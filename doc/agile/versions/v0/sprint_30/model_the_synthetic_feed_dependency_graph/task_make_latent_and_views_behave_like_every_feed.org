@@ -8,7 +8,7 @@
 #+filetags: :synthetic:web:http:graph:model_the_synthetic_feed_dependency_graph:sprint_30:v0:
 #+owner: marco
 #+branch: fix/make-latent-and-views-behave-like-every-feed
-#+pr:
+#+pr: 5079
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-23
@@ -301,7 +301,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5079][#5079]] | [agile] Plan the latent provider as a simulated source |
 
 * Review
 

@@ -1,0 +1,235 @@
+:PROPERTIES:
+:ID: ED9E53BF-27A3-4261-9767-3A25B98BFCA4
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.iam.agent_grant
+#+description: Codegen entity model for the IAM agent_grant table: a person's consent that one named LLM agent acts for them in one party, bounded by a role.
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:agents:
+#+entity_singular: agent_grant
+#+entity_plural: agent_grants
+#+entity_title: Agent Grant
+#+brief: A person's consent that one named LLM agent acts for them in one party.
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+An agent grant records that a person allows one named LLM agent to act for
+them in one tenant and one party, bounded by a role made for the work, until an
+expiry of at most ninety days or until the grant is revoked. It holds no secret: an agent key redeems it,
+and IAM re-checks the grant and its person at every exchange. It is IAM's
+second form of the Grant Management pattern, after the run grant, and
+[[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]] states its checks and its lifecycle.
+
+The table is readable over the wire and written only by IAM's own create and
+revoke operations, which take the person's own session:
+=:client_read_only:= removes the generic write verbs from the wire and keeps
+the repository writable for those operations.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        iam
+:profile:          uuid-identified-lookup
+:client_read_only: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID uniquely identifying this agent grant.
+
+The grant id. It is random, and it is not a credential.
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:natural_key: true
+:END:
+
+The party the agent acts in. Enforced by row level security, so a party sees
+only its own grants.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** grantor_account_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:END:
+
+The person who gave the consent, and for whom the agent acts. A token made from
+the grant names this account as its subject.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** agent_name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+The name the person gives the agent, such as =claude-code= or =desk-assistant=.
+A token made from the grant names it as its actor, so every call the agent
+makes is recorded as this agent's. A person grants each agent once per party.
+
+#+begin_src cpp :name generator
+std::string("claude-code")
+#+end_src
+
+** role_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+The role the agent acts under. At creation the person must hold every
+permission of the role, and the role may name no permission an agent is never
+given; at every exchange the token carries the role's permissions the person
+still holds, less those withheld from agents.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** not_after
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: false
+:END:
+
+The instant after which the grant serves no exchange: at most ninety days after
+the grant was made. A grant is never extended; continuing is a new grant.
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now() + std::chrono::hours(24 * 30)
+#+end_src
+
+** revoked_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: true
+:default_value: {}
+:END:
+
+When the grant was revoked; empty while it is active. Who revoked it and why
+are the revoking version's =modified_by= and change commentary, as for any
+change, so the grant holds no column of its own for them.
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::time_point{}
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_iam_agent_grants_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* Foreign keys
+
+** role_id
+:PROPERTIES:
+:table:         ores_iam_roles_tbl
+:target_column: id
+:parent_entity: role
+:error_message: Invalid role_id: %. No active role found with this id.
+:END:
+
+** grantor_account_id
+:PROPERTIES:
+:table:         ores_iam_accounts_tbl
+:target_column: id
+:parent_entity: account
+:error_message: Invalid grantor_account_id: %. No active account found with this id.
+:list_by:       true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:          api
+:service_find_by_uuid: true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: grant
+:entity_plural_short:   grants
+:entity_singular_words: agent grant
+:entity_plural_words:   agent grants
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ag
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| agent_name  | Agent       |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name:  grants
+:key_field:        agent_name
+:END:
+
+*** Detail fields
+
+| field      | label | widget        | type      | is_key | is_required | placeholder |
+|------------+-------+---------------+-----------+--------+-------------+-------------|
+| agent_name | Agent | agentNameEdit | line_edit | true   | true        |             |
+
+*** Columns
+
+| enum_name  | field       | header      | type      | width |
+|------------+-------------+-------------+-----------+-------|
+| AgentName  | agent_name  | Agent       | string    | 200   |
+| Version    | version     | Version     | int       | 70    |
+| ModifiedBy | modified_by | Modified By | string    | 120   |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150   |
+
+* See also
+
+- [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]] — the checks and the lifecycle this table serves.
+- [[id:AE30F62E-3B9E-4B59-9D11-E8FEE876949A][Grant Management]] — the pattern an agent grant implements.
+- [[id:F3789B6F-042A-4F44-BCFC-E3BB2CA0E274][ores.iam.run_grant]] — the first grant of the same pattern.

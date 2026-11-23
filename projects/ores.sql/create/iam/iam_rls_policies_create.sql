@@ -439,6 +439,21 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()::text
 );
 
+-- The agent token issue log, like the run token's: written only by IAM's own
+-- exchange, each row through a session of its own tenant.
+alter table ores_iam_agent_token_issues_tbl enable row level security;
+
+drop policy if exists agent_token_issues_tenant_isolation_policy
+    on ores_iam_agent_token_issues_tbl;
+
+create policy agent_token_issues_tenant_isolation_policy on ores_iam_agent_token_issues_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()::text
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()::text
+);
+
 -- -----------------------------------------------------------------------------
 -- Seed profiles and their parts
 -- -----------------------------------------------------------------------------

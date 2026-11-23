@@ -1283,6 +1283,9 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'HttpService', 'iam::auth_events:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'HttpService', 'iam::geo:lookup');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'HttpService', 'iam::accounts:read');
+    -- The HTTP edge exchanges an LLM agent's key for a token; it is the only
+    -- holder of this permission.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'HttpService', 'iam::agent_keys:exchange');
 
     -- Compute Wrapper service: worker that processes compute jobs from JetStream
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'ComputeWrapperService', 'Compute Wrapper worker service — processes compute grid jobs', false);
@@ -1586,6 +1589,39 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::instrument_codes:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::counterparty_identifiers:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Viewer', 'refdata::legal_entities:read');
+END $$;
+
+-- =============================================================================
+-- Roles for LLM agents
+--
+-- AgentDelegator lets a person delegate to an LLM agent, and holds that one
+-- permission. AgentReader is the role a grant names for an agent that only
+-- reads. It holds every read and lookup code of the catalogue as it stands
+-- now, each assigned explicitly: an agent role never holds a wildcard, so a
+-- code added later reaches no agent until somebody adds it here. The codes an
+-- agent never holds are left out: the installation's, and the read of other
+-- people's agent grants and keys. A token made from the grant carries only
+-- the codes its person also holds.
+-- =============================================================================
+DO $$
+DECLARE
+    v_code text;
+BEGIN
+    PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'AgentDelegator', 'Delegate to LLM agents: create, list and revoke one''s own agent grants');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'AgentDelegator', 'iam::agent_grants:create');
+
+    PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'AgentReader', 'An LLM agent that reads: every read the person holds, and no write');
+    FOR v_code IN
+        SELECT code FROM ores_iam_permissions_tbl
+        WHERE tenant_id = ores_utility_system_tenant_id_fn()
+          AND valid_to = ores_utility_infinity_timestamp_fn()
+          AND (code LIKE '%:read' OR code LIKE '%:lookup')
+          AND code NOT LIKE 'installation::%'
+          AND code NOT IN ('iam::agent_grants:read', 'iam::agent_keys:read')
+        ORDER BY code
+    LOOP
+        PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'AgentReader', v_code);
+    END LOOP;
 END $$;
 
 

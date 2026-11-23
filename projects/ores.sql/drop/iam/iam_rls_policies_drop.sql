@@ -31,6 +31,7 @@ drop policy if exists account_parties_tenant_isolation_policy on "ores_iam_accou
 drop policy if exists role_grant_request_roles_tenant_isolation_policy on "ores_iam_role_grant_request_roles_tbl";
 drop policy if exists auth_events_tenant_isolation_policy on "ores_iam_auth_events_tbl";
 drop policy if exists run_token_issues_tenant_isolation_policy on "ores_iam_run_token_issues_tbl";
+drop policy if exists agent_token_issues_tenant_isolation_policy on "ores_iam_agent_token_issues_tbl";
 
 -- Tenants
 drop policy if exists tenants_write_policy on "ores_iam_tenants_tbl";

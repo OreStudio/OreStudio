@@ -1,0 +1,178 @@
+:PROPERTIES:
+:ID: 6BA5BFE5-F559-464C-89EA-C071D3199C3F
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.iam.agent_key
+#+description: Codegen entity model for the IAM agent_key table: a key that redeems an agent grant, stored as a hash of its secret.
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:agents:
+#+entity_singular: agent_key
+#+entity_plural: agent_keys
+#+entity_title: Agent Key
+#+brief: A key that redeems an agent grant, stored as a hash of its secret.
+#+created: 2026-11-22
+#+updated: 2026-11-22
+
+An agent key redeems an [[id:ED9E53BF-27A3-4261-9767-3A25B98BFCA4][agent grant]]: an LLM agent presents it as a
+bearer token, and IAM exchanges it for a short token that names the grant's
+person and the agent ([[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]]). The key is shown once, when it is made, and is
+=ores_ak_<tenant id>_<key id>_<secret>=. Only its id, which finds it, and the
+SHA-256 hash of its secret, which checks it, are stored. A grant may have
+several keys, so a key can be replaced before the old one is revoked.
+
+The table is readable over the wire and written only by IAM's own operations:
+=:client_read_only:= removes the generic write verbs from the wire.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        iam
+:profile:          uuid-identified-lookup
+:client_read_only: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID uniquely identifying this agent key.
+
+The key id, which is part of the key and finds it. It is not a credential on
+its own.
+
+** grant_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:END:
+
+The grant the key redeems. A grant may have several keys, so this is not the
+key's natural key.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** secret_hash
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The SHA-256 hash of the key's secret, in hexadecimal. A fast hash suffices
+because the secret is 256 random bits, not a password a person chose.
+
+#+begin_src cpp :name generator
+std::string(64, '0')
+#+end_src
+
+** revoked_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: true
+:default_value: {}
+:END:
+
+When the key was revoked; empty while it redeems its grant.
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::time_point{}
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_iam_agent_keys_tbl
+:rls_tenant_isolation: true
+:END:
+
+* Foreign keys
+
+** grant_id
+:PROPERTIES:
+:table:         ores_iam_agent_grants_tbl
+:target_column: id
+:parent_entity: agent_grant
+:error_message: Invalid grant_id: %. No active agent grant found with this id.
+:list_by:       true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:          api
+:service_find_by_uuid: true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: key
+:entity_plural_short:   keys
+:entity_singular_words: agent key
+:entity_plural_words:   agent keys
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ak
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| id          | Key         |
+| grant_id    | Grant       |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name:  keys
+:key_field:        id
+:END:
+
+*** Detail fields
+
+| field    | label | widget      | type      | is_key | is_required | placeholder |
+|----------+-------+-------------+-----------+--------+-------------+-------------|
+| id       | Key   | idEdit      | line_edit | true   | true        |             |
+| grant_id | Grant | grantIdEdit | line_edit | false  | true        |             |
+
+*** Columns
+
+| enum_name  | field       | header      | type      | width |
+|------------+-------------+-------------+-----------+-------|
+| Id         | id          | Key         | string    | 300   |
+| GrantId    | grant_id    | Grant       | string    | 300   |
+| Version    | version     | Version     | int       | 70    |
+| ModifiedBy | modified_by | Modified By | string    | 120   |
+| RecordedAt | recorded_at | Recorded At | timestamp | 150   |
+
+* See also
+
+- [[id:ED9E53BF-27A3-4261-9767-3A25B98BFCA4][ores.iam.agent_grant]] — the grant a key redeems.
+- [[id:1162906F-BB72-486E-9A11-30D567C65F3E][Delegation tokens for LLM agents: subject and actor claims]] — the exchange a key takes part in.

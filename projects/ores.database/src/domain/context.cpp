@@ -51,6 +51,7 @@ struct context::impl {
     std::string actor;
     std::string service_account;
     std::optional<std::vector<std::string>> roles;
+    std::optional<std::string> delegated_actor;
     pq::transaction* active_transaction = nullptr;
 };
 
@@ -154,6 +155,20 @@ const std::optional<std::vector<std::string>>& context::roles() const {
 context context::with_roles(std::vector<std::string> roles) const {
     auto copy = std::make_shared<impl>(*impl_);
     copy->roles = std::move(roles);
+    return context(std::move(copy));
+}
+
+const std::optional<std::string>& context::delegated_actor() const {
+    return impl_->delegated_actor;
+}
+
+bool context::acts_for_agent() const {
+    return impl_->delegated_actor && impl_->delegated_actor->starts_with("agent:");
+}
+
+context context::with_delegated_actor(std::optional<std::string> actor) const {
+    auto copy = std::make_shared<impl>(*impl_);
+    copy->delegated_actor = std::move(actor);
     return context(std::move(copy));
 }
 

@@ -89,6 +89,17 @@ BEGIN
     -- grant's audience names hold it.
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::run_grants:exchange', 'Exchange a run grant for a run token');
 
+    -- Agent grant permissions. Delegating to an LLM agent is a permission of
+    -- its own, which Member does not hold: a person with it creates, lists
+    -- and revokes their own grants and keys. Administrators read and revoke
+    -- everyone's. ores.http alone exchanges a key, and no agent holds any of
+    -- these, because IAM withholds them from every agent token.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::agent_grants:create', 'Delegate to an LLM agent: create, list and revoke one''s own agent grants and keys');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::agent_grants:read', 'View every agent grant of one''s parties');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::agent_grants:revoke', 'Revoke any agent grant or key of one''s parties');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::agent_keys:read', 'View every agent key of one''s parties, never its secret');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'iam::agent_keys:exchange', 'Exchange an LLM agent''s key for a token naming its person and the agent');
+
     -- A service that dispatches work mints the object-scoped capability a
     -- worker node presents to storage. The grants are the caller's to state,
     -- so only a service trusted to scope an assignment holds it.

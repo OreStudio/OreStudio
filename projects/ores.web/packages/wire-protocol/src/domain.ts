@@ -415,6 +415,8 @@ export const sessionSchema = z.object({
     bytesReceived: z.int().nonnegative(),
     countryCode: z.string(),
     protocol: z.string(),
+    /** The agent grant whose key opened the session; null for a person's own. */
+    agentGrantId: uuidSchema.nullable().default(null),
 });
 
 export type Session = z.infer<typeof sessionSchema>;

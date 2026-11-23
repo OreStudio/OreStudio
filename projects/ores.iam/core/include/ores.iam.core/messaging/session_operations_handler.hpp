@@ -26,6 +26,7 @@
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
 #include "ores.iam.api/messaging/session_statistics_operations_protocol.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
+#include "ores.iam.core/service/agent_grant_operations_service.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -135,7 +136,11 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        if (!has_permission(req_ctx, "iam::sessions:end")) {
+        using agent_ops = service::agent_grant_operations_service;
+        const bool may_end_any = has_permission(req_ctx, "iam::sessions:end");
+        const bool may_end_agents = has_permission(req_ctx, agent_ops::create_permission) ||
+                                    has_permission(req_ctx, agent_ops::revoke_permission);
+        if (req_ctx.acts_for_agent() || (!may_end_any && !may_end_agents)) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
@@ -160,6 +165,26 @@ public:
                 reply(nats_,
                       msg,
                       end_session_response{.success = false, .message = "Session already ended"});
+                return;
+            }
+            /*
+             * An agent's session ends with the key that opened it, or the
+             * agent's next exchange would open another. The key's own rule
+             * decides who may: the grant's person or a holder of the revoke
+             * permission. A person's session needs iam::sessions:end.
+             */
+            if (session->agent_grant_id) {
+                const auto revoked = agent_ops(req_ctx).end_agent_session(
+                    boost::lexical_cast<std::string>(request->session_id));
+                reply(nats_,
+                      msg,
+                      end_session_response{.success = revoked.success,
+                                           .message = revoked.success ?
+                                                          "Session ended and its key revoked" :
+                                                          revoked.message});
+                return;
+            } else if (!may_end_any) {
+                error_reply(nats_, msg, ores::service::error_code::forbidden);
                 return;
             }
 

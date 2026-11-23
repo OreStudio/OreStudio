@@ -569,6 +569,26 @@ const pt: SourceCatalogue = {
         },
     },
 
+    agents: {
+        title: 'Agentes LLM',
+        lead: 'Um agente que nomeia age por si sob uma função, até a autorização expirar ou até a revogar. As suas chamadas são suas e ficam registadas como do agente.',
+        empty: 'Não tem nenhuma autorização de agente ativa.',
+        keyOnce:
+            'Copie esta chave para o agente agora. É mostrada uma vez e não pode ser lida de novo.',
+        until: 'até {at}',
+        newKey: 'Nova chave',
+        revokeGrant: 'Revogar autorização',
+        revokeGrantConfirm:
+            'Revogar a autorização revoga todas as chaves e termina as sessões do agente. Continuar?',
+        key: 'Chave {id}, criada em {at}',
+        revokeKey: 'Revogar chave',
+        name: 'Nome do agente',
+        role: 'Função',
+        days: 'Dias de validade (1–90)',
+        create: 'Criar autorização',
+        readFailed: 'Não foi possível ler as suas autorizações de agente.',
+        actFailed: 'A alteração foi recusada.',
+    },
     auditSignIns: {
         title: 'Inícios de sessão',
         description: 'Quem tem sessão iniciada, o que cada um faz, e quem falha ao entrar.',
@@ -602,6 +622,7 @@ const pt: SourceCatalogue = {
             client: 'Cliente',
             address: 'Endereço',
             country: 'País',
+            agent: 'Agente',
             account: 'Conta',
             traffic: 'Enviado / recebido',
             authorisation: 'Autorização',
@@ -622,6 +643,14 @@ const pt: SourceCatalogue = {
             end: 'Terminar sessão',
             ending: 'A terminar…',
             ended: 'Sessão terminada. As sessões abertas foram lidas de novo.',
+            endAgent:
+                'Terminar a sessão de um agente revoga também a chave que a abriu. A próxima chamada do agente é recusada de imediato, ou no máximo em cinco minutos; precisa de uma nova chave para retomar. Continuar?',
+            holder: 'Mostrar',
+            holders: {
+                all: 'Pessoas e agentes',
+                people: 'Pessoas',
+                agents: 'Agentes',
+            },
             endFailed: 'Não foi possível terminar a sessão.',
             notAllowed: 'Não pode ler as sessões do inquilino.',
             note: 'São lidas todas as sessões abertas do inquilino; terminar uma escreve a sua hora de fim e relê este painel.',

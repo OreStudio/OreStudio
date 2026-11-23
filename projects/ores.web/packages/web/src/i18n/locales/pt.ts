@@ -600,6 +600,18 @@ const pt: SourceCatalogue = {
         },
     },
     agents: {
+        activity: {
+            title: 'O que os seus agentes fizeram',
+            agent: 'Agente',
+            every: 'Todos os agentes',
+            empty: 'Os seus agentes não fizeram nenhuma chamada.',
+            when: 'Quando',
+            call: 'Chamada',
+            answer: 'Resposta',
+            took: 'Duração',
+            ms: '{ms} ms',
+            link: 'Atividade',
+        },
         title: 'Agentes LLM',
         lead: 'Um agente que nomeia age por si sob uma função, até a autorização expirar ou até a revogar. As suas chamadas são suas e ficam registadas como do agente.',
         empty: 'Não tem nenhuma autorização de agente ativa.',
@@ -2896,6 +2908,7 @@ const pt: SourceCatalogue = {
         searchedSoFar: 'Pesquisados os primeiros {shown} de {total}',
     },
     history: {
+        byAgent: 'feita por um agente LLM',
         description: 'Todas as versões deste registo, da mais recente para a mais antiga.',
         newer: 'Mais recente',
         older: 'Mais antiga',

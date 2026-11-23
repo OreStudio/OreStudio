@@ -600,6 +600,18 @@ const fr: SourceCatalogue = {
         },
     },
     agents: {
+        activity: {
+            title: 'Ce que vos agents ont fait',
+            agent: 'Agent',
+            every: 'Tous les agents',
+            empty: 'Vos agents n’ont fait aucun appel.',
+            when: 'Quand',
+            call: 'Appel',
+            answer: 'Réponse',
+            took: 'Durée',
+            ms: '{ms} ms',
+            link: 'Activité',
+        },
         title: 'Agents LLM',
         lead: 'Un agent que vous nommez agit pour vous sous un rôle, jusqu’à l’expiration de l’autorisation ou jusqu’à ce que vous la révoquiez. Ses appels sont les vôtres et sont enregistrés comme ceux de l’agent.',
         empty: 'Vous n’avez aucune autorisation d’agent active.',
@@ -2906,6 +2918,7 @@ const fr: SourceCatalogue = {
         searchedSoFar: 'Recherche sur les {shown} premiers sur {total}',
     },
     history: {
+        byAgent: 'faite par un agent LLM',
         description: 'Toutes les versions de cet enregistrement, la plus récente en premier.',
         newer: 'Plus récente',
         older: 'Plus ancienne',

@@ -75,6 +75,19 @@ exception
 end;
 $$ language plpgsql stable;
 
+-- Get the LLM agent a call was made by, from the session variable: the token's
+-- act claim, agent: and the grant's id, and null for a person's own call.
+-- Used by insert triggers to stamp acting_agent.
+create or replace function ores_iam_current_agent_fn()
+returns text as $$
+begin
+    return nullif(current_setting('app.current_agent', true), '');
+exception
+    when others then
+        return null;
+end;
+$$ language plpgsql stable;
+
 -- Get visible party IDs from session variable as uuid array
 create or replace function ores_iam_visible_party_ids_fn()
 returns uuid[] as $$

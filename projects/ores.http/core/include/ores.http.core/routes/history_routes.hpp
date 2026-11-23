@@ -59,6 +59,7 @@ struct version_change final {
 struct version_row final {
     int version = 0;
     std::string modified_by;
+    std::string acting_agent;
     std::chrono::system_clock::time_point recorded_at;
     std::vector<version_field> fields;
     std::vector<version_change> changes;

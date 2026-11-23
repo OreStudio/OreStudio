@@ -59,6 +59,7 @@ create table if not exists "{{domain_entity.sql_name_base}}_tbl" (
 {{#domain_entity.has_audit_columns}}
     "modified_by" text not null,
     "performed_by" text not null,
+    "acting_agent" text not null default '',
     "change_reason_code" text not null,
     "change_commentary" text not null,
 {{/domain_entity.has_audit_columns}}
@@ -776,6 +777,7 @@ begin
 {{/domain_entity.current_state}}
 {{#domain_entity.has_audit_columns}}
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+    NEW.acting_agent = coalesce(ores_iam_current_agent_fn(), '');
 {{/domain_entity.has_audit_columns}}
 
     return NEW;

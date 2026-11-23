@@ -25,6 +25,7 @@ it. [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent f
 * Includes
 
 #+begin_src cpp :name includes
+#include "ores.iam.api/domain/agent_call.hpp"
 #include "ores.iam.api/domain/agent_grant.hpp"
 #include "ores.iam.api/domain/agent_key.hpp"
 #include <cstdint>
@@ -424,6 +425,47 @@ it. [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent f
 *** keys
 :PROPERTIES:
 :cpp_type: std::vector<ores::iam::domain::agent_key>
+:END:
+
+** list_own_agent_activity_request
+:PROPERTIES:
+:subject: iam.v1.ops.list_own_agent_activity
+:response: list_own_agent_activity_response
+:http_route: true
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Lists the calls the caller's own LLM agents made, newest first.
+ *
+ * A self read, like the caller's own grants: it needs
+ * iam::agent_grants:create and is refused to an agent.
+ */
+#+end_src
+
+** list_own_agent_activity_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The caller's agents' calls: route, method, answer and duration, never
+ * a request or its answer.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** calls
+:PROPERTIES:
+:cpp_type: std::vector<ores::iam::domain::agent_call>
 :END:
 
 * See also

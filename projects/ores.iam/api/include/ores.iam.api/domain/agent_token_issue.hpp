@@ -51,13 +51,13 @@ namespace ores::iam::domain {
  */
 struct agent_token_issue final {
     /**
-     * @brief The row's id, a uuid in its text form. It sits in the primary key beside the paatition
+     * @brief The row's id, a uuid in its text form. It sits in the primary key beside the partition
      * column.
      */
     std::string id;
 
     /**
-     * @brief When the exchange reached the log. The paatition column.
+     * @brief When the exchange reached the log. The partition column.
      */
     std::chrono::system_clock::time_point issued_at;
 

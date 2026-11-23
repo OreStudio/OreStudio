@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/record-what-an-agent-did-and-show-it-to-its-person
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ Every write made with an agent's token records the agent beside the person, in a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -42,9 +42,25 @@ Every write made with an agent's token records the agent beside the person, in a
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The design page put the acting agent on every entity as a codegen field. A
+field on every C++ domain type would break the width ceilings of most of them
+(532 flat types; the ceilings only come down), so the agent is kept at rest and
+read where it is needed:
+
+1. At rest: =app.current_agent= joins the session settings every transaction
+   sets, from the token's =act= when it names an agent, and the three SQL table
+   templates and two hand-written tables gain an =acting_agent= column stamped
+   by the insert trigger beside =performed_by=. The DQ publish functions that
+   copy every live column from staging leave it out.
+2. In history: =entity_history_version= gains =acting_agent=, and every
+   generated history provider marks its versions through one helper in
+   =ores.history.core=, which reads the record's stamps by its key and joins
+   them on =valid_from=, the version's =recorded_at=.
+3. The log: a hypertable =ores_iam_agent_calls_tbl=, written by ores.http after
+   it answers a call made with an exchanged key, through a generic recorder on
+   the gateway's credential path; read by =list_own_agent_activity=.
+4. ores.web: the person's activity panel, a history tag, and links between
+   sessions, grants and activity.
 
 * Measurements
 
@@ -58,7 +74,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Create scripts stamping performed_by but not acting_agent | 0; all 433 history providers' tables and keys exist and hold the column | scratchpad checks over =projects/ores.sql/create= and the registrars | branch head |
+| ores.database.tests | 85 of 85 | =./compass.sh build test_ores.database.tests= | branch head |
+| ores.history.core.tests | 11 of 11 | =./compass.sh build test_ores.history.core.tests= | branch head |
+| ores.iam.core.tests | 302 of 302 | =./compass.sh build test_ores.iam.core.tests= | branch head |
+| ores.http.api.tests | 190 of 190 | =./compass.sh build test_ores.http.api.tests= | branch head |
+| ores.http.iam.tests | 173 passed, 1 skipped | =./compass.sh build test_ores.http.iam.tests= | branch head |
+| ores.web suite | 2666 of 2666 | =npx vitest run src= | branch head |
+| End-to-end through ores.http, Acme provisioned | 18 of 18 | scratchpad =agent_e2e.py= | branch head |
 
 * Notes
 
@@ -86,3 +109,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A write made with an agent's token stamps =acting_agent= with =agent:= and the
+grant's id on the row it writes; a person's own write and a service's stamp
+nothing. A record's history tags the versions an agent made, beside the person
+it made them for. ores.http logs every call an agent makes, reads and writes,
+by route pattern, method, status and duration, never its content, and a person
+reads their agents' calls, newest first and by agent, on their Security page.
+Their own sessions link an agent's session to its activity, and an
+administrator's sessions window links it to its grant.
+
+The history of a junction is not marked yet, and an administrator has no view of
+another person's agents' calls; both are left for when they are needed.

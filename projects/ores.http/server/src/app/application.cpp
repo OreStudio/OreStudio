@@ -51,6 +51,7 @@
 #include "ores.http/routes/workflow/workflow_routes.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
+#include "ores.iam.core/repository/agent_call_log.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.nats/service/client.hpp"
@@ -243,6 +244,22 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     auto agent_keys = std::make_shared<http::routes::iam::agent_key_cache>();
     server.set_bearer_exchanger(
         http::routes::iam::agent_key_exchange::exchanger(service_nats, agent_keys));
+    // Every call an agent makes is logged for its person, reads as well as
+    // writes, from the token's own claims: never the request or the answer.
+    server.set_exchanged_call_recorder([ctx](const http::domain::exchanged_call& call) {
+        iam::domain::agent_call row;
+        row.called_at = std::chrono::system_clock::now();
+        row.tenant_id = call.claims.tenant_id.value_or("");
+        row.party_id = call.claims.party_id.value_or("");
+        row.grant_id = call.claims.grant_id.value_or("");
+        row.session_id = call.claims.session_id.value_or("");
+        row.grantor_account_id = call.claims.subject;
+        row.method = call.method;
+        row.route = call.route;
+        row.status = call.status;
+        row.duration_ms = static_cast<int>(call.duration.count());
+        iam::repository::agent_call_log(ctx).record(std::move(row));
+    });
 
     /*
      * The door finds the verifier when a sign-in needs it. The runner installs the

@@ -63,6 +63,7 @@ package "marketdata" #E3F2FD {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -97,6 +98,7 @@ package "marketdata" #E3F2FD {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -125,6 +127,7 @@ package "marketdata" #E3F2FD {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -165,6 +168,7 @@ package "marketdata" #E3F2FD {
           superseded_as_of : timestamptz
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -226,6 +230,7 @@ package "marketdata" #E3F2FD {
         * deliveries : bigint
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -256,6 +261,7 @@ package "marketdata" #E3F2FD {
           interval_to : timestamptz
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -285,6 +291,7 @@ package "marketdata" #E3F2FD {
           vendor_instrument_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -319,6 +326,7 @@ package "marketdata" #E3F2FD {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -359,6 +367,7 @@ package "marketdata" #E3F2FD {
         * swap_points : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -388,6 +397,7 @@ package "marketdata" #E3F2FD {
         * value : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -424,6 +434,7 @@ package "marketdata" #E3F2FD {
           published_at : timestamptz
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -480,6 +491,7 @@ package "marketdata" #E3F2FD {
         * missing_pillars : jsonb
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -534,6 +546,7 @@ package "marketdata" #E3F2FD {
           superseded_as_of : timestamptz
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -612,6 +625,7 @@ package "marketdata" #E3F2FD {
           effective_to : timestamptz
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -646,6 +660,7 @@ package "marketdata" #E3F2FD {
           deviation_note : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -799,6 +814,7 @@ package "marketdata" #E3F2FD {
         * version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
@@ -930,6 +946,7 @@ package "marketdata" #E3F2FD {
         * derivation_config_version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -984,6 +1001,7 @@ package "marketdata" #E3F2FD {
         * source_weights : jsonb
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1045,6 +1063,7 @@ package "marketdata" #E3F2FD {
           terms_accepted_at : timestamptz
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1080,6 +1099,7 @@ package "marketdata" #E3F2FD {
           effective_to : timestamptz
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1110,6 +1130,7 @@ package "marketdata" #E3F2FD {
         * feed_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1197,6 +1218,7 @@ package "marketdata" #E3F2FD {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1257,6 +1279,7 @@ package "marketdata" #E3F2FD {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1292,6 +1315,7 @@ package "marketdata" #E3F2FD {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1338,6 +1362,7 @@ package "marketdata" #E3F2FD {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1374,6 +1399,7 @@ package "marketdata" #E3F2FD {
           interval_to : timestamptz
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1405,6 +1431,7 @@ package "marketdata" #E3F2FD {
         * derived : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1437,6 +1464,7 @@ package "marketdata" #E3F2FD {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz

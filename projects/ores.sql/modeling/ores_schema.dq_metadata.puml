@@ -54,6 +54,7 @@ package "dq_metadata" #E1F5FE {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -87,6 +88,7 @@ package "dq_metadata" #E1F5FE {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -115,6 +117,7 @@ package "dq_metadata" #E1F5FE {
         * badge_code : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
@@ -152,6 +155,7 @@ package "dq_metadata" #E1F5FE {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -178,6 +182,7 @@ package "dq_metadata" #E1F5FE {
           owner : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -206,6 +211,7 @@ package "dq_metadata" #E1F5FE {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -237,6 +243,7 @@ package "dq_metadata" #E1F5FE {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -265,6 +272,7 @@ package "dq_metadata" #E1F5FE {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -294,6 +302,7 @@ package "dq_metadata" #E1F5FE {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -325,6 +334,7 @@ package "dq_metadata" #E1F5FE {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -353,6 +363,7 @@ package "dq_metadata" #E1F5FE {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -378,6 +389,7 @@ package "dq_metadata" #E1F5FE {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -400,6 +412,7 @@ package "dq_metadata" #E1F5FE {
         * is_terminal : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -430,6 +443,7 @@ package "dq_metadata" #E1F5FE {
           guard_function : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -458,6 +472,7 @@ package "dq_metadata" #E1F5FE {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz

@@ -66,6 +66,7 @@ package "reporting" #E0F7FA {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -99,6 +100,7 @@ package "reporting" #E0F7FA {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -128,6 +130,7 @@ package "reporting" #E0F7FA {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -154,6 +157,7 @@ package "reporting" #E0F7FA {
         * active : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -180,6 +184,7 @@ package "reporting" #E0F7FA {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -206,6 +211,7 @@ package "reporting" #E0F7FA {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -238,6 +244,7 @@ package "reporting" #E0F7FA {
           run_parameter : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -270,6 +277,7 @@ package "reporting" #E0F7FA {
         * owning_component : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -303,6 +311,7 @@ package "reporting" #E0F7FA {
           applied_at : timestamptz
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -346,6 +355,7 @@ package "reporting" #E0F7FA {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -382,6 +392,7 @@ package "reporting" #E0F7FA {
         * reason : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -422,6 +433,7 @@ package "reporting" #E0F7FA {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -465,6 +477,7 @@ package "reporting" #E0F7FA {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -521,6 +534,7 @@ package "reporting" #E0F7FA {
         * output_is_indicative : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -573,6 +587,7 @@ package "reporting" #E0F7FA {
           use_at_par_coupons_trades : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -603,6 +618,7 @@ package "reporting" #E0F7FA {
         * applied : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -636,6 +652,7 @@ package "reporting" #E0F7FA {
           gzip_compression_level : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -667,6 +684,7 @@ package "reporting" #E0F7FA {
           ignore_fixing_lead : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -695,6 +713,7 @@ package "reporting" #E0F7FA {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -727,6 +746,7 @@ package "reporting" #E0F7FA {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -758,6 +778,7 @@ package "reporting" #E0F7FA {
         * configuration_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -796,6 +817,7 @@ package "reporting" #E0F7FA {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -875,6 +897,7 @@ package "reporting" #E0F7FA {
         * configuration_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -917,6 +940,7 @@ package "reporting" #E0F7FA {
           cut_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1026,6 +1050,7 @@ package "reporting" #E0F7FA {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1083,6 +1108,7 @@ package "reporting" #E0F7FA {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1134,6 +1160,7 @@ package "reporting" #E0F7FA {
           cut_timepoint : timestamptz
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1269,6 +1296,7 @@ package "reporting" #E0F7FA {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1299,6 +1327,7 @@ package "reporting" #E0F7FA {
         * version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1329,6 +1358,7 @@ package "reporting" #E0F7FA {
         * workflow_type : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1401,6 +1431,7 @@ package "reporting" #E0F7FA {
           portfolio_recurse_into_sub_directories : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz

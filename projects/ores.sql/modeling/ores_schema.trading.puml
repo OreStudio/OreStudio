@@ -63,6 +63,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -97,6 +98,7 @@ package "trading" #E8F5E9 {
           fsm_transition_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -127,6 +129,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -145,18 +148,19 @@ package "trading" #E8F5E9 {
     ORE XML unchanged. No conversion is introduced here.
     end note
 
-    entity ores_trading_ascots_tbl <<junction>> #ECECEC {
+    entity ores_trading_ascots_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
         * ascot_option_type : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -194,6 +198,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -224,6 +229,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -259,6 +265,7 @@ package "trading" #E8F5E9 {
           lockout_days : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -294,6 +301,7 @@ package "trading" #E8F5E9 {
         * seniority : bigint
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -324,6 +332,7 @@ package "trading" #E8F5E9 {
           direction : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -353,6 +362,7 @@ package "trading" #E8F5E9 {
           fixed_trigger_level : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -394,6 +404,7 @@ package "trading" #E8F5E9 {
         * notional : numeric(28, 10)
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -432,6 +443,7 @@ package "trading" #E8F5E9 {
           premium_date : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -467,6 +479,7 @@ package "trading" #E8F5E9 {
           use_future_price : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -515,6 +528,7 @@ package "trading" #E8F5E9 {
           notional : numeric(38, 12)
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -564,6 +578,7 @@ package "trading" #E8F5E9 {
         * include_accrual : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -594,6 +609,7 @@ package "trading" #E8F5E9 {
         * conversion_ratio : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -630,6 +646,7 @@ package "trading" #E8F5E9 {
           underflow : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -664,6 +681,7 @@ package "trading" #E8F5E9 {
           start_date : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -721,6 +739,7 @@ package "trading" #E8F5E9 {
           back_stub_rounding_precision : bigint
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -770,6 +789,7 @@ package "trading" #E8F5E9 {
         * schedule_date : date
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -823,6 +843,7 @@ package "trading" #E8F5E9 {
           include_duplicate_dates : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -882,6 +903,7 @@ package "trading" #E8F5E9 {
           settlement_fixing_date : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -939,6 +961,7 @@ package "trading" #E8F5E9 {
           credit_risk : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -991,6 +1014,7 @@ package "trading" #E8F5E9 {
           underflow : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1027,6 +1051,7 @@ package "trading" #E8F5E9 {
           start_date : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1086,6 +1111,7 @@ package "trading" #E8F5E9 {
           back_stub_rounding_precision : bigint
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1146,6 +1172,7 @@ package "trading" #E8F5E9 {
           settlement_fixing_date : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1187,6 +1214,7 @@ package "trading" #E8F5E9 {
           knocks_out : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1224,6 +1252,7 @@ package "trading" #E8F5E9 {
           repo_index : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1261,6 +1290,7 @@ package "trading" #E8F5E9 {
           initial_price : numeric(38, 12)
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1296,6 +1326,7 @@ package "trading" #E8F5E9 {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1328,6 +1359,7 @@ package "trading" #E8F5E9 {
         * call_date : date
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1363,6 +1395,7 @@ package "trading" #E8F5E9 {
         * trade_activity_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_to : timestamptz
@@ -1392,18 +1425,19 @@ package "trading" #E8F5E9 {
     only the product's own fields, and joins the header by trade_id.
     end note
 
-    entity ores_trading_cap_floor_instruments_tbl <<junction>> #ECECEC {
+    entity ores_trading_cap_floor_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
           long_short : text <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -1433,6 +1467,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1460,6 +1495,7 @@ package "trading" #E8F5E9 {
           counterparty : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1486,6 +1522,7 @@ package "trading" #E8F5E9 {
         * structure_id : text <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1522,6 +1559,7 @@ package "trading" #E8F5E9 {
         * equity_kicker : numeric(38, 12)
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1552,6 +1590,7 @@ package "trading" #E8F5E9 {
         * oc_ratio : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1588,6 +1627,7 @@ package "trading" #E8F5E9 {
           cash_settlement_days : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1619,6 +1659,7 @@ package "trading" #E8F5E9 {
           initial_price : numeric(38, 12)
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1706,6 +1747,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1762,6 +1804,7 @@ package "trading" #E8F5E9 {
           underlying_price_is_per_unit : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1791,6 +1834,7 @@ package "trading" #E8F5E9 {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1829,6 +1873,7 @@ package "trading" #E8F5E9 {
           currency : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1872,6 +1917,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1916,6 +1962,7 @@ package "trading" #E8F5E9 {
           default_payment_time : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1959,6 +2006,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1987,6 +2035,7 @@ package "trading" #E8F5E9 {
           responsible_role : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2013,6 +2062,7 @@ package "trading" #E8F5E9 {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2062,6 +2112,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2106,6 +2157,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2152,6 +2204,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2187,6 +2240,7 @@ package "trading" #E8F5E9 {
           initial_price : numeric(38, 12)
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2228,6 +2282,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2270,6 +2325,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2313,6 +2369,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2354,6 +2411,7 @@ package "trading" #E8F5E9 {
           premium_payment_date : date
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2403,6 +2461,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2441,6 +2500,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2479,6 +2539,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2518,6 +2579,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2552,6 +2614,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2614,6 +2677,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2655,6 +2719,7 @@ package "trading" #E8F5E9 {
           initial_price_currency2 : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2708,6 +2773,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2745,6 +2811,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2793,6 +2860,7 @@ package "trading" #E8F5E9 {
           premium_pay_date : date
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2850,6 +2918,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2897,6 +2966,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2927,6 +2997,7 @@ package "trading" #E8F5E9 {
           strike : numeric(38, 12)
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -2973,6 +3044,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3004,6 +3076,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3047,6 +3120,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3076,6 +3150,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3093,18 +3168,19 @@ package "trading" #E8F5E9 {
     ORE XML unchanged. No conversion is introduced here.
     end note
 
-    entity ores_trading_flexi_swap_instruments_tbl <<junction>> #ECECEC {
+    entity ores_trading_flexi_swap_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
         * option_long_short : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -3136,6 +3212,7 @@ package "trading" #E8F5E9 {
         * notional : numeric(28, 10)
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3166,6 +3243,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3200,6 +3278,7 @@ package "trading" #E8F5E9 {
         * notional : numeric(38, 12)
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3237,6 +3316,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3281,6 +3361,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3321,6 +3402,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3368,6 +3450,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3400,6 +3483,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3442,6 +3526,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3485,6 +3570,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3529,6 +3615,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3574,6 +3661,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3614,6 +3702,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3657,6 +3746,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3698,6 +3788,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3736,6 +3827,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3772,6 +3864,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3804,6 +3897,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3853,6 +3947,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3893,6 +3988,7 @@ package "trading" #E8F5E9 {
           cash_settlement_days : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3925,6 +4021,7 @@ package "trading" #E8F5E9 {
           front_end_protection_start_date : date
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3956,6 +4053,7 @@ package "trading" #E8F5E9 {
           lag_convention : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -3987,6 +4085,7 @@ package "trading" #E8F5E9 {
         * level : numeric(38, 12)
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4021,6 +4120,7 @@ package "trading" #E8F5E9 {
           override_triggered : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4057,6 +4157,7 @@ package "trading" #E8F5E9 {
           currency : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4088,6 +4189,7 @@ package "trading" #E8F5E9 {
         * price : numeric(38, 12)
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4118,6 +4220,7 @@ package "trading" #E8F5E9 {
         * payment_date : date
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4152,6 +4255,7 @@ package "trading" #E8F5E9 {
           settlement_fixing_date : date
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4215,6 +4319,7 @@ package "trading" #E8F5E9 {
           settlement_fixing_date : date
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4260,6 +4365,7 @@ package "trading" #E8F5E9 {
         * schedule_date : date
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4317,6 +4423,7 @@ package "trading" #E8F5E9 {
           shift : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4378,6 +4485,7 @@ package "trading" #E8F5E9 {
           long_short : text <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4423,6 +4531,7 @@ package "trading" #E8F5E9 {
           bid_ask_adjustment : numeric(38, 12)
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4457,6 +4566,7 @@ package "trading" #E8F5E9 {
         * value : numeric(38, 12)
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4487,6 +4597,7 @@ package "trading" #E8F5E9 {
         * barrier_type : text <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4515,6 +4626,7 @@ package "trading" #E8F5E9 {
           fsm_state_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4538,6 +4650,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4566,6 +4679,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4592,6 +4706,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4616,6 +4731,7 @@ package "trading" #E8F5E9 {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4649,6 +4765,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4664,18 +4781,19 @@ package "trading" #E8F5E9 {
     Examples: 'Counterparty', 'CalculationAgent', 'ExecutingBroker', 'NovationTransferee'.
     end note
 
-    entity ores_trading_party_roles_tbl <<junction>> #ECECEC {
+    entity ores_trading_party_roles_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
         * role : text <<PK, FK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -4702,6 +4820,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4747,6 +4866,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4774,6 +4894,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4801,6 +4922,7 @@ package "trading" #E8F5E9 {
         * is_home : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
@@ -4844,6 +4966,7 @@ package "trading" #E8F5E9 {
           knowledge_note : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4884,6 +5007,7 @@ package "trading" #E8F5E9 {
           strike_adjustment : numeric(38, 12)
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4933,6 +5057,7 @@ package "trading" #E8F5E9 {
           payment_date : date
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -4966,6 +5091,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5014,6 +5140,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5050,6 +5177,7 @@ package "trading" #E8F5E9 {
           naked_option : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5084,6 +5212,7 @@ package "trading" #E8F5E9 {
         * script_version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5110,6 +5239,7 @@ package "trading" #E8F5E9 {
         * script_version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5136,6 +5266,7 @@ package "trading" #E8F5E9 {
         * script_version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5197,6 +5328,7 @@ package "trading" #E8F5E9 {
         * script_version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5228,6 +5360,7 @@ package "trading" #E8F5E9 {
         * script_version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5258,6 +5391,7 @@ package "trading" #E8F5E9 {
           transform : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5290,6 +5424,7 @@ package "trading" #E8F5E9 {
         * script_version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5324,6 +5459,7 @@ package "trading" #E8F5E9 {
           script_hash : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5369,6 +5505,7 @@ package "trading" #E8F5E9 {
         * value : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5408,6 +5545,7 @@ package "trading" #E8F5E9 {
           shift_anchor : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5444,6 +5582,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5470,6 +5609,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5498,6 +5638,7 @@ package "trading" #E8F5E9 {
           issuing_party_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5528,6 +5669,7 @@ package "trading" #E8F5E9 {
         * confirms_as_whole : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5557,6 +5699,7 @@ package "trading" #E8F5E9 {
           member_label : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5591,6 +5734,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5621,6 +5765,7 @@ package "trading" #E8F5E9 {
         * kind : text <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5652,6 +5797,7 @@ package "trading" #E8F5E9 {
           parent_structure_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5692,6 +5838,7 @@ package "trading" #E8F5E9 {
           underflow : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5730,6 +5877,7 @@ package "trading" #E8F5E9 {
         * amount : numeric(38, 12)
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5771,6 +5919,7 @@ package "trading" #E8F5E9 {
           is_in_arrears : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5809,6 +5958,7 @@ package "trading" #E8F5E9 {
         * value : numeric(38, 12)
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5912,6 +6062,7 @@ package "trading" #E8F5E9 {
           zero_coupon_subtract_notional : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -5968,6 +6119,7 @@ package "trading" #E8F5E9 {
         * long_short : text <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6007,6 +6159,7 @@ package "trading" #E8F5E9 {
           upfront_fee : numeric(38, 12)
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6040,6 +6193,7 @@ package "trading" #E8F5E9 {
         * is_operational_error : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6073,6 +6227,7 @@ package "trading" #E8F5E9 {
         * value : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6097,18 +6252,19 @@ package "trading" #E8F5E9 {
     ORE import moves off in its own task.
     end note
 
-    entity ores_trading_trade_authorisation_requests_tbl <<junction>> #ECECEC {
+    entity ores_trading_trade_authorisation_requests_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * request_id : uuid <<PK, FK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * trade_id : uuid <<FK>>
         * trade_version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -6140,6 +6296,7 @@ package "trading" #E8F5E9 {
           execution_timestamp : timestamptz
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6174,6 +6331,7 @@ package "trading" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6200,6 +6358,7 @@ package "trading" #E8F5E9 {
           issuing_party_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6233,6 +6392,7 @@ package "trading" #E8F5E9 {
         * has_economic_effect : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6250,19 +6410,20 @@ package "trading" #E8F5E9 {
     Examples: 'Novation', 'Roll', 'Exercise', 'Hedge'.
     end note
 
-    entity ores_trading_trade_links_tbl <<junction>> #ECECEC {
+    entity ores_trading_trade_links_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * from_trade_id : uuid <<PK, FK>>
         * to_trade_id : uuid <<PK, FK>>
         * link_type : text <<PK, FK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -6286,19 +6447,20 @@ package "trading" #E8F5E9 {
     here: a link holds nothing and stands alone.
     end note
 
-    entity ores_trading_trade_portfolios_tbl <<junction>> #ECECEC {
+    entity ores_trading_trade_portfolios_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
         * sequence_number : integer <<PK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>
         * portfolio_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -6330,6 +6492,7 @@ package "trading" #E8F5E9 {
         * status_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_to : timestamptz
@@ -6372,6 +6535,7 @@ package "trading" #E8F5E9 {
           economic_digest : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -6409,6 +6573,7 @@ package "trading" #E8F5E9 {
           netting_precision : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz

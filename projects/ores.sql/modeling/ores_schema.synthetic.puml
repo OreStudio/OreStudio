@@ -56,6 +56,7 @@ package "synthetic" #F9FBE7 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -91,6 +92,7 @@ package "synthetic" #F9FBE7 {
         * fallback_code : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -122,6 +124,7 @@ package "synthetic" #F9FBE7 {
         * rank : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -149,6 +152,7 @@ package "synthetic" #F9FBE7 {
         * parameter_value : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -194,6 +198,7 @@ package "synthetic" #F9FBE7 {
           collection_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -236,6 +241,7 @@ package "synthetic" #F9FBE7 {
         * window_days : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -283,6 +289,7 @@ package "synthetic" #F9FBE7 {
           variance_calibration_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -319,6 +326,7 @@ package "synthetic" #F9FBE7 {
         * bias : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -349,6 +357,7 @@ package "synthetic" #F9FBE7 {
         * contributor_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -378,6 +387,7 @@ package "synthetic" #F9FBE7 {
         * variance_volatility : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -429,6 +439,7 @@ package "synthetic" #F9FBE7 {
         * quote_curve_name : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -467,6 +478,7 @@ package "synthetic" #F9FBE7 {
         * weight : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -511,6 +523,7 @@ package "synthetic" #F9FBE7 {
         * sensitivity : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -549,6 +562,7 @@ package "synthetic" #F9FBE7 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -587,6 +601,7 @@ package "synthetic" #F9FBE7 {
         * instrument_code : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -638,6 +653,7 @@ package "synthetic" #F9FBE7 {
         * provider_code : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -669,6 +685,7 @@ package "synthetic" #F9FBE7 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -713,6 +730,7 @@ package "synthetic" #F9FBE7 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -756,6 +774,7 @@ package "synthetic" #F9FBE7 {
         * provider_code : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -793,6 +812,7 @@ package "synthetic" #F9FBE7 {
         * book_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -839,6 +859,7 @@ package "synthetic" #F9FBE7 {
           reference_curve_id : text <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -884,6 +905,7 @@ package "synthetic" #F9FBE7 {
         * counterparty_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -918,6 +940,7 @@ package "synthetic" #F9FBE7 {
         * trade_type_code : text <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -955,6 +978,7 @@ package "synthetic" #F9FBE7 {
         * exclusion_reason : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -995,6 +1019,7 @@ package "synthetic" #F9FBE7 {
         * used_count : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1045,6 +1070,7 @@ package "synthetic" #F9FBE7 {
         * state_reason : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1091,6 +1117,7 @@ package "synthetic" #F9FBE7 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz

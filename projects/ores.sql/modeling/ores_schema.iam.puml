@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: iam
-Tables: 28
+Tables: 29
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -75,6 +75,7 @@ package "iam" #E8F4FD {
           web_page : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -113,6 +114,7 @@ package "iam" #E8F4FD {
           totp_secret : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -154,18 +156,19 @@ package "iam" #E8F4FD {
     domain operations, iam.v1.ops.*.
     end note
 
-    entity ores_iam_account_parties_tbl <<junction>> #ECECEC {
+    entity ores_iam_account_parties_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * account_id : uuid <<PK, FK>>
         * party_id : uuid <<PK, FK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -179,18 +182,19 @@ package "iam" #E8F4FD {
     can act on behalf of.
     end note
 
-    entity ores_iam_account_roles_tbl <<junction>> #ECECEC {
+    entity ores_iam_account_roles_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * account_id : uuid <<PK, FK>>
         * role_id : uuid <<PK, FK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -215,6 +219,7 @@ package "iam" #E8F4FD {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -248,6 +253,7 @@ package "iam" #E8F4FD {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -284,6 +290,7 @@ package "iam" #E8F4FD {
         * shared : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -350,6 +357,41 @@ package "iam" #E8F4FD {
     meaning a different read.
     end note
 
+    entity ores_iam_agent_calls_tbl  #F7E5FF {
+        * id : text <<PK>>
+        * called_at : timestamptz <<PK>>
+        --
+        * tenant_id : text <<FK>>
+        * party_id : text <<FK>>
+        * grant_id : text <<FK>>
+        * session_id : text <<FK>>
+        * grantor_account_id : text <<FK>>
+        * method : text
+        * route : text
+        * status : integer
+        * duration_ms : integer
+    }
+
+    note right of ores_iam_agent_calls_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Agent Call Table
+    A row says that an LLM agent, holding a grant, called one route of ores.http
+    for its person, with which method, how it was answered and how long it took.
+    Reads are logged as writes are, because a person who wants to know what an
+    agent did wants to know what it looked at. It never holds a key, a token or a
+    request body. A person reads their agents' rows; the record each write changed
+    carries the agent in its own acting_agent stamp.
+    The table is an audit log like the agent token issue log, and follows it: its
+    tenant_id is an ordinary text column isolated by a policy in
+    iam_rls_policies_create.sql, and only ores.http writes it, after it answers
+    the call, each row through a session of the call's own tenant. No retention
+    policy is set.
+    The table is internal, so only the data layer and the SQL schema are generated.
+    The reads stay hand-written in agent_call_log.
+    end note
+
     entity ores_iam_agent_grants_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -363,6 +405,7 @@ package "iam" #E8F4FD {
           revoked_at : timestamptz
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -396,6 +439,7 @@ package "iam" #E8F4FD {
           revoked_at : timestamptz
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -571,6 +615,7 @@ package "iam" #E8F4FD {
           applied_at : timestamptz
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
@@ -598,6 +643,7 @@ package "iam" #E8F4FD {
         * account_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_to : timestamptz
@@ -623,18 +669,19 @@ package "iam" #E8F4FD {
     [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]].
     end note
 
-    entity ores_iam_role_permissions_tbl <<junction>> #ECECEC {
+    entity ores_iam_role_permissions_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * role_id : uuid <<PK, FK>>
         * permission_id : uuid <<PK, FK>>
-        * valid_from : timestamptz <<PK>>
         --
         * version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
+        * valid_from : timestamptz
         * valid_to : timestamptz
     }
 
@@ -657,6 +704,7 @@ package "iam" #E8F4FD {
         * version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
           closed_by : text
@@ -696,6 +744,7 @@ package "iam" #E8F4FD {
         * is_requestable : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -753,6 +802,7 @@ package "iam" #E8F4FD {
           revoke_reason : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -830,6 +880,7 @@ package "iam" #E8F4FD {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -869,6 +920,7 @@ package "iam" #E8F4FD {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -914,6 +966,7 @@ package "iam" #E8F4FD {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1042,6 +1095,7 @@ package "iam" #E8F4FD {
           badge_code : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1070,6 +1124,7 @@ package "iam" #E8F4FD {
           badge_code : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -1101,6 +1156,7 @@ package "iam" #E8F4FD {
         * is_registration_default : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz

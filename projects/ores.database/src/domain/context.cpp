@@ -216,7 +216,8 @@ pq::session_context context::pq_session() const {
             .party = impl_->party_id,
             .visible_parties = impl_->visible_party_ids,
             .actor = impl_->actor,
-            .service = impl_->service_account};
+            .service = impl_->service_account,
+            .agent = acts_for_agent() ? delegated_actor().value_or("") : std::string()};
 }
 
 void context::refuse_change_inside_transaction(const impl& to) const {

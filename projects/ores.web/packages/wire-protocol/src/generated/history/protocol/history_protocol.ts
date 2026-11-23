@@ -36,6 +36,7 @@ import type { FieldValue } from '../../diff/domain/field_value.js';
 export interface EntityHistoryVersion {
     version: number;
     modified_by: string;
+    acting_agent: string;
     recorded_at: string;
     fields: FieldValue[];
     changes: DiffResult;

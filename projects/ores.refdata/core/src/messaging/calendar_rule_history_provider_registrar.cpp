@@ -25,9 +25,11 @@
 #include "ores.refdata.core/messaging/calendar_rule_history_provider_registrar.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/acting_agents.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.refdata.core/presentation/calendar_rule_history_field_mapper.hpp"
 #include "ores.refdata.core/service/calendar_rule_service.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::refdata::messaging {
 
@@ -38,8 +40,19 @@ void register_calendar_rule_history_provider(ores::history::service::dispatch_re
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::calendar_rule_service svc(scoped_ctx);
             auto versions = svc.get_calendar_rule_history(entity_id);
-            return ores::history::service::build_entity_history_versions(
+            auto history = ores::history::service::build_entity_history_versions(
                 versions, presentation::render_calendar_rule_fields);
+            // The versions an LLM agent wrote carry the agent, read from the
+            // rows' own stamp.
+            if (!versions.empty())
+                ores::history::service::mark_acting_agents(
+                    scoped_ctx,
+                    {.table = "ores_refdata_calendar_rules_tbl",
+                     .key_column = "id",
+                     .key_is_uuid = true},
+                    boost::uuids::to_string(versions.front().id),
+                    history);
+            return history;
         });
 }
 

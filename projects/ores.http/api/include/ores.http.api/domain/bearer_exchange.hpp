@@ -21,6 +21,8 @@
 #define ORES_HTTP_API_DOMAIN_BEARER_EXCHANGE_HPP
 
 #include "ores.http.api/domain/session_store.hpp"
+#include "ores.security/jwt/jwt_claims.hpp"
+#include <chrono>
 #include <functional>
 #include <optional>
 #include <string>
@@ -55,12 +57,34 @@ using bearer_exchanger = std::function<std::optional<bearer_exchange>(
     const std::string& bearer, const std::string& client_address)>;
 
 /**
+ * @brief A call made with an exchanged bearer value, once it is answered.
+ *
+ * Only the route's pattern is kept, never the address with its values, and
+ * never the request or the answer.
+ */
+struct exchanged_call final {
+    ores::security::jwt::jwt_claims claims;
+    std::string method;
+    std::string route;
+    int status = 0;
+    std::chrono::milliseconds duration{0};
+};
+
+/**
+ * @brief Records a call made with an exchanged bearer value, such as an LLM
+ * agent's. It may write to a store, so the gateway runs it on its worker pool.
+ */
+using exchanged_call_recorder = std::function<void(const exchanged_call& call)>;
+
+/**
  * @brief The gateway's calls to IAM on the credential path: renewing a
- * browser session's token, and exchanging a bearer value that is not a token.
+ * browser session's token, exchanging a bearer value that is not a token, and
+ * recording what a call made with such a value did.
  */
 struct credential_exchange final {
     token_renewer renew;
     bearer_exchanger exchange;
+    exchanged_call_recorder record;
 };
 
 }

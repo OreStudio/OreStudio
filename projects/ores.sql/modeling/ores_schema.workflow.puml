@@ -51,6 +51,7 @@ package "workflow" #FFF8E1 {
         * producer_step_index : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -89,6 +90,7 @@ package "workflow" #FFF8E1 {
         * essential : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -165,6 +167,7 @@ package "workflow" #FFF8E1 {
           last_event_at : timestamptz
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -205,6 +208,7 @@ package "workflow" #FFF8E1 {
           completed_at : timestamptz
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz

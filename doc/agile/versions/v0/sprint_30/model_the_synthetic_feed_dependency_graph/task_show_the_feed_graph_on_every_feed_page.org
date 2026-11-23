@@ -8,7 +8,7 @@
 #+filetags: :model_the_synthetic_feed_dependency_graph:sprint_30:v0:
 #+owner: marco
 #+branch: feature/show-the-feed-graph-on-every-feed-page
-#+pr:
+#+pr: 5058
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-23
@@ -90,7 +90,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5058][#5058]] | [web] Show the feed graph and each node's messages on every feed page |
 
 * Review
 

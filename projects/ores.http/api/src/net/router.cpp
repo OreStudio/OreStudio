@@ -134,6 +134,11 @@ route_builder& route_builder::json_body() {
     return *this;
 }
 
+route_builder& route_builder::transport() {
+    catalogue_.transport = true;
+    return *this;
+}
+
 route_builder& route_builder::no_body() {
     catalogue_.takes_no_body = true;
     return *this;
@@ -381,7 +386,8 @@ std::vector<std::string> router::uncatalogued() const {
             out.push_back(name + " declares neither its typed body nor that it takes none");
         if (route.catalogue.takes_no_body && (route.body_schema || route.sink))
             out.push_back(name + " declares that it takes no body, and also a body");
-        if (changes && !route.catalogue.writes && !domain::may_declare_read(route.catalogue))
+        if (changes && !route.catalogue.writes && !route.catalogue.transport &&
+            !domain::may_declare_read(route.catalogue))
             out.push_back(name + " declares that it does not write, and its tool " +
                           route.catalogue.tool + " is neither a bulk get nor a read");
         // A tool names one operation, so two routes may not share one.

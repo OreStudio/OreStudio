@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-mcp-transport-on-ores-http
+#+pr: 5069
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -26,11 +26,11 @@ ores.http serves MCP's Streamable HTTP transport at /mcp: POST, GET and DELETE, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -45,6 +45,23 @@ ores.http serves MCP's Streamable HTTP transport at /mcp: POST, GET and DELETE, 
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+- The transport lives in =ores.http.api/mcp=: a =tool_provider= interface, a
+  =session_registry= that binds each =Mcp-Session-Id= to the person and agent
+  that opened it, and an =endpoint= that reads JSON-RPC through ORE's
+  =json_document=.
+- The route's own authentication exchanges the agent's key; the endpoint then
+  refuses a token whose =act= names no agent, so a person's session cannot use
+  it.
+- GET answers 405, which the transport permits of a server that sends nothing
+  unasked; a stream waits for a capability that needs one.
+- The routes declare =transport()=: the gateway would otherwise hold every MCP
+  POST as an agent's write. Each tool's call is judged as its own route in
+  [[id:24864EC2-233C-4943-B381-3AD69DE2DAB0][Browse, search and call operations through five tools]].
+- One tool, =list_areas=, is served now so that =tools/call= is proven end to
+  end; the other four arrive with that task.
+- The conformance runner sends no header, so it runs through a localhost proxy
+  that adds the agent's key.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -57,7 +74,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Official MCP conformance, the scenarios this task implements | server-initialize 1/1, ping 1/1, tools-list 1/1, dns-rebinding-protection 2/2 | =npx @modelcontextprotocol/conformance@0.1.16 server --url <proxy>/mcp --scenario <name>= through a proxy adding the agent's key | 0193498f3a plus working tree |
+| End-to-end calls to /mcp with an agent key | 18 of 18 checks pass | a script driving initialize, ping, tools/list, tools/call, sessions, refusals and DELETE | 0193498f3a plus working tree |
 
 * Notes
 
@@ -76,12 +94,26 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5069][#5069]] | [http] Serve MCP's Streamable HTTP transport at /mcp |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Conformance: a localhost Origin was refused | =endpoint.cpp= | Accept | This machine's origins are served; any other not listed is refused. Tested. |
+| 2 | PR #5069: one agent can evict another's sessions | =session_registry.cpp= | Accept | An owner holds at most 16 sessions and opening one more ends its own oldest; the registry-wide eviction is the last resort. Tested. |
+| 3 | PR #5069: tools/list is not guarded | =endpoint.cpp= | Accept | A provider that throws is answered -32603. Tested. |
+| 4 | PR #5069: the raw Origin is logged | =endpoint.cpp= | Accept | Printable characters only, at most 100. |
+| 5 | PR #5069: the negotiated version is stored but unused | =session_registry.cpp= | Decline | No behaviour differs by revision yet; a mismatch check belongs with the first that does. |
+| 6 | PR #5069: initialize ignores params that are not an object | =endpoint.cpp= | Accept | Answered -32602. Tested. |
+| 7 | PR #5069: test a lookalike localhost origin | tests | No change | Already tested: =http://localhost.evil.example= is refused. |
 
 * Result
+
+ores.http serves MCP's Streamable HTTP transport at =/mcp= to an LLM agent's
+key: =initialize=, =notifications/initialized=, =ping=, =tools/list= and
+=tools/call= over POST, sessions by =Mcp-Session-Id= bound to their agent,
+DELETE to end one and 405 to GET. A request without a valid agent key is
+refused with 401, a foreign origin with 403. The official conformance runner
+passes every scenario for what is implemented, and =list_areas= answers the
+sixteen published areas through =tools/call=.

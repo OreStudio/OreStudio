@@ -107,6 +107,14 @@ struct route_catalogue final {
      * tell an empty body from an undeclared one.
      */
     bool takes_no_body = false;
+    /**
+     * @brief True when the route is a transport, such as MCP's, that carries
+     * calls to other routes.
+     *
+     * It changes nothing itself, so it does not write whatever its method,
+     * and each call it carries is held and recorded as its own route.
+     */
+    bool transport = false;
     std::string summary;
     std::string description;
     std::vector<std::string> tags;

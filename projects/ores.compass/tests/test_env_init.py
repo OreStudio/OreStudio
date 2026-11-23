@@ -122,18 +122,19 @@ class TestPoolerDeclaration:
     the format decides, which is how an existing .env keeps its choice."""
 
     def test_no_pooler_sends_the_services_to_postgres(self):
-        assert env_init._declared_vars(None, None, False) == [
+        assert env_init._var_overrides(pooler=False) == [
             "--var", "ORES_DB_POOLER_ENABLED=0"]
 
     def test_pooler_sends_the_services_to_the_pooler(self):
-        assert env_init._declared_vars(None, None, True) == [
+        assert env_init._var_overrides(pooler=True) == [
             "--var", "ORES_DB_POOLER_ENABLED=1"]
 
     def test_an_unstated_pooler_declares_nothing(self):
-        assert env_init._declared_vars(None, None, None) == []
+        assert env_init._var_overrides() == []
 
     def test_the_declarations_do_not_crowd_each_other_out(self):
-        assert env_init._declared_vars("ccache", False, False) == [
+        assert env_init._var_overrides(compiler_cache="ccache", use_busctl=False,
+                                pooler=False) == [
             "--var", "ORES_COMPILER_CACHE=ccache",
             "--var", "ORES_USE_BUSCTL=0",
             "--var", "ORES_DB_POOLER_ENABLED=0"]

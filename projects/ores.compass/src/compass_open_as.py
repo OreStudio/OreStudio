@@ -128,9 +128,11 @@ def by_title(staff, text, location):
 def roles_of(person):
     """The roles a person holds.
 
-    The dataset writes them as one comma-separated string, because an account
-    may hold more than one role."""
-    return [r.strip() for r in (person.get("roles") or "").split(",") if r.strip()]
+    The seeder writes them as one comma-separated string under "roles", because
+    an account may hold more than one. The built-in administrators carry a
+    single "role" instead."""
+    text = person.get("roles") or person.get("role") or ""
+    return [r.strip() for r in text.split(",") if r.strip()]
 
 
 def by_role(staff, text, location):
@@ -776,7 +778,7 @@ def launch(person, url, profile_dir, fill, headless=False, workspace=None,
 def describe(person):
     unit = person.get("business_unit_code") or "group"
     return (f"{person['full_name']} ({person['job_title']}, "
-            f"{person['role']}, {unit}) as {principal(person)}")
+            f"{', '.join(roles_of(person))}, {unit}) as {principal(person)}")
 
 
 def run(argv, project_root=None, env_file=None) -> int:

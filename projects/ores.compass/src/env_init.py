@@ -347,19 +347,19 @@ def _run_install_packages(checkout_root: Path, force: bool, skip: bool) -> int:
     return 0
 
 
-def _declared_vars(compiler_cache, use_busctl, pooler) -> list:
-    """The --var pairs that state a choice the environment format cannot derive.
+def _var_overrides(*, compiler_cache=None, use_busctl=None, pooler=None) -> list:
+    """The --var arguments that state a choice the environment format cannot derive.
 
     Each is a fact about the machine the file is generated on, so the caller
     passes what it knows and None where the format's own default stands."""
-    pairs = []
+    args = []
     if compiler_cache:
-        pairs += ["--var", f"ORES_COMPILER_CACHE={compiler_cache}"]
+        args += ["--var", f"ORES_COMPILER_CACHE={compiler_cache}"]
     if use_busctl is not None:
-        pairs += ["--var", f"ORES_USE_BUSCTL={'1' if use_busctl else '0'}"]
+        args += ["--var", f"ORES_USE_BUSCTL={'1' if use_busctl else '0'}"]
     if pooler is not None:
-        pairs += ["--var", f"ORES_DB_POOLER_ENABLED={'1' if pooler else '0'}"]
-    return pairs
+        args += ["--var", f"ORES_DB_POOLER_ENABLED={'1' if pooler else '0'}"]
+    return args
 
 
 def run(argv, project_root: Path) -> int:
@@ -392,9 +392,9 @@ def run(argv, project_root: Path) -> int:
                         help="Whether the services reach the database through a "
                              "transaction pooler. --pooler, the format's default, sends "
                              "every service to ORES_DB_POOLER_PORT. --no-pooler sends it "
-                             "to PostgreSQL's port (PGPORT), which is what CI runs, "
-                             "because CI starts no pooler. Without either flag an "
-                             "existing .env value is kept.")
+                             "to PostgreSQL's port (PGPORT), for a machine whose "
+                             "services reach PostgreSQL directly. Without either flag "
+                             "an existing .env value is kept.")
     pkg_grp = parser.add_mutually_exclusive_group()
     pkg_grp.add_argument("--install-packages", action="store_true",
                          help="Run compass env install-packages without prompting (requires sudo)")
@@ -555,7 +555,8 @@ def run(argv, project_root: Path) -> int:
     cmd = [exe, "-C", str(checkout_root), "env", "generate"]
     for key, value in inputs.items():
         cmd += ["--input", f"{key}={value}"]
-    cmd += _declared_vars(args.compiler_cache, args.use_busctl, args.pooler)
+    cmd += _var_overrides(compiler_cache=args.compiler_cache,
+                         use_busctl=args.use_busctl, pooler=args.pooler)
     # PGPASSWORD goes through the environment, so it never appears in ps.
     rc = subprocess.run(cmd, env=dict(os.environ, PGPASSWORD=pgpassword)).returncode
     if rc:

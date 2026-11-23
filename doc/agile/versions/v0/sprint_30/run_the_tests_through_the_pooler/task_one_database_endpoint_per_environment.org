@@ -2,7 +2,7 @@
 :ID: 6C325B2F-8018-4637-9176-B4709898F89D
 :END:
 #+title: Task: Give the environment one database endpoint
-#+description: The environment states one database endpoint, and whether a pooler fronts it is a deployment detail no client reads: with the pooler off clients dial the PostgreSQL port, with it on they dial the pooler's port, and CI exercises both.
+#+description: The environment names one database endpoint and no client reads the pooler; a machine states its topology.
 #+type: task
 #+level: s1
 #+filetags: :run_the_tests_through_the_pooler:sprint_30:v0:
@@ -80,11 +80,11 @@ pooler-off environment must name PostgreSQL's port, and it names the pooler's.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:CF800DC8-A36D-4DBA-B819-C98B409CD9F7][Run the tests through the pooler]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Name the port owner: write the endpoint in =compass env generate= and let CI say it has no pooler. |
+| Now          | Waiting on the pull request's review. |
+| Waiting on   | The @claude review and the merge. |
+| Next         | Merge, then read the first continuous run on main. |
 | Last touched | 2026-11-23                               |
 
 * Acceptance
@@ -93,21 +93,29 @@ pooler-off environment must name PostgreSQL's port, and it names the pooler's.
   generated =.env= equals the port PostgreSQL listens on for that environment;
   with it =1=, every one equals =ORES_DB_POOLER_PORT= and the pooler's upstream
   stays on the PostgreSQL port.
-- The continuous CI run passes =ores.refdata.core.tests=,
-  =ores.inbox.core.tests= and =ores.workflow.core.tests= with the pooler off,
-  and still passes the database suite through the pooler that
-  =start_ci_pooler.sh= starts, so both cases stay covered.
-- No C++, CMake or test file reads =ORES_DB_POOLER_ENABLED= or
-  =ORES_DB_POOLER_PORT=; the readers stay in =systemd_generate.py= and
-  =env_deploy.py=.
-- A gate step fails when an environment's service database port is neither the
-  PostgreSQL port nor the declared pooler port, so an =.env= cannot name a port
-  nothing listens on again.
+- The first continuous run after the merge passes =ores.refdata.core.tests=,
+  =ores.inbox.core.tests= and =ores.workflow.core.tests=, and still passes the
+  database suite through the pooler that =start_ci_pooler.sh= starts. The
+  workflows run on =main= only, so no pull request can show this.
+- No production code reads =ORES_DB_POOLER_ENABLED= or =ORES_DB_POOLER_PORT=;
+  the readers stay in =systemd_generate.py= and =env_deploy.py=. A test may
+  assert the keys, because the declaration is the behaviour under test.
+- A =--no-pooler= environment whose PostgreSQL port differs from the default
+  takes that port from =PGPORT=, not from the base port, so the endpoint
+  follows the server it will meet.
+
+An earlier acceptance bullet asked for a gate step that rejects a service
+database port which is neither PostgreSQL's nor the declared pooler's. It was
+withdrawn on starting: generation already produces only those two values, so
+such a step would restate the generator, and it would not have caught the
+failure that opened this task, because 20007 was the declared pooler's port.
+The run-time guard that does catch it is the pooler preflight owned by
+[[id:49A91902-32C2-49DB-A761-FC7FD2F2D126][Start the pooler before the tests run]].
 
 * Plan
 
 Work started on 2026-11-23 and the first finding changed the size of the task:
-=.compass/checks/env_format.org= already states the rule. Line 214 gives every
+=compass/checks/env_format.org= already states the rule. Line 214 gives every
 service ={ORES_DB_POOLER_PORT}= when =ORES_DB_POOLER_ENABLED= is 1, and line
 215 gives it ={PGPORT:-5432}= when it is not; lines 216 and 217 write the
 listener variables only in the pooled case. So generation derives one endpoint
@@ -119,14 +127,16 @@ on a machine that runs none.
 Three steps, in order:
 
 1. Teach =compass env configure= the fact: =--pooler= and =--no-pooler= become
-   =--var ORES_DB_POOLER_ENABLED=1/0=. One helper, =env_init._declared_vars=,
-   assembles the =--var= pairs, so the new declaration sits beside the two
+   =--var ORES_DB_POOLER_ENABLED=1/0=. One helper, =env_init._var_overrides=,
+   assembles the =--var= arguments, so the new declaration sits beside the two
    that were already there (=ORES_COMPILER_CACHE=, =ORES_USE_BUSCTL=).
 2. Tell each workflow the truth about its machine: the five that configure an
    environment pass =--no-pooler=, because each starts PostgreSQL directly and
    none of them runs a pooler. The pooled database step keeps its own port, so
-   CI still covers both cases.
-3. Prove both shapes on the pinned generator, and unit-test the declaration.
+   CI still runs one suite through a pooler, though no CI job generates a
+   pooler-on =.env= any more.
+3. Prove both shapes of the generated file on the pinned generator, and
+   unit-test the declaration.
 
 No C++, CMake or test code changed: =database_options= already carries one
 port, which is the shape the rule wants.
@@ -194,9 +204,27 @@ via its "Verifies task" field.
 
 * Review
 
+Standards and spec review of =origin/main...HEAD=, 2026-11-23.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The help text and the workflow comments claimed CI starts no pooler, and =continuous-linux.yml= starts one for the database suite | =env_init.py=, =.github/workflows/= | Accept | The help states the topology, not what CI does. The comments say no pooler fronts the services. |
+| 2 | =site-cdash.yml= starts no PostgreSQL, so its copied comment was false and the flag is inert there | =site-cdash.yml= | Accept | The comment no longer names PostgreSQL. The flag stays, so all five configure alike. |
+| 3 | The task's =#+description= was 250 characters; the contract caps it at 120 | task org | Accept | Shortened, and the story's row matched. |
+| 4 | The task was STARTED with =* Measurements= and =* Result= written | task org | Accept | Closed with =compass task done=. |
+| 5 | =Now= and =Next= still said "Not yet started" | task and story orgs | Accept | Rewritten at close, and the story's =#+updated= set. |
+| 6 | =_declared_vars= returns =--var= tokens, not variables | =env_init.py= | Accept | Renamed =_var_overrides=. |
+| 7 | =--no-pooler= reads as "do not provision a pooler", which is not what it does | =env_init.py= | Decline | It names the format's variable, =ORES_DB_POOLER_ENABLED=, and mirrors =--use-busctl=; the help now says it selects the services' port. |
+| 8 | Three mixed-type positional parameters, two of them tri-state | =env_init.py= | Accept | Keyword-only now; the tests read =_var_overrides(pooler=False)=. |
+| 9 | The same comment and flag block appears in five workflows | =.github/workflows/= | Decline | Two declarative lines per file. A composite action would hide which machine runs what, and the pooler is a fact about the machine. |
+| 10 | ='1' if x else '0'= appears three times | =env_init.py= | Decline | A helper for a two-word idiom is more to read than it saves. |
+| 11 | The Hong Kong role test re-implements =roles_of= | =test_compass_open_as.py= | Accept | The test calls =roles_of= now. |
+| 12 | =describe()= still read =person['role']=, so =compass open-as= raised =KeyError= for every dataset persona | =compass_open_as.py= | Accept | =roles_of= falls back from =roles= to =role=, which is the shape the built-in administrators carry; two tests cover both. |
+| 13 | Acceptance said no test file may read the pooler keys, and the new tests assert them | task org | Accept | The acceptance says production code. |
+| 14 | Acceptance bullet 4, a gate step rejecting a port that is neither of the two, was not implemented | task org | Accept | Withdrawn. Generation produces only those two values, so the step would restate the generator, and it would not have caught 20007, which was the declared pooler's port. The preflight in task =49A91902= owns the run-time guard. |
+| 15 | Acceptance 2 could not be evidenced, because the workflows run on =main= only | task org | Accept | It now names the first run after the merge. |
+| 16 | The =role= to =roles= fix is outside this task | =compass_open_as.py= | Accept | =compass-tests= was red on main, so the gate could not pass without it. It keeps its own task's trailers. |
+| 17 | The task cited =.compass/checks/env_format.org= | task org | Accept | Corrected to =compass/checks/env_format.org=. |
 
 * Result
 
@@ -204,7 +232,8 @@ via its "Verifies task" field.
 runners every service database port is now 5432, the port
 =start_ci_postgres.sh= starts, so the three as-service suites connect to a
 server that exists. The pooled step is untouched and still runs the database
-suite through 6432, so CI covers both topologies.
+suite through 6432. What no CI job covers any more is generation with the
+pooler on: that shape is proven by the probe in * Measurements, not by a run.
 
 | Change | Where |
 |--------+-------|

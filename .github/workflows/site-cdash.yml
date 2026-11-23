@@ -118,8 +118,8 @@ jobs:
           ORES_DATABASE_NAME: ores_ci
           PGPASSWORD: ci-not-used
         run: |
-          # CI starts PostgreSQL directly and runs no pooler, so the services
-          # must dial PostgreSQL's port rather than the pooler's.
+          # The services dial PostgreSQL directly here: no pooler fronts
+          # them, so their port must be PostgreSQL's.
           ./projects/ores.compass/compass.sh --no-deps env configure -y --no-pooler
           grep -v '^[[:space:]]*#' .env | grep -v '^[[:space:]]*$' \
             | grep -v 'ORES_IAM_SERVICE_JWT_PRIVATE_KEY' >> $GITHUB_ENV

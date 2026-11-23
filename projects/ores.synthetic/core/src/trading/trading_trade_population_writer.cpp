@@ -419,6 +419,18 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
         req.limit = page;
         generators.spots = whole(read(req).fx_spot_generation_configs, "spot configs");
     }
+    /*
+     * An FX trade observes the fixing of its pair, and the simulator fixes a
+     * pair from the spot a spot config quotes. A pair no spot config quotes,
+     * such as a cross no vendor collection carries, has no fixing anyone
+     * publishes, so it is left out of the FX draw.
+     */
+    std::erase_if(scope.currency_pairs, [&generators](const domain::currency_pair_reference& pair) {
+        return std::ranges::none_of(generators.spots, [&pair](const auto& spot) {
+            return spot.enabled && spot.base_currency_code == pair.base &&
+                   spot.quote_currency_code == pair.quote;
+        });
+    });
     {
         synthetic::list_fx_vol_surface_feeds_request req;
         req.limit = page;

@@ -94,6 +94,19 @@ std::shared_ptr<const operation_catalogue> make_catalogue() {
                         co_return http_response::json("{\"word\":\"\u00e9\u00e9\u00e9\"}");
                     })
                     .build());
+    r.add_route(r.get("/api/v1/reference-data/countries")
+                    .entity_catalogue("refdata", "countries", "list")
+                    .summary("List the countries")
+                    .auth_required()
+                    .handler(echo)
+                    .build());
+    r.add_route(r.post("/api/v1/iam/accounts")
+                    .entity_catalogue("iam", "accounts", "add")
+                    .summary("Write an account")
+                    .no_body()
+                    .auth_required()
+                    .handler(echo)
+                    .build());
     r.add_route(r.get("/api/v1/trading/trades")
                     .catalogue("list_trades", "trading", "trades", false)
                     .summary("List the trades of a book")
@@ -317,4 +330,24 @@ TEST_CASE("call_operation_refuses_a_caller_without_a_token_and_an_unreadable_arg
                             R"({"name":"list_currencies","arguments":{"limit":[1,2]}})");
     CHECK(listed.is_error);
     CHECK_THAT(listed.text, ContainsSubstring("limit is missing, or is not text"));
+}
+
+TEST_CASE("an_operation_whose_permission_the_token_lacks_or_no_agent_holds_is_not_listed",
+          "[mcp]") {
+    const catalogue_tools tools(make_catalogue(), {});
+    const auto without =
+        run(tools, caller(reader), "list_entities", R"({"area":"reference-data"})");
+    CHECK_THAT(without.text, !ContainsSubstring("countries"));
+    const auto with = run(tools,
+                          caller({"refdata::countries:read"}),
+                          "list_entities",
+                          R"({"area":"reference-data"})");
+    CHECK_THAT(with.text, ContainsSubstring("countries (1)"));
+    const auto wildcard =
+        run(tools, caller({"refdata::*"}), "list_entities", R"({"area":"reference-data"})");
+    CHECK_THAT(wildcard.text, ContainsSubstring("countries (1)"));
+    CHECK(run(tools, caller(reader), "call_operation", R"({"name":"list_countries"})").is_error);
+
+    const auto administrator = run(tools, caller({"iam::accounts:write"}), "list_areas", "{}");
+    CHECK_THAT(administrator.text, !ContainsSubstring("access"));
 }

@@ -300,6 +300,8 @@ std::string endpoint_registry::generate_openapi_json() const {
             operation.set("x-ores-area", route.catalogue.area);
             operation.set("x-ores-entity", route.catalogue.entity);
             operation.set("x-ores-writes", route.catalogue.writes);
+            if (!route.catalogue.permission.empty())
+                operation.set("x-ores-permission", route.catalogue.permission);
         }
 
         if (!route.catalogue.tags.empty()) {

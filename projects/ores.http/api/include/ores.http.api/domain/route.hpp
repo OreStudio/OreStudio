@@ -115,6 +115,15 @@ struct route_catalogue final {
      * and each call it carries is held and recorded as its own route.
      */
     bool transport = false;
+    /**
+     * @brief The permission the route's service checks, when the catalogue
+     * knows it; empty when it does not.
+     *
+     * A generated entity route states it, by the rule its service's handler
+     * applies. Others state none yet, and stay in every list: the service
+     * still refuses a call the person may not make.
+     */
+    std::string permission;
     std::string summary;
     std::string description;
     std::vector<std::string> tags;

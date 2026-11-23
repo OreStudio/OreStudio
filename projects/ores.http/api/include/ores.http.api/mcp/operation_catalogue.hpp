@@ -43,6 +43,8 @@ struct operation final {
     std::string summary;
     std::string description;
     bool writes = false;
+    /// The permission its service checks, when the catalogue knows it.
+    std::string permission;
     domain::http_method method = domain::http_method::get;
     std::string pattern;
     std::vector<std::string> path_params;

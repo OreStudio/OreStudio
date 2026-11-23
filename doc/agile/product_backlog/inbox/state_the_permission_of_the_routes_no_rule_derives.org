@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 895DDD23-019B-4024-BCD8-E2F6C5822486
+:END:
+#+title: State the permission of the routes no rule derives
+#+description: 739 operations of hand-written, screen and IAM operation routes state no permission, so the MCP tools list them whether or not the person may call them; each needs its handler traced, and some check a permission only for another's record.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-23
+#+updated: 2026-11-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Each hand-written, screen and operation route of =ores.http= states the
+permission its service checks, read from the handler it reaches, so the MCP
+tools filter it as they filter the generated entity routes.
+
+* Why
+
+The generated entity routes state their permission by the rule their handlers
+apply. The rest, 739 of the 1,153 operations the server serves, state none: screen routes name the entity in the
+singular, the operation routes are IAM's and no model property carries a
+permission, and the hand-written ones forward to one or more services. Some
+check a permission only for another's record, such as revoking a grant that is
+not one's own, so one permission per route does not describe them; the
+declaration may need to name that condition.
+
+* References
+
+- [[id:83CA0DEA-C89F-426B-B5B3-5D84DD0711CA][Declare the permission each route needs]]
+
+* See also
+
+-

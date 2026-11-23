@@ -97,7 +97,8 @@ std::string area_of_component(std::string_view component) {
 bool operation_only_reads(std::string_view name) {
     if (name.find("_or_") != std::string_view::npos)
         return false;
-    for (const std::string_view verb : {"list_", "get_", "read_", "find_", "search_", "lookup_"})
+    for (const std::string_view verb :
+         {"list_", "get_", "read_", "find_", "search_", "lookup_", "validate_"})
         if (name.starts_with(verb))
             return true;
     return false;
@@ -115,6 +116,15 @@ route_catalogue entity_route_catalogue(http_method method,
     c.tool = std::string(identifier) + "_" + std::string(entity);
     c.writes = method != http_method::get && method != http_method::head &&
                identifier != "get_many" && !operation_only_reads(identifier);
+    if (!identifier.starts_with("screen_")) {
+        const auto action = !c.writes                                             ? "read" :
+                            identifier == "delete" || identifier == "delete_many" ? "delete" :
+                                                                                    "write";
+        c.permission = std::string(component) + "::" + std::string(entity) + ":" + action;
+        // The handlers that read roles and permissions check none.
+        if (c.permission == "iam::roles:read" || c.permission == "iam::permissions:read")
+            c.permission.clear();
+    }
     return c;
 }
 

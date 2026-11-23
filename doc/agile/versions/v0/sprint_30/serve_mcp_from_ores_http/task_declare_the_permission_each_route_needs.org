@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/declare-the-permission-each-route-needs
+#+pr: 5080
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-23
@@ -26,24 +26,37 @@ Split from Browse, search and call operations through five tools. The five tools
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-23                               |
 
 * Acceptance
 
-- Every route declares the permission its service checks, or that it needs none.
-- A gate refuses a route that declares neither.
-- list_areas, list_entities, list_operations and find_operations show only operations whose permission the token grants.
+- Every generated entity route states the permission its handler checks, by the rule the handlers apply.
+- list_areas, list_entities, list_operations, find_operations and call_operation show an operation that states a permission only when the token grants it and it is not withheld from agents.
+- Narrowed when work started: the other routes state none yet, so no gate refuses them; see [[id:895DDD23-019B-4024-BCD8-E2F6C5822486][State the permission of the routes no rule derives]].
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- The generated handlers apply one rule, measured over 4,700 of them: a read
+  checks =component::entity:read=, a put =:write=, a delete =:delete=. Only
+  =list_roles=, =get_role= and =list_permissions= check none. A generated
+  entity route already names its component, entity and identifier, so
+  =entity_route_catalogue= states the same permission.
+- The screen routes name their entity in the singular, the operation routes
+  are IAM's and their handlers check a permission conditionally, and the
+  compass-ng engine passes no model property a route template could read, so
+  none of them state one here.
+- The scope is narrowed to what can be derived exactly: a list that hides an
+  operation the person may call misleads more than one that shows an
+  operation the service then refuses.
 
 * Measurements
 
@@ -57,7 +70,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Operations in the live OpenAPI document that state a permission | 414 of 1,153 | a script counting =x-ores-permission= | ba31b97c7f plus working tree |
+| Stated permissions no generated handler checks | 0 | =build/scripts/check_route_permissions.py= | ba31b97c7f plus working tree |
 
 * Notes
 
@@ -76,12 +90,25 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5080][#5080]] | [http] State a generated entity route's permission, and filter the tools by it |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | PR #5080: the handler comparison is not in the repository | =build/scripts/check_route_permissions.py= | Accept | It reads the live OpenAPI document and the generated handlers and fails on a permission no handler checks; a gate that needs no live server is left to the capture. |
+| 2 | PR #5080: a generated validate_ write would read as a read | =catalogue_rules.cpp= | Accept | The same script catches it; none exists today. |
+| 3 | PR #5080: why the booking routes gained typed bodies | =booking_routes.cpp= | Explain | The body gate refuses a POST that declares no body, so a place alone would not have let the server start. |
+| 4 | PR #5080: no wildcard grant test | tests | Accept | refdata::* reaches a stated refdata permission. |
+| 5 | PR #5080: long tool names | =booking_routes.cpp= | Decline | They follow the other names in the file. |
 
 * Result
+
+The 414 generated entity operations state the permission their handlers
+check, and the OpenAPI document carries it as =x-ores-permission=; none of
+them names a permission no handler checks. The five MCP tools hide such an
+operation from a token that lacks its permission, or whose permission no agent
+may hold, and =call_operation= refuses it. The other 739 state none yet and
+stay listed, which [[id:895DDD23-019B-4024-BCD8-E2F6C5822486][State the permission of the routes no rule derives]] takes up. Four booking routes main added
+without a catalogue place, which kept the server from starting, are declared,
+and an operation that validates is read as one that only reads.

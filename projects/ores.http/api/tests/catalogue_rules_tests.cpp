@@ -188,3 +188,24 @@ TEST_CASE("the_router_refuses_a_route_that_declares_no_body_and_a_body", "[catal
     CHECK(refused[0] == "PUT /both declares that it takes no body, and also a body");
     CHECK(refused[1] == "DELETE /gone declares neither its typed body nor that it takes none");
 }
+
+TEST_CASE("a_generated_entity_route_states_the_permission_its_handler_checks", "[catalogue]") {
+    const auto pattern = "/api/v1/reference-data/currencies";
+    CHECK(entity_route_catalogue(http_method::get, pattern, "refdata", "currencies", "list")
+              .permission == "refdata::currencies:read");
+    CHECK(entity_route_catalogue(http_method::post, pattern, "refdata", "currencies", "get_many")
+              .permission == "refdata::currencies:read");
+    CHECK(entity_route_catalogue(http_method::post, pattern, "refdata", "currencies", "add")
+              .permission == "refdata::currencies:write");
+    CHECK(entity_route_catalogue(http_method::post, pattern, "refdata", "currencies", "delete_many")
+              .permission == "refdata::currencies:delete");
+    CHECK(entity_route_catalogue(
+              http_method::put, "/api/currencies", "refdata", "currency", "screen_put")
+              .permission.empty());
+    CHECK(entity_route_catalogue(http_method::get, "/api/v1/iam/roles", "iam", "roles", "list")
+              .permission.empty());
+}
+
+TEST_CASE("a_validation_only_reads", "[catalogue]") {
+    CHECK(operation_only_reads("validate_trading_script"));
+}

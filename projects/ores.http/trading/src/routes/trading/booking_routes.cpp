@@ -751,6 +751,8 @@ void booking_routes::register_routes(
             }));
 
     add(router->post("/api/trading/booking/validate-script")
+            .catalogue("validate_trading_script", "trading", "scripts", false)
+            .body<script_body>()
             .summary("Validate a script against a trade's variables")
             .description("Parses a library script, as the caller's tenant resolves its name and "
                          "version, or an inline script, with ORE's grammar, and checks the "
@@ -783,6 +785,8 @@ void booking_routes::register_routes(
             }));
 
     add(router->post("/api/trading/booking/scripted")
+            .catalogue("web_post_trading_booking_scripted", "trading", "trades", true)
+            .body<scripted_body>()
             .summary("Book a scripted trade")
             .description("A library script by name and version, or an inline script, on the "
                          "variables the trade states. A script that fails its validation is "
@@ -840,6 +844,8 @@ void booking_routes::register_routes(
             }));
 
     add(router->post("/api/trading/booking/product")
+            .catalogue("web_post_trading_booking_product", "trading", "trades", true)
+            .body<product_body>()
             .summary("Book a product type in a form")
             .description("The product's native rows, booked as its own element or as the "
                          "ScriptedTrade its twin recipe, or a carried script's, reads over them.")
@@ -895,6 +901,7 @@ void booking_routes::register_routes(
             }));
 
     add(router->get("/api/trading/booking/{tradeId}/form")
+            .catalogue("web_get_trading_booking_tradeid_form", "trading", "trades", false)
             .summary("The form a trade was booked in")
             .description("The product the trade was booked as and its form, and for a scripted "
                          "trade the script and the version the store pinned, so a screen "

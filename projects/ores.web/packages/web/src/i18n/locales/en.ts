@@ -571,6 +571,36 @@ export const en: SourceCatalogue = {
         },
     },
 
+    agentGrantsAdmin: {
+        card: 'Agent grants',
+        cardBody: 'Every LLM agent acting for a person, and its keys.',
+        title: 'Agent grants',
+        description:
+            'Every LLM agent grant in your parties: who granted it, to which agent, under which role and until when.',
+        person: 'Person',
+        everyone: 'Everyone',
+        state: 'State',
+        empty: 'No agent grant matches.',
+        ended: 'ended',
+        revokeKey: 'Revoke key',
+        revokeGrant: 'Revoke grant',
+        sessions: 'Sessions',
+        revokeConfirm:
+            'Revoking stops the agent at once: its next call is refused, or within five minutes at most. Continue?',
+        revokeFailed: 'The revocation was refused.',
+        states: {
+            active: 'Active',
+            ended: 'Ended',
+            all: 'All',
+        },
+        column: {
+            person: 'Person',
+            agent: 'Agent',
+            role: 'Role',
+            until: 'Until',
+            keys: 'Keys',
+        },
+    },
     agents: {
         title: 'LLM agents',
         lead: 'An agent you name acts for you under one role, until the grant’s expiry or until you revoke it. Its calls are yours and are recorded as the agent’s.',
@@ -644,6 +674,8 @@ export const en: SourceCatalogue = {
             end: 'End session',
             ending: 'Ending…',
             ended: 'Session ended. The open sessions were read again.',
+            grantFilter: 'Showing the sessions of agent grant {grant} only.',
+            grantFilterClear: 'Show every session',
             endAgent:
                 'Ending an agent’s session also revokes the key that opened it. The agent’s next call is refused at once, or within five minutes at most; it needs a new key to resume. Continue?',
             holder: 'Show',
@@ -8609,6 +8641,9 @@ export const en: SourceCatalogue = {
     },
 
     permissionWords: {
+        agentGrantsCreate: 'let an LLM agent act for you',
+        agentGrantsRead: 'see every LLM agent grant in your parties',
+        agentGrantsRevoke: 'revoke anyone’s LLM agent grant or key',
         reportInstancesWrite: 'Run a report',
         loginInfoRead: 'see when people last signed in',
         partiesRead: 'see the parties of the tenant',

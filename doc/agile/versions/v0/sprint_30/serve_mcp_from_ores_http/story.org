@@ -77,7 +77,7 @@ The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serv
 | [[id:24864EC2-233C-4943-B381-3AD69DE2DAB0][Browse, search and call operations through five tools]] | BACKLOG | | | tools/list answers five tools whatever the catalogue holds: list areas, entities and operations, find operations by words, and call one, filtered to what the person may call. |
 | [[id:529DBF0E-9AE6-448A-AD46-AA836FF33572][Measure how a small model reaches ORE's operations]] | BACKLOG | | | Run a set of real requests with a small model through browsing and through search, and record how often it reaches the right operation and in how many steps. |
 | [[id:213D3539-9792-4C49-86A9-62B41A907992][Sign an MCP client in through OAuth]] | BACKLOG | | | ORE becomes an OAuth 2.1 authorization server for MCP clients, its consent page creating the same agent grant a key does, for Claude Desktop and claude.ai. |
-| [[id:A869A8BE-78DC-44AA-A403-FF7DEB30A3A6][Show administrators every agent grant]] | BACKLOG | | | An administrator who holds iam::agent_grants:read sees every agent grant and key in their parties in ores.web, and revokes one with iam::agent_grants:revoke. |
+| [[id:A869A8BE-78DC-44AA-A403-FF7DEB30A3A6][Show administrators every agent grant]] | DONE | 2026-11-23 | 2026-11-23 | An administrator who holds iam::agent_grants:read sees every agent grant and key in their parties in ores.web, and revokes one with iam::agent_grants:revoke. |
 
 * Decisions
 

@@ -127,3 +127,26 @@ Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
+** =POST /api/v1/iam/ops/list_every_agent_grant=
+:PROPERTIES:
+:ID: 167C0E51-B1BD-5AA1-8E1D-06F37BE36F45
+:END:
+
+List every agent grant. It needs a session.
+
+It forwards to =iam.v1.ops.list_every_agent_grant=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/ops/list_every_agent_grant
+#+end_example
+
+#+name: agent_grant_operations-list-every-agent-grant
+#+begin_src hurl :tangle agent_grant_operations-list-every-agent-grant.hurl :exports none
+POST {{base_url}}/api/v1/iam/ops/list_every_agent_grant
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

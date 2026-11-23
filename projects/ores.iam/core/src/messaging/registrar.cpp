@@ -671,6 +671,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             agh->list_own(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
+        list_every_agent_grant_request::nats_subject, qg, [agh](ores::nats::message msg) {
+            agh->list_every(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
         exchange_agent_key_request::nats_subject, qg, [agh](ores::nats::message msg) {
             agh->exchange(std::move(msg));
         }));

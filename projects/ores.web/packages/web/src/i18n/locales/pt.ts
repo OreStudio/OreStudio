@@ -569,6 +569,36 @@ const pt: SourceCatalogue = {
         },
     },
 
+    agentGrantsAdmin: {
+        card: 'Autorizações de agentes',
+        cardBody: 'Cada agente LLM que age por uma pessoa, e as suas chaves.',
+        title: 'Autorizações de agentes',
+        description:
+            'Cada autorização de agente LLM das suas entidades: quem a deu, a que agente, sob que função e até quando.',
+        person: 'Pessoa',
+        everyone: 'Todos',
+        state: 'Estado',
+        empty: 'Nenhuma autorização de agente corresponde.',
+        ended: 'terminada',
+        revokeKey: 'Revogar chave',
+        revokeGrant: 'Revogar autorização',
+        sessions: 'Sessões',
+        revokeConfirm:
+            'Revogar para o agente de imediato: a próxima chamada é recusada, ou no máximo em cinco minutos. Continuar?',
+        revokeFailed: 'A revogação foi recusada.',
+        states: {
+            active: 'Ativas',
+            ended: 'Terminadas',
+            all: 'Todas',
+        },
+        column: {
+            person: 'Pessoa',
+            agent: 'Agente',
+            role: 'Função',
+            until: 'Até',
+            keys: 'Chaves',
+        },
+    },
     agents: {
         title: 'Agentes LLM',
         lead: 'Um agente que nomeia age por si sob uma função, até a autorização expirar ou até a revogar. As suas chamadas são suas e ficam registadas como do agente.',
@@ -643,6 +673,8 @@ const pt: SourceCatalogue = {
             end: 'Terminar sessão',
             ending: 'A terminar…',
             ended: 'Sessão terminada. As sessões abertas foram lidas de novo.',
+            grantFilter: 'A mostrar apenas as sessões da autorização de agente {grant}.',
+            grantFilterClear: 'Mostrar todas as sessões',
             endAgent:
                 'Terminar a sessão de um agente revoga também a chave que a abriu. A próxima chamada do agente é recusada de imediato, ou no máximo em cinco minutos; precisa de uma nova chave para retomar. Continuar?',
             holder: 'Mostrar',
@@ -8670,6 +8702,9 @@ const pt: SourceCatalogue = {
     },
 
     permissionWords: {
+        agentGrantsCreate: 'deixar um agente LLM agir por si',
+        agentGrantsRead: 'ver cada autorização de agente LLM das suas entidades',
+        agentGrantsRevoke: 'revogar a autorização ou a chave de agente LLM de qualquer pessoa',
         reportInstancesWrite: 'Executar um relatório',
         loginInfoRead: 'ver o último início de sessão das pessoas',
         partiesRead: 'ver as partes do inquilino',

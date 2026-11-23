@@ -34,11 +34,14 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/asio/ip/address.hpp>
+#include <boost/container_hash/hash.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cctype>
+#include <iterator>
+#include <unordered_set>
 
 namespace ores::iam::service {
 
@@ -407,6 +410,49 @@ messaging::list_own_agent_grants_response agent_grant_operations_service::list_o
             k.secret_hash.clear();
             r.keys.push_back(std::move(k));
         }
+    return r;
+}
+
+messaging::list_every_agent_grant_response agent_grant_operations_service::list_every_agent_grant(
+    const messaging::list_every_agent_grant_request&) {
+    using response = messaging::list_every_agent_grant_response;
+
+    if (ctx_.acts_for_agent())
+        return refuse_agent_request<response>("An agent cannot read agent grants.");
+    if (!has_permission(ctx_, read_permission))
+        return refuse_agent_request<response>("Reading every agent grant needs " +
+                                              std::string(read_permission) + ".");
+
+    // Read in pages until the store runs out, so an administrator's overview
+    // never silently stops short; keys come in one paged read, not one per grant.
+    constexpr std::uint32_t page = 1000;
+    response r;
+    r.success = true;
+    agent_grant_service grants(ctx_);
+    for (std::uint32_t offset = 0;; offset += page) {
+        auto batch = grants.list_grants(offset, page);
+        const auto read = batch.size();
+        r.grants.insert(r.grants.end(),
+                        std::make_move_iterator(batch.begin()),
+                        std::make_move_iterator(batch.end()));
+        if (read < page)
+            break;
+    }
+    std::unordered_set<boost::uuids::uuid, boost::hash<boost::uuids::uuid>> listed;
+    for (const auto& g : r.grants)
+        listed.insert(g.id);
+    agent_key_service keys(ctx_);
+    for (std::uint32_t offset = 0;; offset += page) {
+        auto batch = keys.list_keys(offset, page);
+        const auto read = batch.size();
+        for (auto& k : batch)
+            if (listed.contains(k.grant_id)) {
+                k.secret_hash.clear();
+                r.keys.push_back(std::move(k));
+            }
+        if (read < page)
+            break;
+    }
     return r;
 }
 

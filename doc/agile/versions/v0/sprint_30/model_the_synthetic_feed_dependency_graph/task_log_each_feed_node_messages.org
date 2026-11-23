@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 5BFB956B-47EB-4D03-869E-87AC59DE1441
+:END:
+#+title: Task: Log each feed node's messages and mark a node that fails
+#+description: Each node of the feed graph keeps a message log in telemetry, tagged with its name: its state changes with their reasons, and the diagnostics it raises, such as a latent surface that publishes nothing for want of a curve. A node that runs but cannot produce is failing, and starves the nodes below it.
+#+type: task
+#+level: s1
+#+filetags: :model_the_synthetic_feed_dependency_graph:sprint_30:v0:
+#+owner: marco
+#+branch: feature/log-each-feed-node-messages
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-23
+#+updated: 2026-11-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person diagnosing a quiet surface reads its own log: the state changes with who stopped what and why, and the surface's market and calibration messages, such as no market: curve:USD, without opening a service log. The graph read shows the surface failing, with that diagnostic as its reason, and its views starved on it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-23                               |
+
+* Acceptance
+
+- A telemetry log entry carries the node's name in its tag, and the log read filters on it: the check the design asked for.
+- A latent surface that refuses a tick raises its reason once, when it changes, and clears it when it publishes again; the service publishes both to telemetry, tagged with the surface's name.
+- A node with a diagnostic is failing, with the diagnostic as its reason, and the nodes below it are starved on it.
+- A stop or start publishes, to each node whose state it changes, a message with the new state and its reason.
+- Live: stopping a curve a surface reads puts a no market message in the surface's log and its views' starve messages in theirs, read through GET /api/operations/logs with the node's name as the tag.
+
+* Plan
+
+One PR. It applies choice 4 of the [[id:2376A086-4C3C-4D61-92E5-29B122DB6A41][synthetic feed graph]] design: a node's
+messages are telemetry log entries tagged with its name.
+
+1. *The check.* A telemetry log entry has a =tag=, the log read filters on it,
+   and both the BFF and =ores.http= serve that read as
+   =GET /api/operations/logs?tag==. The publish verb,
+   =telemetry.v1.ops.publish_log_entries=, stores a batch under one tag with no
+   session, as the compute wrapper already uses it. So a node's messages are
+   batches tagged with its name, and no new store or route is needed. The
+   database sink uses the tag for a trace id, but no service runs that sink.
+2. *Diagnostics.* A =node_diagnostics= interface in the API, carried by the
+   feed build context, optional. A latent surface raises its refusal when it
+   changes and clears it when it publishes again: the two points where it
+   already logs once.
+3. *The journal.* The service's journal keeps each node's current diagnostic
+   and publishes every raise and clear to telemetry, tagged with the node's
+   name. The graph's rule gains =failing=: a node that is not stopped, whose
+   inputs run, and that holds a diagnostic, with the diagnostic as its reason;
+   a failing input starves the nodes below it. A stop or start derives the
+   states before and after, and publishes to each node whose state changed.
+   Check: graph cases for failing and its precedence, and a journal case.
+4. *Proof.* Live: stop a curve a surface reads, and read the surface's and a
+   view's messages through the log route by their names.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

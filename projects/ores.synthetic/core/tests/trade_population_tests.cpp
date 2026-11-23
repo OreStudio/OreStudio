@@ -19,6 +19,7 @@
  */
 #include "ore_example_conventions.hpp"
 #include "ores.synthetic.core/service/scripted_twins.hpp"
+#include "ores.trading.api/builders/scripted_twins.hpp"
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.synthetic.core/service/trade_population_service.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
@@ -2140,7 +2141,7 @@ TEST_CASE("a_twin_source_reads_a_column_a_role_a_fallback_and_a_literal", "[trad
     date.schedule_date = std::chrono::year{2027} / 1 / 5;
     batch.instrument_schedule_dates.push_back(date);
 
-    using ores::synthetic::service::twin_source_values;
+    using ores::trading::builders::twin_source_values;
     CHECK(twin_source_values(batch, "FxBasketOption", "product.currency") ==
           std::vector<std::string>{"USD"});
     CHECK(twin_source_values(batch, "FxBasketOption", "instrument_underlyings[underlying].name") ==
@@ -2169,7 +2170,7 @@ TEST_CASE("a_twin_source_reads_a_column_a_role_a_fallback_and_a_literal", "[trad
               .empty());
     CHECK_THROWS_AS(
         twin_source_values(batch, "FxBasketOption", "instrument_underlyings[underlying].name[0]"),
-        trade_population_error);
+        ores::trading::builders::scripted_twin_error);
 }
 
 TEST_CASE("a_worst_of_twin_pays_its_initial_amount_first_and_fixes_as_its_native_derives",
@@ -2370,16 +2371,16 @@ TEST_CASE("a_twin_whose_schedule_it_cannot_carry_is_refused", "[trade_population
     CHECK_THROWS_AS(scripted_twin_of(undated), trade_population_error);
 
     td::instrument_batch batch;
-    CHECK_THROWS_AS(ores::synthetic::service::twin_source_values(
+    CHECK_THROWS_AS(ores::trading::builders::twin_source_values(
                         batch,
                         "EquityBasketVarianceSwap",
                         "product.settlement_date or instrument_schedules[valuation_schedule]"),
-                    trade_population_error);
-    CHECK_THROWS_AS(ores::synthetic::service::twin_source_values(
+                    ores::trading::builders::scripted_twin_error);
+    CHECK_THROWS_AS(ores::trading::builders::twin_source_values(
                         batch,
                         "EquityBasketVarianceSwap",
                         "product.settlement_date or ValuationSchedule shifted 1D on A B"),
-                    trade_population_error);
+                    ores::trading::builders::scripted_twin_error);
 }
 
 TEST_CASE("a_window_barrier_twin_states_its_barrier_as_the_code_its_script_reads",

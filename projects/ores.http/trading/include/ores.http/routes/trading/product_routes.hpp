@@ -42,8 +42,7 @@ public:
     /**
      * @brief The list a screen reads: each product's code, name and construction.
      */
-    static std::string
-    list_json(const ores::trading::messaging::list_products_response& response);
+    static std::string list_json(const ores::trading::messaging::list_products_response& response);
 
     /**
      * @brief The description a screen reads.

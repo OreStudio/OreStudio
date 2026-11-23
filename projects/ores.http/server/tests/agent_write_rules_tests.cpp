@@ -39,7 +39,8 @@ TEST_CASE("a_replay_applied_only_when_its_answer_says_so", "[agent_writes]") {
     CHECK_FALSE(agent_write_applied(
         http_response::json(R"({"result":{"outcome":"conflict","message":"stale"}})"), why));
     CHECK(why == "stale");
-    CHECK_FALSE(agent_write_applied(http_response::json(R"({"success":false,"message":"no"})"), why));
+    CHECK_FALSE(
+        agent_write_applied(http_response::json(R"({"success":false,"message":"no"})"), why));
     CHECK(why == "no");
     CHECK_FALSE(agent_write_applied(http_response::forbidden("refused"), why));
 }

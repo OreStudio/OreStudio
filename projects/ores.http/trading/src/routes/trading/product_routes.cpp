@@ -64,34 +64,31 @@ std::string product_routes::describe_json(const schema::describe_product_respons
         fields.push_back(
             "{\"type_name\":" + json::write(f.type_name) + ",\"name\":" + json::write(f.name) +
             ",\"position\":" + json::write(f.position) + ",\"label\":" + json::write(f.label) +
-            ",\"help\":" + json::write(f.help) + ",\"description\":" +
-            json::write(f.description) + ",\"value_domain\":" + json::write(f.value_domain) +
-            ",\"is_required\":" + json::write(f.is_required) + ",\"default_text\":" +
-            json::write(f.default_text) + ",\"format\":" + json::write(f.format) +
-            ",\"xpath\":" + json::write(f.xpath) + "}");
+            ",\"help\":" + json::write(f.help) + ",\"description\":" + json::write(f.description) +
+            ",\"value_domain\":" + json::write(f.value_domain) + ",\"is_required\":" +
+            json::write(f.is_required) + ",\"default_text\":" + json::write(f.default_text) +
+            ",\"format\":" + json::write(f.format) + ",\"xpath\":" + json::write(f.xpath) + "}");
     std::vector<std::string> inputs;
     for (const auto& i : response.inputs)
-        inputs.push_back("{\"script_name\":" + json::write(i.script_name) +
-                         ",\"name\":" + json::write(i.input_name) +
-                         ",\"data_type\":" + json::write(i.data_type) +
+        inputs.push_back("{\"script_name\":" + json::write(i.script_name) + ",\"name\":" +
+                         json::write(i.input_name) + ",\"data_type\":" + json::write(i.data_type) +
                          ",\"is_array\":" + json::write(i.is_array) +
                          ",\"value_rule\":" + json::write(i.value_rule.value_or("")) +
                          ",\"description\":" + json::write(i.description.value_or("")) + "}");
     std::vector<std::string> codes;
     for (const auto& c : response.codes)
-        codes.push_back("{\"script_name\":" + json::write(c.script_name) +
-                        ",\"input_name\":" + json::write(c.input_name) +
-                        ",\"code\":" + json::write(c.code) + ",\"label\":" +
-                        json::write(c.label) + "}");
+        codes.push_back("{\"script_name\":" + json::write(c.script_name) + ",\"input_name\":" +
+                        json::write(c.input_name) + ",\"code\":" + json::write(c.code) +
+                        ",\"label\":" + json::write(c.label) + "}");
     std::vector<std::string> forms;
     for (const auto& f : response.forms)
-        forms.push_back("{\"kind\":" + json::write(f.kind) + ",\"script_name\":" +
-                        json::write(f.script_name) + ",\"product_tag\":" +
-                        json::write(f.product_tag) + "}");
+        forms.push_back("{\"kind\":" + json::write(f.kind) +
+                        ",\"script_name\":" + json::write(f.script_name) +
+                        ",\"product_tag\":" + json::write(f.product_tag) + "}");
     return "{\"product\":" + summary_json(response.product) +
-           ",\"element\":" + json::write(response.element) +
-           ",\"fields\":" + rr::array_of(fields) + ",\"inputs\":" + rr::array_of(inputs) +
-           ",\"codes\":" + rr::array_of(codes) + ",\"forms\":" + rr::array_of(forms) + "}";
+           ",\"element\":" + json::write(response.element) + ",\"fields\":" + rr::array_of(fields) +
+           ",\"inputs\":" + rr::array_of(inputs) + ",\"codes\":" + rr::array_of(codes) +
+           ",\"forms\":" + rr::array_of(forms) + "}";
 }
 
 void product_routes::register_routes(
@@ -111,7 +108,8 @@ void product_routes::register_routes(
                          "twins, each by its code, name and construction.")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<schema::list_products_request>([&] {
-                    const auto resp = forwarding::forward(req, session, schema::list_products_request{});
+                    const auto resp =
+                        forwarding::forward(req, session, schema::list_products_request{});
                     if (!resp.success)
                         return http_response::internal_error(resp.message);
                     return http_response::json(list_json(resp));

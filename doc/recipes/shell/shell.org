@@ -2284,3 +2284,11 @@ tangled into the runnable script library
 * Stopped Simulated Sources
 
 - [[id:9ED1FC4B-FF18-56FB-B221-9CD649D1FE71][How do I run the stopped_simulated_sources commands from the shell?]]
+
+* Agent Grants
+
+- [[id:A11B3E10-AF11-50B5-AE31-966AEB4CC9B1][How do I run the agent_grants commands from the shell?]]
+
+* Agent Keys
+
+- [[id:09553E7C-ED2E-5359-9EBE-72108372DB47][How do I run the agent_keys commands from the shell?]]

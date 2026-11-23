@@ -146,6 +146,13 @@ struct session final {
     std::string protocol = "binary";
 
     /**
+     * @brief The agent grant whose key opened this session, when an LLM agent acts for the account;
+     * empty for every session a person opens. The sessions window shows a session that names a
+     * grant as the agent's, apart from its person's.
+     */
+    std::optional<boost::uuids::uuid> agent_grant_id;
+
+    /**
      * @brief Value equality.
      *
      * Every generated domain type is a value: two of them are equal when their

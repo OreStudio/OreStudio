@@ -76,7 +76,8 @@ make_context_from_jwt(const ores::database::context& base_ctx,
 
     if (!claims->party_id || claims->party_id->empty())
         return base_ctx.with_tenant(*tid_result, claims->username.value_or(""))
-            .with_roles(claims->roles);
+            .with_roles(claims->roles)
+            .with_delegated_actor(claims->act);
 
     try {
         boost::uuids::string_generator sg;
@@ -87,11 +88,13 @@ make_context_from_jwt(const ores::database::context& base_ctx,
         return base_ctx
             .with_party(
                 *tid_result, party_id, std::move(visible_ids), claims->username.value_or(""))
-            .with_roles(claims->roles);
+            .with_roles(claims->roles)
+            .with_delegated_actor(claims->act);
     } catch (const std::exception& e) {
         ORES_LOG_SEV(lg(), warn) << "Failed to parse party UUIDs from JWT: " << e.what();
         return base_ctx.with_tenant(*tid_result, claims->username.value_or(""))
-            .with_roles(claims->roles);
+            .with_roles(claims->roles)
+            .with_delegated_actor(claims->act);
     }
 }
 

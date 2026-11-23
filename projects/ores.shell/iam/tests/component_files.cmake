@@ -28,6 +28,8 @@ set(files
     "account_role_commands_tests.cpp"
     "account_status_commands_tests.cpp"
     "account_type_commands_tests.cpp"
+    "agent_grant_commands_tests.cpp"
+    "agent_key_commands_tests.cpp"
     "auth_event_operations_operations_commands_tests.cpp"
     "authorization_operations_commands_tests.cpp"
     "bootstrap_operations_commands_tests.cpp"

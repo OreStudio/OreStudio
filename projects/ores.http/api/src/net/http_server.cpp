@@ -224,7 +224,7 @@ asio::awaitable<void> http_server::accept_connections() {
                                                           sessions_,
                                                           cookie_,
                                                           limits_,
-                                                          renewer_);
+                                                          credentials_);
 
             asio::co_spawn(
                 io_ctx_,

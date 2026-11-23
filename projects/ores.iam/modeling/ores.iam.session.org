@@ -227,6 +227,18 @@ Protocol used for this session: =binary= or =http=.
 std::string("binary")
 #+end_src
 
+** agent_grant_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:filterable: true
+:END:
+
+The agent grant whose key opened this session, when an LLM agent acts for the
+account; empty for every session a person opens. The sessions window shows a
+session that names a grant as the agent's, apart from its person's.
+
 * SQL
 
 ** Flags

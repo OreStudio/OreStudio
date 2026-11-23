@@ -571,6 +571,25 @@ export const en: SourceCatalogue = {
         },
     },
 
+    agents: {
+        title: 'LLM agents',
+        lead: 'An agent you name acts for you under one role, until the grant’s expiry or until you revoke it. Its calls are yours and are recorded as the agent’s.',
+        empty: 'You have no active agent grant.',
+        keyOnce: 'Copy this key into the agent now. It is shown once and cannot be read again.',
+        until: 'until {at}',
+        newKey: 'New key',
+        revokeGrant: 'Revoke grant',
+        revokeGrantConfirm:
+            'Revoking the grant revokes every key and ends the agent’s sessions. Continue?',
+        key: 'Key {id}, made {at}',
+        revokeKey: 'Revoke key',
+        name: 'Agent name',
+        role: 'Role',
+        days: 'Days valid (1–90)',
+        create: 'Create grant',
+        readFailed: 'Your agent grants could not be read.',
+        actFailed: 'The change was refused.',
+    },
     auditSignIns: {
         title: 'Sign-ins',
         description: 'Who is signed in, what they are doing, and who is failing to get in.',
@@ -604,6 +623,7 @@ export const en: SourceCatalogue = {
             client: 'Client',
             address: 'Address',
             country: 'Country',
+            agent: 'Agent',
             account: 'Account',
             traffic: 'Sent / received',
             authorisation: 'Authorisation',
@@ -624,6 +644,14 @@ export const en: SourceCatalogue = {
             end: 'End session',
             ending: 'Ending…',
             ended: 'Session ended. The open sessions were read again.',
+            endAgent:
+                'Ending an agent’s session also revokes the key that opened it. The agent’s next call is refused at once, or within five minutes at most; it needs a new key to resume. Continue?',
+            holder: 'Show',
+            holders: {
+                all: 'People and agents',
+                people: 'People',
+                agents: 'Agents',
+            },
             endFailed: 'The session could not be ended.',
             notAllowed: 'You may not read the tenant’s sessions.',
             note: 'Every open session the tenant holds is read; ending one writes its end time and re-reads this panel.',

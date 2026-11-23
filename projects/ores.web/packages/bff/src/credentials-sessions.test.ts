@@ -186,6 +186,7 @@ describe('GET /api/sessions', () => {
                     bytesReceived: 4096,
                     countryCode: 'GB',
                     protocol: 'https',
+                    agentGrantId: null,
                 },
             ],
             totalCount: 1,

@@ -48,6 +48,9 @@
 #include "ores.iam.core/messaging/account_party_handler.hpp"
 #include "ores.iam.core/messaging/account_registrar.hpp"
 #include "ores.iam.core/messaging/account_type_registrar.hpp"
+#include "ores.iam.core/messaging/agent_grant_operations_handler.hpp"
+#include "ores.iam.core/messaging/agent_grant_registrar.hpp"
+#include "ores.iam.core/messaging/agent_key_registrar.hpp"
 #include "ores.iam.core/messaging/auth_event_handler.hpp"
 #include "ores.iam.core/messaging/auth_handler.hpp"
 #include "ores.iam.core/messaging/authorization_handler.hpp"
@@ -636,6 +639,40 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         exchange_run_grant_request::nats_subject, qg, [rgh](ores::nats::message msg) {
             rgh->exchange(std::move(msg));
+        }));
+
+    // --- Agent grants and keys ---
+    // Reads only on the wire: IAM's own operations write both tables after
+    // their checks. The exchange mints an LLM agent's token, so the handler is
+    // given the signer.
+    for (auto& sub : register_agent_grant_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    for (auto& sub : register_agent_key_handlers(nats, ctx, signer))
+        subs.push_back(std::move(sub));
+    auto agh = std::make_shared<agent_grant_operations_handler>(nats, ctx, signer);
+    subs.push_back(nats.queue_subscribe(
+        create_agent_grant_request::nats_subject, qg, [agh](ores::nats::message msg) {
+            agh->create_grant(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        create_agent_key_request::nats_subject, qg, [agh](ores::nats::message msg) {
+            agh->create_key(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        revoke_agent_grant_request::nats_subject, qg, [agh](ores::nats::message msg) {
+            agh->revoke_grant(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        revoke_agent_key_request::nats_subject, qg, [agh](ores::nats::message msg) {
+            agh->revoke_key(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        list_own_agent_grants_request::nats_subject, qg, [agh](ores::nats::message msg) {
+            agh->list_own(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        exchange_agent_key_request::nats_subject, qg, [agh](ores::nats::message msg) {
+            agh->exchange(std::move(msg));
         }));
 
     // --- Storage capabilities ---

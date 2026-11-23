@@ -569,6 +569,26 @@ const fr: SourceCatalogue = {
         },
     },
 
+    agents: {
+        title: 'Agents LLM',
+        lead: 'Un agent que vous nommez agit pour vous sous un rôle, jusqu’à l’expiration de l’autorisation ou jusqu’à ce que vous la révoquiez. Ses appels sont les vôtres et sont enregistrés comme ceux de l’agent.',
+        empty: 'Vous n’avez aucune autorisation d’agent active.',
+        keyOnce:
+            'Copiez cette clé dans l’agent maintenant. Elle n’est affichée qu’une fois et ne peut pas être relue.',
+        until: 'jusqu’au {at}',
+        newKey: 'Nouvelle clé',
+        revokeGrant: 'Révoquer l’autorisation',
+        revokeGrantConfirm:
+            'Révoquer l’autorisation révoque toutes ses clés et termine les sessions de l’agent. Continuer ?',
+        key: 'Clé {id}, créée le {at}',
+        revokeKey: 'Révoquer la clé',
+        name: 'Nom de l’agent',
+        role: 'Rôle',
+        days: 'Jours de validité (1–90)',
+        create: 'Créer l’autorisation',
+        readFailed: 'Vos autorisations d’agent n’ont pas pu être lues.',
+        actFailed: 'La modification a été refusée.',
+    },
     auditSignIns: {
         title: 'Connexions',
         description: 'Qui est connecté, ce que chacun fait, et qui échoue à se connecter.',
@@ -602,6 +622,7 @@ const fr: SourceCatalogue = {
             client: 'Client',
             address: 'Adresse',
             country: 'Pays',
+            agent: 'Agent',
             account: 'Compte',
             traffic: 'Envoyé / reçu',
             authorisation: 'Autorisation',
@@ -622,6 +643,14 @@ const fr: SourceCatalogue = {
             end: 'Terminer la session',
             ending: 'Fin en cours…',
             ended: 'Session terminée. Les sessions ouvertes ont été relues.',
+            endAgent:
+                'Terminer la session d’un agent révoque aussi la clé qui l’a ouverte. Le prochain appel de l’agent est refusé aussitôt, ou au plus tard dans cinq minutes ; il lui faut une nouvelle clé pour reprendre. Continuer ?',
+            holder: 'Afficher',
+            holders: {
+                all: 'Personnes et agents',
+                people: 'Personnes',
+                agents: 'Agents',
+            },
             endFailed: 'La session n’a pas pu être terminée.',
             notAllowed: 'Vous ne pouvez pas lire les sessions du locataire.',
             note: 'Toutes les sessions ouvertes du locataire sont lues ; en terminer une écrit son heure de fin et relit ce panneau.',

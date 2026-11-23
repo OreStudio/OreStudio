@@ -34,6 +34,10 @@ The hand-written recipes that predate the facet are catalogued separately in
 
 - [[id:5CE9A9DA-423C-55CD-A7CD-8CC84F89813E][How do I call the accounts endpoints over HTTP?]]
 
+* Agent Grant Operations
+
+- [[id:DC5484A1-587E-5912-9DCB-2052FA14739E][How do I call the agent_grant_operations endpoints over HTTP?]]
+
 * Auth Event Operations
 
 - [[id:73A40B85-A485-5673-BB44-944926EAB983][How do I call the auth_event_operations endpoints over HTTP?]]

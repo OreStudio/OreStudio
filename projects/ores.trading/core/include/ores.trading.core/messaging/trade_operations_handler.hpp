@@ -36,6 +36,7 @@
 #include "ores.trading.core/repository/market_reference_repository.hpp"
 #include "ores.trading.core/repository/script_library_version_repository.hpp"
 #include "ores.trading.core/service/script_publish_service.hpp"
+#include "ores.trading.core/service/script_validation_service.hpp"
 #include "ores.trading.core/service/trade_export_service.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
@@ -371,6 +372,59 @@ public:
                 << msg.subject << " failed: " << e.what();
             resp.success = false;
             resp.message = e.what();
+        }
+        reply(nats_, msg, resp);
+    }
+
+    /**
+     * @brief Serves trading.v1.ops.validate_script.
+     *
+     * Validates a library script by name and version, as the caller's tenant
+     * resolves the name, or an inline script, against the variables a trade
+     * states, and books nothing.
+     */
+    void validate_script(ores::nats::message msg) {
+        using ores::service::messaging::decode;
+        using ores::service::messaging::error_reply;
+        using ores::service::messaging::reply;
+        using namespace ores::logging;
+
+        ORES_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        if (!ores::service::messaging::has_permission(*ctx_expected, "trading::scripts:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        validate_script_response resp;
+        try {
+            if (auto req = decode<validate_script_request>(msg)) {
+                const auto& variables = req->variables;
+                if (req->script_name.empty()) {
+                    const std::vector<service::script_text> inline_script{
+                        {.purpose = "default", .code = req->code}};
+                    resp = service::validate_script(inline_script, variables);
+                } else if (const auto variants = service::library_variants(
+                               *ctx_expected, req->script_name, req->script_version)) {
+                    resp = service::validate_script(*variants, variables);
+                } else {
+                    resp.message = "No library script " + req->script_name +
+                                   (req->script_version == 0
+                                        ? std::string{}
+                                        : " at version " + std::to_string(req->script_version)) +
+                                   " is held.";
+                }
+            } else {
+                resp.message = "Invalid validate_script_request.";
+            }
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(trade_operations_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = "The trading service could not validate the script; it logged the reason.";
         }
         reply(nats_, msg, resp);
     }

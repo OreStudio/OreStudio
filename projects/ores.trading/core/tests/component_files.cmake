@@ -131,6 +131,7 @@ set(files
     "service_product_schema_tests.cpp"
     "service_publish_subject_plan_tests.cpp"
     "service_script_publish_tests.cpp"
+    "service_script_validation_tests.cpp"
     "service_trade_batcher_tests.cpp"
     "service_trade_operations_service_tests.cpp"
     "settlement_type_eventing_integration_tests.cpp"

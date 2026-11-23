@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/book-a-product-in-either-form
+#+pr: 5062
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -26,7 +26,7 @@ The trading service books a product in any form it offers, and a free-form scrip
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -47,9 +47,20 @@ The trading service books a product in any form it offers, and a free-form scrip
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Six PRs, each ending in a check:
+
+1. =validate_script=: parse a library script, by name and version as the
+   caller's tenant resolves it, or an inline script, with ORE's grammar, and check
+   the trade's variables against its inputs; the findings are structured, by line
+   and column or by variable, and warnings alone are valid.
+2. The twin recipe evaluator moves from the synthetic generator into
+   =ores.trading.api=.
+3. A trade records its product and the form it was booked in.
+4. =book_scripted=: a library script by version or an inline script, refused
+   with the validation's findings when they hold an error.
+5. =book=: a product, its terms and a form, validated against
+   =describe_product='s schema.
+6. The =ores.http= and BFF routes under =/api/trading/booking=.
 
 * Measurements
 
@@ -86,12 +97,24 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5062][#5062]] | [trading] Validate a script against a trade's variables |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 5062.1 | the current version read every variant of every script | script_validation_service.cpp | accept | both paths read through the version reader, keyed by tenant, name and version |
+| 5062.2 | the tenant preference is easy to misread | script_validation_service.cpp, service_script_validation_tests.cpp | accept | commented, and a test publishes a tenant's Accumulator01 and resolves it over the library's |
+| 5062.3 | a stated version's variants are taken whole | script_validation_service.cpp | accept | filtered by the script's name |
+| 5062.4 | a negative version reads as not held | script_validation_service.cpp, the operations model | accept | a negative version names no script, as the model states |
+| 5062.5 | the reply for a script with no variant | the operations model | accept | success's comment states when the validation does not run |
+| 5062.6 | include order and a long line | script_validation_service.cpp | accept | clang-formatted |
+| 5062.7 | tests of different findings on one variable and of an empty inline script | none | no change | the key's message part is what keeps two findings apart, and an empty script is ORE's parse, which the parse tests own |
 
 * Result
+
+In progress: PR 1 is in. =trading.v1.ops.validate_script= parses a library
+script, as the caller's tenant resolves its name and version, or an inline
+script, and checks a trade's variables against its inputs, with structured
+findings by line and column or by variable. The twin recipe evaluator's move,
+the trade's product and form, =book_scripted=, =book= and the routes follow.

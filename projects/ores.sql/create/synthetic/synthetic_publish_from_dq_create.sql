@@ -1077,11 +1077,12 @@ begin
         end loop;
 
         -- A view is a feed of its vendor's collection: each lands in its contributor's
-        -- provider's collection, under that collection's FX volatility folder, named in the
-        -- vendor's namespace by the scheme.
+        -- provider's collection, named in the vendor's namespace by the scheme. A new view names
+        -- no folder, so the placement trigger files it under the collection's FX volatility
+        -- folder; a republished view keeps the folder it has.
         for r in
             select a.*, c.provider_code, s.base_currency_code, s.quote_currency_code,
-                   vendor.id as vendor_config_id, vendor_folder.id as vendor_folder_id
+                   vendor.id as vendor_config_id
             from ores_dq_fx_vol_views_artefact_tbl a
             join ores_synthetic_fx_vol_contributors_tbl c
               on c.tenant_id = p_target_tenant_id and c.id = a.contributor_id
@@ -1092,13 +1093,9 @@ begin
             left join ores_synthetic_market_data_generation_configs_tbl vendor
               on vendor.tenant_id = p_target_tenant_id and vendor.provider_code = c.provider_code
              and vendor.valid_to = ores_utility_infinity_timestamp_fn()
-            left join ores_synthetic_folders_tbl vendor_folder
-              on vendor_folder.tenant_id = p_target_tenant_id and vendor_folder.kind = 'collection'
-             and vendor_folder.collection_id = vendor.id
-             and vendor_folder.valid_to = ores_utility_infinity_timestamp_fn()
             where a.dataset_id = p_dataset_id order by a.feed_id, a.contributor_id
         loop
-            if r.vendor_config_id is null or r.vendor_folder_id is null then
+            if r.vendor_config_id is null then
                 raise exception 'The view of contributor % has no collection of its provider % to live in.',
                     r.contributor_id, r.provider_code;
             end if;
@@ -1110,10 +1107,7 @@ begin
             select
                 p_target_tenant_id, r.id, coalesce(existing.version, 0), v_party_id,
                 r.feed_id, r.contributor_id, r.vendor_config_id,
-                ores_synthetic_child_folder_fn(p_target_tenant_id, v_party_id,
-                    ores_synthetic_child_folder_fn(p_target_tenant_id, v_party_id,
-                        r.vendor_folder_id, 'FX', 'asset_class'),
-                    'FX Volatility', 'instrument_type'),
+                existing.folder_id,
                 ores_synthetic_fx_option_view_name_fn(
                     r.provider_code, r.base_currency_code, r.quote_currency_code),
                 true, true,

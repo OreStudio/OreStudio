@@ -52,34 +52,6 @@ create or replace function ores_synthetic_fx_vol_surface_name_fn(
     select 'synthetic.' || lower(p_source) || '.fx.fx_vol_surface.' || lower(p_base || p_quote);
 $$ language sql immutable;
 
--- A folder under a parent, found by its name and kind or made: where the publish files a
--- feed in a collection it did not create, as a view in its vendor's collection.
-create or replace function ores_synthetic_child_folder_fn(
-    p_tenant_id uuid, p_party_id uuid, p_parent_id uuid, p_name text, p_kind text
-) returns uuid as $$
-declare
-    v_id uuid;
-begin
-    select id into v_id
-    from ores_synthetic_folders_tbl
-    where tenant_id = p_tenant_id and party_id = p_party_id and parent_id = p_parent_id
-      and name = p_name and kind = p_kind
-      and valid_to = ores_utility_infinity_timestamp_fn();
-    if v_id is null then
-        v_id := gen_random_uuid();
-        insert into ores_synthetic_folders_tbl (
-            tenant_id, id, version, party_id, parent_id, name, kind, collection_id,
-            modified_by, performed_by, change_reason_code, change_commentary
-        ) values (
-            p_tenant_id, v_id, 0, p_party_id, p_parent_id, p_name, p_kind, null,
-            coalesce(ores_iam_current_service_fn(), current_user), current_user,
-            'system.external_data_import', 'Folder of a feed published into this collection'
-        );
-    end if;
-    return v_id;
-end;
-$$ language plpgsql;
-
 -- One vendor's quotes of a latent surface, in the vendor's namespace:
 -- synthetic.bloomberg.fx.fx_option.audusd.
 create or replace function ores_synthetic_fx_option_view_name_fn(

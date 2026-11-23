@@ -27,6 +27,7 @@
 #include "ores.trading.core/export.hpp"
 #include <optional>
 #include <string>
+#include "ores.nats/service/nats_client.hpp"
 #include <vector>
 
 namespace ores::trading::messaging {
@@ -36,8 +37,9 @@ public:
     static std::vector<ores::nats::service::subscription>
     register_handlers(ores::nats::service::client& nats,
                       const ores::database::context& ctx,
-                      std::optional<ores::security::jwt::jwt_authenticator> verifier = std::nullopt,
-                      std::string http_base_url = {});
+                      std::optional<ores::security::jwt::jwt_authenticator> verifier,
+                      std::string http_base_url,
+                      ores::nats::service::nats_client& svc_nats);
 };
 
 }

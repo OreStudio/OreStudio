@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/describe-every-product-by-its-schema
-#+pr: 5046
+#+pr: 5048
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -191,6 +191,32 @@ text today. Value sets attach to a parameter through a junction keyed by scope
 and name, which is not unique for instrument fields (=Type= is a field of many
 types), so they wait for their own unit of this task.
 
+** PR 3b: describe_product and list_products
+
+Trading serves both from a pure service over data, =product_schema_service=,
+which takes trading's rows and the instrument fields and returns the
+description, so it is tested without a database or a bus. The handler reads the
+rows in the caller's context and the fields from =ores.ore.client='s cache,
+loaded on first use with the service's own token; the trading service now holds
+a service token client for that, as reporting does.
+
+A product type's fields are its element's row and the fields of every type it
+reaches, each type once, breadth first; a twin recipe gives it a scripted form
+with its script's inputs and codes; a code that names a library script and no
+product type describes a script-only product. The response carries its own
+=product_field= rather than =ore_parameter=, because no operation model carries
+another component's domain type.
+
+Every product the seeded catalogue lists is described but one:
+=CommodityPairwiseVarianceSwap=, which ORE cannot build and the catalogue routes
+to no table, is refused with that reason. =CommodityWindowBarrierOption= was
+refused at first, because the vendored schema omits its element; ORE reads it
+with the same =fromXML= as the equity and FX window barriers, so
+=instrument_elements.json= now gives it the equity element's type, with that
+evidence. The engine a pricing configuration assigns a form's product tag is
+not in the response yet: the configuration is analytics' data, and reading it
+needs its own cache.
+
 ** Which component serves describe_product
 
 Who needs the schema, and when:
@@ -263,6 +289,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5048][#5048]] | [trading] Describe a product and list the products that can be described |
 | [[https://github.com/OreStudio/OreStudio/pull/5046][#5046]] | [ore] Serve the ore parameter cache from ores.ore.client |
 | [[https://github.com/OreStudio/OreStudio/pull/5044][#5044]] | [trading] Hold the codes of coded script inputs as data |
 | [[https://github.com/OreStudio/OreStudio/pull/5040][#5040]] | [ore] Describe the fields of every native product in the ore parameters |
@@ -283,6 +310,12 @@ via its "Verifies task" field.
 | 5044.4 | a code stated twice with two labels is dropped silently | script_input_codes.py, generate_script_library.py | accept | the generator warns; KikoType, the one case, has a correction saying the second statement is advice |
 | 5044.5 | track the codes of tenant scripts | doc/agile/product_backlog/inbox | accept | captured as Codes for a tenant's published scripts |
 | 5044.6 | no unit test of the heuristic reader | build/scripts/tests/test_script_input_codes.py | accept | 9 cases, run by the build-script-tests check |
+| 5048.1 | exception text is sent to the caller | product_schema_handler.hpp | accept | the handler logs it and answers that it could not, naming the subject |
+| 5048.2 | list_products reads the inputs and codes it never uses | product_schema_handler.hpp | accept | the list reads product types, scripts and twins only |
+| 5048.3 | the instrument fields are copied on every call | ores.ore.ore_parameter.org, product_schema_handler.hpp | accept | the cache's views are shared and immutable, so a read copies a pointer; the snapshot copied the aux before, too. Two first calls may both load, which replaces the partition twice and is harmless |
+| 5048.4 | a type no cache entry describes is dropped silently | product_schema_service.cpp | accept | the product is refused, naming the type; the check caught list:string being taken for a type, which is fixed |
+| 5048.5 | the element row is assumed to be the first match | product_schema_service.cpp | accept | commented: the seed writes one trade row per trade type |
+| 5048.6 | comment the tenant preference; pin the unbuildable refusal | product_schema_service.cpp, service_product_schema_tests.cpp | accept | commented, and a test pins the text |
 
 * Result
 
@@ -292,4 +325,6 @@ guide's words: one row for each field of each schema type, 2929 in all, and
 the data element of each trade type as a field of its trade,
 =/Trade[TradeType='Swap']/SwapData=. PR 2 is in: the codes of the library's
 coded script inputs are data, the entity =script_input_code=, published with their
-script. The =describe_product= operation and its HTTP and BFF routes follow.
+script. PR 3 is in: trading serves =describe_product= and =list_products= from its
+own rows and =ores.ore.client='s cache, which now holds the parameters for both
+services. The HTTP and BFF routes follow.

@@ -74,11 +74,19 @@ inline auto& ore_parameter_cache_lg() {
 class ore_parameter_cache {
     using key_hash = boost::hash<boost::uuids::uuid>;
     using analytic_parameters = std::vector<ores::ore::domain::ore_parameter>;
+    using instrument_types =
+        std::unordered_map<std::string, std::vector<ores::ore::domain::ore_parameter>>;
+    struct parameter_views {
+        std::shared_ptr<const analytic_parameters> analytics =
+            std::make_shared<const analytic_parameters>();
+        std::shared_ptr<const instrument_types> instruments =
+            std::make_shared<const instrument_types>();
+    };
     using cache_t =
         ores::eventing::service::cache::partitioned_cache<std::string,
                                                           boost::uuids::uuid,
                                                           ores::ore::domain::ore_parameter,
-                                                          analytic_parameters,
+                                                          parameter_views,
                                                           key_hash>;
 
 public:
@@ -180,10 +188,17 @@ public:
                 offset += page_size;
             }
             auto entries = entries_t.persistent();
-            analytic_parameters aux;
-            for (const auto& [id, p] : entries)
+            analytic_parameters analytics;
+            instrument_types instruments;
+            for (const auto& [id, p] : entries) {
                 if (p.scope == "analytic")
-                    aux.push_back(p);
+                    analytics.push_back(p);
+                else if (p.scope == "instrument")
+                    instruments[p.subtype].push_back(p);
+            }
+            parameter_views aux{
+                .analytics = std::make_shared<const analytic_parameters>(std::move(analytics)),
+                .instruments = std::make_shared<const instrument_types>(std::move(instruments))};
             cache_.replace_partition(tenant_id, entries, aux);
             ORES_LOG_SEV(ore_parameter_cache_lg(), debug)
                 << "Loaded " << count << " ore_parameters for tenant " << tenant_id;
@@ -206,7 +221,19 @@ public:
      */
     analytic_parameters analytics_parameters(const std::string& tenant_id) const {
         const auto snap = cache_.snapshot(tenant_id);
-        return snap ? snap->aux : analytic_parameters{};
+        return snap ? *snap->aux.analytics : analytic_parameters{};
+    }
+
+    /**
+     * @brief The fields of the instruments the tenant's partition holds, by the
+     * schema type they belong to, in no order (each field states its position),
+     * empty when the partition is not loaded. The data element of each trade type
+     * is a field of the type trade. The map is shared and never changed, so a read
+     * copies a pointer, not the fields.
+     */
+    std::shared_ptr<const instrument_types> instrument_fields(const std::string& tenant_id) const {
+        const auto snap = cache_.snapshot(tenant_id);
+        return snap ? snap->aux.instruments : std::make_shared<const instrument_types>();
     }
 
 private:

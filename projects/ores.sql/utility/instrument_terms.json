@@ -216,6 +216,13 @@
       "evidence": "the type's name and Data",
       "root": "varianceSwapData"
     },
+    "CommodityWindowBarrierOption": {
+      "construction": "scripted",
+      "declared": "EquityWindowBarrierOptionData",
+      "element": "CommodityWindowBarrierOptionData",
+      "evidence": "ORE 3d75a6908 OREData/ored/portfolio/windowbarrieroption.cpp:219 reads tradeType() + \"Data\" for the commodity, equity and FX forms with one fromXML; the vendored schema declares the equity and FX elements only, so the commodity element takes the equity element's type",
+      "root": "windowBarrierOptionData2"
+    },
     "CommodityWorstOfBasketSwap": {
       "construction": "scripted",
       "element": "CommodityWorstOfBasketSwapData",
@@ -43234,8 +43241,7 @@
   },
   "unresolved": [],
   "without_element": {
-    "CommodityPairwiseVarianceSwap": "ORE has no trade builder for CommodityPairwiseVarianceSwap, as the trade type catalogue's unsupported types record; it is booked as a ScriptedTrade over the PairwiseVarianceSwap script",
-    "CommodityWindowBarrierOption": "ORE 3d75a6908 OREData/ored/portfolio/windowbarrieroption.cpp reads tradeType() + \"Data\", CommodityWindowBarrierOptionData, which the vendored schema's oreTradeData group does not declare"
+    "CommodityPairwiseVarianceSwap": "ORE has no trade builder for CommodityPairwiseVarianceSwap, as the trade type catalogue's unsupported types record; it is booked as a ScriptedTrade over the PairwiseVarianceSwap script"
   },
   "xsd_manifest": "1.8.17.0"
 }

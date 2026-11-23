@@ -6839,6 +6839,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.ops.list_products': {
+        asOf: false,
+        filter: [],
+        rows: ['products'],
+    },
     'trading.v1.option_types.list': {
         asOf: true,
         filter: ['code_one_of'],

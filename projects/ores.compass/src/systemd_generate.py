@@ -61,6 +61,17 @@ HOST_ID_NAMESPACE = uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8")
 FLEET_MEMORY_LIMITS = """MemoryMax=8G
 MemorySwapMax=1G"""
 
+# The start job of a unit that waits for readiness, or that runs a port probe
+# before it reports itself started, can outlast systemd's 90 second default on a
+# cold fleet start. A unit killed at that mark fails its own start job and,
+# through Requires=, every dependent's first job with it, which is how the
+# official rates adapter kept ending up inactive while the service it needs came
+# up on its own restart a minute later. A Type=notify unit waits for READY=1; the
+# nats-server and pooler units are Type=simple but their ExecStartPost= and
+# ExecStartPre= probes run inside the start job. The node unit is Type=simple
+# with neither, so it takes systemd's default and states no budget.
+START_TIMEOUT = "TimeoutStartSec=300"
+
 # tenant_id::system().to_string() -- the max UUID sentinel (RFC 9562), always
 # this literal value regardless of environment; see process_supervisor.cpp's
 # own {tenant_id} substitution and its accompanying comment.
@@ -238,11 +249,7 @@ Description=ORE Studio {def_row['service_name']} (environment {env_name})
 After={after_line}
 Requires={after_line}
 PartOf={target_name}
-# A cold fleet start on a loaded machine outlasts systemd's 90 second default: a
-# service killed at that mark fails its own start job and, through Requires=, every
-# dependent's first job too, which is how the official rates adapter kept ending up
-# inactive while the service it needs came up on its own restart a minute later.
-TimeoutStartSec=300
+{START_TIMEOUT}
 StartLimitIntervalSec=60
 StartLimitBurst=5
 
@@ -307,11 +314,6 @@ Description=ORE Studio {def_row['service_name']} (environment {env_name})
 After={after_line}
 Requires={after_line}
 PartOf={target_name}
-# A cold fleet start on a loaded machine outlasts systemd's 90 second default: a
-# service killed at that mark fails its own start job and, through Requires=, every
-# dependent's first job too, which is how the official rates adapter kept ending up
-# inactive while the service it needs came up on its own restart a minute later.
-TimeoutStartSec=300
 StartLimitIntervalSec=60
 StartLimitBurst=5
 
@@ -369,11 +371,7 @@ Description=ORE Studio {def_row['service_name']} hot replica {replica} (environm
 After={after_line}
 Requires={after_line}
 PartOf={target_name}
-# A cold fleet start on a loaded machine outlasts systemd's 90 second default: a
-# service killed at that mark fails its own start job and, through Requires=, every
-# dependent's first job too, which is how the official rates adapter kept ending up
-# inactive while the service it needs came up on its own restart a minute later.
-TimeoutStartSec=300
+{START_TIMEOUT}
 StartLimitIntervalSec=60
 StartLimitBurst=5
 
@@ -436,11 +434,7 @@ def render_nats_unit(checkout_root, env_name, target_name, nats_port):
 [Unit]
 Description=NATS server (environment {env_name})
 PartOf={target_name}
-# A cold fleet start on a loaded machine outlasts systemd's 90 second default: a
-# service killed at that mark fails its own start job and, through Requires=, every
-# dependent's first job too, which is how the official rates adapter kept ending up
-# inactive while the service it needs came up on its own restart a minute later.
-TimeoutStartSec=300
+{START_TIMEOUT}
 StartLimitIntervalSec=60
 StartLimitBurst=5
 
@@ -485,11 +479,7 @@ def render_pooler_unit(checkout_root, env_name, target_name, pooler_port):
 [Unit]
 Description=PostgreSQL transaction pooler (environment {env_name})
 PartOf={target_name}
-# A cold fleet start on a loaded machine outlasts systemd's 90 second default: a
-# service killed at that mark fails its own start job and, through Requires=, every
-# dependent's first job too, which is how the official rates adapter kept ending up
-# inactive while the service it needs came up on its own restart a minute later.
-TimeoutStartSec=300
+{START_TIMEOUT}
 StartLimitIntervalSec=60
 StartLimitBurst=5
 

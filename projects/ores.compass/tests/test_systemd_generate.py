@@ -300,3 +300,24 @@ class TestServiceLogFile:
         unit = systemd_generate.render_quadlet_singleton_unit(
             _native_def(), [], "/checkout", "eager_maxwell", TARGET)
         assert "--log-directory" not in unit
+
+
+class TestStartBudget:
+    """How long a unit's start job may run before systemd kills it."""
+
+    def test_a_unit_that_waits_for_readiness_states_the_budget(self):
+        unit = systemd_generate.render_singleton_unit(
+            _native_def(), [], "/checkout", "eager_maxwell", TARGET)
+        assert unit.count("TimeoutStartSec=300") == 1
+        assert "Type=notify" in unit
+
+    def test_a_simple_unit_with_a_port_probe_states_the_budget(self):
+        unit = systemd_generate.render_nats_unit(
+            "/checkout", "eager_maxwell", TARGET, 4222)
+        assert unit.count("TimeoutStartSec=300") == 1
+        assert "ExecStartPost=" in unit
+
+    def test_the_node_unit_states_no_budget(self):
+        """Type=simple with no ExecStartPost=: systemd marks the unit started
+        when the process forks, so a budget would bound nothing."""
+        assert "TimeoutStartSec" not in _render()

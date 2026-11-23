@@ -4,7 +4,13 @@ Reads the BFF's route table from its server source and the gateway's from the
 route builders in projects/ores.http, then reports every BFF pair with no
 gateway twin. Run from the repository root:
 
-    python3 evidence/route_pair_census.py
+    python3 doc/agile/versions/v0/sprint_30/serve_one_screen_from_the_new_server-remaining/evidence/route_pair_census.py
+
+The patterns are textual. A route registered through a variable, a macro or a
+call split across lines is not counted, so the gateway total is a floor and a
+gateway route may exist that this script cannot see. A BFF path with a regular
+expression or a wildcard is normalised only at its :name and {name} positions,
+so it would read as unmatched.
 """
 
 import glob

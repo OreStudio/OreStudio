@@ -79,6 +79,11 @@ and the commit it was measured at.
 
 * Notes
 
+The census reads the two sources as text, not the running router. A route
+registered through a variable, a macro or a call split across lines is not
+counted, so 1121 is a floor: a gateway route may exist that the script cannot
+see. The script states this too, and its patterns are beside this task.
+
 The route pairs are counted by reading the two sources, not by asking the
 gateway for its document. The document's count is larger because an operation
 answers over more than one method, so the two numbers measure different things

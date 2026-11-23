@@ -28,15 +28,15 @@ import { subjects as buildingSubjects } from '@ores/wire-protocol/generated/repo
 import { subjects as executionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/engine_settings_execution_protocol';
 import { subjects as groupSubjects } from '@ores/wire-protocol/generated/reporting/protocol/engine_settings_group_protocol';
 import { subjects as settingSubjects } from '@ores/wire-protocol/generated/reporting/protocol/engine_settings_group_setting_protocol';
-import { subjects as parameterSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_protocol';
+import { subjects as parameterSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_protocol';
 import { subjects as bindingSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_configuration_protocol';
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_definition_protocol';
 import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/configuration_protocol';
 import { subjects as proposalSubjects } from '@ores/wire-protocol/generated/reporting/protocol/engine_settings_proposal_operations_protocol';
-import { subjects as valueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_protocol';
-import { subjects as valueSetValueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_value_protocol';
-import { subjects as valueSetCatalogueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_catalogue_protocol';
-import { subjects as settingValueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_setting_value_set_protocol';
+import { subjects as valueSetSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_value_set_protocol';
+import { subjects as valueSetValueSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_value_set_value_protocol';
+import { subjects as valueSetCatalogueSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_value_set_catalogue_protocol';
+import { subjects as settingValueSetSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_setting_value_set_protocol';
 import { HttpFailure, invalidRequest, notFound, otherParty } from './errors.js';
 import {
     input,

@@ -1687,11 +1687,11 @@ tangled into the runnable script library
 
 * Ore Parameter Value Domains
 
-- [[id:10EE66B7-D0C5-52AC-84E3-0367181F65F9][How do I run the ore_parameter_value_domains commands from the shell?]]
+- [[id:B818EB0B-A93C-545D-BBCF-31D36312F65E][How do I run the ore_parameter_value_domains commands from the shell?]]
 
 * Ore Parameters
 
-- [[id:30745220-F498-5666-A6BB-F586CDEE8F3E][How do I run the ore_parameters commands from the shell?]]
+- [[id:60BD6010-4C8E-51B2-AF1C-8326CF28AC04][How do I run the ore_parameters commands from the shell?]]
 
 * Market Data Mappings
 
@@ -1771,19 +1771,19 @@ tangled into the runnable script library
 
 * Ore Parameter Setting Value Sets
 
-- [[id:2F411DF3-3F0D-5047-844A-C1ABC063816E][How do I run the ore_parameter_setting_value_sets commands from the shell?]]
+- [[id:09345AAD-8307-524A-854B-411EF92244E5][How do I run the ore_parameter_setting_value_sets commands from the shell?]]
 
 * Ore Parameter Value Set Catalogues
 
-- [[id:49E7F484-0D4F-5501-B2F5-0A470CDE800A][How do I run the ore_parameter_value_set_catalogues commands from the shell?]]
+- [[id:1F192D4C-D2D1-5CE4-928D-D028F04E8A61][How do I run the ore_parameter_value_set_catalogues commands from the shell?]]
 
 * Ore Parameter Value Set Values
 
-- [[id:B100E49C-E12B-571C-B03A-8D151C34328E][How do I run the ore_parameter_value_set_values commands from the shell?]]
+- [[id:CA8C7D4D-1BD7-530C-813E-153077BA73E8][How do I run the ore_parameter_value_set_values commands from the shell?]]
 
 * Ore Parameter Value Sets
 
-- [[id:3E1AFCC9-7A5D-52DC-825E-869C2589C60F][How do I run the ore_parameter_value_sets commands from the shell?]]
+- [[id:61F6580A-5685-55A2-869E-A25FCB531453][How do I run the ore_parameter_value_sets commands from the shell?]]
 
 * Engine Settings Group Settings
 

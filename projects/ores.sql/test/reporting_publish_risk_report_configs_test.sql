@@ -52,7 +52,7 @@ select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::t
 -- the value domains and then the parameters first.
 create temp table t_vocabulary on commit drop as
 select 'ore.parameter_value_domains'::text as dataset, p.action, p.record_count
-from ores_reporting_publish_ore_parameter_value_domains_from_dq_fn(
+from ores_ore_publish_ore_parameter_value_domains_from_dq_fn(
     (select id from ores_dq_datasets_tbl
      where code = 'ore.parameter_value_domains'
        and valid_to = ores_utility_infinity_timestamp_fn()),
@@ -60,7 +60,7 @@ from ores_reporting_publish_ore_parameter_value_domains_from_dq_fn(
 
 insert into t_vocabulary
 select 'ore.parameters', p.action, p.record_count
-from ores_reporting_publish_ore_parameters_from_dq_fn(
+from ores_ore_publish_ore_parameters_from_dq_fn(
     (select id from ores_dq_datasets_tbl
      where code = 'ore.parameters'
        and valid_to = ores_utility_infinity_timestamp_fn()),
@@ -220,7 +220,7 @@ select results_eq(
 select results_eq(
     $$select d.subtype, d.name, p.value
       from ores_reporting_configuration_analytic_parameters_tbl p
-      join ores_reporting_ore_parameters_tbl d
+      join ores_ore_parameters_tbl d
         on d.tenant_id = ores_utility_system_tenant_id_fn()
        and d.id = p.ore_parameter_id
        and d.valid_to = ores_utility_infinity_timestamp_fn()

@@ -30,11 +30,11 @@ names one.
 
 | Table | States |
 |-------+--------|
-| =ores_reporting_ore_parameter_value_sets_tbl= | the rule: =source_kind= and =cardinality=, plus =minimum=, =maximum=, =pattern=, =catalogue_code=, =is_ordered= |
-| =ores_reporting_ore_parameter_value_set_values_tbl= | the values of an enumerated set: =value=, =label=, =display_order=, =is_active=, =canonical_value= |
-| =ores_reporting_ore_parameter_value_set_catalogues_tbl= | the relation a catalogue set reads, such as =ores_refdata_currency_catalogue_v= |
-| =ores_reporting_ore_parameter_setting_value_sets_tbl= | the link from =(scope, name)= to a set, which is how a parameter finds its rule |
-| =ores_reporting_ore_parameter_vocabularies_tbl= | the link from an ORE leaf's address to a set, which both leaf guards read |
+| =ores_ore_parameter_value_sets_tbl= | the rule: =source_kind= and =cardinality=, plus =minimum=, =maximum=, =pattern=, =catalogue_code=, =is_ordered= |
+| =ores_ore_parameter_value_set_values_tbl= | the values of an enumerated set: =value=, =label=, =display_order=, =is_active=, =canonical_value= |
+| =ores_ore_parameter_value_set_catalogues_tbl= | the relation a catalogue set reads, such as =ores_refdata_currency_catalogue_v= |
+| =ores_ore_parameter_setting_value_sets_tbl= | the link from =(scope, name)= to a set, which is how a parameter finds its rule |
+| =ores_ore_parameter_vocabularies_tbl= | the link from an ORE leaf's address to a set, which both leaf guards read |
 
 [[file:a_value_set_is_the_only_statement_of_a_rule.png]]
 
@@ -43,7 +43,7 @@ names one.
 * The nine kinds
 
 =source_kind= holds one of nine values, and
-=projects/ores.sql/create/reporting/reporting_ore_parameter_value_validate_fn_create.sql=
+=projects/ores.sql/create/ore/ore_ore_parameter_value_validate_fn_create.sql=
 is the only code that reads it. Everything a rule can say about one value is in
 this list.
 
@@ -205,7 +205,7 @@ spelling the schema states instead.
 One gap is known, and it is a change rather than an open question.
 
 - A set code the tables do not hold admits every value
-  (=…reporting_ore_parameter_value_validate_fn_create.sql:87=). A guard that
+  (=…ore_ore_parameter_value_validate_fn_create.sql:87=). A guard that
   cannot find a rule cannot refuse, so a dangling link is silent. The shell
   check's completeness gate (see the enforcement note) catches a parameter with
   no set; it does not catch a typo in a set code, which only a foreign key

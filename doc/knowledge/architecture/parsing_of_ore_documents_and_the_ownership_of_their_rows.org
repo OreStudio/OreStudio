@@ -141,10 +141,16 @@ document text it holds is the text of ORE's own schemas, in =ore_file_version=,
 one row for each schema at each ORE release, because a release's schema is part
 of the description of ORE.
 
-The leaves of ORE's schemas, their value domains and value sets, and the map from
-a leaf to the column that stores it are still =ores.reporting='s; they move to
-=ores.ore= once compass's =ore_value_sets= codec takes their names from the
-models. Of the dependency claims above, =projects/ores.reporting/core/src/CMakeLists.txt=
+The leaves of ORE's schemas are =ores.ore='s too: =ore_parameter= with its value
+domains, the value sets a leaf's value must belong to, the vocabulary that names
+the set for each leaf, and the element map from a leaf to the column that stores
+it, with the functions that check a value against its set. The ore service
+publishes them from their DQ datasets. Reporting maps a run document's
+parameters to their ids through a cache of the parameters fed by their events;
+refdata's and analytics' triggers check a value against its set by calling
+=ores.ore='s functions, as a trigger may.
+
+Of the dependency claims above, =projects/ores.reporting/core/src/CMakeLists.txt=
 no longer holds: it links =ores.ore.core.lib=, under a =core_link_edges=
 exception.
 

@@ -264,7 +264,7 @@ function vocabularyReads(): Record<string, unknown> {
             result: ok,
             instruments: [{ code: 'SWPTN', asset_class: 'interest_rates' }],
         },
-        'reporting.v1.ore_parameters.list': {
+        'ore.v1.ore_parameters.list': {
             result: ok,
             parameters: [
                 {
@@ -413,7 +413,7 @@ function vocabularyReads(): Record<string, unknown> {
                 { code: 'ON', display_name: 'Overnight', unit: 'NONE', sort_order: 0 },
             ],
         },
-        'reporting.v1.ore_parameter_value_sets.list': {
+        'ore.v1.ore_parameter_value_sets.list': {
             result: ok,
             sets: [
                 {
@@ -440,7 +440,7 @@ function vocabularyReads(): Record<string, unknown> {
                 },
             ],
         },
-        'reporting.v1.ore_parameter_value_set_values.list': {
+        'ore.v1.ore_parameter_value_set_values.list': {
             result: ok,
             values: [
                 {
@@ -472,7 +472,7 @@ function vocabularyReads(): Record<string, unknown> {
                 },
             ],
         },
-        'reporting.v1.ore_parameter_value_set_catalogues.list': {
+        'ore.v1.ore_parameter_value_set_catalogues.list': {
             result: ok,
             catalogues: [
                 {
@@ -484,7 +484,7 @@ function vocabularyReads(): Record<string, unknown> {
                 },
             ],
         },
-        'reporting.v1.ore_parameter_setting_value_sets.list': {
+        'ore.v1.ore_parameter_setting_value_sets.list': {
             result: ok,
             setting_value_sets: [
                 {
@@ -708,7 +708,7 @@ describe('pricing engine routes', () => {
     it('refuses a catalogue set whose relation no reader knows', async () => {
         const { server, sessionId } = buildTestServer({
             ...vocabularyReads(),
-            'reporting.v1.ore_parameter_value_set_catalogues.list': {
+            'ore.v1.ore_parameter_value_set_catalogues.list': {
                 result: ok,
                 catalogues: [
                     {

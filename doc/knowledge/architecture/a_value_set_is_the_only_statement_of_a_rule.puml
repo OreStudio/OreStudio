@@ -24,7 +24,7 @@ skinparam linetype ortho
 top to bottom direction
 
 package "The rule" {
-    entity "ores_reporting_ore_parameter_value_sets_tbl" as sets <<temporal>> #C6F0D8 {
+    entity "ores_ore_parameter_value_sets_tbl" as sets <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
         * source_kind : text
@@ -34,7 +34,7 @@ package "The rule" {
         pattern : text
         * is_ordered : boolean
     }
-    entity "ores_reporting_ore_parameter_value_set_values_tbl" as values <<temporal>> #C6F0D8 {
+    entity "ores_ore_parameter_value_set_values_tbl" as values <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
         * value_set_code : text
@@ -43,7 +43,7 @@ package "The rule" {
         * display_order : integer
         * is_active : boolean
     }
-    entity "ores_reporting_ore_parameter_value_set_catalogues_tbl" as cats <<temporal>> #C6F0D8 {
+    entity "ores_ore_parameter_value_set_catalogues_tbl" as cats <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
         * relation : text
@@ -52,14 +52,14 @@ package "The rule" {
 }
 
 package "What finds it" {
-    entity "ores_reporting_ore_parameter_setting_value_sets_tbl" as plink <<temporal>> {
+    entity "ores_ore_parameter_setting_value_sets_tbl" as plink <<temporal>> {
         * code : text <<PK>>\n(Scope:Name)
         --
         * scope : text
         * name : text
         * value_set_code : text
     }
-    entity "ores_reporting_ore_parameters_tbl\n(the per-tenant contract)" as params <<temporal>> {
+    entity "ores_ore_parameters_tbl\n(the per-tenant contract)" as params <<temporal>> {
         * id : uuid <<PK>>
         --
         * scope : text

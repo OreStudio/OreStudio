@@ -62,8 +62,8 @@ The code, in order:
   =MF= until the database sees it.
 - =…/refdata_curve_configuration_columns_validate_create.sql:71= and
   =…/refdata_convention_terms_validate_create.sql:77=: both guards ask
-  =ores_reporting_value_in_set_fn= whether the value is one the set states, then
-  =ores_reporting_canonical_value_fn= for the form it holds. A value outside the
+  =ores_ore_value_in_set_fn= whether the value is one the set states, then
+  =ores_ore_canonical_value_fn= for the form it holds. A value outside the
   set is refused with the set's name; a rendering is stored as its form.
 - =projects/ores.refdata/core/src/repository/*_mapper.cpp=: the entity mapper
   assigns the value it was handed. It converts nothing and includes no header for
@@ -105,8 +105,8 @@ path to it.
   writes a document through the store and states the round trip on what the store
   returns: the document it holds exports and reads back unchanged. This is the
   only case that can be right about a value the guard rewrote.
-- =…/test/reporting_ore_parameter_canonical_form_test.sql= asserts what the sets
-  state, and =ores_reporting_canonical_value_violations_fn()= names any live row
+- =…/test/ore_ore_parameter_canonical_form_test.sql= asserts what the sets
+  state, and =ores_ore_canonical_value_violations_fn()= names any live row
   that holds a rendering instead of its form. Zero today.
 
 * See also

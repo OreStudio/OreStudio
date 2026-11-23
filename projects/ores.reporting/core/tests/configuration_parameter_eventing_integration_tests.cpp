@@ -57,7 +57,7 @@
 // are needed too. A system-tenant parent is read rather than seeded, so its grand-parents need
 // nothing, and a system-tenant grand-parent is read rather than generated.
 #include "ores.reporting.core/repository/configuration_type_repository.hpp"
-// Parent-seed snippet includes (ores_reporting_ore_parameters_tbl): the parent table is
+// Parent-seed snippet includes (ores_ore_parameters_tbl): the parent table is
 // hand-authored with no modeling org, so the snippet's generator and
 // repository headers are named by the org rather than derived.
 #include "ores.testing/make_generation_context.hpp"

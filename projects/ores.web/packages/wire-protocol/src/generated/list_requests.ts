@@ -1938,6 +1938,79 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'ore.v1.ore_parameter_setting_value_sets.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['setting_value_sets'],
+    },
+    'ore.v1.ore_parameter_setting_value_sets_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'ore.v1.ore_parameter_value_domains.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['domains'],
+    },
+    'ore.v1.ore_parameter_value_domains_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'ore.v1.ore_parameter_value_set_catalogues.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['catalogues'],
+    },
+    'ore.v1.ore_parameter_value_set_catalogues_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'ore.v1.ore_parameter_value_set_values.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['values'],
+    },
+    'ore.v1.ore_parameter_value_set_values_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'ore.v1.ore_parameter_value_sets.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['sets'],
+    },
+    'ore.v1.ore_parameter_value_sets_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'ore.v1.ore_parameters.list': {
+        asOf: true,
+        filter: [
+            'ore_parameter_value_domain_code',
+            'id_one_of',
+            'ore_parameter_value_domain_code_one_of',
+        ],
+        rows: ['parameters'],
+    },
+    'ore.v1.ore_parameters.list_by_ore_parameter_value_domain_code': {
+        asOf: false,
+        filter: [
+            'ore_parameter_value_domain_code',
+            'id_one_of',
+            'ore_parameter_value_domain_code_one_of',
+        ],
+        rows: ['parameters'],
+    },
+    'ore.v1.ore_parameters_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'refdata.v1.asset_class_codes.list': {
         asOf: true,
         filter: ['code_one_of'],
@@ -4917,79 +4990,6 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         asOf: false,
         filter: [],
         rows: ['rows'],
-    },
-    'reporting.v1.ore_parameter_setting_value_sets.list': {
-        asOf: true,
-        filter: ['code_one_of'],
-        rows: ['setting_value_sets'],
-    },
-    'reporting.v1.ore_parameter_setting_value_sets_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
-    },
-    'reporting.v1.ore_parameter_value_domains.list': {
-        asOf: true,
-        filter: ['code_one_of'],
-        rows: ['domains'],
-    },
-    'reporting.v1.ore_parameter_value_domains_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
-    },
-    'reporting.v1.ore_parameter_value_set_catalogues.list': {
-        asOf: true,
-        filter: ['code_one_of'],
-        rows: ['catalogues'],
-    },
-    'reporting.v1.ore_parameter_value_set_catalogues_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
-    },
-    'reporting.v1.ore_parameter_value_set_values.list': {
-        asOf: true,
-        filter: ['code_one_of'],
-        rows: ['values'],
-    },
-    'reporting.v1.ore_parameter_value_set_values_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
-    },
-    'reporting.v1.ore_parameter_value_sets.list': {
-        asOf: true,
-        filter: ['code_one_of'],
-        rows: ['sets'],
-    },
-    'reporting.v1.ore_parameter_value_sets_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
-    },
-    'reporting.v1.ore_parameters.list': {
-        asOf: true,
-        filter: [
-            'ore_parameter_value_domain_code',
-            'id_one_of',
-            'ore_parameter_value_domain_code_one_of',
-        ],
-        rows: ['parameters'],
-    },
-    'reporting.v1.ore_parameters.list_by_ore_parameter_value_domain_code': {
-        asOf: false,
-        filter: [
-            'ore_parameter_value_domain_code',
-            'id_one_of',
-            'ore_parameter_value_domain_code_one_of',
-        ],
-        rows: ['parameters'],
-    },
-    'reporting.v1.ore_parameters_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
     },
     'reporting.v1.report_cashflows.list': {
         asOf: true,

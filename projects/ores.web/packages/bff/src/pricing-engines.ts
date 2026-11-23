@@ -37,11 +37,11 @@ import { subjects as tenorSubjects } from '@ores/wire-protocol/generated/refdata
 import { subjects as instrumentCodeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/instrument_code_protocol';
 import { subjects as bindingSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_configuration_protocol';
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_definition_protocol';
-import { subjects as oreParameterSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_protocol';
-import { subjects as valueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_protocol';
-import { subjects as valueSetValueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_value_protocol';
-import { subjects as valueSetCatalogueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_catalogue_protocol';
-import { subjects as settingValueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_setting_value_set_protocol';
+import { subjects as oreParameterSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_protocol';
+import { subjects as valueSetSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_value_set_protocol';
+import { subjects as valueSetValueSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_value_set_value_protocol';
+import { subjects as valueSetCatalogueSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_value_set_catalogue_protocol';
+import { subjects as settingValueSetSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_setting_value_set_protocol';
 import { subjects as documentSubjects } from '@ores/wire-protocol/generated/analytics/protocol/configuration_document_protocol';
 import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/configuration_protocol';
 import { subjects as orePricingSubjects } from '@ores/wire-protocol/generated/ore/protocol/pricing_engines_protocol';

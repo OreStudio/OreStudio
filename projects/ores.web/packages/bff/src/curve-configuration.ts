@@ -25,11 +25,11 @@ import { subjects as segmentTypeSubjects } from '@ores/wire-protocol/generated/r
 import { subjects as sectionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/curve_section_protocol';
 import { subjects as configurationSubjects } from '@ores/wire-protocol/generated/refdata/protocol/curve_configuration_protocol';
 import { subjects as definitionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/curve_definition_protocol';
-import { subjects as parameterSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_protocol';
-import { subjects as valueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_protocol';
-import { subjects as valueSetValueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_value_protocol';
-import { subjects as valueSetCatalogueSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_value_set_catalogue_protocol';
-import { subjects as settingValueSetSubjects } from '@ores/wire-protocol/generated/reporting/protocol/ore_parameter_setting_value_set_protocol';
+import { subjects as parameterSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_protocol';
+import { subjects as valueSetSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_value_set_protocol';
+import { subjects as valueSetValueSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_value_set_value_protocol';
+import { subjects as valueSetCatalogueSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_value_set_catalogue_protocol';
+import { subjects as settingValueSetSubjects } from '@ores/wire-protocol/generated/ore/protocol/ore_parameter_setting_value_set_protocol';
 import {
     CURVE_SECTIONS,
     curveSectionOf,

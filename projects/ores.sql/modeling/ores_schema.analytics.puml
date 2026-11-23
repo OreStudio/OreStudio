@@ -60,6 +60,7 @@ package "analytics" #E8F5E9 {
           loan_exposure_mode : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -89,6 +90,7 @@ package "analytics" #E8F5E9 {
           factor_loadings : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -117,6 +119,7 @@ package "analytics" #E8F5E9 {
         * t1 : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -153,6 +156,7 @@ package "analytics" #E8F5E9 {
         * p_default : double
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -183,6 +187,7 @@ package "analytics" #E8F5E9 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -211,6 +216,7 @@ package "analytics" #E8F5E9 {
         * instrument_type_code : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -235,6 +241,7 @@ package "analytics" #E8F5E9 {
         * source : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -261,6 +268,7 @@ package "analytics" #E8F5E9 {
           configuration_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -289,6 +297,7 @@ package "analytics" #E8F5E9 {
           note : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -317,6 +326,7 @@ package "analytics" #E8F5E9 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -346,6 +356,7 @@ package "analytics" #E8F5E9 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -373,6 +384,7 @@ package "analytics" #E8F5E9 {
         * source : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -402,6 +414,7 @@ package "analytics" #E8F5E9 {
           note : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -433,6 +446,7 @@ package "analytics" #E8F5E9 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -473,6 +487,7 @@ package "analytics" #E8F5E9 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -507,6 +522,7 @@ package "analytics" #E8F5E9 {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -547,6 +563,7 @@ package "analytics" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -573,6 +590,7 @@ package "analytics" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -603,6 +621,7 @@ package "analytics" #E8F5E9 {
           use_spreaded_term_structures : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -633,6 +652,7 @@ package "analytics" #E8F5E9 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -671,6 +691,7 @@ package "analytics" #E8F5E9 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -712,6 +733,7 @@ package "analytics" #E8F5E9 {
           description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -746,6 +768,7 @@ package "analytics" #E8F5E9 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -780,6 +803,7 @@ package "analytics" #E8F5E9 {
           configuration_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -814,6 +838,7 @@ package "analytics" #E8F5E9 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -846,6 +871,7 @@ package "analytics" #E8F5E9 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -880,6 +906,7 @@ package "analytics" #E8F5E9 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz

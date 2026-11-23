@@ -123,29 +123,35 @@ function render(path: string, seed: (client: QueryClient) => void): string {
 describe('the fields a feed derives', () => {
     it('derives the ORE key and a source name from the pair', () => {
         expect(
-            completeFeed({
-                base_currency_code: 'GBP',
-                quote_currency_code: 'JPY',
-                source_name: '',
-                price_source: 'fixed',
-                gmm_initial_price: 190,
-            }),
+            completeFeed(
+                {
+                    base_currency_code: 'GBP',
+                    quote_currency_code: 'JPY',
+                    source_name: '',
+                    price_source: 'fixed',
+                    gmm_initial_price: 190,
+                },
+                'bloomberg',
+            ),
         ).toMatchObject({
             oresmd_uri: 'oresmd://fx/GBP?type=quote&instrument=fx_spot&quote=rate&ccy=JPY',
-            source_name: 'synthetic.gbpjpy',
+            source_name: 'synthetic.bloomberg.fx.fx_spot.gbpjpy',
             gmm_initial_price: 190,
         });
     });
 
     it('keeps a source name that is given, and the fallback level of a fixing feed', () => {
         expect(
-            completeFeed({
-                base_currency_code: 'EUR',
-                quote_currency_code: 'USD',
-                source_name: 'synthetic.feeds.eurusd',
-                price_source: 'fixing',
-                gmm_initial_price: 1.17,
-            }),
+            completeFeed(
+                {
+                    base_currency_code: 'EUR',
+                    quote_currency_code: 'USD',
+                    source_name: 'synthetic.feeds.eurusd',
+                    price_source: 'fixing',
+                    gmm_initial_price: 1.17,
+                },
+                'bloomberg',
+            ),
         ).toMatchObject({
             source_name: 'synthetic.feeds.eurusd',
             gmm_initial_price: 1.17,
@@ -155,11 +161,11 @@ describe('the fields a feed derives', () => {
 
 describe('the synthetic mark', () => {
     it('puts every source name under the synthetic mark, once', () => {
-        expect(syntheticSource('', 'EUR', 'USD')).toBe('synthetic.eurusd');
-        expect(syntheticSource('desk.eurusd', 'EUR', 'USD')).toBe('synthetic.desk.eurusd');
-        expect(syntheticSource('synthetic.desk.eurusd', 'EUR', 'USD')).toBe(
-            'synthetic.desk.eurusd',
+        expect(syntheticSource('', 'synthetic.desk.fx.fx_spot.eurusd')).toBe(
+            'synthetic.desk.fx.fx_spot.eurusd',
         );
+        expect(syntheticSource('desk.eurusd', 'unused')).toBe('synthetic.desk.eurusd');
+        expect(syntheticSource('synthetic.desk.eurusd', 'unused')).toBe('synthetic.desk.eurusd');
     });
 });
 

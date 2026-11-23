@@ -50,7 +50,11 @@ create table if not exists "ores_dq_fx_vol_surface_feeds_artefact_tbl" (
     "spot_skew_correlation" double precision not null,
     "segment_correlation" double precision not null,
     "start_skew" double precision not null,
-    "start_curvature" double precision not null
+    "start_curvature" double precision not null,
+    "spot_oresmd_uri" text not null,
+    "spot_provider_code" text not null,
+    "base_curve_name" text not null,
+    "quote_curve_name" text not null
 );
 
 create index if not exists dq_fx_vol_surface_feeds_artefact_dataset_idx

@@ -29,7 +29,8 @@ namespace ores::database::pq {
 
 /**
  * @brief Who a transaction acts for. The policies of row-level security read
- * these settings, and the audit columns name the actor and the service.
+ * these settings, and the audit columns name the actor, the service and, for a
+ * call an LLM agent made, the agent.
  */
 struct session_context final {
     utility::uuid::tenant_id tenant = utility::uuid::tenant_id::system();
@@ -37,6 +38,7 @@ struct session_context final {
     std::vector<boost::uuids::uuid> visible_parties;
     std::string actor;
     std::string service;
+    std::string agent;
 };
 
 }

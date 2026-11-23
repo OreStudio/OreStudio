@@ -27,6 +27,7 @@
 #include "ores.analytics.core/service/pricing_model_config_service.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/acting_agents.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -44,8 +45,19 @@ void register_pricing_model_config_history_provider(
             // history is addressed by the row's own id.
             auto versions =
                 svc.get_config_history(boost::lexical_cast<boost::uuids::uuid>(entity_id));
-            return ores::history::service::build_entity_history_versions(
+            auto history = ores::history::service::build_entity_history_versions(
                 versions, presentation::render_pricing_model_config_fields);
+            // The versions an LLM agent wrote carry the agent, read from the
+            // rows' own stamp.
+            if (!versions.empty())
+                ores::history::service::mark_acting_agents(
+                    scoped_ctx,
+                    {.table = "ores_analytics_pricing_model_configs_tbl",
+                     .key_column = "id",
+                     .key_is_uuid = true},
+                    boost::uuids::to_string(versions.front().id),
+                    history);
+            return history;
         });
 }
 

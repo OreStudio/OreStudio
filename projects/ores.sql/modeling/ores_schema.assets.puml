@@ -59,6 +59,7 @@ package "assets" #F3E5F5 {
         * assigned_at : timestamptz
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -87,6 +88,7 @@ package "assets" #F3E5F5 {
         * data : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -115,6 +117,7 @@ package "assets" #F3E5F5 {
         * description : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz

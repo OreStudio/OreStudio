@@ -440,14 +440,11 @@ begin
                 coalesce(existing.version, 0),
                 v_party_id, v_config_id, v_fx_folder_id,
                 r.base_currency_code, r.quote_currency_code,
-                -- source_name is just a display/NATS-subject string, namespaced
-                -- by the feed's provider, or by the collection when the feed
-                -- names none (to avoid two datasets' same pair colliding) --
-                -- the actual hierarchy lives in folder_id above, not parsed out
-                -- of this string.
-                'synthetic.' ||
-                    coalesce(r.provider_code, lower(replace(v_config_name, ' ', ''))) || '.' ||
-                    lower(r.base_currency_code) || lower(r.quote_currency_code),
+                -- The source name by the naming scheme, under the feed's provider,
+                -- or the collection when the feed names none.
+                ores_synthetic_fx_spot_name_fn(
+                    coalesce(r.provider_code, lower(replace(v_config_name, ' ', ''))),
+                    r.base_currency_code, r.quote_currency_code),
                 -- oresmd_uri is the quote URI of the spot rate, in the pair's
                 -- natural base/quote order; the underlying market data is named
                 -- the same way.
@@ -770,13 +767,10 @@ begin
                 coalesce(r.auto_start, false),
                 r.description,
                 r.fixed_leg_payment_frequency_code,
-                -- Same shape as fx_spot_generation_config.source_name: namespaced by
-                -- provider or collection only (so two datasets' same currency+index
-                -- never collide), not by asset class.
-                'synthetic.' ||
-                    coalesce(r.provider_code, lower(replace(v_config_name, ' ', ''))) || '.' ||
-                    lower(r.currency_code) || lower(r.index_family) ||
-                    lower(replace(r.tenor, ' ', '')),
+                -- The source name by the naming scheme, as a spot's is.
+                ores_synthetic_yield_curve_name_fn(
+                    coalesce(r.provider_code, lower(replace(v_config_name, ' ', ''))),
+                    r.index_family, r.currency_code, r.tenor),
                 r.price_source,
                 'interest_rates',
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
@@ -1020,42 +1014,32 @@ begin
                 skew_reversion, skew_volatility, curvature_reversion, curvature_volatility,
                 spot_variance_correlation, spot_skew_correlation, segment_correlation,
                 start_skew, start_curvature, spot_oresmd_uri, spot_provider_code,
+                base_curve_name, quote_curve_name,
                 modified_by, performed_by, change_reason_code, change_commentary
             )
             select
                 p_target_tenant_id, r.id, coalesce(existing.version, 0), v_party_id,
                 v_config_id, v_vol_folder_id,
                 r.base_currency_code, r.quote_currency_code,
-                'synthetic.' ||
-                    coalesce(r.provider_code, lower(replace(v_config_name, ' ', ''))) ||
-                    '.vol.' || lower(r.base_currency_code) || lower(r.quote_currency_code),
+                ores_synthetic_fx_vol_surface_name_fn(
+                    coalesce(r.provider_code, lower(replace(v_config_name, ' ', ''))),
+                    r.base_currency_code, r.quote_currency_code),
                 r.ticks_per_hour, r.enabled, r.auto_start, 'fx',
                 r.arrival_mode, r.branching_ratio, r.decay, r.sensitivity,
                 r.skew_reversion, r.skew_volatility, r.curvature_reversion, r.curvature_volatility,
                 r.spot_variance_correlation, r.spot_skew_correlation, r.segment_correlation,
-                r.start_skew, r.start_curvature, spot.oresmd_uri, collection.provider_code,
+                r.start_skew, r.start_curvature,
+                -- The surface's edges: the spot it reads, by URI and provider, and its two
+                -- discounting curves, by name. The dataset states them, because a latent
+                -- surface's collection is not the vendor whose spot and curves it reads.
+                r.spot_oresmd_uri, r.spot_provider_code, r.base_curve_name, r.quote_curve_name,
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name
             from (select 1) as _feed
-            -- The surface reads the spot its own collection quotes: the spot feed this
-            -- publish wrote for the pair, under the collection's provider. A URI names
-            -- what is observed, so the provider is what makes it one feed.
-            join ores_synthetic_market_data_generation_configs_tbl collection
-                on collection.tenant_id = p_target_tenant_id and collection.id = v_config_id
-               and collection.valid_to = ores_utility_infinity_timestamp_fn()
-            join ores_synthetic_fx_spot_generation_configs_tbl spot
-                on spot.tenant_id = p_target_tenant_id and spot.config_id = v_config_id
-               and spot.base_currency_code = r.base_currency_code
-               and spot.quote_currency_code = r.quote_currency_code
-               and spot.valid_to = ores_utility_infinity_timestamp_fn()
             left join ores_synthetic_fx_vol_surface_feeds_tbl existing
                 on existing.tenant_id = p_target_tenant_id and existing.id = r.id
                and existing.valid_to = ores_utility_infinity_timestamp_fn()
             returning version into v_new_version;
-            if not found then
-                raise exception 'The surface %/% of dataset % has no spot feed of its pair in its collection.',
-                    r.base_currency_code, r.quote_currency_code, v_dataset_name;
-            end if;
             if v_new_version = 1 then
                 v_inserted := v_inserted + 1;
             else

@@ -22,6 +22,7 @@
  * Template: cpp_protocol_codec.cpp.mustache
  * To modify, update the template and regenerate.
  */
+#include "ores.iam.api/domain/agent_call_codec.hpp"
 #include "ores.iam.api/domain/agent_grant_codec.hpp"
 #include "ores.iam.api/domain/agent_key_codec.hpp"
 #include "ores.iam.api/messaging/agent_grant_operations_protocol.hpp"
@@ -325,6 +326,50 @@ ores::iam::messaging::list_every_agent_grant_response
 wire_traits<ores::iam::messaging::list_every_agent_grant_response>::read_msgpack(
     std::span<const std::byte> data) {
     return object::read_msgpack<ores::iam::messaging::list_every_agent_grant_response>(data);
+}
+
+std::string wire_traits<ores::iam::messaging::list_own_agent_activity_request>::write_json(
+    const ores::iam::messaging::list_own_agent_activity_request& v) {
+    return object::write_json(v);
+}
+
+ores::iam::messaging::list_own_agent_activity_request
+wire_traits<ores::iam::messaging::list_own_agent_activity_request>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::iam::messaging::list_own_agent_activity_request>(text);
+}
+
+std::string wire_traits<ores::iam::messaging::list_own_agent_activity_request>::write_msgpack(
+    const ores::iam::messaging::list_own_agent_activity_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::iam::messaging::list_own_agent_activity_request
+wire_traits<ores::iam::messaging::list_own_agent_activity_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::iam::messaging::list_own_agent_activity_request>(data);
+}
+
+std::string wire_traits<ores::iam::messaging::list_own_agent_activity_response>::write_json(
+    const ores::iam::messaging::list_own_agent_activity_response& v) {
+    return object::write_json(v);
+}
+
+ores::iam::messaging::list_own_agent_activity_response
+wire_traits<ores::iam::messaging::list_own_agent_activity_response>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::iam::messaging::list_own_agent_activity_response>(text);
+}
+
+std::string wire_traits<ores::iam::messaging::list_own_agent_activity_response>::write_msgpack(
+    const ores::iam::messaging::list_own_agent_activity_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::iam::messaging::list_own_agent_activity_response
+wire_traits<ores::iam::messaging::list_own_agent_activity_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::iam::messaging::list_own_agent_activity_response>(data);
 }
 
 }

@@ -70,7 +70,7 @@ TEST_CASE("agent_grant_operations_routes_registers_every_declared_operation", "[
     const auto table = agent_grant_operations_registered_routes(session);
     const auto& routes = table->routes();
 
-    REQUIRE(routes.size() == 6);
+    REQUIRE(routes.size() == 7);
 
     // The router's own list is the only public view of what was registered,
     // so a route that is missing from it was never registered.
@@ -87,6 +87,8 @@ TEST_CASE("agent_grant_operations_routes_registers_every_declared_operation", "[
                  http_method::post, std::string{"/api/v1/iam/ops/list_own_agent_grants"}, true},
              agent_grant_operations_expected_route{
                  http_method::post, std::string{"/api/v1/iam/ops/list_every_agent_grant"}, true},
+             agent_grant_operations_expected_route{
+                 http_method::post, std::string{"/api/v1/iam/ops/list_own_agent_activity"}, true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;
@@ -94,7 +96,7 @@ TEST_CASE("agent_grant_operations_routes_registers_every_declared_operation", "[
         CHECK(found != routes.end());
     }
 
-    ORES_LOG_SEV(lg, debug) << "Registered 6 route(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered 7 route(s).";
 }
 
 TEST_CASE("agent_grant_operations_routes_requires_a_session_where_the_message_does", "[routes]") {
@@ -120,6 +122,8 @@ TEST_CASE("agent_grant_operations_routes_requires_a_session_where_the_message_do
                  http_method::post, std::string{"/api/v1/iam/ops/list_own_agent_grants"}, true},
              agent_grant_operations_expected_route{
                  http_method::post, std::string{"/api/v1/iam/ops/list_every_agent_grant"}, true},
+             agent_grant_operations_expected_route{
+                 http_method::post, std::string{"/api/v1/iam/ops/list_own_agent_activity"}, true},
          }) {
         const auto found = std::find_if(routes.begin(), routes.end(), [&](const auto& route) {
             return route.method == expected.method && route.pattern == expected.pattern;
@@ -131,5 +135,5 @@ TEST_CASE("agent_grant_operations_routes_requires_a_session_where_the_message_do
         CHECK(found->auth_declared);
     }
 
-    ORES_LOG_SEV(lg, debug) << "Checked the auth flag of 6 route(s).";
+    ORES_LOG_SEV(lg, debug) << "Checked the auth flag of 7 route(s).";
 }

@@ -80,6 +80,13 @@ public:
         credentials_.exchange = std::move(exchanger);
     }
 
+    /**
+     * @brief Sets what records each call made with an exchanged bearer value.
+     */
+    void set_exchanged_call_recorder(domain::exchanged_call_recorder recorder) {
+        credentials_.record = std::move(recorder);
+    }
+
     /// How this deployment names and protects the cookie a session rides in.
     void set_cookie_settings(domain::cookie_settings settings) {
         registry_->set_session_cookie_name(settings.name);

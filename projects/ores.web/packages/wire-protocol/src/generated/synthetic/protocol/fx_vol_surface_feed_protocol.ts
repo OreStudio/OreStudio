@@ -58,6 +58,8 @@ export interface FxVolSurfaceFeedWrite {
     start_curvature: number;
     spot_oresmd_uri: string;
     spot_provider_code: string;
+    base_curve_name: string;
+    quote_curve_name: string;
 }
 
 export interface FxVolSurfaceFeedChange {

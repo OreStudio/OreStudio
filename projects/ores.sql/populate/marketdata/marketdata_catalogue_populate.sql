@@ -64,7 +64,10 @@ values
      7, current_user, current_user, 'system.initial_load', 'Initial population of providers'),
     (ores_utility_system_tenant_id_fn(), 'composite', 0, 'Composite', 'reference',
      'The internal provider of the items that the service derives from the quote series of other providers.',
-     6, current_user, current_user, 'system.initial_load', 'Initial population of providers')
+     6, current_user, current_user, 'system.initial_load', 'Initial population of providers'),
+    (ores_utility_system_tenant_id_fn(), 'latent', 0, 'Latent', 'system',
+     'The source of the synthetic markets no vendor publishes, such as a latent volatility surface that every vendor quotes with noise of its own. A system provider: no tenant reads it.',
+     8, current_user, current_user, 'system.initial_load', 'Initial population of providers')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

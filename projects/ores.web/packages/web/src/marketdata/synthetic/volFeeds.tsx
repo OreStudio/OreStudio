@@ -44,7 +44,8 @@ import { ArrivalsTab } from './ArrivalsPanel.js';
 import { FeedPage } from './FeedScreens.js';
 import { feedPath, type FeedKind } from './feedKind.js';
 import { FeedStatus } from './feedRuns.js';
-import { SYNTHETIC_MARK } from './fxFeeds.js';
+import { fxVolSurfaceName, useSourceOf } from './feedNames.js';
+import { syntheticSource } from './fxFeeds.js';
 
 export const VOL_FEEDS = 'fx-vol-surface-feeds';
 const EXPIRIES = 'fx-vol-surface-feed-expiries';
@@ -212,25 +213,21 @@ function pairOf(feed: Readonly<Record<string, unknown>>): string {
     return `${show(feed['base_currency_code'])}/${show(feed['quote_currency_code'])}`;
 }
 
-/**
- * A surface's source name: `vol.` and the pair under the synthetic mark when none is
- * given, so it never takes the name of the pair's spot feed, and the given name under
- * the mark when it lacks it.
- */
-export function volSource(given: string, base: string, quote: string): string {
-    const name = given.trim() === '' ? `vol.${base}${quote}`.toLowerCase() : given.trim();
-    return name.startsWith(SYNTHETIC_MARK) ? name : `${SYNTHETIC_MARK}${name}`;
-}
-
-export function completeVolFeed(write: Readonly<Record<string, unknown>>): Record<string, unknown> {
+export function completeVolFeed(
+    write: Readonly<Record<string, unknown>>,
+    source: string,
+): Record<string, unknown> {
     const { gamma: _gamma, ...stored } = write;
     return {
         ...stored,
         asset_class_code: show(write['asset_class_code']) === '' ? 'fx' : write['asset_class_code'],
-        source_name: volSource(
+        source_name: syntheticSource(
             show(write['source_name']),
-            show(write['base_currency_code']),
-            show(write['quote_currency_code']),
+            fxVolSurfaceName(
+                source,
+                show(write['base_currency_code']),
+                show(write['quote_currency_code']),
+            ),
         ),
         spot_oresmd_uri:
             show(write['spot_oresmd_uri']).trim() === ''
@@ -256,9 +253,8 @@ export interface Upstream {
 }
 
 /**
- * The feeds a surface reads: the spot its config names by URI and provider, and each
- * currency's discounting curve in the surface's own collection, which is a curve that is not a
- * projection curve and has no index tenor.
+ * The feeds a surface reads: the spot its config names by URI and provider, and the two
+ * discounting curves it names.
  */
 export function upstreamsOf(
     feed: Readonly<Record<string, unknown>>,
@@ -285,19 +281,17 @@ export function upstreamsOf(
                 Number(show(right['config_id']) === collection) -
                 Number(show(left['config_id']) === collection),
         )[0];
-    const curveUpstream = (role: 'baseCurve' | 'quoteCurve', currency: string): Upstream => ({
+    const curveUpstream = (
+        role: 'baseCurve' | 'quoteCurve',
+        currency: string,
+        name: string,
+    ): Upstream => ({
         role,
         currency,
         path: PATHS.irFeed,
         resource: 'ir-curve-feeds',
-        row: curves.find(
-            (row) =>
-                show(row['config_id']) === collection &&
-                show(row['currency_code']) === currency &&
-                show(row['role']) !== 'projection' &&
-                show(row['tenor']) === '',
-        ),
-        wants: currency,
+        row: curves.find((row) => show(row['source_name']) === name),
+        wants: name,
     });
     return [
         {
@@ -308,8 +302,12 @@ export function upstreamsOf(
             row: spot,
             wants: `${uri} from ${provider}`,
         },
-        curveUpstream('baseCurve', show(feed['base_currency_code'])),
-        curveUpstream('quoteCurve', show(feed['quote_currency_code'])),
+        curveUpstream('baseCurve', show(feed['base_currency_code']), show(feed['base_curve_name'])),
+        curveUpstream(
+            'quoteCurve',
+            show(feed['quote_currency_code']),
+            show(feed['quote_curve_name']),
+        ),
     ];
 }
 
@@ -444,6 +442,7 @@ function SurfacePanel({
 }): ReactNode {
     const { t } = useTranslation();
     const check = useVolFeedCheck();
+    const sourceOf = useSourceOf();
     const [editing, setEditing] = useState<(typeof SURFACE_CARDS)[number] | undefined>();
     const starts = editing?.name === 'start';
     return (
@@ -503,7 +502,7 @@ function SurfacePanel({
                     row={feed}
                     {...(starts ? { initial: { gamma: String(SSVI_GAMMA) } } : {})}
                     keep={keptBeside(editing.specs)}
-                    complete={completeVolFeed}
+                    complete={(write) => completeVolFeed(write, sourceOf(show(write['config_id'])))}
                     check={check}
                     onClose={() => setEditing(undefined)}
                 />
@@ -741,18 +740,21 @@ export const VOL_FEED_KIND: FeedKind = {
                             VOL_FEEDS,
                             [
                                 {
-                                    write: completeVolFeed({
-                                        ...Object.fromEntries(
-                                            keptBeside([]).map((field) => [
-                                                field,
-                                                feed[field] ?? null,
-                                            ]),
-                                        ),
-                                        arrival_mode: model,
-                                        branching_ratio: ratio,
-                                        decay,
-                                        sensitivity,
-                                    }),
+                                    write: completeVolFeed(
+                                        {
+                                            ...Object.fromEntries(
+                                                keptBeside([]).map((field) => [
+                                                    field,
+                                                    feed[field] ?? null,
+                                                ]),
+                                            ),
+                                            arrival_mode: model,
+                                            branching_ratio: ratio,
+                                            decay,
+                                            sensitivity,
+                                        },
+                                        '',
+                                    ),
                                     version: feed.version,
                                 },
                             ],

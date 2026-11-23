@@ -63,6 +63,7 @@
 
 -- Sessions and login
 \ir ./iam_auth_events_drop.sql
+\ir ./iam_agent_calls_drop.sql
 \ir ./iam_agent_token_issues_drop.sql
 \ir ./iam_run_token_issues_drop.sql
 \ir ./iam_session_samples_drop.sql

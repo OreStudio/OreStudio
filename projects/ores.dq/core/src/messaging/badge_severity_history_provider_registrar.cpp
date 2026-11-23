@@ -27,6 +27,7 @@
 #include "ores.dq.core/presentation/badge_severity_history_field_mapper.hpp"
 #include "ores.dq.core/service/badge_severity_service.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/acting_agents.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 
 namespace ores::dq::messaging {
@@ -38,8 +39,18 @@ void register_badge_severity_history_provider(ores::history::service::dispatch_r
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::badge_severity_service svc(scoped_ctx);
             auto versions = svc.get_severity_history(entity_id);
-            return ores::history::service::build_entity_history_versions(
+            auto history = ores::history::service::build_entity_history_versions(
                 versions, presentation::render_badge_severity_fields);
+            // The versions an LLM agent wrote carry the agent, read from the
+            // rows' own stamp.
+            if (!versions.empty())
+                ores::history::service::mark_acting_agents(scoped_ctx,
+                                                           {.table = "ores_dq_badge_severities_tbl",
+                                                            .key_column = "code",
+                                                            .key_is_uuid = false},
+                                                           versions.front().code,
+                                                           history);
+            return history;
         });
 }
 

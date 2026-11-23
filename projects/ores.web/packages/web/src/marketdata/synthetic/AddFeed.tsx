@@ -25,6 +25,7 @@ import { useTranslation } from '../../i18n/Provider.js';
 import { RecordDialog, show, useRecordPermissions } from '../../refdata/records.js';
 import { Button, Dialog } from '../../ui/Primitives.js';
 import { feedPath, type FeedKind } from './feedKind.js';
+import { useSourceOf } from './feedNames.js';
 import { FX_FEED_KIND } from './fxFeeds.js';
 import { IR_FEED_KIND } from './irFeeds.js';
 import { VOL_FEED_KIND } from './volFeeds.js';
@@ -52,6 +53,7 @@ function AddFeedForm({
     const { t } = useTranslation();
     const navigate = useNavigate();
     const check = kind.useCheck();
+    const sourceOf = useSourceOf();
     return (
         <RecordDialog
             title={t(`marketdata.${kind.words}.addTitle`)}
@@ -62,7 +64,7 @@ function AddFeedForm({
             initial={
                 collectionId === '' ? kind.initial : { ...kind.initial, config_id: collectionId }
             }
-            complete={kind.complete}
+            complete={(write) => kind.complete(write, sourceOf(show(write['config_id'])))}
             check={check}
             onClose={onClose}
             onSaved={(write) =>

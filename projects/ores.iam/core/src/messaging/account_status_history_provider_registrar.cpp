@@ -25,6 +25,7 @@
 #include "ores.iam.core/messaging/account_status_history_provider_registrar.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.history.api/service/version_builder.hpp"
+#include "ores.history.core/service/acting_agents.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.iam.core/presentation/account_status_history_field_mapper.hpp"
 #include "ores.iam.core/service/account_status_service.hpp"
@@ -38,8 +39,19 @@ void register_account_status_history_provider(ores::history::service::dispatch_r
         [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
             service::account_status_service svc(scoped_ctx);
             auto versions = svc.get_status_history(entity_id);
-            return ores::history::service::build_entity_history_versions(
+            auto history = ores::history::service::build_entity_history_versions(
                 versions, presentation::render_account_status_fields);
+            // The versions an LLM agent wrote carry the agent, read from the
+            // rows' own stamp.
+            if (!versions.empty())
+                ores::history::service::mark_acting_agents(
+                    scoped_ctx,
+                    {.table = "ores_iam_account_statuses_tbl",
+                     .key_column = "status",
+                     .key_is_uuid = false},
+                    versions.front().status,
+                    history);
+            return history;
         });
 }
 

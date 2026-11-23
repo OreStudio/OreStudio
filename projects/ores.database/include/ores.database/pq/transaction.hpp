@@ -248,7 +248,7 @@ private:
     void round_trip(std::span<const sent_statement> statements);
 
     connection& connection_;
-    std::array<param, 5> context_params_;
+    std::array<param, 6> context_params_;
     bool begun_ = false;
     bool done_ = false;
 };

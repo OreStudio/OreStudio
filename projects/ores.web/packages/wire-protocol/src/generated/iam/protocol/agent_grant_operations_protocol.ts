@@ -22,6 +22,7 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
+import type { AgentCall } from '../domain/agent_call.js';
 import type { AgentGrant } from '../domain/agent_grant.js';
 import type { AgentKey } from '../domain/agent_key.js';
 
@@ -187,6 +188,28 @@ export interface ListEveryAgentGrantResponse {
     keys: AgentKey[];
 }
 
+/**
+ * @brief Lists the calls the caller's own LLM agents made, newest first.
+ *
+ * A self read, like the caller's own grants: it needs
+ * iam::agent_grants:create and is refused to an agent.
+ */
+export interface ListOwnAgentActivityRequest {
+    grant_id: string;
+    offset: number;
+    limit: number;
+}
+
+/**
+ * @brief The caller's agents' calls: route, method, answer and duration, never
+ * a request or its answer.
+ */
+export interface ListOwnAgentActivityResponse {
+    success: boolean;
+    message: string;
+    calls: AgentCall[];
+}
+
 export const subjects = {
     create_agent_grant_request: 'iam.v1.agent_grants.put',
     create_agent_key_request: 'iam.v1.ops.create_agent_key',
@@ -195,6 +218,7 @@ export const subjects = {
     exchange_agent_key_request: 'iam.v1.ops.exchange_agent_key',
     list_own_agent_grants_request: 'iam.v1.ops.list_own_agent_grants',
     list_every_agent_grant_request: 'iam.v1.ops.list_every_agent_grant',
+    list_own_agent_activity_request: 'iam.v1.ops.list_own_agent_activity',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -209,4 +233,5 @@ export const requiresSession = {
     exchange_agent_key_request: true,
     list_own_agent_grants_request: true,
     list_every_agent_grant_request: true,
+    list_own_agent_activity_request: true,
 } as const;

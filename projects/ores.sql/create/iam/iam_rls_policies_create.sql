@@ -454,6 +454,21 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()::text
 );
 
+-- The agent call log, written by ores.http in the call's tenant, as the token
+-- issue log is written by IAM in the key's.
+alter table ores_iam_agent_calls_tbl enable row level security;
+
+drop policy if exists agent_calls_tenant_isolation_policy
+    on ores_iam_agent_calls_tbl;
+
+create policy agent_calls_tenant_isolation_policy on ores_iam_agent_calls_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()::text
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()::text
+);
+
 -- -----------------------------------------------------------------------------
 -- Seed profiles and their parts
 -- -----------------------------------------------------------------------------

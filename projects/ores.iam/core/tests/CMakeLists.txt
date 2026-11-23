@@ -52,6 +52,7 @@ target_link_libraries(${tests_target_name}
         ores.telemetry.core.lib
         ores.inbox.api.lib
         ores.inbox.core.lib
+        ores.history.core.lib
         ores.service.lib
         ores.utility.lib
         ores.testing.lib

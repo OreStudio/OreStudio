@@ -166,6 +166,12 @@ export function HistoryPanel({
                                             text={t('history.modifiedBy', { who: slot(0) })}
                                             names={[<PersonRef who={version.modifiedBy} />]}
                                         />
+                                        {(version.actingAgent ?? '') !== '' && (
+                                            <>
+                                                {' · '}
+                                                <Tag>{t('history.byAgent')}</Tag>
+                                            </>
+                                        )}
                                         {performedBy !== '' &&
                                             performedBy !== version.modifiedBy && (
                                                 <>

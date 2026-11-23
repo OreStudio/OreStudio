@@ -150,3 +150,26 @@ Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
+** =POST /api/v1/iam/ops/list_own_agent_activity=
+:PROPERTIES:
+:ID: 734DC30A-CDFB-5A27-93DD-B18A6910F22A
+:END:
+
+List own agent activity. It needs a session.
+
+It forwards to =iam.v1.ops.list_own_agent_activity=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/ops/list_own_agent_activity
+#+end_example
+
+#+name: agent_grant_operations-list-own-agent-activity
+#+begin_src hurl :tangle agent_grant_operations-list-own-agent-activity.hurl :exports none
+POST {{base_url}}/api/v1/iam/ops/list_own_agent_activity
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

@@ -602,6 +602,19 @@ export const en: SourceCatalogue = {
         },
     },
     agents: {
+        activity: {
+            title: 'What your agents did',
+            agent: 'Agent',
+            every: 'Every agent',
+            empty: 'Your agents have made no call.',
+            when: 'When',
+            call: 'Call',
+            answer: 'Answer',
+            took: 'Took',
+            ms: '{ms} ms',
+            link: 'Activity',
+            more: 'Show older calls',
+        },
         title: 'LLM agents',
         lead: 'An agent you name acts for you under one role, until the grant’s expiry or until you revoke it. Its calls are yours and are recorded as the agent’s.',
         empty: 'You have no active agent grant.',
@@ -2872,6 +2885,7 @@ export const en: SourceCatalogue = {
         searchedSoFar: 'Searched the first {shown} of {total}',
     },
     history: {
+        byAgent: 'made by an LLM agent',
         description: 'Every version of this record, newest first.',
         newer: 'Newer',
         older: 'Older',

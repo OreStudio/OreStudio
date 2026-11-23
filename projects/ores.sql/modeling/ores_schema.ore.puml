@@ -62,6 +62,7 @@ package "ore" #E0F2F1 {
         * position : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -95,6 +96,7 @@ package "ore" #E0F2F1 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -129,6 +131,7 @@ package "ore" #E0F2F1 {
         * bytes : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -171,6 +174,7 @@ package "ore" #E0F2F1 {
         * display_order : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -209,6 +213,7 @@ package "ore" #E0F2F1 {
         * value_set_code : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -239,6 +244,7 @@ package "ore" #E0F2F1 {
         * referenced_entity : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -273,6 +279,7 @@ package "ore" #E0F2F1 {
         * is_active : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -309,6 +316,7 @@ package "ore" #E0F2F1 {
           canonical_value : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -341,6 +349,7 @@ package "ore" #E0F2F1 {
         * is_ordered : boolean
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -384,6 +393,7 @@ package "ore" #E0F2F1 {
         * reason : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz
@@ -429,6 +439,7 @@ package "ore" #E0F2F1 {
           removed_in : text
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz

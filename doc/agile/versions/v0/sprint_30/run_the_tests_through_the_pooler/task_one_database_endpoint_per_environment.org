@@ -225,6 +225,10 @@ Standards and spec review of =origin/main...HEAD=, 2026-11-23.
 | 15 | Acceptance 2 could not be evidenced, because the workflows run on =main= only | task org | Accept | It now names the first run after the merge. |
 | 16 | The =role= to =roles= fix is outside this task | =compass_open_as.py= | Accept | =compass-tests= was red on main, so the gate could not pass without it. It keeps its own task's trailers. |
 | 17 | The task cited =.compass/checks/env_format.org= | task org | Accept | Corrected to =compass/checks/env_format.org=. |
+| 18 | Claude review of PR #5065: the help says an unstated flag keeps an existing =.env= value, but the evidence showed only fresh files | =env_init.py= | Accept | Proven on the pinned generator: a pooler-on file regenerated with no flag kept =1= and 25107; a pooler-off file kept =0= and 5432. |
+| 19 | Claude review: =describe()= prints an empty role slot for a person with neither field | =compass_open_as.py= | Accept | It prints "no role". |
+| 20 | Claude review: the continuation lines of one declaration test are indented to a different column | =test_env_init.py= | Accept | Aligned under the call. |
+| 21 | Claude review: the workflow comment repeats five times; it fits the house style, and macOS and Windows are to be confirmed after their first nightly run | =.github/workflows/= | No change | The repetition stays. The nightly check is in * Result. |
 
 * Result
 
@@ -247,3 +251,7 @@ derived the endpoint, so no pin bump and no format version followed. Still
 open, and owned by the sibling task, is a run-time check that a declared
 endpoint has a listener: a pooler that is declared and not started still shows
 up as a connection refusal instead of a message that names the fix.
+
+To confirm after the first nightly runs: the macOS and Windows jobs now say
+=--no-pooler= too, and their =.env= must show PostgreSQL's port for every
+service.

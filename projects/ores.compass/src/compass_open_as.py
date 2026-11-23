@@ -777,8 +777,9 @@ def launch(person, url, profile_dir, fill, headless=False, workspace=None,
 
 def describe(person):
     unit = person.get("business_unit_code") or "group"
+    roles = ", ".join(roles_of(person)) or "no role"
     return (f"{person['full_name']} ({person['job_title']}, "
-            f"{', '.join(roles_of(person))}, {unit}) as {principal(person)}")
+            f"{roles}, {unit}) as {principal(person)}")
 
 
 def run(argv, project_root=None, env_file=None) -> int:

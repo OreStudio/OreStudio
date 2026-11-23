@@ -19,9 +19,9 @@
  */
 #include "ore_example_conventions.hpp"
 #include "ores.synthetic.core/service/scripted_twins.hpp"
-#include "ores.trading.api/builders/scripted_twins.hpp"
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.synthetic.core/service/trade_population_service.hpp"
+#include "ores.trading.api/builders/scripted_twins.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include <boost/uuid/random_generator.hpp>

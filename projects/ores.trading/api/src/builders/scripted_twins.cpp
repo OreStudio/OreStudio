@@ -35,7 +35,6 @@ namespace ores::trading::builders {
 
 namespace {
 
-namespace tb = ores::trading::builders;
 using ores::trading::domain::instrument_batch;
 
 template <typename T>
@@ -201,7 +200,7 @@ std::optional<schedule_source> schedule_source_of(std::string_view source) {
                            .base = base};
 }
 
-using twin_event = std::variant<tb::scripted_schedule, tb::scripted_dates, tb::scripted_derived>;
+using twin_event = std::variant<scripted_schedule, scripted_dates, scripted_derived>;
 
 /**
  * @brief The schedule under the role, as its rules, its listed dates or, when
@@ -229,7 +228,7 @@ std::optional<twin_event> whole_schedule(const instrument_batch& batch,
                            role,
                            &ores::trading::domain::instrument_schedule::schedule_role);
     if (row.schedule_kind == "dates") {
-        tb::scripted_dates out{.calendar = row.calendar, .convention = row.convention};
+        scripted_dates out{.calendar = row.calendar, .convention = row.convention};
         for (const auto& date : batch.instrument_schedule_dates)
             if (date.schedule_role == role && date.schedule_sequence_number == row.sequence_number)
                 out.dates.push_back(date.schedule_date);
@@ -242,7 +241,7 @@ std::optional<twin_event> whole_schedule(const instrument_batch& batch,
     if (row.schedule_kind == "derived" && source.base) {
         if (!row.shift)
             throw refuse("states no shift");
-        return tb::scripted_derived{.base = std::string(*source.base),
+        return scripted_derived{.base = std::string(*source.base),
                                     .shift = *row.shift,
                                     .calendar = row.calendar,
                                     .convention = row.convention};
@@ -251,7 +250,7 @@ std::optional<twin_event> whole_schedule(const instrument_batch& batch,
         throw refuse("is " + row.schedule_kind + ", which a twin cannot read");
     if (!row.start_date || !row.end_date || !row.tenor)
         throw refuse("states no start, end or tenor");
-    return tb::scripted_schedule{.start = *row.start_date,
+    return scripted_schedule{.start = *row.start_date,
                                  .end = *row.end_date,
                                  .tenor = *row.tenor,
                                  .calendar = row.calendar,
@@ -264,11 +263,11 @@ std::optional<twin_event> whole_schedule(const instrument_batch& batch,
  * @brief The event a source derives from another input of the twin, as
  * <Input> shifted <period> on <calendar> <convention>.
  */
-std::optional<tb::scripted_derived> derived_of(std::string_view source) {
+std::optional<scripted_derived> derived_of(std::string_view source) {
     const auto words = parts_of(source, " ");
     if (words.size() != 6 || words[1] != "shifted" || words[3] != "on")
         return std::nullopt;
-    return tb::scripted_derived{.base = std::string(words[0]),
+    return scripted_derived{.base = std::string(words[0]),
                                 .shift = std::string(words[2]),
                                 .calendar = std::string(words[4]),
                                 .convention = std::string(words[5])};
@@ -362,11 +361,11 @@ std::chrono::year_month_day date_of(const std::string& text) {
  * turn, a part being a dates schedule or a source of date values. The listed
  * schedules must agree on their calendar and convention, which the event takes.
  */
-tb::scripted_dates dated_list(const instrument_batch& batch,
+scripted_dates dated_list(const instrument_batch& batch,
                               std::string_view trade_type_code,
                               std::string_view source) {
     // A list of date values alone states no calendar, so ORE takes its dates as listed.
-    tb::scripted_dates out;
+    scripted_dates out;
     bool adjusted = false;
     for (const auto part : parts_of(source, " and ")) {
         if (!is_event_source(part)) {
@@ -379,7 +378,7 @@ tb::scripted_dates dated_list(const instrument_batch& batch,
             continue;
         }
         auto event = event_of(batch, part);
-        auto* listed = event ? std::get_if<tb::scripted_dates>(&*event) : nullptr;
+        auto* listed = event ? std::get_if<scripted_dates>(&*event) : nullptr;
         if (!listed)
             throw scripted_twin_error("The twin recipe source '" + std::string(part) +
                                          "' states no listed dates, which an event list needs.");
@@ -447,7 +446,7 @@ scripted_form scripted_form_of(const instrument_batch& instruments,
     const auto native_type = std::string(trade_type_code);
     const auto script = std::string(recipe.front()->script_name);
     std::vector<ores::trading::domain::script_input> inputs;
-    std::vector<tb::scripted_variable> variables;
+    std::vector<scripted_variable> variables;
     int sequence = 0;
     for (const auto* row : recipe) {
         ores::trading::domain::script_input input;
@@ -458,7 +457,7 @@ scripted_form scripted_form_of(const instrument_batch& instruments,
         input.is_array = row->is_array;
         inputs.push_back(std::move(input));
 
-        tb::scripted_variable variable{.name = std::string(row->input_name),
+        scripted_variable variable{.name = std::string(row->input_name),
                                        .type = std::string(row->data_type),
                                        .value = std::string()};
         if (std::string_view(row->data_type) == "Event" &&
@@ -473,7 +472,7 @@ scripted_form scripted_form_of(const instrument_batch& instruments,
             auto event = event_of(instruments, row->source);
             // A derived event names its base by input name, which ORE resolves
             // only among the trade's other events.
-            if (const auto* derived = event ? std::get_if<tb::scripted_derived>(&*event) : nullptr;
+            if (const auto* derived = event ? std::get_if<scripted_derived>(&*event) : nullptr;
                 derived && std::ranges::none_of(recipe, [&](const auto* other) {
                     return other != row && other->input_name == derived->base &&
                            other->data_type == "Event";
@@ -505,7 +504,7 @@ scripted_form scripted_form_of(const instrument_batch& instruments,
         variables.push_back(std::move(variable));
     }
     auto built =
-        tb::scripted_trade_builder(
+        scripted_trade_builder(
             {.script_name = script, .inputs = std::move(inputs), .variables = std::move(variables)})
             .build();
     if (!built)

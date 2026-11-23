@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 86D8F5FF-AF46-4968-86F6-E43F51B17A33
+:END:
+#+title: Task: Make each vendor view a node an operator can stop and start
+#+description: The stop of a simulated source becomes a stop of any feed node, keyed by its scheme name, and a vendor view gains a stored stop and start of its own.
+#+type: task
+#+level: s1
+#+filetags: :model_the_synthetic_feed_dependency_graph:sprint_30:v0:
+#+owner: marco
+#+branch: feature/make-vendor-views-stoppable-nodes
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-23
+#+updated: 2026-11-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An operator stops one vendor's quotes of one latent surface, such as synthetic.ice.fx.fx_option.audusd, and the other vendors and the surface run on. The stop is stored, so a restart keeps it, and starting the view again restores its quotes. Sources and views share one stop table and one pair of verbs, keyed by the node's name.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-23                               |
+
+* Acceptance
+
+- The stopped simulated source table becomes a table of stopped feed nodes, keyed by node name, with the node's kind and provider; its history records who stopped and started what, and why.
+- One pair of verbs stops and starts a node by name; a source stop behaves as before, and a view stop halts that view's quotes only.
+- A stopped view stays stopped across a service restart, and its ids are not offered to the adapter while it is stopped.
+- The BFF, ores.http and the screens use the node verbs; the Provider tab's source strip works as before.
+- Live: stopping one view stops that vendor's quotes for that pair only; starting it restores them.
+
+* Plan
+
+One PR, in slices that each end in a check. It applies choice 2 of the
+[[id:2376A086-4C3C-4D61-92E5-29B122DB6A41][synthetic feed graph]] design: one stop table for any node, keyed by name.
+
+1. *The stop table.* The entity =stopped_simulated_source= becomes
+   =stopped_feed_node=: =node_name= (the key, a source name such as
+   =bloomberg-a= or a view name such as =synthetic.ice.fx.fx_option.audusd=),
+   =kind= (=source= or =view=, checked) and =provider_code=. The generated
+   layers, the permissions and the roles follow the rename. Check: codegen
+   clean, the SQL and codec tests pass.
+2. *The verbs.* =synthetic.v1.ops.stop_simulated_source= and
+   =start_simulated_source= become =stop_feed_node= and =start_feed_node=,
+   taking a =node_name=. The handler resolves the kind: a source the fleet
+   serves, else a view some latent surface's contributor quotes. The source
+   path is unchanged. The source list verb stays. The BFF, =ores.http= and the
+   web source strip move to the new verbs, and the old ones go. Check: the
+   handler tests cover both kinds and the refusals.
+3. *A view stop at run time.* The fleet keeps the stopped views, read from the
+   table at start. The offers leave out a stopped view's points, and the
+   runner re-applies its last demand on a view stop or start, so the view's
+   hold stops at once and resumes at once; the other vendors' views and the
+   surface run on. Check: a runner test that re-applying drops and restores a
+   withheld offer, and an offers test that a stopped view offers no point.
+4. *Proof.* Rebuild, recreate, start the services; stop
+   =synthetic.ice.fx.fx_option.audusd= and see ice-a stop its AUD/USD vol
+   points while bloomberg-a and tradeweb-a go on; restart the service and see
+   it stay stopped; start it and see the points return.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

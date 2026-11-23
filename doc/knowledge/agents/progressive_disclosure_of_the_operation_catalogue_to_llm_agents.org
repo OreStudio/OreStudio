@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:agents:mcp:catalogue:
 #+created: 2026-11-22
-#+updated: 2026-11-22
+#+updated: 2026-11-23
 
 This page states the target design. It does not describe what is built.
 
@@ -46,7 +46,11 @@ most and shows only what the person may call
 ([[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]]), and within it only what the agent's token holds: the grant's role, less the
 permissions no agent holds ([[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent for LLM agents]]). For a
 write, =call_operation= answers the approval request it raised, because the
-write is held ([[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]]). A client that searches tools itself may ask for the
+write is held ([[id:381D87BB-4E2D-47BA-8853-6132CF900305][Six-eyes approval of LLM agent writes]]). The lists can filter by a permission only
+where a route states the permission its service checks; until every route
+does, they filter by the grant's scope alone, reads only for a grant that only
+reads, and a call the person may not make is refused by the service that
+checks it. A client that searches tools itself may ask for the
 full catalogue through MCP's paginated =tools/list=, as an option.
 
 ** The hierarchy is declared

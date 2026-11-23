@@ -90,33 +90,10 @@ std::pair<std::regex, std::vector<std::string>> compile_pattern(const std::strin
 }
 
 /**
- * @brief The method as a caller of the API spells it, for an error message.
- */
-std::string_view method_name(domain::http_method method) {
-    switch (method) {
-        case domain::http_method::get:
-            return "GET";
-        case domain::http_method::post:
-            return "POST";
-        case domain::http_method::put:
-            return "PUT";
-        case domain::http_method::patch:
-            return "PATCH";
-        case domain::http_method::delete_:
-            return "DELETE";
-        case domain::http_method::head:
-            return "HEAD";
-        case domain::http_method::options:
-            return "OPTIONS";
-    }
-    return "UNKNOWN";
-}
-
-/**
  * @brief The failure a route with no stated authentication position names.
  */
 std::logic_error undeclared_auth(const domain::http_method method, const std::string& pattern) {
-    return std::logic_error("Route " + std::string(method_name(method)) + " " + pattern +
+    return std::logic_error("Route " + std::string(domain::method_name(method)) + " " + pattern +
                             " declares no authentication position; call auth_required() or "
                             "auth_optional() before build().");
 }
@@ -364,7 +341,7 @@ std::vector<std::string> router::uncatalogued() const {
     std::vector<std::string> out;
     std::unordered_map<std::string, std::string> first_with_tool;
     for (const auto& route : routes_) {
-        const auto name = std::string(method_name(route.method)) + " " + route.pattern;
+        const auto name = std::string(domain::method_name(route.method)) + " " + route.pattern;
         if (!route.catalogue.declared()) {
             out.push_back(name);
             continue;

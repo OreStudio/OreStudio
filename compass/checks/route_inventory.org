@@ -270,6 +270,7 @@ independent collections woven into one answer are a view.
 | one book's page | exact | GET /api/books/:id | bff | resource | trading | One book with the portfolio it sits in, the portfolio read by id so the page shows a name rather than a key; one collection with its key resolved is a resource and not a view. |
 | a portfolio's rights | exact | GET /api/books/portfolios/:id/rights | bff | resource | trading | The rights granted on one portfolio, with the tenant's accounts read beside them so each right names the account that holds it; one collection with its key resolved is a resource and not a view. |
 | the book and portfolio writes | regex | ^PUT /api/books/(books\vert{}portfolios)$ | bff | resource | trading | One book or one portfolio written against the version the screen read. |
+| the scripted and product booking routes | regex | ^(POST /api/trading/booking/(validate-script\vert{}scripted\vert{}product)\vert{}GET /api/trading/booking/(\{tradeId\}\vert{}:tradeId)/form)$ |  | resource | trading | A script validated against a trade's variables, a scripted trade and a product type booked through the trading service's operations, and the form a trade was booked in, which a screen reopens it in. |
 | the product schema routes | regex | ^GET /api/trading/products(/(\{code\}\vert{}:code))?$ |  | resource | trading | The products a screen can book and the description of one: its fields, the inputs and codes of the scripts its forms run, and its forms, answered by ores.trading from its own rows and its cache of ores.ore's parameters. |
 | the trade collection | regex | ^(GET\vert{}POST) /api/trades | bff | resource | trading | The trade collection: a page, one trade, one version of it, the booking write, the links a person records and the form's securities and identifier schemes. |
 | the trade link types | exact | GET /api/trade-link-types | bff | resource | trading | The link types a person can record between trades, a lookup the server holds. |
@@ -668,6 +669,10 @@ pair records the mapping and does not prove it.
 | GET | /api/trades/new | GET | /api/trades/new |
 | GET | /api/trading/products | GET | /api/trading/products |
 | GET | /api/trading/products/:code | GET | /api/trading/products/{code} |
+| POST | /api/trading/booking/validate-script | POST | /api/trading/booking/validate-script |
+| POST | /api/trading/booking/scripted | POST | /api/trading/booking/scripted |
+| POST | /api/trading/booking/product | POST | /api/trading/booking/product |
+| GET | /api/trading/booking/:tradeId/form | GET | /api/trading/booking/{tradeId}/form |
 | POST | /api/trades | POST | /api/trades |
 | POST | /api/trades/:id/links | POST | /api/trades/{id}/links |
 | GET | /api/trade-link-types | GET | /api/trade-link-types |

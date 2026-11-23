@@ -313,6 +313,11 @@ struct validate_script_response {
      */
     std::string message;
     /**
+     * @brief Why the validation did not run, as a caller branches on it: script_not_found,
+     * request_invalid or internal; empty when it ran.
+     */
+    std::string code;
+    /**
      * @brief Whether no finding is an error, so a booking on these variables would pass.
      */
     bool is_valid = false;
@@ -649,6 +654,7 @@ struct publish_script_response {
     return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &validate_script_response::success},
         ::ores::utility::codec::field{"message", &validate_script_response::message},
+        ::ores::utility::codec::field{"code", &validate_script_response::code},
         ::ores::utility::codec::field{"is_valid", &validate_script_response::is_valid},
         ::ores::utility::codec::field{"diagnostics", &validate_script_response::diagnostics},
     };

@@ -101,7 +101,7 @@ TEST_CASE("an_fx_fixing_is_the_pairs_spot_at_the_cut", index_fixing_feed_tags) {
                        .faults = {}},
             .item = "oresmd://fx/EUR?type=fixing&index=fx&source=WMR1000NYC&ccy=USD",
             .level_kind = market_member_kind::spot,
-            .level_code = "synthetic.test.eurusd",
+            .level_codes = {"synthetic.test.lseg.eurusd", "synthetic.test.eurusd"},
             .when = new_york_ten_cut,
             .history_days = 3,
             .run_seed = 42,

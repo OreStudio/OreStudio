@@ -27,6 +27,7 @@
 #include "ores.trading.api/domain/trade_id_type.hpp"
 #include "ores.trading.api/domain/trade_identifier.hpp"
 #include "ores.trading.api/domain/trade_state.hpp"
+#include "ores.trading.api/messaging/script_library_operation_protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <memory>
 #include <optional>
@@ -49,6 +50,22 @@ namespace ores::http::routes::trading {
  */
 class booking_routes {
 public:
+    /**
+     * @brief A script's findings as a screen reads them: each one's variant,
+     * severity, code, line and column, message, and the variable it is about.
+     */
+    static std::string
+    diagnostics_json(const std::vector<ores::trading::messaging::script_diagnostic>& found);
+
+    /**
+     * @brief The form a trade was booked in, as a screen reopens it.
+     */
+    static std::string form_json(const boost::uuids::uuid& trade_id,
+                                 const std::string& product_code,
+                                 const std::string& form,
+                                 const std::string& script_name,
+                                 std::optional<int> script_version);
+
     /**
      * @brief The acting party's open books, each as the form offers it: its id
      * and its name.

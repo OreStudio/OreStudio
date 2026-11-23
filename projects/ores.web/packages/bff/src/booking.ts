@@ -70,7 +70,7 @@ const bookingBodySchema = z.object({
  * here is a booking the server answers with "bad_request" and no reason. The
  * list is the one in `ores.trading.api/domain/instrument_batch.hpp`.
  */
-function emptyBatch(): InstrumentBatch {
+export function emptyBatch(): InstrumentBatch {
     return {
         balance_guaranteed_swap_instruments: [],
         balance_guaranteed_swap_tranche_notionals: [],
@@ -196,6 +196,72 @@ function mustNotExist(): { readonly kind: string; readonly version: null } {
     return { kind: 'must_not_exist', version: null };
 }
 
+/** The trade a booking writes: its anchor, its booking, and the activity that books it. */
+export interface TradeHeaderInput {
+    readonly partyId: string;
+    readonly counterpartyId: string;
+    readonly bookId: string;
+    readonly tradeDate: string;
+    readonly draftReasonCode?: string | undefined;
+    readonly tradeType: string;
+}
+
+/**
+ * The anchor and booking of a new trade, and the activity that books it.
+ *
+ * A draft is a deal the desk has captured and not concluded. It writes the same
+ * anchor and booking as a live trade; what differs is the activity, which states
+ * a transition that stops at draft, and the reason it waits on.
+ */
+export function tradeHeader(input: TradeHeaderInput) {
+    const tradeId = randomUUID();
+    const now = new Date().toISOString();
+    const asDraft = input.draftReasonCode !== undefined;
+    return {
+        anchor: {
+            version: 0,
+            tenant_id: statedByTheService,
+            id: tradeId,
+            party_id: input.partyId,
+            counterparty_id: input.counterpartyId,
+            trade_type: input.tradeType,
+            counterparty_scope: 'external',
+            booking_nature: 'actual',
+            entry_channel: 'manual',
+            origin: 'api',
+            origin_reference: '',
+            external_version: 0,
+            economic_digest: '',
+            draft_reason_code: input.draftReasonCode ?? '',
+            modified_by: '',
+            performed_by: '',
+            change_reason_code: bookingReason,
+            change_commentary: '',
+            recorded_at: now,
+        },
+        booking: {
+            version: 0,
+            tenant_id: statedByTheService,
+            trade_id: tradeId,
+            trade_activity_id: statedByTheService,
+            book_id: input.bookId,
+            netting_set_id: null,
+            counterparty_identifier_id: null,
+            netting_set_identifier_id: null,
+            trade_date: input.tradeDate,
+            execution_timestamp: now,
+            modified_by: '',
+            performed_by: '',
+            change_reason_code: bookingReason,
+            change_commentary: '',
+            recorded_at: now,
+        },
+        activity_type_code: asDraft ? draftCapture : newBooking,
+        draft_reason_code: input.draftReasonCode ?? '',
+        identifiers: [],
+    };
+}
+
 /**
  * Why a refused write was refused, in the status the screen acts on.
  *
@@ -203,7 +269,7 @@ function mustNotExist(): { readonly kind: string; readonly version: null } {
  * trade id already taken, an identifier the tenant does not know. Only a fault
  * in the asking is the server's, so only that answers 502.
  */
-function refusalOfBooking(result: z.infer<typeof resultSchema>): HttpFailure {
+export function refusalOfBooking(result: z.infer<typeof resultSchema>): HttpFailure {
     switch (result.outcome) {
         case 'denied':
             return notPermitted(result.message);
@@ -416,58 +482,19 @@ export function registerBookingRoutes(
             throw invalidRequest('A booking is made by a party, and this session works for none.');
         }
 
-        const tradeId = randomUUID();
-        const now = new Date().toISOString();
-        /*
-         * A draft is a deal the desk has captured and not concluded. It writes
-         * the same anchor and booking as a live trade; what differs is the
-         * activity, which states a transition that stops at draft, and the
-         * reason it waits on.
-         */
-        const asDraft = body.draftReasonCode !== undefined;
+        const header = tradeHeader({
+            partyId,
+            counterpartyId: body.counterpartyId,
+            bookId: body.bookId,
+            tradeDate: body.tradeDate,
+            draftReasonCode: body.draftReasonCode,
+            tradeType: 'Bond',
+        });
+        const tradeId = header.anchor.id;
         const acknowledgement = await session.client.callAuthenticated(
             operationsSubjects.book_trade_request,
             {
-                anchor: {
-                    version: 0,
-                    tenant_id: statedByTheService,
-                    id: tradeId,
-                    party_id: partyId,
-                    counterparty_id: body.counterpartyId,
-                    trade_type: 'Bond',
-                    counterparty_scope: 'external',
-                    booking_nature: 'actual',
-                    entry_channel: 'manual',
-                    origin: 'api',
-                    origin_reference: '',
-                    external_version: 0,
-                    economic_digest: '',
-                    draft_reason_code: body.draftReasonCode ?? '',
-                    modified_by: '',
-                    performed_by: '',
-                    change_reason_code: bookingReason,
-                    change_commentary: '',
-                    recorded_at: now,
-                },
-                booking: {
-                    version: 0,
-                    tenant_id: statedByTheService,
-                    trade_id: tradeId,
-                    trade_activity_id: statedByTheService,
-                    book_id: body.bookId,
-                    netting_set_id: null,
-                    counterparty_identifier_id: null,
-                    netting_set_identifier_id: null,
-                    trade_date: body.tradeDate,
-                    execution_timestamp: now,
-                    modified_by: '',
-                    performed_by: '',
-                    change_reason_code: bookingReason,
-                    change_commentary: '',
-                    recorded_at: now,
-                },
-                activity_type_code: asDraft ? draftCapture : newBooking,
-                draft_reason_code: body.draftReasonCode ?? '',
+                ...header,
                 identifiers: [],
                 instruments: emptyBatch(),
                 product_code: 'Bond',

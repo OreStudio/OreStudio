@@ -23,6 +23,7 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.http.api/mcp/catalogue_tools.hpp"
 #include "ores.http.api/mcp/endpoint.hpp"
 #include "ores.http.api/net/http_server.hpp"
 #include "ores.http.core/routes/change_reason_routes.hpp"
@@ -35,7 +36,6 @@
 #include "ores.http.core/stream/change_feed.hpp"
 #include "ores.http.core/stream/change_ticker.hpp"
 #include "ores.http.server/app/agent_writes.hpp"
-#include "ores.http.server/app/catalogue_tools.hpp"
 #include "ores.http.server/messaging/registrar.hpp"
 #include "ores.http/routes/analytics/analytics_routes.hpp"
 #include "ores.http/routes/assets/assets_routes.hpp"
@@ -250,26 +250,28 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
         http::routes::iam::agent_key_exchange::exchanger(service_nats, agent_keys));
     // An agent's write is held for its person, unless a policy exempts it,
     // and replayed when they approve it.
-    server.set_exchanged_write_holder(
-        ores::http::server::app::agent_writes::holder(ctx, service_nats));
+    const auto hold_agent_write = ores::http::server::app::agent_writes::holder(ctx, service_nats);
+    server.set_exchanged_write_holder(hold_agent_write);
     // Made after the server and the client its replays use, so it stops first.
     ores::http::server::app::agent_write_replays agent_replays(ctx, service_nats, server);
     // Every call an agent makes is logged for its person, reads as well as
     // writes, from the token's own claims: never the request or the answer.
-    server.set_exchanged_call_recorder([ctx](const http::domain::exchanged_call& call) {
-        iam::domain::agent_call row;
-        row.called_at = std::chrono::system_clock::now();
-        row.tenant_id = call.claims.tenant_id.value_or("");
-        row.party_id = call.claims.party_id.value_or("");
-        row.grant_id = call.claims.grant_id.value_or("");
-        row.session_id = call.claims.session_id.value_or("");
-        row.grantor_account_id = call.claims.subject;
-        row.method = call.method;
-        row.route = call.route;
-        row.status = call.status;
-        row.duration_ms = static_cast<int>(call.duration.count());
-        iam::repository::agent_call_log(ctx).record(std::move(row));
-    });
+    const http::domain::exchanged_call_recorder record_agent_call =
+        [ctx](const http::domain::exchanged_call& call) {
+            iam::domain::agent_call row;
+            row.called_at = std::chrono::system_clock::now();
+            row.tenant_id = call.claims.tenant_id.value_or("");
+            row.party_id = call.claims.party_id.value_or("");
+            row.grant_id = call.claims.grant_id.value_or("");
+            row.session_id = call.claims.session_id.value_or("");
+            row.grantor_account_id = call.claims.subject;
+            row.method = call.method;
+            row.route = call.route;
+            row.status = call.status;
+            row.duration_ms = static_cast<int>(call.duration.count());
+            iam::repository::agent_call_log(ctx).record(std::move(row));
+        };
+    server.set_exchanged_call_recorder(record_agent_call);
 
     /*
      * The door finds the verifier when a sign-in needs it. The runner installs the
@@ -330,9 +332,14 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     // An LLM agent reaches ORE's operations through MCP, with its own key.
     mcp::register_routes(
         std::make_shared<const mcp::endpoint>(
-            std::make_shared<const catalogue_tools>(),
+            std::make_shared<const mcp::catalogue_tools>(
+                std::make_shared<const mcp::operation_catalogue>(router->routes()),
+                mcp::catalogue_tools_options{.hold = hold_agent_write,
+                                             .record = record_agent_call}),
             mcp::endpoint_options{.server_version = std::string(service_version),
-                                  .instructions = "Walk ORE's operations from list_areas."}),
+                                  .instructions =
+                                      "Find an operation with find_operations, or walk them from "
+                                      "list_areas, then call it with call_operation."}),
         router,
         registry);
 

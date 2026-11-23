@@ -69,11 +69,14 @@ public:
 
     /**
      * @brief Calls a tool by name. Answers nothing when no tool has the name.
+     *
+     * The arguments are a view, taken by value, so the coroutine holds no
+     * reference to a value that dies before it resumes.
      */
     virtual boost::asio::awaitable<std::optional<tool_result>>
     call(const domain::http_request& caller,
          std::string_view name,
-         const ores::utility::codec::json_value& arguments) const = 0;
+         ores::utility::codec::json_value arguments) const = 0;
 };
 
 }

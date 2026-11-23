@@ -45,6 +45,8 @@ struct trade_population_run final {
      */
     std::uint32_t already_present = 0;
     std::vector<trade_population_outcome> outcomes;
+    /// What each trade type the config books did: the trades planned, or why none.
+    std::vector<domain::trade_type_outcome> type_outcomes;
 };
 
 /**

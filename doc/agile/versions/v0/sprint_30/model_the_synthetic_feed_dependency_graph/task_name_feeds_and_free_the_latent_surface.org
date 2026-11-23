@@ -8,7 +8,7 @@
 #+filetags: :synthetic:naming:graph:model_the_synthetic_feed_dependency_graph:sprint_30:v0:
 #+owner: marco
 #+branch: feature/name-feeds-and-free-the-latent-surface
-#+pr:
+#+pr: 5047
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -111,7 +111,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5047][#5047]] | [synthetic] Name feeds by the scheme and free the latent surface |
 
 * Review
 

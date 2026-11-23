@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generate-simulated-fixings-through-the-adapter
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ Implement A simulated fixing source is a publisher the simulator serves. Install
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
-| Now          | Not yet started.                       |
+| Now          | Plan written; step 1, a fixing in a notation. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Step 1.                                |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -41,9 +41,34 @@ Implement A simulated fixing source is a publisher the simulator serves. Install
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+A fixing reaches the store as an ordinary adapter tick: the market data service
+stores it as durable because its vendor id maps to a =type=fixing= address, and
+it stores it for each party routed to the source that sent it. So a simulated
+fixing needs a vendor id, a mapping, a route of the system party, and a
+generator that sends the tick.
+
+1. *Name a fixing in a notation.* Add =fixing_quote= to the vendor quote
+   descriptions: the fixing's oresmd address. A simulated fixing notation writes
+   its id as the ORE index name the ORE index codec writes, such as =USD-SOFR=
+   or =FX-WMR1000NYC-EUR-USD=, with the field =value=, and reads it back. One
+   provider per administrator of a simulated source uses it. Check: notation
+   round trip tests.
+2. *Install the simulated publishers.* For each administrator of a fixing source
+   whose fixings the run simulates, a provider, a publisher and a
+   =synthetic-local= source; a vendor instrument and a mapping for each fixing
+   item, written by =tools/vendor_catalogue=; a route of each tenant's system
+   party to the source. Check: a recreated database holds the rows, and the
+   party demand of the system party names the fixing items.
+3. *Generate the fixings.* A fixing generator kind that the simulator offers one
+   generator per fixing id. On start it sends the history the direct writer
+   wrote, from the same =derive_fixing_history=; then at each fixing time it
+   fixes the item from the run's market board: an IR index from the curve's
+   rate, an FX fixing from the pair's spot at the cut instant. Check: unit tests
+   of the history and of the FX value at the cut.
+4. *Remove the direct writer.* =fixing_history_writer= and the curve feed's
+   fixing plan go. Check: the synthetic service writes nothing to the store.
+5. *Prove it end to end.* A fresh acme_demo provision; the fixing gap query for
+   IR and FX under the system party.
 
 * Measurements
 

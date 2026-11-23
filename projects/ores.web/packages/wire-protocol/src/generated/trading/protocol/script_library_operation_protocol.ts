@@ -222,7 +222,7 @@ export interface ValidateScriptRequest {
      */
     script_name: string;
     /**
-     * @brief The version of the library script; 0 for its current version.
+     * @brief The version of the library script; 0 for its current version. A negative version names no script.
      */
     script_version: number;
     /**
@@ -240,7 +240,7 @@ export interface ValidateScriptRequest {
  */
 export interface ValidateScriptResponse {
     /**
-     * @brief Whether the validation ran.
+     * @brief Whether the validation ran. It does not run for a script that is not held, or that has no variant to parse; the message then says which, and is_valid is false.
      */
     success: boolean;
     /**

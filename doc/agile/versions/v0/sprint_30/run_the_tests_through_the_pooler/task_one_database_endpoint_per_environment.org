@@ -8,7 +8,7 @@
 #+filetags: :run_the_tests_through_the_pooler:sprint_30:v0:
 #+owner: marco
 #+branch: feature/give-the-environment-one-database-endpoint
-#+pr:
+#+pr: 5065
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-23
@@ -200,7 +200,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5065][#5065]] | [compass,ci] Give the environment one database endpoint |
 
 * Review
 

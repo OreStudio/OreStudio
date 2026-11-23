@@ -44,8 +44,8 @@ namespace ores::analytics::quant::domain {
  */
 using curve_point = math::fx_curve_point;
 
-/// What a member of the board holds: a currency's curve, or a pair's spot.
-enum class market_member_kind : std::uint8_t { curve, spot };
+/// What a member of the board holds: a currency's curve, a pair's spot, or an index's rate.
+enum class market_member_kind : std::uint8_t { curve, spot, index_rate };
 
 /**
  * @brief A member as a reader sees it.
@@ -64,7 +64,7 @@ struct market_member_view final {
     std::chrono::year_month_day spot_date{};
     /// A curve's dated discount factors, ascending by date; empty for a spot.
     std::span<const curve_point> points{};
-    /// A spot's level; zero for a curve.
+    /// A spot's level, or an index's rate for an index rate member; zero for a curve.
     double spot = 0.0;
 };
 
@@ -143,9 +143,18 @@ public:
     /**
      * @brief Publishes a pair's spot.
      *
-     * @throws std::invalid_argument if @p id is not a member, or is a curve member.
+     * @throws std::invalid_argument if @p id is not a member, or is not a spot member.
      */
     void publish_spot(member_id id, double level, std::chrono::system_clock::time_point at);
+
+    /**
+     * @brief Publishes an index's rate, such as the overnight rate a curve states for its index.
+     *
+     * The board holds it as a spot holds its level, so a reader takes it from the view's spot.
+     *
+     * @throws std::invalid_argument if @p id is not a member, or is not an index rate member.
+     */
+    void publish_rate(member_id id, double rate, std::chrono::system_clock::time_point at);
 
     /**
      * @brief The member's values now.

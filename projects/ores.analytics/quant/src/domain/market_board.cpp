@@ -90,10 +90,24 @@ void market_board::publish_spot(member_id id,
 
     auto& m = members_[id];
     if (m.kind != market_member_kind::spot)
-        throw std::invalid_argument(
-            std::format("Market board member {} holds a curve, not a spot", id));
+        throw std::invalid_argument(std::format("Market board member {} does not hold a spot", id));
 
     m.spot = level;
+    m.published_at = at;
+    m.published = true;
+}
+
+void market_board::publish_rate(member_id id,
+                                double rate,
+                                std::chrono::system_clock::time_point at) {
+    require_member(id);
+
+    auto& m = members_[id];
+    if (m.kind != market_member_kind::index_rate)
+        throw std::invalid_argument(
+            std::format("Market board member {} does not hold an index rate", id));
+
+    m.spot = rate;
     m.published_at = at;
     m.published = true;
 }

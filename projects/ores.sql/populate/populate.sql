@@ -317,6 +317,10 @@ select ores_utility_allow_version_replace_fn();
 \ir synthetic/synthetic_feeds_latent_populate.sql
 \ir marketdata/marketdata_vendor_volatility_instruments_populate.sql
 
+\echo ''
+\echo '--- Market Data: Simulated Fixings (read from the staged currency pairs) ---'
+\ir marketdata/marketdata_vendor_fixing_instruments_populate.sql
+
 -- =============================================================================
 -- FSM Layer (must precede Trading — activity types reference FSM transitions)
 -- =============================================================================

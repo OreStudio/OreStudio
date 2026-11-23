@@ -24,16 +24,25 @@
 #include "feed_kind_registry.hpp"
 #include "generator_runner.hpp"
 #include "ores.database/domain/context_fwd.hpp"
+#include "ores.marketdata.api/datum/market_index.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/domain/adapter_subjects.hpp"
 #include "ores.marketdata.core/vendor/provider_notation.hpp"
+#include "ores.marketdata.core/vendor/simulated_fixing_notation.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
+#include "ores.synthetic.api/feeds/fx_vol_surface_feed.hpp"
+#include "ores.synthetic.api/feeds/index_fixing_feed.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "shared_surfaces.hpp"
 #include <algorithm>
+#include <chrono>
+#include <expected>
 #include <functional>
+#include <map>
 #include <memory>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -46,6 +55,102 @@ namespace ores::synthetic::service {
  * it.
  */
 using node_halted_fn = std::function<bool(const std::string&)>;
+
+/// One pair's FX fixing: the source that fixes its default cut, and the cut's time and zone.
+struct fx_fixing_schedule final {
+    std::string source;
+    feed::fixing_time when;
+};
+
+/// What the simulated fixing publisher's offers need beyond the configs.
+struct fixing_offer_inputs final {
+    /// Each pair's FX fixing, by base then quote currency.
+    std::map<std::pair<std::string, std::string>, fx_fixing_schedule> fx;
+    /// The days the market already holds of an item up to a date.
+    std::function<std::expected<std::set<std::chrono::year_month_day>, std::string>(
+        const std::string& item, std::chrono::year_month_day to)>
+        held;
+};
+
+/**
+ * @brief The fixing generators the simulated fixing publisher offers its adapter.
+ *
+ * One for the index of each curve that states an index rate, which it takes from the curve's
+ * rate on the run's board, and one for each pair a spot config quotes and whose default cut
+ * names a fixing source, which it takes from the first such spot feed's level on the board at
+ * the cut. Each offer stands alone, and quotes the fixing's address in the simulated fixing
+ * notation.
+ */
+inline std::vector<generator_offer> fixing_offers(const std::vector<feed_start_target>& targets,
+                                                  const feed::feed_build_context& build,
+                                                  const std::string& adapter_id,
+                                                  const fixing_offer_inputs& inputs,
+                                                  std::shared_ptr<const feed::fault_state> faults) {
+    namespace vendor = ores::marketdata::vendor;
+    namespace datum = ores::marketdata::datum;
+    using namespace ores::synthetic::feed;
+
+    std::vector<generator_offer> out;
+    std::set<std::string> offered;
+    const auto offer = [&](std::string item,
+                           ores::analytics::quant::domain::market_member_kind kind,
+                           std::string level_code,
+                           fixing_time when) {
+        if (!offered.insert(item).second)
+            return;
+        const auto target = adapter_target_of(adapter_id,
+                                              vendor::simulated_fixings_provider,
+                                              vendor::index_fixing{.item = item},
+                                              faults);
+        if (!target)
+            return;
+        auto make = [&build, target = *target, item, kind, level_code, when, held = inputs.held] {
+            return std::shared_ptr<ores::marketdata::domain::i_feed>(
+                std::make_shared<index_fixing_feed>(
+                    build.nats,
+                    index_fixing_feed_input{.source_name = "synthetic.fixing." + item,
+                                            .target = target,
+                                            .item = item,
+                                            .level_kind = kind,
+                                            .level_code = level_code,
+                                            .when = when,
+                                            .run_seed = build.market.loop().run_seed(),
+                                            .held = held},
+                    build.market));
+        };
+        out.push_back(generator_offer{.id = target->id, .group = {}, .make = std::move(make)});
+    };
+
+    for (const auto& target : targets) {
+        const auto& candidate = target.row.candidate;
+        if (!target.startable() || !target.container_is_system)
+            continue;
+        if (candidate.fixing_item)
+            offer(*candidate.fixing_item,
+                  ores::analytics::quant::domain::market_member_kind::index_rate,
+                  *candidate.fixing_item,
+                  {});
+        if (candidate.fx_pair && target.row.kind->kind == fx_spot_feed_kind) {
+            const auto found = inputs.fx.find(*candidate.fx_pair);
+            if (found == inputs.fx.end())
+                continue;
+            auto index = datum::market_index::make(
+                datum::index_family::fx,
+                candidate.fx_pair->first,
+                {{"source", found->second.source}, {"ccy", candidate.fx_pair->second}});
+            if (!index)
+                continue;
+            auto item = datum::oresmd_uri_codec::write_index(*index);
+            if (!item)
+                continue;
+            offer(*item,
+                  ores::analytics::quant::domain::market_member_kind::spot,
+                  spot_member_code(candidate.source_name),
+                  found->second.when);
+        }
+    }
+    return out;
+}
 
 /**
  * @brief The generators the simulator offers an adapter, from the system collections it can see.
@@ -75,7 +180,8 @@ system_generator_offers(const feed_kind_registry& registry,
                         const std::string& provider_code,
                         std::shared_ptr<const feed::fault_state> faults = {},
                         shared_surfaces* surfaces = nullptr,
-                        const node_halted_fn& node_halted = {}) {
+                        const node_halted_fn& node_halted = {},
+                        const fixing_offer_inputs* fixings = nullptr) {
     namespace vendor = ores::marketdata::vendor;
     namespace msg = ores::marketdata::messaging;
     using namespace ores::synthetic::feed;
@@ -92,6 +198,9 @@ system_generator_offers(const feed_kind_registry& registry,
     std::ranges::sort(targets, [](const auto& a, const auto& b) {
         return a.row.candidate.feed_config_id < b.row.candidate.feed_config_id;
     });
+    if (provider_code == vendor::simulated_fixings_provider)
+        return fixings ? fixing_offers(targets, build, adapter_id, *fixings, faults) :
+                         std::vector<generator_offer>{};
     const feed::feed_adapter adapter_for_build{.id = adapter_id, .provider_code = provider_code};
     std::vector<generator_offer> out;
     for (const auto& target : targets) {

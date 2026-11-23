@@ -169,7 +169,8 @@ inline domain::trade_generation_scope trade_generation_scope_recipe() {
             .code = "NYMEX:NG", .unit = "MMBtu", .quotation_currency = "USD"}};
     scope.floating_index_codes = {"EUR-EURIBOR-6M", "EUR-EONIA", "EUR-ESTR", "USD-SOFR"};
     scope.inflation_index_codes = {"UKRPIX", "USCPIA", "BECPIHL"};
-    scope.currency_pairs = {{.base = "EUR", .quote = "USD"}, {.base = "GBP", .quote = "USD"}};
+    scope.currency_pairs = {{.base = "EUR", .quote = "USD", .fixing_source = "WMR1000NYC"},
+                            {.base = "GBP", .quote = "USD", .fixing_source = "WMR1000NYC"}};
     scope.credit_reference_entities = {"529900T8BM49AURSDO55", "5493001KJTIIGC8Y1R12"};
     scope.conventions = ore_example_conventions();
     scope.expected_market_data = ore_example_expected_market_data();

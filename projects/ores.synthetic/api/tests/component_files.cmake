@@ -48,6 +48,7 @@ set(files
     "feeds_fx_vol_surface_round_trip_tests.cpp"
     "feeds_fx_vol_surface_tick_tests.cpp"
     "feeds_generator_outputs_tests.cpp"
+    "feeds_index_fixing_feed_tests.cpp"
     "feeds_index_fixings_tests.cpp"
     "feeds_ir_curve_board_points_tests.cpp"
     "feeds_ir_curve_index_rate_tests.cpp"

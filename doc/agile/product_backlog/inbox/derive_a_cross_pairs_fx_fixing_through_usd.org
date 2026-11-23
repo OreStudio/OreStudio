@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 70A64EB5-221D-4977-B7F9-65D12C4E0A72
+:END:
+#+title: Derive a cross pair's FX fixing through USD
+#+description: A cross pair no spot feed quotes has no simulated FX fixing, so FX trades leave it out; the design page derives such a fixing from the two USD legs at the cut.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-23
+#+updated: 2026-11-23
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Fix a cross pair's FX fixing from its two USD legs at the cut: GBP/AUD at
+WMR1000NYC is GBP/USD over AUD/USD at the New York cut. Seed the cross's fixing
+id, offer a fixing generator that reads both legs' spots on the run's board, and
+let the FX draw take the cross back.
+
+* Why
+
+The simulator fixes a pair from the spot a spot config quotes, and no vendor
+collection quotes a cross such as GBP/AUD or AUD/CAD. On a fresh acme_demo
+provision on 2026-11-23, FX trades named five such crosses (AUD/CAD, AUD/CHF,
+GBP/AUD, GBP/CAD and GBP/NZD) whose fixing nothing published. The task Generate
+simulated fixings through the simulator adapter took those pairs out of the FX
+draw. The design page says a pair the cut source does not fix directly is
+derived through USD, which would let the draw keep them.
+
+* References
+
+- =projects/ores.synthetic/core/src/trading/trading_trade_population_writer.cpp=, the FX draw's filter.
+- =projects/ores.synthetic/service/src/simulator_offers.hpp=, =fixing_offers=.
+
+* See also
+
+- [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]]
+- [[id:A18D3933-9817-4885-BC5A-B343427651CE][Generate simulated fixings through the simulator adapter]]

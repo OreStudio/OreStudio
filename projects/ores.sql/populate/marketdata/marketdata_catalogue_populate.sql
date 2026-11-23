@@ -32,7 +32,9 @@
  *
  * Sources of the other providers are installed with their adapters. The simulated sources
  * bloomberg-a, lseg-a, ice-a and tradeweb-a are installed here, and the system party takes their
- * interest rate quotes so the ingest stores the ticks they publish.
+ * interest rate quotes so the ingest stores the ticks they publish. The simulated source
+ * simulated-fixings-a publishes the fixings the simulator states, and the system party takes them,
+ * so a fixing is stored where every party's export falls back to.
  *
  * This script is idempotent - uses INSERT ON CONFLICT DO NOTHING.
  */
@@ -67,7 +69,10 @@ values
      6, current_user, current_user, 'system.initial_load', 'Initial population of providers'),
     (ores_utility_system_tenant_id_fn(), 'latent', 0, 'Latent', 'system',
      'The source of the synthetic markets no vendor publishes, such as a latent volatility surface that every vendor quotes with noise of its own. A system provider: no tenant reads it.',
-     8, current_user, current_user, 'system.initial_load', 'Initial population of providers')
+     8, current_user, current_user, 'system.initial_load', 'Initial population of providers'),
+    (ores_utility_system_tenant_id_fn(), 'simulated-fixings', 0, 'Simulated fixings', 'reference',
+     'The fixings the simulator states for the indices and the FX cuts of the run, fixed from the run''s own market at each fixing time.',
+     9, current_user, current_user, 'system.initial_load', 'Initial population of providers')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
@@ -141,6 +146,10 @@ values
     ('615e89cb-6a9c-46fb-beac-5b6d9b47a8ec', ores_utility_system_tenant_id_fn(), 0,
      'composite-derived', 'composite', 'synthetic-local', 'real_time', '', true,
      'The values that the service computes from the inputs of a composite.',
+     current_user, current_user, 'system.initial_load', 'Initial population of feeds'),
+    ('51f0818b-7a6a-418c-bca0-5990a8f47a5b', ores_utility_system_tenant_id_fn(), 0,
+     'simulated-fixings-a', 'simulated-fixings', 'synthetic-local', 'real_time', '', true,
+     'The fixings that the simulator states from the run''s market and publishes as durable ticks.',
      current_user, current_user, 'system.initial_load', 'Initial population of feeds')
 on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -207,7 +216,10 @@ begin
          'The system party takes the simulated ICE LIBOR quotes'),
         ('db2ba623-9406-4c08-9a85-0b250f4dbbd2', ores_utility_system_tenant_id_fn(), 0, v_party,
          'tradeweb', true, true, false, current_user, current_user, 'system.initial_load',
-         'The system party takes the simulated Tradeweb EURIBOR and LIBOR quotes')
+         'The system party takes the simulated Tradeweb EURIBOR and LIBOR quotes'),
+        ('268060f5-b7a2-42bd-9b71-7fa98df61969', ores_utility_system_tenant_id_fn(), 0, v_party,
+         'simulated-fixings', true, true, false, current_user, current_user, 'system.initial_load',
+         'The system party takes the fixings the simulator states')
     on conflict do nothing;
 
     insert into ores_marketdata_routes_tbl (
@@ -221,7 +233,15 @@ begin
         ('876aa8cf-c78b-497e-a07d-b6884db37eb3', ores_utility_system_tenant_id_fn(), 0, v_party,
          'tradeweb', 'ir', '86ce767d-2280-432c-80f5-7950c01d3245',
          current_user, current_user, 'system.initial_load',
-         'The system party reads the simulated Tradeweb quotes through tradeweb-a')
+         'The system party reads the simulated Tradeweb quotes through tradeweb-a'),
+        ('00b2c37e-bc2a-4cf0-97b5-f06452686c62', ores_utility_system_tenant_id_fn(), 0, v_party,
+         'simulated-fixings', 'ir', '51f0818b-7a6a-418c-bca0-5990a8f47a5b',
+         current_user, current_user, 'system.initial_load',
+         'The system party reads the simulated interest rate fixings through simulated-fixings-a'),
+        ('739960ce-8a8b-4bd5-8d55-989b73aa77a8', ores_utility_system_tenant_id_fn(), 0, v_party,
+         'simulated-fixings', 'fx', '51f0818b-7a6a-418c-bca0-5990a8f47a5b',
+         current_user, current_user, 'system.initial_load',
+         'The system party reads the simulated FX fixings through simulated-fixings-a')
     on conflict do nothing;
 end $$;
 

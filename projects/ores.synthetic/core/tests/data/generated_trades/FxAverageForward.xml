@@ -20,7 +20,7 @@
       <ReferenceCurrency>EUR</ReferenceCurrency>
       <SettlementNotional>4509769.38</SettlementNotional>
       <SettlementCurrency>USD</SettlementCurrency>
-      <FXIndex>FX-TR20H-EUR-USD</FXIndex>
+      <FXIndex>FX-WMR1000NYC-EUR-USD</FXIndex>
     </FxAverageForwardData>
   </Trade>
   <Trade id="356d7f28-c93e-5c72-8752-26e0716d501f">
@@ -43,7 +43,7 @@
       <ReferenceCurrency>EUR</ReferenceCurrency>
       <SettlementNotional>10119679.52</SettlementNotional>
       <SettlementCurrency>USD</SettlementCurrency>
-      <FXIndex>FX-TR20H-EUR-USD</FXIndex>
+      <FXIndex>FX-WMR1000NYC-EUR-USD</FXIndex>
     </FxAverageForwardData>
   </Trade>
 </Portfolio>

@@ -93,9 +93,38 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Products of the catalogue given an element of the vendored schema | 119; 2 have none (CommodityPairwiseVarianceSwap, CommodityWindowBarrierOption) | =python3 projects/ores.sql/utility/extract_instrument_terms.py= | PR 1 |
+| Schema types and fields reachable from those elements | 441 types, 2929 fields; 330 fields described by the guide | =python3 projects/ores.sql/utility/extract_instrument_terms.py= | PR 1 |
+| Rows of the =ore.parameters= seed | 5602, from 2559 | =python3 projects/ores.sql/utility/generate_ore_parameters_dataset.py= | PR 1 |
+| Leaf rows if every product's paths were expanded instead | 11626 | a walk of =instrument_terms.json= from each product's element, before the substitution groups were read | PR 1 |
 
 * Notes
+
+** PR 1: the fields of the native products
+
+The structure comes from the vendored schemas under =external/ore/xsd=, not from
+the trade classes' =fromXML=. The schemas are the release that =ore_file_version=
+records (1.8.17.0), they state a field's type, whether it must be present and
+whether it repeats, and they are parsed by a standard library; a regex over
+=fromXML= would state less and break more often. The guide gives the words, as it
+does for the conventions and the curves.
+
+A row is a field of a schema type, not a leaf of a document. Expanding every
+product's paths gives 11626 leaf rows, because a type such as =legData= is read
+under many products; describing each type once gives 2929. The trade's data
+elements are fields of =trade=, so a product is read from =/trade/SwapData= down.
+A field whose value is a type names it through a value domain, =record:legData=
+or =list:legData=, whose storage kind is =record= or =list= and whose referenced
+entity is the type; those columns already existed and needed no change.
+
+A field the guide does not describe is still written, because a form needs every
+field; its text says the guide does not describe it, and the generator prints
+the count. The XSD reads three constructs that a naive walk misses: a choice
+(=swaptionData= offers two orders of the same fields, and a field is required
+only when every alternative requires it), an abstract element and its
+substitution group (=legDataType= stands for =FixedLegData= and the other legs),
+and a reference to a global element.
+
 
 ** What exists, and how it fits
 

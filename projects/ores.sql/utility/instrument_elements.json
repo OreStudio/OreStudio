@@ -1,0 +1,29 @@
+{
+  "description": "The element each trade type is read under, where it is not the type's name followed by Data, with the evidence. An element of null states that the vendored schema declares no element ORE reads the type under, and why; such a type has no native fields.",
+  "elements": {
+    "Autocallable_01": {
+      "element": "Autocallable01Data",
+      "evidence": "ORE's example portfolios state Autocallable_01 trades under Autocallable01Data"
+    },
+    "BondPosition": {
+      "element": "BondBasketData",
+      "evidence": "ORE 3d75a6908 OREData/ored/portfolio/bondposition.cpp reads the trade with checkNode(node, \"BondBasketData\")"
+    },
+    "CommodityPairwiseVarianceSwap": {
+      "element": null,
+      "evidence": "ORE has no trade builder for CommodityPairwiseVarianceSwap, as the trade type catalogue's unsupported types record; it is booked as a ScriptedTrade over the PairwiseVarianceSwap script"
+    },
+    "CommodityWindowBarrierOption": {
+      "element": null,
+      "evidence": "ORE 3d75a6908 OREData/ored/portfolio/windowbarrieroption.cpp reads tradeType() + \"Data\", CommodityWindowBarrierOptionData, which the vendored schema's oreTradeData group does not declare"
+    },
+    "PerformanceOption_01": {
+      "element": "PerformanceOption01Data",
+      "evidence": "ORE's example portfolios state PerformanceOption_01 trades under PerformanceOption01Data"
+    },
+    "SyntheticCDO": {
+      "element": "CdoData",
+      "evidence": "ORE's example portfolios state SyntheticCDO trades under CdoData"
+    }
+  }
+}

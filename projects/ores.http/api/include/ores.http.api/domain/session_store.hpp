@@ -98,6 +98,11 @@ using token_renewer = std::function<token_renewal(const std::string& token)>;
  *
  * Every method may be called from any thread.
  */
+/**
+ * @brief A fresh session identifier: 256 random bits, as hex.
+ */
+ORES_HTTP_API_EXPORT std::string mint_session_identifier();
+
 class ORES_HTTP_API_EXPORT session_store final {
 public:
     /// How a session's expiry is decided, and how the clock is read.

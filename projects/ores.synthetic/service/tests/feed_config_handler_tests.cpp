@@ -58,9 +58,9 @@
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
 #include "ores.synthetic.core/repository/fx_vol_contributor_repository.hpp"
-#include "ores.synthetic.core/repository/fx_vol_surface_feed_contributor_repository.hpp"
 #include "ores.synthetic.core/repository/fx_vol_surface_feed_expiry_repository.hpp"
 #include "ores.synthetic.core/repository/fx_vol_surface_feed_repository.hpp"
+#include "ores.synthetic.core/repository/fx_vol_view_repository.hpp"
 #include "ores.synthetic.core/repository/gmm_component_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_process_parameter_value_repository.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_repository.hpp"
@@ -450,7 +450,7 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
             repo::fx_vol_surface_feed_expiry_repository().write(party_ctx, expiry);
         }
 
-        dom::fx_vol_surface_feed_contributor link;
+        dom::fx_vol_view link;
         link.tenant_id = h.tenant_id();
         link.id = uuid();
         link.party_id = test_party;
@@ -461,7 +461,7 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
         link.change_reason_code = "system.test";
         link.change_commentary = "feed config test seed";
         link.recorded_at = now;
-        repo::fx_vol_surface_feed_contributor_repository().write(party_ctx, link);
+        repo::fx_vol_view_repository().write(party_ctx, link);
     }
 
     const auto make_ir = [&](const dom::market_data_generation_config& container,

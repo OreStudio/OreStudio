@@ -74,6 +74,7 @@ export const PATHS = {
     fxFeed: '/market-data/synthetic/fx',
     irFeed: '/market-data/synthetic/ir',
     volFeed: '/market-data/synthetic/vol',
+    volView: '/market-data/synthetic/view',
     volContributor: '/market-data/synthetic/vol-contributors',
     reporting: '/reporting',
     reports: '/reporting/reports',

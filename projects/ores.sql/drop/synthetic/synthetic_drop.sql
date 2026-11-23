@@ -43,10 +43,10 @@
 \ir ./synthetic_ir_curve_generation_configs_drop.sql
 \ir ./synthetic_variance_calibrations_notify_trigger_drop.sql
 \ir ./synthetic_variance_calibrations_drop.sql
-\ir ./synthetic_fx_vol_surface_feed_contributors_notify_trigger_drop.sql
+\ir ./synthetic_fx_vol_views_notify_trigger_drop.sql
 \ir ./synthetic_stopped_feed_nodes_notify_trigger_drop.sql
 \ir ./synthetic_stopped_feed_nodes_drop.sql
-\ir ./synthetic_fx_vol_surface_feed_contributors_drop.sql
+\ir ./synthetic_fx_vol_views_drop.sql
 \ir ./synthetic_fx_vol_surface_feed_expiries_notify_trigger_drop.sql
 \ir ./synthetic_fx_vol_surface_feed_expiries_drop.sql
 \ir ./synthetic_fx_vol_surface_feeds_notify_trigger_drop.sql

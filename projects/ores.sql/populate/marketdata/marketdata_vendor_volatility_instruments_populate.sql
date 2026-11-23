@@ -3705,7 +3705,7 @@ select distinct c.provider_code, f.base_currency_code, f.quote_currency_code, e.
 from ores_dq_fx_vol_surface_feeds_artefact_tbl f
 join ores_dq_fx_vol_surface_feed_expiries_artefact_tbl e
   on e.dataset_id = f.dataset_id and e.feed_id = f.id
-join ores_dq_fx_vol_surface_feed_contributors_artefact_tbl k
+join ores_dq_fx_vol_views_artefact_tbl k
   on k.dataset_id = f.dataset_id and k.feed_id = f.id
 join ores_dq_fx_vol_contributors_artefact_tbl c
   on c.dataset_id = k.dataset_id and c.id = k.contributor_id

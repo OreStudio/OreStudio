@@ -49,8 +49,8 @@
 \ir ./synthetic_fx_vol_surface_feeds_notify_trigger_create.sql
 \ir ./synthetic_fx_vol_surface_feed_expiries_create.sql
 \ir ./synthetic_fx_vol_surface_feed_expiries_notify_trigger_create.sql
-\ir ./synthetic_fx_vol_surface_feed_contributors_create.sql
-\ir ./synthetic_fx_vol_surface_feed_contributors_notify_trigger_create.sql
+\ir ./synthetic_fx_vol_views_create.sql
+\ir ./synthetic_fx_vol_views_notify_trigger_create.sql
 \ir ./synthetic_stopped_feed_nodes_create.sql
 \ir ./synthetic_stopped_feed_nodes_notify_trigger_create.sql
 

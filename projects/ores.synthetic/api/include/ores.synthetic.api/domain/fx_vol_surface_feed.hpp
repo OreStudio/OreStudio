@@ -49,7 +49,7 @@ namespace ores::synthetic::domain {
  * from them: spot with every forward variance, spot with the skew, and how strongly
  * neighbouring forward variances move together, which falls by that factor for each
  * segment between them. Every other shock is independent of spot. The surface is
- * quoted by the contributors fx_vol_surface_feed_contributor names.
+ * quoted by the vendors whose fx_vol_view rows name it.
  */
 struct fx_vol_surface_feed final {
     /**

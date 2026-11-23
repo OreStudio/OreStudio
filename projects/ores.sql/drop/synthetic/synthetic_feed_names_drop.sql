@@ -19,6 +19,7 @@
  */
 
 
+drop function if exists ores_synthetic_child_folder_fn;
 drop function if exists ores_synthetic_fx_option_view_name_fn;
 drop function if exists ores_synthetic_fx_vol_surface_name_fn;
 drop function if exists ores_synthetic_yield_curve_name_fn;

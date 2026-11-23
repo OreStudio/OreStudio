@@ -42,6 +42,7 @@ import { Button, Notice } from '../../ui/Primitives.js';
 import { ParameterTable } from '../calibration/VarianceCalibration.js';
 import { ArrivalsTab } from './ArrivalsPanel.js';
 import { FeedPage } from './FeedScreens.js';
+import { volViewPath } from './viewFeeds.js';
 import { feedPath, type FeedKind } from './feedKind.js';
 import { FeedStatus } from './feedRuns.js';
 import { fxVolSurfaceName, useSourceOf } from './feedNames.js';
@@ -49,7 +50,7 @@ import { syntheticSource } from './fxFeeds.js';
 
 export const VOL_FEEDS = 'fx-vol-surface-feeds';
 const EXPIRIES = 'fx-vol-surface-feed-expiries';
-const FEED_CONTRIBUTORS = 'fx-vol-surface-feed-contributors';
+const FEED_CONTRIBUTORS = 'fx-vol-views';
 const CONTRIBUTORS = 'fx-vol-contributors';
 
 const ARRIVAL_MODES = ['periodic', 'poisson', 'hawkes'] as const;
@@ -630,49 +631,54 @@ export function volContributorPath(id: string): string {
 }
 
 /**
- * The vendors that quote the surface, as a list. A row opens the contributor's own page, where
- * its noise profile is read and edited; the profile is shared by every surface it quotes.
+ * The vendors' views of a surface: each a feed of its vendor's collection, read here and
+ * managed on its own page, since a view belongs to its vendor and not to the surface.
  */
-function ContributorsPanel({
-    feed,
-    links,
-}: {
-    readonly feed: RecordRow;
-    readonly links: readonly RecordRow[];
-}): ReactNode {
+function ViewsPanel({ views }: { readonly views: readonly RecordRow[] }): ReactNode {
     const { t } = useTranslation();
     const contributors = useRecords(CONTRIBUTORS);
     const byId = new Map((contributors.data ?? []).map((row) => [show(row['id']), row]));
-    const of = (link: RecordRow): RecordRow | undefined => byId.get(show(link['contributor_id']));
-    const providerOf = (link: RecordRow): string => show(of(link)?.['provider_code']);
+    const of = (view: RecordRow): RecordRow | undefined => byId.get(show(view['contributor_id']));
+    const sorted = [...views].sort((a, b) =>
+        show(a['source_name']).localeCompare(show(b['source_name'])),
+    );
     return (
-        <PartsPanel
-            resource={FEED_CONTRIBUTORS}
-            entityType="ores.synthetic.fx_vol_surface_feed_contributor"
-            specs={LINK_FIELDS}
-            parentField="feed_id"
-            parent={show(feed['id'])}
-            rows={links}
-            error={undefined}
-            columns={[
-                {
-                    header: t('refdata.fields.provider_code'),
-                    cell: providerOf,
-                    mono: true,
-                },
-                { header: t('refdata.fields.noise'), cell: (link) => show(of(link)?.['noise']) },
-                { header: t('refdata.fields.bias'), cell: (link) => show(of(link)?.['bias']) },
-            ]}
-            sort={providerOf}
-            nameOf={providerOf}
-            pathOf={(link) => volContributorPath(show(link['contributor_id']))}
-            lead={t('marketdata.volFeeds.contributors.lead')}
-            titles={{
-                add: t('marketdata.volFeeds.contributors.add'),
-                one: t('marketdata.volFeeds.contributors.one'),
-                remove: t('marketdata.volFeeds.contributors.remove'),
-            }}
-        />
+        <div className="space-y-4">
+            <p className="text-sm text-ink-muted">{t('marketdata.volFeeds.views.lead')}</p>
+            {sorted.length === 0 ? (
+                <p className="text-sm text-ink-muted">{t('marketdata.feedGraph.nothing')}</p>
+            ) : (
+                <table className="w-full text-sm">
+                    <thead>
+                        <tr className="text-left text-ink-muted">
+                            <th className="py-1 pr-2">{t('marketdata.volFeeds.views.view')}</th>
+                            <th className="py-1 pr-2">{t('refdata.fields.provider_code')}</th>
+                            <th className="py-1 pr-2">{t('refdata.fields.noise')}</th>
+                            <th className="py-1">{t('refdata.fields.enabled')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {sorted.map((view) => (
+                            <tr key={show(view['id'])} className="border-t border-line">
+                                <td className="py-1 pr-2">
+                                    <Link
+                                        className="font-mono text-xs text-accent hover:text-accent-bright"
+                                        to={volViewPath(show(view['id']))}
+                                    >
+                                        {show(view['source_name'])}
+                                    </Link>
+                                </td>
+                                <td className="py-1 pr-2 font-mono">
+                                    {show(of(view)?.['provider_code'])}
+                                </td>
+                                <td className="py-1 pr-2">{show(of(view)?.['noise'])}</td>
+                                <td className="py-1">{show(view['enabled'])}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+        </div>
     );
 }
 
@@ -708,7 +714,7 @@ export const VOL_FEED_KIND: FeedKind = {
         },
         {
             resource: FEED_CONTRIBUTORS,
-            entity: 'ores.synthetic.fx_vol_surface_feed_contributor',
+            entity: 'ores.synthetic.fx_vol_view',
             specs: LINK_FIELDS,
             keep: ['id', 'feed_id'],
         },
@@ -725,8 +731,8 @@ export const VOL_FEED_KIND: FeedKind = {
             render: ({ feed, parts }) => <ExpiriesPanel feed={feed} expiries={parts[0] ?? []} />,
         },
         {
-            name: 'contributors',
-            render: ({ feed, parts }) => <ContributorsPanel feed={feed} links={parts[1] ?? []} />,
+            name: 'views',
+            render: ({ parts }) => <ViewsPanel views={parts[1] ?? []} />,
         },
         {
             name: 'arrivals',

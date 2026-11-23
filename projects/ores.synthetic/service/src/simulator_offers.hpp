@@ -219,13 +219,17 @@ system_generator_offers(const feed_kind_registry& registry,
         if (target.row.kind->kind == fx_vol_surface_feed_kind) {
             if (surfaces == nullptr)
                 continue;
-            for (const auto& [contributor, contributor_provider] :
-                 candidate.contributor_providers) {
-                if (contributor_provider != provider_code)
+            for (const auto& [contributor, view] : candidate.views) {
+                if (view.provider_code != provider_code || !view.enabled)
                     continue;
-                if (node_halted &&
-                    node_halted(fx_option_view_name(
-                        provider_code, candidate.fx_pair->first, candidate.fx_pair->second)))
+                // The view's own row names it; a view staged before it had a name takes the
+                // scheme's.
+                const auto view_name = view.source_name.empty() ?
+                                           fx_option_view_name(provider_code,
+                                                               candidate.fx_pair->first,
+                                                               candidate.fx_pair->second) :
+                                           view.source_name;
+                if (node_halted && node_halted(view_name))
                     continue;
                 fx_vol_surface_feed::point_targets point_targets;
                 std::vector<msg::vendor_id> ids;
@@ -246,7 +250,7 @@ system_generator_offers(const feed_kind_registry& registry,
                              contributor,
                              point_targets,
                              adapter_id,
-                             provider_code] {
+                             view_name] {
                     const auto feed_id = target.row.candidate.feed_config_id;
                     auto make_surface = [&registry, &build, target, adapter_for_build] {
                         auto outcome = target.row.candidate.build_input(adapter_for_build);
@@ -256,16 +260,13 @@ system_generator_offers(const feed_kind_registry& registry,
                             registry.factory().make(target.row.kind->kind, build, *outcome.input));
                     };
                     return std::shared_ptr<ores::marketdata::domain::i_feed>(
-                        std::make_shared<shared_surface_hold>(
-                            *surfaces,
-                            feed_id,
-                            adapter_id,
-                            contributor,
-                            fx_option_view_name(provider_code,
-                                                target.row.candidate.fx_pair->first,
-                                                target.row.candidate.fx_pair->second),
-                            point_targets,
-                            make_surface));
+                        std::make_shared<shared_surface_hold>(*surfaces,
+                                                              feed_id,
+                                                              adapter_id,
+                                                              contributor,
+                                                              view_name,
+                                                              point_targets,
+                                                              make_surface));
                 };
                 for (const auto& id : ids)
                     out.push_back(

@@ -120,12 +120,17 @@ inline feed_graph build_feed_graph(const std::vector<feed_start_target>& targets
         edge(c.source_name, c.inputs.quote_curve, "quote_curve");
         if (!c.fx_pair)
             continue;
-        for (const auto& [contributor, provider] : c.contributor_providers) {
-            const auto view = fx_option_view_name(provider, c.fx_pair->first, c.fx_pair->second);
-            out.nodes.push_back(
-                {.name = view, .kind = std::string(node_kind::view), .provider_code = provider});
-            edge(view, c.source_name, "surface");
-            source_edges(view, provider);
+        for (const auto& [contributor, view] : c.views) {
+            const auto name =
+                view.source_name.empty() ?
+                    fx_option_view_name(view.provider_code, c.fx_pair->first, c.fx_pair->second) :
+                    view.source_name;
+            out.nodes.push_back({.name = name,
+                                 .kind = std::string(node_kind::view),
+                                 .provider_code = view.provider_code,
+                                 .feed_config_id = view.view_id});
+            edge(name, c.source_name, "surface");
+            source_edges(name, view.provider_code);
         }
     }
     std::ranges::sort(out.nodes, {}, &msg::feed_graph_node::name);

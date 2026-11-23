@@ -4578,6 +4578,7 @@ export const en: SourceCatalogue = {
                 surfaces: 'Surfaces',
                 graph: 'Graph',
                 messages: 'Messages',
+                views: 'Views',
             },
         },
         fields: {
@@ -7231,6 +7232,23 @@ export const en: SourceCatalogue = {
             noMessages: 'No messages over the last day.',
             latestOnly: 'Showing the latest {count} messages.',
         },
+        volViews: {
+            addTitle: 'New vendor view',
+            held: "Runs while its vendor's simulated source holds the latent surface it quotes.",
+            removeWarning:
+                'Its vendor stops quoting this surface. The surface and the other vendors run on.',
+            engine: 'Noise over a latent surface',
+            lead: "{vendor}'s quotes of the latent {pair} volatility surface: the surface, which no vendor publishes as its own, with {vendor}'s noise over it.",
+            surface: 'The latent surface it quotes',
+            noise: 'The noise it applies',
+            noiseOf: "{vendor}'s noise profile",
+            noiseShared:
+                'One profile for each vendor, shared by every pair the vendor quotes: change it there, and every view of the vendor follows.',
+            help: {
+                feed_id: 'The latent surface the view quotes.',
+                contributor_id: "The vendor's noise profile the view applies.",
+            },
+        },
         volFeeds: {
             add: 'New vol surface',
             addTitle: 'New vol surface',
@@ -7295,6 +7313,10 @@ export const en: SourceCatalogue = {
                 add: 'Add an expiry',
                 one: 'Expiry',
                 remove: 'Delete the expiry',
+            },
+            views: {
+                lead: "Each vendor's view of this surface: a feed of the vendor's own collection, the surface with the vendor's noise over it. Open a view to stop, start or change it.",
+                view: 'View',
             },
             contributors: {
                 title: 'Vol contributors',

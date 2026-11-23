@@ -183,7 +183,8 @@ private:
     /// The table of each kind of feed, which every count of a folder's feeds reads.
     static constexpr std::array feed_tables{"ores_synthetic_fx_spot_generation_configs_tbl",
                                             "ores_synthetic_ir_curve_generation_configs_tbl",
-                                            "ores_synthetic_fx_vol_surface_feeds_tbl"};
+                                            "ores_synthetic_fx_vol_surface_feeds_tbl",
+                                            "ores_synthetic_fx_vol_views_tbl"};
 
     /**
      * A page of the feeds the filter matches, in label order, and how many match in

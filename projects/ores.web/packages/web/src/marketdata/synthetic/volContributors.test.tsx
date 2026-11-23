@@ -92,12 +92,12 @@ function render(path: string): string {
         ['registry', 'synthetic'],
         [
             resource('fx-vol-contributors', 'fx_vol_contributor'),
-            resource('fx-vol-surface-feed-contributors', 'fx_vol_surface_feed_contributor'),
+            resource('fx-vol-views', 'fx_vol_view'),
             resource('fx-vol-surface-feeds', 'fx_vol_surface_feed'),
         ],
     );
     client.setQueryData(['records', 'fx-vol-contributors', 'key', BLOOMBERG], contributor);
-    client.setQueryData(['records', 'fx-vol-surface-feed-contributors'], links);
+    client.setQueryData(['records', 'fx-vol-views'], links);
     client.setQueryData(['records', 'fx-vol-surface-feeds'], surfaces);
     client.setQueryData(['my-access'], access);
     return renderToStaticMarkup(

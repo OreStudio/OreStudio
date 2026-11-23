@@ -39,12 +39,12 @@
 #include "ores.synthetic.core/messaging/fx_spot_generation_config_registrar.hpp"
 #include "ores.synthetic.core/messaging/fx_vol_contributor_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/fx_vol_contributor_registrar.hpp"
-#include "ores.synthetic.core/messaging/fx_vol_surface_feed_contributor_history_provider_registrar.hpp"
-#include "ores.synthetic.core/messaging/fx_vol_surface_feed_contributor_registrar.hpp"
 #include "ores.synthetic.core/messaging/fx_vol_surface_feed_expiry_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/fx_vol_surface_feed_expiry_registrar.hpp"
 #include "ores.synthetic.core/messaging/fx_vol_surface_feed_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/fx_vol_surface_feed_registrar.hpp"
+#include "ores.synthetic.core/messaging/fx_vol_view_history_provider_registrar.hpp"
+#include "ores.synthetic.core/messaging/fx_vol_view_registrar.hpp"
 #include "ores.synthetic.core/messaging/gmm_component_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/gmm_component_registrar.hpp"
 #include "ores.synthetic.core/messaging/ir_curve_generation_config_history_provider_registrar.hpp"
@@ -171,7 +171,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
     }
     {
-        auto s = register_fx_vol_surface_feed_contributor_handlers(nats, ctx, verifier);
+        auto s = register_fx_vol_view_handlers(nats, ctx, verifier);
         subs.insert(
             subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
     }
@@ -306,7 +306,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_fx_vol_contributor_history_provider(hist_registry);
         register_fx_vol_surface_feed_history_provider(hist_registry);
         register_fx_vol_surface_feed_expiry_history_provider(hist_registry);
-        register_fx_vol_surface_feed_contributor_history_provider(hist_registry);
+        register_fx_vol_view_history_provider(hist_registry);
         register_stopped_feed_node_history_provider(hist_registry);
         register_yield_curve_process_parameter_definition_history_provider(hist_registry);
         register_yield_curve_process_type_history_provider(hist_registry);

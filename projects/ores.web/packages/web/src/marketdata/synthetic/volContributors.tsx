@@ -43,7 +43,7 @@ import { useSyntheticStep } from './syntheticTrail.js';
 import { NOISE_FIELDS } from './volFeeds.js';
 
 const CONTRIBUTORS = 'fx-vol-contributors';
-const LINKS = 'fx-vol-surface-feed-contributors';
+const LINKS = 'fx-vol-views';
 const SURFACES = 'fx-vol-surface-feeds';
 const ENTITY = 'ores.synthetic.fx_vol_contributor';
 

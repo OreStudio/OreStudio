@@ -4642,6 +4642,7 @@ const fr: SourceCatalogue = {
                 surfaces: 'Surfaces',
                 graph: 'Graphe',
                 messages: 'Messages',
+                views: 'Vues',
             },
         },
         fields: {
@@ -7340,6 +7341,23 @@ const fr: SourceCatalogue = {
             noMessages: 'Aucun message sur le dernier jour.',
             latestOnly: 'Affichage des {count} messages les plus récents.',
         },
+        volViews: {
+            addTitle: 'Nouvelle vue de fournisseur',
+            held: 'Tourne tant que la source simulée de son fournisseur détient la surface latente qu’elle cote.',
+            removeWarning:
+                'Son fournisseur cesse de coter cette surface. La surface et les autres fournisseurs continuent.',
+            engine: 'Bruit sur une surface latente',
+            lead: 'Les cotations de {vendor} de la surface de volatilité latente {pair} : la surface, qu’aucun fournisseur ne publie comme la sienne, avec le bruit de {vendor} par-dessus.',
+            surface: 'La surface latente qu’elle cote',
+            noise: 'Le bruit qu’elle applique',
+            noiseOf: 'Le profil de bruit de {vendor}',
+            noiseShared:
+                'Un profil par fournisseur, partagé par toutes les paires qu’il cote : modifiez-le là, et toutes les vues du fournisseur suivent.',
+            help: {
+                feed_id: 'La surface latente que la vue cote.',
+                contributor_id: 'Le profil de bruit du fournisseur que la vue applique.',
+            },
+        },
         volFeeds: {
             add: 'Nouvelle surface de volatilité',
             addTitle: 'Nouvelle surface de volatilité',
@@ -7407,6 +7425,10 @@ const fr: SourceCatalogue = {
                 add: 'Ajouter une échéance',
                 one: 'Échéance',
                 remove: "Supprimer l'échéance",
+            },
+            views: {
+                lead: 'La vue de chaque fournisseur sur cette surface : un flux de la collection du fournisseur, la surface avec le bruit du fournisseur par-dessus. Ouvrez une vue pour l’arrêter, la démarrer ou la modifier.',
+                view: 'Vue',
             },
             contributors: {
                 title: 'Contributeurs de volatilité',

@@ -71,9 +71,9 @@ import {
 } from '@ores/wire-protocol/generated/synthetic/protocol/fx_vol_contributor_protocol';
 import {
     subjects as volFeedContributorSubjects,
-    type FxVolSurfaceFeedContributorWrite,
-    type FxVolSurfaceFeedContributorsFilter,
-} from '@ores/wire-protocol/generated/synthetic/protocol/fx_vol_surface_feed_contributor_protocol';
+    type FxVolViewWrite,
+    type FxVolViewsFilter,
+} from '@ores/wire-protocol/generated/synthetic/protocol/fx_vol_view_protocol';
 import { subjects as tenorSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_protocol';
 import { subjects as instrumentCodeSubjects } from '@ores/wire-protocol/generated/refdata/protocol/instrument_code_protocol';
 import { subjects as paymentFrequencySubjects } from '@ores/wire-protocol/generated/refdata/protocol/payment_frequency_protocol';
@@ -617,32 +617,36 @@ const SYNTHETIC_RECORDS: readonly SyntheticResource[] = [
         }) satisfies z.ZodType<FxVolContributorWrite>,
     },
     {
-        key: 'fx-vol-surface-feed-contributors',
+        key: 'fx-vol-views',
         systemOwned: true,
-        entityType: 'ores.synthetic.fx_vol_surface_feed_contributor',
+        entityType: 'ores.synthetic.fx_vol_view',
         keyField: 'id',
         oneOf: 'id_one_of',
-        rows: 'fx_vol_surface_feed_contributors',
+        rows: 'fx_vol_views',
         filter: {
             feed_id: null,
             contributor_id: null,
             id_one_of: null,
             feed_id_one_of: null,
             contributor_id_one_of: null,
-        } satisfies FxVolSurfaceFeedContributorsFilter,
+        } satisfies FxVolViewsFilter,
         parentField: 'feed_id',
         subjects: {
-            list: volFeedContributorSubjects.list_fx_vol_surface_feed_contributors_request,
-            putMany: volFeedContributorSubjects.put_many_fx_vol_surface_feed_contributors_request,
-            remove: volFeedContributorSubjects.delete_fx_vol_surface_feed_contributor_request,
-            removeMany:
-                volFeedContributorSubjects.delete_many_fx_vol_surface_feed_contributors_request,
+            list: volFeedContributorSubjects.list_fx_vol_views_request,
+            putMany: volFeedContributorSubjects.put_many_fx_vol_views_request,
+            remove: volFeedContributorSubjects.delete_fx_vol_view_request,
+            removeMany: volFeedContributorSubjects.delete_many_fx_vol_views_request,
         },
         writes: z.strictObject({
             id: idSchema,
             feed_id: idSchema,
             contributor_id: idSchema,
-        }) satisfies z.ZodType<FxVolSurfaceFeedContributorWrite>,
+            config_id: idSchema,
+            folder_id: idSchema.nullable(),
+            source_name: z.string().trim().startsWith('synthetic.').max(255),
+            enabled: z.boolean(),
+            auto_start: z.boolean(),
+        }) satisfies z.ZodType<FxVolViewWrite>,
     },
     {
         key: 'process-types',

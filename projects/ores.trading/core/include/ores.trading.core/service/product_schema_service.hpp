@@ -64,9 +64,8 @@ using instrument_fields =
  * script as a script-only product. A product with neither an element nor a
  * scripted form is refused, naming what it lacks.
  */
-ORES_TRADING_CORE_EXPORT messaging::describe_product_response
-describe_product(const std::string& code, const product_catalogue& catalogue,
-                 const instrument_fields& fields);
+ORES_TRADING_CORE_EXPORT messaging::describe_product_response describe_product(
+    const std::string& code, const product_catalogue& catalogue, const instrument_fields& fields);
 
 /**
  * @brief Every product type in display order, then every library script that

@@ -73,13 +73,13 @@ TEST_CASE("a description names its fields, inputs, codes and forms in the BFF's 
 
     CHECK(text.starts_with(
         R"({"product":{"code":"Swap","name":"Swap","construction":"native"},"element":"SwapData",)"));
-    CHECK(text.find(R"("value_domain":"record:swapData","is_required":true)") !=
-          std::string::npos);
+    CHECK(text.find(R"("value_domain":"record:swapData","is_required":true)") != std::string::npos);
     CHECK(text.find(R"("inputs":[{"script_name":"SwapScript","name":"PutCall","data_type":)"
                     R"("Number","is_array":false,"value_rule":"","description":""}])") !=
           std::string::npos);
     CHECK(text.find(R"("codes":[{"script_name":"SwapScript","input_name":"PutCall","code":-1,)"
                     R"("label":"put"}])") != std::string::npos);
-    CHECK(text.ends_with(R"("forms":[{"kind":"native","script_name":"","product_tag":""},)"
-                         R"({"kind":"scripted","script_name":"SwapScript","product_tag":"Tag"}]})"));
+    CHECK(
+        text.ends_with(R"("forms":[{"kind":"native","script_name":"","product_tag":""},)"
+                       R"({"kind":"scripted","script_name":"SwapScript","product_tag":"Tag"}]})"));
 }

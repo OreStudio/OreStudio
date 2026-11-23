@@ -220,11 +220,11 @@ void ore_schema_zip::register_routes(
                     if (code.empty() || version.empty())
                         rr::invalid(std::string(no_schema_named));
 
-                    const auto catalogue = forwarding::forward_all(
-                        req,
-                        session,
-                        ore_messaging::list_ore_files_request{},
-                        &ore_messaging::list_ore_files_response::files);
+                    const auto catalogue =
+                        forwarding::forward_all(req,
+                                                session,
+                                                ore_messaging::list_ore_files_request{},
+                                                &ore_messaging::list_ore_files_response::files);
                     std::map<std::string, std::string> name_of;
                     const ores::ore::domain::ore_file* schema = nullptr;
                     for (const auto& file : catalogue) {

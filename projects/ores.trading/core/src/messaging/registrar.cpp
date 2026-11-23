@@ -19,6 +19,8 @@
  */
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.ore.client/service/cache/ore_parameter_cache.hpp"
+#include "ores.ore.client/service/cache/ore_parameter_cache_registrar.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.trading.api/messaging/blotter_protocol.hpp"
 #include "ores.trading.api/messaging/publish_operation_protocol.hpp"
@@ -110,6 +112,7 @@
 #include "ores.trading.core/messaging/performance_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/price_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/price_type_registrar.hpp"
+#include "ores.trading.core/messaging/product_schema_handler.hpp"
 #include "ores.trading.core/messaging/product_type_asset_class_registrar.hpp"
 #include "ores.trading.core/messaging/product_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/publish_from_dq_handler.hpp"
@@ -122,8 +125,8 @@
 #include "ores.trading.core/messaging/script_calibration_registrar.hpp"
 #include "ores.trading.core/messaging/script_calibration_strike_registrar.hpp"
 #include "ores.trading.core/messaging/script_coarsening_registrar.hpp"
-#include "ores.trading.core/messaging/script_input_registrar.hpp"
 #include "ores.trading.core/messaging/script_input_code_registrar.hpp"
+#include "ores.trading.core/messaging/script_input_registrar.hpp"
 #include "ores.trading.core/messaging/script_registrar.hpp"
 #include "ores.trading.core/messaging/script_result_registrar.hpp"
 #include "ores.trading.core/messaging/script_twin_input_registrar.hpp"
@@ -164,12 +167,6 @@
 #include "ores.trading.core/messaging/trade_link_registrar.hpp"
 #include "ores.trading.core/messaging/trade_link_type_registrar.hpp"
 #include "ores.trading.core/messaging/trade_operations_handler.hpp"
-#include "ores.trading.core/messaging/product_schema_handler.hpp"
-#include <atomic>
-#include <stdexcept>
-#include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.ore.client/service/cache/ore_parameter_cache.hpp"
-#include "ores.ore.client/service/cache/ore_parameter_cache_registrar.hpp"
 #include "ores.trading.core/messaging/trade_party_role_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_party_role_registrar.hpp"
 #include "ores.trading.core/messaging/trade_portfolio_history_provider_registrar.hpp"
@@ -179,7 +176,10 @@
 #include "ores.trading.core/messaging/trade_state_registrar.hpp"
 #include "ores.trading.core/messaging/trade_summary_registrar.hpp"
 #include "ores.trading.core/service/bus_book_rules.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include <atomic>
 #include <memory>
+#include <stdexcept>
 
 namespace ores::trading::messaging {
 
@@ -308,7 +308,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         // cache fed by their events, read with the service's own token, rather
         // than reading ores.ore's table. The cache is loaded on first use, so
         // the service starts whether or not the ore service is up.
-        auto ore_parameters = std::make_shared<ores::ore::service::cache::ore_parameter_cache>(nats);
+        auto ore_parameters =
+            std::make_shared<ores::ore::service::cache::ore_parameter_cache>(nats);
         ore_parameters->set_token_provider(
             [&svc_nats](const std::string&, bool) { return svc_nats.bearer_token(); });
         for (auto& sub : ores::ore::service::cache::warm_and_subscribe_ore_parameter_cache(
@@ -322,7 +323,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
                     if (const auto error = ore_parameters->load(system); !error.empty())
                         throw std::runtime_error(
                             "The instrument fields could not be read from the ore service "
-                            "into the trading service's cache: " + error);
+                            "into the trading service's cache: " +
+                            error);
                     *loaded = true;
                 }
                 return ore_parameters->instrument_fields(system);

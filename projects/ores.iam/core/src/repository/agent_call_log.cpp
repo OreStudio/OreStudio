@@ -57,7 +57,9 @@ std::vector<domain::agent_call> agent_call_log::calls_for(const std::string& gra
     for (const auto& row : rows) {
         if (row.size() != 11)
             continue;
-        const auto text = [&](std::size_t i) { return row[i].value_or(""); };
+        const auto text = [&](std::size_t i) {
+            return row[i].value_or("");
+        };
         domain::agent_call c;
         c.tenant_id = text(0);
         c.party_id = text(1);

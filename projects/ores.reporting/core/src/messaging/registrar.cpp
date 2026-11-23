@@ -22,6 +22,8 @@
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.ore.client/service/cache/ore_parameter_cache.hpp"
+#include "ores.ore.client/service/cache/ore_parameter_cache_registrar.hpp"
 #include "ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.reporting.api/messaging/report_error_event_protocol.hpp"
@@ -102,8 +104,6 @@
 #include "ores.reporting.core/messaging/report_type_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/run_document_handler.hpp"
 #include "ores.reporting.core/messaging/run_result_registrar.hpp"
-#include "ores.ore.client/service/cache/ore_parameter_cache.hpp"
-#include "ores.ore.client/service/cache/ore_parameter_cache_registrar.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
@@ -493,8 +493,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     auto ore_parameters = std::make_shared<ores::ore::service::cache::ore_parameter_cache>(nats);
     ore_parameters->set_token_provider(
         [&svc_nats](const std::string&, bool) { return svc_nats.bearer_token(); });
-    for (auto& sub :
-         ores::ore::service::cache::warm_and_subscribe_ore_parameter_cache(nats, ore_parameters, {}))
+    for (auto& sub : ores::ore::service::cache::warm_and_subscribe_ore_parameter_cache(
+             nats, ore_parameters, {}))
         subs.push_back(std::move(sub));
     auto parameters_loaded = std::make_shared<std::atomic<bool>>(false);
     auto rdoc = std::make_shared<run_document_handler>(
@@ -504,7 +504,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 if (const auto error = ore_parameters->load(system); !error.empty())
                     throw std::runtime_error(
                         "The ore parameters could not be read from the ore service into the "
-                        "reporting service's cache: " + error);
+                        "reporting service's cache: " +
+                        error);
                 *parameters_loaded = true;
             }
             return ore_parameters->analytics_parameters(system);

@@ -427,8 +427,9 @@ messaging::get_agent_held_write_response agent_grant_operations_service::get_age
     const auto caller = authorization_service(ctx_).caller_account();
     const bool own = caller && boost::uuids::to_string(*caller) == held->grantor_account_id;
     if (!own && !has_permission(ctx_, read_permission))
-        return refuse_agent_request<response>("Only the person the agent acts for, or a holder of " +
-                                              std::string(read_permission) + ", may read it.");
+        return refuse_agent_request<response>(
+            "Only the person the agent acts for, or a holder of " + std::string(read_permission) +
+            ", may read it.");
     response r;
     r.success = true;
     r.write = *held;

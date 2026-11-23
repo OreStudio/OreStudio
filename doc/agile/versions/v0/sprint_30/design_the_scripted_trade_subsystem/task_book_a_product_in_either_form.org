@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/book-a-product-in-either-form
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ The trading service books a product in any form it offers, and a free-form scrip
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -47,9 +47,20 @@ The trading service books a product in any form it offers, and a free-form scrip
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Six PRs, each ending in a check:
+
+1. =validate_script=: parse a library script, by name and version as the
+   caller's tenant resolves it, or an inline script, with ORE's grammar, and check
+   the trade's variables against its inputs; the findings are structured, by line
+   and column or by variable, and warnings alone are valid.
+2. The twin recipe evaluator moves from the synthetic generator into
+   =ores.trading.api=.
+3. A trade records its product and the form it was booked in.
+4. =book_scripted=: a library script by version or an inline script, refused
+   with the validation's findings when they hold an error.
+5. =book=: a product, its terms and a form, validated against
+   =describe_product='s schema.
+6. The =ores.http= and BFF routes under =/api/trading/booking=.
 
 * Measurements
 

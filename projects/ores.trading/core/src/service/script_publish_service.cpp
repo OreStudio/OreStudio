@@ -18,6 +18,7 @@
  *
  */
 #include "ores.trading.core/service/script_publish_service.hpp"
+#include "script_diagnostics.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.core/repository/script_calibration_repository.hpp"
@@ -304,19 +305,9 @@ publish_script_response script_publish_service::publish(const publish_script_req
     for (const auto& v : ordered) {
         const auto parsed = scripting::parse(v.code);
         for (const auto& d : parsed.diagnostics) {
-            messaging::script_diagnostic out;
-            out.purpose = v.purpose;
-            out.severity = d.severity == scripting::severity::error ? "error" : "warning";
-            out.code = d.code;
-            out.message = d.message;
-            if (d.start) {
-                out.line = static_cast<int>(d.start->line);
-                if (d.start->column)
-                    out.column = static_cast<int>(*d.start->column);
-            }
             if (d.severity == scripting::severity::error)
                 ++errors;
-            response.diagnostics.push_back(std::move(out));
+            response.diagnostics.push_back(to_wire(d, v.purpose));
         }
         if (parsed.parsed())
             inputs_by_variant.push_back(scripting::inputs_of(parsed.tree, v.code));

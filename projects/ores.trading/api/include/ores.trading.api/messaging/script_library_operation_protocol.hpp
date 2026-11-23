@@ -225,8 +225,98 @@ struct script_diagnostic {
      * @brief What the finding says.
      */
     std::string message;
+    /**
+     * @brief The variable a finding about the trade's variables is about; empty for a finding
+     * located in the text.
+     */
+    std::string subject;
 
     friend bool operator==(const script_diagnostic&, const script_diagnostic&) = default;
+};
+
+/**
+ * @brief One variable a trade states for its script.
+ */
+struct script_variable_value {
+    /**
+     * @brief The variable's name, as the script reads it.
+     */
+    std::string name;
+    /**
+     * @brief The type ORE reads it as: Number, Event, Index, Currency or Daycounter.
+     */
+    std::string type;
+    /**
+     * @brief Whether the variable is a list.
+     */
+    bool is_array = false;
+    /**
+     * @brief Its value, or its values when it is a list, as text.
+     */
+    std::vector<std::string> values;
+
+    friend bool operator==(const script_variable_value&, const script_variable_value&) = default;
+};
+
+/**
+ * @brief Validates a script against the variables a trade states, booking nothing.
+ */
+struct validate_script_request {
+    using response_type = struct validate_script_response;
+    static constexpr std::string_view nats_subject = "trading.v1.ops.validate_script";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The library script to validate, as the caller's tenant resolves the name; empty to
+     * validate code instead.
+     */
+    std::string script_name;
+    /**
+     * @brief The version of the library script; 0 for its current version.
+     */
+    int script_version = 0;
+    /**
+     * @brief An inline script's code, read when script_name is empty.
+     */
+    std::string code;
+    /**
+     * @brief The variables the trade states.
+     */
+    std::vector<script_variable_value> variables;
+
+    friend bool operator==(const validate_script_request&,
+                           const validate_script_request&) = default;
+};
+
+/**
+ * @brief The findings of a script's validation.
+ */
+struct validate_script_response {
+    /**
+     * @brief Whether the validation ran.
+     */
+    bool success = false;
+    /**
+     * @brief Why it did not, when it did not, or a summary of the findings.
+     */
+    std::string message;
+    /**
+     * @brief Whether no finding is an error, so a booking on these variables would pass.
+     */
+    bool is_valid = false;
+    /**
+     * @brief Every finding: those in the text by line and column, then those about a variable by
+     * its name.
+     */
+    std::vector<script_diagnostic> diagnostics;
+
+    friend bool operator==(const validate_script_response&,
+                           const validate_script_response&) = default;
 };
 
 /**
@@ -417,6 +507,58 @@ struct publish_script_response {
         ::ores::utility::codec::field{"line", &script_diagnostic::line},
         ::ores::utility::codec::field{"column", &script_diagnostic::column},
         ::ores::utility::codec::field{"message", &script_diagnostic::message},
+        ::ores::utility::codec::field{"subject", &script_diagnostic::subject},
+    };
+}
+
+/**
+ * @brief The members of script_variable_value, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<script_variable_value>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"name", &script_variable_value::name},
+        ::ores::utility::codec::field{"type", &script_variable_value::type},
+        ::ores::utility::codec::field{"is_array", &script_variable_value::is_array},
+        ::ores::utility::codec::field{"values", &script_variable_value::values},
+    };
+}
+
+/**
+ * @brief The members of validate_script_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<validate_script_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"script_name", &validate_script_request::script_name},
+        ::ores::utility::codec::field{"script_version", &validate_script_request::script_version},
+        ::ores::utility::codec::field{"code", &validate_script_request::code},
+        ::ores::utility::codec::field{"variables", &validate_script_request::variables},
+    };
+}
+
+/**
+ * @brief The members of validate_script_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<validate_script_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &validate_script_response::success},
+        ::ores::utility::codec::field{"message", &validate_script_response::message},
+        ::ores::utility::codec::field{"is_valid", &validate_script_response::is_valid},
+        ::ores::utility::codec::field{"diagnostics", &validate_script_response::diagnostics},
     };
 }
 
@@ -530,6 +672,36 @@ struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::script_diag
     static ores::trading::messaging::script_diagnostic read_json(std::string_view text);
     static std::string write_msgpack(const ores::trading::messaging::script_diagnostic& v);
     static ores::trading::messaging::script_diagnostic
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::script_variable_value> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::script_variable_value& v);
+    static ores::trading::messaging::script_variable_value read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::script_variable_value& v);
+    static ores::trading::messaging::script_variable_value
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::validate_script_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::validate_script_request& v);
+    static ores::trading::messaging::validate_script_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::validate_script_request& v);
+    static ores::trading::messaging::validate_script_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::validate_script_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::validate_script_response& v);
+    static ores::trading::messaging::validate_script_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::validate_script_response& v);
+    static ores::trading::messaging::validate_script_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

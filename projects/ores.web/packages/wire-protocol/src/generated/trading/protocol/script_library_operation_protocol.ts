@@ -185,6 +185,76 @@ export interface ScriptDiagnostic {
      * @brief What the finding says.
      */
     message: string;
+    /**
+     * @brief The variable a finding about the trade's variables is about; empty for a finding located in the text.
+     */
+    subject: string;
+}
+
+/**
+ * @brief One variable a trade states for its script.
+ */
+export interface ScriptVariableValue {
+    /**
+     * @brief The variable's name, as the script reads it.
+     */
+    name: string;
+    /**
+     * @brief The type ORE reads it as: Number, Event, Index, Currency or Daycounter.
+     */
+    type: string;
+    /**
+     * @brief Whether the variable is a list.
+     */
+    is_array: boolean;
+    /**
+     * @brief Its value, or its values when it is a list, as text.
+     */
+    values: string[];
+}
+
+/**
+ * @brief Validates a script against the variables a trade states, booking nothing.
+ */
+export interface ValidateScriptRequest {
+    /**
+     * @brief The library script to validate, as the caller's tenant resolves the name; empty to validate code instead.
+     */
+    script_name: string;
+    /**
+     * @brief The version of the library script; 0 for its current version.
+     */
+    script_version: number;
+    /**
+     * @brief An inline script's code, read when script_name is empty.
+     */
+    code: string;
+    /**
+     * @brief The variables the trade states.
+     */
+    variables: ScriptVariableValue[];
+}
+
+/**
+ * @brief The findings of a script's validation.
+ */
+export interface ValidateScriptResponse {
+    /**
+     * @brief Whether the validation ran.
+     */
+    success: boolean;
+    /**
+     * @brief Why it did not, when it did not, or a summary of the findings.
+     */
+    message: string;
+    /**
+     * @brief Whether no finding is an error, so a booking on these variables would pass.
+     */
+    is_valid: boolean;
+    /**
+     * @brief Every finding: those in the text by line and column, then those about a variable by its name.
+     */
+    diagnostics: ScriptDiagnostic[];
 }
 
 /**
@@ -242,6 +312,7 @@ export interface PublishScriptResponse {
 
 export const subjects = {
     export_script_library_request: 'trading.v1.ops.export_script_library',
+    validate_script_request: 'trading.v1.ops.validate_script',
     publish_script_request: 'trading.v1.ops.publish_script',
 } as const;
 /**
@@ -251,5 +322,6 @@ export const subjects = {
  */
 export const requiresSession = {
     export_script_library_request: true,
+    validate_script_request: true,
     publish_script_request: true,
 } as const;

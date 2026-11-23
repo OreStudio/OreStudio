@@ -56,6 +56,7 @@ target_link_libraries(${tests_target_name}
         ores.dq.api.lib
         ores.dq.core.lib
         ores.ore.core.lib
+        ores.trading.scripting.lib
         ores.refdata.api.lib
         ores.refdata.core.lib
         ores.iam.api.lib

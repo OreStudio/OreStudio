@@ -301,6 +301,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             publish_script_request::nats_subject, queue_group, [toh](ores::nats::message msg) {
                 toh->publish_script(std::move(msg));
             }));
+        subs.push_back(nats.queue_subscribe(
+            validate_script_request::nats_subject, queue_group, [toh](ores::nats::message msg) {
+                toh->validate_script(std::move(msg));
+            }));
     }
     {
         // A product's description (hand-written handler, not codegen). The

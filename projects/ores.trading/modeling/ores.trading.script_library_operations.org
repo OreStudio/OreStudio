@@ -3,7 +3,7 @@
 :ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.trading.script_library_operations
-#+description: Codegen operation model for the script library: reading the versions a run's trades name, and a tenant's publish of its own script.
+#+description: Codegen operation model for the script library: reading the versions a run's trades name, a tenant's publish of its own script, and the validation of a script against a trade's variables.
 #+type: ores.codegen.operation
 #+component: trading
 #+subcomponent: api
@@ -440,6 +440,185 @@ generates no service handler.
 #+begin_src cpp :name comment
 /**
  * @brief What the finding says.
+ */
+#+end_src
+
+*** subject
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The variable a finding about the trade's variables is about; empty for a finding located in the text.
+ */
+#+end_src
+
+** script_variable_value
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One variable a trade states for its script.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The variable's name, as the script reads it.
+ */
+#+end_src
+
+*** type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The type ORE reads it as: Number, Event, Index, Currency or Daycounter.
+ */
+#+end_src
+
+*** is_array
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the variable is a list.
+ */
+#+end_src
+
+*** values
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Its value, or its values when it is a list, as text.
+ */
+#+end_src
+
+** validate_script_request
+:PROPERTIES:
+:subject:  trading.v1.ops.validate_script
+:response: validate_script_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Validates a script against the variables a trade states, booking nothing.
+ */
+#+end_src
+
+*** script_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The library script to validate, as the caller's tenant resolves the name; empty to validate code instead.
+ */
+#+end_src
+
+*** script_version
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The version of the library script; 0 for its current version.
+ */
+#+end_src
+
+*** code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief An inline script's code, read when script_name is empty.
+ */
+#+end_src
+
+*** variables
+:PROPERTIES:
+:cpp_type: std::vector<script_variable_value>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The variables the trade states.
+ */
+#+end_src
+
+** validate_script_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The findings of a script's validation.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the validation ran.
+ */
+#+end_src
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why it did not, when it did not, or a summary of the findings.
+ */
+#+end_src
+
+*** is_valid
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether no finding is an error, so a booking on these variables would pass.
+ */
+#+end_src
+
+*** diagnostics
+:PROPERTIES:
+:cpp_type: std::vector<script_diagnostic>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Every finding: those in the text by line and column, then those about a variable by its name.
  */
 #+end_src
 

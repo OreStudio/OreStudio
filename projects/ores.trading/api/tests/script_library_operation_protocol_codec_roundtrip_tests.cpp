@@ -63,6 +63,18 @@ TEST_CASE("ores::trading::messaging::script_diagnostic", "[codec][roundtrip][pro
     ores::testing::check_wire_roundtrip<ores::trading::messaging::script_diagnostic>();
 }
 
+TEST_CASE("ores::trading::messaging::script_variable_value", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::trading::messaging::script_variable_value>();
+}
+
+TEST_CASE("ores::trading::messaging::validate_script_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::trading::messaging::validate_script_request>();
+}
+
+TEST_CASE("ores::trading::messaging::validate_script_response", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::trading::messaging::validate_script_response>();
+}
+
 TEST_CASE("ores::trading::messaging::publish_script_request", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::trading::messaging::publish_script_request>();
 }

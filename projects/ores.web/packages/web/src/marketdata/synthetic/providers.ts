@@ -19,7 +19,9 @@
  *
  */
 
+import { SYSTEM_TENANT_ID } from '@ores/wire-protocol/browser';
 import type { FeedFolder } from '../../api/client.js';
+import { useSessionTenantId } from '../../session/SessionProvider.js';
 
 /** One provider and the collections that stand for it. */
 export interface ProviderEntry {
@@ -27,14 +29,21 @@ export interface ProviderEntry {
     readonly collections: readonly FeedFolder[];
 }
 
+/** The providers of the system's own markets, which only the system tenant sees. */
+const SYSTEM_PROVIDERS: ReadonlySet<string> = new Set(['latent']);
+
 /**
- * The providers of the given collections, in the order of their codes. Once the catalogue is
- * read, a provider the session cannot read is left out: a system provider such as latent is
- * the installation's own, and only the system tenant reads it.
+ * The providers a session does not see: the system's own, such as latent, for any session but
+ * the system tenant's. The market data catalogue hides them from a tenant the same way.
  */
+export function useHiddenProviders(): ReadonlySet<string> {
+    return useSessionTenantId() === SYSTEM_TENANT_ID ? new Set() : SYSTEM_PROVIDERS;
+}
+
+/** The providers of the given collections, in the order of their codes, less the hidden ones. */
 export function providersOf(
     collections: readonly FeedFolder[],
-    catalogue: ReadonlyMap<string, ProviderFacts> = new Map(),
+    hidden: ReadonlySet<string> = new Set(),
 ): readonly ProviderEntry[] {
     const byCode = new Map<string, FeedFolder[]>();
     for (const collection of collections) {
@@ -44,7 +53,7 @@ export function providersOf(
         ]);
     }
     return [...byCode.entries()]
-        .filter(([code]) => catalogue.size === 0 || code === '' || catalogue.has(code))
+        .filter(([code]) => !hidden.has(code))
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([code, held]) => ({ code, collections: held }));
 }

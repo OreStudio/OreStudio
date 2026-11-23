@@ -32,7 +32,13 @@ import {
     useSources,
     type Source,
 } from './adapterStatus.js';
-import { providerName, providersOf, type ProviderEntry, type ProviderFacts } from './providers.js';
+import {
+    providerName,
+    providersOf,
+    useHiddenProviders,
+    type ProviderEntry,
+    type ProviderFacts,
+} from './providers.js';
 import { useSelectionRuns } from './selectionRuns.js';
 import { useCollections } from './useCollections.js';
 import {
@@ -136,8 +142,9 @@ export function DashboardTab(): ReactNode {
     const runs = useSelectionRuns();
     const { collections, loaded, error } = useCollections();
     const facts = useProviderFacts();
+    const hidden = useHiddenProviders();
     const sources = useSources();
-    const providers = providersOf(collections, facts);
+    const providers = providersOf(collections, hidden);
     const counts = useProviderFeedCounts(providers.map((entry) => entry.code));
     const ready = loaded && counts !== undefined && sources !== undefined;
     const notServed = sources === undefined ? 0 : demandedNotServedAll(sources);

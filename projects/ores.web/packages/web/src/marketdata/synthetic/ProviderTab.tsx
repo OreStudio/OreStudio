@@ -37,7 +37,7 @@ const ASSET_CLASSES = ['fx', 'interest_rates'] as const;
 import { feedPageOf } from './feedTree.js';
 import { frequencyOf } from './frequency.js';
 import { ProcessTag } from './processSummary.js';
-import { providerName, providersOf, type ProviderEntry } from './providers.js';
+import { providerName, providersOf, useHiddenProviders, type ProviderEntry } from './providers.js';
 import { FEEDS_KEY, useSelectionRuns } from './selectionRuns.js';
 import { EVERY_MS, useCollections } from './useCollections.js';
 
@@ -69,8 +69,9 @@ export function ProviderTab(): ReactNode {
     const [params, setParams] = useSearchParams();
     const { collections, loaded, error } = useCollections();
     const facts = useProviderFacts();
+    const hidden = useHiddenProviders();
     const sources = useSources();
-    const providers = providersOf(collections, facts);
+    const providers = providersOf(collections, hidden);
     const chosen = params.get('provider') ?? '';
     const entry: ProviderEntry | undefined =
         providers.find((one) => one.code === chosen) ?? providers[0];

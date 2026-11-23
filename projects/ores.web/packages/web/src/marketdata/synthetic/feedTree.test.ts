@@ -51,14 +51,16 @@ describe('the providers of the collections', () => {
         ]);
     });
 
-    it('leaves out a provider the session cannot read, such as the system provider latent', () => {
+    it('leaves out a hidden provider, and keeps it when none is hidden', () => {
         const latent = collection('l', 'Latent', 'latent');
-        const facts = new Map([
-            ['bloomberg', { name: 'Bloomberg', kind: 'data_vendor', description: '' }],
-            ['ore', { name: 'ORE', kind: 'reference', description: '' }],
+        expect(
+            providersOf([samples, bloomberg, latent], new Set(['latent'])).map((e) => e.code),
+        ).toEqual(['bloomberg', 'ore']);
+        expect(providersOf([samples, bloomberg, latent]).map((e) => e.code)).toEqual([
+            'bloomberg',
+            'latent',
+            'ore',
         ]);
-        const entries = providersOf([samples, bloomberg, latent], facts);
-        expect(entries.map((entry) => entry.code)).toEqual(['bloomberg', 'ore']);
     });
 });
 

@@ -22,8 +22,8 @@
  * Template: cpp_nats_event_cache.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_REPORTING_CORE_SERVICE_CACHE_ORE_PARAMETER_CACHE_HPP
-#define ORES_REPORTING_CORE_SERVICE_CACHE_ORE_PARAMETER_CACHE_HPP
+#ifndef ORES_ORE_CLIENT_SERVICE_CACHE_ORE_PARAMETER_CACHE_HPP
+#define ORES_ORE_CLIENT_SERVICE_CACHE_ORE_PARAMETER_CACHE_HPP
 
 #include "ores.eventing.core/service/cache/partition_token_cache.hpp"
 #include "ores.eventing.core/service/cache/partitioned_cache.hpp"
@@ -46,12 +46,11 @@
 #include <utility>
 #include <vector>
 
-namespace ores::reporting::service::cache {
+namespace ores::ore::service::cache {
 
 namespace {
 inline auto& ore_parameter_cache_lg() {
-    static auto instance =
-        ores::logging::make_logger("ores.reporting.service.cache.ore_parameter_cache");
+    static auto instance = ores::logging::make_logger("ores.ore.service.cache.ore_parameter_cache");
     return instance;
 }
 }

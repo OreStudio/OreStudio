@@ -102,8 +102,8 @@
 #include "ores.reporting.core/messaging/report_type_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/run_document_handler.hpp"
 #include "ores.reporting.core/messaging/run_result_registrar.hpp"
-#include "ores.reporting.core/service/cache/ore_parameter_cache.hpp"
-#include "ores.reporting.core/service/cache/ore_parameter_cache_registrar.hpp"
+#include "ores.ore.client/service/cache/ore_parameter_cache.hpp"
+#include "ores.ore.client/service/cache/ore_parameter_cache_registrar.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
@@ -490,11 +490,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // service's own token, rather than reading ores.ore's table. The cache is
     // loaded on its first use, so the service starts whether or not the ore
     // service is up, and the subscription reloads it on every change.
-    auto ore_parameters = std::make_shared<service::cache::ore_parameter_cache>(nats);
+    auto ore_parameters = std::make_shared<ores::ore::service::cache::ore_parameter_cache>(nats);
     ore_parameters->set_token_provider(
         [&svc_nats](const std::string&, bool) { return svc_nats.bearer_token(); });
     for (auto& sub :
-         service::cache::warm_and_subscribe_ore_parameter_cache(nats, ore_parameters, {}))
+         ores::ore::service::cache::warm_and_subscribe_ore_parameter_cache(nats, ore_parameters, {}))
         subs.push_back(std::move(sub));
     auto parameters_loaded = std::make_shared<std::atomic<bool>>(false);
     auto rdoc = std::make_shared<run_document_handler>(

@@ -248,7 +248,7 @@ std::string("1.9.0.0")
 ** Flags
 :PROPERTIES:
 :subcomponent:    api
-:cached_by:       reporting
+:cached_by:       ore.client
 :cache_aux_type:  analytic_parameters
 :END:
 
@@ -349,10 +349,11 @@ table, which is =ores.ore='s.
 
 ** Cache aux index
 
-Reporting's =ore_parameter_cache= (=nats-event-cache= facet, =cached_by:
-reporting=) keeps the parameters of the analytics as a list beside the plain id →
-parameter map, because a run document names a parameter by its analytic and its
-name and a stored configuration by its id, and reporting maps one to the other
+The =ore_parameter_cache= (=nats-event-cache= facet, =cached_by: ore.client=)
+lives in =ores.ore.client=, because more than one service reads it. It keeps the
+parameters of the analytics as a list beside the plain id → parameter map,
+because a run document names a parameter by its analytic and its name and a
+stored configuration by its id, and the reporting service maps one to the other
 over the analytics' parameters alone.
 
 #+begin_src cpp :name aux_type_decl :implements ADD930C7-EF33-44B4-A0A2-49254FCC7ACD

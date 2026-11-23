@@ -553,8 +553,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/results/canonical_log_reader.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/results/run_output_reader.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/analytic_type_service.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/cache/ore_parameter_cache.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/cache/ore_parameter_cache_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/concurrency_policy_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/configuration_analytic_parameter_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.reporting.core/service/configuration_analytic_service.hpp"

@@ -343,6 +343,9 @@ TEST_CASE("an_operation_whose_permission_the_token_lacks_or_no_agent_holds_is_no
                           "list_entities",
                           R"({"area":"reference-data"})");
     CHECK_THAT(with.text, ContainsSubstring("countries (1)"));
+    const auto wildcard =
+        run(tools, caller({"refdata::*"}), "list_entities", R"({"area":"reference-data"})");
+    CHECK_THAT(wildcard.text, ContainsSubstring("countries (1)"));
     CHECK(run(tools, caller(reader), "call_operation", R"({"name":"list_countries"})").is_error);
 
     const auto administrator = run(tools, caller({"iam::accounts:write"}), "list_areas", "{}");

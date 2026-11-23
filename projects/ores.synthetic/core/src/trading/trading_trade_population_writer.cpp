@@ -30,6 +30,7 @@
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_pair_protocol.hpp"
 #include "ores.refdata.api/messaging/curve_definition_protocol.hpp"
+#include "ores.refdata.api/messaging/cut_code_protocol.hpp"
 #include "ores.refdata.api/messaging/equity_underlying_protocol.hpp"
 #include "ores.refdata.api/messaging/floating_index_type_protocol.hpp"
 #include "ores.refdata.api/messaging/ibor_index_convention_protocol.hpp"
@@ -63,6 +64,7 @@
 #include <array>
 #include <chrono>
 #include <format>
+#include <map>
 #include <optional>
 #include <set>
 #include <string>
@@ -300,10 +302,27 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     const auto prices = [&](const std::string& currency) {
         return priced.empty() || priced.contains(currency);
     };
-    for (const auto& pair : pairs)
-        if (prices(pair.base_currency) && prices(pair.quote_currency))
-            scope.currency_pairs.push_back(domain::currency_pair_reference{
-                .base = pair.base_currency, .quote = pair.quote_currency});
+    /*
+     * An FX trade observes the fixing of its pair's default cut, so a pair
+     * whose cut names no fixing source is left out: a trade on it would
+     * observe a fixing nothing publishes.
+     */
+    ores::refdata::messaging::list_cut_codes_request cut_req;
+    cut_req.limit = page;
+    std::map<std::string, std::string> cut_sources;
+    for (const auto& cut : read(cut_req).cuts)
+        cut_sources.emplace(cut.code, cut.fixing_source_code);
+    for (const auto& pair : pairs) {
+        if (!prices(pair.base_currency) || !prices(pair.quote_currency) || !pair.default_cut_code)
+            continue;
+        const auto source = cut_sources.find(*pair.default_cut_code);
+        if (source == cut_sources.end())
+            continue;
+        scope.currency_pairs.push_back(
+            domain::currency_pair_reference{.base = pair.base_currency,
+                                            .quote = pair.quote_currency,
+                                            .fixing_source = source->second});
+    }
 
     /*
      * An equity trade names an underlying from the tenant's equity catalogue,

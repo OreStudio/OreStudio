@@ -205,7 +205,8 @@ domain::trade_generation_scope fx_scope() {
     auto scope = bond_scope();
     scope.asset_class_code = "fx";
     scope.currency_code = "EUR";
-    scope.currency_pairs = {{.base = "EUR", .quote = "USD"}, {.base = "GBP", .quote = "USD"}};
+    scope.currency_pairs = {{.base = "EUR", .quote = "USD", .fixing_source = "WMR1000NYC"},
+                            {.base = "GBP", .quote = "USD", .fixing_source = "WMR1000NYC"}};
     scope.floating_index_codes = {"EUR-ESTR", "USD-SOFR"};
     return scope;
 }
@@ -1166,9 +1167,9 @@ TEST_CASE("a_basket_in_a_book_whose_currency_no_second_pair_quotes_is_still_plan
      */
     auto scope = fx_scope();
     scope.currency_code = "GBP";
-    scope.currency_pairs = {{.base = "EUR", .quote = "GBP"},
-                            {.base = "EUR", .quote = "USD"},
-                            {.base = "GBP", .quote = "USD"}};
+    scope.currency_pairs = {{.base = "EUR", .quote = "GBP", .fixing_source = "WMR1000NYC"},
+                            {.base = "EUR", .quote = "USD", .fixing_source = "WMR1000NYC"},
+                            {.base = "GBP", .quote = "USD", .fixing_source = "WMR1000NYC"}};
     scope.trades_per_book = 64;
 
     domain::trade_population_plan plan;
@@ -2603,4 +2604,21 @@ TEST_CASE("a_window_barrier_twin_states_the_premium_its_native_states", "[trade_
     CHECK(value_of("PremiumAmount") == premium.amount.to_string());
     CHECK(value_of("PremiumCcy") == "EUR");
     CHECK(value_of("PremiumPayDate") == "2026-03-04");
+}
+
+TEST_CASE("an_fx_index_names_the_fixing_source_of_its_pairs_default_cut", "[trade_population]") {
+    auto scope = fx_scope();
+    for (auto& pair : scope.currency_pairs)
+        pair.fixing_source = "WMR1500TKY";
+    scope.trades_per_book = 64;
+    const auto plan = plan_of(scope);
+
+    std::size_t indices = 0;
+    for (const auto& slot : plan.slots)
+        for (const auto& row : slot.instruments.fx_asian_forward_instruments) {
+            ++indices;
+            CHECK(row.fx_index.find("source=WMR1500TKY") != std::string::npos);
+            CHECK(row.fx_index.find("TR20H") == std::string::npos);
+        }
+    CHECK(indices > 0);
 }

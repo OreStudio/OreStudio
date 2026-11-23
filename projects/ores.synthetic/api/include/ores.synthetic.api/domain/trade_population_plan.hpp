@@ -77,6 +77,13 @@ struct commodity_reference final {
 struct currency_pair_reference final {
     std::string base;
     std::string quote;
+    /**
+     * @brief The source that fixes the pair at its default cut, such as WMR1000NYC.
+     *
+     * An FX trade on the pair observes the fixing of this source, so a trade
+     * names the fixing the pair's own cut is set by.
+     */
+    std::string fixing_source;
 };
 
 /**

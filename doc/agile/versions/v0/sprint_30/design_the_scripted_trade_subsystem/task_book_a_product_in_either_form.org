@@ -119,6 +119,10 @@ via its "Verifies task" field.
 | 5063.2 | a namespace alias left from the move | scripted_twins.cpp | accept | removed |
 | 5063.3 | an include out of order in the synthetic tests | trade_population_tests.cpp | accept | moved beside the other ores.trading.api includes |
 | 5063.4 | a builder exception of another type would escape the conversion | none | no change | the builder returns std::expected, and the evaluator raises scripted_twin_error on its refusal |
+| 5068.1 | no role holds the delete permission | none | no change | the trade identifiers grant read and write only, too; a trade's product is written with the trade and not deleted alone |
+| 5068.2 | the activity is checked only on insert | none | no change | as on every child of the anchor: the row records the activity that wrote it |
+| 5068.3 | no test of an empty product or a cross-party read | repository_trade_product_tests.cpp | accept | both added; the party case pins the restrictive policy |
+| 5068.4 | regenerating gives no diff | none | no change | the ratchet's codegen drift check passes |
 
 * Result
 

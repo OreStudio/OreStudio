@@ -98,3 +98,27 @@ TEST_CASE("a form other than native or scripted is refused", "[trade_product][da
 
     CHECK_THROWS(repository::trade_product_repository().write(party_ctx, row));
 }
+
+TEST_CASE("a trade product with no product is refused", "[trade_product][database]") {
+    ores::testing::scoped_database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto party_ctx = trade_product_party_context(h, gen);
+
+    const auto row = trade_product_booked(party_ctx, gen, "", "native");
+
+    CHECK_THROWS(repository::trade_product_repository().write(party_ctx, row));
+}
+
+TEST_CASE("another party does not see a trade's product", "[trade_product][database]") {
+    ores::testing::scoped_database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto owner_ctx = trade_product_party_context(h, gen);
+    const auto other_ctx = trade_product_party_context(h, gen);
+
+    const auto row = trade_product_booked(owner_ctx, gen, "Swap", "native");
+    repository::trade_product_repository().write(owner_ctx, row);
+
+    const auto id = boost::uuids::to_string(row.trade_id);
+    CHECK(repository::trade_product_repository().read_latest(owner_ctx, id).size() == 1u);
+    CHECK(repository::trade_product_repository().read_latest(other_ctx, id).empty());
+}

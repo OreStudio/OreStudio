@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
-#+updated: 2026-11-21
+#+updated: 2026-11-23
 #+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-describe_product serves every product's schema: its fields, with type, list or scalar, accepted values and description, and its forms, with the script and engine of each; a script-only product's fields are its script's inputs, and annotations are held as data.
+describe_product serves every product's schema: its fields, with type, list or scalar, accepted values and description, and its forms, with the script and product tag of each; a script-only product's fields are its script's inputs, and annotations are held as data.
 
 * Status
 
@@ -31,13 +31,13 @@ describe_product serves every product's schema: its fields, with type, list or s
 | Now          | Nothing. |
 | Waiting on   | Nothing. |
 | Next         | Nothing. |
-| Last touched | 2026-11-22                               |
+| Last touched | 2026-11-23                               |
 
 * Acceptance
 
 - every product of the catalogue and every script with no element of its own has a schema
 - labels, coded values, defaults and descriptions are annotations held as data
-- each form states the script it runs and the engine its product tag prices with
+- each form states the script it runs and its product tag; the engine it prices with moved to [[id:8E44EA16-D191-4092-9EB7-EA6C4D9811FA][State the engine a pricing configuration gives a trade]], because ORE chooses it from a booked trade's terms
 - a test fails when a product has no schema
 - ores.http serves a product's schema and the list of products as JSON routes over the trading service's operation
 - the BFF serves the same under /api/trading/products, with a unit test of each route
@@ -64,7 +64,7 @@ Revised with the user on 2026-11-22, after the analysis in the notes below.
   =/Trade[TradeType='Swap']/SwapData=. =product_type= needs no element column;
   its seed is written by compass's catalogue loader, which a new column would
   have had to change (decided in PR 1).
-- Each form states its product tag (scripted) or ORE pricing engine type
+- (Superseded: the engine moved to its own task, see the Result.) Each form states its product tag (scripted) or ORE pricing engine type
   (native); =describe_product= takes an optional pricing configuration and, when
   given one, states the model and engine it assigns. Cost is left to a later task.
 - =describe_product= is served by trading, which holds the leaves and their value
@@ -81,7 +81,8 @@ PRs, each ending in a check, once the move is merged:
    (labels, coded values, defaults, descriptions) as =ore_parameter= texts and
    value sets where a leaf exists, and as data beside the inputs where none does.
 3. =describe_product= and =list_products= in the trading service, with the forms
-   and the engine of a stated pricing configuration.
+   and the engine of a stated pricing configuration (the engine moved to its own
+   task; see the Result).
 4. The ores.http routes and the BFF routes under =/api/trading/products=, with a
    test of each.
 

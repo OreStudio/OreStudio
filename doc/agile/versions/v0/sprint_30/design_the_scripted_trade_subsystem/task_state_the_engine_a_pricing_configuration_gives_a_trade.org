@@ -30,7 +30,7 @@ A booked trade states the model and engine a pricing configuration prices it wit
 | Parent story | [[id:E6359881-7919-4BBC-9B9C-03A8EEDB8A03][Design the scripted trade subsystem]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Hold the trade type to engine type rule as data. |
 | Last touched | 2026-11-23                               |
 
 * Acceptance
@@ -58,7 +58,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Catalogued trade types, the container aside, with a pricing engine type of the same code | 51 of 120 | =select count(*) filter (where e.code is not null), count(*) from ores_trading_product_types_tbl p left join ores_analytics_pricing_engine_types_tbl e on e.code = p.code and e.valid_to = ores_utility_infinity_timestamp_fn() where p.valid_to = ores_utility_infinity_timestamp_fn() and p.construction <> 'container'= | 79a22cffcf, on a database recreated from it |
+| Library scripts whose product tag is a pricing engine type code | 0 of 54 | =select count(*) filter (where exists (select 1 from ores_analytics_pricing_engine_types_tbl e where e.code = s.product_tag and e.valid_to = ores_utility_infinity_timestamp_fn())), count(*) from ores_trading_scripts_tbl s where s.valid_to = ores_utility_infinity_timestamp_fn()= | 79a22cffcf, on a database recreated from it |
+| ORE source cited | =swaption.cpp=, =fxswap.cpp:62=, =builders/scriptedtrade.cpp:120= | read in the ORE checkout | ORE 3d75a6908 |
 
 * Notes
 
@@ -69,8 +71,9 @@ not a fact of a product:
 - ORE chooses a native trade's engine builder from the trade's terms. A
   Swaption looks up =EuropeanSwaption= or =BermudanSwaption= by its exercise
   type (ORE 3d75a6908 =OREData/ored/portfolio/swaption.cpp=, the exercise branch
-  before the builder lookup); an =FxSwap= is priced by the =FxForward= builder
-  (=fxswap.cpp:62=).
+  before the builder lookup). Even where the choice does not depend on terms, the
+  engine type need not be the trade type: an =FxSwap= is priced by the
+  =FxForward= builder (=fxswap.cpp:62=), so its engine type is =FxForward=.
 - A scripted trade is priced by the =ScriptedTrade= builder, which resolves the
   script's product tag by putting the trade's asset class in place of
   ={AssetClass}= and looks up the resolved tag

@@ -106,6 +106,15 @@ struct book_trade_request {
      * row. A row for a kind with no writer yet refuses the booking by name.
      */
     ores::trading::domain::instrument_batch instruments;
+    /**
+     * @brief The product the trade is booked as, as describe_product names it; empty when the
+     * caller states none, and the trade then records no product.
+     */
+    std::string product_code;
+    /**
+     * @brief The form the product is booked in, native or scripted; stated with the product.
+     */
+    std::string booking_form;
 
     friend bool operator==(const book_trade_request&, const book_trade_request&) = default;
 };
@@ -562,6 +571,8 @@ struct resolve_market_data_requirements_response {
         ::ores::utility::codec::field{"draft_reason_code", &book_trade_request::draft_reason_code},
         ::ores::utility::codec::field{"identifiers", &book_trade_request::identifiers},
         ::ores::utility::codec::field{"instruments", &book_trade_request::instruments},
+        ::ores::utility::codec::field{"product_code", &book_trade_request::product_code},
+        ::ores::utility::codec::field{"booking_form", &book_trade_request::booking_form},
     };
 }
 

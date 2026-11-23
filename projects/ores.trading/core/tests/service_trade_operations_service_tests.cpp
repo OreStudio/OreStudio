@@ -59,6 +59,7 @@
 #include "ores.trading.core/repository/instrument_option_repository.hpp"
 #include "ores.trading.core/repository/rate_instrument_repository.hpp"
 #include "ores.trading.core/repository/script_input_repository.hpp"
+#include "ores.trading.core/repository/scripted_instrument_repository.hpp"
 #include "ores.trading.core/repository/structure_member_repository.hpp"
 #include "ores.trading.core/repository/structure_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
@@ -66,10 +67,12 @@
 #include "ores.trading.core/repository/trade_authorisation_request_repository.hpp"
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
 #include "ores.trading.core/repository/trade_identifier_repository.hpp"
+#include "ores.trading.core/repository/trade_product_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
 #include "ores.trading.core/repository/trade_summary_repository.hpp"
 #include "ores.trading.core/service/operational_authorisation_service.hpp"
+#include "ores.trading.core/service/script_publish_service.hpp"
 #include "ores.trading.core/service/trade_export_service.hpp"
 #include "ores.trading.core/service/trade_operations_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -1342,4 +1345,161 @@ TEST_CASE("a_scripted_trade_that_states_a_variable_its_script_never_reads_passes
 
     INFO(response.result.message);
     CHECK(response.result.code != "script_input_mismatch");
+}
+
+namespace {
+
+/// A scripted booking of an inline payoff on the fixture's book, every input stated.
+ores::trading::messaging::book_scripted_request book_scripted_inline_request(fixture& f) {
+    const auto base = f.request();
+    ores::trading::messaging::book_scripted_request r;
+    r.anchor = base.anchor;
+    r.booking = base.booking;
+    r.activity_type_code = base.activity_type_code;
+    r.script_name = "TestPayoff";
+    r.code = "Option = PAY(Notional * 5, Expiry, Expiry, PayCcy);";
+    r.npv_variable = "Option";
+    r.variables = {{.name = "Notional", .type = "Number", .values = {"1000"}},
+                   {.name = "Expiry", .type = "Event", .values = {"2027-06-30"}},
+                   {.name = "PayCcy", .type = "Currency", .values = {"EUR"}}};
+    return r;
+}
+
+/// The products the store records for a trade.
+std::vector<ores::trading::domain::trade_product>
+book_scripted_products_of(fixture& f, const boost::uuids::uuid& trade_id) {
+    return ores::trading::repository::trade_product_repository().read_latest(
+        f.ctx, boost::uuids::to_string(trade_id));
+}
+
+}
+
+TEST_CASE(
+    "an inline scripted trade is booked and records the free-form ScriptedTrade as its product",
+    "[service][book_scripted]") {
+    fixture f;
+    const auto req = book_scripted_inline_request(f);
+
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_scripted(req, {});
+
+    INFO(response.result.code << ": " << response.result.message);
+    REQUIRE(response.result.outcome == outcome::ok);
+    REQUIRE(response.activity_id.has_value());
+    const auto products = book_scripted_products_of(f, req.anchor.id);
+    REQUIRE(products.size() == 1u);
+    CHECK(products[0].product_code == "ScriptedTrade");
+    CHECK(products[0].booking_form == "scripted");
+}
+
+TEST_CASE("a scripted trade that leaves out an input is refused with its finding, booking nothing",
+          "[service][book_scripted]") {
+    fixture f;
+    auto req = book_scripted_inline_request(f);
+    std::erase_if(req.variables, [](const auto& v) { return v.name == "Notional"; });
+
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_scripted(req, {});
+
+    CHECK(response.result.outcome == outcome::failed);
+    CHECK(response.result.code == "script_invalid");
+    CHECK(std::ranges::any_of(response.diagnostics,
+                              [](const auto& d) { return d.subject == "Notional"; }));
+    CHECK(ores::trading::repository::trade_repository()
+              .read_latest(f.ctx, boost::uuids::to_string(req.anchor.id))
+              .empty());
+}
+
+TEST_CASE("a scripted trade of a script the store does not hold is refused by name",
+          "[service][book_scripted]") {
+    fixture f;
+    auto req = book_scripted_inline_request(f);
+    req.code.clear();
+    req.script_name = "NoSuchScript";
+
+    const auto response = trade_operations_service(f.ctx, every_book_open).book_scripted(req, {});
+
+    CHECK(response.result.code == "script_not_found");
+    CHECK(response.result.message.contains("NoSuchScript"));
+}
+
+TEST_CASE("book_trade records the product a caller states, and refuses a form that is neither",
+          "[service][book_scripted]") {
+    fixture f;
+    auto req = f.request();
+    req.product_code = "Swap";
+    req.booking_form = "native";
+
+    const auto booked = trade_operations_service(f.ctx, every_book_open).book_trade(req, {});
+
+    INFO(booked.result.code << ": " << booked.result.message);
+    REQUIRE(booked.result.outcome == outcome::ok);
+    const auto products = book_scripted_products_of(f, req.anchor.id);
+    REQUIRE(products.size() == 1u);
+    CHECK(products[0].booking_form == "native");
+
+    auto odd = f.request();
+    odd.product_code = "Swap";
+    odd.booking_form = "spreadsheet";
+    CHECK(trade_operations_service(f.ctx, every_book_open).book_trade(odd, {}).result.code ==
+          "booking_form_invalid");
+}
+
+TEST_CASE("a tenant's library script is booked by name, current or pinned at a stated version",
+          "[service][book_scripted]") {
+    fixture f;
+    const std::string code = "Option = PAY(Notional * 3, Expiry, Expiry, PayCcy);";
+    ores::trading::messaging::publish_script_request publish;
+    publish.name = "TenantPayoff";
+    publish.description = "A tenant's payoff";
+    ores::trading::messaging::published_variant variant;
+    variant.purpose = "default";
+    variant.code = code;
+    variant.npv_variable = "Option";
+    variant.results.push_back({.variable = "Notional", .rename = std::nullopt});
+    publish.variants.push_back(variant);
+    const auto published = ores::trading::service::script_publish_service(f.ctx).publish(publish);
+    REQUIRE(published.success);
+
+    auto current = book_scripted_inline_request(f);
+    current.code.clear();
+    current.script_name = "TenantPayoff";
+    current.product_code = "EquityOption";
+    const auto booked = trade_operations_service(f.ctx, every_book_open).book_scripted(current, {});
+    INFO(booked.result.code << ": " << booked.result.message);
+    REQUIRE(booked.result.outcome == outcome::ok);
+    const auto products = book_scripted_products_of(f, current.anchor.id);
+    REQUIRE(products.size() == 1u);
+    CHECK(products[0].product_code == "EquityOption");
+
+    auto pinned = book_scripted_inline_request(f);
+    pinned.code.clear();
+    pinned.script_name = "TenantPayoff";
+    pinned.script_version = published.version;
+    REQUIRE(
+        trade_operations_service(f.ctx, every_book_open).book_scripted(pinned, {}).result.outcome ==
+        outcome::ok);
+    const auto instruments =
+        ores::trading::repository::scripted_instrument_repository().read_latest(
+            f.ctx, boost::uuids::to_string(pinned.anchor.id));
+    REQUIRE(instruments.size() == 1u);
+    CHECK(instruments[0].script_version == published.version);
+    CHECK(instruments[0].script_body.empty());
+}
+
+TEST_CASE("a booking states a known product with a single-valued variable and a form",
+          "[service][book_scripted]") {
+    fixture f;
+    trade_operations_service svc(f.ctx, every_book_open);
+
+    auto unknown = f.request();
+    unknown.product_code = "NoSuchProduct";
+    unknown.booking_form = "native";
+    CHECK(svc.book_trade(unknown, {}).result.code == "product_unknown");
+
+    auto formless = f.request();
+    formless.product_code = "Swap";
+    CHECK(svc.book_trade(formless, {}).result.code == "booking_form_missing");
+
+    auto doubled = book_scripted_inline_request(f);
+    doubled.variables[0].values.push_back("2000");
+    CHECK(svc.book_scripted(doubled, {}).result.code == "variable_not_single");
 }

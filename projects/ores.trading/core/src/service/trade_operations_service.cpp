@@ -22,7 +22,9 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.trading.api/builders/scripted_builders.hpp"
 #include "ores.trading.api/domain/bond_instrument_rows.hpp"
+#include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.trading.api/domain/trade_type_routing.hpp"
 #include "ores.trading.core/repository/bond_instrument_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_call_date_repository.hpp"
@@ -35,17 +37,23 @@
 #include "ores.trading.core/repository/bond_issue_leg_schedule_repository.hpp"
 #include "ores.trading.core/repository/bond_issue_repository.hpp"
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
+#include "ores.trading.core/repository/product_type_repository.hpp"
 #include "ores.trading.core/repository/script_input_repository.hpp"
+#include "ores.trading.core/repository/script_repository.hpp"
 #include "ores.trading.core/repository/structure_member_repository.hpp"
 #include "ores.trading.core/repository/structure_repository.hpp"
 #include "ores.trading.core/repository/trade_activity_repository.hpp"
 #include "ores.trading.core/repository/trade_booking_repository.hpp"
 #include "ores.trading.core/repository/trade_identifier_repository.hpp"
+#include "ores.trading.core/repository/trade_product_repository.hpp"
 #include "ores.trading.core/repository/trade_repository.hpp"
 #include "ores.trading.core/repository/trade_state_repository.hpp"
 #include "ores.trading.core/service/instrument_batch_writer.hpp"
 #include "ores.trading.core/service/operational_authorisation_service.hpp"
+#include "ores.trading.core/service/script_validation_service.hpp"
 #include "ores.trading.core/service/structure_service.hpp"
+#include "ores.trading.scripting/inputs.hpp"
+#include "ores.trading.scripting/parse.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -206,6 +214,38 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
         response.result.message = *refusal;
         return response;
     }
+    if (!request.product_code.empty() && request.booking_form.empty()) {
+        response.result.outcome = outcome::failed;
+        response.result.code = "booking_form_missing";
+        response.result.message = "A product is stated with the form it is booked in: native or "
+                                  "scripted.";
+        return response;
+    }
+    if (!request.product_code.empty() && request.booking_form != "native" &&
+        request.booking_form != "scripted") {
+        response.result.outcome = outcome::failed;
+        response.result.code = "booking_form_invalid";
+        response.result.message = "A product is booked in its native or its scripted form, not '" +
+                                  request.booking_form + "'.";
+        return response;
+    }
+    if (request.product_code.empty() && !request.booking_form.empty()) {
+        response.result.outcome = outcome::failed;
+        response.result.code = "booking_form_without_product";
+        response.result.message = "A form is stated with the product it is the form of.";
+        return response;
+    }
+    // The product is a product type, or a library script the caller's tenant
+    // sees for a script-only product, so a screen reopens the trade as one.
+    if (!request.product_code.empty() &&
+        repository::product_type_repository().read_latest(ctx_, request.product_code).empty() &&
+        repository::script_repository().read_latest(ctx_, request.product_code).empty()) {
+        response.result.outcome = outcome::failed;
+        response.result.code = "product_unknown";
+        response.result.message =
+            "No product type or library script is named " + request.product_code + ".";
+        return response;
+    }
 
     /*
      * A booking lands in a book, so the book's own rules decide whether it may:
@@ -315,6 +355,19 @@ trade_operations_service::book_trade(const messaging::book_trade_request& reques
         identifier_repository.write(ctx, identifier, must_not_exist);
     }
 
+    // The product the trade is booked as is a child of the trade too, written
+    // in the same transaction so a booked product never lacks its record.
+    if (!request.product_code.empty()) {
+        domain::trade_product product;
+        product.trade_id = anchor.id;
+        product.trade_activity_id = activity.id;
+        product.product_code = request.product_code;
+        product.booking_form = request.booking_form;
+        product.version = 0;
+        stamp(product, ctx_);
+        repository::trade_product_repository{}.write(ctx, product, must_not_exist);
+    }
+
     auto instruments = request.instruments;
     domain::split_bond_rows(instruments);
     const service::instrument_keys keys{anchor.id, anchor.trade_type, activity.id};
@@ -409,6 +462,116 @@ trade_operations_service::execute_within(const context& ctx,
         *activity_id = activity.id;
 
     return operational_authorisation_service(ctx).raise_if_awaiting(trade_id, authorisation);
+}
+
+messaging::book_scripted_response
+trade_operations_service::book_scripted(const messaging::book_scripted_request& request,
+                                        std::string_view actor_token) {
+    using ores::utility::domain::outcome;
+    namespace tb = ores::trading::builders;
+
+    messaging::book_scripted_response response;
+    const auto refuse = [&](std::string code, std::string message) {
+        response.result.outcome = outcome::failed;
+        response.result.code = std::move(code);
+        response.result.message = std::move(message);
+        return response;
+    };
+    if (request.script_name.empty())
+        return refuse(
+            "script_name_missing",
+            "A scripted trade names its script, or the name its inline code is booked under.");
+
+    const bool inline_script = !request.code.empty();
+    std::optional<resolved_script> library;
+    std::vector<script_text> variants;
+    if (inline_script) {
+        variants.push_back({.purpose = "default", .code = request.code});
+    } else {
+        library = resolve_library_script(ctx_, request.script_name, request.script_version);
+        if (!library)
+            return refuse("script_not_found",
+                          "No library script " + request.script_name +
+                              (request.script_version == 0 ?
+                                   std::string{} :
+                                   " at version " + std::to_string(request.script_version)) +
+                              " is held.");
+        variants = library->variants;
+    }
+
+    auto validation = validate_script(variants, request.variables);
+    response.diagnostics = validation.diagnostics;
+    if (!validation.success || !validation.is_valid)
+        return refuse("script_invalid",
+                      "The script " + request.script_name +
+                          " is refused on the trade's variables: " + validation.message);
+
+    std::vector<std::vector<scripting::script_input>> inputs_by_variant;
+    for (const auto& v : variants)
+        inputs_by_variant.push_back(scripting::inputs_of(scripting::parse(v.code).tree, v.code));
+    std::vector<domain::script_input> inputs;
+    int sequence = 0;
+    for (const auto& i : scripting::merge_inputs(inputs_by_variant)) {
+        domain::script_input input;
+        input.script_name = request.script_name;
+        input.sequence_number = ++sequence;
+        input.input_name = i.name;
+        input.data_type = i.type;
+        input.is_array = i.is_array;
+        inputs.push_back(std::move(input));
+    }
+    std::vector<tb::scripted_variable> variables;
+    for (const auto& v : request.variables) {
+        if (!v.is_array && v.values.size() != 1)
+            return refuse("variable_not_single",
+                          "The variable " + v.name + " is one value, and the trade states " +
+                              std::to_string(v.values.size()) + ".");
+        tb::scripted_variable variable{.name = v.name, .type = v.type, .value = std::string{}};
+        if (v.is_array)
+            variable.value = v.values;
+        else
+            variable.value = v.values.empty() ? std::string{} : v.values.front();
+        variables.push_back(std::move(variable));
+    }
+
+    auto built = tb::scripted_trade_builder({.script_name = request.script_name,
+                                             .inputs = std::move(inputs),
+                                             .variables = std::move(variables)})
+                     .build();
+    if (!built)
+        return refuse("script_terms_refused",
+                      "The scripted trade is refused at " + built.error().term + ": " +
+                          built.error().message);
+    if (inline_script) {
+        built->instrument.script_body = request.code;
+        built->instrument.script_npv = request.npv_variable;
+    } else {
+        // The version that was validated is the one pinned, so a version
+        // published meanwhile is not booked unvalidated.
+        built->instrument.script_tenant_id = library->tenant_id;
+        built->instrument.script_version = library->version;
+    }
+
+    messaging::book_trade_request booking;
+    booking.anchor = request.anchor;
+    booking.anchor.trade_type = std::string(tb::scripted_trade_builder::trade_type);
+    booking.booking = request.booking;
+    booking.activity_type_code = request.activity_type_code;
+    booking.draft_reason_code = request.draft_reason_code;
+    booking.identifiers = request.identifiers;
+    domain::append_instrument(booking.instruments, domain::trade_instrument{std::move(*built)});
+    // A library script with no stated product is a script-only product, the
+    // script itself; an inline script with none is the catalogue's free-form
+    // ScriptedTrade.
+    booking.product_code = !request.product_code.empty() ? request.product_code :
+                           inline_script                 ? booking.anchor.trade_type :
+                                                           request.script_name;
+    booking.booking_form = "scripted";
+
+    const auto booked = book_trade(booking, actor_token);
+    response.result = booked.result;
+    response.activity_id = booked.activity_id;
+    return response;
 }
 
 messaging::execute_trade_response

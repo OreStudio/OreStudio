@@ -52,6 +52,10 @@ std::string mint_identifier() {
 
 }
 
+std::string mint_session_identifier() {
+    return mint_identifier();
+}
+
 session_store::session_store(std::chrono::seconds ttl, clock now)
     : ttl_(ttl)
     , now_(std::move(now)) {}

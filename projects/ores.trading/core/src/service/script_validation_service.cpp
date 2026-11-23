@@ -105,8 +105,8 @@ validate_script(std::span<const script_text> variants,
     return out;
 }
 
-std::optional<std::vector<script_text>>
-library_variants(const ores::database::context& ctx, const std::string& name, int version) {
+std::optional<resolved_script>
+resolve_library_script(const ores::database::context& ctx, const std::string& name, int version) {
     using ores::utility::uuid::tenant_id;
     if (version < 0)
         return std::nullopt;
@@ -136,13 +136,21 @@ library_variants(const ores::database::context& ctx, const std::string& name, in
         repository::script_library_version_repository().read(ctx, {pin}, held);
         if (held.scripts.empty())
             continue;
-        std::vector<script_text> out;
+        resolved_script out{.tenant_id = pin.tenant_id, .version = held.scripts.front().version};
         for (const auto& v : held.variants)
             if (v.script_name == name)
-                out.push_back({.purpose = v.purpose, .code = v.code});
+                out.variants.push_back({.purpose = v.purpose, .code = v.code});
         return out;
     }
     return std::nullopt;
+}
+
+std::optional<std::vector<script_text>>
+library_variants(const ores::database::context& ctx, const std::string& name, int version) {
+    auto script = resolve_library_script(ctx, name, version);
+    if (!script)
+        return std::nullopt;
+    return std::move(script->variants);
 }
 
 }

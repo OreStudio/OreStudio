@@ -23,6 +23,7 @@
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.trading.api/messaging/script_library_operation_protocol.hpp"
 #include "ores.trading.core/export.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <span>
 #include <string>
@@ -52,6 +53,27 @@ struct script_text final {
 ORES_TRADING_CORE_EXPORT messaging::validate_script_response
 validate_script(std::span<const script_text> variants,
                 const std::vector<messaging::script_variable_value>& variables);
+
+/**
+ * @brief A library script as the caller's tenant resolves its name and version:
+ * the tenant that holds it, the version, and its variants.
+ */
+struct resolved_script final {
+    boost::uuids::uuid tenant_id;
+    int version = 0;
+    std::vector<script_text> variants;
+};
+
+/**
+ * @brief A library script as the caller's tenant resolves its name: the
+ * tenant's own script where it has one, else the world library's.
+ *
+ * @param version the script's version, or 0 for its current one.
+ * @return the script, or nothing when no script of that name and version is
+ * held.
+ */
+ORES_TRADING_CORE_EXPORT std::optional<resolved_script>
+resolve_library_script(const ores::database::context& ctx, const std::string& name, int version);
 
 /**
  * @brief The variants of a library script as the caller's tenant resolves its

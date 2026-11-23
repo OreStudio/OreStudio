@@ -146,6 +146,28 @@ generates no service handler.
  */
 #+end_src
 
+*** product_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The product the trade is booked as, as describe_product names it; empty when the caller states none, and the trade then records no product.
+ */
+#+end_src
+
+*** booking_form
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The form the product is booked in, native or scripted; stated with the product.
+ */
+#+end_src
+
 ** book_trade_response
 :PROPERTIES:
 :END:

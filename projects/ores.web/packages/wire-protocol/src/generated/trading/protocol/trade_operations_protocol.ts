@@ -80,6 +80,14 @@ export interface BookTradeRequest {
      * row. A row for a kind with no writer yet refuses the booking by name.
      */
     instruments: InstrumentBatch;
+    /**
+     * @brief The product the trade is booked as, as describe_product names it; empty when the caller states none, and the trade then records no product.
+     */
+    product_code: string;
+    /**
+     * @brief The form the product is booked in, native or scripted; stated with the product.
+     */
+    booking_form: string;
 }
 
 /**

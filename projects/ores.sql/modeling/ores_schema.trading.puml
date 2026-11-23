@@ -5294,6 +5294,7 @@ package "trading" #E8F5E9 {
         * script_version : integer
         * modified_by : text
         * performed_by : text
+        * acting_agent : text
         * change_reason_code : text <<FK>>
         * change_commentary : text
         * valid_from : timestamptz

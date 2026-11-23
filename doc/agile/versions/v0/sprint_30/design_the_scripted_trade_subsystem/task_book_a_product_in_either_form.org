@@ -112,3 +112,9 @@ via its "Verifies task" field.
 | 5062.7 | tests of different findings on one variable and of an empty inline script | none | no change | the key's message part is what keeps two findings apart, and an empty script is ORE's parse, which the parse tests own |
 
 * Result
+
+In progress: PR 1 is in. =trading.v1.ops.validate_script= parses a library
+script, as the caller's tenant resolves its name and version, or an inline
+script, and checks a trade's variables against its inputs, with structured
+findings by line and column or by variable. The twin recipe evaluator's move,
+the trade's product and form, =book_scripted=, =book= and the routes follow.

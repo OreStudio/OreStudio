@@ -125,13 +125,24 @@ def by_title(staff, text, location):
     return sorted(found, key=lambda p: (p["job_title"], p["full_name"]))
 
 
+def roles_of(person):
+    """The roles a person holds.
+
+    The seeder writes them as one comma-separated string under "roles", because
+    an account may hold more than one. The built-in administrators carry a
+    single "role" instead."""
+    text = person.get("roles") or person.get("role") or ""
+    return [r.strip() for r in text.split(",") if r.strip()]
+
+
 def by_role(staff, text, location):
     role = ROLES.get(text.strip().lower())
     if role is None:
         raise SystemExit(f"open-as: unknown role '{text}'. Known: "
                          + ", ".join(sorted(set(ROLES.values()))))
     prefix = location_prefix(location)
-    found = [p for p in staff if p["role"] == role and in_location(p, prefix)]
+    found = [p for p in staff
+             if role in roles_of(p) and in_location(p, prefix)]
     return sorted(found, key=lambda p: (p["job_title"], p["full_name"]))
 
 
@@ -766,8 +777,9 @@ def launch(person, url, profile_dir, fill, headless=False, workspace=None,
 
 def describe(person):
     unit = person.get("business_unit_code") or "group"
+    roles = ", ".join(roles_of(person)) or "no role"
     return (f"{person['full_name']} ({person['job_title']}, "
-            f"{person['role']}, {unit}) as {principal(person)}")
+            f"{roles}, {unit}) as {principal(person)}")
 
 
 def run(argv, project_root=None, env_file=None) -> int:

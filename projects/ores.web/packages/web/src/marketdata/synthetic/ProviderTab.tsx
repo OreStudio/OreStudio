@@ -158,7 +158,9 @@ export function ProviderTab(): ReactNode {
                             })}
                         </span>
                         <span className="ml-auto flex items-center gap-2">
-                            {runs.mayRun && (
+                            {/* A provider with no source of its own, such as latent, is held by the
+                                vendors' sources, so it is not started or stopped as a whole. */}
+                            {runs.mayRun && source !== undefined && (
                                 <>
                                     <Button size="sm" onClick={() => ask('start')}>
                                         {t('marketdata.synthetic.runs.start')}

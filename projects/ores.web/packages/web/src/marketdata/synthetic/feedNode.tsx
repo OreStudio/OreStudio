@@ -29,6 +29,7 @@ import { logTime } from '../../operations/LogsPage.js';
 import { ReasonFields, useReason } from '../../refdata/shared.js';
 import { Card } from '../../ui/Card.js';
 import { Button, Dialog, Notice, Tag } from '../../ui/Primitives.js';
+import { PATHS } from '../../shell/paths.js';
 import { feedPageOf } from './feedTree.js';
 
 const graphKey = (node: string): readonly unknown[] => ['feed-graph', node];
@@ -44,33 +45,47 @@ function useFeedGraph(node: string) {
 }
 
 /**
- * The page of a node of the graph, when it has one: an upstream spot or curve, or a latent
- * surface. A source or a vendor view has none.
+ * Where a node of the graph opens: a feed's own page, the Graph tab of the surface a vendor view
+ * quotes, since a view has no page of its own and is stopped there, or a source's provider on
+ * the Provider tab. The graph is what names a view's surface.
  */
 export function nodePage(
-    node: Pick<FeedGraphNode, 'kind' | 'name' | 'feed_config_id'>,
+    node: Pick<FeedGraphNode, 'kind' | 'name' | 'feed_config_id' | 'provider_code'>,
+    graph?: FeedGraph,
 ): string | undefined {
+    if (node.kind === 'source')
+        return `${PATHS.synthetic}?tab=provider&provider=${encodeURIComponent(node.provider_code)}`;
+    if (node.kind === 'view') {
+        const surface = graph?.edges.find((e) => e.node === node.name && e.role === 'surface');
+        const latent = graph?.nodes.find((n) => n.name === surface?.input);
+        return latent === undefined ? undefined : `${nodePage(latent)}?tab=graph`;
+    }
     if (node.feed_config_id === '') return undefined;
     if (node.kind === 'latent')
         return feedPageOf({ kind: 'fx_vol_surface', id: node.feed_config_id });
-    if (node.kind !== 'upstream') return undefined;
     return feedPageOf({
         kind: node.name.includes('.ir.yield_curve.') ? 'ir_curve' : 'fx_spot',
         id: node.feed_config_id,
     });
 }
 
-/** A node's name, as a link to its page when it has one. */
+/** A node's name, as a link to where it opens. */
 function NodeName({
     node,
     name,
+    graph,
 }: {
     readonly node: FeedGraphNode | undefined;
     readonly name: string;
+    readonly graph: FeedGraph;
 }): ReactNode {
-    const page = node === undefined ? undefined : nodePage(node);
-    const shown = <span className="font-mono text-xs">{name}</span>;
-    return page === undefined ? shown : <Link to={page}>{shown}</Link>;
+    const page = node === undefined ? undefined : nodePage(node, graph);
+    if (page === undefined) return <span className="font-mono text-xs">{name}</span>;
+    return (
+        <Link className="font-mono text-xs text-accent hover:text-accent-bright" to={page}>
+            {name}
+        </Link>
+    );
 }
 
 const TONE: Readonly<Record<string, 'up' | 'down' | 'warn' | 'muted'>> = {
@@ -202,7 +217,7 @@ function Neighbours({
                                         {t(`marketdata.feedGraph.role.${row.role}`)}
                                     </td>
                                     <td className="py-1 pr-2">
-                                        <NodeName node={node} name={row.name} />
+                                        <NodeName node={node} name={row.name} graph={graph} />
                                     </td>
                                     <td className="py-1 pr-2">
                                         {node === undefined ? null : (
@@ -257,7 +272,7 @@ export function FeedGraphTab({ name }: { readonly name: string }): ReactNode {
                     {me.cause !== '' && (
                         <div>
                             {t('marketdata.feedGraph.causedBy')}{' '}
-                            <NodeName node={cause} name={me.cause} />
+                            <NodeName node={cause} name={me.cause} graph={graph.data} />
                         </div>
                     )}
                 </div>

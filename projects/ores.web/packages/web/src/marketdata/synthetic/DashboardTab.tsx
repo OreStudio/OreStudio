@@ -278,7 +278,7 @@ export function DashboardTab(): ReactNode {
                                             </td>
                                             <td className="px-4 py-2 text-right">
                                                 <span className="flex items-center justify-end gap-2">
-                                                    {runs.mayRun && (
+                                                    {runs.mayRun && source !== undefined && (
                                                         <>
                                                             <Button
                                                                 size="sm"

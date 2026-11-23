@@ -451,17 +451,28 @@ describe('the feed graph on a surface page', () => {
     });
 
     it('opens a node of the graph on its own page when it has one', () => {
-        expect(nodePage({ kind: 'latent', name: latent, feed_config_id: 'x' })).toBe(
-            '/market-data/synthetic/vol/x',
-        );
+        expect(
+            nodePage({
+                kind: 'latent',
+                name: latent,
+                feed_config_id: 'x',
+                provider_code: 'latent',
+            }),
+        ).toBe('/market-data/synthetic/vol/x');
         expect(
             nodePage({
                 kind: 'upstream',
                 name: 'synthetic.ice.ir.yield_curve.libor.chf.3m',
                 feed_config_id: 'c',
+                provider_code: 'ice',
             }),
         ).toBe('/market-data/synthetic/ir/c');
-        expect(nodePage({ kind: 'view', name: ice, feed_config_id: '' })).toBeUndefined();
+        expect(
+            nodePage({ kind: 'view', name: ice, feed_config_id: '', provider_code: 'ice' }, graph),
+        ).toBe(`/market-data/synthetic/vol/${FEED_ID}?tab=graph`);
+        expect(
+            nodePage({ kind: 'source', name: 'ice-a', feed_config_id: '', provider_code: 'ice' }),
+        ).toBe('/market-data/synthetic?tab=provider&provider=ice');
     });
 });
 

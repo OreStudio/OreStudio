@@ -100,7 +100,10 @@ begin
          7),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'tradeweb', 0, 'Tradeweb', 'broker',
          'Simulates Tradeweb dealer composite prices for rates, credit and money markets.',
-         8);
+         8),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'latent', 0, 'Latent', 'reference',
+         'The latent FX volatility surfaces every vendor quotes with noise of its own: no vendor''s market. The vendors'' sources hold them, so they run while a vendor quotes them.',
+         9);
 end $$;
 
 -- Summary

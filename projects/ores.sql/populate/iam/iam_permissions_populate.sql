@@ -2290,6 +2290,9 @@ BEGIN
     -- administrator, who holds '*', does not hold this. Only the code itself or
     -- 'installation::*' grants it.
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'installation::deployment:read', 'View the deployment as a whole: its tenants, services, grid, message bus and logs');
+    -- Decides the approval part none, which exempts an act from approval, so it
+    -- is held by nobody: a request naming only that part is never raised.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'installation::approvals:none', 'Decide the part that exempts an act from approval; held by nobody');
 END $$;
 
 

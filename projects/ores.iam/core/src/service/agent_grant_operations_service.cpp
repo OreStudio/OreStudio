@@ -23,6 +23,7 @@
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/agent_call_log.hpp"
+#include "ores.iam.core/repository/agent_held_write_store.hpp"
 #include "ores.iam.core/repository/agent_token_issue_log.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/service/agent_grant_service.hpp"
@@ -414,6 +415,29 @@ messaging::list_own_agent_grants_response agent_grant_operations_service::list_o
     return r;
 }
 
+messaging::get_agent_held_write_response agent_grant_operations_service::get_agent_held_write(
+    const messaging::get_agent_held_write_request& request) {
+    using response = messaging::get_agent_held_write_response;
+
+    if (ctx_.acts_for_agent())
+        return refuse_agent_request<response>("An agent cannot read a held write.");
+    const auto held = repository::agent_held_write_store(ctx_).find(request.request_id);
+    if (!held)
+        return refuse_agent_request<response>("No held agent write for that request.");
+    const auto caller = authorization_service(ctx_).caller_account();
+    const bool own = caller && boost::uuids::to_string(*caller) == held->grantor_account_id;
+    if (!own && !has_permission(ctx_, read_permission))
+        return refuse_agent_request<response>("Only the person the agent acts for, or a holder of " +
+                                              std::string(read_permission) + ", may read it.");
+    response r;
+    r.success = true;
+    r.write = *held;
+    if (const auto id = parse_uuid(held->grant_id))
+        if (const auto grant = agent_grant_service(ctx_).find_grant(*id))
+            r.agent_name = grant->agent_name;
+    return r;
+}
+
 messaging::list_own_agent_activity_response agent_grant_operations_service::list_own_agent_activity(
     const messaging::list_own_agent_activity_request& request) {
     using response = messaging::list_own_agent_activity_response;
@@ -657,6 +681,83 @@ messaging::exchange_agent_key_response agent_grant_operations_service::exchange_
     r.expires_at =
         std::chrono::duration_cast<std::chrono::seconds>(claims.expires_at.time_since_epoch())
             .count();
+    return r;
+}
+
+messaging::issue_agent_replay_token_response
+agent_grant_operations_service::issue_agent_replay_token(
+    const messaging::issue_agent_replay_token_request& request) {
+    using response = messaging::issue_agent_replay_token_response;
+
+    if (!signer_)
+        return refuse_agent_request<response>("This deployment cannot issue agent tokens.");
+    if (ctx_.acts_for_agent() || !has_permission(ctx_, exchange_permission))
+        return refuse_agent_request<response>("The caller needs " +
+                                              std::string(exchange_permission) + ".");
+    const auto tenant = utility::uuid::tenant_id::from_string(request.tenant_id);
+    if (!tenant || !parse_uuid(request.request_id))
+        return refuse_agent_request<response>("Not a held agent write.");
+    const auto tctx = ctx_.with_tenant(*tenant, ctx_.actor());
+
+    // Only a write that is being applied. The gateway alone moves a held
+    // write there, and only once it has read its request's approval; IAM's
+    // own store does not reach the approval queue's tables.
+    const auto held = repository::agent_held_write_store(tctx).find(request.request_id);
+    if (!held || held->state != repository::agent_held_write_store::applying)
+        return refuse_agent_request<response>("No agent write is being applied for that request.");
+
+    const auto now = std::chrono::system_clock::now();
+    const auto grant_id = parse_uuid(held->grant_id);
+    const auto grant = grant_id ? agent_grant_service(tctx).find_grant(*grant_id) : std::nullopt;
+    if (!grant || !is_active(*grant, now))
+        return refuse_agent_request<response>("The agent's grant has ended.");
+    const auto account_text = boost::uuids::to_string(grant->grantor_account_id);
+    const auto accounts = repository::account_repository().read_latest(tctx, account_text);
+    if (accounts.empty() || accounts.front().account_status != "active")
+        return refuse_agent_request<response>("The agent's person is not active.");
+    const auto& person = accounts.front();
+
+    authorization_service auth(tctx);
+    const auto permissions = agent_permissions(codes_of(auth.list_permissions()),
+                                               auth.get_role_permissions(grant->role_id),
+                                               auth.get_effective_permissions(person.id));
+    if (permissions.empty())
+        return refuse_agent_request<response>("The agent's grant carries no permission.");
+
+    const auto grant_text = boost::uuids::to_string(grant->id);
+    const auto party_text = boost::uuids::to_string(grant->party_id);
+    security::jwt::jwt_claims claims;
+    claims.subject = account_text;
+    claims.username = person.username;
+    claims.tenant_id = tenant->to_string();
+    claims.party_id = party_text;
+    claims.visible_party_ids = {party_text};
+    claims.roles = permissions;
+    claims.act = "agent:" + grant_text;
+    claims.grant_id = grant_text;
+    claims.audience = "HttpService";
+    claims.issued_at = now;
+    claims.expires_at = now + token_lifetime;
+    const auto token = signer_->create_token(claims);
+    if (!token)
+        return refuse_agent_request<response>("The agent token could not be signed.");
+
+    // A replay token is an issue like any other, so the log names it too.
+    repository::agent_token_issue_log(ctx_).record(
+        {.issued_at = now,
+         .tenant_id = tenant->to_string(),
+         .party_id = party_text,
+         .grant_id = grant_text,
+         .key_id = "",
+         .session_id = "",
+         .grantor_account_id = account_text,
+         .client_address = "",
+         .outcome = std::string(repository::agent_token_issue_log::issued),
+         .reason = "replay of request " + request.request_id});
+
+    response r;
+    r.success = true;
+    r.token = *token;
     return r;
 }
 

@@ -27,6 +27,7 @@ it. [[id:A7E2942C-66AD-449C-B80B-CA789EBC34FA][Agent grants: delegated consent f
 #+begin_src cpp :name includes
 #include "ores.iam.api/domain/agent_call.hpp"
 #include "ores.iam.api/domain/agent_grant.hpp"
+#include "ores.iam.api/domain/agent_held_write.hpp"
 #include "ores.iam.api/domain/agent_key.hpp"
 #include <cstdint>
 #include <string>
@@ -488,6 +489,108 @@ At most this many calls, from one to five hundred.
 *** calls
 :PROPERTIES:
 :cpp_type: std::vector<ores::iam::domain::agent_call>
+:END:
+
+** issue_agent_replay_token_request
+:PROPERTIES:
+:subject: iam.v1.ops.issue_agent_replay_token
+:response: issue_agent_replay_token_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the token that replays an LLM agent's approved write.
+ *
+ * Only the gateway asks, under its own identity and iam::agent_keys:exchange,
+ * once it has read the request's approval and claimed the held write. IAM
+ * issues it only for a held write that is being applied, and checks the grant
+ * and the person again, as an exchange does. Never a route.
+ */
+#+end_src
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** issue_agent_replay_token_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The replay token, naming the person and the agent, or a refusal.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** token
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_agent_held_write_request
+:PROPERTIES:
+:subject: iam.v1.ops.get_agent_held_write
+:response: get_agent_held_write_response
+:http_route: true
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the write an LLM agent made that an approval request holds.
+ *
+ * The review panel's read: the person the agent acts for reads their own, and
+ * a holder of iam::agent_grants:read reads any in their parties. An agent never
+ * reads one.
+ */
+#+end_src
+
+*** request_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** get_agent_held_write_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The held call, the agent that made it and what its replay answered.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** write
+:PROPERTIES:
+:cpp_type: ores::iam::domain::agent_held_write
+:END:
+
+*** agent_name
+:PROPERTIES:
+:cpp_type: std::string
 :END:
 
 * See also

@@ -173,3 +173,26 @@ Authorization: Bearer {{token}}
 HTTP 200
 #+end_src
 
+** =POST /api/v1/iam/ops/get_agent_held_write=
+:PROPERTIES:
+:ID: 605FEDE5-6B69-5473-8FE5-A5D0D44F1FE8
+:END:
+
+Get agent held write. It needs a session.
+
+It forwards to =iam.v1.ops.get_agent_held_write=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/iam/ops/get_agent_held_write
+#+end_example
+
+#+name: agent_grant_operations-get-agent-held-write
+#+begin_src hurl :tangle agent_grant_operations-get-agent-held-write.hurl :exports none
+POST {{base_url}}/api/v1/iam/ops/get_agent_held_write
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

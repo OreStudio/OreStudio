@@ -24,6 +24,7 @@ import type { InboxRequestView, RequestChange } from '@ores/wire-protocol/browse
 import type { InterpolationValues } from '../i18n/translate.js';
 import { CurvePublishExtras } from './CurvePublishExtras.js';
 import { CutAuthorisationExtras } from './CutAuthorisationExtras.js';
+import { AgentWriteExtras } from './AgentWriteExtras.js';
 import { RoleRequestExtras } from './RoleRequestExtras.js';
 import { kindLabel } from './words.js';
 import { Tag } from '../ui/Primitives.js';
@@ -252,8 +253,24 @@ function cutAuthorisation(code: string): KindDescriptor {
     };
 }
 
+/**
+ * An LLM agent's write, held for the person it acts for: they alone decide it,
+ * on the call the agent made, which the review section draws.
+ */
+const WRITE_BY_AGENT: KindDescriptor = {
+    code: 'iam.write_by_agent',
+    label: (t) => kindLabel(t, 'iam.write_by_agent'),
+    summary: (t) => kindLabel(t, 'iam.write_by_agent'),
+    approveLabel: (t) => t('inbox.agentWrite.approve'),
+    subjectRoute: () => null,
+    fieldLabel: fieldLabelUnder('iam.write_by_agent'),
+    drawsDelta: false,
+    Extras: AgentWriteExtras,
+};
+
 const KINDS: Readonly<Record<string, KindDescriptor>> = {
     [ROLE_GRANT.code]: ROLE_GRANT,
+    [WRITE_BY_AGENT.code]: WRITE_BY_AGENT,
     [BOOK_CHANGE.code]: BOOK_CHANGE,
     [CURVE_PUBLISH.code]: CURVE_PUBLISH,
     [ENGINE_SETTINGS_CHANGE.code]: ENGINE_SETTINGS_CHANGE,

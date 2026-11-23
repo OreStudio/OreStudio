@@ -188,6 +188,17 @@ struct run_call_record final {
     }
 };
 
+/// A write's hold, as the worker pool runs it: it calls other services.
+struct run_write_hold final {
+    const domain::exchanged_write_holder& hold;
+    const domain::http_request& req;
+    const std::string& route;
+
+    asio::awaitable<std::optional<domain::http_response>> operator()() const {
+        co_return hold(req, route);
+    }
+};
+
 /// The route handler, as the worker pool runs it.
 struct run_route_handler final {
     const domain::request_handler& handler;
@@ -858,8 +869,19 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                                                 "The server is saturated. Try again shortly.");
     } else {
         try {
+            /*
+             * A write made with an exchanged value, such as an LLM agent's key,
+             * is held for its person instead of running, unless it is exempt.
+             */
+            std::optional<domain::http_response> held;
+            if (bearer_was_exchanged && credentials_.hold && changes_something(domain_req.method))
+                held = workers_ != nullptr ? co_await workers_->run(run_write_hold{
+                                                 credentials_.hold, domain_req, matched->pattern}) :
+                                             credentials_.hold(domain_req, matched->pattern);
             ORES_LOG_SEV(lg(), trace) << "Executing handler for: " << matched->pattern;
-            if (workers_ != nullptr) {
+            if (held) {
+                response = std::move(*held);
+            } else if (workers_ != nullptr) {
                 const auto handler = matched->handler;
                 response = co_await workers_->run(run_route_handler{handler, domain_req});
             } else {
@@ -900,7 +922,7 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                 credentials_.record(call);
         } catch (const std::exception& e) {
             ORES_LOG_SEV(lg(), error) << "A call made with an exchanged credential was not "
-                                     << "recorded for " << matched->pattern << ": " << e.what();
+                                      << "recorded for " << matched->pattern << ": " << e.what();
         }
     }
 

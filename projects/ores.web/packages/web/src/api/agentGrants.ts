@@ -57,6 +57,18 @@ const callSchema = z.looseObject({
 });
 
 export type AgentCall = z.infer<typeof callSchema>;
+
+const heldWriteSchema = z.looseObject({
+    method: z.string(),
+    route: z.string(),
+    target: z.string(),
+    body: z.string(),
+    state: z.string(),
+    status: z.number(),
+    outcome: z.string(),
+});
+
+export type AgentHeldWrite = z.infer<typeof heldWriteSchema>;
 export type AgentGrant = z.infer<typeof grantSchema>;
 export type AgentKey = z.infer<typeof keySchema>;
 
@@ -93,6 +105,14 @@ export const agentGrants = {
             z.object({ ...answer, calls: z.array(callSchema) }),
         );
         return reply.calls;
+    },
+    /** The call an agent made that an approval request holds, and the agent's name. */
+    async heldWrite(requestId: string): Promise<{ write: AgentHeldWrite; agent_name: string }> {
+        return post(
+            '/api/v1/iam/ops/get_agent_held_write',
+            { request_id: requestId },
+            z.object({ ...answer, write: heldWriteSchema, agent_name: z.string() }),
+        );
     },
     /** Every grant and key in the reader's parties; needs iam::agent_grants:read. */
     async listAll(): Promise<{ grants: AgentGrant[]; keys: AgentKey[] }> {

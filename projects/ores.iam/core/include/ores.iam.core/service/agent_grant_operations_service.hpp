@@ -94,6 +94,9 @@ public:
     messaging::list_own_agent_grants_response
     list_own_agent_grants(const messaging::list_own_agent_grants_request& request);
 
+    messaging::get_agent_held_write_response
+    get_agent_held_write(const messaging::get_agent_held_write_request& request);
+
     messaging::list_own_agent_activity_response
     list_own_agent_activity(const messaging::list_own_agent_activity_request& request);
 
@@ -102,6 +105,13 @@ public:
 
     messaging::exchange_agent_key_response
     exchange_agent_key(const messaging::exchange_agent_key_request& request);
+
+    /**
+     * @brief The token that replays an approved agent write, as the person
+     * with the agent as actor.
+     */
+    messaging::issue_agent_replay_token_response
+    issue_agent_replay_token(const messaging::issue_agent_replay_token_request& request);
 
 private:
     struct limiters {

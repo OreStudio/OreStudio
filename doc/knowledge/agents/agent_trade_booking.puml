@@ -17,7 +17,7 @@
 '
 @startuml
 
-title An agent's booking goes live unauthorised, and its authorisation waits for the person and then Operations
+title An agent's booking is held for its person, then booked live and unauthorised for Operations to authorise
 
 skinparam sequenceMessageAlign center
 skinparam responseMessageBelowArrow true
@@ -25,21 +25,22 @@ autonumber
 
 actor "Agent" as agent
 participant "ores.http" as http
-participant "ores.trading" as trading
 participant "ores.inbox" as inbox
 actor "Person" as person
+participant "ores.trading" as trading
 actor "Operations\nauthoriser" as ops
 
-agent -> http : call_operation(book_trade, terms)
-http -> trading : book, token with act = agent
-trading -> trading : trade live and unauthorised, recording the agent
-trading -> inbox : raise operational authorisation:\npart 1 = the agent's person,\npart 2 = Operations
-inbox --> trading : request id
-trading --> http : trade id, authorisation request id
-http --> agent : booked, waiting for authorisation
+agent -> http : book a trade, with its key
+http -> inbox : raise iam.write_by_agent, with the agent's token
+http -> http : hold the call
+http --> agent : 202, the request waits for the person
 
-person -> inbox : confirm the booking (part 1)
-ops -> inbox : authorise (part 2, never the agent's person)
+person -> inbox : approve (the person alone)
+inbox --> http : the request is approved
+http -> trading : replay the booking as the person, act = agent
+trading -> trading : trade live and unauthorised, recording the agent
+trading -> inbox : raise operational authorisation, asked by the person
+ops -> inbox : authorise (never the person, never the agent)
 inbox -> trading : mark the trade authorised
 
 @enduml

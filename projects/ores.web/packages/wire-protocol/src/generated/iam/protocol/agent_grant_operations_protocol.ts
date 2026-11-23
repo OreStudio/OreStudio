@@ -24,6 +24,7 @@
  */
 import type { AgentCall } from '../domain/agent_call.js';
 import type { AgentGrant } from '../domain/agent_grant.js';
+import type { AgentHeldWrite } from '../domain/agent_held_write.js';
 import type { AgentKey } from '../domain/agent_key.js';
 
 /**
@@ -210,6 +211,49 @@ export interface ListOwnAgentActivityResponse {
     calls: AgentCall[];
 }
 
+/**
+ * @brief Asks for the token that replays an LLM agent's approved write.
+ *
+ * Only the gateway asks, under its own identity and iam::agent_keys:exchange,
+ * once it has read the request's approval and claimed the held write. IAM
+ * issues it only for a held write that is being applied, and checks the grant
+ * and the person again, as an exchange does. Never a route.
+ */
+export interface IssueAgentReplayTokenRequest {
+    tenant_id: string;
+    request_id: string;
+}
+
+/**
+ * @brief The replay token, naming the person and the agent, or a refusal.
+ */
+export interface IssueAgentReplayTokenResponse {
+    success: boolean;
+    message: string;
+    token: string;
+}
+
+/**
+ * @brief Reads the write an LLM agent made that an approval request holds.
+ *
+ * The review panel's read: the person the agent acts for reads their own, and
+ * a holder of iam::agent_grants:read reads any in their parties. An agent never
+ * reads one.
+ */
+export interface GetAgentHeldWriteRequest {
+    request_id: string;
+}
+
+/**
+ * @brief The held call, the agent that made it and what its replay answered.
+ */
+export interface GetAgentHeldWriteResponse {
+    success: boolean;
+    message: string;
+    write: AgentHeldWrite;
+    agent_name: string;
+}
+
 export const subjects = {
     create_agent_grant_request: 'iam.v1.agent_grants.put',
     create_agent_key_request: 'iam.v1.ops.create_agent_key',
@@ -219,6 +263,8 @@ export const subjects = {
     list_own_agent_grants_request: 'iam.v1.ops.list_own_agent_grants',
     list_every_agent_grant_request: 'iam.v1.ops.list_every_agent_grant',
     list_own_agent_activity_request: 'iam.v1.ops.list_own_agent_activity',
+    issue_agent_replay_token_request: 'iam.v1.ops.issue_agent_replay_token',
+    get_agent_held_write_request: 'iam.v1.ops.get_agent_held_write',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -234,4 +280,6 @@ export const requiresSession = {
     list_own_agent_grants_request: true,
     list_every_agent_grant_request: true,
     list_own_agent_activity_request: true,
+    issue_agent_replay_token_request: true,
+    get_agent_held_write_request: true,
 } as const;

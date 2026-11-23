@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/hold-an-agents-writes-for-six-eyes
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ An agent's write does not apply. It raises an approval request in the existing f
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LLM agents over MCP]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -45,9 +45,28 @@ An agent's write does not apply. It raises an approval request in the existing f
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The four-eyes framework gates a write through typed pending tables, one per
+gated entity. An agent may write any entity, so a pending table per entity is
+not the hold. The gateway is: every agent write passes ores.http, and the held
+change is the call itself. The person's approval replays the call, as the
+person with the agent as actor, and the replay meets exactly the controls the
+person's own write would: a gated entity raises its own request, decided by
+others under the four-eyes rule; a trade goes live unauthorised and enters
+trade authorisation. That is the six eyes.
+
+1. Inbox: an =iam.write_by_agent= kind; a request an agent raised (its
+   =acting_agent= stamp) is decided only by the person it was raised for, and
+   the queue offers it to them alone.
+2. The second line: the queue, trade authorisation and IAM's writes refuse a
+   token whose =act= names an agent, from rules shared with IAM's withholding.
+3. The hold: ores.http raises the request with the agent's token, keeps the
+   call (method, path, body) as a held write, and answers 202 with the request.
+4. The replay: on the request's approval ores.http claims the held write, asks
+   IAM for a replay token naming the person and the agent, runs the call
+   through its own routes, and marks the request failed when it does not apply.
+5. Exemption: an approval policy row exempts an agent write by route.
+6. The review panel shows the held call and the agent and person.
+7. Trades: trade authorisation refuses the agent and the agent's person.
 
 * Measurements
 
@@ -61,7 +80,15 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| ores.inbox.core.tests | 86 of 86 | =./compass.sh build test_ores.inbox.core.tests= | branch head |
+| ores.iam.core.tests | 302 of 302 | =./compass.sh build test_ores.iam.core.tests= | branch head |
+| ores.service.tests | 91 of 91 | =./compass.sh build test_ores.service.tests= | branch head |
+| ores.http.api.tests | 190 of 190 | =./compass.sh build test_ores.http.api.tests= | branch head |
+| ores.http.iam.tests | 173 passed, 1 skipped | =./compass.sh build test_ores.http.iam.tests= | branch head |
+| ores.web suite | 2668 of 2668 | =npx vitest run src= | branch head |
+| Six-eyes end-to-end through ores.http, Acme provisioned | 12 of 12 | scratchpad =agent_six_eyes.py= | branch head |
+| Exemption by policy row | 4 of 4 | scratchpad =agent_exempt.py= | branch head |
+| Earlier agent end-to-end, unchanged | 18 of 18 | scratchpad =agent_e2e.py= | branch head |
 
 * Notes
 
@@ -86,6 +113,29 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Self-review: the person-only rule keyed on the agent stamp would hand a replayed booking's authorisation to the person | inbox rule | Accept | Keyed on the kind =iam.write_by_agent= alone; a request a replay raises keeps the asker-never-decides rule. |
+| 2 | Self-review: IAM's database user cannot read the approval queue's tables | replay token | Accept | IAM issues for a held write in =applying=, which only the gateway sets after reading the approval. |
+| 3 | Self-review: a route answers 200 with a refusal in its body | replay | Accept | The replay judges the body's success or outcome and records the service's reason. |
+| 4 | Self-review: operation reads are POSTs and would be held | hold | Accept, interim | A POST to an operation named list, get, read, find, search or lookup passes; the route catalogue's declaration replaces this. |
+| 5 | Self-review: a write the token cannot make is held, not refused | hold | Partial | A token with no write at all is refused before any request; a partly writing token's uncovered write is refused at replay until the catalogue names each route's permission. |
+| 6 | Self-review: the generated decision test always takes the first seeded kind | kind code | Accept | The kind is =iam.write_by_agent=, which sorts after the role request. |
+| 7 | Self-review: the review panel does not say that a later part has no eligible approver | review panel | Open | Stated on the design page. |
+| 8 | Self-review: a tenant's currency delete at the version it read is refused | main | Capture | =a_tenant_cannot_delete_a_currency_at_the_version_it_read=, a defect of main the replay reproduced. |
 
 * Result
+
+An LLM agent's write is held at the gateway: ores.http raises an
+=iam.write_by_agent= approval request with the agent's own token, keeps the call
+itself, and answers 202 with the request. Reads, POST operations that only
+read, and writes a policy row exempts run as any other, and a token that can
+write nothing is refused at once. The request is its person's alone to decide:
+the queue offers it to them only, the decisions table refuses anyone else, only
+an agent can raise the kind, and no agent can decide anything, because every
+service refuses a withheld permission, decisions included, to an agent's token
+and the queue refuses its decision outright. Approval replays the call through
+ores.http as the person with the agent as actor, under a token IAM issues for
+that held write alone, so the write meets the controls the person's own would:
+a gated write raises its own request for others to decide, and a booking goes
+live unauthorised for Operations. A replay the service refuses fails the
+request with the service's reason. The review panel shows the agent, the call
+and its outcome.

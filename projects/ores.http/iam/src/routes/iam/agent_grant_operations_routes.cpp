@@ -163,6 +163,22 @@ agent_grant_operations_routes::handle_list_own_agent_activity(const http_request
     }
 }
 
+boost::asio::awaitable<http_response>
+agent_grant_operations_routes::handle_get_agent_held_write(const http_request& req,
+                                                           nats_client& session) {
+    using request_type = messaging::get_agent_held_write_request;
+    try {
+        const auto parsed = agent_grant_operations_read_body<request_type>(req.body);
+        if (!parsed) {
+            co_return http_response::api_error(
+                http_status::bad_request, "invalid-request", "Invalid request body");
+        }
+        co_return ores::http::forwarding::respond(req, session, *parsed);
+    } catch (const std::exception& e) {
+        co_return http_response::api_error(http_status::bad_request, "invalid-request", e.what());
+    }
+}
+
 void agent_grant_operations_routes::register_routes(
     std::shared_ptr<ores::http::net::router> router,
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
@@ -274,7 +290,22 @@ void agent_grant_operations_routes::register_routes(
     router->add_route(list_own_agent_activity_built);
     registry->register_route(list_own_agent_activity_built);
 
-    ORES_LOG_SEV(lg(), info) << "agent_grant_operations routes registered: " << 7 << " endpoint(s)";
+    auto get_agent_held_write_route =
+        router->post("/api/v1/iam/ops/get_agent_held_write")
+            .summary("Get agent held write")
+            .description("Forwards to the iam.v1.ops.get_agent_held_write operation.")
+            .tags({"iam"})
+            .auth_required()
+            .body<messaging::get_agent_held_write_request>()
+            .response<messaging::get_agent_held_write_response>()
+            .handler([&session](const http_request& req) {
+                return handle_get_agent_held_write(req, session);
+            });
+    const auto get_agent_held_write_built = get_agent_held_write_route.build();
+    router->add_route(get_agent_held_write_built);
+    registry->register_route(get_agent_held_write_built);
+
+    ORES_LOG_SEV(lg(), info) << "agent_grant_operations routes registered: " << 8 << " endpoint(s)";
 }
 
 }

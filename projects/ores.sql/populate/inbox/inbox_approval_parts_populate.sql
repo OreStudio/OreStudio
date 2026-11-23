@@ -41,6 +41,11 @@ insert into ores_inbox_approval_parts_tbl (
     answer_order, display_order,
     modified_by, performed_by, change_reason_code, change_commentary
 ) values
+    (ores_utility_system_tenant_id_fn(), 'none', 0, 'No approval',
+     'A policy row naming this part exempts the act: it is not held, and nobody decides it',
+     'installation::approvals:none',
+     0, 0,
+     current_user, current_user, 'system.initial_load', 'Initial population of approval parts'),
     (ores_utility_system_tenant_id_fn(), 'controller', 0, 'Controller',
      'The first independent check on a new book', 'inbox::approvals:decide_controller',
      1, 10,

@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 904F8E36-2E41-4245-B3BA-AEB6D2184245
+:END:
+#+title: Task: Make each vendor's view of a latent surface a feed of its collection
+#+description: A vendor's quotes of a latent surface become a view: a feed row of the vendor's own collection, named synthetic.<vendor>.fx.fx_option.<pair>, that reads the latent surface and applies the vendor's noise profile. It is listed and counted under its vendor, has its own page, and replaces the surface's contributor links; and a run's start and stop are written to each node's log.
+#+type: task
+#+level: s1
+#+filetags: :model_the_synthetic_feed_dependency_graph:sprint_30:v0:
+#+owner: marco
+#+branch: feature/make-each-vendor-view-a-feed
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-23
+#+updated: 2026-11-23
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person sees Bloomberg's AUD/USD vol quotes as a feed of Bloomberg: listed and counted under Bloomberg, with its own page saying plainly it is noise over the latent AUD/USD surface, linking the surface and the noise profile it applies, and stopped and started there. Every node's log also says when its run starts and stops, and why.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-23                               |
+
+* Acceptance
+
+- A view is a feed row of its vendor's collection, in an FX volatility folder, naming its latent surface and its vendor's noise profile; the surface's contributor links are gone.
+- The latent dataset publishes one view for each surface and contributor, into that contributor's vendor collection.
+- The dashboard and the Provider tab list and count views under their vendor; a view has its own page: Details, Graph, Messages and History, and Stop and Start.
+- The surface's Contributors tab becomes a read-only Views list, each linked to its page.
+- The service runs views as today: the vendor's source holds the shared surface and publishes the view's points; the graph's view nodes are the view rows.
+- A run's start and stop are written to the node's log, with why: demanded, by hand, released.
+- Live: Bloomberg lists 14 views; stopping one stops that vendor's quotes of that pair; the view's log shows its run starting and stopping.
+
+* Plan
+
+One PR, in slices that each end in a check. Agreed with the owner on
+2026-11-23: a view is a feed of its vendor's collection, and its name and page
+say plainly that it is one vendor's noise over a latent surface.
+
+1. *The view entity.* The link =fx_vol_surface_feed_contributor= becomes the
+   feed =fx_vol_view=, the way the stopped source became the stopped feed node:
+   the model is renamed, so the generated layers, the permissions and the roles
+   follow. It keeps its two inputs, =feed_id= (the latent surface) and
+   =contributor_id= (the vendor's noise profile, still one per vendor and
+   shared by its pairs, referenced and not copied), and gains what a feed of a
+   collection has: =config_id= (the vendor's collection), =folder_id=,
+   =source_name= (=synthetic.<vendor>.fx.fx_option.<pair>=), =enabled= and
+   =auto_start=. Check: codegen clean; SQL and codec tests.
+2. *The publish.* The latent dataset stages one view for each surface and
+   contributor, and the publish writes each into its contributor's vendor
+   collection, under an FX volatility folder there, named by the scheme. The
+   clean =demo= contributor becomes a =demo= view with its zero-noise profile.
+   Check: the names test covers views; a publish test that Bloomberg's
+   collection holds 14 views.
+3. *The service.* The registry reads view rows where it read the links; the
+   offers, the holds and the graph's view nodes come from them, the view node
+   carrying the view's own id. Run time is unchanged. A run's start and stop
+   are written to the node's log with why: demanded and run by a source,
+   started or stopped by hand, released when the demand drops or the source
+   stops. Check: service tests; graph cases.
+4. *The screens.* The dashboard and the Provider tab list and count views
+   under their vendor. A view page: Details (its surface and its noise profile,
+   linked), Graph, Messages, History, and Stop and Start. The surface's
+   Contributors tab becomes a read-only Views list linking each view; adding a
+   vendor to a surface is adding a view. BFF and =ores.http= serve the view
+   entity. Check: web tests.
+5. *Proof.* Rebuild, recreate, provision; Bloomberg lists 14 views; stopping
+   one stops that vendor's quotes of that pair; the view's log shows its run
+   starting and stopping.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

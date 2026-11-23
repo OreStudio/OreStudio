@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/book-a-product-in-either-form
-#+pr: 5070
+#+pr: 5071
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -106,6 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5071][#5071]] | [trading] Book a product type in its native or its scripted form |
 | [[https://github.com/OreStudio/OreStudio/pull/5070][#5070]] | [trading] Book a scripted trade, refused with the script's findings |
 | [[https://github.com/OreStudio/OreStudio/pull/5068][#5068]] | [trading] Record the product a trade was booked as, and its form |
 | [[https://github.com/OreStudio/OreStudio/pull/5063][#5063]] | [trading] Move the twin recipe evaluator into ores.trading.api |

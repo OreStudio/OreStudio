@@ -25,9 +25,9 @@
  * is no vendor's market. Each vendor quotes it with noise of its own. Nothing
  * here lists a pair or an expiry: the surfaces are the pairs the published FX
  * volatility surface blueprints calibrate and that the Bloomberg dataset's spot
- * feeds quote, at the expiries those blueprints' pillars name. A cross the dataset quotes
- * no spot for has no latent spot to strike a surface against, so it is left
- * for the task that quotes crosses consistently with their legs.
+ * feeds quote, at the expiries those blueprints' pillars name. A cross the
+ * Bloomberg dataset quotes no spot for has no spot to strike a surface against,
+ * so it is left for the task that quotes crosses consistently with their legs.
  *
  * A surface reads the Bloomberg spot of its pair, and the Bloomberg
  * discounting curves of its two currencies: each currency's curve with no

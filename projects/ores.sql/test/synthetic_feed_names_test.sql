@@ -27,7 +27,7 @@
 
 begin;
 
-select plan(7);
+select plan(9);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -75,6 +75,12 @@ select is(
 );
 
 select is(
+    ores_synthetic_fx_option_view_name_fn('bloomberg', 'AUD', 'USD'),
+    'synthetic.bloomberg.fx.fx_option.audusd',
+    'a vendor view is named in its vendor namespace, as the C++ twin names it'
+);
+
+select is(
     (select count(*)::int from ores_synthetic_fx_vol_surface_feeds_tbl s
      where s.valid_to = ores_utility_infinity_timestamp_fn()
        and not exists (select 1 from ores_synthetic_ir_curve_generation_configs_tbl c
@@ -82,6 +88,16 @@ select is(
                          and c.valid_to = ores_utility_infinity_timestamp_fn())),
     0,
     'every surface names a base curve that a feed publishes'
+);
+
+select is(
+    (select count(*)::int from ores_synthetic_fx_vol_surface_feeds_tbl s
+     where s.valid_to = ores_utility_infinity_timestamp_fn()
+       and not exists (select 1 from ores_synthetic_ir_curve_generation_configs_tbl c
+                       where c.source_name = s.quote_curve_name
+                         and c.valid_to = ores_utility_infinity_timestamp_fn())),
+    0,
+    'every surface names a quote curve that a feed publishes'
 );
 
 select * from finish();

@@ -227,6 +227,10 @@ signed off.
 6. *The screens.* Links both ways on every node page, the states with their
    reasons, stop and start per node, and the graph read through the BFF and
    =ores.http=.
+   It also settles what a tenant sees of the latent nodes: the =latent=
+   provider is hidden from tenants since PR #5047, but the system =Latent=
+   collection and its surfaces are still readable by tenants, because the
+   service's tenant runs read them.
 
 * See also
 

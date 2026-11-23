@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :every_floating_index_has_a_curve_and_fixings:sprint_30:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/plan-trades-on-the-expected-market-data-and-report-them
+#+pr: 5076
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -26,11 +26,11 @@ Every draw goes through one predicate: an index, a pair, an equity, a commodity,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -42,9 +42,25 @@ Every draw goes through one predicate: an index, a pair, an equity, a commodity,
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *One predicate over the candidates.* Before a population is planned, each
+   candidate list of the scope keeps only the candidates whose address the
+   party expects: a pair by its FX fixing at its cut source, an equity, a
+   commodity, a credit entity and an inflation index by the address a trade on
+   it names. The floating swaps already pass through =drawable=. The expected
+   set gains each spot-fed pair's FX fixing, which the simulated fixing
+   publisher states for the system party every party falls back to.
+2. *A type with no candidate leaves the cycle.* Each planner builds one probe
+   slot of each booked type on the filtered scope. A type whose probe throws
+   leaves the cycle, with the throw's message as its reason, and the slots
+   cycle over the types that remain, so a book keeps its size. The planners'
+   existing refusals become the reasons.
+3. *The plan says what it did.* =trade_population_plan= carries one outcome per
+   booked type: the trades planned and the reason when there are none.
+4. *The step reports it.* The generate_trades step plans every config first,
+   then writes, and adds an info entry per config with the trades by type and
+   the reason for each type with none.
+5. *Prove it.* Unit tests for the filter and the cycle; a fresh acme_demo
+   provision with the fixing gap query and the step log.
 
 * Measurements
 
@@ -58,9 +74,28 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trades, IR and FX fixing addresses, empty addresses | 840; 18 and 13; 0 | =fixing_gap_by_trade.sql=; =evidence/expected_market_data_plan.txt= | this branch |
 
 * Notes
+
+The goal asks the step to plan every config first and then write. The step
+still plans and writes one config at a time, and adds the info entry per config
+the acceptance asks for; planning all first would change when a failed config
+stops the step, and no acceptance needs it.
+
+The end-to-end runs found two faults outside the planner, fixed here because
+the acceptance cannot hold without them:
+- A fixing generator read only the first spot feed of its pair, by config id,
+  and that feed may be one no party starts. It now reads any of the pair's
+  spot feeds.
+- The adapter supervisor counts a tenant's routes only once the tenant is
+  live, and a provision makes the tenant live after writing them, so lseg-a
+  and demo-a were never asked for anything until a restart. A tenant's change
+  now refreshes the demand and the ingest loop.
+
+And one regression of the simulated fixings: a publisher whose FX fixings
+quote against two bases made the system party's whole FX composition refuse.
+Such a publisher is now left out with a log line.
 
 * Test Scenarios
 
@@ -77,12 +112,40 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5076][#5076]] | [synthetic] Plan trades on the market data a party expects |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A probe plans one trade per book | trade_population_planner.cpp | Declined | A type's candidates do not depend on the count |
+| 2 | Comment the empty catch | trade_population_planner.cpp | Accepted | The planner's refusal stands |
+| 3 | All publishers skipped leaves no refusal | fixing_sources.cpp | Accepted | Refusal set when nothing is left |
+| 4 | Tenant refresh on every change; thread safety | application.cpp | Declined | Tenants change rarely; the same calls already run from the event bus |
+| 5 | Empty level list ticks silently | index_fixing_feed.cpp | Accepted | The constructor refuses it |
+| 6 | Test a non-default cut | trading_trade_population_writer.cpp | Declined | No party has its own cut yet |
+| 7 | Per-type counts are planned, not written | provisioning_step_handler.hpp | Accepted | The entry says "planned by type" |
+| 8 | Housekeeping | — | No change | |
 
 * Result
+
+Every draw goes through one predicate: =expected_candidates= keeps the pairs,
+equities, commodities, credit entities and inflation indices whose address the
+party expects, and the floating swaps already pass through =drawable=.
+=plan_on_expected_market_data= tries each booked type alone; a type the planner
+refuses plans no trade and keeps a reason, which says the party expects none of
+its market data when the full scope would have planned it, and the slots cycle
+over the remaining types. The plan carries one outcome per type, and the
+generate_trades step adds an info entry per config.
+
+Acceptance:
+- No draw names an address outside the party's expected set: the FX worst-of
+  and basket partners come from the filtered pairs; a test checks that every
+  FX index a plan names is the expected one. Met.
+- A type with no candidate is left out and its slots go to the others: the
+  booked types' trades fill the book. Met.
+- The provisioning report has an info entry per config with the trades by type
+  and the reason for each type with none. Met.
+- On a fresh acme_demo provision every fixing address a trade names, IR and
+  FX, has a series with values: 18 IR and 13 FX, none empty
+  (=evidence/expected_market_data_plan.txt=). Met.

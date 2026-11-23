@@ -94,7 +94,7 @@ inline std::vector<generator_offer> fixing_offers(const std::vector<feed_start_t
     std::set<std::string> offered;
     const auto offer = [&](std::string item,
                            ores::analytics::quant::domain::market_member_kind kind,
-                           std::string level_code,
+                           std::vector<std::string> level_codes,
                            fixing_time when) {
         if (!offered.insert(item).second)
             return;
@@ -104,7 +104,7 @@ inline std::vector<generator_offer> fixing_offers(const std::vector<feed_start_t
                                               faults);
         if (!target)
             return;
-        auto make = [&build, target = *target, item, kind, level_code, when, held = inputs.held] {
+        auto make = [&build, target = *target, item, kind, level_codes, when, held = inputs.held] {
             return std::shared_ptr<ores::marketdata::domain::i_feed>(
                 std::make_shared<index_fixing_feed>(
                     build.nats,
@@ -112,7 +112,7 @@ inline std::vector<generator_offer> fixing_offers(const std::vector<feed_start_t
                                             .target = target,
                                             .item = item,
                                             .level_kind = kind,
-                                            .level_code = level_code,
+                                            .level_codes = level_codes,
                                             .when = when,
                                             .run_seed = build.market.loop().run_seed(),
                                             .held = held},
@@ -121,6 +121,14 @@ inline std::vector<generator_offer> fixing_offers(const std::vector<feed_start_t
         out.push_back(generator_offer{.id = target->id, .group = {}, .make = std::move(make)});
     };
 
+    // Every spot feed of a pair, whichever runs: a fixing reads the first that has a level.
+    std::map<std::pair<std::string, std::string>, std::vector<std::string>> pair_spots;
+    for (const auto& target : targets)
+        if (target.startable() && target.container_is_system && target.row.candidate.fx_pair &&
+            target.row.kind->kind == fx_spot_feed_kind)
+            pair_spots[*target.row.candidate.fx_pair].push_back(
+                spot_member_code(target.row.candidate.source_name));
+
     for (const auto& target : targets) {
         const auto& candidate = target.row.candidate;
         if (!target.startable() || !target.container_is_system)
@@ -128,7 +136,7 @@ inline std::vector<generator_offer> fixing_offers(const std::vector<feed_start_t
         if (candidate.fixing_item)
             offer(*candidate.fixing_item,
                   ores::analytics::quant::domain::market_member_kind::index_rate,
-                  *candidate.fixing_item,
+                  {*candidate.fixing_item},
                   {});
         if (candidate.fx_pair && target.row.kind->kind == fx_spot_feed_kind) {
             const auto found = inputs.fx.find(*candidate.fx_pair);
@@ -145,7 +153,7 @@ inline std::vector<generator_offer> fixing_offers(const std::vector<feed_start_t
                 continue;
             offer(*item,
                   ores::analytics::quant::domain::market_member_kind::spot,
-                  spot_member_code(candidate.source_name),
+                  pair_spots[*candidate.fx_pair],
                   found->second.when);
         }
     }

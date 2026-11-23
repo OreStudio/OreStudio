@@ -21,6 +21,7 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.iam.api/eventing/tenant_event.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/eventing/feed_event.hpp"
@@ -277,6 +278,18 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto mapping_refresh_sub = event_bus.subscribe<mdm::market_data_mapping_event>(
         [ingest, supervisor](const mdm::market_data_mapping_event&) {
             ORES_LOG_SEV(lg(), info) << "Mapping changed — refreshing ingest loop and demand.";
+            ingest->refresh();
+            supervisor->request_refresh();
+        });
+
+    // A tenant's routes and subscriptions count only once the tenant is live, and a provision
+    // writes them before it makes the tenant live, so the change of a tenant refreshes both
+    // what the loop stores to and what each adapter is asked to publish.
+    event_source.register_entity_event_mapping<ores::iam::messaging::tenant_event>(
+        "ores_iam_tenants");
+    auto tenant_refresh_sub = event_bus.subscribe<ores::iam::messaging::tenant_event>(
+        [ingest, supervisor](const ores::iam::messaging::tenant_event&) {
+            ORES_LOG_SEV(lg(), info) << "Tenant changed — refreshing ingest loop and demand.";
             ingest->refresh();
             supervisor->request_refresh();
         });

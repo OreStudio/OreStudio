@@ -22,6 +22,9 @@
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.logging/logger.hpp"
+#include "ores.marketdata.api/datum/market_datum.hpp"
+#include "ores.marketdata.api/datum/market_index.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/messaging/party_demand_operations_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
@@ -419,18 +422,6 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
         req.limit = page;
         generators.spots = whole(read(req).fx_spot_generation_configs, "spot configs");
     }
-    /*
-     * An FX trade observes the fixing of its pair, and the simulator fixes a
-     * pair from the spot a spot config quotes. A pair no spot config quotes,
-     * such as a cross no vendor collection carries, has no fixing anyone
-     * publishes, so it is left out of the FX draw.
-     */
-    std::erase_if(scope.currency_pairs, [&generators](const domain::currency_pair_reference& pair) {
-        return std::ranges::none_of(generators.spots, [&pair](const auto& spot) {
-            return spot.enabled && spot.base_currency_code == pair.base &&
-                   spot.quote_currency_code == pair.quote;
-        });
-    });
     {
         synthetic::list_fx_vol_surface_feeds_request req;
         req.limit = page;
@@ -455,6 +446,33 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     }
     scope.expected_market_data =
         feed::expected_market_data(demand.routes, feed::generator_publications(generators));
+
+    /*
+     * The simulator fixes each pair a spot config quotes at the source of its
+     * default cut, for the system party every party falls back to. A party
+     * that expects a pair's spot quote can price the pair, so it expects the
+     * pair's FX fixing too.
+     */
+    for (const auto& pair : scope.currency_pairs) {
+        namespace md = ores::marketdata::datum;
+        const auto spot = md::market_datum::make(
+            md::instrument_type::fx_spot,
+            md::quote_type::rate,
+            {{md::field::unit_ccy, pair.base}, {md::field::ccy, pair.quote}});
+        if (!spot)
+            continue;
+        const auto quote = md::oresmd_uri_codec::write(*spot);
+        if (!quote || !scope.expected_market_data.contains(*quote))
+            continue;
+        auto index = ores::marketdata::datum::market_index::make(
+            ores::marketdata::datum::index_family::fx,
+            pair.base,
+            {{"source", pair.fixing_source}, {"ccy", pair.quote}});
+        if (!index)
+            continue;
+        if (auto fixing = ores::marketdata::datum::oresmd_uri_codec::write_index(*index))
+            scope.expected_market_data.insert(std::move(*fixing));
+    }
 
     /*
      * A trade builder reads the terms it does not draw from the tenant's
@@ -893,6 +911,4 @@ void trading_trade_population_writer::write_structure_member(
                                                        boost::uuids::to_string(structure_id),
                                                        decoded->result.message));
 }
-
-
 }

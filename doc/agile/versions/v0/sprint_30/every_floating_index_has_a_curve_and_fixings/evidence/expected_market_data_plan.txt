@@ -1,0 +1,29 @@
+fixing_gap_by_trade.sql on a fresh acme_demo provision, with no service restart.
+Branch feature/plan-trades-on-the-expected-market-data-and-report-them, 2026-11-23.
+Command: compass sql -u ddl -- -f evidence/fixing_gap_by_trade.sql
+
+ trades | ir_fixing_addresses | fx_fixing_addresses | empty_fixing_addresses
+--------+---------------------+---------------------+------------------------
+    840 |                  18 |                  13 |                      0
+
+simulated-fixings-a stated 42640 fixings over all 82 of its items.
+
+The generate_trades step log, an excerpt of the info entries per config:
+
+  ACME ACCOUK bonds by type: Bond 2; BondOption 2; ForwardBond 2; BondFuture 1;
+    BondRepo 1; BondTRS 1; BondPosition 1; CallableBond 0, the party expects none
+    of the market data that CallableBond trades would name: no generator it is
+    routed to publishes it; ...
+  ACME ACCOUK rates by type: Swap 14; CrossCurrencySwap 14; ... RateDigitalOption 14
+  ACME ACCOUK equity by type: EquityAccumulator 0, the party expects none of the
+    market data that EquityAccumulator trades would name: ...
+  ACME ACCOUK FX by type: FxForward 3; FxSwap 3; FxOption 3; ...
+
+ACCOUK books 254 trades where it booked 649: its equity, commodity, credit,
+inflation and scripted configs plan none, because no generator the party is
+routed to publishes the market data those trades would name.
+
+Two runs before this one, with a restart-free provision, left fixings empty:
+18 FX fixings whose pair's first spot feed never started, and then 14 crosses
+quoted only by the lseg and demo collections, which the adapter supervisor never
+asked for because the tenant became live after its routes were written.

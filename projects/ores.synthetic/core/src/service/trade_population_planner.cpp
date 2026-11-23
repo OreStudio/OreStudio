@@ -20,7 +20,9 @@
 #include "ores.synthetic.core/service/trade_population_planner.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/market_index.hpp"
+#include "ores.marketdata.api/datum/ore_index_codec.hpp"
 #include "ores.marketdata.api/datum/ore_key_codec.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/projection/ore_projection.hpp"
 #include "ores.synthetic.core/service/scripted_twins.hpp"
 #include "ores.trading.api/builders/barrier_product_builders.hpp"
@@ -680,8 +682,8 @@ ores::trading::domain::bond_product build_bond_trade(const domain::trade_generat
 
 }
 
-std::size_t bond_trade_planner::code_count() const {
-    return bond_type_count;
+std::vector<std::string> bond_trade_planner::codes() const {
+    return {std::begin(bond_types), std::end(bond_types)};
 }
 
 namespace {
@@ -1293,8 +1295,11 @@ std::string_view commodity_trade_planner::asset_class_code() const {
     return "commodity";
 }
 
-std::size_t commodity_trade_planner::code_count() const {
-    return commodity_type_count;
+std::vector<std::string> commodity_trade_planner::codes() const {
+    std::vector<std::string> out;
+    for (const auto& type : commodity_types)
+        out.emplace_back(type.code);
+    return out;
 }
 
 domain::trade_population_plan
@@ -1803,8 +1808,8 @@ std::string_view rate_trade_planner::asset_class_code() const {
     return "interest_rates";
 }
 
-std::size_t rate_trade_planner::code_count() const {
-    return rate_type_count;
+std::vector<std::string> rate_trade_planner::codes() const {
+    return {std::begin(rate_types), std::end(rate_types)};
 }
 
 domain::trade_population_plan
@@ -1986,8 +1991,8 @@ std::string_view fx_trade_planner::asset_class_code() const {
     return "fx";
 }
 
-std::size_t fx_trade_planner::code_count() const {
-    return fx_type_count;
+std::vector<std::string> fx_trade_planner::codes() const {
+    return {std::begin(fx_types), std::end(fx_types)};
 }
 
 /*
@@ -2451,8 +2456,8 @@ std::string_view equity_trade_planner::asset_class_code() const {
     return "equity";
 }
 
-std::size_t equity_trade_planner::code_count() const {
-    return equity_type_count;
+std::vector<std::string> equity_trade_planner::codes() const {
+    return {std::begin(equity_types), std::end(equity_types)};
 }
 
 
@@ -2476,8 +2481,8 @@ std::string_view credit_trade_planner::asset_class_code() const {
     return "credit";
 }
 
-std::size_t credit_trade_planner::code_count() const {
-    return credit_type_count;
+std::vector<std::string> credit_trade_planner::codes() const {
+    return {std::begin(credit_types), std::end(credit_types)};
 }
 
 namespace {
@@ -2918,8 +2923,8 @@ std::string_view scripted_trade_planner::asset_class_code() const {
     return "scripted";
 }
 
-std::size_t scripted_trade_planner::code_count() const {
-    return scripted_type_count;
+std::vector<std::string> scripted_trade_planner::codes() const {
+    return {std::begin(scripted_types), std::end(scripted_types)};
 }
 
 domain::trade_population_plan
@@ -2990,8 +2995,8 @@ std::string_view inflation_trade_planner::asset_class_code() const {
     return "inflation";
 }
 
-std::size_t inflation_trade_planner::code_count() const {
-    return std::size(inflation_types);
+std::vector<std::string> inflation_trade_planner::codes() const {
+    return {std::begin(inflation_types), std::end(inflation_types)};
 }
 
 domain::trade_population_plan
@@ -3853,6 +3858,114 @@ void group_into_structures(domain::trade_population_plan& plan, std::uint32_t st
         if (!first || !paired)
             break;
     }
+}
+
+}
+
+namespace ores::synthetic::service {
+
+namespace {
+
+/// Whether @p address names something the party expects; an address that cannot be written,
+/// such as a pair whose cut names no fixing source, is not expected.
+template <typename AddressOf>
+bool expected_address(const domain::trade_generation_scope& scope, AddressOf address_of) {
+    try {
+        return scope.expected_market_data.contains(address_of().uri());
+    } catch (const trade_population_error&) {
+        return false;
+    }
+}
+
+std::optional<std::string> inflation_address_of(const std::string& code) {
+    namespace md = ores::marketdata::datum;
+    const auto index = md::ore_index_codec::read(code);
+    if (!index)
+        return std::nullopt;
+    auto uri = md::oresmd_uri_codec::write_index(*index);
+    if (!uri)
+        return std::nullopt;
+    return std::move(*uri);
+}
+
+}
+
+domain::trade_generation_scope expected_candidates(domain::trade_generation_scope scope) {
+    const auto& expected = scope.expected_market_data;
+    std::erase_if(scope.currency_pairs, [&](const domain::currency_pair_reference& pair) {
+        return !expected_address(scope, [&] { return fx_index_of(pair); });
+    });
+    std::erase_if(scope.equity_underlyings, [&](const domain::equity_underlying_reference& u) {
+        return !expected_address(scope, [&] { return equity_address_of(u.code); });
+    });
+    std::erase_if(scope.commodities, [&](const domain::commodity_reference& c) {
+        return !expected_address(scope, [&] { return commodity_address_of(c.code); });
+    });
+    std::erase_if(scope.credit_reference_entities, [&](const std::string& lei) {
+        return !expected_address(scope, [&] { return credit_curve_of(lei, scope.currency_code); });
+    });
+    std::erase_if(scope.inflation_index_codes, [&](const std::string& code) {
+        const auto address = inflation_address_of(code);
+        return !address || !expected.contains(*address);
+    });
+    return scope;
+}
+
+domain::trade_population_plan
+plan_on_expected_market_data(const domain::trade_generation_scope& scope) {
+    const auto& planner = planner_for(scope.asset_class_code);
+    const auto candidates = expected_candidates(scope);
+
+    std::vector<std::string> booked;
+    for (const auto& code : planner.codes())
+        if (scope.trade_type_codes.empty() ||
+            std::ranges::find(scope.trade_type_codes, code) != scope.trade_type_codes.end())
+            booked.push_back(code);
+
+    std::vector<domain::trade_type_outcome> outcomes;
+    std::vector<std::string> drawable_types;
+    for (const auto& code : booked) {
+        auto probe = candidates;
+        probe.trade_type_codes = {code};
+        probe.trades_per_book = 1;
+        try {
+            static_cast<void>(planner.plan(probe));
+            drawable_types.push_back(code);
+            outcomes.push_back({.trade_type_code = code});
+        } catch (const trade_population_error& e) {
+            // A type the full scope plans is refused only because the party expects none of
+            // its candidates, which is what the reason must say, rather than that the tenant
+            // holds none.
+            auto unfiltered = scope;
+            unfiltered.trade_type_codes = {code};
+            unfiltered.trades_per_book = 1;
+            std::string reason = e.what();
+            try {
+                static_cast<void>(planner.plan(unfiltered));
+                reason = "the party expects none of the market data that " + code +
+                         " trades would name: no generator it is routed to publishes it";
+            } catch (const trade_population_error&) {
+                // The full scope refuses the type too, so the planner's own refusal stands.
+            }
+            outcomes.push_back({.trade_type_code = code, .planned = 0, .reason = reason});
+        }
+    }
+
+    domain::trade_population_plan plan;
+    if (drawable_types.empty()) {
+        plan.config_id = scope.config_id;
+        plan.party_id = scope.party_id;
+        plan.as_of_date = scope.as_of_date;
+    } else {
+        auto planned = candidates;
+        planned.trade_type_codes = drawable_types;
+        plan = planner.plan(planned);
+    }
+    for (auto& outcome : outcomes)
+        outcome.planned = static_cast<std::uint32_t>(std::ranges::count(
+            plan.slots, outcome.trade_type_code, &domain::trade_population_slot::trade_type_code));
+    plan.type_outcomes = std::move(outcomes);
+    return plan;
 }
 
 }

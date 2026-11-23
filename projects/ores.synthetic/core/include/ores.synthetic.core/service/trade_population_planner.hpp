@@ -53,6 +53,29 @@ public:
 ORES_SYNTHETIC_CORE_EXPORT std::size_t routed_code_count(std::string_view asset_class_code);
 
 /**
+ * @brief The candidates of @p scope the party expects the address of.
+ *
+ * A pair is kept when the party expects its FX fixing, an equity or a commodity when it
+ * expects the address a trade on it names, a credit entity when it expects the entity's credit
+ * curve in the scope's currency, and an inflation index when it expects the index. The floating
+ * swaps are kept to the expected indices when a trade draws them.
+ */
+[[nodiscard]] ORES_SYNTHETIC_CORE_EXPORT domain::trade_generation_scope
+expected_candidates(domain::trade_generation_scope scope);
+
+/**
+ * @brief States the population on the market data the party expects, and what each trade type
+ * did.
+ *
+ * The candidates are the expected ones. Each trade type the config books is tried alone; a type
+ * whose planner refuses it plans no trade and keeps the refusal as its reason, and the slots
+ * cycle over the types that remain, so a book keeps its size. A config none of whose types has a
+ * candidate plans no trade.
+ */
+[[nodiscard]] ORES_SYNTHETIC_CORE_EXPORT domain::trade_population_plan
+plan_on_expected_market_data(const domain::trade_generation_scope& scope);
+
+/**
  * @brief Names the trade type code the bond family states for a plain bond.
  */
 inline constexpr std::string_view bond_trade_type_code = "Bond";
@@ -92,7 +115,12 @@ public:
      * therefore the least a config of the class can state without losing a code,
      * and a caller that sizes a population states it as its floor.
      */
-    [[nodiscard]] virtual std::size_t code_count() const = 0;
+    [[nodiscard]] std::size_t code_count() const {
+        return codes().size();
+    }
+
+    /// The trade types this planner cycles, in its own order.
+    [[nodiscard]] virtual std::vector<std::string> codes() const = 0;
 };
 
 /**
@@ -109,7 +137,7 @@ public:
 
     [[nodiscard]] std::string_view asset_class_code() const override;
 
-    [[nodiscard]] std::size_t code_count() const override;
+    [[nodiscard]] std::vector<std::string> codes() const override;
 };
 
 /**
@@ -131,7 +159,7 @@ public:
 
     [[nodiscard]] std::string_view asset_class_code() const override;
 
-    [[nodiscard]] std::size_t code_count() const override;
+    [[nodiscard]] std::vector<std::string> codes() const override;
 };
 
 /**
@@ -154,7 +182,7 @@ public:
 
     [[nodiscard]] std::string_view asset_class_code() const override;
 
-    [[nodiscard]] std::size_t code_count() const override;
+    [[nodiscard]] std::vector<std::string> codes() const override;
 };
 
 /**
@@ -181,7 +209,7 @@ public:
 
     [[nodiscard]] std::string_view asset_class_code() const override;
 
-    [[nodiscard]] std::size_t code_count() const override;
+    [[nodiscard]] std::vector<std::string> codes() const override;
 };
 
 /**
@@ -203,7 +231,7 @@ public:
 
     [[nodiscard]] std::string_view asset_class_code() const override;
 
-    [[nodiscard]] std::size_t code_count() const override;
+    [[nodiscard]] std::vector<std::string> codes() const override;
 };
 
 /**
@@ -226,7 +254,7 @@ public:
 
     [[nodiscard]] std::string_view asset_class_code() const override;
 
-    [[nodiscard]] std::size_t code_count() const override;
+    [[nodiscard]] std::vector<std::string> codes() const override;
 };
 
 /**
@@ -253,7 +281,7 @@ public:
 
     [[nodiscard]] std::string_view asset_class_code() const override;
 
-    [[nodiscard]] std::size_t code_count() const override;
+    [[nodiscard]] std::vector<std::string> codes() const override;
 };
 
 /**
@@ -266,7 +294,7 @@ public:
 
     [[nodiscard]] std::string_view asset_class_code() const override;
 
-    [[nodiscard]] std::size_t code_count() const override;
+    [[nodiscard]] std::vector<std::string> codes() const override;
 };
 
 /**

@@ -346,6 +346,17 @@ private:
                 wf.record(entry.name + " for " + entry.party + ": wrote " +
                           std::to_string(population.written) + " trade(s), " +
                           std::to_string(population.already_present) + " already present");
+                // What each trade type did, so a type that planned nothing says why.
+                std::string by_type;
+                for (const auto& outcome : population.type_outcomes) {
+                    if (!by_type.empty())
+                        by_type += "; ";
+                    by_type += outcome.trade_type_code + " " + std::to_string(outcome.planned);
+                    if (outcome.planned == 0 && !outcome.reason.empty())
+                        by_type += ", " + outcome.reason;
+                }
+                if (!by_type.empty())
+                    wf.record(entry.name + " for " + entry.party + " planned by type: " + by_type);
             } catch (const std::exception& e) {
                 ORES_LOG_SEV(lg(), ores::logging::warn)
                     << "generate_trades: " << entry.name << " for party " << entry.party

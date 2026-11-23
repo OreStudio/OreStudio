@@ -81,7 +81,9 @@ struct index_fixing_feed_input final {
     /// The board member the fixing is taken from: a spot's level, or an index's rate.
     ores::analytics::quant::domain::market_member_kind level_kind =
         ores::analytics::quant::domain::market_member_kind::index_rate;
-    std::string level_code;
+    /// The board members the level is read from, in order; the first one published is read.
+    /// A pair may be quoted by several spot feeds, of which only some run.
+    std::vector<std::string> level_codes;
     fixing_time when;
     /// How many business days of history the generator states on its first level.
     int history_days = 520;
@@ -138,7 +140,7 @@ private:
     ores::nats::service::client& nats_;
     index_fixing_feed_input input_;
     ores::analytics::quant::service::run_market& market_;
-    ores::analytics::quant::domain::market_board::member_id level_member_;
+    std::vector<ores::analytics::quant::domain::market_board::member_id> level_members_;
     std::vector<std::string> series_uris_;
     std::optional<std::chrono::year_month_day> last_fixed_;
     bool history_stated_ = false;

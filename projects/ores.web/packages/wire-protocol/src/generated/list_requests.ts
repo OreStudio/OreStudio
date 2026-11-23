@@ -7459,6 +7459,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.trade_products.list': {
+        asOf: true,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['products'],
+    },
+    'trading.v1.trade_products.list_by_trade_id': {
+        asOf: false,
+        filter: ['trade_id', 'trade_id_one_of'],
+        rows: ['products'],
+    },
+    'trading.v1.trade_products_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'trading.v1.trade_states.list': {
         asOf: true,
         filter: ['trade_id_one_of'],

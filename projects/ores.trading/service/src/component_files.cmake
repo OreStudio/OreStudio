@@ -189,6 +189,7 @@ set(files
     "messaging/trade_link_type_event_registrar.cpp"
     "messaging/trade_party_role_event_registrar.cpp"
     "messaging/trade_portfolio_event_registrar.cpp"
+    "messaging/trade_product_event_registrar.cpp"
     "messaging/trade_state_event_registrar.cpp"
     "messaging/vanilla_swap_instrument_event_registrar.cpp"
 )
@@ -366,6 +367,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/trade_link_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/trade_party_role_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/trade_portfolio_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/trade_product_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/trade_state_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/vanilla_swap_instrument_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/ores.trading.service.hpp"

@@ -1,0 +1,186 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 8911D316-805D-4A63-93C1-8E53D92A5BB5
+:END:
+#+title: ores.trading.trade_product
+#+description: Codegen entity model for the trading =trade_product= table: the product a trade was booked as, and the form it was booked in.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: The product a trade was booked as, and its form.
+#+entity_singular: trade_product
+#+entity_plural: trade_products
+#+entity_title: Trade Product
+#+created: 2026-11-23
+#+updated: 2026-11-23
+
+The product a trade was booked as, and the form it was booked in, so a screen
+reopens the trade in that form. The product is a product type's code, or a
+library script's name for a script-only product, as =describe_product= names it;
+the form is =native=, the product's own element, or =scripted=, a =ScriptedTrade=
+over a library script. Neither follows from the trade alone: a script such as
+=VanillaBasketOption= is the scripted form of the equity, FX and commodity basket
+options alike, so a =ScriptedTrade= over it does not say which was booked.
+
+The row is its own type, not two columns of the [[id:4304A441-E532-45FB-837A-378F13693CAE][trade anchor]], because the
+anchor is at its ceiling of fields. It is keyed by the trade, written by the
+booking operation with the trade, and a trade booked any other way has none.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     trading
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:parent_entity: trade
+:economic:    false
+:END:
+
+The trade booked as the product.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:economic: false
+:END:
+
+The activity that wrote this version.
+
+** product_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:economic: false
+:END:
+
+The product the trade was booked as, as =describe_product= names it.
+
+#+begin_src cpp :name generator
+std::string("Swap")
+#+end_src
+
+** booking_form
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:economic: false
+:END:
+
+The form the product was booked in: =native= or =scripted=.
+
+#+begin_src cpp :name generator
+std::string("native")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_trade_products_tbl
+:END:
+
+** Checks
+
+| expression                                  |
+|---------------------------------------------|
+| "product_code" <> ''                        |
+| "booking_form" in ('native', 'scripted')    |
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:    ores_trading_trades_tbl
+:error_message: Invalid trade_id: %. No active trade found with this id.
+:nullable: false
+:list_by:  true
+:bump_parent_version: true
+:END:
+
+A database foreign key: the anchor is immutable.
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
+:nullable: false
+:END:
+
+The activity that wrote this version. A database foreign key: the activity
+is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
+    }
+#+end_src
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:generator_facet_name: generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: product
+:entity_plural_short:   products
+:entity_singular_words: trade product
+:entity_plural_words:   trade products
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: tp
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| trade_id    | Trade Id    |
+| product_code | Product    |
+| booking_form | Form       |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:290A1069-A1EE-4DD1-8D23-1C60F76F8949][Product Schemas for Native and Scripted Products]] — the forms a product admits.

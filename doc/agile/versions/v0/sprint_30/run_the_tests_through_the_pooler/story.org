@@ -87,6 +87,12 @@ pooler. The gate and the tests around them do not.
 - A test does not strip variables to get a clean parse. The parser reads
   only the provider, so the fake environment a test sets is the whole
   environment.
+- The environment states one database endpoint and derives it from the
+  topology: =ORES_<SVC>_DB_PORT= is the pooler's port when a pooler is
+  declared, and PostgreSQL's port otherwise. Only the code that renders the
+  pooler unit reads the pooler keys. A machine that runs no pooler says so at
+  configure time with =compass env configure --no-pooler=, which is what every
+  CI job does.
 
 * Out of scope
 

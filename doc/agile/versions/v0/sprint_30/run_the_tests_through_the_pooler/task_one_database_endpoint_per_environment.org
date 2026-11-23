@@ -106,23 +106,39 @@ pooler-off environment must name PostgreSQL's port, and it names the pooler's.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Work started on 2026-11-23 and the first finding changed the size of the task:
+=.compass/checks/env_format.org= already states the rule. Line 214 gives every
+service ={ORES_DB_POOLER_PORT}= when =ORES_DB_POOLER_ENABLED= is 1, and line
+215 gives it ={PGPORT:-5432}= when it is not; lines 216 and 217 write the
+listener variables only in the pooled case. So generation derives one endpoint
+and the services stay ignorant of the pooler. What no one could do was *state*
+the topology: =compass env configure= had no flag for it, so every environment
+took the format's default, which is a pooler, and CI generated a pooler's port
+on a machine that runs none.
+
+Three steps, in order:
+
+1. Teach =compass env configure= the fact: =--pooler= and =--no-pooler= become
+   =--var ORES_DB_POOLER_ENABLED=1/0=. One helper, =env_init._declared_vars=,
+   assembles the =--var= pairs, so the new declaration sits beside the two
+   that were already there (=ORES_COMPILER_CACHE=, =ORES_USE_BUSCTL=).
+2. Tell each workflow the truth about its machine: the five that configure an
+   environment pass =--no-pooler=, because each starts PostgreSQL directly and
+   none of them runs a pooler. The pooled database step keeps its own port, so
+   CI still covers both cases.
+3. Prove both shapes on the pinned generator, and unit-test the declaration.
+
+No C++, CMake or test code changed: =database_options= already carries one
+port, which is the shape the rule wants.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Service database ports, pooler off | 5432 (the =PGPORT= default), 0 listener variables | =compass-ng -C . env generate --file build/output/tmp/env_off_0 --input env_name=probe-0 --input label=probe_0 --input base_port=25000 --input http_port_offset=0 --input preset=linux-clang-debug-ninja --input env_activity=0 --input nats_subject_prefix=ores.dev.probe --input nats_tls_ca=/tmp/ca.pem --input nats_tls_cert=/tmp/cert.pem --input nats_tls_key=/tmp/key.pem --input web_env= --input db_port= --var ORES_DB_POOLER_ENABLED=0= | 7356020de3 |
+| Service database ports, pooler on | 25007 (=base_port= + 7), 34 listener variables | the same command with =--var ORES_DB_POOLER_ENABLED=1= | 7356020de3 |
+| The declaration itself | 13 passed | =projects/ores.compass/venv/bin/pytest projects/ores.compass/tests/test_env_init.py -q= | 147239e4d5 |
+| The gate | 8 of 8 passed | =./compass.sh check --class ci --class docs --class tooling= | dbbfec80ae |
 
 * Notes
 
@@ -137,14 +153,14 @@ task and name that file in the Command column.
 - =db_port= has no single owner. =env_init.py:530= forwards
   =ORES_DB_PORT= when =.env= already has it and passes nothing when it does
   not, so a fresh environment takes whatever =compass env generate= chooses.
-  The choice lives in compass-ng, which is an external pinned release, so this
-  task may need a pin bump in =build/scripts/compass_ng.pin=; confirm before
-  promising it.
-- Not yet confirmed: that compass-ng v0.0.13 defaults the pooler on. The
-  evidence is that CI, which never sets =ORES_DB_POOLER_ENABLED= and starts no
-  pooler, generated service ports of base + 7. Check
-  =compass/checks/env_format.org= in the pinned compass-ng before deciding
-  where the fix goes.
+  This turned out not to matter: the choice is not arbitrary, it follows
+  =ORES_DB_POOLER_ENABLED=, and that is what the task made declarable.
+- Confirmed on starting: the default is a pooler.
+  =.compass/checks/env_format.org= line 209 (=kept=, default =1=) and CI never
+  set it, so a fresh CI environment generated service ports of base + 7.
+- Confirmed on starting: the rule was already written down, at line 214 and
+  line 215 of the same file. No new derivation was needed, and no pin bump was
+  needed, because =--var= overrides a =kept= variable.
 - The as-service suites are right to read =.env=. A service that systemd
   starts reads that file, so a test of the service must read it too. The defect
   is the file, not the suites.
@@ -155,6 +171,10 @@ task and name that file in the Command column.
 - Rejected: teaching the C++ side, the tests or the helpers to branch on the
   pooler. That would spread an infrastructure detail through every consumer
   and leave the disagreement in place.
+- The gate needed one fix outside this task:
+  =projects/ores.compass/src/compass_open_as.py= still read =role= from the
+  Acme accounts, and the seeder renamed the column to =roles=, so
+  =compass-tests= failed on main. Fixed under task =A611C520=.
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -179,3 +199,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=--no-pooler= makes the environment state the machine it runs on. On the CI
+runners every service database port is now 5432, the port
+=start_ci_postgres.sh= starts, so the three as-service suites connect to a
+server that exists. The pooled step is untouched and still runs the database
+suite through 6432, so CI covers both topologies.
+
+| Change | Where |
+|--------+-------|
+| =--pooler= and =--no-pooler= on =compass env configure=, through one =--var= helper | =projects/ores.compass/src/env_init.py= |
+| Four tests, including the one account that holds two roles | =projects/ores.compass/tests/test_env_init.py= |
+| =--no-pooler= in the five workflows that configure an environment | =.github/workflows/continuous-linux.yml=, =nightly-linux.yml=, =nightly-macos.yml=, =nightly-windows.yml=, =site-cdash.yml= |
+| =role= read as the comma-separated =roles= the seeder writes | =projects/ores.compass/src/compass_open_as.py= |
+
+The environment format did not change: =compass/checks/env_format.org= already
+derived the endpoint, so no pin bump and no format version followed. Still
+open, and owned by the sibling task, is a run-time check that a declared
+endpoint has a listener: a pooler that is declared and not started still shows
+up as a connection refusal instead of a message that names the fix.

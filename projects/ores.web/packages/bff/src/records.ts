@@ -174,7 +174,7 @@ const WRITES: Readonly<Record<string, z.ZodType<Record<string, unknown>>>> = {
             base_currency: isoCode,
             quote_currency: isoCode,
             classification: code,
-            default_cut_code: code.nullable(),
+            default_cut_code: code.nullable().default(null),
         })
         .refine((pair) => pair.base_currency !== pair.quote_currency, {
             message: 'The two legs of a pair differ.',

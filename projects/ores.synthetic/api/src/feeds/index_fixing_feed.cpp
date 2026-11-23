@@ -77,8 +77,10 @@ index_fixing_feed::index_fixing_feed(ores::nats::service::client& nats,
     : nats_(nats)
     , input_(std::move(input))
     , market_(market)
-    , level_member_(market_.values().member_of(input_.level_kind, input_.level_code))
-    , series_uris_{input_.item} {}
+    , series_uris_{input_.item} {
+    for (const auto& code : input_.level_codes)
+        level_members_.push_back(market_.values().member_of(input_.level_kind, code));
+}
 
 void index_fixing_feed::start() {
     handle_ =
@@ -110,9 +112,17 @@ void index_fixing_feed::publish(std::chrono::year_month_day date, const std::str
 }
 
 std::string index_fixing_feed::tick(const ores::analytics::quant::service::tick_context& context) {
-    const auto level = market_.values().view(level_member_);
-    if (!level.published)
+    std::optional<ores::analytics::quant::domain::market_member_view> published;
+    for (const auto member : level_members_) {
+        const auto view = market_.values().view(member);
+        if (view.published) {
+            published = view;
+            break;
+        }
+    }
+    if (!published)
         return "0";
+    const auto& level = *published;
 
     std::optional<std::chrono::year_month_day> due;
     try {

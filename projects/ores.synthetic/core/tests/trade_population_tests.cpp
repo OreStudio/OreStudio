@@ -2668,3 +2668,12 @@ TEST_CASE("a_config_whose_types_have_no_candidate_plans_no_trade", "[trade_popul
         CHECK_FALSE(outcome.reason.empty());
     }
 }
+
+TEST_CASE("a_type_the_party_expects_nothing_for_says_so_rather_than_that_the_tenant_holds_none",
+          "[trade_population]") {
+    using namespace ores::synthetic::service;
+    const auto plan = plan_on_expected_market_data(fx_scope());
+    REQUIRE_FALSE(plan.type_outcomes.empty());
+    for (const auto& outcome : plan.type_outcomes)
+        CHECK(outcome.reason.find("the party expects none") != std::string::npos);
+}

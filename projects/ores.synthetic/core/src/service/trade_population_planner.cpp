@@ -3933,7 +3933,20 @@ plan_on_expected_market_data(const domain::trade_generation_scope& scope) {
             drawable_types.push_back(code);
             outcomes.push_back({.trade_type_code = code});
         } catch (const trade_population_error& e) {
-            outcomes.push_back({.trade_type_code = code, .planned = 0, .reason = e.what()});
+            // A type the full scope plans is refused only because the party expects none of
+            // its candidates, which is what the reason must say, rather than that the tenant
+            // holds none.
+            auto unfiltered = scope;
+            unfiltered.trade_type_codes = {code};
+            unfiltered.trades_per_book = 1;
+            std::string reason = e.what();
+            try {
+                static_cast<void>(planner.plan(unfiltered));
+                reason = "the party expects none of the market data a " + code +
+                         " would name: no generator it is routed to publishes it";
+            } catch (const trade_population_error&) {
+            }
+            outcomes.push_back({.trade_type_code = code, .planned = 0, .reason = reason});
         }
     }
 

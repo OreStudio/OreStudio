@@ -470,6 +470,8 @@ export function registerBookingRoutes(
                 draft_reason_code: body.draftReasonCode ?? '',
                 identifiers: [],
                 instruments: emptyBatch(),
+                product_code: 'Bond',
+                booking_form: 'native',
             } satisfies BookTradeRequest,
             z.looseObject({
                 result: resultSchema,

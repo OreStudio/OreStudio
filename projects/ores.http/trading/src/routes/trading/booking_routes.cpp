@@ -349,6 +349,8 @@ booking_of(const http_request& req, const boost::uuids::uuid& trade_id, const st
     msg.draft_reason_code = draft_reason.value_or(std::string());
     msg.identifiers = {};
     msg.instruments = trading_domain::instrument_batch{};
+    msg.product_code = std::string(booked_trade_type);
+    msg.booking_form = "native";
     return {std::move(msg), body->identifierType, body->identifierValue, issue_id, notional};
 }
 

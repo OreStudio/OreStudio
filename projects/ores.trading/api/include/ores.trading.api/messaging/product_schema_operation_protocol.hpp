@@ -170,6 +170,12 @@ struct describe_product_response {
      */
     std::string message;
     /**
+     * @brief Why the product was not described, when it was refused: not_found for a code no
+     * product type or script has, not_describable for a product that has no fields to describe.
+     * Empty when the service failed rather than refused, so a caller tells a refusal from a fault.
+     */
+    std::string refusal_code;
+    /**
      * @brief The product described.
      */
     product_summary product;
@@ -318,6 +324,7 @@ struct list_products_response {
     return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"success", &describe_product_response::success},
         ::ores::utility::codec::field{"message", &describe_product_response::message},
+        ::ores::utility::codec::field{"refusal_code", &describe_product_response::refusal_code},
         ::ores::utility::codec::field{"product", &describe_product_response::product},
         ::ores::utility::codec::field{"element", &describe_product_response::element},
         ::ores::utility::codec::field{"fields", &describe_product_response::fields},

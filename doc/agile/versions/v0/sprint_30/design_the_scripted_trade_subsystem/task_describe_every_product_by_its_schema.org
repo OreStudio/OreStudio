@@ -8,7 +8,7 @@
 #+filetags: :design_the_scripted_trade_subsystem:sprint_30:v0:
 #+owner: marco
 #+branch: feature/describe-every-product-by-its-schema
-#+pr: 5048
+#+pr: 5050
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -217,6 +217,19 @@ evidence. The engine a pricing configuration assigns a form's product tag is
 not in the response yet: the configuration is analytics' data, and reading it
 needs its own cache.
 
+** PR 4: the routes
+
+=ores.http= and the BFF serve =GET /api/trading/products= and
+=GET /api/trading/products/{code}=, each naming every field it answers, so a screen
+reads one shape from either server; a product the service cannot describe is a
+404 with the service's reason. Against the running fleet the two servers'
+answers are equal byte for byte: the list of 159 products, Swap's 400 fields over
+88 schema types, and Accumulator01's 15 inputs, 6 codes and scripted form.
+
+The live check found that the trading service's role could not list =ores.ore='s
+parameters: =TradingService= now holds =ore::ore_parameters:read=, as
+=ReportingService= does. The route inventory classifies and pairs the two routes.
+
 ** Which component serves describe_product
 
 Who needs the schema, and when:
@@ -289,6 +302,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5050][#5050]] | [http] Serve a product's description and the product list over HTTP |
 | [[https://github.com/OreStudio/OreStudio/pull/5048][#5048]] | [trading] Describe a product and list the products that can be described |
 | [[https://github.com/OreStudio/OreStudio/pull/5046][#5046]] | [ore] Serve the ore parameter cache from ores.ore.client |
 | [[https://github.com/OreStudio/OreStudio/pull/5044][#5044]] | [trading] Hold the codes of coded script inputs as data |
@@ -316,6 +330,12 @@ via its "Verifies task" field.
 | 5048.4 | a type no cache entry describes is dropped silently | product_schema_service.cpp | accept | the product is refused, naming the type; the check caught list:string being taken for a type, which is fixed |
 | 5048.5 | the element row is assumed to be the first match | product_schema_service.cpp | accept | commented: the seed writes one trade row per trade type |
 | 5048.6 | comment the tenant preference; pin the unbuildable refusal | product_schema_service.cpp, service_product_schema_tests.cpp | accept | commented, and a test pins the text |
+| 5050.1 | the list maps a failure to 500 on ores.http and unexpectedReply on the BFF | none | no change | unexpectedReply is a 502; both answer a fault with a 5xx |
+| 5050.2 | every describe failure is a 404, so a fault reads as an unknown product | product_schema_operations, product_routes.cpp, products.ts | accept | the response states a refusal_code: not_found is a 404, not_describable a 422, and a fault, which states none, a 5xx; live, both servers answer 200, 422 and 404 alike |
+| 5050.3 | the servers fill defaults differently | none | no change | the live comparison of the answers is equal byte for byte |
+| 5050.4 | a free-form code | none | no change | trimmed and 1 to 128 characters; it only travels in a NATS message |
+| 5050.5 | the two field lists could drift | none | no change | each server's test pins its shape; a shared contract test is wider than this route |
+| 5050.6 | the role grant on existing databases | none | no change | ores_iam_role_permissions_assign_fn is an upsert, and the grant was applied to the running database with it |
 
 * Result
 
@@ -327,4 +347,7 @@ the data element of each trade type as a field of its trade,
 coded script inputs are data, the entity =script_input_code=, published with their
 script. PR 3 is in: trading serves =describe_product= and =list_products= from its
 own rows and =ores.ore.client='s cache, which now holds the parameters for both
-services. The HTTP and BFF routes follow.
+services. PR 4 is in: =ores.http= and the BFF serve =GET /api/trading/products= and
+=GET /api/trading/products/{code}=, and give the same answers byte for byte. What
+remains is the engine of each form: the engine a pricing configuration assigns
+the form's product tag, which is analytics' data.

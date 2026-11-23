@@ -1952,6 +1952,42 @@ describe('synthetic operations', () => {
         expect(calls).toHaveLength(0);
     });
 
+    it('reads the feed graph around one node', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'synthetic.v1.feed_graph.get': {
+                success: true,
+                nodes: [
+                    {
+                        name: 'synthetic.ice.fx.fx_option.audusd',
+                        kind: 'view',
+                        provider_code: 'ice',
+                        state: 'starved',
+                        reason: 'synthetic.latent.fx.fx_vol_surface.audusd is stopped',
+                        cause: 'synthetic.latent.fx.fx_vol_surface.audusd',
+                    },
+                ],
+                edges: [
+                    {
+                        node: 'synthetic.ice.fx.fx_option.audusd',
+                        input: 'synthetic.latent.fx.fx_vol_surface.audusd',
+                        role: 'surface',
+                    },
+                ],
+            },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/feed-graph?node=synthetic.ice.fx.fx_option.audusd',
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toEqual({ node_name: 'synthetic.ice.fx.fx_option.audusd' });
+        const body = response.json() as { nodes: { state: string; cause: string }[] };
+        expect(body.nodes[0]?.state).toBe('starved');
+        expect(body.nodes[0]?.cause).toBe('synthetic.latent.fx.fx_vol_surface.audusd');
+    });
+
     it('stops a vendor view by its name', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'synthetic.v1.ops.stop_feed_node': {

@@ -312,12 +312,87 @@ struct list_simulated_sources_response {
 };
 
 /**
+ * @brief One node of the synthetic feed graph, with the state the service derives for it.
+ */
+struct feed_graph_node {
+    /** @brief The node's name: a source's catalogue name, or a feed's or a view's scheme name. */
+    std::string name;
+    /** @brief What sort of node it is: source, upstream, latent or view. */
+    std::string kind;
+    /** @brief The provider whose notation its ticks use, or latent for a latent surface. */
+    std::string provider_code;
+    /** @brief The id of the feed row an upstream or a latent surface is; empty for a source or a
+     * view. */
+    std::string feed_config_id;
+    /** @brief Its state: running, stopped, starved or failing. */
+    std::string state;
+    /** @brief Why it is in that state; empty when it runs. */
+    std::string reason;
+    /** @brief For a starved node, the name of the input that starved it. */
+    std::string cause;
+
+    friend bool operator==(const feed_graph_node&, const feed_graph_node&) = default;
+};
+
+/**
+ * @brief One edge of the synthetic feed graph: a node and one input it reads.
+ */
+struct feed_graph_edge {
+    /** @brief The name of the node that reads the input. */
+    std::string node;
+    /** @brief The name of the input node. */
+    std::string input;
+    /** @brief What the input is to the node: source, spot, base_curve, quote_curve or surface. */
+    std::string role;
+
+    friend bool operator==(const feed_graph_edge&, const feed_graph_edge&) = default;
+};
+
+/**
+ * @brief Request the synthetic feed graph: every node with its state, and every edge.
+ *
+ * A node name narrows the answer to that node, every node upstream of it and every node
+ * downstream of it, and the edges among them.
+ */
+struct get_feed_graph_request {
+    using response_type = struct get_feed_graph_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.feed_graph.get";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** @brief The node to centre on; empty for the whole graph. */
+    std::string node_name;
+
+    friend bool operator==(const get_feed_graph_request&, const get_feed_graph_request&) = default;
+};
+
+/**
+ * @brief The feed graph, and whether the read succeeded.
+ */
+struct get_feed_graph_response {
+    bool success = false;
+    std::string message;
+    /** @brief The nodes, in name order. */
+    std::vector<feed_graph_node> nodes;
+    /** @brief The edges, in node then input order. */
+    std::vector<feed_graph_edge> edges;
+
+    friend bool operator==(const get_feed_graph_response&,
+                           const get_feed_graph_response&) = default;
+};
+
+/**
  * @brief Request to stop one node of the feed graph, and keep it stopped until it is started.
  *
  * A source's adapter stops: the feeds it runs for the store stop, and it releases the vol
  * surfaces it holds, each of which runs on while another source holds it. Feeds started by hand
- * run on. A vendor view's points are withheld: its vendor stops quoting that surface, and the
- * surface and the other vendors run on.
+ * run on. An upstream's or a latent surface's offers are withheld, so the nodes below it starve.
+ * A vendor view's points are withheld: its vendor stops quoting that surface, and the surface and
+ * the other vendors run on.
  */
 struct stop_feed_node_request {
     using response_type = struct stop_feed_node_response;
@@ -329,7 +404,7 @@ struct stop_feed_node_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    /** @brief The node's name: a source's catalogue name or a view's scheme name. */
+    /** @brief The node's name: a source's catalogue name, or a feed's or a view's scheme name. */
     std::string node_name;
     /** @brief Why it is stopped, as a change reason code. */
     std::string reason_code;
@@ -363,7 +438,7 @@ struct start_feed_node_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    /** @brief The node's name: a source's catalogue name or a view's scheme name. */
+    /** @brief The node's name: a source's catalogue name, or a feed's or a view's scheme name. */
     std::string node_name;
 
     friend bool operator==(const start_feed_node_request&,
@@ -841,6 +916,73 @@ struct review_variance_calibration_response {
 }
 
 /**
+ * @brief The members of feed_graph_node, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<feed_graph_node>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"name", &feed_graph_node::name},
+        ::ores::utility::codec::field{"kind", &feed_graph_node::kind},
+        ::ores::utility::codec::field{"provider_code", &feed_graph_node::provider_code},
+        ::ores::utility::codec::field{"feed_config_id", &feed_graph_node::feed_config_id},
+        ::ores::utility::codec::field{"state", &feed_graph_node::state},
+        ::ores::utility::codec::field{"reason", &feed_graph_node::reason},
+        ::ores::utility::codec::field{"cause", &feed_graph_node::cause},
+    };
+}
+
+/**
+ * @brief The members of feed_graph_edge, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<feed_graph_edge>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"node", &feed_graph_edge::node},
+        ::ores::utility::codec::field{"input", &feed_graph_edge::input},
+        ::ores::utility::codec::field{"role", &feed_graph_edge::role},
+    };
+}
+
+/**
+ * @brief The members of get_feed_graph_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_feed_graph_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"node_name", &get_feed_graph_request::node_name},
+    };
+}
+
+/**
+ * @brief The members of get_feed_graph_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_feed_graph_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &get_feed_graph_response::success},
+        ::ores::utility::codec::field{"message", &get_feed_graph_response::message},
+        ::ores::utility::codec::field{"nodes", &get_feed_graph_response::nodes},
+        ::ores::utility::codec::field{"edges", &get_feed_graph_response::edges},
+    };
+}
+
+/**
  * @brief The members of stop_feed_node_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -1224,6 +1366,46 @@ struct ORES_SYNTHETIC_API_EXPORT
     static std::string
     write_msgpack(const ores::synthetic::messaging::list_simulated_sources_response& v);
     static ores::synthetic::messaging::list_simulated_sources_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::feed_graph_node> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::feed_graph_node& v);
+    static ores::synthetic::messaging::feed_graph_node read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::feed_graph_node& v);
+    static ores::synthetic::messaging::feed_graph_node
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::feed_graph_edge> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::feed_graph_edge& v);
+    static ores::synthetic::messaging::feed_graph_edge read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::feed_graph_edge& v);
+    static ores::synthetic::messaging::feed_graph_edge
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::get_feed_graph_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::get_feed_graph_request& v);
+    static ores::synthetic::messaging::get_feed_graph_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::get_feed_graph_request& v);
+    static ores::synthetic::messaging::get_feed_graph_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::get_feed_graph_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::synthetic::messaging::get_feed_graph_response& v);
+    static ores::synthetic::messaging::get_feed_graph_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::get_feed_graph_response& v);
+    static ores::synthetic::messaging::get_feed_graph_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

@@ -107,7 +107,7 @@ make_adapters(const std::vector<ores::marketdata::domain::feed>& sources,
               const ores::synthetic::feed::feed_build_context& build,
               const std::shared_ptr<ores::synthetic::feed::fault_state>& faults,
               const generator_runner::started_hook& started,
-              const view_stopped_fn& view_stopped) {
+              const node_stopped_fn& node_stopped) {
     std::vector<simulated_adapter> out;
     for (const auto& source : sources) {
         if (source.session_code != "synthetic-local")
@@ -123,9 +123,9 @@ make_adapters(const std::vector<ores::marketdata::domain::feed>& sources,
              surfaces = &generators.surfaces(),
              name = source.name,
              provider = source.publisher_code,
-             view_stopped] {
+             node_stopped] {
                 return system_generator_offers(
-                    registry, ctx, build, name, provider, faults, surfaces, view_stopped);
+                    registry, ctx, build, name, provider, faults, surfaces, node_stopped);
             },
             &generators.running_names(),
             started);
@@ -233,52 +233,91 @@ public:
         return true;
     }
 
-    [[nodiscard]] std::optional<view_node> view(const std::string& view_name) const override {
-        const auto views = view_providers(registry_, db_ctx_);
-        const auto found = views.find(view_name);
-        if (found == views.end())
+    [[nodiscard]] std::optional<feed_node> node(const std::string& name) const override {
+        const auto found = graph_node(name);
+        if (!found)
             return std::nullopt;
-        const std::lock_guard lock(views_mu_);
-        return view_node{.name = view_name,
-                         .provider_code = found->second,
-                         .stopped = stopped_views_.contains(view_name)};
+        return feed_node{.name = found->name,
+                         .kind = found->kind,
+                         .provider_code = found->provider_code,
+                         .stopped = node_stopped(found->name)};
     }
 
-    bool stop_view(const std::string& view_name) override {
-        return set_view(view_name, true);
+    bool stop_node(const std::string& name) override {
+        return set_node(name, true);
     }
 
-    bool start_view(const std::string& view_name) override {
-        return set_view(view_name, false);
+    bool start_node(const std::string& name) override {
+        return set_node(name, false);
+    }
+
+    [[nodiscard]] feed_graph graph(const std::string& around_node) const override {
+        auto whole = build_graph();
+        std::set<std::string> stopped;
+        {
+            const std::lock_guard lock(nodes_mu_);
+            stopped = stopped_nodes_;
+        }
+        {
+            const std::lock_guard lock(mu_);
+            for (const auto& one : adapters_)
+                if (one.stopped)
+                    stopped.insert(one.name);
+        }
+        derive_states(whole, stopped);
+        return around_node.empty() ? whole : around(whole, around_node);
     }
 
 private:
-    // A view is withheld by the offers of its vendor's adapters, so each re-applies its demand:
-    // a stopped view's hold stops at once, and a started one resumes at once.
-    bool set_view(const std::string& view_name, bool stopped) {
-        const auto views = view_providers(registry_, db_ctx_);
-        const auto found = views.find(view_name);
-        if (found == views.end())
+    // The graph of the system collections' feeds and the sources the service serves, without
+    // states.
+    [[nodiscard]] feed_graph build_graph() const {
+        std::vector<graph_source> served;
+        {
+            const std::lock_guard lock(mu_);
+            for (const auto& one : adapters_)
+                served.push_back({.name = one.name, .provider_code = one.provider_code});
+        }
+        const auto sys_ctx = ores::database::service::tenant_context::with_system_tenant(db_ctx_);
+        return build_feed_graph(registry_.targets(sys_ctx), served);
+    }
+
+    [[nodiscard]] std::optional<ores::synthetic::messaging::feed_graph_node>
+    graph_node(const std::string& name) const {
+        const auto whole = build_graph();
+        const auto found = std::ranges::find(
+            whole.nodes, name, &ores::synthetic::messaging::feed_graph_node::name);
+        if (found == whole.nodes.end() || found->kind == "source")
+            return std::nullopt;
+        return *found;
+    }
+
+    // A node is withheld by the offers it makes, so every running adapter re-applies its demand:
+    // a stopped node's runs stop at once, and a started one's resume at once. A stopped upstream
+    // starves the surfaces that read it through the market they share.
+    bool set_node(const std::string& name, bool stopped) {
+        const auto found = graph_node(name);
+        if (!found)
             return false;
         {
-            const std::lock_guard lock(views_mu_);
+            const std::lock_guard lock(nodes_mu_);
             if (stopped)
-                stopped_views_.insert(view_name);
+                stopped_nodes_.insert(name);
             else
-                stopped_views_.erase(view_name);
+                stopped_nodes_.erase(name);
         }
         const std::lock_guard lock(mu_);
         for (auto& one : adapters_)
-            if (one.provider_code == found->second && !one.stopped)
+            if (!one.stopped)
                 one.runner->reapply();
-        ORES_LOG_SEV(lg(), info) << "Vendor view " << view_name
+        ORES_LOG_SEV(lg(), info) << "Feed node " << name << " (" << found->kind << ")"
                                  << (stopped ? " stopped" : " started");
         return true;
     }
 
-    [[nodiscard]] bool view_stopped(const std::string& view_name) const {
-        const std::lock_guard lock(views_mu_);
-        return stopped_views_.contains(view_name);
+    [[nodiscard]] bool node_stopped(const std::string& name) const {
+        const std::lock_guard lock(nodes_mu_);
+        return stopped_nodes_.contains(name);
     }
 
     simulated_adapter* find(const std::string& source_name) {
@@ -286,13 +325,14 @@ private:
         return found == adapters_.end() ? nullptr : &*found;
     }
 
-    // The nodes an operator stopped, of one kind, which stay stopped across a restart.
-    std::set<std::string> stopped_nodes(std::string_view kind) const {
+    // The nodes an operator stopped, which stay stopped across a restart: the sources, or the
+    // others.
+    std::set<std::string> stopped_rows(bool sources) const {
         std::set<std::string> out;
         const auto sys_ctx = ores::database::service::tenant_context::with_system_tenant(db_ctx_);
         for (const auto& row :
              ores::synthetic::repository::stopped_feed_node_repository().read_latest(sys_ctx))
-            if (row.kind == kind)
+            if ((row.kind == "source") == sources)
                 out.insert(row.node_name);
         return out;
     }
@@ -310,20 +350,19 @@ private:
                 writer->enqueue(*plan);
         };
         {
-            const std::lock_guard lock(views_mu_);
-            stopped_views_ = stopped_nodes("view");
+            const std::lock_guard lock(nodes_mu_);
+            stopped_nodes_ = stopped_rows(false);
         }
-        auto built =
-            make_adapters(sources,
-                          db_ctx_,
-                          nats_,
-                          generators_,
-                          registry_,
-                          build_,
-                          faults_,
-                          started,
-                          [this](const std::string& view_name) { return view_stopped(view_name); });
-        const auto stopped = stopped_nodes("source");
+        auto built = make_adapters(sources,
+                                   db_ctx_,
+                                   nats_,
+                                   generators_,
+                                   registry_,
+                                   build_,
+                                   faults_,
+                                   started,
+                                   [this](const std::string& name) { return node_stopped(name); });
+        const auto stopped = stopped_rows(true);
         std::size_t attempted = 0;
         try {
             for (auto& one : built) {
@@ -412,8 +451,8 @@ private:
     // Guards the adapters against an operator's stop or start while the worker builds them.
     mutable std::mutex mu_;
     std::vector<simulated_adapter> adapters_;
-    mutable std::mutex views_mu_;
-    std::set<std::string> stopped_views_;
+    mutable std::mutex nodes_mu_;
+    std::set<std::string> stopped_nodes_;
     ores::platform::concurrency::jthread worker_;
 };
 
@@ -649,6 +688,12 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                   [&n, c, v, &fleet](ores::nats::message msg) {
                                       simulated_source_handler(n, c, v, fleet).list(std::move(msg));
                                   }));
+            subs.push_back(n.queue_subscribe(
+                std::string(msgs::get_feed_graph_request::nats_subject),
+                queue,
+                [&n, c, v, &fleet](ores::nats::message msg) {
+                    simulated_source_handler(n, c, v, fleet).graph(std::move(msg));
+                }));
             subs.push_back(
                 n.queue_subscribe(std::string(msgs::stop_feed_node_request::nats_subject),
                                   queue,

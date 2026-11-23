@@ -286,6 +286,24 @@ void feed_operation_routes::register_routes(
                 });
             }));
 
+    add(router->get("/api/synthetic/feed-graph")
+            .summary("Read the synthetic feed graph, or the part around one node, with its states")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<synthetic_messaging::get_feed_graph_request>([&] {
+                    synthetic_messaging::get_feed_graph_request msg;
+                    msg.node_name = rr::trimmed(req.get_query_param("node"));
+                    if (rr::characters_of(msg.node_name) > 100)
+                        rr::invalid("A feed node is named by a code of up to 100 characters.");
+                    const auto reply = forwarding::forward(req, session, msg);
+                    if (!reply.success)
+                        rr::refuse(http_status::bad_gateway,
+                                   "upstream-unavailable",
+                                   std::string(rr::unanswered));
+                    return http_response::json("{\"nodes\":" + json::write(reply.nodes) +
+                                               ",\"edges\":" + json::write(reply.edges) + "}");
+                });
+            }));
+
     add(router->post("/api/synthetic/feed-nodes/{name}/stop")
             .summary(
                 "Stop a feed node, a simulated source or a vendor view, until someone starts it")

@@ -608,6 +608,156 @@ feeds it answers with, because a caller reads it beside the config list.
 /** @brief The sources, in name order. */
 #+end_src
 
+** feed_graph_node
+#+begin_src cpp :name comment
+/**
+ * @brief One node of the synthetic feed graph, with the state the service derives for it.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The node's name: a source's catalogue name, or a feed's or a view's scheme name. */
+#+end_src
+
+*** kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief What sort of node it is: source, upstream, latent or view. */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The provider whose notation its ticks use, or latent for a latent surface. */
+#+end_src
+
+*** feed_config_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The id of the feed row an upstream or a latent surface is; empty for a source or a view. */
+#+end_src
+
+*** state
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Its state: running, stopped, starved or failing. */
+#+end_src
+
+*** reason
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief Why it is in that state; empty when it runs. */
+#+end_src
+
+*** cause
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief For a starved node, the name of the input that starved it. */
+#+end_src
+
+** feed_graph_edge
+#+begin_src cpp :name comment
+/**
+ * @brief One edge of the synthetic feed graph: a node and one input it reads.
+ */
+#+end_src
+
+*** node
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The name of the node that reads the input. */
+#+end_src
+
+*** input
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The name of the input node. */
+#+end_src
+
+*** role
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief What the input is to the node: source, spot, base_curve, quote_curve or surface. */
+#+end_src
+
+** get_feed_graph_request
+:PROPERTIES:
+:subject: synthetic.v1.feed_graph.get
+:response: get_feed_graph_response
+:END:
+#+begin_src cpp :name comment
+/**
+ * @brief Request the synthetic feed graph: every node with its state, and every edge.
+ *
+ * A node name narrows the answer to that node, every node upstream of it and every node
+ * downstream of it, and the edges among them.
+ */
+#+end_src
+
+*** node_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+#+begin_src cpp :name comment
+/** @brief The node to centre on; empty for the whole graph. */
+#+end_src
+
+** get_feed_graph_response
+#+begin_src cpp :name comment
+/**
+ * @brief The feed graph, and whether the read succeeded.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** nodes
+:PROPERTIES:
+:cpp_type: std::vector<feed_graph_node>
+:END:
+#+begin_src cpp :name comment
+/** @brief The nodes, in name order. */
+#+end_src
+
+*** edges
+:PROPERTIES:
+:cpp_type: std::vector<feed_graph_edge>
+:END:
+#+begin_src cpp :name comment
+/** @brief The edges, in node then input order. */
+#+end_src
+
 ** stop_feed_node_request
 :PROPERTIES:
 :subject: synthetic.v1.ops.stop_feed_node
@@ -619,8 +769,9 @@ feeds it answers with, because a caller reads it beside the config list.
  *
  * A source's adapter stops: the feeds it runs for the store stop, and it releases the vol
  * surfaces it holds, each of which runs on while another source holds it. Feeds started by hand
- * run on. A vendor view's points are withheld: its vendor stops quoting that surface, and the
- * surface and the other vendors run on.
+ * run on. An upstream's or a latent surface's offers are withheld, so the nodes below it starve.
+ * A vendor view's points are withheld: its vendor stops quoting that surface, and the surface and
+ * the other vendors run on.
  */
 #+end_src
 
@@ -629,7 +780,7 @@ feeds it answers with, because a caller reads it beside the config list.
 :cpp_type: std::string
 :END:
 #+begin_src cpp :name comment
-/** @brief The node's name: a source's catalogue name or a view's scheme name. */
+/** @brief The node's name: a source's catalogue name, or a feed's or a view's scheme name. */
 #+end_src
 
 *** reason_code
@@ -682,7 +833,7 @@ feeds it answers with, because a caller reads it beside the config list.
 :cpp_type: std::string
 :END:
 #+begin_src cpp :name comment
-/** @brief The node's name: a source's catalogue name or a view's scheme name. */
+/** @brief The node's name: a source's catalogue name, or a feed's or a view's scheme name. */
 #+end_src
 
 ** start_feed_node_response

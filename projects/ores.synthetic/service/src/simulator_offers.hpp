@@ -32,7 +32,6 @@
 #include "shared_surfaces.hpp"
 #include <algorithm>
 #include <functional>
-#include <map>
 #include <memory>
 #include <optional>
 #include <stdexcept>
@@ -42,30 +41,8 @@
 
 namespace ores::synthetic::service {
 
-/** @brief Whether an operator stopped the vendor view of this name. */
-using view_stopped_fn = std::function<bool(const std::string&)>;
-
-/**
- * @brief Every vendor view a latent surface's contributors quote, by its name, with the provider
- * that quotes it.
- *
- * @param ctx A context of the system tenant, which sees the system collections.
- */
-inline std::map<std::string, std::string> view_providers(const feed_kind_registry& registry,
-                                                         const ores::database::context& ctx) {
-    using namespace ores::synthetic::feed;
-    std::map<std::string, std::string> out;
-    for (const auto& target : registry.targets(ctx)) {
-        const auto& candidate = target.row.candidate;
-        if (target.row.kind->kind != fx_vol_surface_feed_kind || !candidate.fx_pair)
-            continue;
-        for (const auto& [contributor, provider] : candidate.contributor_providers)
-            out.emplace(
-                fx_option_view_name(provider, candidate.fx_pair->first, candidate.fx_pair->second),
-                provider);
-    }
-    return out;
-}
+/** @brief Whether an operator stopped the feed node of this name. */
+using node_stopped_fn = std::function<bool(const std::string&)>;
 
 /**
  * @brief The generators the simulator offers an adapter, from the system collections it can see.
@@ -81,8 +58,10 @@ inline std::map<std::string, std::string> view_providers(const feed_kind_registr
  * holds, so it is one offer for each of its pillars, all of them naming the curve as their group,
  * and each of them builds the same generator: the curve, with the adapter target of every pillar.
  *
- * A vendor view an operator stopped offers none of its points, so its vendor stops quoting that
- * surface while the surface and the other vendors run on.
+ * A node an operator stopped offers nothing: an upstream offers none of its ids, so the
+ * surfaces that read it starve; a latent surface offers none of its views; and a vendor view
+ * offers none of its points, so its vendor stops quoting that surface while the surface and the
+ * other vendors run on.
  *
  * @param ctx A context of the system tenant, which sees the system collections.
  */
@@ -94,7 +73,7 @@ system_generator_offers(const feed_kind_registry& registry,
                         const std::string& provider_code,
                         std::shared_ptr<const feed::fault_state> faults = {},
                         shared_surfaces* surfaces = nullptr,
-                        const view_stopped_fn& view_stopped = {}) {
+                        const node_stopped_fn& node_stopped = {}) {
     namespace vendor = ores::marketdata::vendor;
     namespace msg = ores::marketdata::messaging;
     using namespace ores::synthetic::feed;
@@ -117,6 +96,8 @@ system_generator_offers(const feed_kind_registry& registry,
         const auto& candidate = target.row.candidate;
         if (!target.startable() || !target.container_is_system)
             continue;
+        if (node_stopped && node_stopped(candidate.source_name))
+            continue;
         const auto* notation = vendor::notation_of(provider_code);
         if (!notation)
             continue;
@@ -131,8 +112,8 @@ system_generator_offers(const feed_kind_registry& registry,
                  candidate.contributor_providers) {
                 if (contributor_provider != provider_code)
                     continue;
-                if (view_stopped &&
-                    view_stopped(fx_option_view_name(
+                if (node_stopped &&
+                    node_stopped(fx_option_view_name(
                         provider_code, candidate.fx_pair->first, candidate.fx_pair->second)))
                     continue;
                 fx_vol_surface_feed::point_targets point_targets;

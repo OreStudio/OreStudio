@@ -90,6 +90,38 @@ public:
         }
     }
 
+    // The graph is read as the source list is: any session may read it.
+    void graph(ores::nats::message msg) {
+        using namespace ores::synthetic::messaging;
+        [[maybe_unused]] const auto cid =
+            ores::service::messaging::log_handler_entry(simulated_source_handler_lg(), msg);
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            ores::service::messaging::error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto req = ores::service::messaging::decode<get_feed_graph_request>(msg);
+        if (!req) {
+            ores::service::messaging::reply(
+                nats_, msg, get_feed_graph_response{.message = "Malformed graph request"});
+            return;
+        }
+        try {
+            auto graph = sources_.graph(req->node_name);
+            ores::service::messaging::reply(
+                nats_,
+                msg,
+                get_feed_graph_response{.success = true,
+                                        .nodes = std::move(graph.nodes),
+                                        .edges = std::move(graph.edges)});
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(simulated_source_handler_lg(), ores::logging::error)
+                << msg.subject << " failed: " << e.what();
+            ores::service::messaging::reply(
+                nats_, msg, get_feed_graph_response{.message = client_message(e)});
+        }
+    }
+
     void stop(ores::nats::message msg) {
         using namespace ores::synthetic::messaging;
         [[maybe_unused]] const auto cid =
@@ -109,8 +141,7 @@ public:
         try {
             const auto node = find_node(req->node_name);
             if (!node) {
-                refuse("The service serves no source and quotes no view named " + req->node_name +
-                       ".");
+                refuse("The feed graph holds no node named " + req->node_name + ".");
                 return;
             }
             if (node->stopped) {
@@ -169,8 +200,7 @@ public:
         try {
             const auto node = find_node(req->node_name);
             if (!node) {
-                refuse("The service serves no source and quotes no view named " + req->node_name +
-                       ".");
+                refuse("The feed graph holds no node named " + req->node_name + ".");
                 return;
             }
             if (!node->stopped) {
@@ -207,10 +237,10 @@ private:
         bool stopped = false;
     };
 
-    // A name is a source's when the service serves a source of that name, and a view's when a
-    // contributor of a latent surface quotes it. The two kinds of name never meet, and must not:
-    // a source is a catalogue name such as bloomberg-a, and a view carries the synthetic mark and
-    // the scheme's dotted segments, so one name always names one node.
+    // A name is a source's when the service serves a source of that name, and otherwise the
+    // graph's node of that name. The two kinds of name never meet, and must not: a source is a
+    // catalogue name such as bloomberg-a, and a feed or a view carries the synthetic mark and the
+    // scheme's dotted segments, so one name always names one node.
     std::optional<node> find_node(const std::string& name) const {
         const auto all = sources_.sources();
         const auto found = std::ranges::find(
@@ -220,11 +250,11 @@ private:
                         .kind = "source",
                         .provider_code = found->provider_code,
                         .stopped = found->stopped};
-        if (const auto view = sources_.view(name))
-            return node{.name = view->name,
-                        .kind = "view",
-                        .provider_code = view->provider_code,
-                        .stopped = view->stopped};
+        if (const auto other = sources_.node(name))
+            return node{.name = other->name,
+                        .kind = other->kind,
+                        .provider_code = other->provider_code,
+                        .stopped = other->stopped};
         return std::nullopt;
     }
 
@@ -232,14 +262,14 @@ private:
         if (n.kind == "source")
             sources_.stop(n.name);
         else
-            sources_.stop_view(n.name);
+            sources_.stop_node(n.name);
     }
 
     void resume(const node& n) {
         if (n.kind == "source")
             sources_.start(n.name);
         else
-            sources_.start_view(n.name);
+            sources_.start_node(n.name);
     }
 
     // A source serves every tenant, so the caller is the system tenant, with the run permission.

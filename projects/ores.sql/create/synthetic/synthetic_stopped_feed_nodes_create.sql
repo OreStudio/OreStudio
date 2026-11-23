@@ -25,12 +25,16 @@
  * Stopped Feed Node Table
  *
  * A node of the synthetic feed graph that an operator stopped, named by the
- * naming scheme. Two kinds of node are stopped here:
+ * naming scheme. Every kind of node is stopped here:
  *
  * - a /source/, a simulated source of the market data catalogue such as
  *   bloomberg-a, served by an adapter that runs the feeds the store demands of
  *   it and holds the vol surfaces its provider quotes; its stop stops the
  *   adapter;
+ * - an /upstream/, a vendor's spot or curve feed, such as
+ *   synthetic.bloomberg.fx.fx_spot.audusd, and a /latent/ surface, such as
+ *   synthetic.latent.fx.fx_vol_surface.audusd; its stop withholds its offers,
+ *   so the nodes below it starve;
  * - a /view/, one vendor's quotes of a latent vol surface, such as
  *   synthetic.ice.fx.fx_option.audusd; its stop withholds that vendor's points
  *   of that surface, and the surface and the other vendors run on.
@@ -70,7 +74,7 @@ create table if not exists "ores_synthetic_stopped_feed_nodes_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("node_name" <> ''),
-    check ("kind" in ('source', 'view'))
+    check ("kind" in ('source', 'upstream', 'latent', 'view'))
 );
 
 -- Version uniqueness for optimistic concurrency

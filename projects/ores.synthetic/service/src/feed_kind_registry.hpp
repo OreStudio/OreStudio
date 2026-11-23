@@ -95,6 +95,11 @@ struct feed_kind_candidate final {
      */
     std::string spot_source_name;
     /**
+     * The source names of a surface's discounting curves, base then quote, as its config names
+     * them. Empty for other kinds.
+     */
+    std::optional<std::pair<std::string, std::string>> curve_source_names;
+    /**
      * @brief The pillars of a curve feed, in the notation's own words.
      *
      * A feed that quotes one instrument leaves the list empty. A curve quotes one id for each of

@@ -22,6 +22,7 @@
 set(files
     "config_parser_tests.cpp"
     "feed_config_handler_tests.cpp"
+    "feed_graph_tests.cpp"
     "feed_kind_registry_tests.cpp"
     "folder_feed_control_handler_tests.cpp"
     "generator_fleet_tests.cpp"

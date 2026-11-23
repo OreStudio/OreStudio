@@ -450,18 +450,22 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
             repo::fx_vol_surface_feed_expiry_repository().write(party_ctx, expiry);
         }
 
-        dom::fx_vol_view link;
-        link.tenant_id = h.tenant_id();
-        link.id = uuid();
-        link.party_id = test_party;
-        link.feed_id = surface_enabled_id;
-        link.contributor_id = contributor.id;
-        link.modified_by = db_user;
-        link.performed_by = db_user;
-        link.change_reason_code = "system.test";
-        link.change_commentary = "feed config test seed";
-        link.recorded_at = now;
-        repo::fx_vol_view_repository().write(party_ctx, link);
+        dom::fx_vol_view view;
+        view.tenant_id = h.tenant_id();
+        view.id = uuid();
+        view.party_id = test_party;
+        view.feed_id = surface_enabled_id;
+        view.contributor_id = contributor.id;
+        view.config_id = main_container.id;
+        view.source_name = "synthetic.test.fx.fx_option.eurusd";
+        view.enabled = true;
+        view.auto_start = false;
+        view.modified_by = db_user;
+        view.performed_by = db_user;
+        view.change_reason_code = "system.test";
+        view.change_commentary = "feed config test seed";
+        view.recorded_at = now;
+        repo::fx_vol_view_repository().write(party_ctx, view);
     }
 
     const auto make_ir = [&](const dom::market_data_generation_config& container,

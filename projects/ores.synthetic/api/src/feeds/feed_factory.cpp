@@ -93,7 +93,7 @@ build_fx_vol_surface(const feed_build_context& ctx, const feed_build_input& inpu
                                                       ctx.market,
                                                       in.config.sensitivity,
                                                       to_arrival_spec(in.config));
-    feed->set_diagnostics(ctx.diagnostics);
+    feed->set_journal(ctx.journal);
     return feed;
 }
 

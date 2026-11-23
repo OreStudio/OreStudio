@@ -30,6 +30,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
+#include "ores.synthetic.api/feeds/node_journal.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.utility/version/version.hpp"
@@ -342,6 +343,33 @@ TEST_CASE("re-applying the last demand stops a withheld offer and starts it agai
     const auto resumed = runner.reapply();
     CHECK(resumed.started == 1);
     CHECK(runner.running_count() == 2);
+}
+
+TEST_CASE("the runner says why each run starts and stops, in the run's own log",
+          "[simulator_adapter][runner]") {
+    struct recording final : ores::synthetic::feed::node_journal {
+        void say(const std::string& node, std::string_view, const std::string& message) override {
+            said.push_back(node + "|" + message);
+        }
+        void raise(const std::string&, const std::string&) override {}
+        void clear(const std::string&) override {}
+        std::vector<std::string> said;
+    };
+    auto journal = std::make_shared<recording>();
+    auto counters = std::make_shared<generator_counters>();
+    generator_runner runner([&] { return std::vector{idle_offer("EUR/USD", counters)}; });
+    runner.set_journal(journal, "bloomberg-a");
+
+    runner.apply({bbg_id("EUR/USD")});
+    REQUIRE(journal->said.size() == 1);
+    CHECK(journal->said[0].find("Started: the market data service demands it") !=
+          std::string::npos);
+    CHECK(journal->said[0].find("bloomberg-a") != std::string::npos);
+
+    runner.apply({});
+    REQUIRE(journal->said.size() == 2);
+    CHECK(journal->said[1].find("Stopped: the market data service no longer demands it") !=
+          std::string::npos);
 }
 
 TEST_CASE("one generator serves every id of a curve, whichever of them is demanded",

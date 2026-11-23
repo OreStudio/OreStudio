@@ -18,11 +18,12 @@
  *
  */
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.trading.core/service/script_publish_service.hpp"
 #include "ores.trading.core/service/script_validation_service.hpp"
 #include "ores.trading.scripting/inputs.hpp"
 #include "ores.trading.scripting/parse.hpp"
-#include <catch2/catch_test_macros.hpp>
 #include <algorithm>
+#include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>
 
@@ -46,10 +47,8 @@ std::vector<messaging::script_variable_value> stated_inputs() {
     const auto parsed = scripting::parse(payoff);
     std::vector<messaging::script_variable_value> out;
     for (const auto& i : scripting::inputs_of(parsed.tree, payoff))
-        out.push_back({.name = i.name,
-                       .type = i.type,
-                       .is_array = i.is_array,
-                       .values = {value_of(i.type)}});
+        out.push_back(
+            {.name = i.name, .type = i.type, .is_array = i.is_array, .values = {value_of(i.type)}});
     return out;
 }
 
@@ -129,4 +128,28 @@ TEST_CASE("a library script resolves by name and version, and is checked against
     REQUIRE(out.success);
     CHECK_FALSE(out.is_valid);
     CHECK(std::ranges::any_of(out.diagnostics, [](const auto& d) { return !d.subject.empty(); }));
+}
+
+TEST_CASE("a tenant's own script shadows the world library's of the same name",
+          "[script_validation][database]") {
+    ores::testing::scoped_database_helper h;
+    const std::string own_code = "Option = PAY(Notional * 7, Expiry, Expiry, PayCcy);";
+
+    messaging::publish_script_request request;
+    request.name = "Accumulator01";
+    request.description = "A tenant's payoff";
+    messaging::published_variant variant;
+    variant.purpose = "default";
+    variant.code = own_code;
+    variant.npv_variable = "Option";
+    variant.results.push_back({.variable = "Notional", .rename = std::nullopt});
+    request.variants.push_back(variant);
+    REQUIRE(service::script_publish_service(h.context()).publish(request).success);
+
+    const auto resolved = service::library_variants(h.context(), "Accumulator01", 0);
+
+    REQUIRE(resolved.has_value());
+    REQUIRE(resolved->size() == 1u);
+    CHECK(resolved->front().code == own_code);
+    CHECK_FALSE(service::library_variants(h.context(), "Accumulator01", -1).has_value());
 }

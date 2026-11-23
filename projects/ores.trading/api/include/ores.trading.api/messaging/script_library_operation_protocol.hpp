@@ -277,7 +277,8 @@ struct validate_script_request {
      */
     std::string script_name;
     /**
-     * @brief The version of the library script; 0 for its current version.
+     * @brief The version of the library script; 0 for its current version. A negative version names
+     * no script.
      */
     int script_version = 0;
     /**
@@ -298,7 +299,8 @@ struct validate_script_request {
  */
 struct validate_script_response {
     /**
-     * @brief Whether the validation ran.
+     * @brief Whether the validation ran. It does not run for a script that is not held, or that has
+     * no variant to parse; the message then says which, and is_valid is false.
      */
     bool success = false;
     /**

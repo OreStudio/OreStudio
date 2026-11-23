@@ -18,15 +18,14 @@
  *
  */
 #include "ores.trading.core/service/script_validation_service.hpp"
-#include "script_diagnostics.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.trading.scripting/check.hpp"
 #include "ores.trading.core/repository/script_library_version_repository.hpp"
 #include "ores.trading.core/repository/script_repository.hpp"
-#include "ores.trading.core/repository/script_variant_repository.hpp"
+#include "ores.trading.scripting/check.hpp"
 #include "ores.trading.scripting/inputs.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.trading.scripting/parse.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include "script_diagnostics.hpp"
 #include <format>
 #include <set>
 #include <tuple>
@@ -55,8 +54,7 @@ to_variables(const std::vector<messaging::script_variable_value>& values) {
     std::vector<scripting::script_variable> out;
     out.reserve(values.size());
     for (const auto& v : values)
-        out.push_back(
-            {.name = v.name, .type = v.type, .is_array = v.is_array, .values = v.values});
+        out.push_back({.name = v.name, .type = v.type, .is_array = v.is_array, .values = v.values});
     return out;
 }
 
@@ -89,10 +87,10 @@ validate_script(std::span<const script_text> variants,
         for (std::size_t i = 0; i < variants.size(); ++i) {
             for (const auto& d :
                  scripting::check(parsed[i].tree, variants[i].code, inputs, variables)) {
-                if (d.subject &&
-                    !reported.emplace(d.code, *d.subject, d.message).second)
+                if (d.subject && !reported.emplace(d.code, *d.subject, d.message).second)
                     continue;
-                out.diagnostics.push_back(to_wire(d, d.subject ? std::string{} : variants[i].purpose));
+                out.diagnostics.push_back(
+                    to_wire(d, d.subject ? std::string{} : variants[i].purpose));
             }
         }
     }
@@ -110,8 +108,15 @@ validate_script(std::span<const script_text> variants,
 std::optional<std::vector<script_text>>
 library_variants(const ores::database::context& ctx, const std::string& name, int version) {
     using ores::utility::uuid::tenant_id;
-    std::vector<script_text> out;
+    if (version < 0)
+        return std::nullopt;
+
+    // The pins to try, in the order the caller's tenant resolves the name: its own
+    // script first, then the world library's.
+    std::vector<messaging::script_pin> pins;
     if (version == 0) {
+        // The read returns the tenant's own row and the system tenant's under
+        // row-level security; the tenant's own replaces a system one found first.
         const domain::script* chosen = nullptr;
         const auto scripts = repository::script_repository().read_latest(ctx, name);
         for (const auto& s : scripts)
@@ -119,20 +124,22 @@ library_variants(const ores::database::context& ctx, const std::string& name, in
                 chosen = &s;
         if (chosen == nullptr)
             return std::nullopt;
-        for (const auto& v : repository::script_variant_repository().read_latest(ctx))
-            if (v.script_name == name && v.tenant_id == chosen->tenant_id &&
-                v.script_version == chosen->version)
-                out.push_back({.purpose = v.purpose, .code = v.code});
-        return out;
+        pins.push_back(
+            {.tenant_id = chosen->tenant_id.to_uuid(), .name = name, .version = chosen->version});
+    } else {
+        for (const auto& tenant : {ctx.tenant_id(), tenant_id::system()})
+            pins.push_back({.tenant_id = tenant.to_uuid(), .name = name, .version = version});
     }
-    for (const auto& tenant : {ctx.tenant_id(), tenant_id::system()}) {
+
+    for (const auto& pin : pins) {
         messaging::export_script_library_response held;
-        repository::script_library_version_repository().read(
-            ctx, {{.tenant_id = tenant.to_uuid(), .name = name, .version = version}}, held);
+        repository::script_library_version_repository().read(ctx, {pin}, held);
         if (held.scripts.empty())
             continue;
+        std::vector<script_text> out;
         for (const auto& v : held.variants)
-            out.push_back({.purpose = v.purpose, .code = v.code});
+            if (v.script_name == name)
+                out.push_back({.purpose = v.purpose, .code = v.code});
         return out;
     }
     return std::nullopt;

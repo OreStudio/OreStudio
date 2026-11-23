@@ -46,7 +46,7 @@ namespace {
 namespace source_messaging = ores::synthetic::messaging;
 using ores::synthetic::service::simulated_source_handler;
 using ores::synthetic::service::source_control;
-using ores::synthetic::service::view_node;
+using ores::synthetic::service::feed_node;
 
 const std::string source_test_secret("simulated-source-handler-test-source_test_secret");
 
@@ -74,20 +74,23 @@ public:
         all_.front().stopped = false;
         return true;
     }
-    std::optional<view_node> view(const std::string& view_name) const override {
-        if (view_name != view_.name)
+    std::optional<feed_node> node(const std::string& name) const override {
+        if (name != view_.name)
             return std::nullopt;
         return view_;
     }
-    bool stop_view(const std::string& view_name) override {
-        view_stops.push_back(view_name);
+    bool stop_node(const std::string& name) override {
+        view_stops.push_back(name);
         view_.stopped = true;
         return true;
     }
-    bool start_view(const std::string& view_name) override {
-        view_starts.push_back(view_name);
+    bool start_node(const std::string& name) override {
+        view_starts.push_back(name);
         view_.stopped = false;
         return true;
+    }
+    ores::synthetic::service::feed_graph graph(const std::string&) const override {
+        return {};
     }
 
     std::vector<std::string> stops;
@@ -99,7 +102,8 @@ public:
 
 private:
     std::vector<source_messaging::simulated_source> all_;
-    view_node view_{.name = "synthetic.ice.fx.fx_option.audusd", .provider_code = "ice"};
+    feed_node view_{
+        .name = "synthetic.ice.fx.fx_option.audusd", .kind = "view", .provider_code = "ice"};
 };
 
 std::string source_token_for(const std::string& tenant_id, const std::vector<std::string>& roles) {

@@ -890,8 +890,25 @@ const simulatedSourceSchema = z.object({
     surfaces_only_held_here: z.int().default(0),
 });
 
-/** A simulated source's catalogue name, as the route names it. */
-/** The node an address names: a simulated source's catalogue name or a vendor view's name. */
+/** One node of the feed graph, with the state the service derives for it. */
+const feedGraphNodeSchema = z.object({
+    name: z.string(),
+    kind: z.string(),
+    provider_code: z.string().default(''),
+    feed_config_id: z.string().default(''),
+    state: z.string(),
+    reason: z.string().default(''),
+    cause: z.string().default(''),
+});
+
+/** One edge of the feed graph: a node and one input it reads. */
+const feedGraphEdgeSchema = z.object({
+    node: z.string(),
+    input: z.string(),
+    role: z.string(),
+});
+
+/** The node an address names: a simulated source's catalogue name, or a feed's or a view's name. */
 function nodeName(request: FastifyRequest): string {
     return input(code, (request.params as { name: string }).name);
 }
@@ -1664,6 +1681,29 @@ export function registerSyntheticRoutes(
         );
         refuseUnless(reply, upstreamFailure);
         return { sources: reply.sources };
+    });
+
+    /**
+     * The synthetic feed graph: every node with its state, reason and cause, and every edge with
+     * its role. A node name narrows it to that node, its upstreams and its downstreams; a name
+     * the graph does not hold answers an empty graph, not a graph of stopped nodes.
+     */
+    server.get('/api/synthetic/feed-graph', async (request) => {
+        const session = requireSession(request);
+        const query = input(
+            z.object({ node: z.string().trim().max(100).default('') }).strict(),
+            request.query,
+        );
+        const reply = await session.client.callAuthenticated(
+            feedSubjects.get_feed_graph_request,
+            { node_name: query.node },
+            operationReplySchema.extend({
+                nodes: z.array(feedGraphNodeSchema).default([]),
+                edges: z.array(feedGraphEdgeSchema).default([]),
+            }),
+        );
+        refuseUnless(reply, upstreamFailure);
+        return { nodes: reply.nodes, edges: reply.edges };
     });
 
     /**

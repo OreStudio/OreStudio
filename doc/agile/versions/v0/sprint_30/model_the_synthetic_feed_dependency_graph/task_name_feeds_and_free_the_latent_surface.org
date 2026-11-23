@@ -26,18 +26,18 @@ Every synthetic feed is named by the signed-off scheme, wherever a name is made:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
 
 - Every seeded feed carries its scheme name, and a test refuses two feeds that derive one name.
 - A vendor's quotes of a surface run under the vendor's own fx_option name.
-- The latent surfaces are in a latent collection with no provider, seeded by synthetic.feeds.latent, and the Provider tab still shows them.
+- The latent surfaces are in a latent collection under the system provider =latent=, seeded by synthetic.feeds.latent; no tenant reads that provider, and the Provider tab lists it for a system session only.
 - A surface stores its base and quote discounting curves by name, a curve publishes to the board under its own name, and the surface reads the curves it names.
 - The vol ticks still publish live for every pair, and the Calibration tab links the stored curves.
 
@@ -88,7 +88,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Latent surfaces staged and published | 14, provider =latent= | psql count of the latent dataset's surface artefacts and the surface table | b7c1bc77cf |
+| SQL tests, synthetic and market data | 21 files, 184 tests, all pass | =pg_prove test/synthetic_*_test.sql test/marketdata_*_test.sql= | b7c1bc77cf |
+| C++ synthetic suites | 5 of 5 pass (api, core, service, shell, http) | =compass test run -- -R synthetic= | b7c1bc77cf |
+| Web tests | 510 pass (marketdata); BFF 1340 pass | =npx vitest run packages/web/src/marketdata=, =npx vitest run packages/bff= | b7c1bc77cf |
+| Live vol quotes | bloomberg-a, ice-a and tradeweb-a each publish points for all 14 pairs | grep of the ingress subjects in =ores.synthetic.service.0.log= after =compass services start= | b7c1bc77cf |
 
 * Notes
 
@@ -116,3 +120,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every synthetic feed takes its name from the scheme, derived in one place for
+each kind: four SQL functions the publish calls, their web twins in
+=feedNames.ts= for the Add dialogs, and =fx_option_view_name= in C++ for the
+vendor views. A test refuses two feeds that derive one name and checks that
+every name has the scheme's shape.
+
+The latent surfaces live in their own dataset, =synthetic.feeds.latent=, under
+the provider =latent=, of a new kind =system=. Row security hides a system
+provider from every tenant but the system tenant, and the provider validation
+refuses a tenant row that names one; both come from a new optional model flag,
+=rls_shared_read_condition=, so no other table's SQL changed. The Provider and
+Dashboard tabs list only the providers a session can read.
+
+Each surface stores its spot and its two discounting curves by name. A curve
+writes the run's board under its own name, and the surface reads the names it
+stores, so the rule that searched the collection is gone. Live, the three
+vendors quote every one of the 14 surfaces.
+
+The system =Latent= collection and its surfaces stay readable by tenants,
+because the service's tenant runs read them to build the vendor views; hiding
+them is left to the screens task of the story, which owns what a party sees of
+the graph.

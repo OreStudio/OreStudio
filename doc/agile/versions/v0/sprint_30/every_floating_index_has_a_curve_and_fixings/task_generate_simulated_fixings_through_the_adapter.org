@@ -26,11 +26,11 @@ Implement A simulated fixing source is a publisher the simulator serves. Install
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]] |
-| Now          | Plan written; step 1, a fixing in a notation. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 1.                                |
+| Next         | Nothing. |
 | Last touched | 2026-11-22                               |
 
 * Acceptance
@@ -82,9 +82,32 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| IR and FX fixing addresses the trades name, fresh provision | 18 and 18 | =fixing_gap_by_trade.sql=; =evidence/simulated_fixings_through_the_adapter.txt= | this branch |
+| Of those, addresses with no fixing | 0 | the same | this branch |
+| Simulated fixings stored, and items | 42640 over 82 | the same | this branch |
 
 * Notes
+
+The task asks for a publisher for each administrator of a simulated source. The
+data names an administrator for six interest rate indices only, and the curves
+fix many more, so one provider, =simulated-fixings=, publishes every simulated
+fixing. A publisher per administrator needs a fixing source row for each index
+first.
+
+The simulated fixing notation names a fixing by its oresmd address rather than
+by ORE's index name, so ORE's spellings, such as =EUR-ESTER=, stay at ORE's
+boundary.
+
+The run's market board held curves only for the currencies they discount, so a
+term index such as LIBOR 3M could not be read from it. Each curve now states its
+index's rate on the board, under the index's fixing address, and the fixing
+generator reads it there.
+
+Every generated FX trade observed =TR20H=, which ORE's examples name and the
+design page keeps only for imported examples. An FX trade now observes the
+fixing source of its pair's default cut. A cross no vendor collection quotes has
+no spot to fix, so the FX draw keeps the pairs a spot config quotes; deriving a
+cross through USD is captured in the inbox.
 
 * Test Scenarios
 
@@ -110,3 +133,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The simulator writes nothing to the store. A simulated fixing is an adapter tick
+of the simulated fixing publisher, =simulated-fixings-a=, which the market data
+ingest stores as a durable fixing for the system party. =index_fixing_feed=
+states an item's history on its first level, leaving the days the market holds,
+and then fixes it once a day from the run's board: an FX pair at its cut on the
+cut zone's clock, an index once a run day from the rate its curve states.
+=fixing_history_writer= and the curve's fixing plan are gone.
+
+Acceptance:
+- The simulator writes nothing to the store; every simulated fixing arrives
+  through the adapter: 42,640 fixings over 82 items, all from
+  =simulated-fixings-a=, none from the removed writer. Met.
+- A fixing of EUR/USD at the New York cut equals the run's EUR/USD spot at
+  that instant: =an_fx_fixing_is_the_pairs_spot_at_the_cut= ticks before and
+  after 10:00 New York and finds the board's spot, stamped on the cut's date.
+  The value is the spot at the first tick past the cut, which the generator
+  takes every ten seconds of the run. Met.
+- On a fresh acme_demo provision every FX and IR fixing address a trade names
+  has a series with values under the system party: 18 IR and 18 FX addresses,
+  none empty. Met, once the FX draw kept the pairs a spot config quotes.

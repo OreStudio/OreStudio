@@ -177,6 +177,20 @@ DownIn as DonwIn, and one states a payoff as a formula. A tenant's own scripts
 get no codes yet: their publish derives inputs from the code, not from a comment
 the library generator reads.
 
+** PR 3a: the parameter cache moves to ores.ore.client
+
+Trading is the second service to cache =ores.ore='s parameters, and a model
+names one consumer in =cached_by=. The placement rule for entity-mirror caches
+puts a cache with more than one consumer in the producer's =client= component,
+so =ores.ore.client= now holds =ore_parameter_cache=, and reporting links it.
+Reporting's core loses its =ores.eventing.core= link and the exception that
+allowed it, because the client carries that link.
+
+The accepted values of an instrument field's enumeration are only in its format
+text today. Value sets attach to a parameter through a junction keyed by scope
+and name, which is not unique for instrument fields (=Type= is a field of many
+types), so they wait for their own unit of this task.
+
 ** Which component serves describe_product
 
 Who needs the schema, and when:

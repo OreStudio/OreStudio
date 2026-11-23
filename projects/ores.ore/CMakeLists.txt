@@ -21,4 +21,5 @@
 # To modify, update the template and regenerate.
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/api)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/core)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/client)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/service)

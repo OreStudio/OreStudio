@@ -22,8 +22,8 @@
  * Template: cpp_nats_event_cache_registrar.hpp.mustache
  * To modify, update the template and regenerate.
  */
-#ifndef ORES_REPORTING_CORE_SERVICE_CACHE_ORE_PARAMETER_CACHE_REGISTRAR_HPP
-#define ORES_REPORTING_CORE_SERVICE_CACHE_ORE_PARAMETER_CACHE_REGISTRAR_HPP
+#ifndef ORES_ORE_CLIENT_SERVICE_CACHE_ORE_PARAMETER_CACHE_REGISTRAR_HPP
+#define ORES_ORE_CLIENT_SERVICE_CACHE_ORE_PARAMETER_CACHE_REGISTRAR_HPP
 
 #include "ores.eventing.api/domain/entity_event.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
@@ -31,18 +31,18 @@
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.ore.api/eventing/ore_parameter_event.hpp"
-#include "ores.reporting.core/service/cache/ore_parameter_cache.hpp"
+#include "ores.ore.client/service/cache/ore_parameter_cache.hpp"
 #include <memory>
 #include <string>
 #include <thread>
 #include <vector>
 
-namespace ores::reporting::service::cache {
+namespace ores::ore::service::cache {
 
 namespace {
 inline auto& ore_parameter_cache_registrar_lg() {
     static auto instance =
-        ores::logging::make_logger("ores.reporting.service.cache.ore_parameter_cache_registrar");
+        ores::logging::make_logger("ores.ore.service.cache.ore_parameter_cache_registrar");
     return instance;
 }
 }

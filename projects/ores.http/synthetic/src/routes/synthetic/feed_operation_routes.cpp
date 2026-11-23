@@ -287,7 +287,8 @@ void feed_operation_routes::register_routes(
             }));
 
     add(router->get("/api/synthetic/feed-graph")
-            .summary("Read the synthetic feed graph, or the part around one node, with its states")
+            .summary("Read the synthetic feed graph, or the part around one node, with its states; "
+                     "an unknown node answers an empty graph")
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<synthetic_messaging::get_feed_graph_request>([&] {
                     synthetic_messaging::get_feed_graph_request msg;

@@ -173,3 +173,18 @@ TEST_CASE("the part of the graph around a node holds its upstreams and downstrea
     CHECK(names.contains("bloomberg-a"));
     CHECK(ores::synthetic::service::around(audusd(), "synthetic.nobody").nodes.empty());
 }
+
+TEST_CASE("a surface that reads itself is starved on the cycle, not running", "[feed_graph]") {
+    auto s = surface();
+    s.row.candidate.inputs.spot = latent;
+    auto g = build_feed_graph({upstream(curve_kind, aud), upstream(curve_kind, usd), s}, {});
+    derive_states(g, {});
+    CHECK(node(g, latent).state == "starved");
+    CHECK(node(g, latent).cause == latent);
+}
+
+TEST_CASE("an edge read twice is kept once", "[feed_graph]") {
+    auto g = build_feed_graph({upstream(spot_kind, spot), upstream(spot_kind, spot)},
+                              {{.name = "bloomberg-a", .provider_code = "bloomberg"}});
+    CHECK(std::ranges::count_if(g.edges, [](const auto& e) { return e.node == spot; }) == 1);
+}

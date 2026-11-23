@@ -27,11 +27,27 @@
 #include <map>
 #include <set>
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <utility>
 #include <vector>
 
 namespace ores::synthetic::service {
+
+/** @brief The kinds of node of the feed graph, as the graph's read spells them. */
+namespace node_kind {
+inline constexpr std::string_view source = "source";
+inline constexpr std::string_view upstream = "upstream";
+inline constexpr std::string_view latent = "latent";
+inline constexpr std::string_view view = "view";
+}
+
+/** @brief The states of a node of the feed graph, as the graph's read spells them. */
+namespace node_state {
+inline constexpr std::string_view running = "running";
+inline constexpr std::string_view stopped = "stopped";
+inline constexpr std::string_view starved = "starved";
+}
 
 /**
  * @brief The synthetic feed graph: its nodes, each named by the naming scheme, and its edges, each
@@ -67,8 +83,9 @@ inline feed_graph build_feed_graph(const std::vector<feed_start_target>& targets
     feed_graph out;
     std::map<std::string, std::vector<std::string>> sources_of;
     for (const auto& source : sources) {
-        out.nodes.push_back(
-            {.name = source.name, .kind = "source", .provider_code = source.provider_code});
+        out.nodes.push_back({.name = source.name,
+                             .kind = std::string(node_kind::source),
+                             .provider_code = source.provider_code});
         sources_of[source.provider_code].push_back(source.name);
     }
     const auto edge = [&out](const std::string& node, const std::string& input, std::string role) {
@@ -87,14 +104,14 @@ inline feed_graph build_feed_graph(const std::vector<feed_start_target>& targets
         const auto& c = target.row.candidate;
         if (target.row.kind->kind != fx_vol_surface_feed_kind) {
             out.nodes.push_back({.name = c.source_name,
-                                 .kind = "upstream",
+                                 .kind = std::string(node_kind::upstream),
                                  .provider_code = target.container_provider_code,
                                  .feed_config_id = c.feed_config_id});
             source_edges(c.source_name, target.container_provider_code);
             continue;
         }
         out.nodes.push_back({.name = c.source_name,
-                             .kind = "latent",
+                             .kind = std::string(node_kind::latent),
                              .provider_code = target.container_provider_code,
                              .feed_config_id = c.feed_config_id});
         edge(c.source_name, c.inputs.spot, "spot");
@@ -104,7 +121,8 @@ inline feed_graph build_feed_graph(const std::vector<feed_start_target>& targets
             continue;
         for (const auto& [contributor, provider] : c.contributor_providers) {
             const auto view = fx_option_view_name(provider, c.fx_pair->first, c.fx_pair->second);
-            out.nodes.push_back({.name = view, .kind = "view", .provider_code = provider});
+            out.nodes.push_back(
+                {.name = view, .kind = std::string(node_kind::view), .provider_code = provider});
             edge(view, c.source_name, "surface");
             source_edges(view, provider);
         }
@@ -112,9 +130,13 @@ inline feed_graph build_feed_graph(const std::vector<feed_start_target>& targets
     std::ranges::sort(out.nodes, {}, &msg::feed_graph_node::name);
     const auto [first, last] = std::ranges::unique(out.nodes, {}, &msg::feed_graph_node::name);
     out.nodes.erase(first, last);
-    std::ranges::sort(out.edges, [](const auto& a, const auto& b) {
-        return std::tie(a.node, a.input) < std::tie(b.node, b.input);
-    });
+    const auto key = [](const auto& e) {
+        return std::tie(e.node, e.input);
+    };
+    std::ranges::sort(out.edges, [&key](const auto& a, const auto& b) { return key(a) < key(b); });
+    const auto [efirst, elast] = std::ranges::unique(
+        out.edges, [&key](const auto& a, const auto& b) { return key(a) == key(b); });
+    out.edges.erase(efirst, elast);
     return out;
 }
 
@@ -142,28 +164,36 @@ inline void derive_states(feed_graph& graph, const std::set<std::string>& stoppe
             return;
         done.insert(node.name);
         if (stopped.contains(node.name)) {
-            node.state = "stopped";
+            node.state = node_state::stopped;
             node.reason = "An operator stopped it.";
             return;
         }
         for (const auto& input : inputs[node.name]) {
             const auto found = index.find(input);
             if (found == index.end()) {
-                node.state = "starved";
+                node.state = node_state::starved;
                 node.cause = input;
                 node.reason = "It reads " + input + ", which no feed of the graph publishes.";
                 return;
             }
             self(self, found->second);
             const auto& upstream = graph.nodes[found->second];
-            if (upstream.state != "running") {
-                node.state = "starved";
+            // An input still being resolved closes a cycle, which a sound graph never has: the
+            // node starves on it, so the bad config shows rather than reads as running.
+            if (upstream.state.empty()) {
+                node.state = node_state::starved;
+                node.cause = input;
+                node.reason = "It reads " + input + ", which reads it back: the graph has a cycle.";
+                return;
+            }
+            if (upstream.state != node_state::running) {
+                node.state = node_state::starved;
                 node.cause = input;
                 node.reason = input + " is " + upstream.state + ": " + upstream.reason;
                 return;
             }
         }
-        node.state = "running";
+        node.state = node_state::running;
     };
     for (std::size_t i = 0; i < graph.nodes.size(); ++i)
         resolve(resolve, i);
@@ -172,7 +202,8 @@ inline void derive_states(feed_graph& graph, const std::set<std::string>& stoppe
 /**
  * @brief The part of the graph around one node: the node, every node it reads directly or
  * through others, every node that reads it directly or through others, and the edges among them.
- * An empty graph when no node has that name.
+ * An empty graph when no node has that name, which a caller must not read as a graph of stopped
+ * nodes.
  */
 inline feed_graph around(const feed_graph& graph, const std::string& name) {
     const auto known =

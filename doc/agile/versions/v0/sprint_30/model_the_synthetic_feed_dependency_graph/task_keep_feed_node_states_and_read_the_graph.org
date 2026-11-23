@@ -115,6 +115,12 @@ via its "Verifies task" field.
 | 1 | Local review: every node stop re-applies every running adapter's demand | application.cpp | Accepted | An upstream or a latent surface can be held by several providers' adapters; re-applying all is the simple, correct reach, and a stop is a rare operator act. |
 | 2 | Local review: each graph read rebuilds the graph from the registry | application.cpp | Accepted | 196 nodes; the design chose derivation over a stored copy, and a read is an operator's page load. |
 | 3 | Local review: a stale doc comment on nodeName in the BFF, from the previous task | synthetic.ts | Accepted | Removed. |
+| 4 | PR review: duplicate edges are possible | feed_graph.hpp | Accepted | Edges are kept once by node and input; a test reads one edge twice. |
+| 5 | PR review: a cycle would read as running | feed_graph.hpp | Accepted | An input still being resolved starves the node on it, naming the cycle; a test has a surface read itself. |
+| 6 | PR review: states and kinds are string literals | feed_graph.hpp | Accepted | Named once, in node_kind and node_state, for the C++ side; the wire keeps strings, as every generated protocol does. |
+| 7 | PR review: around() walks every edge per step | feed_graph.hpp | Declined | 196 nodes and 272 edges; an adjacency map earns its place only when the graph grows. |
+| 8 | PR review: a starved reason grows with the chain | feed_graph.hpp | Declined | The cause names the direct input; the chain is the trace back to the operator's reason that the story asks for. |
+| 9 | PR review: an unknown node answers an empty graph | synthetic.ts, feed_operation_routes.cpp | Accepted | The BFF's doc and the route's summary say so. |
 
 * Result
 

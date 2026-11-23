@@ -287,7 +287,7 @@ private:
         const auto whole = build_graph();
         const auto found = std::ranges::find(
             whole.nodes, name, &ores::synthetic::messaging::feed_graph_node::name);
-        if (found == whole.nodes.end() || found->kind == "source")
+        if (found == whole.nodes.end() || found->kind == node_kind::source)
             return std::nullopt;
         return *found;
     }
@@ -332,7 +332,7 @@ private:
         const auto sys_ctx = ores::database::service::tenant_context::with_system_tenant(db_ctx_);
         for (const auto& row :
              ores::synthetic::repository::stopped_feed_node_repository().read_latest(sys_ctx))
-            if ((row.kind == "source") == sources)
+            if ((row.kind == node_kind::source) == sources)
                 out.insert(row.node_name);
         return out;
     }

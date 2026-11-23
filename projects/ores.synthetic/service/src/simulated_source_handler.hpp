@@ -247,7 +247,7 @@ private:
             all, name, &ores::synthetic::messaging::simulated_source::source_name);
         if (found != all.end())
             return node{.name = found->source_name,
-                        .kind = "source",
+                        .kind = std::string(node_kind::source),
                         .provider_code = found->provider_code,
                         .stopped = found->stopped};
         if (const auto other = sources_.node(name))
@@ -259,14 +259,14 @@ private:
     }
 
     void halt(const node& n) {
-        if (n.kind == "source")
+        if (n.kind == node_kind::source)
             sources_.stop(n.name);
         else
             sources_.stop_node(n.name);
     }
 
     void resume(const node& n) {
-        if (n.kind == "source")
+        if (n.kind == node_kind::source)
             sources_.start(n.name);
         else
             sources_.start_node(n.name);

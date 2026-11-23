@@ -1685,7 +1685,8 @@ export function registerSyntheticRoutes(
 
     /**
      * The synthetic feed graph: every node with its state, reason and cause, and every edge with
-     * its role. A node name narrows it to that node, its upstreams and its downstreams.
+     * its role. A node name narrows it to that node, its upstreams and its downstreams; a name
+     * the graph does not hold answers an empty graph, not a graph of stopped nodes.
      */
     server.get('/api/synthetic/feed-graph', async (request) => {
         const session = requireSession(request);

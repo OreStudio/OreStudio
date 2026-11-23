@@ -891,7 +891,8 @@ const simulatedSourceSchema = z.object({
 });
 
 /** A simulated source's catalogue name, as the route names it. */
-function sourceName(request: FastifyRequest): string {
+/** The node an address names: a simulated source's catalogue name or a vendor view's name. */
+function nodeName(request: FastifyRequest): string {
     return input(code, (request.params as { name: string }).name);
 }
 
@@ -1666,28 +1667,29 @@ export function registerSyntheticRoutes(
     });
 
     /**
-     * Stops a simulated source until someone starts it, a restart of the service included. Its
-     * feeds stop and it releases its vol surfaces; feeds started by hand run on. The system
-     * tenant alone stops a source, with the run permission, and says why.
+     * Stops a node of the feed graph until someone starts it, a restart of the service included.
+     * A simulated source's feeds stop and it releases its vol surfaces; feeds started by hand run
+     * on. A vendor view's points are withheld, and the surface and the other vendors run on. The
+     * system tenant alone stops a node, with the run permission, and says why.
      */
-    server.post('/api/synthetic/simulated-sources/:name/stop', async (request) => {
+    server.post('/api/synthetic/feed-nodes/:name/stop', async (request) => {
         const session = requireSession(request);
         const intent = input(intentSchema, request.body);
         const reply = await session.client.callAuthenticated(
-            feedSubjects.stop_simulated_source_request,
-            { source_name: sourceName(request), ...intent },
+            feedSubjects.stop_feed_node_request,
+            { node_name: nodeName(request), ...intent },
             operationReplySchema,
         );
         refuseUnless(reply, conflict);
         return { message: reply.message };
     });
 
-    /** Starts a stopped simulated source again. */
-    server.post('/api/synthetic/simulated-sources/:name/start', async (request) => {
+    /** Starts a stopped node of the feed graph again. */
+    server.post('/api/synthetic/feed-nodes/:name/start', async (request) => {
         const session = requireSession(request);
         const reply = await session.client.callAuthenticated(
-            feedSubjects.start_simulated_source_request,
-            { source_name: sourceName(request) },
+            feedSubjects.start_feed_node_request,
+            { node_name: nodeName(request) },
             operationReplySchema,
         );
         refuseUnless(reply, conflict);

@@ -965,7 +965,7 @@ entity "synthetic" as synthetic {
   ores_synthetic_market_data_generation_configs_tbl
   ores_synthetic_market_data_providers_tbl
   ores_synthetic_process_parameter_definitions_tbl
-  ores_synthetic_stopped_simulated_sources_tbl
+  ores_synthetic_stopped_feed_nodes_tbl
   ores_synthetic_trade_generation_books_tbl
   ores_synthetic_trade_generation_configs_tbl
   ores_synthetic_trade_generation_counterparties_tbl

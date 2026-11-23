@@ -28,7 +28,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
-#include "ores.synthetic.core/service/stopped_simulated_source_service.hpp"
+#include "ores.synthetic.core/service/stopped_feed_node_service.hpp"
 #include "source_control.hpp"
 #include <algorithm>
 #include <cctype>
@@ -97,23 +97,24 @@ public:
         const auto ctx = operator_context("stop", msg);
         if (!ctx)
             return;
-        const auto req = ores::service::messaging::decode<stop_simulated_source_request>(msg);
+        const auto req = ores::service::messaging::decode<stop_feed_node_request>(msg);
         const auto refuse = [&](std::string why) {
             ores::service::messaging::reply(
-                nats_, msg, stop_simulated_source_response{.message = std::move(why)});
+                nats_, msg, stop_feed_node_response{.message = std::move(why)});
         };
         if (!req) {
             refuse("Malformed stop request");
             return;
         }
         try {
-            const auto source = served(req->source_name);
-            if (!source) {
-                refuse("The service serves no simulated source " + req->source_name + ".");
+            const auto node = find_node(req->node_name);
+            if (!node) {
+                refuse("The service serves no source and quotes no view named " + req->node_name +
+                       ".");
                 return;
             }
-            if (source->stopped) {
-                refuse("The simulated source " + req->source_name + " is already stopped.");
+            if (node->stopped) {
+                refuse("The " + node->kind + " " + req->node_name + " is already stopped.");
                 return;
             }
             if (std::ranges::all_of(req->reason_code,
@@ -121,27 +122,27 @@ public:
                 refuse("A stop states its reason.");
                 return;
             }
-            ores::synthetic::domain::stopped_simulated_source row;
-            row.source_name = source->source_name;
-            row.provider_code = source->provider_code;
+            ores::synthetic::domain::stopped_feed_node row;
+            row.node_name = node->name;
+            row.kind = node->kind;
+            row.provider_code = node->provider_code;
             row.change_reason_code = req->reason_code;
             row.change_commentary = req->commentary;
-            // The stop is recorded before the adapter stops, so a crash between the two leaves
-            // the source stopped after a restart. An adapter that throws undoes the record, so
-            // no record says a running source is stopped.
-            ores::synthetic::service::stopped_simulated_source_service records(*ctx);
-            records.save_stopped_source(row);
+            // The stop is recorded before the node stops, so a crash between the two leaves the
+            // node stopped after a restart. A node that throws undoes the record, so no record
+            // says a running node is stopped.
+            ores::synthetic::service::stopped_feed_node_service records(*ctx);
+            records.save_stopped_node(row);
             try {
-                sources_.stop(source->source_name);
+                halt(*node);
             } catch (...) {
-                records.delete_stopped_source(source->source_name);
+                records.delete_stopped_node(node->name);
                 throw;
             }
             ores::service::messaging::reply(
                 nats_,
                 msg,
-                stop_simulated_source_response{.success = true,
-                                               .message = "Stopped " + source->source_name});
+                stop_feed_node_response{.success = true, .message = "Stopped " + node->name});
         } catch (const std::exception& e) {
             ORES_LOG_SEV(simulated_source_handler_lg(), ores::logging::error)
                 << msg.subject << " failed: " << e.what();
@@ -156,41 +157,41 @@ public:
         const auto ctx = operator_context("start", msg);
         if (!ctx)
             return;
-        const auto req = ores::service::messaging::decode<start_simulated_source_request>(msg);
+        const auto req = ores::service::messaging::decode<start_feed_node_request>(msg);
         const auto refuse = [&](std::string why) {
             ores::service::messaging::reply(
-                nats_, msg, start_simulated_source_response{.message = std::move(why)});
+                nats_, msg, start_feed_node_response{.message = std::move(why)});
         };
         if (!req) {
             refuse("Malformed start request");
             return;
         }
         try {
-            const auto source = served(req->source_name);
-            if (!source) {
-                refuse("The service serves no simulated source " + req->source_name + ".");
+            const auto node = find_node(req->node_name);
+            if (!node) {
+                refuse("The service serves no source and quotes no view named " + req->node_name +
+                       ".");
                 return;
             }
-            if (!source->stopped) {
-                refuse("The simulated source " + req->source_name + " is not stopped.");
+            if (!node->stopped) {
+                refuse("The " + node->kind + " " + req->node_name + " is not stopped.");
                 return;
             }
-            // The adapter starts before the record goes, so an adapter that does not start leaves
-            // the source stopped and recorded as stopped. A record that cannot be removed stops
-            // the adapter again, so the two agree whichever step fails.
-            sources_.start(source->source_name);
+            // The node starts before the record goes, so a node that does not start stays
+            // stopped and recorded as stopped. A record that cannot be removed stops the node
+            // again, so the two agree whichever step fails.
+            resume(*node);
             try {
-                ores::synthetic::service::stopped_simulated_source_service(*ctx)
-                    .delete_stopped_source(source->source_name);
+                ores::synthetic::service::stopped_feed_node_service(*ctx).delete_stopped_node(
+                    node->name);
             } catch (...) {
-                sources_.stop(source->source_name);
+                halt(*node);
                 throw;
             }
             ores::service::messaging::reply(
                 nats_,
                 msg,
-                start_simulated_source_response{.success = true,
-                                                .message = "Started " + source->source_name});
+                start_feed_node_response{.success = true, .message = "Started " + node->name});
         } catch (const std::exception& e) {
             ORES_LOG_SEV(simulated_source_handler_lg(), ores::logging::error)
                 << msg.subject << " failed: " << e.what();
@@ -199,14 +200,44 @@ public:
     }
 
 private:
-    std::optional<ores::synthetic::messaging::simulated_source>
-    served(const std::string& source_name) const {
+    struct node final {
+        std::string name;
+        std::string kind;
+        std::string provider_code;
+        bool stopped = false;
+    };
+
+    // A name is a source's when the service serves a source of that name, and a view's when a
+    // contributor of a latent surface quotes it; the two kinds of name never meet.
+    std::optional<node> find_node(const std::string& name) const {
         const auto all = sources_.sources();
         const auto found = std::ranges::find(
-            all, source_name, &ores::synthetic::messaging::simulated_source::source_name);
-        if (found == all.end())
-            return std::nullopt;
-        return *found;
+            all, name, &ores::synthetic::messaging::simulated_source::source_name);
+        if (found != all.end())
+            return node{.name = found->source_name,
+                        .kind = "source",
+                        .provider_code = found->provider_code,
+                        .stopped = found->stopped};
+        if (const auto view = sources_.view(name))
+            return node{.name = view->name,
+                        .kind = "view",
+                        .provider_code = view->provider_code,
+                        .stopped = view->stopped};
+        return std::nullopt;
+    }
+
+    void halt(const node& n) {
+        if (n.kind == "source")
+            sources_.stop(n.name);
+        else
+            sources_.stop_view(n.name);
+    }
+
+    void resume(const node& n) {
+        if (n.kind == "source")
+            sources_.start(n.name);
+        else
+            sources_.start_view(n.name);
     }
 
     // A source serves every tenant, so the caller is the system tenant, with the run permission.
@@ -224,7 +255,7 @@ private:
             !feed_kind_registry::is_system_caller(*ctx_expected)) {
             ORES_LOG_SEV(simulated_source_handler_lg(), ores::logging::warn)
                 << "Rejecting " << verb
-                << " request: a source is stopped and started by the system tenant, with the "
+                << " request: a node is stopped and started by the system tenant, with the "
                    "run permission.";
             ores::service::messaging::error_reply(nats_, msg, ores::service::error_code::forbidden);
             return std::nullopt;

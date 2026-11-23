@@ -36,7 +36,7 @@ set(files
     "main.cpp"
     "market_data_generation_config_commands_tests.cpp"
     "market_data_provider_commands_tests.cpp"
-    "stopped_simulated_source_commands_tests.cpp"
+    "stopped_feed_node_commands_tests.cpp"
     "trade_generation_book_commands_tests.cpp"
     "trade_generation_config_commands_tests.cpp"
     "trade_generation_counterparty_commands_tests.cpp"

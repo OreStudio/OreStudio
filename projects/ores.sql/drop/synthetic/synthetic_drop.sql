@@ -44,8 +44,8 @@
 \ir ./synthetic_variance_calibrations_notify_trigger_drop.sql
 \ir ./synthetic_variance_calibrations_drop.sql
 \ir ./synthetic_fx_vol_surface_feed_contributors_notify_trigger_drop.sql
-\ir ./synthetic_stopped_simulated_sources_notify_trigger_drop.sql
-\ir ./synthetic_stopped_simulated_sources_drop.sql
+\ir ./synthetic_stopped_feed_nodes_notify_trigger_drop.sql
+\ir ./synthetic_stopped_feed_nodes_drop.sql
 \ir ./synthetic_fx_vol_surface_feed_contributors_drop.sql
 \ir ./synthetic_fx_vol_surface_feed_expiries_notify_trigger_drop.sql
 \ir ./synthetic_fx_vol_surface_feed_expiries_drop.sql

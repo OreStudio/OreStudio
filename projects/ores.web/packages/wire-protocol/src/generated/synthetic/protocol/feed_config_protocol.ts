@@ -226,14 +226,16 @@ export interface ListSimulatedSourcesResponse {
 }
 
 /**
- * @brief Request to stop one simulated source, and keep it stopped until it is started.
+ * @brief Request to stop one node of the feed graph, and keep it stopped until it is started.
  *
- * Its adapter stops: the feeds it runs for the store stop, and it releases the vol surfaces
- * it holds, each of which runs on while another source holds it. Feeds started by hand run on.
+ * A source's adapter stops: the feeds it runs for the store stop, and it releases the vol
+ * surfaces it holds, each of which runs on while another source holds it. Feeds started by hand
+ * run on. A vendor view's points are withheld: its vendor stops quoting that surface, and the
+ * surface and the other vendors run on.
  */
-export interface StopSimulatedSourceRequest {
-    /** @brief The catalogue name of the source. */
-    source_name: string;
+export interface StopFeedNodeRequest {
+    /** @brief The node's name: a source's catalogue name or a view's scheme name. */
+    node_name: string;
     /** @brief Why it is stopped, as a change reason code. */
     reason_code: string;
     /** @brief What the person said about why. */
@@ -241,25 +243,25 @@ export interface StopSimulatedSourceRequest {
 }
 
 /**
- * @brief Whether the source stopped, and why not when it did not.
+ * @brief Whether the node stopped, and why not when it did not.
  */
-export interface StopSimulatedSourceResponse {
+export interface StopFeedNodeResponse {
     success: boolean;
     message: string;
 }
 
 /**
- * @brief Request to start a stopped simulated source again.
+ * @brief Request to start a stopped node of the feed graph again.
  */
-export interface StartSimulatedSourceRequest {
-    /** @brief The catalogue name of the source. */
-    source_name: string;
+export interface StartFeedNodeRequest {
+    /** @brief The node's name: a source's catalogue name or a view's scheme name. */
+    node_name: string;
 }
 
 /**
- * @brief Whether the source started, and why not when it did not.
+ * @brief Whether the node started, and why not when it did not.
  */
-export interface StartSimulatedSourceResponse {
+export interface StartFeedNodeResponse {
     success: boolean;
     message: string;
 }
@@ -463,8 +465,8 @@ export const subjects = {
     stop_feed_request: 'synthetic.v1.ops.stop_feed',
     list_feeds_request: 'synthetic.v1.feed_configs.list',
     list_simulated_sources_request: 'synthetic.v1.simulated_sources.list',
-    stop_simulated_source_request: 'synthetic.v1.ops.stop_simulated_source',
-    start_simulated_source_request: 'synthetic.v1.ops.start_simulated_source',
+    stop_feed_node_request: 'synthetic.v1.ops.stop_feed_node',
+    start_feed_node_request: 'synthetic.v1.ops.start_feed_node',
     calibrate_request: 'synthetic.v1.ops.calibrate_feeds',
     review_variance_calibration_request: 'synthetic.v1.ops.review_variance_calibration',
 } as const;
@@ -478,8 +480,8 @@ export const requiresSession = {
     stop_feed_request: true,
     list_feeds_request: true,
     list_simulated_sources_request: true,
-    stop_simulated_source_request: true,
-    start_simulated_source_request: true,
+    stop_feed_node_request: true,
+    start_feed_node_request: true,
     calibrate_request: true,
     review_variance_calibration_request: true,
 } as const;

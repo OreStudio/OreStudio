@@ -312,14 +312,16 @@ struct list_simulated_sources_response {
 };
 
 /**
- * @brief Request to stop one simulated source, and keep it stopped until it is started.
+ * @brief Request to stop one node of the feed graph, and keep it stopped until it is started.
  *
- * Its adapter stops: the feeds it runs for the store stop, and it releases the vol surfaces
- * it holds, each of which runs on while another source holds it. Feeds started by hand run on.
+ * A source's adapter stops: the feeds it runs for the store stop, and it releases the vol
+ * surfaces it holds, each of which runs on while another source holds it. Feeds started by hand
+ * run on. A vendor view's points are withheld: its vendor stops quoting that surface, and the
+ * surface and the other vendors run on.
  */
-struct stop_simulated_source_request {
-    using response_type = struct stop_simulated_source_response;
-    static constexpr std::string_view nats_subject = "synthetic.v1.ops.stop_simulated_source";
+struct stop_feed_node_request {
+    using response_type = struct stop_feed_node_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.ops.stop_feed_node";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -327,34 +329,33 @@ struct stop_simulated_source_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    /** @brief The catalogue name of the source. */
-    std::string source_name;
+    /** @brief The node's name: a source's catalogue name or a view's scheme name. */
+    std::string node_name;
     /** @brief Why it is stopped, as a change reason code. */
     std::string reason_code;
     /** @brief What the person said about why. */
     std::string commentary;
 
-    friend bool operator==(const stop_simulated_source_request&,
-                           const stop_simulated_source_request&) = default;
+    friend bool operator==(const stop_feed_node_request&, const stop_feed_node_request&) = default;
 };
 
 /**
- * @brief Whether the source stopped, and why not when it did not.
+ * @brief Whether the node stopped, and why not when it did not.
  */
-struct stop_simulated_source_response {
+struct stop_feed_node_response {
     bool success = false;
     std::string message;
 
-    friend bool operator==(const stop_simulated_source_response&,
-                           const stop_simulated_source_response&) = default;
+    friend bool operator==(const stop_feed_node_response&,
+                           const stop_feed_node_response&) = default;
 };
 
 /**
- * @brief Request to start a stopped simulated source again.
+ * @brief Request to start a stopped node of the feed graph again.
  */
-struct start_simulated_source_request {
-    using response_type = struct start_simulated_source_response;
-    static constexpr std::string_view nats_subject = "synthetic.v1.ops.start_simulated_source";
+struct start_feed_node_request {
+    using response_type = struct start_feed_node_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.ops.start_feed_node";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -362,22 +363,22 @@ struct start_simulated_source_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    /** @brief The catalogue name of the source. */
-    std::string source_name;
+    /** @brief The node's name: a source's catalogue name or a view's scheme name. */
+    std::string node_name;
 
-    friend bool operator==(const start_simulated_source_request&,
-                           const start_simulated_source_request&) = default;
+    friend bool operator==(const start_feed_node_request&,
+                           const start_feed_node_request&) = default;
 };
 
 /**
- * @brief Whether the source started, and why not when it did not.
+ * @brief Whether the node started, and why not when it did not.
  */
-struct start_simulated_source_response {
+struct start_feed_node_response {
     bool success = false;
     std::string message;
 
-    friend bool operator==(const start_simulated_source_response&,
-                           const start_simulated_source_response&) = default;
+    friend bool operator==(const start_feed_node_response&,
+                           const start_feed_node_response&) = default;
 };
 
 /**
@@ -840,62 +841,62 @@ struct review_variance_calibration_response {
 }
 
 /**
- * @brief The members of stop_simulated_source_request, named as the wire names them and in the
- * order the type declares them.
+ * @brief The members of stop_feed_node_request, named as the wire names them and in the order
+ * the type declares them.
  *
  * This is the one statement of the message's shape. The carriers find it by
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<stop_simulated_source_request>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stop_feed_node_request>) {
     return ::ores::utility::codec::field_list{
-        ::ores::utility::codec::field{"source_name", &stop_simulated_source_request::source_name},
-        ::ores::utility::codec::field{"reason_code", &stop_simulated_source_request::reason_code},
-        ::ores::utility::codec::field{"commentary", &stop_simulated_source_request::commentary},
+        ::ores::utility::codec::field{"node_name", &stop_feed_node_request::node_name},
+        ::ores::utility::codec::field{"reason_code", &stop_feed_node_request::reason_code},
+        ::ores::utility::codec::field{"commentary", &stop_feed_node_request::commentary},
     };
 }
 
 /**
- * @brief The members of stop_simulated_source_response, named as the wire names them and in the
- * order the type declares them.
+ * @brief The members of stop_feed_node_response, named as the wire names them and in the order
+ * the type declares them.
  *
  * This is the one statement of the message's shape. The carriers find it by
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<stop_simulated_source_response>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<stop_feed_node_response>) {
     return ::ores::utility::codec::field_list{
-        ::ores::utility::codec::field{"success", &stop_simulated_source_response::success},
-        ::ores::utility::codec::field{"message", &stop_simulated_source_response::message},
+        ::ores::utility::codec::field{"success", &stop_feed_node_response::success},
+        ::ores::utility::codec::field{"message", &stop_feed_node_response::message},
     };
 }
 
 /**
- * @brief The members of start_simulated_source_request, named as the wire names them and in the
- * order the type declares them.
+ * @brief The members of start_feed_node_request, named as the wire names them and in the order
+ * the type declares them.
  *
  * This is the one statement of the message's shape. The carriers find it by
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<start_simulated_source_request>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<start_feed_node_request>) {
     return ::ores::utility::codec::field_list{
-        ::ores::utility::codec::field{"source_name", &start_simulated_source_request::source_name},
+        ::ores::utility::codec::field{"node_name", &start_feed_node_request::node_name},
     };
 }
 
 /**
- * @brief The members of start_simulated_source_response, named as the wire names them and in the
- * order the type declares them.
+ * @brief The members of start_feed_node_response, named as the wire names them and in the order
+ * the type declares them.
  *
  * This is the one statement of the message's shape. The carriers find it by
  * argument-dependent lookup, so no caller passes a list, and a message that
  * holds another message or a domain type encodes it as its own object.
  */
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<start_simulated_source_response>) {
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<start_feed_node_response>) {
     return ::ores::utility::codec::field_list{
-        ::ores::utility::codec::field{"success", &start_simulated_source_response::success},
-        ::ores::utility::codec::field{"message", &start_simulated_source_response::message},
+        ::ores::utility::codec::field{"success", &start_feed_node_response::success},
+        ::ores::utility::codec::field{"message", &start_feed_node_response::message},
     };
 }
 
@@ -1226,59 +1227,43 @@ struct ORES_SYNTHETIC_API_EXPORT
     read_msgpack(std::span<const std::byte> data);
 };
 template <>
-struct ORES_SYNTHETIC_API_EXPORT
-    wire_traits<ores::synthetic::messaging::stop_simulated_source_request> {
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::stop_feed_node_request> {
     static constexpr bool is_generated = true;
 
-    static std::string
-    write_json(const ores::synthetic::messaging::stop_simulated_source_request& v);
-    static ores::synthetic::messaging::stop_simulated_source_request
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::synthetic::messaging::stop_simulated_source_request& v);
-    static ores::synthetic::messaging::stop_simulated_source_request
+    static std::string write_json(const ores::synthetic::messaging::stop_feed_node_request& v);
+    static ores::synthetic::messaging::stop_feed_node_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::stop_feed_node_request& v);
+    static ores::synthetic::messaging::stop_feed_node_request
     read_msgpack(std::span<const std::byte> data);
 };
 template <>
-struct ORES_SYNTHETIC_API_EXPORT
-    wire_traits<ores::synthetic::messaging::stop_simulated_source_response> {
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::stop_feed_node_response> {
     static constexpr bool is_generated = true;
 
-    static std::string
-    write_json(const ores::synthetic::messaging::stop_simulated_source_response& v);
-    static ores::synthetic::messaging::stop_simulated_source_response
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::synthetic::messaging::stop_simulated_source_response& v);
-    static ores::synthetic::messaging::stop_simulated_source_response
+    static std::string write_json(const ores::synthetic::messaging::stop_feed_node_response& v);
+    static ores::synthetic::messaging::stop_feed_node_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::stop_feed_node_response& v);
+    static ores::synthetic::messaging::stop_feed_node_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>
-struct ORES_SYNTHETIC_API_EXPORT
-    wire_traits<ores::synthetic::messaging::start_simulated_source_request> {
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::start_feed_node_request> {
     static constexpr bool is_generated = true;
 
-    static std::string
-    write_json(const ores::synthetic::messaging::start_simulated_source_request& v);
-    static ores::synthetic::messaging::start_simulated_source_request
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::synthetic::messaging::start_simulated_source_request& v);
-    static ores::synthetic::messaging::start_simulated_source_request
+    static std::string write_json(const ores::synthetic::messaging::start_feed_node_request& v);
+    static ores::synthetic::messaging::start_feed_node_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::start_feed_node_request& v);
+    static ores::synthetic::messaging::start_feed_node_request
     read_msgpack(std::span<const std::byte> data);
 };
 template <>
-struct ORES_SYNTHETIC_API_EXPORT
-    wire_traits<ores::synthetic::messaging::start_simulated_source_response> {
+struct ORES_SYNTHETIC_API_EXPORT wire_traits<ores::synthetic::messaging::start_feed_node_response> {
     static constexpr bool is_generated = true;
 
-    static std::string
-    write_json(const ores::synthetic::messaging::start_simulated_source_response& v);
-    static ores::synthetic::messaging::start_simulated_source_response
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::synthetic::messaging::start_simulated_source_response& v);
-    static ores::synthetic::messaging::start_simulated_source_response
+    static std::string write_json(const ores::synthetic::messaging::start_feed_node_response& v);
+    static ores::synthetic::messaging::start_feed_node_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::synthetic::messaging::start_feed_node_response& v);
+    static ores::synthetic::messaging::start_feed_node_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

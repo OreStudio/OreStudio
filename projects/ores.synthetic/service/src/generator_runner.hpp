@@ -145,6 +145,10 @@ public:
     demand_outcome apply(const std::vector<ores::marketdata::messaging::vendor_id>& demand) {
         using ores::marketdata::messaging::rejected_id;
         using ores::marketdata::messaging::vendor_id;
+        {
+            std::lock_guard lock(demand_mu_);
+            last_demand_ = demand;
+        }
 
         const auto offers = index_offers();
         demand_outcome out;
@@ -276,6 +280,19 @@ public:
         ORES_LOG_SEV(lg(), ores::logging::info) << "Manual start of " << source_name << "; "
                                                 << running_count() << " generator(s) running";
         return true;
+    }
+
+    /**
+     * Applies the last demand again, against the offers as they are now: a generator whose offer
+     * went is stopped, and one whose offer came back is started.
+     */
+    demand_outcome reapply() {
+        std::vector<ores::marketdata::messaging::vendor_id> demand;
+        {
+            std::lock_guard lock(demand_mu_);
+            demand = last_demand_;
+        }
+        return apply(demand);
     }
 
     /** Stops the run of the feed with this source name. Returns 1 when it found one. */
@@ -436,6 +453,8 @@ private:
     }
 
     offers_fn offers_;
+    std::mutex demand_mu_;
+    std::vector<ores::marketdata::messaging::vendor_id> last_demand_;
     running_set* names_;
     /// What a started generator is told, when a run starts it.
     started_hook started_;

@@ -608,26 +608,28 @@ feeds it answers with, because a caller reads it beside the config list.
 /** @brief The sources, in name order. */
 #+end_src
 
-** stop_simulated_source_request
+** stop_feed_node_request
 :PROPERTIES:
-:subject: synthetic.v1.ops.stop_simulated_source
-:response: stop_simulated_source_response
+:subject: synthetic.v1.ops.stop_feed_node
+:response: stop_feed_node_response
 :END:
 #+begin_src cpp :name comment
 /**
- * @brief Request to stop one simulated source, and keep it stopped until it is started.
+ * @brief Request to stop one node of the feed graph, and keep it stopped until it is started.
  *
- * Its adapter stops: the feeds it runs for the store stop, and it releases the vol surfaces
- * it holds, each of which runs on while another source holds it. Feeds started by hand run on.
+ * A source's adapter stops: the feeds it runs for the store stop, and it releases the vol
+ * surfaces it holds, each of which runs on while another source holds it. Feeds started by hand
+ * run on. A vendor view's points are withheld: its vendor stops quoting that surface, and the
+ * surface and the other vendors run on.
  */
 #+end_src
 
-*** source_name
+*** node_name
 :PROPERTIES:
 :cpp_type: std::string
 :END:
 #+begin_src cpp :name comment
-/** @brief The catalogue name of the source. */
+/** @brief The node's name: a source's catalogue name or a view's scheme name. */
 #+end_src
 
 *** reason_code
@@ -646,10 +648,10 @@ feeds it answers with, because a caller reads it beside the config list.
 /** @brief What the person said about why. */
 #+end_src
 
-** stop_simulated_source_response
+** stop_feed_node_response
 #+begin_src cpp :name comment
 /**
- * @brief Whether the source stopped, and why not when it did not.
+ * @brief Whether the node stopped, and why not when it did not.
  */
 #+end_src
 
@@ -664,29 +666,29 @@ feeds it answers with, because a caller reads it beside the config list.
 :cpp_type: std::string
 :END:
 
-** start_simulated_source_request
+** start_feed_node_request
 :PROPERTIES:
-:subject: synthetic.v1.ops.start_simulated_source
-:response: start_simulated_source_response
+:subject: synthetic.v1.ops.start_feed_node
+:response: start_feed_node_response
 :END:
 #+begin_src cpp :name comment
 /**
- * @brief Request to start a stopped simulated source again.
+ * @brief Request to start a stopped node of the feed graph again.
  */
 #+end_src
 
-*** source_name
+*** node_name
 :PROPERTIES:
 :cpp_type: std::string
 :END:
 #+begin_src cpp :name comment
-/** @brief The catalogue name of the source. */
+/** @brief The node's name: a source's catalogue name or a view's scheme name. */
 #+end_src
 
-** start_simulated_source_response
+** start_feed_node_response
 #+begin_src cpp :name comment
 /**
- * @brief Whether the source started, and why not when it did not.
+ * @brief Whether the node started, and why not when it did not.
  */
 #+end_src
 

@@ -2755,21 +2755,24 @@ export const api = {
             .parse(await request('/api/synthetic/simulated-sources', { method: 'GET' })).sources;
     },
 
-    /** Stops a simulated source until someone starts it, with the person's reason. */
-    async stopSimulatedSource(
+    /**
+     * Stops a feed node, a simulated source or a vendor view, until someone starts it, with the
+     * person's reason.
+     */
+    async stopFeedNode(
         name: string,
         intent: { readonly reason_code: string; readonly commentary: string },
     ): Promise<void> {
-        await request(`/api/synthetic/simulated-sources/${encodeURIComponent(name)}/stop`, {
+        await request(`/api/synthetic/feed-nodes/${encodeURIComponent(name)}/stop`, {
             method: 'POST',
             headers: JSON_HEADERS,
             body: JSON.stringify(intent),
         });
     },
 
-    /** Starts a stopped simulated source again. */
-    async startSimulatedSource(name: string): Promise<void> {
-        await request(`/api/synthetic/simulated-sources/${encodeURIComponent(name)}/start`, {
+    /** Starts a stopped feed node again. */
+    async startFeedNode(name: string): Promise<void> {
+        await request(`/api/synthetic/feed-nodes/${encodeURIComponent(name)}/start`, {
             method: 'POST',
             headers: JSON_HEADERS,
             body: '{}',

@@ -68,7 +68,7 @@ export function SourceStrip({ provider }: { readonly provider: string }): ReactN
     });
     const [stopping, setStopping] = useState<SimulatedSource | undefined>();
     const start = useMutation({
-        mutationFn: (name: string) => api.startSimulatedSource(name),
+        mutationFn: (name: string) => api.startFeedNode(name),
         onSettled: () => queries.invalidateQueries({ queryKey: SOURCES_KEY }),
     });
     const mine = (sources.data ?? []).filter((source) => source.provider_code === provider);
@@ -144,7 +144,7 @@ function StopSourceDialog({
     const missing = reason.needsCommentary && commentary.trim() === '';
     const stop = useMutation({
         mutationFn: () =>
-            api.stopSimulatedSource(source.source_name, {
+            api.stopFeedNode(source.source_name, {
                 reason_code: reason.code,
                 commentary: commentary.trim(),
             }),

@@ -28,7 +28,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
-#include "ores.synthetic.core/repository/stopped_simulated_source_repository.hpp"
+#include "ores.synthetic.core/repository/stopped_feed_node_repository.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include "test_helpers.hpp"
@@ -36,6 +36,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -45,6 +46,7 @@ namespace {
 namespace source_messaging = ores::synthetic::messaging;
 using ores::synthetic::service::simulated_source_handler;
 using ores::synthetic::service::source_control;
+using ores::synthetic::service::view_node;
 
 const std::string source_test_secret("simulated-source-handler-test-source_test_secret");
 
@@ -72,14 +74,32 @@ public:
         all_.front().stopped = false;
         return true;
     }
+    std::optional<view_node> view(const std::string& view_name) const override {
+        if (view_name != view_.name)
+            return std::nullopt;
+        return view_;
+    }
+    bool stop_view(const std::string& view_name) override {
+        view_stops.push_back(view_name);
+        view_.stopped = true;
+        return true;
+    }
+    bool start_view(const std::string& view_name) override {
+        view_starts.push_back(view_name);
+        view_.stopped = false;
+        return true;
+    }
 
     std::vector<std::string> stops;
     std::vector<std::string> starts;
+    std::vector<std::string> view_stops;
+    std::vector<std::string> view_starts;
     bool fail_stop = false;
     bool fail_start = false;
 
 private:
     std::vector<source_messaging::simulated_source> all_;
+    view_node view_{.name = "synthetic.ice.fx.fx_option.audusd", .provider_code = "ice"};
 };
 
 std::string source_token_for(const std::string& tenant_id, const std::vector<std::string>& roles) {
@@ -134,9 +154,13 @@ struct source_fixture {
         return simulated_source_handler(nats, ctx, verifier, sources);
     }
 
-    std::vector<ores::synthetic::domain::stopped_simulated_source> stored() {
-        return ores::synthetic::repository::stopped_simulated_source_repository().read_latest(
-            ores::database::service::tenant_context::with_system_tenant(ctx), source);
+    std::vector<ores::synthetic::domain::stopped_feed_node> stored(const std::string& name) {
+        return ores::synthetic::repository::stopped_feed_node_repository().read_latest(
+            ores::database::service::tenant_context::with_system_tenant(ctx), name);
+    }
+
+    std::vector<ores::synthetic::domain::stopped_feed_node> stored() {
+        return stored(source);
     }
 };
 
@@ -149,8 +173,8 @@ TEST_CASE("a tenant may not stop a simulated source, which serves every tenant",
     source_fixture f;
     const auto tenant = boost::uuids::to_string(boost::uuids::random_generator()());
     f.handler().stop(source_request_message(
-        source_messaging::stop_simulated_source_request{
-            .source_name = f.source, .reason_code = "system.test", .commentary = "a tenant"},
+        source_messaging::stop_feed_node_request{
+            .node_name = f.source, .reason_code = "system.test", .commentary = "a tenant"},
         source_token_for(tenant, {source_run_permission})));
     CHECK(f.sources.stops.empty());
     CHECK(f.stored().empty());
@@ -165,32 +189,33 @@ TEST_CASE("a stopped source is recorded with its reason, and a start removes the
 
     // Without the run permission the system tenant is refused too.
     f.handler().stop(source_request_message(
-        source_messaging::stop_simulated_source_request{.source_name = f.source,
-                                                        .reason_code = "system.test"},
+        source_messaging::stop_feed_node_request{.node_name = f.source,
+                                                 .reason_code = "system.test"},
         source_token_for(std::string(ores::database::service::tenant_context::system_tenant_id),
                          {})));
     CHECK(f.sources.stops.empty());
 
     f.handler().stop(source_request_message(
-        source_messaging::stop_simulated_source_request{
-            .source_name = f.source, .reason_code = "system.test", .commentary = "for a test"},
+        source_messaging::stop_feed_node_request{
+            .node_name = f.source, .reason_code = "system.test", .commentary = "for a test"},
         system));
     CHECK(f.sources.stops == std::vector<std::string>{f.source});
     const auto stored = f.stored();
     REQUIRE(stored.size() == 1);
+    CHECK(stored.front().kind == "source");
     CHECK(stored.front().provider_code == "bloomberg");
     CHECK(stored.front().change_reason_code == "system.test");
     CHECK(stored.front().change_commentary == "for a test");
 
     // A stopped source is not stopped twice.
     f.handler().stop(source_request_message(
-        source_messaging::stop_simulated_source_request{.source_name = f.source,
-                                                        .reason_code = "system.test"},
+        source_messaging::stop_feed_node_request{.node_name = f.source,
+                                                 .reason_code = "system.test"},
         system));
     CHECK(f.sources.stops.size() == 1);
 
     f.handler().start(source_request_message(
-        source_messaging::start_simulated_source_request{.source_name = f.source}, system));
+        source_messaging::start_feed_node_request{.node_name = f.source}, system));
     CHECK(f.sources.starts == std::vector<std::string>{f.source});
     CHECK(f.stored().empty());
 }
@@ -202,8 +227,7 @@ TEST_CASE("a stop states its reason, or nothing is stored and nothing stops",
         source_token_for(std::string(ores::database::service::tenant_context::system_tenant_id),
                          {source_run_permission});
     f.handler().stop(source_request_message(
-        source_messaging::stop_simulated_source_request{.source_name = f.source,
-                                                        .reason_code = "  "},
+        source_messaging::stop_feed_node_request{.node_name = f.source, .reason_code = "  "},
         system));
     CHECK(f.sources.stops.empty());
     CHECK(f.stored().empty());
@@ -217,8 +241,8 @@ TEST_CASE("an adapter that does not stop leaves no stored stop behind",
                          {source_run_permission});
     f.sources.fail_stop = true;
     f.handler().stop(source_request_message(
-        source_messaging::stop_simulated_source_request{.source_name = f.source,
-                                                        .reason_code = "system.test"},
+        source_messaging::stop_feed_node_request{.node_name = f.source,
+                                                 .reason_code = "system.test"},
         system));
     // The source still runs, so no record may say it is stopped.
     CHECK(f.stored().empty());
@@ -231,20 +255,61 @@ TEST_CASE("an adapter that does not start keeps the stored stop",
         source_token_for(std::string(ores::database::service::tenant_context::system_tenant_id),
                          {source_run_permission});
     f.handler().stop(source_request_message(
-        source_messaging::stop_simulated_source_request{.source_name = f.source,
-                                                        .reason_code = "system.test"},
+        source_messaging::stop_feed_node_request{.node_name = f.source,
+                                                 .reason_code = "system.test"},
         system));
     REQUIRE(f.stored().size() == 1);
 
     // The source is still stopped, so the record that says so stays.
     f.sources.fail_start = true;
     f.handler().start(source_request_message(
-        source_messaging::start_simulated_source_request{.source_name = f.source}, system));
+        source_messaging::start_feed_node_request{.node_name = f.source}, system));
     CHECK(f.stored().size() == 1);
 
     // Clean up so the system tenant keeps no stop of a test source.
     f.sources.fail_start = false;
     f.handler().start(source_request_message(
-        source_messaging::start_simulated_source_request{.source_name = f.source}, system));
+        source_messaging::start_feed_node_request{.node_name = f.source}, system));
     CHECK(f.stored().empty());
+}
+
+TEST_CASE("a vendor view is stopped and started by its name, apart from its source",
+          "[simulated_source_handler][integration]") {
+    source_fixture f;
+    const auto system =
+        source_token_for(std::string(ores::database::service::tenant_context::system_tenant_id),
+                         {source_run_permission});
+    const std::string view = "synthetic.ice.fx.fx_option.audusd";
+
+    f.handler().stop(source_request_message(
+        source_messaging::stop_feed_node_request{
+            .node_name = view, .reason_code = "system.test", .commentary = "one vendor's view"},
+        system));
+    CHECK(f.sources.view_stops == std::vector<std::string>{view});
+    CHECK(f.sources.stops.empty());
+    const auto stored = f.stored(view);
+    REQUIRE(stored.size() == 1);
+    CHECK(stored.front().kind == "view");
+    CHECK(stored.front().provider_code == "ice");
+
+    f.handler().start(source_request_message(
+        source_messaging::start_feed_node_request{.node_name = view}, system));
+    CHECK(f.sources.view_starts == std::vector<std::string>{view});
+    CHECK(f.stored(view).empty());
+}
+
+TEST_CASE("a name that is neither a source nor a view is refused",
+          "[simulated_source_handler][integration]") {
+    source_fixture f;
+    const auto system =
+        source_token_for(std::string(ores::database::service::tenant_context::system_tenant_id),
+                         {source_run_permission});
+    const std::string unknown = "synthetic.nobody.fx.fx_option.audusd";
+    f.handler().stop(source_request_message(
+        source_messaging::stop_feed_node_request{.node_name = unknown,
+                                                 .reason_code = "system.test"},
+        system));
+    CHECK(f.sources.view_stops.empty());
+    CHECK(f.sources.stops.empty());
+    CHECK(f.stored(unknown).empty());
 }

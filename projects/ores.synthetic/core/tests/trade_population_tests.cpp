@@ -2623,3 +2623,48 @@ TEST_CASE("an_fx_index_names_the_fixing_source_of_its_pairs_default_cut", "[trad
         }
     CHECK(indices > 0);
 }
+
+TEST_CASE("a_pair_the_party_does_not_expect_leaves_the_draw_and_its_types_say_why",
+          "[trade_population]") {
+    using namespace ores::synthetic::service;
+    const std::string eur_usd = "oresmd://fx/EUR?type=fixing&index=fx&source=WMR1000NYC&ccy=USD";
+    auto scope = fx_scope();
+    scope.trades_per_book = 32;
+    scope.expected_market_data.insert(eur_usd);
+
+    const auto candidates = expected_candidates(scope);
+    REQUIRE(candidates.currency_pairs.size() == 1);
+    CHECK(candidates.currency_pairs.front().base == "EUR");
+
+    const auto plan = plan_on_expected_market_data(scope);
+
+    std::uint32_t planned = 0;
+    std::size_t refused = 0;
+    for (const auto& outcome : plan.type_outcomes) {
+        planned += outcome.planned;
+        if (outcome.planned == 0) {
+            ++refused;
+            CHECK_FALSE(outcome.reason.empty());
+        }
+    }
+    // The booked types share every slot, so the book keeps its size; the scripted twins the
+    // planner adds on top are not booked types.
+    CHECK(planned == scope.trades_per_book * scope.book_ids.size());
+    CHECK(refused > 0);
+
+    for (const auto& slot : plan.slots)
+        for (const auto& row : slot.instruments.fx_asian_forward_instruments)
+            CHECK(row.fx_index == eur_usd);
+}
+
+TEST_CASE("a_config_whose_types_have_no_candidate_plans_no_trade", "[trade_population]") {
+    using namespace ores::synthetic::service;
+    auto scope = fx_scope();
+    const auto plan = plan_on_expected_market_data(scope);
+    CHECK(plan.slots.empty());
+    REQUIRE_FALSE(plan.type_outcomes.empty());
+    for (const auto& outcome : plan.type_outcomes) {
+        CHECK(outcome.planned == 0);
+        CHECK_FALSE(outcome.reason.empty());
+    }
+}

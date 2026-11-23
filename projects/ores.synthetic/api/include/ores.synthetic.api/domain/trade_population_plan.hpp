@@ -379,12 +379,27 @@ struct trade_population_structure final {
 /**
  * @brief The population a scope states, one entry per trade.
  */
+/**
+ * @brief What a population did with one trade type it books.
+ *
+ * A type with no candidate the party expects plans no trade, and its reason
+ * says why, so a report names the gap rather than a count that is short.
+ */
+struct trade_type_outcome final {
+    std::string trade_type_code;
+    std::uint32_t planned = 0;
+    /// Why the type plans no trade; empty when it plans some.
+    std::string reason;
+};
+
 struct trade_population_plan final {
     boost::uuids::uuid config_id;
     boost::uuids::uuid party_id;
     std::chrono::year_month_day as_of_date;
     std::vector<trade_population_slot> slots;
     std::vector<trade_population_structure> structures;
+    /// One entry for each trade type the config books, in the class's own order.
+    std::vector<trade_type_outcome> type_outcomes;
 };
 
 }

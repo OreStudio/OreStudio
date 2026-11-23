@@ -19,6 +19,7 @@
  *
  */
 
+import { nodePage } from './feedNode.js';
 import { describe, expect, it } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -380,6 +381,76 @@ describe('what a vol surface reads', () => {
         expect(html).toContain('href="/market-data/synthetic/ir/usd-discount"');
         expect(html).toContain('EUR discounting curve');
         expect(html).not.toContain('GJR-GARCH');
+    });
+});
+
+describe('the feed graph on a surface page', () => {
+    const latent = 'synthetic.latent.fx.fx_vol_surface.eurusd';
+    const ice = 'synthetic.ice.fx.fx_option.eurusd';
+    const graph = {
+        nodes: [
+            {
+                name: latent,
+                kind: 'latent',
+                provider_code: 'latent',
+                feed_config_id: FEED_ID,
+                state: 'starved',
+                reason: 'synthetic.bloomberg.fx.fx_spot.eurusd is stopped: An operator stopped it.',
+                cause: 'synthetic.bloomberg.fx.fx_spot.eurusd',
+            },
+            {
+                name: 'synthetic.bloomberg.fx.fx_spot.eurusd',
+                kind: 'upstream',
+                provider_code: 'bloomberg',
+                feed_config_id: 'spot-bbg',
+                state: 'stopped',
+                reason: 'An operator stopped it.',
+                cause: '',
+            },
+            {
+                name: ice,
+                kind: 'view',
+                provider_code: 'ice',
+                feed_config_id: '',
+                state: 'starved',
+                reason: '',
+                cause: latent,
+            },
+        ],
+        edges: [
+            { node: latent, input: 'synthetic.bloomberg.fx.fx_spot.eurusd', role: 'spot' },
+            { node: ice, input: latent, role: 'surface' },
+        ],
+    };
+
+    it('shows the state, links the cause, and lists what it reads and what reads it', () => {
+        const html = render(`/market-data/synthetic/vol/${FEED_ID}?tab=graph`, (client) => {
+            writer(client);
+            client.setQueryData(['records', 'fx-vol-surface-feeds', 'key', FEED_ID], {
+                ...feed,
+                source_name: latent,
+            });
+            client.setQueryData(['feed-graph', latent], graph);
+        });
+        expect(html).toContain('Starved');
+        expect(html).toContain('Caused by');
+        expect(html).toContain('href="/market-data/synthetic/fx/spot-bbg"');
+        expect(html).toContain(ice);
+        expect(html).toContain('Read by');
+    });
+
+    it('opens a node of the graph on its own page when it has one', () => {
+        expect(nodePage({ kind: 'latent', name: latent, feed_config_id: 'x' })).toBe(
+            '/market-data/synthetic/vol/x',
+        );
+        expect(
+            nodePage({
+                kind: 'upstream',
+                name: 'synthetic.ice.ir.yield_curve.libor.chf.3m',
+                feed_config_id: 'c',
+            }),
+        ).toBe('/market-data/synthetic/ir/c');
+        expect(nodePage({ kind: 'view', name: ice, feed_config_id: '' })).toBeUndefined();
     });
 });
 

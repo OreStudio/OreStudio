@@ -4576,6 +4576,8 @@ export const en: SourceCatalogue = {
                 expiries: 'Expiries',
                 contributors: 'Contributors',
                 surfaces: 'Surfaces',
+                graph: 'Graph',
+                messages: 'Messages',
             },
         },
         fields: {
@@ -7192,6 +7194,41 @@ export const en: SourceCatalogue = {
             add: 'Add a tenor entry',
             one: 'Tenor entry',
             remove: 'Delete the tenor entry',
+        },
+        feedGraph: {
+            lead: 'Where this feed sits in the synthetic feed graph: its state, what it reads and what reads it.',
+            state: {
+                running: 'Running',
+                stopped: 'Stopped',
+                starved: 'Starved',
+                failing: 'Failing',
+            },
+            kind: {
+                source: 'Source',
+                upstream: 'Upstream',
+                latent: 'Latent surface',
+                view: 'Vendor view',
+            },
+            role: {
+                source: 'Source',
+                spot: 'Spot',
+                base_curve: 'Base curve',
+                quote_curve: 'Quote curve',
+                surface: 'Surface',
+            },
+            causedBy: 'Caused by',
+            reads: 'Reads',
+            readBy: 'Read by',
+            nothing: 'Nothing.',
+            stop: 'Stop node',
+            start: 'Start node',
+            stopTitle: 'Stop {node}?',
+            stopEffect:
+                'Its offers are withheld, and every node below it stops and says why. It stays stopped across a restart until someone starts it.',
+            unknown: 'The feed graph holds no node of this name.',
+            messagesLead:
+                "This node's messages over the last day: its state changes with their reasons, and the diagnostics it raises.",
+            noMessages: 'No messages over the last day.',
         },
         volFeeds: {
             add: 'New vol surface',

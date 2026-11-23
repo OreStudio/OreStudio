@@ -4606,6 +4606,8 @@ const pt: SourceCatalogue = {
                 expiries: 'Vencimentos',
                 contributors: 'Contribuidores',
                 surfaces: 'Superfícies',
+                graph: 'Grafo',
+                messages: 'Mensagens',
             },
         },
         fields: {
@@ -7245,6 +7247,41 @@ const pt: SourceCatalogue = {
             add: 'Adicionar uma entrada de prazo',
             one: 'Entrada de prazo',
             remove: 'Apagar a entrada de prazo',
+        },
+        feedGraph: {
+            lead: 'Onde este feed se situa no grafo de feeds sintéticos: o seu estado, o que lê e o que o lê.',
+            state: {
+                running: 'Em execução',
+                stopped: 'Parado',
+                starved: 'Sem entradas',
+                failing: 'Em falha',
+            },
+            kind: {
+                source: 'Fonte',
+                upstream: 'A montante',
+                latent: 'Superfície latente',
+                view: 'Vista do fornecedor',
+            },
+            role: {
+                source: 'Fonte',
+                spot: 'Spot',
+                base_curve: 'Curva base',
+                quote_curve: 'Curva de cotação',
+                surface: 'Superfície',
+            },
+            causedBy: 'Causado por',
+            reads: 'Lê',
+            readBy: 'Lido por',
+            nothing: 'Nada.',
+            stop: 'Parar o nó',
+            start: 'Iniciar o nó',
+            stopTitle: 'Parar {node}?',
+            stopEffect:
+                'As suas ofertas são retidas, e cada nó abaixo dele para e diz porquê. Fica parado após um reinício até alguém o iniciar.',
+            unknown: 'O grafo de feeds não tem nenhum nó com este nome.',
+            messagesLead:
+                'As mensagens deste nó no último dia: as mudanças de estado com as suas razões, e os diagnósticos que levanta.',
+            noMessages: 'Nenhuma mensagem no último dia.',
         },
         volFeeds: {
             add: 'Nova superfície de volatilidade',

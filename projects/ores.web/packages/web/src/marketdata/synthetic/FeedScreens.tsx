@@ -44,6 +44,7 @@ import { FeedStatus, RunOutcomeText, useFeedRuns } from './feedRuns.js';
 import { FeedRunTab } from './feedStart.js';
 import { FeedHistory, type FeedPart } from './FeedHistory.js';
 import type { FeedKind } from './feedKind.js';
+import { FeedGraphTab, FeedMessagesTab } from './feedNode.js';
 import { useSourceOf } from './feedNames.js';
 import { folderChain } from './feedTree.js';
 import { useSyntheticStep } from './syntheticTrail.js';
@@ -128,7 +129,14 @@ function FeedBody({
     const related = kind.useRelated?.(feed) ?? [];
     const { tab, bar } = useRecordTabs({
         label: name,
-        tabs: ['details', 'calibration', ...kind.tabs.map((one) => one.name), 'history'],
+        tabs: [
+            'details',
+            'calibration',
+            'graph',
+            ...kind.tabs.map((one) => one.name),
+            'messages',
+            'history',
+        ],
     });
     const running = feed.running;
     const runs = useFeedRuns();
@@ -204,6 +212,8 @@ function FeedBody({
                         parts: parts.map((part) => part.rows),
                     })
                 ))}
+            {tab === 'graph' && <FeedGraphTab name={show(feed['source_name'])} />}
+            {tab === 'messages' && <FeedMessagesTab name={show(feed['source_name'])} />}
             {tab === 'details' && (
                 <RecordDetails specs={kind.fields} row={feed} extra={kind.extraDetails(feed, t)} />
             )}

@@ -8,7 +8,7 @@
 #+filetags: :serve_mcp_from_ores_http:sprint_30:v0:
 #+owner: marco
 #+branch: feature/hold-an-agents-writes-for-six-eyes
-#+pr:
+#+pr: 5054
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -107,7 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5054][#5054]] | [inbox] Hold an LLM agent's writes for its person, then six eyes |
 
 * Review
 

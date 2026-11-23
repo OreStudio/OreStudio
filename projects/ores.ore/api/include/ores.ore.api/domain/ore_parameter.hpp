@@ -92,8 +92,8 @@ struct ore_parameter final {
      * /ORE/Setup/Parameter[@name='implyTodaysFixings']. The schema name and the XPath together say
      * which leaf this is. For ore.xsd, scope, subtype and name give the same path. A field of a
      * trade's data is the field of a schema type that many products share, such as legData, so its
-     * path starts at the type, for example /legData/Payer, and the trade's data element is a field
-     * of the trade, for example /trade/SwapData.
+     * path starts at the type, for example /legData/Payer, and the data element of a trade type is
+     * a field of the trade of that type, for example /Trade[TradeType='Swap']/SwapData.
      */
     std::string xpath;
 

@@ -27,9 +27,10 @@ is shared by many products and is described once. Its XPath is relative to its t
 /legData/Payer, and its subtype is the type. A field whose value is another type
 names that type through its value domain, record:legData, whose storage kind is
 record and whose referenced entity is the type; a field that repeats has a list
-domain, list:legData or list:double. The data element of each native product is a
-field of the trade, /trade/SwapData, so a product's fields are read from its
-element down.
+domain, list:legData or list:double. The data element of each product is a field
+of the trade of its type, /Trade[TradeType='Swap']/SwapData, so a product's fields
+are read from its trade type down, and the element each type is read under is
+stated where ORE's schema states it.
 
 Every field is written, because a form needs every field. A field the guide does
 not describe gets a text that says so, and undocumented() lists it, so the
@@ -94,6 +95,8 @@ def default_of(field):
 
 
 def xpath_of(owner, field):
+    if owner == TRADE:
+        return f"/Trade[TradeType='{field['trade_type']}']/{field['name']}"
     leaf = f"@{field['name']}" if field["attribute"] else field["name"]
     return "/" + owner.replace(".", "/") + "/" + leaf
 
@@ -107,10 +110,10 @@ def unstated_text(owner, field):
 def fields():
     """Each field with its owner: the trade's product elements, then every type's."""
     extracted = terms()
-    elements = sorted({p["element"]: p["root"] for p in extracted["products"].values()}.items())
-    for position, (element, root) in enumerate(elements):
-        yield TRADE, position, {"name": element, "attribute": False, "required": False,
-                                "repeated": False, "default": None, "record": root}
+    for position, (code, product) in enumerate(sorted(extracted["products"].items())):
+        yield TRADE, position, {"name": product["element"], "trade_type": code,
+                                "attribute": False, "required": True, "repeated": False,
+                                "default": None, "record": product["root"]}
     for owner, entry in sorted(extracted["types"].items()):
         for position, field in enumerate(entry["fields"]):
             yield owner, position, field
@@ -154,7 +157,7 @@ def rows():
     out = []
     for owner, position, field in fields():
         text = field.get("text") or (
-            f"The data of the {field['name'][:-len('Data')]} trade type."
+            f"The data of a {field['trade_type']} trade, read under {field['name']}."
             if owner == TRADE else unstated_text(owner, field))
         out.append({
             "schema_name": extracted["types"].get(owner, {}).get("schema", "input.xsd"),

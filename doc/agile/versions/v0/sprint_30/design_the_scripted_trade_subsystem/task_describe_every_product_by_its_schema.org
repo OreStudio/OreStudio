@@ -59,7 +59,11 @@ Revised with the user on 2026-11-22, after the analysis in the notes below.
   =--check= fails when the committed seed differs.
 - The metamodel moves to =ores.ore= first, in [[id:0FD7D2A8-7A4A-4052-A4D5-6C8A01CAAA41][Move the ORE metamodel into ores.ore]], which blocks
   this task.
-- =product_type= states the element each type is read under.
+- The element each trade type is read under is a fact of ORE's schema, so =ores.ore=
+  states it: the trade's data element is a field of the trade of its type,
+  =/Trade[TradeType='Swap']/SwapData=. =product_type= needs no element column;
+  its seed is written by compass's catalogue loader, which a new column would
+  have had to change (decided in PR 1).
 - Each form states its product tag (scripted) or ORE pricing engine type
   (native); =describe_product= takes an optional pricing configuration and, when
   given one, states the model and engine it assigns. Cost is left to a later task.
@@ -70,7 +74,7 @@ Revised with the user on 2026-11-22, after the analysis in the notes below.
 
 PRs, each ending in a check, once the move is merged:
 
-1. The element of each product type, and the =instruments.xsd= leaves of every
+1. The element of each trade type, and the =instruments.xsd= leaves of every
    native product in the =ore.parameters= dataset, by the extraction method; a
    test fails when a native product of the catalogue has no leaf.
 2. A script-only product's fields from its script's inputs, and the annotations
@@ -112,7 +116,8 @@ does for the conventions and the curves.
 A row is a field of a schema type, not a leaf of a document. Expanding every
 product's paths gives 11626 leaf rows, because a type such as =legData= is read
 under many products; describing each type once gives 2929. The trade's data
-elements are fields of =trade=, so a product is read from =/trade/SwapData= down.
+elements are fields of the trade of their type, so a product is read from
+=/Trade[TradeType='Swap']/SwapData= down.
 A field whose value is a type names it through a value domain, =record:legData=
 or =list:legData=, whose storage kind is =record= or =list= and whose referenced
 entity is the type; those columns already existed and needed no change.

@@ -51,15 +51,26 @@ trade_product_party_context(ores::testing::scoped_database_helper& h,
 }
 
 /// A trade product for a trade booked now, as a party of the test tenant.
-domain::trade_product trade_product_booked(const ores::database::context& party_ctx,
+domain::trade_product trade_product_booked(ores::testing::scoped_database_helper& h,
+                                           const ores::database::context& party_ctx,
                                            ores::utility::generation::generation_context& gen,
                                            const std::string& product,
                                            const std::string& form) {
+    // The audit author is stated here rather than taken from the generator's
+    // default, so the row is refused for what the test is about and not for a
+    // missing field the caller cannot see.
+    const auto booked_by = h.db_user();
+
     auto trade = generators::generate_synthetic_trade(gen);
     trade.party_id = *party_ctx.party_id();
+    trade.modified_by = booked_by;
+    trade.performed_by = booked_by;
     repository::trade_repository().write(party_ctx, trade);
+
     auto activity = generators::generate_synthetic_trade_activity(gen);
     activity.party_id = *party_ctx.party_id();
+    activity.modified_by = booked_by;
+    activity.performed_by = booked_by;
     repository::trade_activity_repository().write(party_ctx, activity);
 
     domain::trade_product row;
@@ -68,9 +79,8 @@ domain::trade_product trade_product_booked(const ores::database::context& party_
     row.product_code = product;
     row.booking_form = form;
     row.change_reason_code = "system.test";
+    row.modified_by = booked_by;
     return row;
-}
-
 }
 
 TEST_CASE("a trade's product and form are written with it and read back by the trade",
@@ -79,7 +89,7 @@ TEST_CASE("a trade's product and form are written with it and read back by the t
     auto gen = ores::testing::make_generation_context(h);
     const auto party_ctx = trade_product_party_context(h, gen);
 
-    const auto row = trade_product_booked(party_ctx, gen, "FxBasketOption", "scripted");
+    const auto row = trade_product_booked(h, party_ctx, gen, "FxBasketOption", "scripted");
     repository::trade_product_repository().write(party_ctx, row);
 
     const auto read = repository::trade_product_repository().read_latest(
@@ -94,7 +104,7 @@ TEST_CASE("a form other than native or scripted is refused", "[trade_product][da
     auto gen = ores::testing::make_generation_context(h);
     const auto party_ctx = trade_product_party_context(h, gen);
 
-    const auto row = trade_product_booked(party_ctx, gen, "Swap", "spreadsheet");
+    const auto row = trade_product_booked(h, party_ctx, gen, "Swap", "spreadsheet");
 
     CHECK_THROWS(repository::trade_product_repository().write(party_ctx, row));
 }
@@ -104,7 +114,7 @@ TEST_CASE("a trade product with no product is refused", "[trade_product][databas
     auto gen = ores::testing::make_generation_context(h);
     const auto party_ctx = trade_product_party_context(h, gen);
 
-    const auto row = trade_product_booked(party_ctx, gen, "", "native");
+    const auto row = trade_product_booked(h, party_ctx, gen, "", "native");
 
     CHECK_THROWS(repository::trade_product_repository().write(party_ctx, row));
 }
@@ -115,7 +125,7 @@ TEST_CASE("another party does not see a trade's product", "[trade_product][datab
     const auto owner_ctx = trade_product_party_context(h, gen);
     const auto other_ctx = trade_product_party_context(h, gen);
 
-    const auto row = trade_product_booked(owner_ctx, gen, "Swap", "native");
+    const auto row = trade_product_booked(h, owner_ctx, gen, "Swap", "native");
     repository::trade_product_repository().write(owner_ctx, row);
 
     const auto id = boost::uuids::to_string(row.trade_id);

@@ -2497,8 +2497,17 @@ def _lint_marker_generators(files):
     out = []
     for rel, text in files:
         for m in _MARKER_SOURCE_RE.finditer(text):
-            script = Path(PROJECT_ROOT) / m.group(1).strip()
+            named = m.group(1).strip()
             lineno = text[:m.start()].count("\n") + 1
+            # A codec of the pinned generator writes the region, and no file in
+            # this repository does: compass-ng is an external release, so there
+            # is no source here to read for the file's name.
+            if named.startswith("compass generate:"):
+                if not named[len("compass generate:"):].strip():
+                    out.append((str(rel), lineno,
+                                "marker names no generator codec"))
+                continue
+            script = Path(PROJECT_ROOT) / named
             if not script.is_file():
                 out.append((str(rel), lineno,
                             f"marker names {m.group(1)}, which does not exist"))

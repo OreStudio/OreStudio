@@ -8,7 +8,7 @@
 #+filetags: :publish_the_sprint_30_release:sprint_30:v0:
 #+owner: marco
 #+branch:
-#+pr: 5085
+#+pr: 5087
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -80,6 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5087][#5087]] | [doc] Put the hotfixes last in the release notes |
 | [[https://github.com/OreStudio/OreStudio/pull/5085][#5085]] | [agile] Put each release screenshot beside the feature it shows |
 | [[https://github.com/OreStudio/OreStudio/pull/5084][#5084]] | [agile] Carry the release screenshots in the notes' own format |
 

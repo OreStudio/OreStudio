@@ -1,0 +1,263 @@
+:PROPERTIES:
+:ID: AD1C422D-0CFC-494F-88CD-AF6FFE22240A
+:END:
+#+title: Test Scenario: Capture the sprint 30 release screenshots
+#+description: Walk the screens sprint 30 delivered on an ACME-provisioned environment and capture one screenshot per release highlight.
+#+type: test_scenario
+#+level: s1
+#+filetags: :screenshots:release_notes:test_scenario:publish_the_sprint_30_release:sprint_30:v0:
+#+target_dialog:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: festive-dijkstra
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:728FB790-CE79-4833-856C-5075BCED287C][Publish the sprint 30 release]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+The environment is ready before you open this scenario.
+
+- Worktree =festive_dijkstra= runs a current build of =main=.
+- The database is recreated and =acme_corporation= is provisioned:
+  =compass db status= to confirm, then =compass db recreate -y -k= and
+  =compass shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=
+  if it is stale. The provisioning run must end with no failed step, because
+  every market data screen below reads what it publishes.
+- The services run (=compass services start=). The synthetic feeds must be
+  publishing, or the quotes and feed pages have nothing to show.
+- The web client is served by the C++ gateway at
+  =http://localhost:21801= (=ORES_WEB_PORT= in =.env=; adjust if this
+  worktree was provisioned on another base port).
+
+Rules for every capture:
+
+- Use the light theme and English.
+- Use a browser window 1600 pixels wide, at 100% zoom.
+- Save each image in =assets/images/= with the file name the step gives.
+- Do not capture real names, passwords or tokens.
+- Tell the person who runs it with
+  =compass notify scenario doc/agile/versions/v0/sprint_30/scenario_capture_the_sprint_30_release_screenshots.org --to <username@tenant>=.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:04A0214D-CC6D-4683-8F5B-A9FFABDDB01E][Assemble the release notes, charts and retrospective]] |
+| Parent story  | [[id:728FB790-CE79-4833-856C-5075BCED287C][Publish the sprint 30 release]] |
+| Target screen | The market data and operations screens named in each step |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step captures one image for the release notes. Record PASS, FAIL or PENDING in its =*** Result=. Record FAIL when the screen is empty, shows an error or does not match the step, and say what you saw.
+
+** Log in as tenant_admin
+
+- Open =http://localhost:21801/login=.
+- Log in as =tenant_admin@acme_corporation= with the password =Secure-Password-123=.
+- Confirm the shell opens with no permission errors.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Capture the release hero
+
+- Open =http://localhost:21801/market-data/rate-ladder=.
+- Pick a currency whose ladder the provisioning published; the rows must show
+  instruments, their rates and their tenors.
+- Save the screenshot as =assets/images/ore_studio-v0.0.30.png=.
+- Caption for the release notes: /The rates ladder reads every published
+  instrument of a currency, against the market data the party holds./
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Search the instrument catalogue
+
+- Open =http://localhost:21801/market-data/instruments=.
+- Type a few letters of a published instrument's name.
+- Confirm the list narrows and each row names the instrument, its class and
+  its currency.
+- Save the screenshot as =assets/images/ore_studio-v0.0.30-instruments.png=.
+- Caption: /Instrument search over the market data the party actually holds./
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Read an FX spot montage
+
+- Open =http://localhost:21801/market-data/fx-montage=.
+- Choose a pair the provisioning published.
+- Confirm the montage shows the spot, its day's move and the points it came
+  from.
+- Save the screenshot as =assets/images/ore_studio-v0.0.30-fx-montage.png=.
+- Caption: /The FX spot montage draws one pair's spot, its move and the
+  points behind it./
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Watch the vendors' quotes
+
+- Open =http://localhost:21801/market-data/quotes=.
+- Leave the page open long enough for a tick to land.
+- Confirm a board per vendor, one column each, and that the cells change
+  without a refresh.
+- Save the screenshot as =assets/images/ore_studio-v0.0.30-quotes.png=.
+- Caption: /The quotes view shows the market as each vendor quotes it, one
+  board per vendor, live./
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Inspect a published curve
+
+- Open =http://localhost:21801/market-data/published-curves=.
+- Open one curve.
+- Confirm the page states its pillars, its quotes and when it was published,
+  and that the grid draws.
+- Save the screenshot as =assets/images/ore_studio-v0.0.30-curve.png=.
+- Caption: /A published curve states its pillars, the quotes it was built
+  from, and the moment it published./
+
+*** Result
+
+| Field  | Value |
+--------+-------|
+| Status | PENDING |
+
+** Compare curves across currencies
+
+- Open =http://localhost:21801/market-data/curve-analytics=.
+- Compare within one currency first, then switch to the across-currency
+  comparison.
+- Confirm the screen says in words what the overnight-to-overnight comparison
+  shows.
+- Save the screenshot as =assets/images/ore_studio-v0.0.30-curve-analytics.png=.
+- Caption: /Curves compared within a currency by default, and across
+  currencies only like for like./
+
+*** Result
+
+| Field  | Value |
+--------+-------|
+| Status | PENDING |
+
+** Read the IR calibration coverage
+
+- Open =http://localhost:21801/market-data/calibration= and choose the
+  interest rate asset class.
+- Confirm one row per curve, the class policy as a card, and a state that is
+  true for the feeds the provisioning published.
+- Save the screenshot as =assets/images/ore_studio-v0.0.30-calibration.png=.
+- Caption: /IR calibration coverage: one row per curve, and a state that is
+  true./
+
+*** Result
+
+| Field  | Value |
+--------+-------|
+| Status | PENDING |
+
+** Read the fixings of both kinds
+
+- Open =http://localhost:21801/market-data/fixings=.
+- Find an FX series and an interest rate series.
+- Confirm each shows its recent fixings and the provider it came from.
+- Save the screenshot as =assets/images/ore_studio-v0.0.30-fixings.png=.
+- Caption: /FX and interest rate fixings side by side, each with its
+  provider./
+
+*** Result
+
+| Field  | Value |
+--------+-------|
+| Status | PENDING |
+
+** Browse identity shapes as records
+
+- Open =http://localhost:21801/market-data/identity-shapes=.
+- Open one shape.
+- Confirm the list is paged, and the shape's page states its code, its
+  description and its field rules.
+- Save the screenshot as =assets/images/ore_studio-v0.0.30-identity-shapes.png=.
+- Caption: /An identity shape is a record: a code, a description and the field
+  rules that make a series identifiable./
+
+*** Result
+
+| Field  | Value |
+--------+-------|
+| Status | PENDING |
+
+** Follow the synthetic feed graph
+
+- Open =http://localhost:21801/operations/market-data-feeds= and open one
+  synthetic feed.
+- Confirm the page draws the feed graph: the latent surface, the vendor views
+  downstream of it, each node's state and its messages.
+- Save the screenshot as =assets/images/ore_studio-v0.0.30-feed-graph.png=.
+- Caption: /The feed graph names what feeds what, each node's state, and the
+  reason a node stopped./
+
+*** Result
+
+| Field  | Value |
+--------+-------|
+| Status | PENDING |
+
+** Check the role screens
+
+- Open =http://localhost:21801/organisation/roles= and open one role.
+- Confirm the list is paged and the role page follows the record standard,
+  with the people who hold the role.
+- Save the screenshot as =assets/images/ore_studio-v0.0.30-roles.png=.
+- Caption: /Roles on the shared record parts, with a paged list and the people
+  who hold a role./
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes
+
+- The screens this scenario captures are the ones sprint 30 changed or added:
+  the market data screens ported from hedgr, the vendor quotes view, the
+  redesigned IR calibration coverage, the cross-currency curve comparison, the
+  fixings view, identity shapes as records, the synthetic feed graph and the
+  role screens.
+- Screens the sprint only partly delivered are not captured here: the
+  volatility surface calibration, the scripted trade editor and the grid job
+  screens carry into the product backlog as their own stories.
+- The release notes' images resolve from =main= only after the notes and these
+  files are merged, and the notes name each file the steps save.

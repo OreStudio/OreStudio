@@ -376,4 +376,4 @@ closed documents, the rule this review already judged belongs in the audit
 rather than in 51 documents.
 
 The sprint is closed with =End= 2026-11-24, nine days past its planned end,
-holding 73 stories delivered and 6 abandoned, and nothing in flight.
+holding 74 stories delivered and 6 abandoned, and nothing in flight.

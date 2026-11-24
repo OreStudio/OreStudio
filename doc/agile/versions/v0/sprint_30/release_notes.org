@@ -21,7 +21,7 @@ Sprint 30 was named for finishing the move off sqlgen and reflect-cpp, and that 
 - *The mission's deliverable shipped.* Moving off sqlgen and reflect-cpp was the reason for the sprint, and it closed on its second day. The work that made it stick — forward declarations, the database context by reference, the wide-type exceptions — closed on day 13.
 - *The queue never blocked.* 579 pull requests merged with a median cycle of twelve minutes, and never more than one open at a time. Review was not the constraint at any point in the sprint, and nothing waited in a branch.
 - *The gate and the CI kept their word.* The local check gate runs the class a change needs, CI installs its pinned tools, and CDash receives every continuous build.
-- *The close was clean.* Seventy-three stories were delivered, six abandoned, and every piece of open work was either finished or named: nineteen stories were split into successors whose titles say what remains, and eighty-one unstarted stories returned to the backlog with their tasks and history.
+- *The close was clean.* Seventy-four stories were delivered, six abandoned, and every piece of open work was either finished or named: nineteen stories were split into successors whose titles say what remains, and eighty-one unstarted stories returned to the backlog with their tasks and history.
 
 * 🛠️ Key Improvements
 
@@ -204,6 +204,13 @@ on as a story in the product backlog whose title states it.
 - [[id:316D6744-31F3-4CAC-AB33-D8FAE67C0BF1][Size a volatility surface to the data its party holds]] → [[id:A5250AE9-E315-4198-8B77-A3DE1ED15F97][Give each party the configuration its surfaces are built with]]
 - [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] → [[id:AC005F38-9E58-42B8-AC14-B1ABD784B5B4][Calibrate and publish the surfaces on a schedule]]
 - [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] → [[id:D8264C31-DA2D-44F2-A597-081AF3FD14BF][Prove a party's surfaces agree with the latent market and its forwards]]
+
+* 📸 Screenshots
+
+The screens this release changed are captured by
+[[id:AD1C422D-0CFC-494F-88CD-AF6FFE22240A][Capture the sprint 30 release screenshots]].
+Each step of that scenario names the file it saves under =assets/images/=, and
+the captures are added to this page as they are taken.
 
 * 📊 Time Summary
 

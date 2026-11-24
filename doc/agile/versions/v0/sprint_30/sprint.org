@@ -128,6 +128,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:8DE041AE-95E6-40CE-9B62-2CE3BA77838A][Model the synthetic feeds as a dependency graph: upstreams, latent surfaces and vendor views]] | DONE | 2026-11-22 | 2026-11-24 | Make the dependencies between synthetic feeds data: a vendor-neutral latent surface with named upstreams and per-vendor downstream views, each node with a state, a reason when it stops, links both ways, and its own diagnostics. |
 | [[id:BB602F81-7F6F-4ABC-81A3-4D2CD3782E55][Sprint health review — System 2 analysis]] | DONE | 2026-11-24 | 2026-11-24 | Recurring System 2 health reviews of sprint 30: goal alignment, load, PR velocity, balance and focus. |
 | [[id:2A3AF682-3822-458F-BFE5-D36CA7001845][Handle the backlog when the compute path stalls]] | DONE | 2026-11-19 | 2026-11-24 | Bound the delivery counts, give each cadence its own execution, refuse unfinished work, and report a full store as full. |
+| [[id:728FB790-CE79-4833-856C-5075BCED287C][Publish the sprint 30 release]] | DONE | 2026-11-24 | 2026-11-24 | The notes, the charts, the retrospective and the screenshots that make the sprint's release readable. |
 
 * Achievements
 
@@ -167,7 +168,7 @@ rather than name a pooler's port on a machine that runs none.
 
 ** 2026-11-24 — sprint 30 closes with nothing in flight
 
-Seventy-three stories delivered, six abandoned, and the rest carried to the
+Seventy-four stories delivered, six abandoned, and the rest carried to the
 product backlog in stories that name the work that remains. The audit went
 from 100 findings to 51, and the CI pipeline installs its pinned tools, builds
 and submits to CDash on every continuous run.
@@ -248,7 +249,7 @@ same day. Read the shape of the first sixteen days, not the final jump./
 - *The gate and the CI kept their word.* The local check gate runs the class a
   change needs, CI installs its pinned tools, and CDash receives every
   continuous build.
-- *The close was clean.* Nothing was left ambiguous: 73 delivered, 6
+- *The close was clean.* Nothing was left ambiguous: 74 delivered, 6
   abandoned, 19 split into named successors, 81 carried with their tasks and
   history. The audit is down from 100 findings to 51, and all 51 are one style
   rule.

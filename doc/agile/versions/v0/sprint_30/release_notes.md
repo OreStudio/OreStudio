@@ -10,7 +10,7 @@ Sprint 30 was named for finishing the move off sqlgen and reflect-cpp, and that 
 -   **The mission's deliverable shipped.** Moving off sqlgen and reflect-cpp was the reason for the sprint, and it closed on its second day. The work that made it stick — forward declarations, the database context by reference, the wide-type exceptions — closed on day 13.
 -   **The queue never blocked.** 579 pull requests merged with a median cycle of twelve minutes, and never more than one open at a time. Review was not the constraint at any point in the sprint, and nothing waited in a branch.
 -   **The gate and the CI kept their word.** The local check gate runs the class a change needs, CI installs its pinned tools, and CDash receives every continuous build.
--   **The close was clean.** Seventy-three stories were delivered, six abandoned, and every piece of open work was either finished or named: nineteen stories were split into successors whose titles say what remains, and eighty-one unstarted stories returned to the backlog with their tasks and history.
+-   **The close was clean.** Seventy-four stories were delivered, six abandoned, and every piece of open work was either finished or named: nineteen stories were split into successors whose titles say what remains, and eighty-one unstarted stories returned to the backlog with their tasks and history.
 
 
 # 🛠️ Key Improvements
@@ -199,6 +199,11 @@ These stories closed with part of their work done. Each remaining scope lives on
 -   [Size a volatility surface to the data its party holds](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_30/size_a_surface_to_its_data/story.html) → [Give each party the configuration its surfaces are built with](https://orestudio.github.io/OreStudio/doc/agile/product_backlog/next/give_each_party_its_surface_configuration/story.html)
 -   [Support volatility surfaces — the remaining work](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_30/support_volatility_surfaces-remaining/story.html) → [Calibrate and publish the surfaces on a schedule](https://orestudio.github.io/OreStudio/doc/agile/product_backlog/next/calibrate_and_publish_the_surfaces_on_a_schedule/story.html)
 -   [Build each party's volatility surfaces from vendor quotes of a latent surface](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_30/vendor_quotes_of_a_latent_surface/story.html) → [Prove a party's surfaces agree with the latent market and its forwards](https://orestudio.github.io/OreStudio/doc/agile/product_backlog/next/prove_a_partys_surfaces_agree_with_the_latent_market/story.html)
+
+
+# 📸 Screenshots
+
+The screens this release changed are captured by [Capture the sprint 30 release screenshots](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_30/publish_the_sprint_30_release/scenario_capture_the_sprint_30_release_screenshots.html). Each step of that scenario names the file it saves under `assets/images/`, and the captures are added to this page as they are taken.
 
 
 # 📊 Time Summary

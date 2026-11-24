@@ -26,11 +26,11 @@ GET /api/marketdata/public-rates/coverage on ores.http works for more than 45 se
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] |
-| Now          | Built: the service answers the coverage of a batch in one statement, the gateway joins it in memory, and the forwarding step carries the budget and answers a timeout as 504. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The pull request.                       |
+| Next         | Nothing. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance

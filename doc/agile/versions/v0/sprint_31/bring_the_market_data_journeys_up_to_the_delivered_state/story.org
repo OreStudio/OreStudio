@@ -21,11 +21,11 @@ The four stale journey pages and the two stale seed comments state the calibrati
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
-| Now           | Not yet started.                       |
+| Now           | Both tasks are done: the four surface journeys, the withdrawal journey and the two seed headers state the tree as it is. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. The story is closed.          |
 | Last touched  | 2026-11-24                               |
 
 * Acceptance
@@ -41,7 +41,7 @@ The four stale journey pages and the two stale seed comments state the calibrati
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:92FD6C20-5EB8-4648-AEC1-A6578076A6F3][Correct the three surface and curve journeys]] | DONE | 2026-11-24 | 2026-11-24 | Bring the published-surface, calibration and slices journeys up to the tree the surface work delivered. |
-| [[id:87BE3020-A43C-42EE-BABE-979791B93E16][Correct the withdrawal journey and the two seed comments]] | BACKLOG | | | Bring the withdrawal journey and the two population script headers up to the rows they seed. |
+| [[id:87BE3020-A43C-42EE-BABE-979791B93E16][Correct the withdrawal journey and the two seed comments]] | DONE | 2026-11-24 | 2026-11-24 | Bring the withdrawal journey and the two population script headers up to the rows they seed. |
 
 * Decisions
 

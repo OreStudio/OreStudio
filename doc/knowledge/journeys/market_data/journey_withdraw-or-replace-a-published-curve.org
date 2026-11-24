@@ -45,10 +45,9 @@ approval is reversed rather than edited, as for every kind.
 * Steps
 
 1. *Find the published curve.* The trader opens the curve by its =oresmd_uri= or
-   finds it in the curve list. The system shows the series and its latest
-   points. The read that serves the curve states whether it is published, and
-   an unpublished curve is the one to look at twice. No read lists the tenant's
-   published curves; see /What is missing/.
+   finds it in the list of the party's published sets, which states for each
+   series the set in use and what ended the one before it. An unpublished curve
+   is the one to look at twice.
 2. *Read what is published.* The trader reads the points the system is using.
    The snapshot read states the instant a person published the set, the account
    that published it, the as-of the set was built at, and the request that
@@ -61,19 +60,26 @@ approval is reversed rather than edited, as for every kind.
    names the corrected set or its as-of.
 5. *Raise the request.* The trader chooses *Raise withdrawal request* or
    *Raise replacement request*. The system raises an approval request for the
-   signed-in trader, waiting, under the withdrawal kind. No market-data
-   withdrawal kind is seeded; see /What is missing/.
+   signed-in trader, waiting, under =marketdata.curve_withdrawal=. A replacement
+   is raised as a publish and not as a withdrawal, because a replacement is a
+   publish whose successor supersedes the set it replaces.
 6. *Watch for the decision, or publish at once.* Where the kind's
    =approvals_required= is zero the withdrawal is immediate; where it is one or
    more, an approver decides in the queue. An approver who is also the asker is
    refused.
 7. *Apply the withdrawal or the replacement.* Once approved, the system makes
-   the withdrawal or the replacement live: the withdrawn curve stops being the
-   one pricing and reporting use, or the replacement becomes it. No such
-   operation exists; see /What is missing/.
-8. *See the consumers change.* The consumers that read the curve pick up the
-   change at their next read. The system tells them a published curve changed.
-   No notification kind exists for this; see /What is missing/.
+   the withdrawal or the replacement live. =marketdata.v1.ops.withdraw_curve=
+   writes the withdrawing account, the instant, the reason and the request on
+   the publish record, and no read by as-of takes the set afterwards. A
+   replacement is a publish, which marks every live set of the series
+   superseded and names the request that replaced it. The withdrawal names its
+   request when the tenant requires a decision, and names none when the
+   tenant's count lets the trader act alone.
+8. *See the consumers change.* The apply writes a notice under
+   =marketdata.curve_withdrawn= in its own transaction, and the people who read
+   the curve are told; a replacement is told under =marketdata.curve_published=,
+   because a replacement is a publish. The consumers that read the curve pick up
+   the change at their next read.
 9. *Confirm the audit.* The trader re-reads the history and sees the withdrawal
    or the replacement as a new version, with the reason and the decision
    attached. A withdrawal is not a deletion: the published version stays in the
@@ -95,8 +101,9 @@ replace it before the act.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/market_data/wireframe_withdraw-or-replace-a-published-curve.png]]
 
-The action controls are disabled while no withdrawal or replacement operation
-exists, and the panel says so, so the screen does not pretend the act succeeded.
+The controls are live for a curve. Withdrawal is delivered for the IR curve
+alone: the forward set and the surface have no withdrawal, so on those the
+controls are disabled and the panel says which act is missing.
 
 * Prototype
 
@@ -123,80 +130,51 @@ no build step and no session. It argues that a wrong publish is undone as an act
 | =notification_kind= | What kind of notice a withdrawal sends to consumers | [[id:D246CF5B-132C-4F85-874F-65D8871C0231][ores.inbox.notification_kind]] |
 | =notification= | The notice itself: who it is for and where it points | [[id:0AC22038-6060-4B08-81E8-F79768714F6B][ores.inbox.notification]] |
 
-The published state a withdrawal would change is the =curve_publish= detail
-row of the request that authorised the publish: it holds =published_at=,
-=published_by=, the as-of the set was built at and the request. What it does not
-hold is a superseded link or a withdrawn marker; see /What is missing/.
+The state the acts change is the =curve_publish= row of the request that
+authorised the publish. It holds =published_at=, =published_by= and the as-of
+the set was built at, the four withdrawal columns (=withdrawn_by=,
+=withdrawn_at=, =withdrawn_reason_code= and =withdrawal_request_id=), and the
+three supersession columns (=superseded_at=, =superseded_by_request_id= and
+=superseded_as_of=). The set's state is read from those columns and is not
+stored beside them
+([[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][Publication record of a derived market data set]]).
 
 * Operations and messages
 
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Find the published curve | List and read the series | =marketdata.v1.market_series.list=, =.get= | exists |
-| Read what is published | Read the latest snapshot of the curve | =marketdata.v1.curve_snapshot.get= | partial |
+| Find the published curve | List the party's published sets | =marketdata.v1.ops.list_published_curves= | exists |
+| Read what is published | Read the published sets of a subject | =marketdata.v1.ops.get_published_curve_sets= | exists |
 | Read the trail | Read every version with its diff | =marketdata.v1.history.get= | exists |
 | Raise the request | List the approval kinds on offer | =inbox.v1.approval_kinds.list= | exists |
-| Raise the request | Raise the withdrawal or replacement request | =inbox.v1.ops.raise_approval= | exists |
+| Raise the request | Raise the withdrawal request | =inbox.v1.ops.raise_approval= | exists |
 | Watch for the decision | Read the queue and decide | =inbox.v1.ops.list_approval_queue=, =inbox.v1.ops.decide_approval= | exists |
-| Apply the withdrawal | Take the published curve out of use | =marketdata.v1.curve_bootstrap.withdraw= | missing |
-| Apply the replacement | Publish a corrected version in its place, linked to the one it supersedes | =marketdata.v1.curve_bootstrap.replace= | missing |
+| Apply the withdrawal | Take the published curve out of use | =marketdata.v1.ops.withdraw_curve= | exists |
+| Apply the replacement | Publish a corrected version, which supersedes the one it replaces | =marketdata.v1.ops.publish_curve= | exists |
 | See the consumers change | Announce the change on the series' own event | =marketdata.v1.events.market_series.updated=, =marketdata.v1.events.market_observations.updated= | partial |
-| See the consumers change | Raise a notice to the consumers | =inbox.v1.ops.raise_notification= | partial |
+| See the consumers change | Tell the readers with a notice | =marketdata.curve_withdrawn=, =marketdata.curve_published= | exists |
 
-The history read is the generic one,
-=marketdata.v1.history.get=, with =entity_type=
-=ores.marketdata.market_series= or =ores.marketdata.observation_lineage=;
-both register a history provider. The change events exist and fire on a write,
-but they carry an entity change and not the meaning "the published curve
-changed".
+The change events fire on a write and carry an entity change. The notice is
+written by the act, in the act's transaction, and says that the live set moved
+([[id:B3F03DBB-EBD1-4649-94E5-6C5C1B67A084][Announcement of change in a published market data set]]).
 
 * What is missing
 
-1. *There is no withdrawal or replacement operation.* A published curve cannot
-   be taken out of use or superseded by a corrected one. The candidates are
-   =marketdata.v1.curve_bootstrap.withdraw= and
-   =marketdata.v1.curve_bootstrap.replace=. Until they exist the action
-   controls are disabled, and the only write,
-   =marketdata.v1.ops.republish_curve=, would silently write a new set
-   with nothing withdrawn and nothing linked.
-2. *There is no withdrawn state.* A publish records the instant, the publisher,
-   the as-of and the request, so a reader knows which set is live. Nothing marks
-   a set withdrawn or superseded, so a withdrawal has no column to write and
-   there is no read that excludes a withdrawn set. The candidate is a withdrawn
-   instant and actor on the publish record, or a withdrawing record of its own.
-   Until it exists a withdrawal would be a new publish, and the record would
-   read as two live sets rather than one replaced by the other. The decision
-   *Withdrawal and supersession* below states the state the record holds.
-3. *There is no market-data withdrawal kind.* One kind is seeded,
-   =iam.role_grant=, and it does not withdraw a curve. The candidate is a kind,
-   =marketdata.curve_withdrawal=, with =decide_permission_code=,
-   =comment_on_approve= and a configurable =approvals_required=, so a tenant
-   may allow a trader to withdraw alone or require approvals. Until then the
-   raise cannot be given a kind and the controls are disabled. The decision
-   below names the kind, its count and who may withdraw.
-4. *Nothing links a replacement to the version it supersedes.* A corrected
-   curve written under the same =oresmd_uri= would be a new set of observations
-   with no pointer from the old version to the new. The candidate is a
-   =superseded_by= link or a =valid_to= on the published record. Until then the
-   history shows two versions in time order and cannot say which one replaced
-   the other.
-5. *No notification kind tells consumers a curve changed.* The consumers of a
-   published curve are not told it was withdrawn or replaced. The candidate is
-   an =ores.inbox.notification_kind= such as =marketdata.curve_withdrawn=,
-   seeded beside the kind. Until then the consumers panel states that nobody is
-   told, and the change is found only at the next read. The recipients and the
-   trigger are stated under *The publish notice* in
-   [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]].
-6. *No read maps a published curve to its consumers.* Nothing returns which
+The withdrawal is delivered for the IR curve and for no other kind.
+
+1. *The forward set and the surface have no withdrawal.* Neither names a
+   withdrawal kind, neither carries the four withdrawal columns, and neither
+   seeds a withdrawal notice. The gaps are the subject of
+   [[id:A3C64267-3320-4CD1-944E-EB2CB79E43A1][Withdraw a published set of any kind]].
+2. *No read maps a published curve to its consumers.* Nothing returns which
    people or services read a given published curve, so the screen cannot list
-   who is affected. The candidate is a read over the party
-   subscriptions. Until then the consumers panel names the roles that
-   read curves in general, not the ones bound to this curve.
-7. *There is no delta against the last published.* A replacement is a change,
-   and there is no baseline to show what it changes. The candidate is the delta
-   read of the first journey. Until then the change panel is shown empty and
-   the trader describes the change in the reason.
+   who is affected. The candidate is a read over the party subscriptions. Until
+   then the consumers panel names the roles that read curves in general, not the
+   ones bound to this curve.
+3. *There is no single delta read against the last published.* The screen
+   compares two published sets because it can read both, so the change is
+   visible; it is the screen that subtracts them and not the server.
 
 * The decision
 

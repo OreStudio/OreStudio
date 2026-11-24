@@ -11,18 +11,18 @@
 
 * Summary
 
-A party reads what it published in four shapes that share one rule: a list of its
-sets, a record of one set with the history behind it, a comparison of two
-instants, and the values themselves, as a curve's points, a forward set's ladder
-or a surface's grid and one of its smiles. Every shape answers from the publish
-record and never from a candidate, and every one of them is the same shape
-whatever the kind, because the lifecycle record is one record
+A party reads what it published in four shapes, and the four share one rule. The
+shapes are a list of its sets, a record of one set with the history behind it, a
+comparison of two instants, and the values themselves, read as a curve's points,
+a forward set's ladder or a surface's grid and one of its smiles. Every shape
+answers from the publish record and never from a candidate, and every one of them
+is the same shape whatever the kind, because the lifecycle record is one record
 ([[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][The lifecycle record of a derived market object]]).
 
 The list answers the question a desk asks first, which is not what the numbers
-are but which set is in use: for each subject of the party, the live set, when it
-was published and what ended the set before it. The record answers what the set
-is and who put it there. The values answer what it says.
+are but which set is in use. For each subject of the party it states the live
+set, when it was published, and what ended the set before it. The record answers
+what the set is and who put it there, and the values answer what it says.
 
 * Detail
 
@@ -35,9 +35,10 @@ is and who put it there. The values answer what it says.
 | The comparison | What changed between these two sets? | Two publishes of one subject | The signed difference per node, and the nodes that appeared or dropped |
 | The values | What does the set say at this expiry and strike? | The publish, and a slice | The points, the grid, or one row of the grid |
 
-The first three are the same for every kind. The fourth is the only one a kind
-shapes for itself, because a curve is read as points against a tenor, a forward
-set as a ladder of dates, and a surface as a grid with a smile in each row.
+The list, the record and the comparison are the same for every kind. The values
+are the only read that a kind shapes for itself, because a curve is read as points
+against a tenor, a forward set as a ladder of dates, and a surface as a grid with a
+smile in each row.
 
 ** The list
 
@@ -112,7 +113,8 @@ Source: [[proj:doc/knowledge/architecture/reading_a_published_set.puml][=reading
 
 ** What a reader never receives
 
-Three refusals and one peculiarity hold for every kind.
+Two refusals and one allowance hold for every kind, and one fact belongs to the
+read rather than to the set.
 
 A candidate is never returned by a read by as-of, by a list or by a comparison.
 A set that no rule selects is refused with the subject and the as-of named,
@@ -122,9 +124,9 @@ its values and the words that say it was withdrawn, because the set a desk price
 from must remain readable after it leaves use
 ([[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]]).
 
-The peculiarity is the staleness verdict, which is a fact of the read and not of
-the set: it compares the read's instant with the instant the set was built at, so
-the same set is fresh in one read and stale in another.
+The fact that belongs to the read is the staleness verdict: it compares the read's
+instant with the instant the set was built at, so the same set is fresh in one
+read and stale in another.
 
 ** Where the kinds stand
 

@@ -30,7 +30,7 @@ values: who asked, who decided, who published, when, and what ended it.
 ** The three parts of one act
 
 A publish is an act over a candidate that an approval request authorised, and
-each of the three is stored apart. The separation decides where a fact is
+the request, the candidate and the publish are stored apart. The separation decides where a fact is
 written, and every act of the lifecycle writes to one of them.
 
 | Part | What it holds | Who writes it |
@@ -41,8 +41,7 @@ written, and every act of the lifecycle writes to one of them.
 
 ** The columns every kind shares
 
-The publish record is one table of the lifecycle, and the columns fall into five
-groups. A reader of any kind reads all five, so a screen that lists sets, or a
+The publish record is a single table, and its columns fall into five groups. A reader of any kind reads all five, so a screen that lists sets, or a
 report that binds one, does not know which kind it reads.
 
 | Group | Columns | What it states |
@@ -54,7 +53,7 @@ report that binds one, does not know which kind it reads.
 | Withdrawal | the withdrawing account, the instant, the reason code, the withdrawal request | That the set left use, why, and by which act |
 
 The state of the set is read from those columns and is not a column of its own,
-because a state that were stored could disagree with the facts beside it.
+because a stored state could disagree with the facts beside it.
 [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] states the derivation: a set with a
 published instant is published; one that also carries a successor is superseded;
 one that carries a withdrawing account is withdrawn. The supersession columns
@@ -76,8 +75,8 @@ them as it checks every other row.
 | FX forward set | A currency pair of the party | the pair, the spot date and rate, the two curve publishes it was built from, the convention version, the calendars and the method |
 | FX volatility surface | A surface blueprint of the party | the blueprint's id |
 
-The subject part holds the inputs a set was computed from where those inputs are
-publish records themselves, as an FX forward set holds the two curves it read.
+Where a set's inputs are themselves publish records, the subject part holds
+them, as an FX forward set holds the two curves it read.
 That is what lets the apply refuse a set whose input was withdrawn after it was
 computed ([[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]).
 
@@ -93,7 +92,7 @@ generated diagram in [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diag
 ** What the record does not hold
 
 Three kinds of fact are deliberately outside the record, and a reader that wants
-them reads the record they belong to.
+one of them reads the record it belongs to.
 
 - *The values of the set.* They are observations of the output series, each with
   its own oresmd identity, written by the compute and never by the apply.
@@ -109,7 +108,7 @@ them reads the record they belong to.
 
 ** Why one record
 
-Two consequences follow from the shape, and both are the reason for it.
+Two consequences follow, and both are reasons for the shape.
 
 The history of a set is a stream of versions of one row, and not a join across
 tables. A withdrawal adds the end of the act to the row that already holds its
@@ -125,9 +124,9 @@ kind it serves.
 
 ** The distance to the code
 
-The record is one shape in this page and three shapes in the tree. Each kind
-carries its own table with the shared columns repeated, and the columns a kind
-does not yet need are absent rather than empty.
+The lifecycle record is one shape in the target state, and three shapes in the
+tree. Each kind carries its own table with the shared columns repeated, and the
+columns a kind does not yet need are absent rather than empty.
 
 | Kind | Shared columns | Subject part | Withdrawal columns |
 |------+----------------+--------------+--------------------|

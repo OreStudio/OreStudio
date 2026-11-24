@@ -16,19 +16,19 @@ questions. The entity change event, raised by a database trigger on the publish
 tables, says that a row changed. The notice, written as an outbox row in the
 apply's own transaction, says that the set the party prices from has moved, and
 it names the subject, the act and the instant without carrying a single value.
-The first channel serves code that follows a table; the second serves a person who
-must know that the market moved under them.
+The entity change event serves code that follows a table; the notice serves the
+reader who must know that the set in use has changed.
 
-Only the second is a promise. It is written with the publish or not at all, it is
-delivered after the commit, and a delivery that fails is retried rather than
-allowed to undo the act.
+Only the notice carries that guarantee. It is written with the publish or not at
+all, it is delivered after the commit, and a delivery that fails is retried
+rather than allowed to undo the act.
 
 * Detail
 
 ** The two channels
 
-| | The change event | The notice |
-|--+------------------+------------|
+| Aspect | The change event | The notice |
+|--------+------------------+------------|
 | What raises it | A database trigger on the publish table | The apply, in its own transaction |
 | What it says | A row of a table changed | The live set of a subject moved, and by which act |
 | What it carries | The row's identity and its new state | The subject, the party, the as-of, the instant, the publisher, the request and the set it replaced |
@@ -109,6 +109,6 @@ row is empty here is a kind whose readers find the change only at their next rea
 - [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — the structure note that orders this cluster.
 - [[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]] — the act that writes the notice.
 - [[id:E474FB93-2ACE-4981-9761-33E214B3D268][Withdrawal of published market data sets]] — the second act that writes one.
-- [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] — the subsystem's own contract, which this page does not repeat.
+- [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] — the subsystem's contract, which governs both channels.
 - [[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Reading a published market data set]] — where the values are read instead.
 - [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]] — the acts, of which these are the announcements.

@@ -15,10 +15,10 @@ A person may key a point of a derived market object by hand, and the value then
 owns its coordinate until it is cleared. An automatic write at a later instant
 leaves the manual row in place, the read at an as-of prefers the manual point to
 whatever later value an automatic writer produced, and an automatic write at the
-very same instant is dropped rather than allowed to replace it. The rule is one
-rule, applied in one place below every automatic writer, so the feed, the import,
-the scheduled refresh and the compute are held to it equally and none of them
-needs to know that a manual point exists.
+very same instant is dropped rather than allowed to replace it. One rule, applied in one
+place below every automatic writer, holds the feed, the import, the scheduled
+refresh and the compute to it equally, and none of them needs to know that a
+manual point exists.
 
 A manual mark is a candidate correction. It never publishes anything, and the
 decision to publish the corrected candidate is the ordinary four-eyes act
@@ -28,11 +28,12 @@ decision to publish the corrected candidate is the ordinary four-eyes act
 
 ** Why a person keys a point
 
-Three reasons, and the record names which one applies. The market is wrong, so
-the hand value corrects a value a contributor published. The market is thin or
-absent, so the hand value stands in for a value nobody quoted. The person wants a
-what-if, so the hand value is a candidate and nothing more. The first two change
-what a set would be if it were published; the third never leaves the desk.
+A person keys a point for one of three reasons, and the record names which
+applies. The market is wrong, so the hand value corrects a value a contributor
+published. The market is thin or absent, so the hand value stands in for a value
+no contributor quoted. The person wants a what-if, so the hand value is a
+candidate and nothing more. A correction and a stand-in change what a set would
+be if it were published; a what-if never leaves the desk.
 
 ** What a manual mark carries
 
@@ -50,7 +51,7 @@ surface carries an expiry and a strike label.
 
 ** The precedence rule
 
-The rule is stated in five parts, and each part is load-bearing.
+The rule has five parts, and each is necessary.
 
 1. A manual point owns its coordinate until it is cleared.
 2. An automatic write at a later instant leaves the manual row where it is.
@@ -61,8 +62,8 @@ The rule is stated in five parts, and each part is load-bearing.
 5. Clearing releases every manual point on the coordinate, and the automatic
    value shows again.
 
-Part 3 is why the rule is a precedence and not a lock. A feed does not stop
-publishing because a desk keyed a value; it keeps publishing into the series, and
+The third part is why the rule is a precedence and not a lock. A feed does not
+stop publishing because a desk keyed a value; it keeps publishing into the series, and
 the read decides which of the two it shows. A person who wants the feed's value
 back clears the mark rather than waiting for the market to overwrite it.
 
@@ -112,8 +113,8 @@ value forever.
 ** Where the kinds stand
 
 The operation is shape-driven, so it addresses a curve and a surface by the axes
-the shape declares, and it serves both. What differs is the way in, and the
-surface screens do not exist yet
+the shape declares, and it serves both. What differs is the way a person reaches
+it: the surface screens do not exist yet
 ([[id:9487E120-6D43-4EFB-8E28-E9CEBA7EB43A][Read a published surface]]).
 
 * See also

@@ -208,6 +208,28 @@ make a series identifiable./
 /The setup report states each step of the provisioning, and the one that ended
 with a warning says why./
 
+** Compass, its own project
+
+Compass is no longer a directory of Python scripts inside this repository. It
+is its own project, [MASD-Project/compass](https://github.com/MASD-Project/compass),
+released on its own schedule and pinned here by
+=build/scripts/compass_ng.pin=; this sprint closed against
+[release v0.0.13](https://github.com/MASD-Project/compass/releases/tag/v0.0.13).
+
+- *One binary carries the gates.* The checks that were Python modules here —
+  component files, route tables, wide types, portable C++, the environment
+  format, commit provenance — are codecs of the compass release, run as one
+  =compass check=.
+- *CI installs the pinned release.* Every workflow that configures an
+  environment or runs a gate downloads the release the pin names and verifies
+  its checksum, so a build runs the same compass a developer does.
+- *The Python it replaced is gone.* The generator, the tier 2 and tier 3 gates
+  and the codegen scaffold verifier were deleted as compass took them over,
+  and a marker that names a compass codec is now linted as a codec rather than
+  as a missing script.
+- *The pin is the contract.* Bumping =compass_ng.pin= is the whole upgrade;
+  nothing in the tree depends on a compass path any more.
+
 * ⚠️ Known Issues & Postponed
 
 - *Search the knowledge base from ores.web* (ABANDONED): deferred.

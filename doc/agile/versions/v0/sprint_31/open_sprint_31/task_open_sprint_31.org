@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-24
 #+updated: 2026-11-24
-#+environment: festive-dijkstra
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C664D147-7520-4C4E-A421-51AE184DBF3D][Story: Open sprint 31]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ behind is filed in the product backlog's inbox.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C664D147-7520-4C4E-A421-51AE184DBF3D][Story: Open sprint 31]] |
-| Now          | Scaffolding and wiring the sprint.     |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-11-24                               |
 
 * Acceptance
@@ -87,3 +87,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Sprint 31 is open. Its doc states the mission, the previous sprint and the
+dates, the version manifest lists it, and the agile index makes it current.
+The product moves to 0.0.31 and the readme's sprint, PR and commit badges
+follow it.
+
+The hundred stories sprint 30 left behind — nineteen split successors and
+eighty-one carried stories — moved into =doc/agile/product_backlog/inbox=,
+with their bucket tag and their bucket link rewritten. The pre-sprint index
+drops from 522 to 422 rows and the inbox index rises to 710, so both buckets
+read what they hold.
+
+The market data export fix that made a report price its trades had been edited
+into the generated handler. It now lives in the model block that generates the
+handler, and the handler and the wire protocol's TypeScript twin are
+regenerated from it, so no generate can lose it.
+
+The docs class gate passes 5/5, and =compass generate= reports no drift.

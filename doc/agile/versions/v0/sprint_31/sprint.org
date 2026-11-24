@@ -42,7 +42,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------|
-| [[id:C664D147-7520-4C4E-A421-51AE184DBF3D][Story: Open sprint 31]] | STARTED | 2026-11-24 | | Scaffold and wire sprint 31, and carry the leftovers. |
+| [[id:C664D147-7520-4C4E-A421-51AE184DBF3D][Story: Open sprint 31]] | DONE | 2026-11-24 | 2026-11-24 | Scaffold and wire sprint 31, and carry the leftovers. |
 
 ** Hotfixes
 

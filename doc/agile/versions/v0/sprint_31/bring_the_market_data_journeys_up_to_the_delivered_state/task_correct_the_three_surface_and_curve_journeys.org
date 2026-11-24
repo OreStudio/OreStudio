@@ -26,11 +26,11 @@ Three journeys state what the tree does today: the read returns the model, the s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9C8F48B9-9B03-4C0A-8D57-12E8481272C8][Bring the market data journeys up to the delivered state]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-24                               |
 
 * Acceptance
@@ -85,3 +85,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The four journeys now describe the tree as it is.
+
+| Journey | Changed |
+|---------+---------|
+| Read a published surface | The read states the model, the strike convention, the delta type, the publish instant and the staleness verdict; the missing list is the axes as axes, the rest of the convention, the blueprint's identifier and the history of a surface |
+| Calibrate or refresh a surface | The blueprint is the recipe, the convention is a row of its own, and the calibration returns and stores the fit, the pillar errors and the violations; the missing list is a read of a stored calibration, a candidate grid read, a slice and mesh finer than the grid, and the convention's five unread fields |
+| Inspect a surface's slices | The smiles are the grid's rows, the mesh is the grid whole, and the two arbitrage checks run in the calibration and block a publish; the missing list is a read of a stored calibration, the declared but unserved slice subject, the grid's fineness, and the check's own evidence |
+| Adjust a curve or surface by hand | The manual point is a write with an annex, the guard holds it against a feed write, and the trail is in the history; the one missing act is the spread overlay, and the guard's one-round-trip limit is stated as a limit |
+
+Every subject the pages name was read from the tree before it was written: the
+blueprint and convention reads, the calibration and publish subjects, the manual
+point subjects, the generic history subject, and the forty-four id links.
+
+The checks are green: five of five on the docs class.

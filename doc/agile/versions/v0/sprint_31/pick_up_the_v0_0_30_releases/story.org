@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 70D7AC45-8FD9-4C82-939B-6150605EAF84
+:END:
+#+title: Story: Pick up the v0.0.30 release across the fleet
+#+description: Take the release the v0.0.30 tag names onto this environment before any other: the newest vcpkg ports, the compiler and standard library the dist-upgrade installed, and PostgreSQL 19 in place of 18, so the fleet moves once rather than twice.
+#+type: story
+#+level: s2
+#+filetags: :sprint_31:v0:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+This environment runs the released toolchain, the released ports and PostgreSQL 19, proven here before the fleet is touched.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-24                               |
+
+* Acceptance
+
+- The vcpkg submodule is at the commit the release move names, and the manifest resolves against it.
+- The whole build compiles on the dist-upgraded compiler and standard library.
+- PostgreSQL 19 holds the database, and its schema and populate match the 18 it replaced.
+- The fleet starts and answers on the new toolchain and the new database.
+- The move is written down, with the root steps recorded, so the fleet rollout is the same list.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:95518D2B-205D-4B37-B362-A63D7A83BCA2][Move the toolchain and the database to the release]] | STARTED | 2026-11-24 | | The vcpkg submodule moves to the released ports, the environment is compiled by the compiler the dist-upgrade installed, and PostgreSQL 19 replaces 18 with the same schema and populate. Every step is proven here first, and the root steps are recorded for the fleet. |
+
+* Decisions
+
+* Out of scope
+
+-

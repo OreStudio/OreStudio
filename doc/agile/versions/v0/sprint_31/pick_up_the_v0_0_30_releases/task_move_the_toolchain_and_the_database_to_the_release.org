@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: 95518D2B-205D-4B37-B362-A63D7A83BCA2
+:END:
+#+title: Task: Move the toolchain and the database to the release
+#+description: The vcpkg submodule moves to the released ports, the environment is compiled by the compiler the dist-upgrade installed, and PostgreSQL 19 replaces 18 with the same schema and populate. Every step is proven here first, and the root steps are recorded for the fleet.
+#+type: task
+#+level: s1
+#+filetags: :pick_up_the_v0_0_30_releases:sprint_31:v0:
+#+owner: marco
+#+branch: feature/pick-up-the-v0-0-30-releases
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:70D7AC45-8FD9-4C82-939B-6150605EAF84][Pick up the v0.0.30 release across the fleet]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+This environment builds and runs on the released ports and PostgreSQL 19, so the fleet rollout is the same list applied again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:70D7AC45-8FD9-4C82-939B-6150605EAF84][Pick up the v0.0.30 release across the fleet]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+- The vcpkg submodule points at the release commit, and the manifest resolves against it.
+- The build compiles and the tests pass on the dist-upgraded toolchain.
+- PostgreSQL 19 serves the database, and its schema and populate match the 18 it replaced.
+- The fleet starts, signs in and answers on the new toolchain and database.
+- The root steps and the failures met are in the record.
+
+* Plan
+
+Three moves, in this order, each proven before the next.
+
+** The ports
+
+The submodule moves to the commit the release move names and the manifest is
+resolved against it before anything is compiled. The ports did not all stand
+still: =cnats= 3.14.0 becomes 3.15.0, =lz4= 1.11.1, =zlib= 1.4, and
+=vcpkg-cmake= 2026-11-09. =libpq= stays at 18.4, which is the newest the registry
+holds: it speaks the protocol a 19 server answers, so the client library and the
+server version are allowed to differ, and that is a decision rather than an
+accident.
+
+** The compiler and the standard library
+
+The dist-upgrade moved GCC to 16 and rewrote the C++ standard library headers. A
+precompiled header built before that is refused by clang, so the build tree's
+=PCH= files were removed and the whole tree recompiles once.
+
+** The database
+
+PostgreSQL 19 was proven before the cluster was touched. A throwaway 19.0 cluster
+was created with =initdb= on port 55432, the whole database was built on it with
+=compass db recreate=, and its tables were counted against the 18 the environment
+runs. The switch of the system cluster needs root and the steps are recorded in
+=* Notes=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| vcpkg submodule, before | =2026.10.16-379-gec48c11eae= | git -C vcpkg describe --tags | 57f61f9dc5 |
+| vcpkg submodule, after | =2f8bf7a5ba= (=2026.10.16-619=, 240 commits on) | git -C vcpkg describe --tags | 57f61f9dc5 |
+| packages the manifest resolves | 103, every port found | VCPKG_FORCE_SYSTEM_BINARIES=1 vcpkg install --dry-run --triplet x64-linux | 57f61f9dc5 |
+| PostgreSQL server proven | 19.0 (Debian 19.0-2) | select version() | 57f61f9dc5 |
+| tables on 19 / on 18 | 853 / 855, the two being pgtap's own | select count(*) from information_schema.tables where table_schema='public' | 57f61f9dc5 |
+| extensions on 19 | btree_gist, plpgsql, unaccent | select string_agg(extname, ', ') from pg_extension | 57f61f9dc5 |
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+What the release does not bring, found while proving it.
+
+- =postgresql-19-pgtap= and =postgresql-19-timescaledb= are not in the Debian 13
+  archive. Only the core server, its JIT and =pgaudit= are. Both extensions are
+  optional in =setup_extensions.sql=: without pgTAP the 110 SQL test files cannot
+  run, and without TimescaleDB the create scripts keep plain tables, because each
+  hypertable is guarded by a check that the extension exists.
+- =libpq= has no 19 port in the registry, so the client library stays 18.4. That
+  is protocol-compatible with a 19 server and is recorded as a choice.
+- The environment's cluster is owned by =nobody=, not by =postgres=, which the
+  Debian upgrade tooling assumes. Rebuilding the cluster is the simpler path here
+  and the database is reproducible from SQL, which the throwaway cluster proved.
+
+** The root steps
+
+=pg_upgradecluster= keeps the data and rebuilds the cluster; dropping and
+recreating is simpler and loses only what SQL rebuilds. Both are listed.
+
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

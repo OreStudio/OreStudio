@@ -8,7 +8,7 @@
 #+filetags: :bring_the_market_data_journeys_up_to_the_delivered_state:sprint_31:v0:
 #+owner: marco
 #+branch: feature/correct-the-three-surface-and-curve-journeys
-#+pr:
+#+pr: 5103
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5103][#5103]] | [doc] Correct the surface journeys to the delivered tree |
 
 * Review
 

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :bring_the_market_data_journeys_up_to_the_delivered_state:sprint_31:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/correct-the-three-surface-and-curve-journeys
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ Three journeys state what the tree does today: the read returns the model, the s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9C8F48B9-9B03-4C0A-8D57-12E8481272C8][Bring the market data journeys up to the delivered state]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

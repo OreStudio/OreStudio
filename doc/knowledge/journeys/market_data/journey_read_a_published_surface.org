@@ -55,8 +55,11 @@ arbitrage of a candidate).
    strikes: the put wing, the ATM point and the call wing. A second operation is
    not needed; the smile is the grid's row.
 6. *Read what a strike is.* The person reads the strike convention and the delta
-   type. A column called =25D put= is a delta, quoted spot, premium-adjusted or
-   not; without those three facts the number is not a vol.
+   type, which the read states. A column called =25D put= is a delta, quoted spot,
+   premium-adjusted or not, and the pair's convention fixes which of those it is.
+   The read gives two of the convention's fields and the person reads the rest
+   from the blueprint; without the switch tenor the column's meaning past the
+   switch is not stated.
 7. *Meet a stale verdict.* The system marks the surface stale against the
    server's threshold for its kind, and says when it was published.
 8. *Meet nothing published.* The party holds the blueprint but has published no
@@ -104,26 +107,40 @@ The prototype is the visual record:
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Open the surface | the published surface of a blueprint at an as-of | =marketdata.v1.ops.get_published_fx_vol_surface= | partial |
-| Read the axes | the axes in draw order, with their values | =marketdata.v1.ops.get_published_fx_vol_surface= | partial |
+| Open the surface | the published surface of a blueprint at an as-of | =marketdata.v1.ops.get_published_fx_vol_surface= | exists |
+| Read the axes | the two axis lists | =marketdata.v1.ops.get_published_fx_vol_surface= | exists, not as axes |
 | Read the grid | expiries, strikes and the row-major grid | =marketdata.v1.ops.get_published_fx_vol_surface= | exists |
-| Read one smile | one row of the grid, or a slice by expiry | =marketdata.v1.ops.get_series_slice= | exists, unreachable |
-| Read what a strike is | model, strike convention, delta type, conventions | =marketdata.v1.ops.get_published_fx_vol_surface= | missing |
+| Read one smile | one row of the grid | =marketdata.v1.ops.get_published_fx_vol_surface= | exists |
+| Read what a strike is | model, strike convention, delta type | =marketdata.v1.ops.get_published_fx_vol_surface= | partial |
+| Read what a strike is | the rest of the pair's convention | =refdata.v1.fx_option_conventions.get= | exists, off the read |
+| Read the history | the published surfaces of one blueprint | (a repository method) | missing |
 
-=marketdata.v1.ops.get_published_fx_vol_surface= already returns the expiries,
-the strikes and a row-major grid. It does not return the model, the strike
-convention, the delta type, the conventions, the axes in a stated order, the
-publish instant or the staleness verdict.
+=marketdata.v1.ops.get_published_fx_vol_surface= returns the model, the strike
+convention, the delta type, the staleness verdict, the as-of, the publisher, the
+instant, the set it superseded, the expiries, the strikes and a row-major grid.
+It states the two axes as two lists of labels and not as axes in draw order; it
+does not return the blueprint's identifier, so a client reaches the blueprint by
+name; and it does not return the convention's own fields beyond the two above.
 
 * What is missing
 
-- The surface read must state =model=, =strike_convention=, =delta_type=,
-  =conventions=, =axes= (in draw order), =published_at= and =stale=. Without the
-  first three, the screen shows numbers whose meaning it cannot state.
-- The surface as an instrument. The smile needs the surface's =instrument_id= and
-  its axis field names, which =list_instruments= must expose; today a client has
-  no identity to slice by.
-- The staleness verdict, so the screen does not compute its own threshold.
+The read states the five facts that make a number a volatility: the model, the
+strike convention, the delta type, the instant it was published and the stale
+verdict. Four things are still missing.
+
+1. *The axes as axes.* The read gives two lists of labels. It does not state them
+   as axes in draw order, with a display label beside each code the grid is
+   indexed by, so the screen has to infer the order and print the code.
+2. *The convention block.* The pair's convention holds seven fields: the ATM
+   type, the delta type, the switch tenor, the long-term ATM and delta types, the
+   preference of the risk reversal and the butterfly style. The read states two
+   of them, so a strike column past the switch tenor cannot be read with
+   certainty ([[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]]).
+3. *The blueprint's identifier.* The read names the blueprint and does not return
+   its id, so a screen cannot link a surface to the blueprint it came from.
+4. *The history.* Every published surface of one blueprint is a repository method
+   and not an operation, so the read answers for one as-of and never for the
+   series of sets behind it.
 
 * Related journeys
 

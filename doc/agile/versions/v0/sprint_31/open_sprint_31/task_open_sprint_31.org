@@ -8,7 +8,7 @@
 #+filetags: :open_sprint_31:sprint_31:v0:
 #+owner: marco
 #+branch: agile/open-sprint-31
-#+pr:
+#+pr: 5091
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5091][#5091]] | [agile] Open sprint 31 and carry its leftovers into the inbox |
 
 * Review
 

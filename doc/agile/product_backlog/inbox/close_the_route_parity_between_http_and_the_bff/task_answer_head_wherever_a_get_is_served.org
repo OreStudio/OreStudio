@@ -26,11 +26,11 @@ A HEAD request answers the status and headers the GET of the same path answers, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] |
-| Now          | Implemented and gated: the router answers a HEAD from the GET of the same pattern, and the suite proves a 200, a 401 and a 404. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The pull request.                       |
+| Next         | Nothing. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance

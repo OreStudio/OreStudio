@@ -27,6 +27,7 @@ set(files
     "http_answer_cache_tests.cpp"
     "http_body_limit_tests.cpp"
     "http_cors_tests.cpp"
+    "http_error_contract_tests.cpp"
     "http_head_tests.cpp"
     "http_info_protocol_codec_roundtrip_tests.cpp"
     "http_metrics_tests.cpp"

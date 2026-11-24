@@ -55,7 +55,7 @@ TEST_CASE("http_response_error_creates_error_response", "[http_response]") {
 
     CHECK(sut.status == http_status::bad_request);
     CHECK(sut.content_type == "application/json");
-    CHECK(sut.body == R"({"error":"Invalid input"})");
+    CHECK(sut.body == R"({"code":"invalid-request","message":"Invalid input"})");
 }
 
 TEST_CASE("http_response_not_found_creates_404", "[http_response]") {
@@ -66,7 +66,7 @@ TEST_CASE("http_response_not_found_creates_404", "[http_response]") {
 
     CHECK(sut.status == http_status::not_found);
     CHECK(sut.content_type == "application/json");
-    CHECK(sut.body == R"({"error":"Resource not found"})");
+    CHECK(sut.body == R"({"code":"not-found","message":"Resource not found"})");
 }
 
 TEST_CASE("http_response_not_found_with_default_message", "[http_response]") {
@@ -76,7 +76,7 @@ TEST_CASE("http_response_not_found_with_default_message", "[http_response]") {
     auto sut = http_response::not_found();
 
     CHECK(sut.status == http_status::not_found);
-    CHECK(sut.body == R"({"error":"Not Found"})");
+    CHECK(sut.body == R"({"code":"not-found","message":"Not Found"})");
 }
 
 TEST_CASE("http_response_unauthorized_creates_401", "[http_response]") {
@@ -87,7 +87,7 @@ TEST_CASE("http_response_unauthorized_creates_401", "[http_response]") {
 
     CHECK(sut.status == http_status::unauthorized);
     CHECK(sut.content_type == "application/json");
-    CHECK(sut.body == R"({"error":"Token expired"})");
+    CHECK(sut.body == R"({"code":"not-authenticated","message":"Token expired"})");
 }
 
 TEST_CASE("http_response_unauthorized_with_default_message", "[http_response]") {
@@ -97,7 +97,7 @@ TEST_CASE("http_response_unauthorized_with_default_message", "[http_response]") 
     auto sut = http_response::unauthorized();
 
     CHECK(sut.status == http_status::unauthorized);
-    CHECK(sut.body == R"({"error":"Unauthorized"})");
+    CHECK(sut.body == R"({"code":"not-authenticated","message":"Unauthorized"})");
 }
 
 TEST_CASE("http_response_forbidden_creates_403", "[http_response]") {
@@ -108,7 +108,7 @@ TEST_CASE("http_response_forbidden_creates_403", "[http_response]") {
 
     CHECK(sut.status == http_status::forbidden);
     CHECK(sut.content_type == "application/json");
-    CHECK(sut.body == R"({"error":"Access denied"})");
+    CHECK(sut.body == R"({"code":"forbidden","message":"Access denied"})");
 }
 
 TEST_CASE("http_response_forbidden_with_default_message", "[http_response]") {
@@ -118,7 +118,7 @@ TEST_CASE("http_response_forbidden_with_default_message", "[http_response]") {
     auto sut = http_response::forbidden();
 
     CHECK(sut.status == http_status::forbidden);
-    CHECK(sut.body == R"({"error":"Forbidden"})");
+    CHECK(sut.body == R"({"code":"forbidden","message":"Forbidden"})");
 }
 
 TEST_CASE("http_response_bad_request_creates_400", "[http_response]") {
@@ -129,7 +129,7 @@ TEST_CASE("http_response_bad_request_creates_400", "[http_response]") {
 
     CHECK(sut.status == http_status::bad_request);
     CHECK(sut.content_type == "application/json");
-    CHECK(sut.body == R"({"error":"Missing required field"})");
+    CHECK(sut.body == R"({"code":"invalid-request","message":"Missing required field"})");
 }
 
 TEST_CASE("http_response_internal_error_creates_500", "[http_response]") {
@@ -140,7 +140,7 @@ TEST_CASE("http_response_internal_error_creates_500", "[http_response]") {
 
     CHECK(sut.status == http_status::internal_server_error);
     CHECK(sut.content_type == "application/json");
-    CHECK(sut.body == R"({"error":"Database connection failed"})");
+    CHECK(sut.body == R"({"code":"internal","message":"Database connection failed"})");
 }
 
 TEST_CASE("http_response_set_header_adds_header", "[http_response]") {

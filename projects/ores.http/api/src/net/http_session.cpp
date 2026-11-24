@@ -735,7 +735,10 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                         if (co_await refused_failed_credential(
                                 version, matched->pattern, keep_alive))
                             co_return;
-                        auto unauthorized = domain::http_response::unauthorized("invalid key");
+                        auto unauthorized =
+                            domain::http_response::api_error(domain::http_status::unauthorized,
+                                                             "invalid-credentials",
+                                                             "The credential was not accepted.");
                         co_await write_response(unauthorized, version, keep_alive, true);
                         co_return;
                     }
@@ -752,7 +755,9 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                     << ": " << ores::security::jwt::to_string(claims_result.error());
                 if (co_await refused_failed_credential(version, matched->pattern, keep_alive))
                     co_return;
-                auto unauthorized = domain::http_response::unauthorized(
+                auto unauthorized = domain::http_response::api_error(
+                    domain::http_status::unauthorized,
+                    "invalid-credentials",
                     ores::security::jwt::to_string(claims_result.error()));
                 co_await write_response(unauthorized, version, keep_alive, true);
                 co_return;
@@ -783,8 +788,18 @@ asio::awaitable<void> http_session::handle_request(domain::http_request domain_r
                 << "No usable credential for " << matched->pattern << " from " << remote_address_;
             if (co_await refused_failed_credential(version, matched->pattern, keep_alive))
                 co_return;
-            auto unauthorized = domain::http_response::unauthorized(
-                "A bearer token or a session cookie is required");
+            /*
+             * A cookie this server no longer holds is a session that ended, and
+             * the browser signs in again on that word rather than showing it as a
+             * refusal of what the person did.
+             */
+            auto unauthorized =
+                clear_the_cookie ?
+                    domain::http_response::api_error(domain::http_status::unauthorized,
+                                                     "session-expired",
+                                                     "The session has ended; sign in again.") :
+                    domain::http_response::unauthorized(
+                        "A bearer token or a session cookie is required");
             if (clear_the_cookie)
                 unauthorized.set_header("Set-Cookie", domain::session_cookie::clear(cookie_));
             co_await write_response(unauthorized, version, keep_alive, true);

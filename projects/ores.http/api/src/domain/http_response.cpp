@@ -27,16 +27,6 @@ namespace ores::http::domain {
 
 namespace {
 
-struct error_message final {
-    std::string error;
-};
-
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<error_message>) {
-    return ::ores::utility::codec::field_list{
-        ores::utility::codec::field{"error", &error_message::error}};
-}
-static_assert(ores::utility::codec::names_every_member<error_message>());
-
 struct api_error_body final {
     std::string code;
     std::string message;
@@ -59,8 +49,36 @@ http_response http_response::json(const std::string& body, http_status status) {
     return r;
 }
 
+std::string_view http_response::code_for_status(http_status status) {
+    switch (status) {
+        case http_status::bad_request:
+            return "invalid-request";
+        case http_status::unauthorized:
+            return "not-authenticated";
+        case http_status::forbidden:
+            return "forbidden";
+        case http_status::not_found:
+            return "not-found";
+        case http_status::conflict:
+            return "conflict";
+        case http_status::too_many_requests:
+            return "too-many-requests";
+        case http_status::internal_server_error:
+        case http_status::not_implemented:
+            return "internal";
+        case http_status::bad_gateway:
+        case http_status::service_unavailable:
+            return "upstream-unavailable";
+        default:
+            break;
+    }
+    // A status the contract names no code for is coded by the class it belongs
+    // to: a refused request, or a fault on this side.
+    return static_cast<std::uint16_t>(status) >= 500 ? "internal" : "invalid-request";
+}
+
 http_response http_response::error(http_status status, const std::string& message) {
-    return json(ores::utility::codec::json::write(error_message{message}), status);
+    return api_error(status, std::string(code_for_status(status)), message);
 }
 
 http_response

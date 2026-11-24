@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :derive_term_indices_from_their_overnight_curves:ir:curves:sprint_31:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/derive-a-term-index-from-its-overnight-curve
 #+pr: 5109
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
-#+updated: 2026-11-21
+#+updated: 2026-11-24
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -30,12 +30,12 @@ data beside the curve configs, and task 3's list reads it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-21                               |
+| Next         | Slice 1: the rule entity and its seeds. |
+| Last touched | 2026-11-24                               |
 
 * Acceptance
 
@@ -47,9 +47,57 @@ data beside the curve configs, and task 3's list reads it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The rule is data, and the row it belongs on is the synthetic curve config,
+because that config is the only thing that states an index rate. Reading the
+pipeline settled this:
+
+- =ir_curve_feed= is the sole publisher of =market_member_kind::index_rate=
+  on the run's board, and it publishes the rate of its own config's pillar
+  whose end tenor equals the index tenor.
+- =index_fixing_feed= writes a fixing from whatever the board holds as that
+  index's rate, so a fixing needs only a board rate.
+- The marketdata bootstrap (=curve_republish_service=) publishes discount
+  factors, never rates, so it cannot serve this.
+
+Five indices need it, over three existing overnight configs:
+
+| Term index | Currency | Overnight index | Rule |
+|------------|----------|-----------------+------|
+| SOFR 1M | USD | SOFR | compounded over the term |
+| IBR 3M | COP | IBR | compounded over the term |
+| EYTIBOR 3M | JPY | TONA | overnight plus a stated spread |
+| GENERIC 3M | KRW | KOFR | overnight plus a stated spread |
+| WIBOR 6M | PLN | POLONIA | overnight plus a stated spread |
+
+1. *The rule on the config.* =ir_curve_generation_config= gains
+   =rate_source= (=process= | =compounded_overnight= |
+   =overnight_plus_spread=), =derived_spread_basis_points= and
+   =derived_spread_source=. A derived config states no process parameters:
+   its rate comes from its currency's overnight config, which is the one
+   config of that currency that funds (a =FUNDING= role and no tenor), so no
+   new reference is needed. Checks: a =process= config states no spread; a
+   spread config states both the points and their source.
+2. *The derived rate.* =ir_curve_feed::index_rate()= answers a derived
+   config from the board's overnight curve instead of its own pillars:
+   =compounded= is the simple forward over the term,
+   =(P(t)/P(t+T) - 1) / year_fraction(t, t+T)= — the OIS compounded rate of a
+   daily overnight curve — and =spread= is the overnight rate plus the
+   stated points. Both read the primitives already there:
+   =curve_instrument_pricer::fra_rate= and
+   =day_count_calculator::year_fraction=. Nothing compounds or adds a spread
+   in the tree today, so this is the new arithmetic.
+3. *The five rows.* One =ir_curve_generation_config= per derived index,
+   seeded against the currency's overnight config, with the spread of the
+   two spread indices stated and sourced.
+
+Deferred to a follow-up task if it costs more than a slice: publishing a
+*projection curve* for a derived index. The acceptance of this task asks
+for the fixing addresses to answer and for the compounded equality, and
+both follow from the board rate alone.
+
+Test: a unit test proves the compounded rate equals the forward implied by
+two discount factors of the overnight curve and that the spread form adds
+its points; a fresh provision shows the five fixing addresses answering.
 
 * Measurements
 

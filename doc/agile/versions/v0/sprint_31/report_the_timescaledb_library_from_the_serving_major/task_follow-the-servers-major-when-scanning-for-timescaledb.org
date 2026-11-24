@@ -8,7 +8,7 @@
 #+filetags: :report_the_timescaledb_library_from_the_serving_major:sprint_31:v0:
 #+owner: marco
 #+branch: feature/follow-the-servers-major-when-scanning-for-timescaledb
-#+pr:
+#+pr: 5099
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5099][#5099]] | [compass] Follow the server's major in the timescaledb scan |
 
 * Review
 

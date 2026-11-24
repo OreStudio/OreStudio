@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: C45999F0-2B86-48D7-814F-F10727BC9565
+:END:
+#+title: Housekeeping
+#+description: Structure note for the housekeeping cluster: the model that bounds every store, and the classes of retained data it governs.
+#+type: knowledge
+#+level: cross
+#+filetags: :housekeeping:retention:storage:architecture:structure_note:
+#+created: 2026-11-24
++#+updated: 2026-11-24
+
+* Summary
+
+This cluster owns one question: how a store the platform retains is held to a
+bound. It does not describe what the stores are, which the storage cluster owns,
+nor the interfaces that reach them; it describes the declaration, the executor
+and the measurement that keep a store from growing without one. The cluster is
+small and the order matters, because the second page uses the vocabulary the
+first establishes.
+
+* Detail
+
+** The sequence
+
+1. [[id:E92D8CA4-C33F-4AE2-808B-9092B100E9C5][Housekeeping of retained
+   data]] states the model. A bound exists only where a declaration, an executor
+   and a measurement are present together, and the page gives the shape of each,
+   the actions an executor can take, the path it follows where the storage engine
+   will not act, and the telemetry a policy reports. It comes first because a
+   reader needs its three terms before any later page can use them, and because
+   the platform's failure has been the middle term: a declaration that reads as
+   satisfied while nothing acts on it.
+
+2. [[id:21D539CD-AF3B-4479-81D5-F195756C064F][Classification of retained
+   data]] applies the model. It names the classes of data the platform keeps and
+   assigns each the mechanism that fits it, and it is the page that shows why one
+   mechanism does not serve: retention suits data whose worth decays, and the
+   classes that dominate the footprint are superseded, derived or duplicated
+   instead. It follows the model because assigning an action requires the model's
+   vocabulary of declaration, executor and measurement.
+
+The order is short because the cluster is new. A page on the policy record, one
+on the executor and one on the telemetry belong here as they are written; each
+would follow the classification, because each refines a part that the model
+states only in outline.
+
+** What the cluster excludes
+
+The identity, ownership and interfaces of each store belong to
+[[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] and its spokes. A
+reader who wants to know what the object store is, or who owns a key, should
+start there and return here only for how long a key is kept.
+
+The scheduler's mechanics belong to
+[[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]]; this cluster states that
+an executor runs on a configured cadence and defers to that page for how a
+firing happens.
+
+** # aside
+
+These pages bear on the cluster without belonging to its sequence, because the
+question that reaches them is a different one.
+
+- [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][Bounded retention in the tick
+  store]] states the tick class in full, with its numbers and its chunk
+  geometry. It belongs to the sequence of the data path cluster, and this cluster
+  links it rather than restating it.
+- [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]] is the
+  one sweep the platform already runs on a configured cadence. It is an instance
+  of the executor, not a statement of the model, and is reached when the question
+  is how a sweep is registered rather than what housekeeping is.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this structure note hangs from.
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the neighbouring cluster: it owns what each store is, and this one owns how each is bounded.

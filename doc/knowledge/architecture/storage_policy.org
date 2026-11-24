@@ -400,3 +400,6 @@ was given.
   tenant-scoped credential a step service presents.
 - [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — the
   design whose grid this policy isolates.
+- [[id:21D539CD-AF3B-4479-81D5-F195756C064F][Classification of retained data]] —
+  answers: ownership decides who may delete a key, which is the condition the
+  artefact class depends on.

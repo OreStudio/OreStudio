@@ -58,8 +58,7 @@ TEST_CASE("only the curve can take a published set out of use", derived_kind_tag
 TEST_CASE("a withdrawal is refused at the raise for a kind that has none", derived_kind_tags) {
     CHECK_FALSE(withdrawal_refusal_of_publish_kind("marketdata.curve_publish").has_value());
 
-    for (const auto code : {"marketdata.fx_forward_publish",
-                            "marketdata.fx_vol_surface_publish"}) {
+    for (const auto code : {"marketdata.fx_forward_publish", "marketdata.fx_vol_surface_publish"}) {
         const auto refusal = withdrawal_refusal_of_publish_kind(code);
         REQUIRE(refusal.has_value());
         CHECK(refusal->find(code) != std::string::npos);

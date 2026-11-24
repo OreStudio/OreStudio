@@ -21,6 +21,7 @@
 #include "../curve_pillar_reader.hpp"
 #include "../curve_republish_resolver.hpp"
 #include "ores.analytics.quant/service/day_count_calculator.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"

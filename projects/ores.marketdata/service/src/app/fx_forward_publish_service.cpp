@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/fx_forward_publish_service.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/repository/approval_decision_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_repository.hpp"

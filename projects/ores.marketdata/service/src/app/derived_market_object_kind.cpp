@@ -30,8 +30,8 @@ std::optional<kind_declaration> declaration_of_publish_kind(std::string_view pub
 }
 
 const kind_declaration& declaration_of(derived_kind kind) {
-    const auto found = std::ranges::find_if(kind_declarations,
-                                            [kind](const auto& d) { return d.kind == kind; });
+    const auto found =
+        std::ranges::find_if(kind_declarations, [kind](const auto& d) { return d.kind == kind; });
     return *found;
 }
 

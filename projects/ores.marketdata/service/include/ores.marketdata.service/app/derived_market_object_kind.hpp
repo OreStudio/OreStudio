@@ -37,11 +37,7 @@ namespace ores::marketdata::service::app {
  * write the same facts for every kind, and a kind names the four parts that
  * differ: its subject, its compute, its checks and its approval kinds.
  */
-enum class derived_kind {
-    curve,
-    fx_forward,
-    fx_vol_surface
-};
+enum class derived_kind { curve, fx_forward, fx_vol_surface };
 
 /**
  * @brief What a kind declares, in one row.

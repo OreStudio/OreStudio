@@ -22,6 +22,7 @@
 #include "../curve_republish_resolver.hpp"
 #include "../published_curve.hpp"
 #include "ores.analytics.quant/service/curve_bootstrap_engine.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/domain/catalogue_ids.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"

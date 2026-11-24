@@ -141,8 +141,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 A HEAD now answers what the GET of the same path answers, with no body, on
 every route that has one. A probe, a =curl -I= and a client that tests a
 resource before reading it no longer read the whole gateway as missing, and no

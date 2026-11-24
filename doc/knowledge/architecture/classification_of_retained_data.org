@@ -15,9 +15,8 @@ The data the platform retains divides into a small number of classes, and the
 retention period or other treatment that suits a class follows from what the
 data is for rather than from the table or directory that holds it. Age-based
 retention suits only those classes whose worth decays with time. The classes
-that dominate a footprint are commonly superseded, derived or duplicated
-instead, and each of those takes a different treatment: overwriting,
-recomputation or deduplication. The classification assigns a treatment to each
+that dominate a footprint are commonly superseded, derived or duplicated, and
+each takes a different treatment: overwriting, recomputation or deduplication. The classification assigns a treatment to each
 class, and the executor that applies it is described in
 [[id:E92D8CA4-C33F-4AE2-808B-9092B100E9C5][Housekeeping of retained data]].
 
@@ -42,18 +41,17 @@ class, and the executor that applies it is described in
 ** Why one treatment does not serve
 
 Age-based retention assumes that a row's worth decays with time. Three of the
-classes violate that assumption in different ways, and each violation has its
-own answer.
+classes violate that assumption in different ways, and each takes its own
+treatment.
 
 A versioned counter is not aged but superseded: every row but the latest is
-already obsolete when it is written, so a retention period removes the history
-long after it has cost the space. The treatment is an overwrite applied as the
-value is written, which prevents the rows and costs least of any here.
+already obsolete when it is written, so a retention period removes rows long
+after they stopped being useful. The treatment is an overwrite applied as the
+value is written, which prevents the rows.
 
 Derived reference data is not aged but reproduceable. A calendar's business days
-follow from its rule and its year range, so a copy per owner is a copy of a
-function, and the treatment is to compute the data or share one copy rather than
-to expire it.
+follow from its rule and its year range, so the treatment is to compute the data
+or share one copy.
 
 Engine distributions and per-owner copies are not aged but duplicated. The same
 package sits in the object store and again in each node's cache, often a third
@@ -64,11 +62,10 @@ second copy cannot be made, and the remaining copy is evicted by age.
 ** Two treatments that write nothing
 
 Overwriting a counter and recomputing derived data hold a store without removing
-anything from it. They are classified here, apart from retention, because an
-operator reads them differently: a retention policy reports what it deleted, and
-these report what they avoided writing. Both are subject to the same policy and
-the same telemetry as the deleting treatments, and neither depends on the storage
-engine's licence.
+anything from it. They are classified apart from retention: a retention policy
+reports what it deleted, and these report what they avoided writing. Both are
+subject to the same policy and the same telemetry as the deleting treatments, and
+neither depends on the storage engine's licence.
 
 ** Where the treatment is applied
 

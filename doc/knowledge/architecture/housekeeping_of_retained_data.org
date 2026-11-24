@@ -11,16 +11,13 @@
 
 * Summary
 
-A store is housekept when three parts hold together: a retention policy declares
+A store is housekept when three parts are present: a retention policy declares
 what the store keeps and for how long, an executor applies the policy, and a
-telemetry record states what the executor did. A policy with no executor leaves
-the store growing, and an executor with no telemetry cannot be shown to have run.
-Both failures are present in the platform today. The second is the commoner: the
-schema installs a retention policy only where the storage engine reports the
-licensed edition, and reports the interval without installing anything where it
-does not. The page gives the shape of a retention policy, the actions an executor
-takes, the path an executor follows where the engine will not apply a policy
-itself, and the telemetry a policy reports.
+telemetry record states what the executor did. Policies must have executors, and
+executors must have telemetry. The platform exhibits both absences. The more
+common is the missing executor: the schema installs a retention policy only where
+the storage engine reports the licensed edition, and states the interval without
+installing anything where it does not.
 
 * Detail
 
@@ -62,39 +59,34 @@ takes which action is the subject of
 
 ** One executor
 
-A single scheduled job reads the policies and performs their actions, taking its
-cadence from the configured setting that the platform's other sweeps already use
+A single scheduled job reads the policies and performs their actions. It takes
+its cadence from the configured setting that the platform's other sweeps use
 ([[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]]). One executor serves
-every class because the classes differ in what they hold and in when their
-contents stop being useful, not in how a sweep runs. The established example is
+every class: the classes differ in what they hold and in when their contents stop
+being useful, not in how a sweep runs. The established example is
 [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]], whose
 sweep a service registers at runtime from a system setting.
 
 ** The fallback path
 
 A time-series engine applies a retention policy as a background job, and the job
-exists only where the engine's licensed edition includes it. Where that edition
-is absent the policy is never created and the declaration reads as satisfied. The
-executor therefore performs the action itself wherever the engine will not, and
-records which path ran, so that one declaration is honoured on either edition and
-the difference is visible rather than inferred. This is the gap recorded for the
-tick store in
-[[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][Bounded retention in the tick store]],
-generalised to every class.
+exists only where the engine's licensed edition includes it. Where that edition is
+absent the policy is never created, and the schema states the interval without
+applying it. The executor therefore performs the action itself wherever the engine
+will not, and records which path ran. One declaration is honoured on either
+edition, and the path taken is recorded.
 
 ** The telemetry
 
 Each policy reports, per sweep, the size of its target before and after, the
 rows, chunks or objects removed, the time taken and the outcome. The measured
-size over time yields a growth rate, which is the quantity a capacity decision
-needs and the one an operator cannot obtain from a single reading.
+size over time yields a growth rate.
 
-The telemetry sits beside the declaration rather than in a separate console: a
-policy's row shows what it governs and what the last sweep freed, together, so
-that a policy which is enabled and freeing nothing is visible as such. The size
-comes from the database's catalogues for tables and chunks, from the object
-store's listing for key prefixes, and from a directory walk for the caches and
-working directories a node holds.
+The telemetry sits beside the declaration: a policy's row shows what it governs
+and what the last sweep freed, so an enabled policy that frees nothing is
+visible. The size comes from the database's catalogues for tables and chunks,
+from the object store's listing for key prefixes, and from a directory walk for
+the caches and working directories a node holds.
 
 ** The parts
 

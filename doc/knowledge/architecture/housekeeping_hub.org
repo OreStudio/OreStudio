@@ -63,8 +63,7 @@ an executor runs on a configured cadence and takes the mechanics as given.
 ** Reference pages
 # aside
 
-Two pages bear on the cluster without belonging to its sequence, because the
-question that reaches them differs from the one the cluster orders.
+Two pages bear on the cluster without belonging to its sequence.
 
 - [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][Bounded retention in the tick
   store]] states the market data class in full, with its numbers and its chunk

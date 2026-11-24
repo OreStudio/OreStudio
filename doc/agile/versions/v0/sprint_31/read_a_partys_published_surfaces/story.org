@@ -21,7 +21,7 @@ A person reads a party's published volatility surfaces the way they read its pub
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                                |
+| State         | STARTED                                |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
 | Now           | In sprint 31, promoted out of the product backlog. |
 | Waiting on    | Nothing.                               |
@@ -36,7 +36,7 @@ A person reads a party's published volatility surfaces the way they read its pub
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:977FD666-571A-4B85-85CC-435319DF9085][Analyse the market data architecture for surfaces]] | STARTED | 2026-11-24 | | Read the market data knowledge base and the code, state the target picture for the party side of market data across calibration, publishing, manual marks, events and four eyes, and list the gaps between it and the code. |
 
 * Decisions
 

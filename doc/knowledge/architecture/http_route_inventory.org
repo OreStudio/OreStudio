@@ -518,7 +518,7 @@ against the answer the BFF gives.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
-| transport capability | (none) | get | =/= | ores.http | projects/ores.http/core/src/routes/web_bundle_routes.cpp:92 | The built browser bundle's index, served so a browser can start the application. |
+| transport capability | (none) | get | =/= | ores.http | projects/ores.http/core/src/routes/web_bundle_routes.cpp:110 | The built browser bundle's index, served so a browser can start the application. |
 | resource | auth | post | =/api/account/password= | bff | projects/ores.web/packages/bff/src/server.ts:1140 | Replaces the signed-in account's own password, the account named by the session so nobody else's is reachable. |
 | resource | auth | post | =/api/account/password= | ores.http | projects/ores.http/iam/src/routes/iam/browser_session_routes.cpp:405 | A registration, the rules a password must keep, and the signed-in account's own password change, at the address and in the shape the BFF answered; a registration shares the sign-in budget. |
 | resource | access | get | =/api/accounts= | bff | projects/ores.web/packages/bff/src/server.ts:1182 | The tenant's accounts, one page, because the number of accounts a tenant holds is not a number a screen uses. |
@@ -2003,7 +2003,7 @@ against the answer the BFF gives.
 |  |  | delete | =/mcp= | ores.http | projects/ores.http/api/src/mcp/endpoint.cpp:339 |  |
 |  |  | get | =/mcp= | ores.http | projects/ores.http/api/src/mcp/endpoint.cpp:331 |  |
 |  |  | post | =/mcp= | ores.http | projects/ores.http/api/src/mcp/endpoint.cpp:323 |  |
-| transport capability | (none) | get | =/{path}= | ores.http | projects/ores.http/core/src/routes/web_bundle_routes.cpp:104 | A file of the built bundle, or the application shell for a screen path, and an /api path is answered 404 so the shell never stands in for JSON. |
+| transport capability | (none) | get | =/{path}= | ores.http | projects/ores.http/core/src/routes/web_bundle_routes.cpp:123 | A file of the built bundle, or the application shell for a screen path, and an /api path is answered 404 so the shell never stands in for JSON. |
 | transport capability | (none) | get | ={bucket_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:299 | path composed from bucket_pattern (declared at 236). A page of the keys one bucket of the object store holds. |
 | transport capability | (none) | delete | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:288 | path composed from object_pattern (declared at 234). One object of the object store, uploaded, downloaded, checked or removed by bucket and key. |
 | transport capability | (none) | get | ={object_pattern}= | ores.http | projects/ores.http/core/src/routes/storage_routes.cpp:262 | path composed from object_pattern (declared at 234). One object of the object store, uploaded, downloaded, checked or removed by bucket and key. |

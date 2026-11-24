@@ -221,6 +221,11 @@ TEST_CASE("a_missing_asset_and_an_api_path_are_not_the_application", "[web_bundl
         REQUIRE(answered.has_value());
         REQUIRE(answered->result_int() == 404);
         REQUIRE(answered->body().find("<!doctype html>") == std::string::npos);
+        // The refusal is one the browser can read, and it names the path asked
+        // for with the slash the caller wrote.
+        REQUIRE(answered->body().find(R"("code":"not-found")") != std::string::npos);
+        REQUIRE(answered->body().find("No route answers " + std::string(path)) !=
+                std::string::npos);
     }
 }
 

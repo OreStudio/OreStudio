@@ -81,18 +81,30 @@ struct ORES_HTTP_API_EXPORT http_response final {
     static http_response json(const std::string& body, http_status status = http_status::ok);
 
     /**
-     * @brief Creates an error response.
+     * @brief Creates an error response whose body names a code and a message.
+     *
+     * The browser reads a refusal as a code it can act on and a sentence it can
+     * show, so every refusal answers in this shape, the session's own as much as
+     * a route's. The codes are the ones the browser's contract states, so a
+     * refusal it cannot branch on is still one it can show.
+     */
+    static http_response
+    api_error(http_status status, const std::string& code, const std::string& message);
+
+    /**
+     * @brief Creates a refusal in the error contract, coded by its status.
+     *
+     * This is what a caller that has words but no code of its own uses.
      */
     static http_response error(http_status status, const std::string& message);
 
     /**
-     * @brief Creates an error response whose body names a code and a message.
+     * @brief The code the error contract states for a refusal of @p status.
      *
-     * The browser reads a refusal as a code it can act on and a sentence it can
-     * show, so a route the browser calls answers in this shape.
+     * The codes are the browser's own enum. A status the contract has no word
+     * for is coded by its class, so a refusal is never unreadable.
      */
-    static http_response
-    api_error(http_status status, const std::string& code, const std::string& message);
+    [[nodiscard]] static std::string_view code_for_status(http_status status);
 
     /**
      * @brief Creates a 404 Not Found response.

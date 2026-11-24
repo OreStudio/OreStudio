@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
-#+branch:
+#+branch: feature/answer-a-session-refusal-in-the-error-contract
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
-#+updated: 2026-11-22
-#+environment:
+#+updated: 2026-11-25
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,12 +27,12 @@ client parses: ={"code": "...", "message": "..."}=.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-22                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
 
 * Acceptance
 
@@ -42,9 +42,42 @@ client parses: ={"code": "...", "message": "..."}=.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The gateway wrote two refusal shapes. =http_response::api_error= stated ={code,
+message}=, which is what the browser parses, and =http_response::error= stated
+={"error": ...}=, which it does not: the browser's transport falls back to
+"Request failed with status N" and the sentence the server wrote is lost. The
+session layer, the file-backed bundle and a few routes used the second shape.
+
+So the second shape is gone rather than corrected call by call. =error= now
+writes =api_error=, with the code the status states, and the ={ "error" }= codec
+is deleted, so no new call site can reach the shape the browser cannot read.
+=code_for_status= is the one table: it names the codes the browser's own enum
+holds, and a status the contract has no word for is coded by the class it
+belongs to, a refused request or a fault on this side. That covers the statuses
+the session produces on its own: a body past the limit and a sink that refuses
+the request answer =invalid-request=, a handler that raises answers =internal=,
+a rate limit answers =too-many-requests=, and a credential the server cannot
+check yet answers =upstream-unavailable=.
+
+Three refusals deserve a word of their own, and get one:
+
+- *A credential that was presented and refused* is =invalid-credentials=, at the
+  token check and at the exchange, so the browser can tell a wrong key from no
+  key.
+- *A cookie this server no longer holds* is =session-expired=, and it already
+  cleared the cookie. The browser's =isSessionEnded= is written for exactly that
+  code, so a dead session now opens the sign-in instead of reporting a refusal
+  of what the person did.
+- *No credential at all* keeps =not-authenticated=, which is the same check's
+  other half.
+
+The bundle's 404 was the other fault the task names: =web_bundle_routes= answered
+=not_found(path)= with the manifest key, so an API path read as ="api/nope"= —
+no leading slash, and no sentence. It now answers =not-found= with "No route
+answers /api/nope", and a bundle with no application answers that it holds none.
+
+What is not done: the BFF's own refusals are untouched, since it is the thing
+being retired, and a route that states a code of its own keeps it.
 
 * Measurements
 
@@ -58,9 +91,32 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The shapes the gateway wrote | 2: ={code, message}= and ={error}= | =grep -rn 'http_response::error(' projects/ores.http= | 5b22b5341b |
+| The factory expectations rewritten | 9 | =grep -c '"code"' projects/ores.http/api/tests/http_response_tests.cpp= | the branch head |
+| The HTTP API suite | 245 cases, was 240 | =./compass.sh test run -- -R ores.http.api= | the branch head |
+| The browser's transport tests | 6, was 4 | =npx vitest run src/api/transport.test.ts= | the branch head |
+| Codes the contract states | 22, the browser's own enum | =projects/ores.web/packages/wire-protocol/src/contracts.ts= | the branch head |
 
 * Notes
+
+The five cases the acceptance names are in
+=projects/ores.http/api/tests/http_error_contract_tests.cpp=, each against a
+server on a free port: the 401 of a route that needs a session, the 403 of a
+write made with a cookie and no proof of intent, the 400 of a sink that refuses
+the request, the 404 of a path no route answers, and the 500 of a handler that
+raises. Each asserts the status, the JSON content type, the code, and a message
+with words in it.
+
+"The browser reads the words of each" is proved on the browser's side, in
+=projects/ores.web/packages/web/src/api/transport.test.ts=: a 403 in the contract
+reaches the caller with the server's own sentence, and a 401 coded
+=session-expired= is recognised by =isSessionEnded=. That second case is what
+the old shape broke: the browser saw an unparsable body and treated a dead
+session as a refusal.
+
+The bundle's own 404 is proved where it belongs, in
+=projects/ores.http/core/tests/web_bundle_routes_tests.cpp=, which now asserts
+the code and that the sentence names the path with its leading slash.
 
 * Test Scenarios
 
@@ -84,8 +140,6 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
-
-* Result
 
 * Promoted from capture
 
@@ -137,3 +191,26 @@ the shape the *session* uses for its own refusals, which no route writes.
 - =projects/ores.http/api/src/domain/http_response.cpp=
 - =projects/ores.web/packages/web/src/api/transport.ts= (reads ={code, message}=)
 - =projects/ores.web/packages/bff/src/errors.ts= (the shape the BFF answers)
+
+* Result
+
+The gateway writes one refusal shape. =http_response::error= now writes the code
+and the message the browser parses, the ={"error": ...}= codec is deleted, and
+the session's own refusals — the 401, the CSRF 403, the 400, the 404 and the 500
+— all carry a code from the browser's enum and the sentence that says why.
+
+Three refusals gained a word of their own beyond their status: a credential that
+was presented and refused is =invalid-credentials=, a cookie this server no
+longer holds is =session-expired=, and a missing credential stays
+=not-authenticated=. The bundle's 404 stopped echoing the manifest key and now
+says "No route answers /api/nope", with the slash the caller wrote.
+
+What the browser gains is the point of it: a refused write shows the server's
+words instead of "Request failed with status 403", and a dead session is
+recognised by =isSessionEnded= and turned into a sign-in rather than reported as
+a refusal.
+
+Proved: the five session cases and the bundle's three paths on the gateway side,
+and the two browser cases that read them. Not proved: nothing replayed the smoke
+fleet's own refusals, so the words a real deployment shows are read from these
+tests rather than from a screen.

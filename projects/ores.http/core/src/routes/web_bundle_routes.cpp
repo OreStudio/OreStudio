@@ -73,6 +73,24 @@ bool accepts_brotli(const http::domain::http_request& request) {
     return encoding.find("br") != std::string::npos;
 }
 
+/**
+ * @brief A miss the bundle answers, in the error contract.
+ *
+ * The path travels with the leading slash the caller wrote it with, so the
+ * sentence names what was asked for rather than echoing a lookup key.
+ */
+http::domain::http_response no_route(const std::string& path) {
+    return http::domain::http_response::api_error(
+        http::domain::http_status::not_found, "not-found", "No route answers /" + path);
+}
+
+/// A bundle that holds no application is a broken build, not a missing screen.
+http::domain::http_response no_index() {
+    return http::domain::http_response::api_error(http::domain::http_status::not_found,
+                                                  "not-found",
+                                                  "The bundle holds no " + std::string(index_name));
+}
+
 }
 
 web_bundle_routes::web_bundle_routes(std::filesystem::path root)
@@ -121,14 +139,14 @@ web_bundle_routes::answer(const std::string& path,
     // An API path is never a screen: a misspelled one must not be answered with the
     // application shell, because a caller reading HTML as JSON learns nothing.
     if (path == "api" || path.starts_with("api/"))
-        return http::domain::http_response::not_found(path);
+        return no_route(path);
 
     if (const auto* entry = manifest_.find(path); entry != nullptr)
         return file(*entry, path, request);
 
     // A file the build should have written and did not is a breakage, not a screen.
     if (path.starts_with(assets_prefix))
-        return http::domain::http_response::not_found(path);
+        return no_route(path);
 
     return index(request);
 }
@@ -137,7 +155,7 @@ http::domain::http_response
 web_bundle_routes::index(const http::domain::http_request& request) const {
     const auto* entry = manifest_.find(std::string(index_name));
     if (entry == nullptr)
-        return http::domain::http_response::not_found(std::string(index_name));
+        return no_index();
 
     return file(*entry, std::string(index_name), request);
 }

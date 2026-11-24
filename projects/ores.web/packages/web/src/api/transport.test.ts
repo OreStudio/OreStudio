@@ -20,6 +20,7 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { api } from './client.js';
+import { isSessionEnded } from './errors.js';
 
 afterEach(() => {
     vi.unstubAllGlobals();
@@ -57,5 +58,36 @@ describe('the mark that a request came from this client', () => {
         const headers = sentHeaders();
         await api.withdrawProviderTerms('boc');
         expect(headers().get('x-ores-request')).toBe('1');
+    });
+});
+
+describe('a refusal the server sends', () => {
+    function refuser(status: number, body: unknown): void {
+        vi.stubGlobal(
+            'fetch',
+            async () =>
+                new Response(JSON.stringify(body), {
+                    status,
+                    headers: { 'content-type': 'application/json' },
+                }),
+        );
+    }
+
+    it('reaches the caller with the words the server said', async () => {
+        const words = 'A session request must carry the X-Ores-Request header';
+        refuser(403, { code: 'forbidden', message: words });
+
+        await expect(api.acceptProviderTerms('boc', 3)).rejects.toMatchObject({
+            code: 'forbidden',
+            message: words,
+        });
+    });
+
+    it('says the session ended when the server says its cookie is gone', async () => {
+        refuser(401, { code: 'session-expired', message: 'The session has ended; sign in again.' });
+
+        const error: unknown = await api.acceptProviderTerms('boc', 3).catch((failure) => failure);
+
+        expect(isSessionEnded(error)).toBe(true);
     });
 });

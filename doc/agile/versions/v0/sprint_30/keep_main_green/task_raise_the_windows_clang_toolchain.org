@@ -8,7 +8,7 @@
 #+filetags: :keep_main_green:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/raise-the-windows-clang-toolchain
-#+pr: 5086
+#+pr: 5089
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -74,6 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5089][#5089]] | [ci] Run compass-ng on Windows through a shim |
 | [[https://github.com/OreStudio/OreStudio/pull/5086][#5086]] | [ci] Build Windows and macOS with the toolchains they ship |
 | [[https://github.com/OreStudio/OreStudio/pull/4970][#4970]] | [ci] Install a Clang the runner's STL accepts |
 

@@ -8,7 +8,7 @@
 #+filetags: :ci:branching:sprint_30:v0:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment: festive_dijkstra
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Developers start work from a commit that CI has proven green, and main only move
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
 | Now           | Nothing. |
 | Waiting on    | Nothing.                               |
@@ -55,6 +55,7 @@ carries the remaining work from sprint 30's close. This story ships
 | [[id:ABE30398-FA7A-4721-BA2B-3CD32C15F0D5][Clear what the web server switch left red on main]] | DONE | 2026-11-22 | 2026-11-22 | The merge of the change that served the web app from the C++ server left the Compass check and the TypeScript workflow red: five malformed exception rows, two rows in the wrong table, three wide types over the ceiling and two sign-in tests that read ports the build did not have. |
 | [[id:2B91A1BF-F657-4737-B108-B9ABCF24E9AC][Install the pinned compass in CI so the nightlies build]] | DONE | 2026-11-22 | 2026-11-22 | The nightly and continuous builds stop at Init environment because compass env configure needs compass-ng on PATH, and neither workflow installs the release the pin names. Nothing reaches the build, so nothing submits to CDash. |
 | [[id:70191ADC-EF7D-4E85-8BAF-DA50133B1DAC][Pin compass-ng v0.0.13 and make the name resolve in CI]] | DONE | 2026-11-23 | 2026-11-23 | The install step put the release's bin on PATH, but the binary is named compass and compass env configure looks for compass-ng, so the nightlies still stopped at Init environment. The pin also still named v0.0.12. |
+| [[id:FADB1650-62B7-4795-A8BA-00AEDA1BA389][Bring the export test onto the carried-quotes rule]] | DONE | 2026-11-24 | 2026-11-24 | 8f71717dfa made a run's export carry the interest rate quotes its curves are bootstrapped from, and left the narrowed-export test asserting the rule before it. ores.marketdata.core.tests fails on main on two assertions, and no PR workflow runs ctest, so nothing caught it. |
 
 * Decisions
 

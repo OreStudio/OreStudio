@@ -795,7 +795,7 @@ TEST_CASE("an_export_with_no_party_writes_every_series_of_its_tenant", "[service
     CHECK(chosen_uris(chosen) == std::vector<std::string>{world_sonia, world_estr});
 }
 
-TEST_CASE("a narrowed export writes the series that answer the run's requirements",
+TEST_CASE("a narrowed export writes the requirements and the quotes a curve is built from",
           "[service][ore_export]") {
     auto lg(make_logger(test_suite));
 
@@ -803,7 +803,8 @@ TEST_CASE("a narrowed export writes the series that answer the run's requirement
      * A run gathers the market data its trade set resolves to, so the export is narrowed to
      * the addresses that set named. The selection keeps the party's own series for each of
      * them and, for a fixing, the world's series of an index the party holds none of, which
-     * is the rule an unnarrowed export applies to every series it reads.
+     * is the rule an unnarrowed export applies to every series it reads. The quotes a curve
+     * is bootstrapped from answer a need no trade states, so they travel with every run.
      */
     const auto party = boost::uuids::random_generator{}();
     const auto other = boost::uuids::random_generator{}();
@@ -831,18 +832,20 @@ TEST_CASE("a narrowed export writes the series that answer the run's requirement
         return out;
     };
 
-    // One quote and one fixing: the party's own quote, and the world's fixing it holds none of.
+    // The quote the run names, the quotes a curve is built from, which travel with every
+    // run, and the world's fixing the party holds none of.
     const std::set<std::string> required{gbp_swap, sonia_fixing};
     const auto narrowed = ores::marketdata::service::series_to_export(
         series, ores::utility::uuid::tenant_id::system(), party, required);
-    CHECK(uris(narrowed) == std::vector<std::string>{gbp_swap, sonia_fixing});
+    CHECK(uris(narrowed) == std::vector<std::string>{eur_swap, gbp_swap, sonia_fixing});
 
     // A fixing the party holds its own series of is written from the party, not the world.
     const std::set<std::string> also_libor{libor_fixing};
     const auto libor = ores::marketdata::service::series_to_export(
         series, ores::utility::uuid::tenant_id::system(), party, also_libor);
-    REQUIRE(libor.size() == 1);
-    CHECK(libor.front()->party_id == party);
+    REQUIRE(libor.size() == 3);
+    CHECK(uris(libor) == std::vector<std::string>{eur_swap, gbp_swap, libor_fixing});
+    CHECK(libor.back()->party_id == party);
 
     // No requirement set writes every series the party's export writes, as before: its own
     // quote, its own fixing, and the world's fixing whose index it holds none of.

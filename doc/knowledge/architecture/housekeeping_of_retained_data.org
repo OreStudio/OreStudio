@@ -67,6 +67,9 @@ being useful, not in how a sweep runs. The established example is
 [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]], whose
 sweep a service registers at runtime from a system setting.
 
+Each firing is recorded as a scheduler job instance, and the housekeeping jobs
+appear in the scheduler's screens beside every other job.
+
 ** The fallback path
 
 A time-series engine applies a retention policy as a background job, and the job

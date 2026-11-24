@@ -34,6 +34,7 @@ No store the system keeps grows without bound: each one has a declared policy, h
 - The concepts are named and decided: what a retention policy is, what it attaches to, who runs the sweep, and what happens when the licence forbids the obvious mechanism
 - The configuration is data, modelled and stored like any other entity, not hard-coded per table
 - A person can see and change the policy of a dimension from a screen
+- Every housekeeping run is visible in the system as a scheduled task, with when it last ran, what it freed and whether it is enabled, so a person can tell what housekeeping is running and tune it
 - Each dimension has a mechanism that bounds it, or a recorded decision that it is kept indefinitely and why
 
 * Tasks
@@ -54,6 +55,8 @@ No store the system keeps grows without bound: each one has a declared policy, h
 | [[id:57122E23-9100-4DB1-A5B7-84ED45E14A7F][Build the housekeeping sweep]] | BACKLOG | | | One scheduled executor reads the policies, applies them including where the engine runs no job, and records telemetry per policy. |
 | [[id:59912463-407F-459E-9FC2-1CEE8284C402][Give housekeeping a screen]] | BACKLOG | | | A person sees every policy beside the size it governs and can change one, because a policy nobody can see is a policy nobody checks. |
 | [[id:927730CB-C16E-489C-A62B-9B4F0F792BA1][Break the story into tasks]] | DONE | 2026-11-24 | 2026-11-24 | Task for: Housekeeping: bound every store the system keeps |
+| [[id:8F23F8FE-1951-441C-A866-27EE12733832][Show housekeeping work as scheduled tasks]] | BACKLOG | | | Housekeeping runs appear as scheduler jobs with their own definition, so the existing task screens list them, show their last run and outcome, and let a person enable or disable them. |
+| [[id:856BA64E-96AE-47A7-940F-E8BEEFFAAD31][Record the housekeeping visibility requirement]] | DONE | 2026-11-24 | 2026-11-24 | Task for: Housekeeping: bound every store the system keeps |
 
 * Decisions
 

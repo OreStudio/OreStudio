@@ -290,6 +290,60 @@ struct get_pair_levels_response {
 };
 
 /**
+ * @brief Asks for the coverage of a set of series in one read: the first and the
+ * last date each one holds and how many values it carries.
+ *
+ * The set is the batch. A caller that holds thousands of series sends them in
+ * batches it can afford rather than asking for one series at a time: the
+ * aggregate is the database's, and a set costs one plan whatever its size.
+ */
+struct get_fixing_coverage_request {
+    using response_type = struct get_fixing_coverage_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_fixing_coverage";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The series to read, in one batch.
+     */
+    std::vector<boost::uuids::uuid> series_ids;
+
+    friend bool operator==(const get_fixing_coverage_request&,
+                           const get_fixing_coverage_request&) = default;
+};
+
+struct get_fixing_coverage_response {
+    /**
+     * @brief How the call ended: a batch over the ceiling, or a set the caller may
+     * not see, is refused here.
+     */
+    ores::utility::domain::result result;
+    /**
+     * @brief The series that hold at least one value, ordered by id.
+     */
+    std::vector<boost::uuids::uuid> series_ids;
+    /**
+     * @brief The earliest date each of those series holds, in the same order.
+     */
+    std::vector<std::chrono::year_month_day> first_dates;
+    /**
+     * @brief The latest date each of those series holds, in the same order.
+     */
+    std::vector<std::chrono::year_month_day> last_dates;
+    /**
+     * @brief How many values each of those series holds, in the same order.
+     */
+    std::vector<std::uint32_t> counts;
+
+    friend bool operator==(const get_fixing_coverage_response&,
+                           const get_fixing_coverage_response&) = default;
+};
+
+/**
  * @brief The members of get_fixing_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -407,6 +461,38 @@ struct get_pair_levels_response {
     };
 }
 
+/**
+ * @brief The members of get_fixing_coverage_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fixing_coverage_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"series_ids", &get_fixing_coverage_request::series_ids},
+    };
+}
+
+/**
+ * @brief The members of get_fixing_coverage_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_fixing_coverage_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"result", &get_fixing_coverage_response::result},
+        ::ores::utility::codec::field{"series_ids", &get_fixing_coverage_response::series_ids},
+        ::ores::utility::codec::field{"first_dates", &get_fixing_coverage_response::first_dates},
+        ::ores::utility::codec::field{"last_dates", &get_fixing_coverage_response::last_dates},
+        ::ores::utility::codec::field{"counts", &get_fixing_coverage_response::counts},
+    };
+}
+
 }
 namespace ores::utility::codec {
 
@@ -475,6 +561,34 @@ struct ORES_MARKETDATA_API_EXPORT
     static std::string
     write_msgpack(const ores::marketdata::messaging::get_pair_levels_response& v);
     static ores::marketdata::messaging::get_pair_levels_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_fixing_coverage_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_fixing_coverage_request& v);
+    static ores::marketdata::messaging::get_fixing_coverage_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_fixing_coverage_request& v);
+    static ores::marketdata::messaging::get_fixing_coverage_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_fixing_coverage_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_fixing_coverage_response& v);
+    static ores::marketdata::messaging::get_fixing_coverage_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_fixing_coverage_response& v);
+    static ores::marketdata::messaging::get_fixing_coverage_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

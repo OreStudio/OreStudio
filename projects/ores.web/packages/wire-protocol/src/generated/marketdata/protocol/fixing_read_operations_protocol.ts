@@ -230,10 +230,50 @@ export interface GetPairLevelsResponse {
     levels: number[];
 }
 
+/**
+ * @brief Asks for the coverage of a set of series in one read: the first and the
+ * last date each one holds and how many values it carries.
+ *
+ * The set is the batch. A caller that holds thousands of series sends them in
+ * batches it can afford rather than asking for one series at a time: the
+ * aggregate is the database's, and a set costs one plan whatever its size.
+ */
+export interface GetFixingCoverageRequest {
+    /**
+     * @brief The series to read, in one batch.
+     */
+    series_ids: string[];
+}
+
+export interface GetFixingCoverageResponse {
+    /**
+     * @brief How the call ended: a batch over the ceiling, or a set the caller may
+     * not see, is refused here.
+     */
+    result: Result;
+    /**
+     * @brief The series that hold at least one value, ordered by id.
+     */
+    series_ids: string[];
+    /**
+     * @brief The earliest date each of those series holds, in the same order.
+     */
+    first_dates: string[];
+    /**
+     * @brief The latest date each of those series holds, in the same order.
+     */
+    last_dates: string[];
+    /**
+     * @brief How many values each of those series holds, in the same order.
+     */
+    counts: number[];
+}
+
 export const subjects = {
     get_fixing_request: 'marketdata.v1.ops.get_fixing',
     get_fixing_window_request: 'marketdata.v1.ops.get_fixing_window',
     get_pair_levels_request: 'marketdata.v1.ops.get_pair_levels',
+    get_fixing_coverage_request: 'marketdata.v1.ops.get_fixing_coverage',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -244,4 +284,5 @@ export const requiresSession = {
     get_fixing_request: true,
     get_fixing_window_request: true,
     get_pair_levels_request: true,
+    get_fixing_coverage_request: true,
 } as const;

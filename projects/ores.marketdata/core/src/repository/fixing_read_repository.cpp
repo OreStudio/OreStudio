@@ -159,6 +159,54 @@ std::vector<stored_fixing> fixing_read_repository::between(const context& ctx,
         "reading the fixings of a series in a window"));
 }
 
+std::vector<series_coverage>
+fixing_read_repository::coverage(const context& ctx,
+                                 const std::vector<boost::uuids::uuid>& series_ids) {
+    std::vector<series_coverage> out;
+    if (series_ids.empty())
+        return out;
+
+    std::vector<std::string> ids;
+    ids.reserve(series_ids.size());
+    for (const auto& id : series_ids)
+        ids.push_back(boost::uuids::to_string(id));
+
+    const auto tenant = ctx.tenant_id().to_string();
+    const auto party =
+        ctx.party_id() ? std::optional{boost::uuids::to_string(*ctx.party_id())} : std::nullopt;
+
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx,
+        "SELECT f.series_id::text, min(f.fixing_date)::text, max(f.fixing_date)::text, "
+        "count(*)::text "
+        "FROM ores_marketdata_market_fixings_tbl f "
+        "WHERE f.tenant_id = $1::uuid "
+        "AND ($2::uuid IS NULL OR f.party_id = $2::uuid) "
+        "AND f.series_id = any($3::uuid[]) "
+        "AND f.valid_to = ores_utility_infinity_timestamp_fn() "
+        "GROUP BY f.series_id ORDER BY f.series_id",
+        {tenant, party, pg_array(ids)},
+        lg(),
+        "reading the coverage of a set of series");
+
+    boost::uuids::string_generator gen;
+    out.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() < 4 || !row[0] || !row[1] || !row[2] || !row[3])
+            continue;
+        series_coverage one;
+        one.series_id = gen(*row[0]);
+        one.first = date_of(*row[1]);
+        one.last = date_of(*row[2]);
+        const auto text = *row[3];
+        const auto [end, ec] = std::from_chars(text.data(), text.data() + text.size(), one.count);
+        if (ec != std::errc{} || end != text.data() + text.size())
+            throw std::runtime_error("Not a number in a stored count: " + text);
+        out.push_back(std::move(one));
+    }
+    return out;
+}
+
 std::optional<vendor_key> fixing_read_repository::vendor_of(const context& ctx,
                                                             const std::string& item,
                                                             const std::string& provider_code) {

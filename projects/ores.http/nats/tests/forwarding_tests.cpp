@@ -20,6 +20,7 @@
 #include "ores.http.nats/forwarding.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -104,4 +105,40 @@ TEST_CASE("forwarding_names_the_session_the_callers_token_states", "[forwarding]
     req.authenticated_user = claims;
     CHECK(ores::http::forwarding::caller_session_id(req) ==
           std::optional<std::string>("f07ae806-ca59-4355-8086-121dd7d6ff03"));
+}
+
+/*
+ * A composed view makes several reads, and the time they may take is the
+ * request's, not each read's. The budget is what a view spends, and a view that
+ * has spent it answers instead of sending a read nobody will wait for.
+ */
+TEST_CASE("forwarding_refuses_a_read_once_the_view_has_spent_its_time", "[forwarding]") {
+    const fw::budget spent(std::chrono::milliseconds(0));
+    CHECK_THROWS_AS(spent.next(), fw::budget_spent_error);
+
+    const fw::budget fresh;
+    CHECK(fresh.next() > fw::shortest_read);
+
+    const fw::budget nearly(std::chrono::milliseconds(500));
+    CHECK_THROWS_AS(nearly.next(), fw::budget_spent_error);
+}
+
+TEST_CASE("forwarding_answers_a_timeout_as_the_service_not_answering_in_time", "[forwarding]") {
+    // The route's own guard turns a spent budget into 504 in the contract, and
+    // the code is the one the browser reads as the service being too slow.
+    const auto response = ores::http::domain::http_response::error(
+        http_status::gateway_timeout, "The service did not answer in time.");
+    CHECK(response.status == http_status::gateway_timeout);
+    CHECK(ores::http::domain::http_response::code_for_status(http_status::gateway_timeout) ==
+          "upstream-timeout");
+    CHECK(response.body.find("\"code\":\"upstream-timeout\"") != std::string::npos);
+}
+
+TEST_CASE("forwarding_answers_a_request_that_waited_out_its_time", "[forwarding]") {
+    const ores::nats::service::nats_connect_error timed_out(
+        ores::nats::service::nats_error_kind::request_timeout, "no reply");
+    const auto response = fw::timed_out(timed_out);
+    CHECK(response.status == http_status::gateway_timeout);
+    CHECK(response.body.find("\"code\":\"upstream-timeout\"") != std::string::npos);
+    CHECK(response.body.find("no reply") == std::string::npos);
 }

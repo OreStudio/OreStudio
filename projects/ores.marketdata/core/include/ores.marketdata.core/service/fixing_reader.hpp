@@ -50,6 +50,22 @@ public:
     static ::ores::marketdata::messaging::get_fixing_window_response
     window(const ores::database::context& ctx,
            const ::ores::marketdata::messaging::get_fixing_window_request& request);
+
+    /**
+     * @brief The most series one coverage read takes.
+     *
+     * The set is the batch, and the answer is four columns of one row each: a thousand
+     * series is a few tens of kilobytes, well under the message cap of the broker. A
+     * caller with more sends them in batches of its own.
+     */
+    static constexpr std::size_t max_coverage_batch = 1'000;
+
+    /**
+     * @brief The coverage of each series in the request that holds a value.
+     */
+    static ::ores::marketdata::messaging::get_fixing_coverage_response
+    coverage(const ores::database::context& ctx,
+             const ::ores::marketdata::messaging::get_fixing_coverage_request& request);
 };
 
 }

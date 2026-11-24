@@ -203,6 +203,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             fixing_read_handler h(nats, ctx, verifier);
                                             h.get_fixing_window(std::move(msg));
                                         }));
+    // The coverage of a set of series in one read: first and last date, and count.
+    subs.push_back(nats.queue_subscribe(std::string(get_fixing_coverage_request::nats_subject),
+                                        queue,
+                                        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                            fixing_read_handler h(nats, ctx, verifier);
+                                            h.get_fixing_coverage(std::move(msg));
+                                        }));
+
     // The durable observations of a series over a window of days, every point each day.
     subs.push_back(nats.queue_subscribe(std::string(get_observation_window_request::nats_subject),
                                         queue,

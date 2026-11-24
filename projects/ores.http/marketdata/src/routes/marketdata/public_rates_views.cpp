@@ -26,6 +26,7 @@
 #include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/feed_protocol.hpp"
 #include "ores.marketdata.api/messaging/feed_scope_protocol.hpp"
+#include "ores.marketdata.api/messaging/fixing_read_operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_fixing_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
@@ -408,23 +409,39 @@ void public_rates_views::register_routes(
             .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
                 co_return guarded<marketdata_messaging::list_providers_request>([&] {
                     rr::refuse_unknown_params(req, {});
+                    // The view states the time it may take, once, for every read
+                    // it makes.
+                    const forwarding::budget budget;
                     const auto catalogue = read_public_catalogue(req, session);
 
+                    /*
+                     * One read for the whole set. The aggregate is the service's,
+                     * answered as columns of one row per series rather than a page
+                     * per series, and the gateway joins it to the catalogue here,
+                     * in memory: a screen reads this on every visit, so nothing in
+                     * it may cost a round trip per series.
+                     */
+                    marketdata_messaging::get_fixing_coverage_request wanted;
+                    wanted.series_ids.reserve(catalogue.series.size());
+                    for (const auto& one : catalogue.series)
+                        wanted.series_ids.push_back(one.id);
+                    const auto coverage = forwarding::forward(req, session, wanted, budget.next());
+                    rr::require_ok(coverage.result);
+
                     std::vector<std::string> written;
-                    for (const auto& one : catalogue.series) {
-                        // A series holds thousands of values, so its coverage is
-                        // read from its first and last value and the count the
-                        // service states, never from the values themselves.
-                        const auto first = fixings_of_series(req, session, one.id, false, 0, 1);
-                        if (first.total == 0 || first.rows.empty())
-                            continue;
-                        const auto last = fixings_of_series(req, session, one.id, true, 0, 1);
-                        if (last.rows.empty())
-                            continue;
-                        written.push_back(json::write(boost::uuids::to_string(one.id)) +
-                                          ":{\"first\":" + json::write(first.rows.front().date) +
-                                          ",\"last\":" + json::write(last.rows.front().date) +
-                                          ",\"count\":" + std::to_string(first.total) + "}");
+                    written.reserve(coverage.series_ids.size());
+                    for (std::size_t i = 0; i < coverage.series_ids.size(); ++i) {
+                        written.push_back(
+                            json::write(boost::uuids::to_string(coverage.series_ids[i])) +
+                            ":{\"first\":" +
+                            json::write(
+                                ores::utility::codec::text_form<std::chrono::year_month_day>::
+                                    to_text(coverage.first_dates[i])) +
+                            ",\"last\":" +
+                            json::write(
+                                ores::utility::codec::text_form<
+                                    std::chrono::year_month_day>::to_text(coverage.last_dates[i])) +
+                            ",\"count\":" + std::to_string(coverage.counts[i]) + "}");
                     }
 
                     std::string series("{");

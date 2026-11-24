@@ -28,9 +28,9 @@ GET /api/marketdata/public-rates/coverage on ores.http works for more than 45 se
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] |
-| Now          | Timed and designed: one bulk aggregate read on the service, the gateway joins in memory, and the forwarding step carries the budget. The PostgreSQL-side alternatives are deliberated in the Plan. |
+| Now          | Built: the service answers the coverage of a batch in one statement, the gateway joins it in memory, and the forwarding step carries the budget and answers a timeout as 504. |
 | Waiting on   | Nothing.                               |
-| Next         | Build it: the model and the read, then the service's handler, then the gateway's one call, then the budget with a silent-service test. |
+| Next         | The pull request.                       |
 | Last touched | 2026-11-25                               |
 
 * Acceptance
@@ -83,6 +83,15 @@ interrogate, so the cost is per object rather than per collection.
 The transformation needs one fact per series: =(series_id, first, last, count)=.
 For 142 series that is 142 rows. It does not need the 346,893 fixings, and it
 does not need one series at a time.
+
+*** As built: the columns, not a vector of rows
+
+The message shape was refined while building it. The response is four parallel
+columns — =series_ids=, =first_dates=, =last_dates=, =counts= — rather than a
+vector of one row struct, which is what the model's other bulk reads already do
+(the fixings window answers =dates=, =values=, =sources=, =received_at=). It is
+the columnar form the principle asks for: one contiguous array per field, no
+per-row allocation, and the caller reads them in one pass.
 
 *** One bulk read on the service
 
@@ -179,6 +188,10 @@ task and name that file in the Command column.
 | Planning and executing a one-series count | 26 ms and 3.76 ms | the same command with =count(*)= | the branch-head database |
 | The fixings the table holds | 346,893 over 224 series, 2016-11-22 to 2026-11-24 | =compass sql -- -c "select count(*), count(distinct series_id) ..."= | the branch-head database |
 | The NATS client's default wait per request | 30 s | =ores.nats/service/timeouts.hpp= | the branch head |
+| The one statement on real data | 77.4 ms planning, 236.8 ms executing | =compass sql -- -c "explain (analyze, timing on) select f.series_id, min(...), max(...), count(*) ... group by f.series_id"= | the branch-head database, 224 series |
+| The statement's shape after the change | one plan, one scan, 224 rows out | the same command | the branch-head database |
+| The view's budget, and the shortest read | 10 s, and 1 s | =ores.http.nats/forwarding.hpp= | the branch head |
+| The suites the change touches | =ores.marketdata.api=, =ores.marketdata.core=, =ores.http.nats=, =ores.http.marketdata=, all passing | =./compass.sh test run -- -R "..."= | the branch head |
 
 * Notes
 

@@ -121,6 +121,12 @@ remaining 15 here.
   PostgreSQL-side answer and is *deferred with a trigger*: add it if the read is
   measured above 200 ms at p95 or a second reader needs the triples, with a
   refresh on both write paths and a drift gate. The reasoning is on the task.
+- *A composed view states the time it may take* (2026-11-25, task 16F7691D). The
+  NATS client waits thirty seconds per request, longer than the HTTP server's
+  idle timeout, so one silent service took a socket down instead of answering.
+  A view now opens a budget at its first read and passes what is left to each
+  forward; a read past the time, or a reply that never came, answers =504=
+  =upstream-timeout= in the error contract.
 - *The bundle is served from the directory it lives in* (2026-11-25, task
   3F1B0A52). The manifest is a snapshot taken at startup and the files are read
   from disk, so a publish under a running gateway is reconciled on the read

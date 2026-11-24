@@ -74,6 +74,13 @@ public:
             });
     }
 
+    void get_fixing_coverage(ores::nats::message msg) {
+        handle<get_fixing_coverage_request, get_fixing_coverage_response>(
+            std::move(msg), fixings_read, [](const auto& ctx, const auto& req) {
+                return service::fixing_reader::coverage(ctx, req);
+            });
+    }
+
     void get_observation_window(ores::nats::message msg) {
         handle<get_observation_window_request, get_observation_window_response>(
             std::move(msg), observations_read, [](const auto& ctx, const auto& req) {

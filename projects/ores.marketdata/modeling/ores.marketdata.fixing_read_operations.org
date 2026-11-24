@@ -522,6 +522,94 @@ two items. The values stay decimal text, as they are stored.
  */
 #+end_src
 
+** get_fixing_coverage_request
+:PROPERTIES:
+:subject:  marketdata.v1.ops.get_fixing_coverage
+:response: get_fixing_coverage_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the coverage of a set of series in one read: the first and the
+ * last date each one holds and how many values it carries.
+ *
+ * The set is the batch. A caller that holds thousands of series sends them in
+ * batches it can afford rather than asking for one series at a time: the
+ * aggregate is the database's, and a set costs one plan whatever its size.
+ */
+#+end_src
+
+*** series_ids
+:PROPERTIES:
+:cpp_type: std::vector<boost::uuids::uuid>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The series to read, in one batch.
+ */
+#+end_src
+
+** get_fixing_coverage_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How the call ended: a batch over the ceiling, or a set the caller may
+ * not see, is refused here.
+ */
+#+end_src
+
+*** series_ids
+:PROPERTIES:
+:cpp_type: std::vector<boost::uuids::uuid>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The series that hold at least one value, ordered by id.
+ */
+#+end_src
+
+*** first_dates
+:PROPERTIES:
+:cpp_type: std::vector<std::chrono::year_month_day>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The earliest date each of those series holds, in the same order.
+ */
+#+end_src
+
+*** last_dates
+:PROPERTIES:
+:cpp_type: std::vector<std::chrono::year_month_day>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The latest date each of those series holds, in the same order.
+ */
+#+end_src
+
+*** counts
+:PROPERTIES:
+:cpp_type: std::vector<std::uint32_t>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many values each of those series holds, in the same order.
+ */
+#+end_src
+
 * See also
 
 - [[id:F2FA516C-1F86-43EF-80D4-E92F640B6CFD][ores.marketdata]] — component group overview.

@@ -8,7 +8,7 @@
 #+filetags: :derive_term_indices_from_their_overnight_curves:ir:curves:sprint_31:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 5109
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5109][#5109]] | [agile] Carry the IBOR leftovers into sprint 31 |
 
 * Review
 

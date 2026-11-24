@@ -47,6 +47,11 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:58E7AD14-ED53-478B-AA37-34FE6607E794][Read a party's published surfaces]] | BACKLOG | | | A party's surfaces get the published-curve pattern: a list, a record page with its grid and smiles, a comparison as of and its history. |
 | [[id:305E3F4D-6A79-40F3-9F57-5D149A142B73][Drive a party's crosses from its driver pairs]] | BACKLOG | | | A cross is driven: its surface implied from driver pairs by correlation, or by a basis spread over one driver, configured per party. |
 | [[id:91E40364-DB1A-4EA4-AE99-4904849AED22][Give each party its correlation market data, end to end]] | BACKLOG | | | Correlations reach a party: the simulator's quotes, the party's own correlation tables, the screens that maintain them, and their use in driven surfaces and ORE. |
+| [[id:9C8F48B9-9B03-4C0A-8D57-12E8481272C8][Story: Bring the market data journeys up to the delivered state]] | BACKLOG | | | The four stale journeys and the two stale seed comments state the calibration, publish, manual mark and withdrawal work the tree already holds. |
+| [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Story: Publish every kind of derived market object through one lifecycle]] | BACKLOG | | | One raise, decide, apply and notice, parameterised by a kind declaration, with the three kinds as declarations beside it. |
+| [[id:CBA99FC1-9BEA-49A9-AF58-575ECBFE30A2][Story: Hold one publish record with a subject part per kind]] | BACKLOG | | | The three publish tables become one record plus one subject part per kind, with the checks moved onto the candidate. |
+| [[id:A3C64267-3320-4CD1-944E-EB2CB79E43A1][Story: Withdraw a published set of any kind]] | BACKLOG | | | Every kind supplies its withdrawal kind, its record columns, the operation and the notice, so a wrong set can leave use. |
+| [[id:D13B9134-652D-4CE5-A39C-EA0ACE8E90C7][Story: Adjust a published set by a spread overlay]] | BACKLOG | | | A parallel shift or a twist over a node or a segment, with a reason, applied as one act and preferred at read time. |
 
 ** Hotfixes
 

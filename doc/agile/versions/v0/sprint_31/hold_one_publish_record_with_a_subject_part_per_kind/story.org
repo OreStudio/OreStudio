@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: CBA99FC1-9BEA-49A9-AF58-575ECBFE30A2
+:END:
+#+title: Story: Hold one publish record with a subject part per kind
+#+description: The three publish tables become one record of the columns every kind shares and one subject part per kind, with the checks moved onto the candidate.
+#+type: story
+#+level: s2
+#+filetags: :sprint_31:v0:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The tree holds one publish record whose columns every kind shares, and one subject part per kind that says what the set is of. A reader of any kind reads one shape, and a withdrawal writes one set of columns instead of a set per kind.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-24                               |
+
+* Acceptance
+
+- One table holds the columns every kind shares, and a subject part table per kind holds what that kind's set is of, keyed by the publish.
+- The calibration's verdict moves off the publish record and onto the candidate version the decision covered.
+- Every read and every repository returns the same facts for each kind as before, and a party's published sets survive the migration.
+- The schema, the migrations, the ER diagram and the seeds are regenerated, and the database rebuilds from empty with the new shape.
+- The notification triggers exist on the new tables and fire for the same acts as before.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5DC1D494-FA15-44CB-96B3-33DD64380D0F][Create the shared record and the three subject parts]] | BACKLOG | | | One table of the columns every kind shares, and one subject part per kind keyed by the publish. |
+| [[id:9B1FBD3D-A445-4BE3-A800-B68540F8C17E][Move the calibration's verdict onto the candidate]] | BACKLOG | | | The calibration's checks belong to the candidate version and not to the publish record. |
+| [[id:2DAA95EE-E0FF-433B-AA1C-03ED0ADE7CD4][Re-point the repositories, the reads and the notification triggers]] | BACKLOG | | | Every reader and repository keeps returning the same facts for its kind, over the one record. |
+| [[id:C797C9C3-A594-4E3F-85DC-00B795E4FF1D][Regenerate the schema, the diagram and the seeds]] | BACKLOG | | | The generated artefacts follow the new record, and the database rebuilds from empty. |
+
+* Decisions
+
+* Out of scope
+
+-

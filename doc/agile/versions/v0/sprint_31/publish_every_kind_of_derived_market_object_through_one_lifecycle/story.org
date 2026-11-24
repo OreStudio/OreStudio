@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: E130B7A6-A7D1-444C-A25D-6117A009CF7C
+:END:
+#+title: Story: Publish every kind of derived market object through one lifecycle
+#+description: One implementation of raise, decide, apply and notice, parameterised by a kind declaration, with the curve, the forward set and the surface as declarations beside it.
+#+type: story
+#+level: s2
+#+filetags: :sprint_31:v0:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+ores.marketdata holds one implementation of the raise, the decide, the apply and the notice, parameterised by a kind declaration. The IR curve, the FX forward set and the FX volatility surface are declarations beside it and not copies of it, so a fourth kind is a declaration and the three copies are gone.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-24                               |
+
+* Acceptance
+
+- A kind declares its subject, its compute, its checks and its approval kinds in one place, and no step of the raise, the decide, the apply, the supersession or the notice branches on the kind.
+- All three kinds publish through the one path, and the curve's published behaviour is unchanged, proved by a test against the behaviour the delivered tree has.
+- An FX forward publish supersedes the set it replaces and writes its notice, as every kind does.
+- The three publish implementations are deleted and the lifecycle exists once.
+- The get_series_slice subject is either served or deleted, and no declared subject is left unreachable.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E11F9816-9A61-44B2-852C-EE2F282CFD0B][Declare the three kinds and the interface they share]] | BACKLOG | | | State the four things a kind supplies, and the interface the one lifecycle calls through. |
+| [[id:B153E922-AE1D-48FB-9998-5AD72DF9113A][Serve the raise, the decide and the apply once]] | BACKLOG | | | One raise, one apply and one supersession, called for every kind through the declaration. |
+| [[id:AFAA7027-4896-4E22-B76F-A743DABF0CDC][Carry the forward set's supersession and notice]] | BACKLOG | | | Give the FX forward set the supersession columns and the publish notice every other kind has. |
+| [[id:88CDEB14-2F43-407C-847F-0D85C96C74C4][Delete the three publish implementations]] | BACKLOG | | | Remove the three copies of the lifecycle and the subject no caller serves. |
+
+* Decisions
+
+* Out of scope
+
+-

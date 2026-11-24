@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 73EE02E5-22D3-4AF0-88BA-20A865FA669A
+:END:
+#+title: Task: Seed the withdrawal kinds and the withdrawal notices
+#+description: A withdrawal approval kind and a withdrawal notice kind for the forward set and for the surface.
+#+type: task
+#+level: s1
+#+filetags: :withdraw_a_published_set_of_any_kind:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A3C64267-3320-4CD1-944E-EB2CB79E43A1][Withdraw a published set of any kind]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The forward set and the surface name a withdrawal kind, with the permission that raises it, the permission that decides it, the count and the auto-approval code, and a notice kind their readers are told with.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A3C64267-3320-4CD1-944E-EB2CB79E43A1][Withdraw a published set of any kind]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+- The approval kinds seed holds a withdrawal kind for the forward set and for the surface, each naming its raise permission, its decide permission, its count and its auto-approval code.
+- The market data notification kinds seed holds a withdrawal notice for each, under its own code.
+- A test proves the kind is read at the raise, and that a tenant's count of zero closes the withdrawal without a person.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

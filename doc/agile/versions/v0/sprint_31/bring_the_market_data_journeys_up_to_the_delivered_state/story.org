@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 9C8F48B9-9B03-4C0A-8D57-12E8481272C8
+:END:
+#+title: Story: Bring the market data journeys up to the delivered state
+#+description: The market data journeys state the tree as it is, so a reader can tell a gap from a closed gap.
+#+type: story
+#+level: s2
+#+filetags: :sprint_31:v0:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The four stale journey pages and the two stale seed comments state the calibration, publish, manual mark and withdrawal work that the tree already holds. Every what-is-missing list holds only what is still missing, so a gap read from a journey is a gap in the code and not a gap in the page.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-24                               |
+
+* Acceptance
+
+- The published-surface journey states that the read returns the model, the strike convention, the delta type, the publish instant and the staleness verdict, and lists as missing only the axes, the conventions, the instrument identity and the history.
+- The calibration journey and the slices journey no longer claim that no surface model, no calibration engine, no as-of and no typed identity exist.
+- The manual adjustment journey lists only the spread overlay as missing, and states the precedence rule the code enforces.
+- The withdrawal journey describes the withdrawal as delivered for curves, and names the kinds that still lack it.
+- The market data notification seed and the approval kind seed each describe the rows they seed, including the third notification kind and the third publish kind.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:92FD6C20-5EB8-4648-AEC1-A6578076A6F3][Correct the three surface and curve journeys]] | BACKLOG | | | Bring the published-surface, calibration and slices journeys up to the tree the surface work delivered. |
+| [[id:87BE3020-A43C-42EE-BABE-979791B93E16][Correct the withdrawal journey and the two seed comments]] | BACKLOG | | | Bring the withdrawal journey and the two population script headers up to the rows they seed. |
+
+* Decisions
+
+* Out of scope
+
+-

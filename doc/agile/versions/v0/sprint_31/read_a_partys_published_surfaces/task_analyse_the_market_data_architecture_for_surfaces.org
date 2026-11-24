@@ -26,11 +26,11 @@ A written target picture, agreed with the reader, that defines how a party's vol
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:58E7AD14-ED53-478B-AA37-34FE6607E794][Read a party's published surfaces]] |
-| Now          | Analysis and the lifecycle documentation are written. |
+| Now          | Nothing. |
 | Waiting on   | Agreement on the story outline in =* Notes=. |
-| Next         | Create the six stories, four of them new. |
+| Next         | Nothing. |
 | Last touched | 2026-11-24                               |
 
 * Acceptance
@@ -337,9 +337,9 @@ every kind, with the kind-specific parts stated once each.
 | [[id:B3F03DBB-EBD1-4649-94E5-6C5C1B67A084][Notification of a change to a published market data set]] | The two channels, what a notice may carry, the recipients and the per-kind seed |
 | [[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Reading a published market data set]] | The list, the record, the comparison and the values, and the per-kind state of each |
 
-Five diagrams were added: the states of a set, the states of a request, the
-record and its subject parts, the manual precedence at the write and at the read,
-the withdrawal sequence, and the four reads. The withdrawal page and the publish
+Five diagrams were added: the states of a request, the record and its subject
+parts, the manual precedence at the write and at the read, the withdrawal
+sequence, and the four reads. The states of a set already had one. The withdrawal page and the publish
 structure note were brought into the same reading order.
 
 Gap 10 of the list is closed by this work, because the manual point rule now has
@@ -394,3 +394,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The target picture is in the knowledge base and the gaps are in the backlog.
+
+Five pages now state the lifecycle once for every kind: the lifecycle itself, its
+record, the manual marks, the notifications and the read. Five diagrams were
+added: the states of a request, the record and its subject parts, the manual
+precedence at the write and at the read, the withdrawal sequence, and the four
+reads. The states of a set already had one. The withdrawal page and the publish
+structure note were brought into the same reading order.
+
+The twelve gaps became five stories and one existing one. That departs from the
+third acceptance criterion, which asked for one task per gap, and the departure
+is the finding: four of the twelve share one cause, so a task per gap would have
+built one cause four times.
+
+| Story | Closes |
+|-------+--------|
+| [[id:9C8F48B9-9B03-4C0A-8D57-12E8481272C8][Bring the market data journeys up to the delivered state]] | the documentation defects |
+| [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] | the three copies, the forward's supersession and notice, the dead subject |
+| [[id:CBA99FC1-9BEA-49A9-AF58-575ECBFE30A2][Hold one publish record with a subject part per kind]] | the three records |
+| [[id:A3C64267-3320-4CD1-944E-EB2CB79E43A1][Withdraw a published set of any kind]] | the withdrawal the surface and the forward set lack |
+| [[id:58E7AD14-ED53-478B-AA37-34FE6607E794][Read a party's published surfaces]] | the list, the verdict, the axes, the history and the web |
+| [[id:D13B9134-652D-4CE5-A39C-EA0ACE8E90C7][Adjust a published set by a spread overlay]] | the overlay, and the guard's window |
+
+The manual point rule was the one gap with no page at all; it now has one, and
+that is the only gap this task closed in the tree. The checks are green: five of
+five on the docs class.

@@ -83,6 +83,8 @@ domain::trade_product trade_product_booked(ores::testing::scoped_database_helper
     return row;
 }
 
+}
+
 TEST_CASE("a trade's product and form are written with it and read back by the trade",
           "[trade_product][database]") {
     ores::testing::scoped_database_helper h;

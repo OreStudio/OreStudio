@@ -207,10 +207,12 @@ on as a story in the product backlog whose title states it.
 
 * 📸 Screenshots
 
-The screens this release changed are captured by
-[[id:AD1C422D-0CFC-494F-88CD-AF6FFE22240A][Capture the sprint 30 release screenshots]].
-Each step of that scenario names the file it saves under =assets/images/=, and
-the captures are added to this page as they are taken.
+The screens this release changed are captured by two scenarios:
+[[id:AD1C422D-0CFC-494F-88CD-AF6FFE22240A][Capture the sprint 30 release screenshots]]
+for the market data screens and the roles, and
+[[id:FC6494C7-B467-4A4B-B593-600865858D0E][Capture the ladder, the fixings and the setup report]]
+for the three the first run could not take. Each step names the file it saves
+under =assets/images/=.
 
 * 📊 Time Summary
 

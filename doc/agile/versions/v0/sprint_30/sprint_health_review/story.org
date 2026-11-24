@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: BB602F81-7F6F-4ABC-81A3-4D2CD3782E55
+:END:
+#+title: Story: Sprint health review — System 2 analysis
+#+description: Recurring System 2 health reviews of sprint 30: goal alignment, load, PR velocity, balance and focus.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A System 2 review of sprint 30. Each review measures the dimensions the
+skill names, challenges its own readings, and writes one verdict with the
+evidence behind it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Complete. Review 1 closed the story with a RED verdict. |
+| Waiting on    | Nothing.                               |
+| Next          | Run review 2 if the sprint is reopened. |
+| Last touched  | 2026-11-24                               |
+
+* Acceptance
+
+- The review measures goal alignment, sprint load, PR velocity, story and task
+  balance, focus signal, velocity and the overall verdict.
+- Every number in the review is a measurement with the command that produced
+  it and the commit it was taken at, or is marked as an estimate with its basis.
+- The sprint's Health Review table carries the review's summary row.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7C3D0695-6821-409B-9285-BB0760F653F1][Health review 1 — sprint 30 close analysis]] | DONE | 2026-11-24 | 2026-11-24 | System 2 health review 1 of sprint 30, taken at close. |
+
+* Decisions
+
+* Out of scope
+
+-

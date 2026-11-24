@@ -38,9 +38,19 @@ Sprint 30 was named for finishing the move off sqlgen and reflect-cpp, and that 
 ## Financial Features
 
 -   **Design and seed the reports, configurations and portfolio trees each ACME party runs**: Each ACME party gets the reports it would really run, with the configuration those reports need and a realistic portfolio tree, root portfolio and currencies.
+
+![ore_studio-v0.0.30-report-results-book.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.30-report-results-book.png)
+
+*The same run rolled up to its book: the trades, their NPV and notional, and the tree the book sits in.*
+
 -   **Every index a generated trade floats on has a curve and fixings**: A report over the generated trades finds the fixings and the curve of every index a trade floats on.
 -   **Eight columns in the trading models hold JSON blobs where th…**: Eight columns in the trading models hold JSON blobs where the domain should hold rows, and each is a place where the store cannot answer a question about the trade without parsing text.
 -   **Make the generated trades value correctly in ORE**: Every trade the generator books is correct according to ORE: ORE builds it, and a report values it to the NPV ORE itself gives for the same trade.
+
+![ore_studio-v0.0.30-report-results.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.30-report-results.png)
+
+*A report run's Results tab: one row per trade the engine priced, with its NPV, its notional and the counterparty it faces, and the total at the head.*
+
 -   **Build the calendars without a read per day**: Provisioning a tenant builds its holiday calendars well inside the `build_calendars` step's 600 s, so a new tenant is ready without a manual rebuild.
 -   **Data model clean up**: One data-oriented, consistent model of the system's persisted data.
 -   **Publish one curated convention set and provision to completion**: A fresh environment provisions the system and Acme to completion, every step of it, and each party holds every convention its trades and curves name.
@@ -49,14 +59,6 @@ Sprint 30 was named for finishing the move off sqlgen and reflect-cpp, and that 
 -   **Design the scripted trade subsystem**: One scripted trade subsystem serves every way a scripted trade enters ORE Studio: a product-specific booking form that books a product natively or as scripted, a free-form scripted trade editor validated on the server, import, and the generator that proves every product books and values.
 
 -   **Run a report on the generated trades with the market data they need**: A report over the trades the generator books runs to completion, and ORE values every generated trade type from market data the system holds.
-
-![ore_studio-v0.0.30-report-results.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.30-report-results.png)
-
-*A report run's Results tab: one row per trade the engine priced, with its NPV, its notional and the book it belongs to, and the total at the head.*
-
-![ore_studio-v0.0.30-report-results-book.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.30-report-results-book.png)
-
-*The same run rolled up to its book: the trades, their NPV and notional, and the tree the book sits in.*
 
 ![ore_studio-v0.0.30-report-results-counterparty.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.30-report-results-counterparty.png)
 

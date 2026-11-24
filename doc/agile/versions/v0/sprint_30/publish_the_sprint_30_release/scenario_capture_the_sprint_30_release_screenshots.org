@@ -48,7 +48,7 @@ Rules for every capture:
 | Parent story  | [[id:728FB790-CE79-4833-856C-5075BCED287C][Publish the sprint 30 release]] |
 | Target screen | The market data and operations screens named in each step |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | FAILED |
 
 * Steps
 
@@ -64,7 +64,7 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Capture the release hero
 
@@ -79,7 +79,8 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | A request did not finish; ; No provider quotes a USD discount ladder starting 0D at this as-of. (POST /api/market/rate-ladder, request e229296e) |
 
 ** Search the instrument catalogue
 
@@ -94,7 +95,8 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_30_release_screenshots_step3_20261124_091454.png]] |
 
 ** Read an FX spot montage
 
@@ -110,7 +112,8 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_30_release_screenshots_step4_20261124_091534.png]] |
 
 ** Watch the vendors' quotes
 
@@ -126,7 +129,8 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_30_release_screenshots_step5_20261124_091620.png]]; ; [[file:scenario_capture_the_sprint_30_release_screenshots_step5_20261124_091952.png]]; ; ; [[file:scenario_capture_the_sprint_30_release_screenshots_step5_20261124_092017.png]] |
 
 ** Inspect a published curve
 
@@ -141,8 +145,9 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 *** Result
 
 | Field  | Value |
---------+-------|
-| Status | PENDING |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_30_release_screenshots_step6_20261124_092101.png]]; ; ; [[file:scenario_capture_the_sprint_30_release_screenshots_step6_20261124_092120.png]] |
 
 ** Compare curves across currencies
 
@@ -158,8 +163,9 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 *** Result
 
 | Field  | Value |
---------+-------|
-| Status | PENDING |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_30_release_screenshots_step7_20261124_092307.png]]; [[file:scenario_capture_the_sprint_30_release_screenshots_step7_20261124_092335.png]] |
 
 ** Read the IR calibration coverage
 
@@ -174,14 +180,20 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 *** Result
 
 | Field  | Value |
---------+-------|
-| Status | PENDING |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_30_release_screenshots_step8_20261124_092512.png]]; ; [[file:scenario_capture_the_sprint_30_release_screenshots_step8_20261124_092532.png]]; ; |
 
 ** Read the fixings of both kinds
 
-- Open =http://localhost:21801/market-data/fixings=.
-- Find an FX series and an interest rate series.
-- Confirm each shows its recent fixings and the provider it came from.
+- Open =http://localhost:21801/market-data/calibration= and pick the feed
+  whose start item is a fixing series.
+- Follow the series link on the feed to the fixings page.
+- Confirm the page states the series, its recent fixings and the provider they
+  came from.
+- There is no fixings card in Market data and the page refuses a direct visit:
+  a fixing is not in the instrument catalogue yet, so nothing lists one. That
+  gap is its own capture; this step reaches the page the way a person can.
 - Save the screenshot as =assets/images/ore_studio-v0.0.30-fixings.png=.
 - Caption: /FX and interest rate fixings side by side, each with its
   provider./
@@ -189,8 +201,9 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 *** Result
 
 | Field  | Value |
---------+-------|
-| Status | PENDING |
+|--------+-------|
+| Status | FAIL |
+| Notes  | - No fixings card in market data; - via direct URL gives error: "Open this page from an oresmd link, so it knows which item to show." |
 
 ** Browse identity shapes as records
 
@@ -205,8 +218,9 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 *** Result
 
 | Field  | Value |
---------+-------|
-| Status | PENDING |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_30_release_screenshots_step10_20261124_092949.png]]; ; [[file:scenario_capture_the_sprint_30_release_screenshots_step10_20261124_093009.png]] |
 
 ** Follow the synthetic feed graph
 
@@ -221,8 +235,9 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 *** Result
 
 | Field  | Value |
---------+-------|
-| Status | PENDING |
+|--------+-------|
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_30_release_screenshots_step11_20261124_093219.png]] |
 
 ** Check the role screens
 
@@ -237,17 +252,18 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_sprint_30_release_screenshots_step12_20261124_093255.png]] |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-11-24T09:32:57Z |
+| Branch        | doc/sprint-30-health-review |
+| Commit        | d66d21c385 |
+| Worktree      | festive_dijkstra |
 
 * Notes
 
@@ -261,3 +277,41 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
   screens carry into the product backlog as their own stories.
 - The release notes' images resolve from =main= only after the notes and these
   files are merged, and the notes name each file the steps save.
+
+* Review of the run
+
+Ten of the twelve steps passed and produced fifteen captures. Two failed, and
+both failures are the product's, not the scenario's.
+
+** The rate ladder cannot build a USD ladder
+
+=POST /api/market/rate-ladder= answers "A request did not finish; No provider
+quotes a USD discount ladder starting 0D at this as-of." (request =e229296e=).
+The screen therefore has no hero shot, and the failure names the reason
+precisely: something must quote the 0D pillar of a USD discount ladder. Either
+the provisioning should publish that quote, or the ladder should build from the
+pillars a provider does quote. Worth chasing: the same ladder is the release's
+front page.
+
+** The fixings screen cannot be reached or addressed
+
+There is no fixings card anywhere in Market data, and the page refuses a direct
+visit: "Open this page from an oresmd link, so it knows which item to show."
+The screen exists but has no front door and no way to state its own subject, so
+a person cannot get to it and a bookmark cannot either.
+
+** What the captures themselves show
+
+- The ten passing steps captured the screens the sprint changed: instruments,
+  the FX spot montage, the vendor quotes boards, a published curve, the
+  cross-currency comparison, IR calibration coverage, identity shapes, the
+  synthetic feed graph and the roles screen.
+- The captures were taken in the dark theme at 1919 pixels wide, against the
+  scenario's rule of the light theme at 1600 pixels. They are legible, and they
+  match each other, so the set is usable as it stands; the rule exists so a
+  release reads the same from one sprint to the next.
+- The runner wrote one malformed table per step: the separator landed after the
+  rows and a second, empty =Status= row followed. Repaired by hand; the harness
+  should write one table per result.
+- The captures were saved beside this scenario, not in =assets/images/=. They
+  were copied there under the names the release notes use.

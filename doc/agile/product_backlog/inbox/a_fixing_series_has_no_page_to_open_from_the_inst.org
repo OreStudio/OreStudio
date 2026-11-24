@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D8898283-95D2-43A5-938D-34AB1232E2DB
+:END:
+#+title: A fixing series has no page to open from: the instrument cat…
+#+description: A fixing series has no page to open from: the instrument catalogue deliberately omits fixing instruments because a fixing is read from the fixings table rather than from observations, so nothing in Market data links to /market-data/fixings and a direct visit is refused for want of an oresmd uri. Catalogue its fixing-bearing series, on the instruments list or a fixings card, so a person can reach the page and a bookmark can address it.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

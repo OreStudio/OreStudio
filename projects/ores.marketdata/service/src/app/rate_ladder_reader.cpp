@@ -164,9 +164,17 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
         if (std::string(dt::oresmd_uri_codec::instrument_spelling(parsed->type())) !=
             request.instrument_type)
             continue;
-        if (!request.forward_start.empty() &&
-            field_text(*parsed, dt::field::fwd_start) != request.forward_start)
-            continue;
+        // A ladder starting 0D is the spot ladder, and a spot series states no
+        // forward start at all: the URI of an overnight curve carries no
+        // fwd_start field. Comparing the two as text refused every spot series
+        // and left the ladder with no quotes.
+        if (!request.forward_start.empty()) {
+            const auto series_start = field_text(*parsed, dt::field::fwd_start);
+            const auto spot_starting = request.forward_start == "0D";
+            if (series_start != request.forward_start &&
+                !(spot_starting && series_start.empty()))
+                continue;
+        }
         if (!request.providers.empty() &&
             std::find(request.providers.begin(), request.providers.end(), series.provider_code) ==
                 request.providers.end())

@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 927730CB-C16E-489C-A62B-9B4F0F792BA1
+:END:
+#+title: Task: Break the story into tasks
+#+description: Task for: Housekeeping: bound every store the system keeps
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: feature/break-the-story-into-tasks
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story carries one task for each store that must be bounded, in the order that the investigation ranks them, so the work can be taken one task at a time to a merged pull request.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+- Every store the investigation names has a task, or a recorded decision that it is out of scope
+- The tasks are ordered by what bounding each would save
+- Each task states a goal and checkable acceptance, so it can be worked without re-reading the investigation
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story carries eight tasks, in the order the investigation ranks them by what
+bounding each would save. Each states a goal and checkable acceptance, and none
+carries a branch: the branch is created when the task is started, so one branch
+is in flight at a time.
+
+| Task | What it removes | Order |
+|------+-----------------+-------|
+| Carry the delivery counts forward | 1270 MB of versioned rows behind 23 counters | 1 |
+| Bound the report run outputs by age | 1777 MB, growing about 7 MB a run | 2 |
+| Share one package cache across a host's nodes | 266 MB per node per engine version | 3 |
+| Give object storage a lifecycle | every key family, none of which expires | 4 |
+| Decide whether calendar dates are stored or computed | 612 MB, copied per tenant | 5 |
+| Model the retention policy | the mechanism the rest depend on | 6 |
+| Build the housekeeping sweep | applies the policy, with the licence fallback | 7 |
+| Give housekeeping a screen | makes a policy visible and changeable | 8 |
+
+The first two are transforms and retention on the stores that hold the most. The
+third and fourth bound artefacts rather than rows. The last three build the
+mechanism that keeps the others from returning.
+
+Two tasks already existed and are not repeated: releasing a job's folder once its
+output is uploaded, which sits on its own branch, and the umbrella implement
+task, which these displace once the mechanism is picked up.
+
+The measurement table is not repeated here; every figure in the order column is
+stated with its command in
+[[id:FEAF481D-C631-4452-9896-22E5486CF2F1][the investigation]].

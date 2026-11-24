@@ -347,6 +347,10 @@ knobs are compile-time model text that need a schema rebuild to change.
       name proves what it holds.
    c. Prune cache directories by age, through the same policy as everything
       else, once that policy exists.
+   d. Release a job's folder once its output has been uploaded. By then the
+      output is in =compute/output= and the log in =compute/logs=, so the copy
+      buys nothing. A job that fails before its upload keeps its folder, which
+      is then the only evidence of what went wrong.
 
    Both halves are cheaper than a policy engine and should come first.
 

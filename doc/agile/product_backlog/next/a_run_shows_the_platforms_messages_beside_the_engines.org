@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 6224A53C-C034-4BB9-92E4-E3967A5C0529
+:END:
+#+title: A run shows the platform's messages beside the engine's
+#+description: A run's Log tab holds the engine's lines and one reason the run failed. A step that carries on past a gap it could not fill, such as the market addresses no series answers or the datums too stale to use, states nothing on the run: the gap reaches the caller folded into a sentence, or not at all. A step should state its own messages, each with a severity and the step it came from, and the run should show them beside the engine's.
+#+type: capture
+#+level: cross
+#+filetags: :reporting:workflow:errors:diagnostics:ux:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A step states the messages it wants the reader to see, and the run's Log tab shows
+them beside the engine's lines. Each message carries a severity, the step that
+spoke, and the words.
+
+The store already takes such a row: the errors table admits =error=, =warning= and
+=info=, the scope =Report= is the one that names no subject, and the Log tab draws
+all three with a tag and filters the list by scope and by log. What is missing is a
+writer. The recorder writes the engine's log rows and one row that says the run
+failed, and a step has no entry point to state a message of its own, so the only way
+it can speak today is to fail.
+
+* Why
+
+A run that carries on past a gap tells nobody about the gap.
+
+The market data step is the example that raised this. The export names the oresmd
+addresses no series answers, and the step treats that answer as fatal, so the run
+stops with the addresses in its failure message. The datums that carry a value from
+an earlier day, and those too stale to use at the valuation date, are folded into
+one sentence in the step's result. That sentence is the run's own account of what
+the market did not hold, and a reader cannot filter it, count it, or follow it to
+the curve or the trade it costs. The engine then fails later, on a curve it could
+not build, and the reason the platform already knew is on no row of the run.
+
+Three things have to hold for the message to be worth reading.
+
+- A step states a message without failing. The severity says how bad it is, and a
+  warning leaves the run completed. The health word counts errors alone, so a
+  warning must not turn a clean run red.
+- The row says which step spoke. The =filename= column names one of the engine's
+  artefacts, such as =log.txt= or =engine.log=, and a row that names none is drawn
+  under a chip meaning no log. A platform message needs a source of its own, so that
+  the reader tells "the market held no curve for this trade" from "the platform
+  withheld this datum".
+- The message names what it is about, where it can. The addresses no series
+  answered are a list, and each one is a fact about a currency or a curve. A row per
+  address is filterable; a sentence with the list inside it is not.
+
+The design has one question open: whether the platform's messages ride the existing
+errors table under a source of their own, or whether a run gets a message log beside
+it. The [[id:B5A7DE1E-CD0F-4676-A23B-9E9F38BFFA6C][step journal]] is the other candidate
+home, and it was written for narration rather than for the facts a reader diagnoses
+a run by.
+
+* References
+
+- =projects/ores.reporting/core/src/service/report_error_recorder.cpp= — the two
+  writers a run has today.
+- =projects/ores.sql/create/reporting/reporting_report_error_events_create.sql= — the
+  table, its severity check and its scope vocabulary.
+- =projects/ores.web/packages/web/src/reporting/RunErrorsTable.tsx= — the Log tab:
+  overview by scope, list by log, severity tags.
+- =projects/ores.reporting/core/src/messaging/report_execution_handler.cpp= — the
+  market data step whose gaps reach the run as one sentence.
+
+* See also
+
+- [[id:B5A7DE1E-CD0F-4676-A23B-9E9F38BFFA6C][Story: Observe a run while it works]] — the step journal and the progress
+  register this capture shares a question with.
+- [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] — the bucket this capture sits in.

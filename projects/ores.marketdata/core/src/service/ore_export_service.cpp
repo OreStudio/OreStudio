@@ -147,6 +147,23 @@ std::optional<std::string> fixing_index(const std::string& uri) {
     return datum::ore_index_codec::write(*index);
 }
 
+/**
+ * @brief Whether @p uri names a quote an interest-rate curve is bootstrapped from.
+ *
+ * A run's requirements name the curves it prices on, and the engine builds those
+ * curves from quotes rather than from the curve's own identity: a trade that
+ * names Yield/GBP/GBP1D carries no swap rate, so the quotes are the run's need
+ * without being any trade's address. They travel with every run for that reason.
+ */
+bool is_curve_input(const std::string& uri) {
+    const auto datum = datum::oresmd_uri_codec::read(uri);
+    if (!datum)
+        return false;
+    const auto instrument = datum->type();
+    return instrument == datum::instrument_type::ir_swap ||
+           instrument == datum::instrument_type::discount;
+}
+
 }
 
 std::vector<const domain::market_series*>
@@ -156,9 +173,11 @@ series_to_export(const std::vector<domain::market_series>& series,
                  const std::optional<std::set<std::string>>& requirement_uris) {
     // A run that names its requirements writes only the series that answer them. The
     // narrowing is applied to every candidate, so the choice between the party's own fixing
-    // series and the world's is made over the required ones alone.
+    // series and the world's is made over the required ones alone. The quotes a curve is
+    // built from are an answer to a need no trade states, so they are always carried.
     const auto wanted = [&requirement_uris](const domain::market_series& s) {
-        return !requirement_uris || requirement_uris->contains(s.oresmd_uri);
+        return !requirement_uris || requirement_uris->contains(s.oresmd_uri) ||
+               is_curve_input(s.oresmd_uri);
     };
     std::vector<const domain::market_series*> out;
     if (!party) {

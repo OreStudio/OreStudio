@@ -57,6 +57,21 @@ Sprint 30 was named for finishing the move off sqlgen and reflect-cpp, and that 
 - *Design the scripted trade subsystem*: One scripted trade subsystem serves every way a scripted trade enters ORE Studio: a product-specific booking form that books a product natively or as scripted, a free-form scripted trade editor validated on the server, import, and the generator that proves every product books and values.
 
 - *Run a report on the generated trades with the market data they need*: A report over the trades the generator books runs to completion, and ORE values every generated trade type from market data the system holds.
+
+[[proj:assets/images/ore_studio-v0.0.30-report-results.png]]
+
+/A report run's Results tab: one row per trade the engine priced, with its NPV,
+its notional and the book it belongs to, and the total at the head./
+
+[[proj:assets/images/ore_studio-v0.0.30-report-results-book.png]]
+
+/The same run rolled up to its book: the trades, their NPV and notional, and the
+tree the book sits in./
+
+[[proj:assets/images/ore_studio-v0.0.30-report-results-counterparty.png]]
+
+/Rolled up to the counterparty instead: one row for each, with the NPV the run
+gave its trades./
 - *Read the public interest rate sources*: The public overnight rate of as many currencies as their publishers allow is stored as fixings in the system tenant, with its history.
 
 [[proj:assets/images/ore_studio-v0.0.30-fixings-fx.png]]

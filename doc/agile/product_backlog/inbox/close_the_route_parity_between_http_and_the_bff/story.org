@@ -18,7 +18,15 @@ Continued from: [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF se
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Every route the BFF answers has an equivalent on =ores.http=, and the
+behaviours a side-by-side probe of the two servers found different are settled,
+so =ores.web= can leave the BFF behind for good.
+
+The acceptance of the story this one continues is met except where the tasks
+below say otherwise; the parity was moved here from
+[[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]]
+when that story closed on 2026-11-24, shipping 67 of its 82 tasks and moving the
+remaining 15 here.
 
 * Status
 
@@ -26,14 +34,23 @@ Continued from: [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF se
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
 | Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-11-24                               |
+| Now           | Scaffolded empty on 2026-11-24 and filled in the next day: 15 tasks moved in, of which three are done and three are blocked. |
+| Waiting on    | The knowledge base read for the two blocked tasks, and a new compass-ng release for the recipe body. |
+| Next          | The recipes, whose body needs the compass change the handover in =evidence/= describes, then HEAD, then the answer-shape sweep. |
+| Last touched  | 2026-11-25                               |
 
 * Acceptance
 
--
+- [ ] Every composed view the BFF answers is answered by =ores.http= with its
+      name, schema, owner, computation and cache policy.
+- [ ] The twelve routes the BFF read from the checkout's doc tree are served
+      over the org page read, not from the files.
+- [ ] HEAD is answered wherever a GET is served.
+- [ ] Every generated HTTP recipe sends the body or the parameters its route
+      requires, and a check keeps the corpus that way.
+- [ ] The differences a probe of the two servers finds — the answer shape, the
+      error contract, the session's token, the payload cap — are each closed or
+      recorded with the reason they stand.
 
 * Tasks
 
@@ -45,17 +62,38 @@ Continued from: [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF se
 | [[id:FC74EFF3-6DE3-49D3-8A8B-EE0F39FA99C3][Answer HEAD wherever a GET is served]] | BACKLOG | | | The gateway answers 404 to HEAD on every API route: the router has a HEAD builder and only the storage routes use it. The BFF answered HEAD from its GET, so an uptime probe, a curl -I, or a client that tests a resource before reading it now sees every route as missing. |
 | [[id:12666A97-69C2-4874-ABE0-E8C497C9EAE1][Authentication is optional at runtime on both transports]] | BACKLOG | | | The HTTP server skips its whole auth middleware block when no authenticator is configured, and warns rather than refusing; the NATS request context comes back unauthenticated when no verifier is configured; and has_permission returns true for an empty permission list to keep pre-RBAC tokens working. A deployment that forgets to configure either transport therefore accepts everything, and nothing reports it. |
 | [[id:CAC61239-EEC2-4697-9622-F9B4A5466761][Check every ported route's answer shape against the BFF]] | BACKLOG | | | Two routes answered a bare array where the BFF answered an object with a member: a report's runs answered an array instead of {runs: [...]}, and the screen read the missing member as no rows. The inventory pairs addresses, and each port task proves a payload by hand, but nothing compares the shape a route answers with the shape the BFF answered, so a member the client reads can be absent and the screen reads it as empty. |
-| [[id:60BBB3B1-6083-4A78-B51D-4FD2E81C54C2][Generated HTTP recipes send no request body]] | BACKLOG | | | Every write endpoint answers 400 where its recipe asserts 200: the ores.doc.http-recipe template emits no body, so 57 of the 82 generated recipes never reach the handler they exist to check. |
+| [[id:60BBB3B1-6083-4A78-B51D-4FD2E81C54C2][Generated HTTP recipes send no request body]] | BLOCKED | 2026-11-25 | | Every write endpoint answers 400 where its recipe asserts 200: neither the template nor the compass-ng data it renders carries a request body, so 280 of the 453 generated recipes never reach the handler they exist to check. |
 | [[id:49ECC288-3655-4185-B93D-5643CE17B1D9][Keep an API answer out of a cache]] | DONE | 2026-11-23 | 2026-11-24 | The BFF stamped Cache-Control: private, no-store on every /api/ answer that set none. The gateway sets it only on views, images and downloads, so an authenticated read, a refusal, or a not-found can be held by a browser or an intermediary, which shows as a screen that is wrong until it is hard-refreshed. |
 | [[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written operation handler]] | BACKLOG | | | check_handler_permissions.py compares only the four components in its registry, and only their generated messaging handlers. An operation model generates no handler, so its handler is hand-written and can ship with no permission check at all: ores.scheduler's operation handlers call has_permission zero times. The HTTP server has no route-level permission hook either, and only iam_routes checks codes. |
 | [[id:F8172A06-6927-4085-9901-B5F62A58A6EC][Serve the doc-backed agile and QA routes]] | BLOCKED | 2026-11-22 | | The twelve routes the BFF answered from the checkout's doc tree: the QA scenarios and the agile browser. They are served over the read the knowledge base story builds, not from the files. |
-| [[id:A2165589-71E8-4107-856A-77FB5FDD32E0][Serve the grid composed views]] | STARTED | 2026-11-21 | | Three grid views are answered only by the BFF. |
+| [[id:A2165589-71E8-4107-856A-77FB5FDD32E0][Serve the grid composed views]] | DONE | 2026-11-21 | 2026-11-21 | Three grid views are answered only by the BFF. |
 | [[id:3E187C09-27F5-4D52-A14D-4647552FC023][Serve the IR coverage through ores.http]] | BACKLOG | | | The calibration screen's IR coverage is served by the BFF today: one row per currency with its source, policy window, bootstrap config, latest published set and the first gap. Implement the same read in the C++ HTTP server so the browser can leave the BFF. |
-| [[id:878A1153-2C81-4857-8CB8-A619EE74A7BE][Serve the message bus composed view]] | STARTED | 2026-11-20 | | The message bus view is answered only by the BFF. |
+| [[id:878A1153-2C81-4857-8CB8-A619EE74A7BE][Serve the message bus composed view]] | DONE | 2026-11-20 | 2026-11-21 | The message bus view is answered only by the BFF. |
 | [[id:16F7691D-9EFA-4440-9E6E-3124D7BA11E7][The public rates coverage closes the socket at the server's timeout]] | BACKLOG | | | GET /api/marketdata/public-rates/coverage on ores.http works for more than 45 seconds and the server closes the socket, so the browser gets no answer. The BFF composes the same view from the same service in about a second, and the route answered in its own live run when the market data views were ported, so something since then made it pathologically slow: the gateway reads two small pages per public series, and 142 series are 284 round trips. Time the reads to find which one stalls before changing the design. |
 | [[id:7C83579B-4DA3-4EF8-BF5B-33E97C2E3874][Write an org page back through the service]] | BLOCKED | 2026-11-22 | | A version-checked page write on ores.orgmode.service, so a QA run can record its outcomes into the scenario page once the docs live in PostgreSQL. |
 
 * Decisions
+
+- *The twelve file-backed routes are not the gateway's* (2026-11-21, task
+  46F3605C). Each reads or writes the checkout the server runs in, and a
+  deployed gateway holds no checkout, so their owner is the developer tooling.
+  Four of them write into the repository, which settles it.
+- *A recipe's request is compass's to compose, not this repository's*
+  (2026-11-25, task 60BBB3B1). =doc/recipes/http= and the Hurl corpus are both
+  written by compass-ng from the entity models, so the missing body cannot be
+  fixed here: it needs a compass-ng change and a release. The handover in
+  =evidence/compass_handover_send_the_request_body.md= states the change, the
+  data contract this repository's template will consume, and how to prove it.
+- *These routes take a DELETE's intent as query parameters, not a body*
+  (2026-11-25). The generated route registers =.no_body()= and requires
+  =reason= and =commentary= in the query, so a DELETE recipe that sends only a
+  body still answers 400. The task and the handover carry this; it corrects the
+  task's original count of body-carrying methods.
+- *A recipe proves the wiring, not the data* (2026-11-25). A well-formed write
+  reaches the service and may come back refused because the row it names does
+  not exist; the corpus's own =HTTP 200= line is therefore a claim about wiring
+  only. Making every recipe pass needs a seeded fixture set, which is a
+  decision this story does not take.
 
 * Out of scope
 

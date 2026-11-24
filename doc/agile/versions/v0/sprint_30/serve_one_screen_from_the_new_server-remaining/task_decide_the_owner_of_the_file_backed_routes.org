@@ -12,8 +12,8 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-09
-#+updated: 2026-11-09
-#+environment:
+#+updated: 2026-11-21
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,9 +28,9 @@ Decide whether each agile and QA route moves to an owner or is deleted, and reco
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:21323568-8E87-4858-98E1-77451E123965][Serve what the BFF serves, then retire it — the remaining work]] |
-| Now          | Decided; the pairing change waits.     |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Record the deletions in the pairing data once the compass-ng port of that gate settles. |
+| Next         | Nothing. |
 | Last touched | 2026-11-20                               |
 
 * Acceptance

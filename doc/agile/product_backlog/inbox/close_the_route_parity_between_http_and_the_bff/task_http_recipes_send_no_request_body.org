@@ -2,51 +2,49 @@
 :ID: 60BBB3B1-6083-4A78-B51D-4FD2E81C54C2
 :END:
 #+title: Task: Generated HTTP recipes send no request body
-#+description: Every write endpoint answers 400 where its recipe asserts 200: the ores.doc.http-recipe template emits no body, so 57 of the 82 generated recipes never reach the handler they exist to check.
+#+description: Every write endpoint answers 400 where its recipe asserts 200: neither the template nor the compass-ng data it renders carries a request body, so 280 of the 453 generated recipes never reach the handler they exist to check.
 #+type: task
 #+level: s1
 #+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: A compass-ng release carrying evidence/compass_handover_send_the_request_body.md
+#+blocked_since: 2026-11-25
 #+created: 2026-11-22
-#+updated: 2026-11-22
-#+environment:
+#+updated: 2026-11-25
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The 82 recipes under =projects/ores.http/scripts/library/= are tangled from
-the =ores.doc.http-recipe= facet, and its template
-=http_recipe.org.mustache= emits only a method line, an =Accept= header, an
-optional =Authorization= header and the status assertion. It emits no body
-and no =Content-Type=, so a write arrives empty.
+The recipes under =projects/ores.http/scripts/library/= are tangled from the
+=ores.doc.http-recipe= facet, and its template =http_recipe.org.mustache=
+emits only a method line, an =Accept= header, an optional =Authorization=
+header and the status assertion. It emits no body and no =Content-Type=, so a
+write arrives empty.
 
-57 of the 82 use a body-carrying method — 45 =POST=, 6 =PUT=, 6 =DELETE= —
-and none carries a body. Replaying the =tags= group against the running
-gateway gives 4 =PASSED= and 6 =FAILED=, every failure reading
-=actual value is <400>=: =add=, =set=, =get-many=, =put-many=, =delete= and
-=delete-many=.
+Replaying the =tags= group against the running gateway gives 4 =PASSED= and 6
+=FAILED=, every failure reading =actual value is <400>=: =add=, =set=,
+=get-many=, =put-many=, =delete= and =delete-many=.
 
 The path sentinel is wrong for HTTP as well. =_sentinel_for_field= falls back
 to the shell absent token =__none__= for =std::string= and for every unmapped
-type, so 17 recipes write that token straight into the request URL, as in
+type, so the token is written straight into request URLs, as in
 =DELETE /api/v1/assets/tags/__none__=.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-22                               |
+| Now          | Blocked before any code: neither the body nor the sentinel can be written on this side. |
+| Waiting on   | A compass-ng release carrying the handover in =evidence/compass_handover_send_the_request_body.md=. |
+| Next         | When that release is installed: bump =build/scripts/compass_ng.pin=, change the template, enable the new check, regenerate, measure. |
+| Last touched | 2026-11-25                               |
 
 * Acceptance
 
@@ -56,9 +54,35 @@ type, so 17 recipes write that token straight into the request URL, as in
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The fault is one stage upstream of this repository, and that decides the plan.
+
+=doc/recipes/http/<plural>/<singular>.org= is rendered by compass-ng's
+=codegen= codec from the entity models, and the Hurl files are then tangled
+from it by compass-ng's =http_recipe_library= codec. The endpoint data those
+templates read carries the method, the path, the subject and the session flag,
+and nothing about the request, so a body has nowhere to come from here: any
+edit to a recipe document is overwritten by the next =compass generate=, and
+the check would fail on it besides.
+
+So the work is two changes, in this order.
+
+1. *compass-ng.* The codec supplies, per endpoint, the body as JSON built from
+   the request message the route names, an HTTP-appropriate path sentinel in
+   place of the shell's =__none__=, and the query parameters a route requires
+   instead of a body. A new check codec, =http_recipe_bodies=, reports a
+   generated recipe that sends neither. The specification is the handover
+   beside this task.
+2. *This repository*, once a release carrying it is installed: the template
+   renders =Content-Type= and the body when the endpoint states one, =reason=
+   and =commentary= in the query for a delete, =compass_ng.pin= names the new
+   release, =.compass.org= enables the check with its page under
+   =compass/checks/=, and the 54 recipe documents and their Hurl files are
+   regenerated.
+
+Two things the measurements below corrected in the original capture: the
+corpus is far larger than it said, and a =DELETE= takes no body at all — its
+intent travels as query parameters, which is why those six recipes answer 400
+even with a body.
 
 * Measurements
 
@@ -72,9 +96,35 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The Hurl corpus | 453 files: 198 POST, 173 GET, 41 PUT, 41 DELETE | a read of each file's request line | 1aa1c19564 |
+| The corpus with a body | 0 | a scan for a line after a blank line, before the =HTTP= line | 1aa1c19564 |
+| The corpus with a =Content-Type= | 0 | =grep -rl Content-Type projects/ores.http/scripts/library --include=*.hurl= | 1aa1c19564 |
+| Recipes whose request line carries =__none__= | 127, of which 96 are GET | =grep -rl __none__ projects/ores.http/scripts/library --include=*.hurl= | 1aa1c19564 |
+| Recipe documents | 99, of which 54 are generated by codegen and produce every Hurl file | =grep -rl '#+generated: AUTO-GENERATED' doc/recipes/http= | 1aa1c19564 |
+| What the capture said | 82 recipes and 57 body-carrying methods | this task's =* Promoted from capture= | 2026-09-27 |
 
 * Notes
+
+The capture's numbers were read before the corpus grew, and one of its facts
+was wrong. The truth as measured on 2026-11-25:
+
+- The corpus is 453 Hurl files, not 82. 280 of them use =POST=, =PUT= or
+  =DELETE=, and every one of those sends no body and no =Content-Type=.
+- =DELETE= is not a body-carrying method in this gateway. The generated route
+  registers =.no_body()= and takes the change intent as query parameters,
+  =reason= and =commentary=, both required, so a DELETE recipe answers 400
+  until it states them in the URL. That is the sixth of the six failing =tags=
+  recipes, and it is why a body alone does not fix this task.
+- The body of a write is the request message the route names, read as JSON by
+  the generated codec into a default-constructed struct, so an absent member
+  keeps its default. A body of ={} =, or one whose nested written rows are ={}=,
+  therefore reaches the handler; it is the empty *body* that is refused.
+
+The handover for the compass agent is
+=evidence/compass_handover_send_the_request_body.md=. It states the data
+contract the template will consume — =has_body=, =body=, =content_type=,
+=has_query=, =query= — the sentinel rule, the check codec, and how to prove the
+result.
 
 * Test Scenarios
 

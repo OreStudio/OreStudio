@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 359B9FC7-C616-4ACA-A02B-04DB36B857E6
+:END:
+#+title: Task: Open sprint 31
+#+description: Scaffold and wire sprint 31, and carry the sprint 30 leftovers into the backlog inbox.
+#+type: task
+#+level: s1
+#+filetags: :open_sprint_31:sprint_31:v0:
+#+owner: marco
+#+branch: agile/open-sprint-31
+#+pr: 5091
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C664D147-7520-4C4E-A421-51AE184DBF3D][Story: Open sprint 31]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Sprint 31 exists as a sprint doc, is wired into the version manifest and the agile
+index, and its open story is linked from the sprint. Every story sprint 30 left
+behind is filed in the product backlog's inbox.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C664D147-7520-4C4E-A421-51AE184DBF3D][Story: Open sprint 31]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+- The sprint doc states its mission, its previous sprint and its dates.
+- The version manifest lists sprint 31 and the agile index makes it current.
+- The 100 stories sprint 30 left behind sit in the inbox bucket.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5091][#5091]] | [agile] Open sprint 31 and carry its leftovers into the inbox |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Sprint 31 is open. Its doc states the mission, the previous sprint and the
+dates, the version manifest lists it, and the agile index makes it current.
+The product moves to 0.0.31 and the readme's sprint, PR and commit badges
+follow it.
+
+The hundred stories sprint 30 left behind — nineteen split successors and
+eighty-one carried stories — moved into =doc/agile/product_backlog/inbox=,
+with their bucket tag and their bucket link rewritten. The pre-sprint index
+drops from 522 to 422 rows and the inbox index rises to 710, so both buckets
+read what they hold.
+
+The market data export fix that made a report price its trades had been edited
+into the generated handler. It now lives in the model block that generates the
+handler, and the handler and the wire protocol's TypeScript twin are
+regenerated from it, so no generate can lose it.
+
+The docs class gate passes 5/5, and =compass generate= reports no drift.

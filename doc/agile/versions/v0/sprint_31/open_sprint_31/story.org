@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: C664D147-7520-4C4E-A421-51AE184DBF3D
+:END:
+#+title: Story: Open sprint 31
+#+description: Scaffold sprint 31, wire the version manifest and the agile index, and carry the sprint 30 leftovers into the backlog inbox.
+#+type: story
+#+level: s2
+#+filetags: :sprint_31:v0:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Sprint 31 is open: it is the current sprint in the version manifest and the agile
+index, its mission is stated, and every story sprint 30 left behind sits in the
+product backlog's inbox for triage.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
+| Now           | Scaffolding and wiring the sprint.     |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-11-24                               |
+
+* Acceptance
+
+- Sprint 31 is the current sprint in the version manifest and the agile index.
+- The sprint states its mission and its previous sprint.
+- Every story carried out of sprint 30 sits in =doc/agile/product_backlog/inbox/=
+  and is listed by that bucket's generated index.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:359B9FC7-C616-4ACA-A02B-04DB36B857E6][Task: Open sprint 31]] | STARTED | 2026-11-24 | | Scaffold and wire sprint 31, and carry the leftovers. |
+
+* Decisions
+
+* Out of scope
+
+-

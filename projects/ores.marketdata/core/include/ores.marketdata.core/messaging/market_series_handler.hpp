@@ -612,6 +612,7 @@ public:
             } else if (req->requirements) {
                 repository::requirement_coverage_repository coverage_repo;
                 std::set<std::string> answered;
+                std::vector<std::string> missing;
                 for (const auto& one :
                      coverage_repo.read(ctx, *req->requirements, req->valuation_date)) {
                     if (one.answered)

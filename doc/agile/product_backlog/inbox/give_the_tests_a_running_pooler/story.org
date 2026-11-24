@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: DA793070-8333-4502-A231-A0752BE20377
+:END:
+#+title: Story: Give the tests a running pooler and a clean parse
+#+description: The gate and compass test run start the pooler, the parsers read only the provider, and pgTAP runs before ctest.
+#+type: story
+#+level: s2
+#+filetags: :inbox:product_backlog:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+#+predecessor: CF800DC8-A36D-4DBA-B819-C98B409CD9F7
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Continued from: [[id:CF800DC8-A36D-4DBA-B819-C98B409CD9F7][Run the tests through the pooler]].
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-24                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:CB04682B-706D-4AEF-BABB-E7F00A0FB63B][Read the options' environment through the provider]] | BACKLOG | | | The parsers read their environment variables through ores.platform's environment provider instead of boost's parse_environment, so a test's fake environment is the only one the parser sees and no test lists variables to strip. |
+| [[id:9F0DCC25-CE62-41A3-9C5A-7BDED6BE5A30][Run pgTAP before ctest]] | BACKLOG | | | The local gate runs the pgtap check before ctest rather than beside it, so the two no longer write to the same database at the same time and iam_tenant_purge_test stops deadlocking. |
+| [[id:49A91902-32C2-49DB-A761-FC7FD2F2D126][Start the pooler before the tests run]] | BACKLOG | | | The gate's ctest step and compass test run start the pooler and NATS when ORES_DB_POOLER_ENABLED is 1, and the test-run preflight refuses to run without a pooler and names the fix. |
+
+* Decisions
+
+* Out of scope
+
+-

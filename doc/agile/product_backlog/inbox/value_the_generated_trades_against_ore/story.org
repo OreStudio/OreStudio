@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: B1234477-CF4C-4358-AB45-67998AF91CDB
+:END:
+#+title: Story: Value the generated trades against ORE's own NPVs
+#+description: Seed the fixings and engines the generated trades need, follow them into a run, and match ORE on a fresh database.
+#+type: story
+#+level: s2
+#+filetags: :inbox:product_backlog:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+#+predecessor: 0E718054-03B7-43A5-9289-61E505235BBD
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Continued from: [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]].
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-24                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:06886D23-1A52-4BBC-B305-4609D606EEA7][Generate the historical fixings the generated trades need]] | STARTED | 2026-11-19 | | A floating leg that has already reset needs the fixing of its index on each past reset date, and ores.synthetic generates only FX spot and IR curves. Generate the index fixings back from the as-of for the indices the population uses, derived from the generated curve of that index and tenor, deterministic for a seed, in the series the conventions' oresmd URIs name. |
+| [[id:9EFEAA52-D458-4CCF-A6C6-7C5A6A2EF6DC][Give every generated trade type its market data and pricing engines]] | BLOCKED | 2026-11-21 |  | Every type can be priced, or leaves the generator with a stated reason. Measured and diagnosed; the FX and IR fix moved to the connection task. |
+| [[id:03554F8C-7FFF-4735-BC5B-2CA45E58C621][Make the market data connection follow the trades]] | BACKLOG | | | A party demands, is entitled to, and reads exactly the market data its trades name: every convention a trade references has a supplier, the supplier is chosen by a stated rank, and a booking that names a convention no entitled supplier covers is refused. |
+| [[id:D42DC42B-1729-4B1C-9EE8-658208319355][Prove a run on generated trades and market data]] | BACKLOG | | | Every end-to-end run so far has depended on hand-seeded ACME data, which is why a run fails for a data reason rather than a chain reason. The synthetic component already generates the trade population (bond books, counterparties, trade generation configs) and publishes market data (IR curve and FX spot generation configs, feeds into ores.marketdata). Prove a report runs to completion on data the system generates: generate the trades, generate the market data they need, point a report definition at those books, and run it. Record what the generated data cannot yet express, which is the gap a gather has to respect. |
+| [[id:17EB5750-8798-4AEE-8877-771E9B22C55D][Seed five years of public fixings from a DQ dataset]] | BACKLOG | | | A static DQ snapshot holds five years of daily public fixings and seeds every environment, it is refreshed only now and then, and the public sources adapter fills the gap from the latest stored fixing to today. |
+| [[id:B4B85683-D59C-4526-A4BF-7A5B1127BA5E][Value the generated trades in a report and make them correct]] | BACKLOG | |  | A report values every type, and each matches ORE's own NPV for its sample. |
+
+* Decisions
+
+* Out of scope
+
+-

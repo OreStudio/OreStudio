@@ -8,7 +8,7 @@
 #+filetags: :read_a_partys_published_surfaces:sprint_31:v0:
 #+owner: marco
 #+branch: feature/read-a-partys-published-surfaces
-#+pr:
+#+pr: 5100
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -385,7 +385,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5100][#5100]] | [agile,marketdata] Scaffold the lifecycle stories and document the lifecycle for every kind |
 
 * Review
 

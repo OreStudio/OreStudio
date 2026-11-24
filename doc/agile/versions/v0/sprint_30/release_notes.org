@@ -10,6 +10,10 @@
 #+updated: 2026-11-24
 #+startup: inlineimages
 
+[[proj:assets/images/ore_studio-v0.0.30-rate-ladder.png]]
+
+/The rates ladder reads every published instrument of a currency, against the market data the party holds./
+
 /November 2026/
 
 Sprint 30 was named for finishing the move off sqlgen and reflect-cpp, and that work closed on its second day: every component now reads its rows through generated statements on a thin libpq layer, and its codecs are generated rather than reflected. The sprint then removed the reason a change was expensive, forward-declaring the headers most of the build depended on and passing the database context by reference. Every product type ORE reads is now held as a trade, generated for Acme in each form the engine accepts and proved by the engine itself. Market data gained a latent surface quoted through vendors, overnight rates from a dozen central banks, and curve and fixing histories a party triangulates for itself. The migration of the gates and the generator onto compass-ng reached v0.0.13 and now runs in CI, and the pooler work closed with the environment naming one database endpoint. The sprint merged 579 pull requests with a median cycle of twelve minutes. It also ran seventeen days against a seven-day plan, so nineteen stories were split with the work that remains named in their successors, and eighty-one unstarted stories returned to the product backlog with their tasks intact.
@@ -131,6 +135,69 @@ Sprint 30 was named for finishing the move off sqlgen and reflect-cpp, and that 
 - *Stop the workflow from losing steps to a transient storm — the remaining work*: A workflow step must survive a transient failure of the service that serves it.
 - *Run a service's steps concurrently*: A provisioning run whose steps run side by side completes, however long one of them takes.
 
+** Market Data & Curves
+
+[[proj:assets/images/ore_studio-v0.0.30-instruments.png]]
+
+/Instrument search over the market data the party actually holds./
+
+[[proj:assets/images/ore_studio-v0.0.30-fx-montage.png]]
+
+/The FX spot montage draws one pair's spot, its move and the points behind it./
+
+[[proj:assets/images/ore_studio-v0.0.30-curve.png]]
+
+/A published curve states its pillars, the quotes it was built from, and the moment it published./
+
+[[proj:assets/images/ore_studio-v0.0.30-curve-analytics.png]]
+
+/Curves compared within a currency by default, and across currencies only like for like./
+
+[[proj:assets/images/ore_studio-v0.0.30-calibration.png]]
+
+/IR calibration coverage: one row per curve, and a state that is true./
+
+[[proj:assets/images/ore_studio-v0.0.30-fixings-fx.png]]
+
+/A fixing series states its series identity, its recent fixings and the provider that published them./
+
+[[proj:assets/images/ore_studio-v0.0.30-fixings-ir.png]]
+
+/The same page for an interest rate index: an overnight rate and the history its publisher states./
+
+[[proj:assets/images/ore_studio-v0.0.30-feed-graph.png]]
+
+/The feed graph names what feeds what, each node's state, and the reason a node stopped./
+
+[[proj:assets/images/ore_studio-v0.0.30-quotes-2.png]]
+
+/A second moment of the same board, as the next tick lands./
+
+[[proj:assets/images/ore_studio-v0.0.30-quotes.png]]
+
+/The quotes view shows the market as each vendor quotes it, one board per
+vendor, live./
+
+[[proj:assets/images/ore_studio-v0.0.30-identity-shapes.png]]
+
+/An identity shape is a record: a code, a description and the field rules that
+make a series identifiable./
+
+** Operations
+
+[[proj:assets/images/ore_studio-v0.0.30-setup-report.png]]
+
+/The setup report states each step of the provisioning, and the one that ended
+with a warning says why./
+
+[[proj:assets/images/ore_studio-v0.0.30-setup-report-rerun.png]]
+
+/A step that ended with warnings can be run again from its report, and the warnings stay in front of the person until none remain./
+
+[[proj:assets/images/ore_studio-v0.0.30-roles.png]]
+
+/Roles on the shared record parts, with a paged list and the people who hold a role./
+
 * ⚠️ Known Issues & Postponed
 
 - *Search the knowledge base from ores.web* (ABANDONED): deferred.
@@ -204,35 +271,6 @@ on as a story in the product backlog whose title states it.
 - [[id:316D6744-31F3-4CAC-AB33-D8FAE67C0BF1][Size a volatility surface to the data its party holds]] → [[id:A5250AE9-E315-4198-8B77-A3DE1ED15F97][Give each party the configuration its surfaces are built with]]
 - [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]] → [[id:AC005F38-9E58-42B8-AC14-B1ABD784B5B4][Calibrate and publish the surfaces on a schedule]]
 - [[id:8EC92006-17BB-4575-BA13-2BE5ED5327C3][Build each party's volatility surfaces from vendor quotes of a latent surface]] → [[id:D8264C31-DA2D-44F2-A597-081AF3FD14BF][Prove a party's surfaces agree with the latent market and its forwards]]
-
-* 📸 Screenshots
-
-[[proj:assets/images/ore_studio-v0.0.30-rate-ladder.png]]
-
-/The rates ladder reads every published instrument of a currency, against the
-market data the party holds./
-
-[[proj:assets/images/ore_studio-v0.0.30-quotes.png]]
-
-/The quotes view shows the market as each vendor quotes it, one board per
-vendor, live./
-
-[[proj:assets/images/ore_studio-v0.0.30-identity-shapes.png]]
-
-/An identity shape is a record: a code, a description and the field rules that
-make a series identifiable./
-
-[[proj:assets/images/ore_studio-v0.0.30-setup-report.png]]
-
-/The setup report states each step of the provisioning, and the one that ended
-with a warning says why./
-
-The screens are captured by two scenarios:
-[[id:AD1C422D-0CFC-494F-88CD-AF6FFE22240A][Capture the sprint 30 release screenshots]]
-for the market data screens and the roles, and
-[[id:FC6494C7-B467-4A4B-B593-600865858D0E][Capture the ladder, the fixings and the setup report]]
-for the ladder, the fixing series and the setup report. Each step names the
-file it saves under =assets/images/=.
 
 * 📊 Time Summary
 

@@ -26,11 +26,11 @@ This environment builds and runs on the released ports, and the database move is
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:70D7AC45-8FD9-4C82-939B-6150605EAF84][Pick up the v0.0.30 release across the fleet]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-24                               |
 
 * Acceptance

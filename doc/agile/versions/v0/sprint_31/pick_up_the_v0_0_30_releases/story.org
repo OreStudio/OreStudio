@@ -40,7 +40,7 @@ This environment runs the released toolchain and the released ports, and the dat
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:95518D2B-205D-4B37-B362-A63D7A83BCA2][Move the toolchain and the database to the release]] | STARTED | 2026-11-24 | | The vcpkg submodule moves to the released ports and the environment is compiled by the compiler the dist-upgrade installed. PostgreSQL 19 is proven on a throwaway cluster and the move itself waits: TimescaleDB has no 19 package. |
+| [[id:95518D2B-205D-4B37-B362-A63D7A83BCA2][Move the toolchain and the database to the release]] | DONE | 2026-11-24 | 2026-11-24 | The vcpkg submodule moves to the released ports and the environment is compiled by the compiler the dist-upgrade installed. PostgreSQL 19 is proven on a throwaway cluster and the move itself waits: TimescaleDB has no 19 package. |
 
 * Decisions
 

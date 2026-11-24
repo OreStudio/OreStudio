@@ -1,3 +1,7 @@
+![ore_studio-v0.0.30-rate-ladder.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.30-rate-ladder.png)
+
+*The rates ladder reads every published instrument of a currency, against the market data the party holds.*
+
 *November 2026*
 
 Sprint 30 was named for finishing the move off sqlgen and reflect-cpp, and that work closed on its second day: every component now reads its rows through generated statements on a thin libpq layer, and its codecs are generated rather than reflected. The sprint then removed the reason a change was expensive, forward-declaring the headers most of the build depended on and passing the database context by reference. Every product type ORE reads is now held as a trade, generated for Acme in each form the engine accepts and proved by the engine itself. Market data gained a latent surface quoted through vendors, overnight rates from a dozen central banks, and curve and fixing histories a party triangulates for itself. The migration of the gates and the generator onto compass-ng reached v0.0.13 and now runs in CI, and the pooler work closed with the environment naming one database endpoint. The sprint merged 579 pull requests with a median cycle of twelve minutes. It also ran seventeen days against a seven-day plan, so nineteen stories were split with the work that remains named in their successors, and eighty-one unstarted stories returned to the product backlog with their tasks intact.
@@ -133,6 +137,24 @@ Sprint 30 was named for finishing the move off sqlgen and reflect-cpp, and that 
 -   **Run a service's steps concurrently**: A provisioning run whose steps run side by side completes, however long one of them takes.
 
 
+## Market Data & Curves
+
+![ore_studio-v0.0.30-quotes.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.30-quotes.png)
+
+*The quotes view shows the market as each vendor quotes it, one board per vendor, live.*
+
+![ore_studio-v0.0.30-identity-shapes.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.30-identity-shapes.png)
+
+*An identity shape is a record: a code, a description and the field rules that make a series identifiable.*
+
+
+## Operations
+
+![ore_studio-v0.0.30-setup-report.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.30-setup-report.png)
+
+*The setup report states each step of the provisioning, and the one that ended with a warning says why.*
+
+
 # ⚠️ Known Issues & Postponed
 
 -   **Search the knowledge base from ores.web** (ABANDONED): deferred.
@@ -199,27 +221,6 @@ These stories closed with part of their work done. Each remaining scope lives on
 -   [Size a volatility surface to the data its party holds](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_30/size_a_surface_to_its_data/story.html) → [Give each party the configuration its surfaces are built with](https://orestudio.github.io/OreStudio/doc/agile/product_backlog/next/give_each_party_its_surface_configuration/story.html)
 -   [Support volatility surfaces — the remaining work](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_30/support_volatility_surfaces-remaining/story.html) → [Calibrate and publish the surfaces on a schedule](https://orestudio.github.io/OreStudio/doc/agile/product_backlog/next/calibrate_and_publish_the_surfaces_on_a_schedule/story.html)
 -   [Build each party's volatility surfaces from vendor quotes of a latent surface](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_30/vendor_quotes_of_a_latent_surface/story.html) → [Prove a party's surfaces agree with the latent market and its forwards](https://orestudio.github.io/OreStudio/doc/agile/product_backlog/next/prove_a_partys_surfaces_agree_with_the_latent_market/story.html)
-
-
-# 📸 Screenshots
-
-![ore_studio-v0.0.30-rate-ladder.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.30-rate-ladder.png)
-
-*The rates ladder reads every published instrument of a currency, against the market data the party holds.*
-
-![ore_studio-v0.0.30-quotes.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.30-quotes.png)
-
-*The quotes view shows the market as each vendor quotes it, one board per vendor, live.*
-
-![ore_studio-v0.0.30-identity-shapes.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.30-identity-shapes.png)
-
-*An identity shape is a record: a code, a description and the field rules that make a series identifiable.*
-
-![ore_studio-v0.0.30-setup-report.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.30-setup-report.png)
-
-*The setup report states each step of the provisioning, and the one that ended with a warning says why.*
-
-The screens are captured by two scenarios: [Capture the sprint 30 release screenshots](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_30/publish_the_sprint_30_release/scenario_capture_the_sprint_30_release_screenshots.html) for the market data screens and the roles, and [Capture the ladder, the fixings and the setup report](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_30/publish_the_sprint_30_release/scenario_capture_the_ladder_the_fixings_and_the_setup_report.html) for the ladder, the fixing series and the setup report. Each step names the file it saves under `assets/images/`.
 
 
 # 📊 Time Summary

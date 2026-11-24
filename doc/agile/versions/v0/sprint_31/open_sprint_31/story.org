@@ -23,11 +23,11 @@ product backlog's inbox for triage.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
-| Now           | Scaffolding and wiring the sprint.     |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Nothing.                               |
+| Next          | Nothing. |
 | Last touched  | 2026-11-24                               |
 
 * Acceptance
@@ -43,7 +43,16 @@ product backlog's inbox for triage.
 |------+-------+-------+-----+-------------|
 | [[id:359B9FC7-C616-4ACA-A02B-04DB36B857E6][Task: Open sprint 31]] | STARTED | 2026-11-24 | | Scaffold and wire sprint 31, and carry the leftovers. |
 
+* Result
+
+Sprint 31 is the current sprint, with its mission and its previous sprint
+stated, and the project on 0.0.31. The hundred stories sprint 30 left behind
+wait in the product backlog's inbox for triage, which is where the next
+planning looks for work.
+
 * Decisions
+
+-
 
 * Out of scope
 

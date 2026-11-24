@@ -21,11 +21,11 @@ This environment runs the released toolchain and the released ports, and the dat
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-11-24                               |
 
 * Acceptance
@@ -63,3 +63,22 @@ and the tables convert in place then.
 * Out of scope
 
 -
+
+* Result
+
+This environment runs the released ports and the compiler the dist-upgrade
+installed, and the database stays on 18 with the 19 move proven and its blocker
+named.
+
+The vcpkg registry moved 240 commits to 2f8bf7a5ba and the manifest resolves
+against it. The whole tree compiled in 29 minutes 43 seconds and no port failed.
+ctest ran 108 tests; every failure was answered, three of them by starting the
+fleet and one by fixing main's stale export test. The gate is 25 of 25.
+
+PostgreSQL 19 builds the whole database — 853 tables against 18's 855, the
+difference being pgTAP's own — and the move waits on TimescaleDB, which has no
+package for 19 in Debian, in PGDG or in its own repository. The evidence and the
+root steps are on the task, so the fleet rollout is the same list applied again.
+
+The fleet has not been rolled out. That is the next move, and this story closes
+with the environment ready for it.

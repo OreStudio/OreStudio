@@ -13,15 +13,14 @@
 
 A store is housekept when three parts hold together: a retention policy declares
 what the store keeps and for how long, an executor applies the policy, and a
-telemetry record states what the executor did. Any two without the third leave
-the store growing. A policy alone is an intention, and an application with no
-record cannot be told apart from an inert one. Both failures are present in the
-platform today, and the second is the commoner: the schema installs a retention
-policy only where the storage engine reports the licensed edition, and reports
-the interval without installing anything where it does not. The page gives the
-shape of a retention policy, the actions an executor takes, the path an executor
-follows where the engine will not apply a policy itself, and the telemetry a
-policy reports.
+telemetry record states what the executor did. A policy with no executor leaves
+the store growing, and an executor with no telemetry cannot be shown to have run.
+Both failures are present in the platform today. The second is the commoner: the
+schema installs a retention policy only where the storage engine reports the
+licensed edition, and reports the interval without installing anything where it
+does not. The page gives the shape of a retention policy, the actions an executor
+takes, the path an executor follows where the engine will not apply a policy
+itself, and the telemetry a policy reports.
 
 * Detail
 
@@ -38,10 +37,8 @@ policy reports.
 A retention policy names its target, the action to take on it, the retention
 period or threshold past which the action applies, the cadence at which it is
 considered, whether it is enabled, and the fallback to take where the engine will
-not act. The policy is stored as data rather than held in frontmatter or in code,
-because two requirements follow from the operator's side: a period changes
-without a schema rebuild, and one screen shows every policy beside the size of
-what it governs.
+not act. The policy is stored as data: a period changes without a schema rebuild,
+and one screen shows every policy beside the size of what it governs.
 
 ** The actions
 
@@ -54,8 +51,7 @@ Four actions treat a store by removing what it no longer needs:
   rule;
 - release a working directory once what it produced is stored elsewhere.
 
-Two further treatments hold a store without removing anything, and belong to
-housekeeping for that reason:
+Two further treatments hold a store without removing anything:
 
 - overwrite a counter instead of appending a new version of it;
 - recompute derived data instead of keeping a copy per owner.

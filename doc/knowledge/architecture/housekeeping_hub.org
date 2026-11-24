@@ -12,12 +12,11 @@
 * Summary
 
 Housekeeping is the practice by which a store the platform retains is made
-subject to a retention policy, and the policy is applied rather than only
-declared. The cluster treats the subject in two pages, and the order between
-them is fixed by vocabulary: the first establishes the policy, the executor that
-applies it and the telemetry that records what it did, and the second assigns to
-each class of retained data the retention period or the other treatment that its
-contents require.
+subject to a retention policy. The cluster treats the subject in two pages, and
+the order between them is fixed by vocabulary: the first establishes the policy,
+the executor that applies it and the telemetry that records what it did, and the
+second assigns to each class of retained data the retention period or the other
+treatment that its contents require.
 
 * Detail
 
@@ -28,7 +27,7 @@ their synonyms is the [[proj:doc/meta/glossary.org][glossary]].
 
 | Term | Meaning |
 |------+---------|
-| Housekeeping | the practice of making every retained store subject to a policy, and applying it |
+| Housekeeping | the practice of making every retained store subject to a retention policy |
 | Retention policy | the declared rule for one store: what it targets, what action is taken, the period or threshold, the cadence, and the fallback where the engine will not act |
 | Retention period | the length of time a store keeps a record before the policy acts on it |
 | Lifecycle rule | the object store's form of a retention policy, naming a key prefix and the age at which its objects expire |
@@ -51,10 +50,6 @@ their synonyms is the [[proj:doc/meta/glossary.org][glossary]].
    data]] applies the model. It names the classes of data a platform retains and
    the retention period or treatment each class takes, and it establishes why
    age-based retention serves only those classes whose worth decays with time.
-
-Two further subjects are expected to join the sequence, a policy record and an
-executor with its telemetry, each refining a part that the model states in
-outline and each following the classification.
 
 ** Scope
 

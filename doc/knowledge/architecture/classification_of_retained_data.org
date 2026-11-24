@@ -48,8 +48,7 @@ own answer.
 A versioned counter is not aged but superseded: every row but the latest is
 already obsolete when it is written, so a retention period removes the history
 long after it has cost the space. The treatment is an overwrite applied as the
-value is written, and it is the cheapest of any here because it prevents the rows
-rather than removing them.
+value is written, which prevents the rows and costs least of any here.
 
 Derived reference data is not aged but reproduceable. A calendar's business days
 follow from its rule and its year range, so a copy per owner is a copy of a
@@ -58,18 +57,18 @@ to expire it.
 
 Engine distributions and per-owner copies are not aged but duplicated. The same
 package sits in the object store and again in each node's cache, often a third
-time as the extracted tree. Expiring a duplicate postpones the cost. The
-treatment is deduplication: the content is addressed by its digest, so that a
+time as the extracted tree. Expiring a duplicate removes one copy of several.
+The treatment is deduplication: the content is addressed by its digest, so that a
 second copy cannot be made, and the remaining copy is evicted by age.
 
 ** Two treatments that write nothing
 
 Overwriting a counter and recomputing derived data hold a store without removing
-anything from it. They are classified here rather than under retention because
-the distinction changes what an operator sees: a retention policy reports what it
-deleted, and these report what they avoided writing. Both are subject to the same
-policy and the same telemetry as the deleting treatments, and neither depends on
-the storage engine's licence.
+anything from it. They are classified here, apart from retention, because an
+operator reads them differently: a retention policy reports what it deleted, and
+these report what they avoided writing. Both are subject to the same policy and
+the same telemetry as the deleting treatments, and neither depends on the storage
+engine's licence.
 
 ** Where the treatment is applied
 

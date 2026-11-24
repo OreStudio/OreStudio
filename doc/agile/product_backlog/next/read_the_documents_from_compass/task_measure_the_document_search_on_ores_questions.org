@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 2924A178-BC49-460B-8D2C-0210D4372824
+:END:
+#+title: Task: Measure the document search on ORE's questions
+#+description: Run at least twenty real questions about ORE, each with the documents that should answer it, through the ores.http document route, and record how many find their document in the first five.
+#+type: task
+#+level: s1
+#+filetags: :read_the_documents_from_compass:next:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: compass document service
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-22
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7764434E-173B-4006-8A44-8AC453AAC14B][Read the documents from compass]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Write a set of at least twenty real questions a person would ask about ORE,
+each with the documents that should answer it. Run them through the ores.http
+search route, which compass answers, and record how many find a right
+document in the first five, and which miss. Ranking is compass's: the misses
+go to compass as evidence, and the result decides whether ORE's documents
+need better titles, descriptions or tags, or compass's search needs more.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7764434E-173B-4006-8A44-8AC453AAC14B][Read the documents from compass]] |
+| Now          | Not yet started.                       |
+| Waiting on   | compass releasing its document service. |
+| Next         | Plan once compass releases the service. |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- The question set and its expected documents are kept in the repository, so
+  the measurement can be rerun.
+- The share found in the first five is recorded, with every miss named.
+- The misses that are compass's ranking are reported to compass, and those
+  that are ORE's documents are fixed or recorded.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -82,9 +82,9 @@ pooler-off environment must name PostgreSQL's port, and it names the pooler's.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:CF800DC8-A36D-4DBA-B819-C98B409CD9F7][Run the tests through the pooler]] |
-| Now          | Waiting on the pull request's review. |
-| Waiting on   | The @claude review and the merge. |
-| Next         | Merge, then read the first continuous run on main. |
+| Now          | Merged as PR #5065. The continuous run on main is the evidence. |
+| Waiting on   | Nothing. |
+| Next         | Nothing. |
 | Last touched | 2026-11-23                               |
 
 * Acceptance

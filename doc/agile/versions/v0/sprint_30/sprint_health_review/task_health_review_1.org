@@ -1,0 +1,379 @@
+:PROPERTIES:
+:ID: 7C3D0695-6821-409B-9285-BB0760F653F1
+:END:
+#+title: Task: Health review 1 — sprint 30 close analysis
+#+description: System 2 health review 1 of sprint 30, taken at close.
+#+type: task
+#+level: s1
+#+filetags: :sprint_health_review:sprint_30:v0:
+#+owner: marco
+#+branch: doc/sprint-30-health-review
+#+pr: 5083
+#+blocked_on:
++#+blocked_since:
+#+created: 2026-11-24
++#+updated: 2026-11-24
++#+environment: festive-dijkstra
++#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BB602F81-7F6F-4ABC-81A3-4D2CD3782E55][Sprint health review — System 2 analysis]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Measure sprint 30 on the day it is being closed and record one verdict with
+its evidence. The sprint planned seven days from 2026-11-08; this review is
+taken on the seventeenth day, nine days past the planned end.
+
+The sprint's own mission has two halves: finish moving off sqlgen and
+reflect-cpp, and hold a limit on the stories in flight. The review tests both,
+and it tests whether the limit exists as anything a person can be held to.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:BB602F81-7F6F-4ABC-81A3-4D2CD3782E55][Sprint health review — System 2 analysis]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+- Every dimension has a measurement with the command that produced it.
+- The sprint's =* Health Review= table carries this review's summary row.
+- The bookkeeping the review finds is named per item, with the shape of the
+  fix, so the closure can act on it without re-deriving it.
+
+* Plan
+
+Measure first, then read, then challenge the readings. The numbers come from
+four sources: =git= for commits, =gh= for pull requests, a parse of the 159
+story documents and their 900 task documents, and =compass sprint audit= for
+state-sync violations. Nothing is taken from a status table that the documents
+themselves can answer.
+
+The two readings that most shape the verdict are the ones a status table
+hides: how many stories are in flight, and how many of those are already
+finished but still open. The first is a strategy failure; the second makes the
+in-flight count wrong in both directions at once.
+
+* Measurements
+
+Every number below is measured at commit =fa5d1bfa1c= on =origin/main=, on
+2026-11-24.
+
+| What | Value | Command |
+|------+-------+---------|
+| Commits since the sprint start | 3926, of which 21 carry a pre-start date, leaving 3905 in the window | =git log --oneline --since=2026-11-08 \| wc -l=, and the per-day histogram |
+| Commits per day | 245 over 16 elapsed days, ranging 115 to 368 | =git log --since=2026-11-08 --date=short --format=%ad= |
+| Pull requests merged since the sprint start | 590, ranging 17 to 66 per day | =gh pr list --state merged --search "merged:>=2026-11-08" --limit 1000= |
+| Pull request cycle time | median 0.2 h, p90 4.5 h, max 44.3 h | the same list, =mergedAt - createdAt= |
+| Open pull requests | 1 (#5073, 6 h old) | =gh pr list --state open= |
+| Stories in the sprint | 159: 43 DONE, 29 STARTED, 81 BACKLOG, 6 ABANDONED | a parse of =sprint_30/*/story.org= |
+| Tasks under those stories | 900: 538 DONE, 14 STARTED, 309 BACKLOG, 34 ABANDONED, 5 BLOCKED | a parse of =sprint_30/*/task_*.org= |
+| Stories with no tasks | 12, of which 10 BACKLOG and 2 ABANDONED | the same parse |
+| Stories finished with tasks still open | 0 | the same parse |
+| Stories whose tasks are all DONE but which are still STARTED | 10 | =compass sprint audit -f json= |
+| Stories whose state differs from the sprint table | 10, and 1 more absent from the table | the same audit, cross-checked against the story files |
+| Audit findings | 100: 10 all-tasks-done-story-open, 24 task-open-all-prs-merged, 10 sprint-table-mismatch, 56 closed-doc-now-not-nothing | =compass sprint audit= |
+| Stories closed | 43 by state; 40 carry an End date in the sprint table; 19 of those 40 closed after the planned end | the sprint table's =End= column |
+| Stories started after the planned end | 12, of which 7 have since closed and 5 remain STARTED | the sprint table's =Start= column |
+
+* Notes
+
+- The sprint table is not a source of truth: it is stale in 11 places, so
+  every count above comes from the documents, and the table is quoted only
+  where it is the thing under test.
+- The sprint has no stated number for "a limit on the stories in flight". The
+  phrase appears in the mission and nowhere else, so no one can be held to it
+  and nothing can be measured against it. The reviews of sprints 28 and 29
+  recommended enforcing such a limit in =compass= at the point a story starts;
+  neither sprint recorded a decision against the recommendation, and it was
+  not built.
+- One finding belongs to another task: =Give the environment one database
+  endpoint= is DONE and merged as PR #5065, but its =Now= still says it waits
+  on the review. The audit is right, and the fix is one line in that task.
+- The standalone =./compass.sh lint= command is red on main, and the gate
+  does not notice: nine generated markers name a generator as =compass
+  generate: <codec>=, and the Python lint resolves a marker to a file path, so
+  it reports them as missing. The files are
+  =product_backlog/{inbox,next,deferred,discarded}.org= and four under
+  =doc/llm/skills/=, none of them changed here. The marker contract changed
+  when the generators moved to compass-ng and the Python lint did not follow;
+  the gate's own lint check is the ported =compass-ng= one, which passes. So
+  nothing is blocked, and a command a person runs by hand now fails for a
+  reason no gate reports. That is a task of its own.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5083][#5083]] | [agile] Close sprint 30 with its review, notes and retrospective |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+** Review on 2026-11-24 (day 17 of 7)
+
+*** Goal alignment
+
+The mission is "Finish moving off sqlgen and reflect-cpp, with a limit on the
+stories in flight". It has two halves and they are not comparable: one is a
+deliverable, the other is a constraint on how work is taken.
+
+| Goal | Coverage | Stories | Verdict |
+|------+----------+---------+---------|
+| Finish moving off sqlgen and reflect-cpp | Direct | =Replace sqlgen and reflect-cpp with generated code= DONE with 61 of 63 tasks done and 2 abandoned; =Break the large compilation dependencies= DONE, 11 of 11; =Move codegen and the gates to compass-ng= STARTED, 19 of 21 | MET |
+| Hold a limit on the stories in flight | None | 29 stories STARTED; no number is stated in the sprint, so no story can be tested against it | NOT MET |
+
+The first half is delivered: the two dependencies the sprint named are gone,
+and the compilation-coupling work that made the migration worth finishing is
+closed with it. The second half never became a constraint. A limit that exists
+only in a sentence cannot fail a story, stop a start, or be counted at close,
+and the count it was meant to bound is 29, roughly ten times the 1 to 3 the
+review skill treats as healthy.
+
+Twelve stories started after the planned end date. Five of them are still
+STARTED today. That is the sharper reading of "finish": the sprint did not
+only overrun, it kept opening work while overrunning.
+
+Challenge: is the met half enough to rescue the sprint? On its own it is worth
+what the sprint claimed. It does not excuse a second goal that was adopted as
+words and dropped as a mechanism, because the next sprint inherits the same
+sentence.
+
+*** Sprint load
+
+| Metric | Value | Target | Status |
+|--------+-------+--------+--------|
+| Commits in the sprint | 3905 in the window | ≤ 1000 | RED, 3.9× |
+| Elapsed days | 16 | 7 | RED, 2.3× |
+| Commits per day | 245 | about 140 at the ceiling over 7 days | RED |
+| Peak day | 368 on 2026-11-21 | | |
+| Quietest day | 115 on 2026-11-08 | | |
+| Commits in the planned seven days | 1761 | ≤ 1000 | RED, 1.8× |
+
+The commit rate never fell below 115 a day, so this is not a sprint that
+started fast and stalled: it ran at three to five times the target rate every
+day of the overrun, and at nearly twice the ceiling inside the planned week.
+
+Challenge: is the ceiling the wrong unit? It may be, but the sprint that
+adopted it did not restate it, and a target nobody revisits while doubling it
+is not a target.
+
+*** PR velocity
+
+| Metric | Value | Notes |
+|--------+-------+-------|
+| Merged PRs since the sprint start | 590 | target band is 100 to 120 |
+| Per day | 37 | every day between 17 and 66 |
+| Cycle time | median 0.2 h, p90 4.5 h | the flow itself is fast |
+| Open PRs | 1, 6 h old | no WIP accumulation |
+| Merges in the last two days | 93 | the sprint is still moving |
+
+Flow is excellent and volume is the problem. A median of twelve minutes from
+open to merge, with a single open PR, is the healthiest flow signal this
+review series has recorded: review is not the bottleneck and nothing is piling
+up unmerged. But 590 merges is five times the band the skill sets, and the
+band is about the size of the change the sprint claims to make, not about the
+speed of the queue.
+
+Challenge: with this flow, is the PR count a symptom or a cause? It is a
+symptom of starting more than the sprint can name, which is the same defect
+the focus dimension finds.
+
+*** Story and task balance
+
+| Story | State | Tasks | Notes |
+|-------+-------+-------+-------|
+| =Serve what the BFF serves, then retire it= | STARTED | 67 of 82 | largest in the sprint; core parity work unfinished |
+| =Support volatility surfaces= | STARTED | 31 of 46 | the arc's acceptance is not met |
+| =Hold every product type the engine supports= | DONE | 38 of 41 | closed with 3 abandoned, and that is recorded |
+| =Replace sqlgen and reflect-cpp= | DONE | 61 of 63 | the mission's deliverable |
+| =Build the IR curves of every currency= | DONE | 14 of 15 | |
+| =Finish the tick ingest pipeline= | BACKLOG | 4 of 21 | decomposed but not started; the largest carried story |
+| 12 stories with no tasks | BACKLOG, ABANDONED | 0 | 10 BACKLOG, 2 ABANDONED |
+
+| Metric | Value | Target | Status |
+|--------+-------+--------+--------|
+| Stories decomposed | 147 of 159 | all | AMBER, 12 opaque |
+| DONE ÷ (BACKLOG + STARTED) | 43 ÷ 110 = 0.39 | ≥ 0.5 | AMBER |
+| Stories finished but still STARTED | 10 | 0 | AMBER |
+| Stories whose documents disagree with the sprint table | 11 | 0 | AMBER |
+
+The ratio is the best this review series has recorded and it is still under
+the line, because the sprint added 159 stories to a seven-day plan. The ten
+finished-but-open stories matter twice: they inflate the in-flight count by
+ten, so the true focus number is 19 rather than 29, and they deny the team the
+credit for work that is done and merged.
+
+Challenge: do the ten finished stories satisfy their own acceptance? For the
+six hotfixes the answer is plain, because the fix landed and the tasks record
+it. For =Make the generated trades value correctly in ORE= the 19 tasks
+include the report valuation the story promised. For =Move the Linux CI image
+to Ubuntu 26.04= and =Run the Linux CI on GCC 16= the images are built by the
+pipelines they changed. So the ten are closeable, and the cleanup section
+names each one.
+
+*** Focus signal
+
+| Metric | Value | Verdict |
+|--------+-------+---------|
+| Stories STARTED | 29 | RED, 6+ |
+| Of those, tasks all DONE | 10 | the true in-flight count is 19 |
+| Themes in flight | identity and LLM (assistant, MCP), market data (volatility, feeds, surfaces, IR indices), workflow and services, codegen and tooling, CI and hotfixes, reporting | RED, divergent |
+| Stories started after the planned end | 12 | RED, work was still being opened |
+
+Every "just one more" story in flight compounds the cost of the next context
+switch, and the sprint made that trade 29 times. The count is not accidental:
+the twelve starts after the planned end show work being opened while an
+overrun was in progress.
+
+Challenge: is a high in-flight count actually harmful on a solo project where
+one person does all of it? The cost is real even then: a story in flight holds
+open questions, unfinished branches and a promise the sprint does not measure.
+The ten finished-but-open stories show what that does to the bookkeeping.
+
+*** Velocity
+
+| Metric | Value | Notes |
+|--------+-------+-------|
+| Stories closed | 43 in 17 days (2.5 a day) | 40 carry an End date |
+| Closures after the planned end | 19 of 40 | the second week carried as much as the first |
+| Tasks closed | 538 of 900 | 60% of the work the sprint named |
+| Merge cycle | median 0.2 h | output per day is not the constraint |
+| Stories started after the planned end | 12 | the backlog was still being promoted |
+
+Velocity is not the problem, and it is not the answer. Output per day was
+higher in the overrun than in the planned week, which is why the sprint has
+something to show at all, and why its boundary means nothing. A sprint that
+closes nineteen stories after its end date is not finishing work; it is
+reporting that it kept working.
+
+Challenge: would a hard close at 2026-11-15 have shipped the mission's
+deliverable? The migration story closed on 2026-11-09 and the compilation
+story on 2026-11-20. The first would have shipped; the second would have
+carried. That is a cheap price for a boundary that holds.
+
+*** Bookkeeping found
+
+The audit reports 100 findings. By shape:
+
+| Shape | Count | What it means |
+|-------+-------+---------------|
+| all-tasks-done-story-open | 10 | finished stories waiting to be closed |
+| task-open-all-prs-merged | 24 | a task still open although every PR it names merged; some are legitimately open work whose PR was partial, and each needs a reading |
+| sprint-table-mismatch | 11 | 9 stories STARTED in the file and BACKLOG in the table, 1 DONE in the file and STARTED in the table, and 1 STARTED story absent from the table |
+| closed-doc-now-not-nothing | 56 | a closed document's =Now= is a sentence rather than =Nothing.=, which the audit treats as a sync violation |
+
+The last shape is a style rule, not a defect in the sprint's state, and it
+should be settled once in the audit rather than 56 times in the documents.
+
+The 11 table mismatches are a real risk at close: the sprint table is what the
+release notes and the version table read. One of them, =Take the DQ pipeline
+end to end=, is DONE in its own file and STARTED in the table, which would
+report finished work as in flight at close.
+
+*** Sprint cleanup: closes, splits and carries
+
+The 29 STARTED stories, read against their own acceptance:
+
+| Disposition | Count | Stories (tasks done / total) |
+|-------------+-------+------------------------------|
+| Close now | 10 | =Hotfix: Fix the AppleClang min call= (2/2), =Hotfix: Clear the Windows, GCC and test breakages= (2/2), =Hotfix: Fix the warnings and the macOS database tests= (3/3), =Hotfix: Give the booking test its own refdata= (2/2), =Hotfix: Publish the catalogues the booking test reads= (2/2), =Hotfix: Main CI is red on Windows, GCC, and tests= (2/2), =Hotfix: nightly CI failures= (5/5), =Make the generated trades value correctly in ORE= (19/19), =Move the Linux CI image to Ubuntu 26.04= (2/2), =Run the Linux CI on GCC 16= (2/2) |
+| Finish, then close | 3 | =Move codegen and the gates to compass-ng= (19/21), =Serve ORE's API to LLM agents over MCP= (12/13), =Handle the backlog when the compute path stalls= (5/6) |
+| Return to the backlog | 1 | =Make the build faster= (0/4, started 2026-11-11, nothing closed) |
+| Carry, acceptance unmet | 15 | the three volatility stories, =Serve what the BFF serves= (67/82), =Keep main green= (10/19), =Keep workflow steps alive= (6/11), =Design the scripted trade subsystem= (7/16), =Run a report on the generated trades= (11/17), =Every index a generated trade floats on= (11/15), =Data model clean up= (2/4), =Configure the public sources= (1/6), =Put a content security policy on the site= (1/2), =Run the tests through the pooler= (1/4), =Model the synthetic feeds as a dependency graph= (9/11) |
+
+No story is sprawling enough to need a split: the two large ones, =Serve what
+the BFF serves= and =Support volatility surfaces=, are large because their
+acceptance is large, and the remaining tasks are that same acceptance rather
+than forward-looking extensions. Closing either one now would misreport it.
+
+*** What this review did not check
+
+- Whether each of the 24 "task open, all its PRs merged" findings is really
+  finished work. The PR named may be a partial step, and each needs its own
+  reading; the review records the count and the shape, not a verdict per task.
+- The quality of what merged. A fast queue and a high count say nothing about
+  correctness; the local gate and the suites own that.
+- Whether the sprint's mission was still the right mission on day 17. The
+  version's goals are not restated here, and a review that rearranges the
+  targets is a different document.
+- The charts the sprint template expects. =compass sprint charts= writes them,
+  and this review did not run it.
+
+*** Overall verdict
+
+| Dimension | Verdict |
+|-----------+---------|
+| Goal alignment | AMBER (deliverable met, constraint absent) |
+| Sprint load | RED |
+| PR velocity | RED (flow GREEN) |
+| Story and task balance | AMBER |
+| Focus signal | RED |
+| Velocity | RED |
+| Overall | RED |
+
+Sprint 30 is RED. It delivered the thing it was named for: the sqlgen and
+reflect-cpp migration is gone, and the compilation coupling that blocked
+further work is closed. It failed the constraint in its own mission, which was
+never written as a number and so could not be enforced: 29 stories were in
+flight on day 17, of which 10 were already finished. It ran 3.9 times its
+commit ceiling, 2.3 times its duration and 4.9 times its PR band, while
+keeping the fastest merge flow of any sprint reviewed so far. The most
+important concern is not the volume; it is that this is the third consecutive
+review to recommend a real work-in-progress limit, and the second sprint to
+adopt that recommendation as a phrase in its mission rather than as a rule in
+the tool. The one change that would most improve the next sprint is to make
+the limit executable: refuse a story start that would exceed a stated number
+of in-flight stories, and state that number in the sprint document where the
+close can measure it.
+
+Before the sprint closes, three mechanical steps follow from this review:
+close the ten finished stories, return =Make the build faster= to the backlog,
+and sync the sprint table to the documents. Each is cheap, and each inflates
+what the closure reports until it is done.
+
+*** Closure executed on 2026-11-24
+
+This section records what the closure did, which differs from the dispositions
+this review recommended.
+
+| Action | Count | Detail |
+|--------+-------+--------|
+| Stories closed with every task done | 10 | seven hotfixes, =Make the generated trades value correctly in ORE=, =Move the Linux CI image to Ubuntu 26.04= and =Run the Linux CI on GCC 16= |
+| Stories closed and split | 19 | each keeps its finished tasks and its =* Tasks= record, and its remaining tasks moved to a successor |
+| Successor stories created | 19 | under =doc/agile/product_backlog/next/=, each with a =#+predecessor= link and a name that states the remaining work |
+| Tasks moved to successors | 84 | =compass task move=, so each task keeps its UUID and history |
+| Unstarted stories carried to the product backlog | 81 | =BACKLOG= folders moved to =doc/agile/product_backlog/next/= with their 282 tasks, their sprint rows removed, and their parent links rewritten |
+| Sprint table rows changed | 92 | 10 flipped to DONE by =compass story done=, 81 removed with the carried stories, 1 added that had never been in the table, and 1 drifted row corrected |
+
+The review recommended closing ten, finishing three, returning one to the
+backlog, and carrying fifteen. The owner took a different decision: close all
+29 and split every remainder into the product backlog instead of a next
+sprint, because sprint 31 is not open yet. The three that were one task from
+done (19 of 21, 12 of 13, 5 of 6) went with the rest rather than being
+finished first.
+
+The audit went from 100 findings to 51: no story is left open, none is left
+with all its tasks done, no sprint row disagrees with its story, and no closed
+story holds an open task. All 51 that remain are =Now= style violations on
+closed documents, the rule this review already judged belongs in the audit
+rather than in 51 documents.
+
+The sprint is closed with =End= 2026-11-24, nine days past its planned end,
+holding 74 stories delivered and 6 abandoned, and nothing in flight.

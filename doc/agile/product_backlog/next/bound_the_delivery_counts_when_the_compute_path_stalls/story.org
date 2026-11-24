@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 4890092C-22AA-47C8-8054-804C887209B7
+:END:
+#+title: Story: Bound the delivery counts when the compute path stalls
+#+description: A stalled compute path must not let a durable consumer's pending count grow without bound.
+#+type: story
+#+level: s2
+#+filetags: :next:product_backlog:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+#+predecessor: 2A3AF682-3822-458F-BFE5-D36CA7001845
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Continued from: [[id:2A3AF682-3822-458F-BFE5-D36CA7001845][Handle the backlog when the compute path stalls]].
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-24                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2FDC34EA-1816-4654-BA55-48BD8158252D][Stop the delivery counts from growing without bound]] | STARTED | 2026-11-19 | | The marketdata usage recorder flushes every thirty seconds and writes one new versioned row per party and feed through delivery_count_repository::write, which is an INSERT into a versioned table. On pauli this reached 2.3 million rows, 2.4 GB, one day of a counter that only needs its current value. Make the flush carry the counter forward instead of appending history, or state and enforce a retention, so the table's size follows the number of subscriptions rather than the number of flushes. |
+
+* Decisions
+
+* Out of scope
+
+-

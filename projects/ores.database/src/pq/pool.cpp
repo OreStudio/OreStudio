@@ -129,7 +129,7 @@ pool::lease pool::acquire() {
                               "53300",
                               error_kind::retryable);
         if (!idle_.empty()) {
-            c = std::move(idle_.back().connection);
+            c = std::move(idle_.back().conn);
             idle_.pop_back();
         } else {
             ++open_;
@@ -230,7 +230,7 @@ void pool::reap() {
 
         // The front is the coldest, so it is the one that has been idle longest.
         // Closed outside the lock: a teardown that blocks must not block a lease.
-        std::unique_ptr<connection> dying = std::move(idle_.front().connection);
+        std::unique_ptr<connection> dying = std::move(idle_.front().conn);
         idle_.erase(idle_.begin());
         lock.unlock();
         dying.reset();

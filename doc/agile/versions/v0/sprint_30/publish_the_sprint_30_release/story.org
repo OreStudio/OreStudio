@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 728FB790-CE79-4833-856C-5075BCED287C
+:END:
+#+title: Story: Publish the sprint 30 release
+#+description: The notes, the charts, the retrospective and the screenshots that make the sprint's release readable.
+#+type: story
+#+level: s2
+#+filetags: :sprint_30:v0:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The sprint's release is readable: generated notes over every merged pull
+request, the health charts, a retrospective, and a scenario that captures the
+screens the sprint changed.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-11-24                               |
+
+* Acceptance
+
+- =release_notes.org= carries both summary blurbs, the carried-forward section
+  and every merged pull request, and =release_notes.md= is exported from it.
+- The four health charts are rendered beside the notes.
+- =sprint.org= carries the achievements and the retrospective.
+- A test scenario captures one screenshot per release highlight, and its steps
+  name the file each capture saves.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:04A0214D-CC6D-4683-8F5B-A9FFABDDB01E][Assemble the release notes, charts and retrospective]] | DONE | 2026-11-24 | 2026-11-24 | Generate the sprint's release notes from its merged pull requests, fill the blurbs, render the charts and export the Markdown. |
+
+* Decisions
+
+* Out of scope
+
+-

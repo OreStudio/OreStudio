@@ -21,11 +21,11 @@ Developers start work from a commit that CI has proven green, and main only move
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Create the dev and integration branches. |
+| Next          | Nothing. |
 | Last touched  | 2026-11-11                               |
 
 * Acceptance
@@ -37,19 +37,14 @@ Developers start work from a commit that CI has proven green, and main only move
 - compass task start branches new work from integration.
 - A red dev run lists the candidate PRs in its batch, and compass pr merge refuses a non-fix merge while dev is red.
 
+The bullets above are the acceptance of [[id:C52E1CF7-4011-4DF7-935B-7E5A8DFD58FB][Promote dev to main only from a green run]], which
+carries the remaining work from sprint 30's close. This story ships
+10 of its 19 tasks; see * Tasks.
+
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:BBAABAF7-B078-46BB-A108-D4558F09563E][Create the dev and integration branches]] | BACKLOG | | | Create dev and integration from main, make dev the default PR target, and protect integration and main. |
-| [[id:7DD726A3-894F-4CC3-BC34-D2226CAE5502][Promote green commits by fast-forward]] | BACKLOG | | | Fast-forward integration on a green continuous Linux run and main on a green nightly matrix. |
-| [[id:FD1B9FB6-56A3-4E7E-B435-A4780321E1D4][Branch new work from integration]] | BACKLOG | | | Make compass task start, story start and worktree provisioning branch from integration. |
-| [[id:5811D91F-227C-4121-8ED3-0B43220A803B][Run continuous Linux every hour]] | BACKLOG | | | Let continuous Linux runs overlap so each run tests a smaller batch of merges. |
-| [[id:20FA6378-3FCA-4156-89AC-9BCB527B8978][Name the culprit of a red run]] | BACKLOG | | | On a red continuous run, list the PRs between the last green commit and the run's commit and match them to the failing tests. |
-| [[id:7E177AB3-D85E-4029-B496-C21F76FEA34B][Stop the line when dev is red]] | BACKLOG | | | Make compass pr merge refuse a non-fix merge while the latest continuous run on dev is red. |
-| [[id:2585BB37-1F7F-4D2A-B3C7-EEA6B1805A54][Show the branch of each build in CDash]] | BACKLOG | | | Submit each CI build to a CDash group named after the branch it built: dev, integration or main. |
-| [[id:AC551901-58D0-4F99-8C4E-AABC7BF70858][Fix the nightly compile errors]] | STARTED | 2026-11-12 | | Fix the gcc, macOS and Windows compile errors that stop the nightly builds, and keep warnings as warnings on those compilers until they are clean. |
-| [[id:F15CA18F-4DC9-48A1-92F7-65E7E987E8C2][Record the XML benchmark after the format pass]] | BACKLOG | | | A nightly format pass changed the measured XML code and no benchmark row followed it, so the local check gate refused every branch cut from main. |
 | [[id:7F2DAB93-6627-46BB-8515-A45AAE64E064][Fix the checks main fails on the new trade tables]] | DONE | | 2026-11-17 | Four instrument tables landed without the three things every trading table needs: row-level security, the permission codes their handlers check, and an entry in the ER diagrams. Each absence turns one local check red on main, so every branch raised from main inherits a red gate. |
 | [[id:08035698-916F-4134-8D93-B89D2C284BE4][Regenerate the output that drifted from its models]] | DONE | 2026-11-17 | 2026-11-17 | Two checks are red on main because generated files no longer match the models they are generated from: 26 files differ across the component set, and the BFF list request descriptor table is stale. Neither is a hand-edit gone wrong that needs reading; both are what the generators produce when they are run. |
 | [[id:2454C5FF-E84D-4ABC-807B-ECA17287A271][Align the codegen tests with the tree]] | DONE | 2026-11-17 | 2026-11-18 | Four codegen tests fail on main. Two assert a policy shape that a November change replaced for a security reason, one hardcodes a routed-code list the catalogue has since grown, and one names four trading models that declare an include they do not use. |

@@ -1,0 +1,181 @@
+:PROPERTIES:
+:ID: 9EFEAA52-D458-4CCF-A6C6-7C5A6A2EF6DC
+:END:
+#+title: Task: Give every generated trade type its market data and pricing engines
+#+description: Every generated trade type has the market data and the pricing engine configuration ORE needs to value it, or is left out of the generator with the reason stated.
+#+type: task
+#+level: s1
+#+filetags: :value_the_generated_trades_against_ore:next:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: 03554F8C-7FFF-4735-BC5B-2CA45E58C621
+#+blocked_since: 2026-11-21
+#+created: 2026-11-09
+#+updated: 2026-11-21
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B1234477-CF4C-4358-AB45-67998AF91CDB][Value the generated trades against ORE's own NPVs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every generated trade type can be priced: its market data and its pricing engine configuration exist, so a run fails only for a reason this story has stated.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BLOCKED                              |
+| Parent story | [[id:B1234477-CF4C-4358-AB45-67998AF91CDB][Value the generated trades against ORE's own NPVs]] |
+| Now          | The gap is measured per generated trade type, and the FX and IR half is diagnosed against the architecture. The fix for that half moved to [[id:03554F8C-7FFF-4735-BC5B-2CA45E58C621][Make the market data connection follow the trades]] on 2026-11-21, with the evidence and this task's records. |
+| Waiting on   | [[id:03554F8C-7FFF-4735-BC5B-2CA45E58C621][Make the market data connection follow the trades]]: this task's acceptance names the market data errors of a provisioned Acme, and the FX and IR errors cannot go until a party is entitled to a supplier that serves the convention its trade names. |
+| Next         | Decide, per class, whether equity, commodity, credit, inflation and security get a market data source or leave the generator, which is independent of the connection. |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- Each row of the review's table has its market data, the market configuration that names it, and its pricing engine configuration, or the type leaves the generator with the reason stated. The equity, commodity, inflation and credit configuration moved here on 2026-11-17 from [[id:EB839A7A-0EB6-4FD2-85E8-9847CA0D8634][Name every market object the generated trades use in the party's market configuration]].
+- FX volatilities and the pricing engines for FX options and bonds are in place, the gap the first Acme run found.
+- A provisioned Acme's reports record no market data errors for the generated trades, unless a known list asserted exactly names each with its reason.
+
+- Each trade column that holds an oresmd address is checked by a soft foreign key against the party's series catalogue, by kind, as =ores_marketdata_validate_curve_series_fn= checks a curve today.
+
+- No stored trade reference holds an ORE name when the key lands, so readers handle one form. A name the address cannot write back, such as =UK RPI=, is resolved here.
+
+- An imported curve name becomes an address when the series catalogue or market configuration resolves it, and stays as written otherwise. Credit curve series are in the catalogue.
+
+* Plan
+
+The gap is one problem with seven faces. A provision publishes market data for
+a subset of the objects the trade catalogue can draw from, so the generator
+books trades on instruments that no series answers. Take the classes one at a
+time, and for every address choose one of two outcomes: the market answers it,
+or the generator stops drawing it and this task states the reason.
+
+1. *Know the gap, per type.* Measured: 124 of 133 addresses, over 100 trade type
+   and class rows. Evidence in =evidence/generated_population_gap.txt=.
+2. *Separate what the market cannot name from what it does not publish.* The
+   tenant publishes two asset classes and no more: FX prices, IR curves, and the
+   fixings the system tenant derives from them. The other five classes — equity,
+   commodity, credit, inflation and security — have no series of any kind in this
+   tenant, so their 84 addresses need a market data *source* before any name can
+   match, and no amount of renaming closes them.
+3. *FX and IR: the machinery exists, the closure does not.* Read against the
+   architecture in =evidence/fx_and_ir_publishing_setup.txt=: the feeds, scopes,
+   catalogue and durable fixing store all do their jobs, and the system party
+   receives 325,571 fixings. The subscription check is implemented too
+   (=demand_calculator.cpp= refuses =not_entitled= and =terms_not_accepted=), and
+   the demand carries a hook for the party's own required items which
+   =adapter_supervisor.cpp:229= never supplies. What is missing is the closure
+
+       trades -> conventions -> catalogue items -> suppliers -> entitlements.
+
+   The trade names a *fixing convention* — who calculates the rate, at what time
+   (the ECB reference rate, the 4pm London fix ORE spells =TR20H=, ICE LIBOR,
+   NY Fed SOFR). The *supplier* is who sells us that convention — LSEG, Bloomberg,
+   a central bank's portal, the platform's own derived feed — and it is the thing
+   a party is entitled to. The model carries both axes already: the convention is
+   inside the oresmd URI, the supplier is =market_series.provider_code=; the word
+   =source= names the convention there and the supplier everywhere else.
+
+   So, in order: (i) give every convention a supplier in the catalogue — today no
+   vendor supplies any FX fixing, so the 4pm London convention the generator names
+   has none; (ii) wire the demand's requirements hook to the closure over the
+   party's trades, so demand is the party's items and not its provider's whole
+   catalogue; (iii) refuse a booking whose conventions no entitled supplier
+   covers, naming the supplier that is missing; (iv) read a fixing by convention
+   and supplier, not by series, which is what the target in
+   [[id:F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE][Public sources publish daily fixings through an adapter]] already states.
+4. *The other five classes.* Either build a market data source for the class —
+   a price series and then a fixing series per object — or take the class's types
+   out of the generator, in which case this task states the reason in the
+   generator's own terms. Decide per class, not for all five at once.
+5. *Prove it.* A provisioned Acme's reports record no market data error for the
+   generated trades, or one asserted list names each with its reason.
+
+Steps 3 and 4 are independent of each other, and each ends in a verifiable
+state: the class's addresses answer, and no address of another class has stopped
+answering.
+
+The architectural gap this task does not close, and cannot without its own story,
+is the choice of supplier: a requirement is symbolic, and resolution picks one
+supplier for it under a per-tenant market data configuration, by a stated rank,
+and records the choice. There is no such configuration in the schema, so a trade
+stores a frozen identifier and the difference between what the trades ask for and
+what the market holds surfaces at the export instead of at booking.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The population's requirements, answered and not, by asset class | 133 required, 124 unanswered, 123 of those with no series anywhere in the tenant | =compass sql -- -f doc/agile/versions/v0/sprint_30/run_a_report_with_market_data/evidence/generated_population_gap_class.sql= | 7bb52278f6 |
+| The same gap, per generated trade type | 100 trade type and class rows; raw output in =evidence/generated_population_gap.txt= | =compass sql -- -f doc/agile/versions/v0/sprint_30/run_a_report_with_market_data/evidence/generated_population_gap.sql= | 7bb52278f6 |
+| Market data classes the acme tenant publishes | 2 of 7: 612 fx and 535 ir series, all =type=series=, and no fixing series of any class | =compass sql -- -c "select split_part(oresmd_uri,'/',3) as class, case when oresmd_uri like '%type=fixing%' then 'fixing' else 'series' end as form, count(*) from ores_marketdata_market_series_tbl where valid_to > now() and tenant_id = '<acme tenant>' group by 1, 2"= | 7bb52278f6 |
+| Fixing series the system tenant publishes | 132 fx and 51 ir | the same query against =tenant_id = 'ffffffff-ffff-ffff-ffff-ffffffffffff'= | 7bb52278f6 |
+| Durable fixings the installation holds | 325,571, every one in the system tenant; the acme tenant holds none | =compass sql -- -c "select t.code, count(*) from ores_marketdata_market_fixings_tbl f join ores_iam_tenants_tbl t on t.id = f.tenant_id where f.valid_to > now() group by 1 order by 2 desc"= | b0add7a53e |
+| Public publishers the acme parties are entitled to | none: 19 routes, all =fx=, all to vendor publishers; the system party routes 21 (publisher, class) pairs including every public one | =compass sql -- -c "select p.short_code, r.publisher_code, r.asset_class from ores_marketdata_routes_tbl r join ores_refdata_parties_tbl p on p.id = r.party_id and p.valid_to > now() where r.valid_to > now() and r.tenant_id = '<acme>' order by 1"= | b0add7a53e |
+| Catalogue rows naming the FX fixing source the trades state | 0, for =TR20H=, in providers, vendor instruments, mappings and feed scopes | =compass sql -- -c "select count(*) from ores_marketdata_market_data_vendor_instruments_tbl where valid_to > now() and external_id ilike '%TR20H%'"= | b0add7a53e |
+| FX fixing items in the feed scopes | 140, in four bases only: ECB 44 (EUR), IMF 48 (USD), BOC 27 (CAD), TCMB 21 (TRY); 13 named overnight rates beside them | =compass sql -- -c "select f.publisher_code, count(*), count(*) filter (where s.item like '%type=fixing&index=fx%') from ores_marketdata_feeds_tbl f join ores_marketdata_feed_scopes_tbl s on s.feed_id = f.id and s.valid_to > now() where f.valid_to > now() and f.publisher_code <> 'ore' group by 1 order by 2 desc"= | b0add7a53e |
+| FX pairs, of the 24 the population names | 9 have a fixing under some source, 11 are priced by the party, and the two sets overlap on 8 | =compass sql -- -c "..."= as recorded in =evidence/generated_population_gap.txt= sections 3 | 7bb52278f6 |
+
+* Notes
+
+- From the baseline run of 2026-11-17 (=evidence/run_674d2887_errors.txt=):
+  70 trades name a LIBOR index. The system generates LIBOR on purpose; the
+  trades failed because the configuration named no published curve, and
+  because some tenors are not bootstrapped. The tenors are added by
+  [[id:2189859D-6B0B-493E-A858-0435091D2365][Bootstrap every IBOR tenor the generated trades book]]. The baseline also lists the smaller causes this
+  task owns: basket reference data for the credit index products, the
+  script library for =ScriptedTrade=, and a pricing engine for
+  =EquityOutperformanceOption=.
+- The baseline's error rows and this task's missing addresses are the same
+  finding seen from two sides. The run says "equity not in the market" 118
+  times; the market says 11 equity addresses have no series. Both are true: one
+  index answers many trades, and one trade names many indices.
+- The first version of this measurement counted market series over the whole
+  table and so reported credit, commodity, equity, security and inflation series
+  the tenant does not hold: every one of them belonged to the =marketdata_corpus_*=
+  tenants the market data tests leave behind. On this machine the table answers a
+  question about the machine. Every count here is scoped to the acme tenant or to
+  the system tenant, and the evidence file names which.
+- The IR half of the gap is a curve gap, not a fixing gap. Every one of the 15
+  failing IBOR addresses names an index and tenor that the 51 fixing series the
+  system tenant publishes does not carry, and a fixing is derived from its curve.
+  Two of them go further: the =GENERIC= Ibor conventions the catalogue holds for
+  92 currencies state no tenor, while a trade's leg states one, so even a
+  generated curve for that convention would not produce the address the trade
+  names. =COP IBR= and =USD SOFR= are the same shape.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

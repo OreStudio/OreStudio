@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 04A0214D-CC6D-4683-8F5B-A9FFABDDB01E
+:END:
+#+title: Task: Assemble the release notes, charts and retrospective
+#+description: Generate the sprint's release notes from its merged pull requests, fill the blurbs, render the charts and export the Markdown.
+#+type: task
+#+level: s1
+#+filetags: :publish_the_sprint_30_release:sprint_30:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: festive-dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:728FB790-CE79-4833-856C-5075BCED287C][Publish the sprint 30 release]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The sprint's release artefacts exist: the notes generated from 579 merged
+pull requests with their blurbs written, a carried-forward section naming each
+split story, the four charts rendered, the Markdown export, and the
+retrospective and achievements that the notes draw on.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:728FB790-CE79-4833-856C-5075BCED287C][Publish the sprint 30 release]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+- =release_notes.org= and =release_notes.md= exist for sprint 30, with both
+  blurbs filled and the carried-forward section present.
+- The four chart images exist beside them.
+- The retrospective and the achievements are in =sprint.org=.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+Generated the notes from the 579 pull requests merged since =v0.0.29=, filled
+both blurbs, and added a carried-forward section because the generated notes
+listed nineteen split stories as if they had shipped. Wrote the retrospective
+and the achievements, rendered and captioned the four charts, exported the
+Markdown, and linked the notes from =sprint.org=.

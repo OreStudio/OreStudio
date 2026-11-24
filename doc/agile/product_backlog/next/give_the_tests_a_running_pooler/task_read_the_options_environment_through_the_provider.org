@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: CB04682B-706D-4AEF-BABB-E7F00A0FB63B
+:END:
+#+title: Task: Read the options' environment through the provider
+#+description: The parsers read their environment variables through ores.platform's environment provider instead of boost's parse_environment, so a test's fake environment is the only one the parser sees and no test lists variables to strip.
+#+type: task
+#+level: s1
+#+filetags: :give_the_tests_a_running_pooler:next:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DA793070-8333-4502-A231-A0752BE20377][Give the tests a running pooler and a clean parse]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A service's parser sees one environment: the one the
+=ores::platform::environment= provider gives it. Today it sees two:
+
+- =scoped_environment_override= swaps in a fake provider whose keys are the
+  only ones set. Its documentation says a key it does not carry reads as
+  unset.
+- =boost::program_options::parse_environment= ignores the provider and reads
+  the process's =environ= directly. =standard_service_options::parse= in
+  =ores.service= calls it, and so do the parsers of the official rates
+  adapter, the shell, the compute wrapper and the HTTP server.
+
+So the fake environment holds nothing, and the parser still reads
+=ORES_REFDATA_SERVICE_DB_PORT=21607= from =.env=. The tests have worked around
+this by listing NATS variables to strip. The pooler only made a second
+variable visible.
+
+The fix: the provider can list its entries, and one helper in
+=ores.utility= builds the parsed options from those entries with the existing
+=environment_mapper_factory= mapper. The 6 callers use the helper instead of
+=parse_environment=, and the tests drop their strip lists.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:DA793070-8333-4502-A231-A0752BE20377][Give the tests a running pooler and a clean parse]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Let the environment provider list its entries. |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- No production code calls =boost::program_options::parse_environment=; a
+  check fails if a new call appears.
+- With =.env= loaded and the pooler on, all 13 =config_parser_tests= pass,
+  and none of them names a variable to strip.
+- A test shows that a value in the fake provider reaches the parsed options,
+  and a value only in the real environment does not.
+- A service started by systemd reads the same options as before: the fleet
+  starts and =compass services status= shows every unit active.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- PR #4998 (the knowledge pages) made a point fix so its gate could run with
+  the pooler up: each of the 14 =parse_defaults_returns_expected_values= tests,
+  ores.orgmode.service's among them, also clears its own
+  =ORES_<SVC>_SERVICE_DB_HOST= and =ORES_<SVC>_SERVICE_DB_PORT=. Reading the
+  options' environment through the provider replaces those lists.
+- Measured on 2026-11-21 at c35f696b41: with =.env= loaded,
+  =ores.refdata.service.tests parse_defaults_returns_expected_values= fails
+  with =21607 == 5432=. With =ORES_REFDATA_SERVICE_DB_PORT= unset, it passes
+  (6 assertions).
+- The tests open no database connection, so the pooler is not what fails
+  here. They failed because the default changed from 5432, which the direct
+  port happened to equal, to the pooler's port.
+- The mapper (=environment_mapper_factory::make_mapper=) maps a variable's
+  name to an option name; it can stay as it is. Only the source of the
+  variables changes.
+- The callers of =parse_environment=:
+  =ores.service/src/config/standard_service_options.cpp=,
+  =ores.marketdata/official/src/config/parser.cpp=,
+  =ores.shell/application/src/config/parser.cpp=,
+  =ores.compute/wrapper/src/config/parser.cpp=,
+  =ores.http/server/src/config/parser.cpp=.
+- The shell parser has a note about how boost handles a variable twice in one
+  =parse_environment= call; keep that behaviour.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

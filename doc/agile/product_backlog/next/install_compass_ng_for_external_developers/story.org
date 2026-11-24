@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 8C763143-581A-4916-9990-85D1CDEB73A1
+:END:
+#+title: Story: Install compass-ng for external developers and gate CI with it
+#+description: An external developer gets the pinned compass-ng, and CI runs compass check as its gate.
+#+type: story
+#+level: s2
+#+filetags: :next:product_backlog:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+#+predecessor: E3BF90FE-43DF-4A30-9F2C-FF5E20128C88
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Continued from: [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]].
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-24                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A463E42D-7A73-44DC-BB9B-FEFF1D1413E2][Install compass-ng for external developers]] | BLOCKED | | | Document and script how a developer outside the fleet installs compass-ng, and keep the project usable when they do not. |
+| [[id:C333376D-5D88-4D73-BB2F-AACED7605D17][Run compass check in CI]] | STARTED | 2026-11-20 | | Install the pinned compass-ng release in CI and replace the single-gate workflows it covers with one compass check --ratchet job. |
+
+* Decisions
+
+* Out of scope
+
+-

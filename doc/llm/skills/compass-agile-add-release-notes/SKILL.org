@@ -7,7 +7,7 @@
 #+level: s4
 #+filetags: :llm:skill:skills:claude_code:agile:release:github:
 #+created: 2024-09-01
-#+updated: 2026-06-06
+#+updated: 2026-11-24
 
 #+begin_export markdown
 ---
@@ -98,6 +98,13 @@ verbs, run in order, from a task branch off =main=.
    fact) — reuses/updates in place rather than erroring or losing
    work.
 
+   The codenames are towns and villages of the Namibe province of
+   Angola, and nothing guards against a repeat: =release-notes draft=
+   accepts any name, including one already released. Check the
+   candidate against the =Codenames= section before drafting, and
+   prefer a place with no release beside it; a municipality's communes
+   keep the next few releases supplied.
+
 8. /Hand off to a human/. The release is always created in /draft/
    so a maintainer can review, attach binaries/screenshots, and
    publish.
@@ -110,6 +117,50 @@ owns it at sprint level.
 
 - [[id:9F274EE4-3CAB-47FD-BB6E-449D8B789D8C][How do I generate release notes?]] — the end-to-end procedure.
 - =PR Manager= — for the notes PR itself.
+
+* Codenames
+
+One codename per release, taken from the towns and villages of the Namibe
+province of Angola. Check a candidate against this list before drafting; the
+list is the only guard against a repeat.
+
+| Tag     | Codename |
+|---------+----------|
+| v0.0.1 | At the beginning there was darkness |
+| v0.0.2 | Fazenda Mucongo |
+| v0.0.3 | Venâncio Guimarães |
+| v0.0.4 | Fazenda Camilunga |
+| v0.0.5 | Tambor |
+| v0.0.6 | Nonguai |
+| v0.0.7 | Pediba |
+| v0.0.8 | Espinheira |
+| v0.0.9 | Otchifengo |
+| v0.0.10 | Morros do Tchitundulo |
+| v0.0.11 | Cambêno |
+| v0.0.12 | Gruta do Leão |
+| v0.0.13 | Cainde |
+| v0.0.14 | Curoca Norte |
+| v0.0.15 | Isaias |
+| v0.0.16 | Oncocua |
+| v0.0.17 | Mutumieque |
+| v0.0.18 | Jose Sobral |
+| v0.0.19 | Rocha |
+| v0.0.20 | Capopolo |
+| v0.0.21 | Otjinhungwa |
+| v0.0.22 | Epupa |
+| v0.0.23 | Taca |
+| v0.0.24 | Capunda |
+| v0.0.25 | Lucira |
+| v0.0.26 | Baía dos Tigres |
+| v0.0.27 | Bentiaba |
+| v0.0.28 | Tômbwa |
+| v0.0.29 | Moçâmedes |
+| v0.0.30 | Bibala |
+
+Namibe's municipalities are Moçâmedes, Bibala, Camucuio, Virei and Tômbwa.
+=Bibala= is the first release named after its own town; =Camucuio=, =Virei=,
+and Bibala's communes =Caitou=, =Lola= and =Kapagombe= are unused and next in
+line.
 
 * Reference
 

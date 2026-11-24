@@ -119,7 +119,10 @@ public:
 
 private:
     struct idle_connection final {
-        std::unique_ptr<connection> connection;
+        // GCC 16 refuses a member whose name repeats its own type's name, and
+        // -Wchanges-meaning makes that an error, so the member is named for
+        // what it holds.
+        std::unique_ptr<connection> conn;
         std::chrono::steady_clock::time_point since;
     };
 

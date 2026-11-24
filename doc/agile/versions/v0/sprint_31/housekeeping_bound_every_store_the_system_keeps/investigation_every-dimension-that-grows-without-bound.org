@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: FEAF481D-C631-4452-9896-22E5486CF2F1
+:END:
+#+title: Investigation: Every dimension that grows without bound
+#+description: The inventory of every store that grows without bound: what each holds today, what writes it, how fast it grows, and which mechanism bounds it, including the ones that have none.
+#+type: investigation
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+
+A point-in-time record, written while the story that commissioned it was open, of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into The inventory of every store that grows without bound: what each holds today, what writes it, how fast it grows, and which mechanism bounds it, including the ones that have none..
+
+It is a snapshot, not a description of the system. Whatever it concludes that the code must keep doing belongs on the page that owns the subject; cite that page from code, recipes and models, not this one.
+
+* Context
+
+(Describe the original problem, research question, or incident that triggered this investigation. What was the observed behavior and why was it significant?)
+
+* Methodology
+
+(Describe how the investigation was conducted. List the tools used, the reproduction steps, the environment details, and the datasets involved.)
+
+* Paths taken
+
+(Provide a detailed log of the various approaches explored during the investigation. Be transparent about what was tried and why, especially for paths that were ultimately unsuccessful or abandoned. Link to related PRs, branches, or commits where available.)
+
+- [[https://github.com/OreStudio/OreStudio/pull/NNN][PR #NNN]] — (Describe what this approach was and why it failed or was set aside).
+
+* Conclusions
+
+(Summarize the ultimate findings of the investigation. What is the root cause? What have we learned about the system's behavior or limits?)
+
+* Recommendations
+
+(Suggest the next steps or new architectural approaches based on these findings. Focus on the high-level strategy rather than implementation-level detail. Identify any follow-up tasks or stories that should be created.)
+
+* See also
+
+- (Links to related knowledge docs, tasks, or external references.)

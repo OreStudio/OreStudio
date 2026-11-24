@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F
+:END:
+#+title: Story: Housekeeping: bound every store the system keeps
+#+description: Every store the system keeps grows without bound, because nothing deletes old data and nothing deletes old artefacts. Measured on the shared cluster on 2026-11-24: environment databases run from 415 MB to 13 GB. In the largest healthy one, ores_reporting_report_cashflows_tbl holds 1777 MB, ores_marketdata_delivery_counts_tbl 1270 MB, calendar dates 612 MB and ticks 72 MB, while report tables other than cashflows are small. The growth is therefore not uniform: cashflows, counters, calendars and compute artefacts each have their own shape and their own fix. Retention is declared on ticks alone and the Apache Timescale edition runs no retention job at all, so even that declaration does nothing. Nothing models a policy, nothing schedules a sweep, and no screen shows a person what the system is keeping. This story inventories every dimension, decides the concepts, models the configuration as data, gives it a screen, and applies it to each dimension.
+#+type: story
+#+level: s2
+#+filetags: :housekeeping:retention:database:storage:timescaledb:sprint_31:v0:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+No store the system keeps grows without bound: each one has a declared policy, held as data and visible on a screen, and a mechanism that applies it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-24                               |
+
+* Acceptance
+
+- Every dimension that grows without bound is identified, with its current size, its growth rate and the artefact that produces it
+- The concepts are named and decided: what a retention policy is, what it attaches to, who runs the sweep, and what happens when the licence forbids the obvious mechanism
+- The configuration is data, modelled and stored like any other entity, not hard-coded per table
+- A person can see and change the policy of a dimension from a screen
+- Each dimension has a mechanism that bounds it, or a recorded decision that it is kept indefinitely and why
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:093C2CAE-AA56-4317-B10B-9AD0BF1E7593][Scaffold story: Housekeeping: bound every store the system keeps]] | STARTED | 2026-11-24 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B510B5D5-CA8B-4936-B289-508579036354][Implement Housekeeping: bound every store the system keeps]] | BACKLOG | | | Initial task for: Housekeeping: bound every store the system keeps |
+| [[id:701FF7D7-23D5-49D0-BE2E-661AFEE24654][Inventory every dimension that grows without bound]] | BACKLOG | | | Task for: Housekeeping: bound every store the system keeps |
+
+* Decisions
+
+* Out of scope
+
+-

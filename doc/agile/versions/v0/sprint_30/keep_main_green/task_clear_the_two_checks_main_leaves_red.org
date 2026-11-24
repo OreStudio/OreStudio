@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: EA12FD69-D331-4005-B439-4DF49D5410DC
+:END:
+#+title: Task: Clear the two checks main leaves red
+#+description: The timescaledb library scan reads every cluster's directory even when it is given one, so the check fails on any machine with the extension installed. And the XML benchmark has no row after the commit that changed the measured files, so the check fails on every branch until someone measures.
+#+type: task
+#+level: s1
+#+filetags: :keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch: feature/pick-up-the-v0-0-30-releases
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The two checks that are red on main for reasons unrelated to any branch pass again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+- timescaledb_libraries reads only the directory it is given when one is given, and the compass suite passes.
+- The XML benchmark records a row after the commit that changed the measured files, and history.tsv carries it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+=timescaledb_libraries= read every cluster's library directory even when it was
+given one, so on a machine with the extension installed it returned the installed
+version beside the one it was asked about, and the test that passes a temporary
+directory failed. It now reads only the directory it is given, and falls back to
+every installed cluster when it is given none, which is what its own docstring
+said. The compass suite passes: 589 tests, 2 skipped.
+
+The XML benchmark had no row after =0714120eac=, the commit that adopted
+compass-ng v0.0.7 and changed the measured files, so the check failed on every
+branch. The benchmark was rebuilt and run, and history.tsv carries 96 new rows
+measured on clang 16 at -O3.
+
+The gate is green: 25 of 25.

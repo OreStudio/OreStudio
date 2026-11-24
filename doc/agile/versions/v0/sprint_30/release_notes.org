@@ -175,6 +175,11 @@ Steady upward slope is healthy; plateauing signals a stall.
 #+attr_html: :width 100%
 [[proj:doc/agile/versions/v0/sprint_30/stories_done.png]]
 
+/The last step is the close itself: nineteen stories that were split and
+ten that had finished their tasks but were never closed all land on the
+same day. Read the shape of the first sixteen days, not the final jump./
+
+
 * ↩️ Carried forward
 
 These stories closed with part of their work done. Each remaining scope lives

@@ -8,7 +8,7 @@
 #+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 5096
 #+blocked_on: A compass-ng release carrying evidence/compass_handover_send_the_request_body.md
 #+blocked_since: 2026-11-25
 #+created: 2026-11-22
@@ -141,7 +141,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5096][#5096]] | [agile] Record the parity story's finished tasks and block the recipe task |
 
 * Review
 

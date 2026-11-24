@@ -242,11 +242,7 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
-The coverage read answers in one statement. The service's
-=list_market_fixing_coverage='s sibling =get_fixing_coverage= takes the batch of
-series ids and answers four parallel columns — the ids, the first and last dates
+The coverage read answers in one statement. The service's =get_fixing_coverage= takes the batch of series ids and answers four parallel columns — the ids, the first and last dates
 and the counts — for each series that holds a value, ordered by id. The gateway
 makes one call and joins it to the catalogue in memory in one pass.
 

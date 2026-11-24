@@ -17,12 +17,12 @@
 '
 @startuml
 
-title Housekeeping: the parts and what the executor touches
+title Housekeeping: the parts, and what the executor treats
 
 actor "Operator" as op
 
 component "Housekeeping screen" as screen
-database "Policy table\n(declared bounds)" as policy
+database "Retention policy table" as policy
 component "Scheduler" as sched
 component "Housekeeping executor" as exec
 component "Policy telemetry" as tel
@@ -37,8 +37,8 @@ screen --> policy : writes
 sched --> exec : fires on a configured cadence
 exec --> policy : reads the enabled policies
 exec --> db : drops chunks, deletes rows
-exec --> obj : deletes a prefix
-exec --> cache : prunes a content-addressed copy
+exec --> obj : expires a key prefix
+exec --> cache : evicts a cache entry
 exec --> scratch : releases after the upload
 exec --> tel : records the size and the outcome
 tel --> screen : shows the size beside its policy

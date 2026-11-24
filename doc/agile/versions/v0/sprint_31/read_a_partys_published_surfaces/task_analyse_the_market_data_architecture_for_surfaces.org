@@ -28,9 +28,9 @@ A written target picture, agreed with the reader, that defines how a party's vol
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:58E7AD14-ED53-478B-AA37-34FE6607E794][Read a party's published surfaces]] |
-| Now          | Analysis written; the target picture waits on agreement. |
-| Waiting on   | Agreement on the target picture in =* Notes=. |
-| Next         | Convert the gaps into tasks once the picture is agreed. |
+| Now          | Analysis and the lifecycle documentation are written. |
+| Waiting on   | Agreement on the story outline in =* Notes=. |
+| Next         | Create the six stories, four of them new. |
 | Last touched | 2026-11-24                               |
 
 * Acceptance
@@ -323,20 +323,52 @@ are built on it.
     make the target picture disagree with the code, and the user's requirement
     is that the docs define the architecture and the code implement it.
 
-**Proposed task order**
+**What this task produced**
 
-1. Correct the four journey pages and the two seed comments, so the base is
-   honest.
-2. One lifecycle over a kind declaration, and the surface and the forward set
-   moved onto it. This carries the forward's missing notice and supersession
-   with it.
-3. The withdrawal act for surfaces.
-4. The list read, and the detail the record page needs: the calibration verdict,
-   the blueprint id, the axes and the conventions.
-5. The history read.
-6. The web tree and the bff module.
-7. The manual point rule written into the knowledge base, and the spread
-   overlay if we keep it in this story.
+The target picture now lives in the knowledge base and not only in this task, so
+that the code has a specification to match. The pages are one description for
+every kind, with the kind-specific parts stated once each.
+
+| Page | What it settles |
+|------+-----------------|
+| [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]] | The two objects, the two state machines, the six acts, the declaration a kind supplies, and where the kinds stand |
+| [[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][The lifecycle record of a derived market object]] | One record, its five groups of columns, the subject part per kind, and what the record does not hold |
+| [[id:C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4][Manual marks on a derived market object]] | The precedence rule, where it is enforced, its limit, and the act that has no manual form |
+| [[id:B3F03DBB-EBD1-4649-94E5-6C5C1B67A084][Notification of a change to a published market data set]] | The two channels, what a notice may carry, the recipients and the per-kind seed |
+| [[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Reading a published market data set]] | The list, the record, the comparison and the values, and the per-kind state of each |
+
+Five diagrams were added: the states of a set, the states of a request, the
+record and its subject parts, the manual precedence at the write and at the read,
+the withdrawal sequence, and the four reads. The withdrawal page and the publish
+structure note were brought into the same reading order.
+
+Gap 10 of the list is closed by this work, because the manual point rule now has
+a page rather than a comment in a header. The remaining gaps become stories
+rather than tasks, because four of them share one cause.
+
+**The stories the gaps become**
+
+Four of the twelve gaps share one cause, so they are one story and not four
+tasks. The other eight belong to stories that already exist or that carry one
+cause each.
+
+| Story | Closes | Depends on |
+|-------+--------+------------|
+| Bring the market data journeys up to the delivered state | gap 12, and the stale seeds | nothing |
+| Publish every kind of derived market object through one lifecycle | gaps 1, 2, 3 | the correction above |
+| Hold one publish record with a subject part per kind | the three copies of the record inside gap 1 | the lifecycle story |
+| Read a party's published surfaces | gaps 4, 5, 6, 7, 8, 9 | the lifecycle story |
+| Adjust a published set by a spread overlay | the spread overlay inside gap 10, and the guard's race | nothing |
+| Calibrate and publish the surfaces on a schedule | gap 11 | the lifecycle story |
+
+The reading story is the one already in this sprint, and the scheduling story is
+the one already in the product backlog. The other four are new.
+
+The order is the correction first, because a gap measured against a stale page is
+a gap in the wrong place; the lifecycle second, because it is the cause of three
+gaps and because the reading story cannot state a surface's withdrawal until the
+withdrawal exists; and the record third, because it is a migration behind the
+interface the lifecycle story introduces and it need not block the reader.
 
 * Test Scenarios
 

@@ -64,7 +64,7 @@ A list takes the ended sets too, because the question "which set was in use
 yesterday" is a question about a superseded or withdrawn one. The filter is a
 field of the request and not a property of the endpoint.
 
-** The record and its history**
+** The record and its history
 
 The record is one set, read by its publish or by its subject and an as-of. It
 gives the header facts, the approval that authorised it, the rule that closed the
@@ -76,7 +76,7 @@ one subject, newest as-of first, each with its state. A history is not a second
 store. It is the record's own rows, which is why a withdrawal appears in it as a
 new version of one row and not as a deletion.
 
-** The comparison**
+** The comparison
 
 A comparison takes two publishes of one subject and gives the difference per
 node. Two details decide whether the difference means anything, and both are the
@@ -89,7 +89,7 @@ find. The second is the age of each side. A difference between two points
 recorded far apart is not a move in the market, so each side carries the instant
 it represents beside its value.
 
-** The values**
+** The values
 
 The values are read from the published set and never from the candidate. What
 differs by kind is only the shape of the answer.
@@ -110,7 +110,7 @@ second read: the grid already holds it.
 Source: [[proj:doc/knowledge/architecture/reading_a_published_set.puml][=reading_a_published_set.puml=]]. Regenerate with
 =plantuml -tpng doc/knowledge/architecture/reading_a_published_set.puml=.
 
-** What a reader never receives**
+** What a reader never receives
 
 Three refusals and one peculiarity hold for every kind.
 
@@ -126,7 +126,7 @@ The peculiarity is the staleness verdict, which is a fact of the read and not of
 the set: it compares the read's instant with the instant the set was built at, so
 the same set is fresh in one read and stale in another.
 
-** Where the kinds stand**
+** Where the kinds stand
 
 | Read | IR curve | FX forward set | FX volatility surface |
 |------+----------+----------------+-----------------------|

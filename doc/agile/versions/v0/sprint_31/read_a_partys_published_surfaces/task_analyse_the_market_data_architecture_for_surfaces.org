@@ -323,7 +323,7 @@ are built on it.
     make the target picture disagree with the code, and the user's requirement
     is that the docs define the architecture and the code implement it.
 
-**What this task produced**
+** What this task produced
 
 The target picture now lives in the knowledge base and not only in this task, so
 that the code has a specification to match. The pages are one description for
@@ -346,7 +346,7 @@ Gap 10 of the list is closed by this work, because the manual point rule now has
 a page rather than a comment in a header. The remaining gaps become stories
 rather than tasks, because four of them share one cause.
 
-**The stories the gaps become**
+** The stories the gaps become
 
 Four of the twelve gaps share one cause, so they are one story and not four
 tasks. The other eight belong to stories that already exist or that carry one

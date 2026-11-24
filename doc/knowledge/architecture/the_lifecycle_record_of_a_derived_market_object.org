@@ -39,7 +39,7 @@ written, and every act of the lifecycle writes to one of them.
 | The candidate | The points, their lineage, and the result of every check | The kind's compute |
 | The publish | The authority: party, as-of, subject, candidate version, output series, publisher, instant, and the end of the set | The apply, and the withdrawal's apply |
 
-** The columns every kind shares**
+** The columns every kind shares
 
 The publish record is one table of the lifecycle, and the columns fall into five
 groups. A reader of any kind reads all five, so a screen that lists sets, or a
@@ -63,7 +63,7 @@ decides that ([[id:86158AAD-423A-421A-8BE2-CC5123109297][As-of resolution of pub
 set is taken for an as-of before its successor's, and again after its successor
 is withdrawn.
 
-** The subject part**
+** The subject part
 
 The subject part is the only table a kind owns in the record, and it is keyed by
 the publish. It states what the set is a set of, in the words of the kind's own
@@ -90,7 +90,7 @@ Source: [[proj:doc/knowledge/architecture/the_lifecycle_record.puml][=the_lifecy
 diagram states the target shape and not the live schema, which is drawn by the
 generated diagram in [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram conventions]].
 
-** What the record does not hold**
+** What the record does not hold
 
 Three kinds of fact are deliberately outside the record, and a reader that wants
 them reads the record they belong to.
@@ -107,7 +107,7 @@ them reads the record they belong to.
   the point and not of the publish, and a set whose blueprint gained a
   contributor after the publish does not thereby change its own record.
 
-** Why one record**
+** Why one record
 
 Two consequences follow from the shape, and both are the reason for it.
 
@@ -123,7 +123,7 @@ two approval kinds ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication l
 Nothing in the raise, the apply, the withdrawal or the read branches on which
 kind it serves.
 
-** The distance to the code**
+** The distance to the code
 
 The record is one shape in this page and three shapes in the tree. Each kind
 carries its own table with the shared columns repeated, and the columns a kind

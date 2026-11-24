@@ -34,7 +34,7 @@ absent, so the hand value stands in for a value nobody quoted. The person wants 
 what-if, so the hand value is a candidate and nothing more. The first two change
 what a set would be if it were published; the third never leaves the desk.
 
-** What a manual mark carries**
+** What a manual mark carries
 
 | Fact | Why it is needed |
 |------+------------------|
@@ -48,7 +48,7 @@ The coordinate is checked against the shape the object declares, so a node the
 shape does not hold is refused. A curve carries a tenor on its coordinate; a
 surface carries an expiry and a strike label.
 
-** The precedence rule**
+** The precedence rule
 
 The rule is stated in five parts, and each part is load-bearing.
 
@@ -85,7 +85,7 @@ the rule.
 Only the operation that keys a manual point writes a manual point, and it does
 not pass through the guard.
 
-** What a mark leaves behind**
+** What a mark leaves behind
 
 Each key writes a new observation row, so a node adjusted twice holds two rows,
 and the history keeps every correction rather than the last one. An annex row
@@ -93,7 +93,7 @@ records that the point was written by hand, with the author and the reason, so a
 reader can tell a manual point from a feed point without asking the value. A
 clear releases them all, and the read returns the automatic value.
 
-** The limit of the rule**
+** The limit of the rule
 
 The guard reads the annex and the insert is a separate statement. A manual point
 committed between those two statements, by another transaction, can therefore
@@ -101,7 +101,7 @@ still be replaced by an automatic write at its instant. The window is one round
 trip wide. Closing it needs the check inside the insert statement itself, which
 is a single statement and not a second round trip.
 
-** What has no manual form**
+** What has no manual form
 
 A mark is one point. A spread overlay is many points moved by one decision: a
 parallel shift or a twist, over a node or a segment, with its own reason. That
@@ -109,7 +109,7 @@ act does not exist, and it is not a loop of marks, because the overlay applies t
 whatever the automatic values are at the time it is read and a mark fixes one
 value forever.
 
-** Where the kinds stand**
+** Where the kinds stand
 
 The operation is shape-driven, so it addresses a curve and a surface by the axes
 the shape declares, and it serves both. What differs is the way in, and the

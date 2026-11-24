@@ -42,7 +42,7 @@ trigger fires once for the set published and once for each set it ended, and no
 reader could tell from those rows which of them was the act. The notice is
 written once, by the act, and says what the act meant.
 
-** What the notice names**
+** What the notice names
 
 The same shape serves a publish and a withdrawal, and the difference is one
 field.
@@ -60,7 +60,7 @@ carried the points would be a second copy of the set, and the two copies would
 drift. It carries a link to the record page instead, which is where the values
 are read ([[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Reading a published market data set]]).
 
-** The outbox**
+** The outbox
 
 The notice is a row written in the transaction that publishes or withdraws the
 set, and it is delivered from there after the commit
@@ -74,7 +74,7 @@ it.
 Telling is therefore never the act. A failure is logged, retried and left in the
 outbox, and the set stays published.
 
-** The recipients**
+** The recipients
 
 The recipients are the accounts of the party that holds the set and the accounts
 of the tenant that may read market series, resolved when the notice is raised so
@@ -86,7 +86,7 @@ not an account. A service that must react to a published set binds it and reads
 it, and it learns of a move from its own read and from the change event, not from
 the notice.
 
-** The kinds, per kind**
+** The kinds, per kind
 
 Every kind that publishes must seed a notice kind for its publish, and every kind
 that withdraws must seed one for its withdrawal. The rule is the same for each,

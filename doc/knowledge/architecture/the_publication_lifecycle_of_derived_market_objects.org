@@ -73,7 +73,7 @@ A request publishes once. The apply refuses a request that has published
 already, and the next publish is a new request, because an approval is a decision
 on one candidate version and a second publish decides different numbers.
 
-** The acts**
+** The acts
 
 Six acts make up the lifecycle, and each is documented once for every kind.
 
@@ -92,7 +92,7 @@ act that moves a published set tells its readers
 ([[id:C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4][Manual marks on a derived market object]],
 [[id:B3F03DBB-EBD1-4649-94E5-6C5C1B67A084][Notification of a change to a published market data set]]).
 
-** What a kind supplies**
+** What a kind supplies
 
 A kind is a declaration and never a copy of the lifecycle. It states four things.
 
@@ -107,7 +107,7 @@ The two approval kinds are part of the declaration and not an afterthought. A
 kind that names a publish kind and no withdrawal kind cannot take a wrong set out
 of use, and a kind that names neither cannot be published at all.
 
-** The kinds**
+** The kinds
 
 The three kinds in the tree, with the declaration each supplies. The row is the
 whole of what a kind owns.
@@ -118,7 +118,7 @@ whole of what a kind owns.
 | FX forward set | a currency pair | the forward compute, by covered interest parity from two published curves | the recipe and the inputs' state | =marketdata.fx_forward_publish= | none |
 | FX volatility surface | a surface blueprint | the calibration | two: the recipe, and the result's freedom from arbitrage | =marketdata.fx_vol_surface_publish= | none |
 
-** What is the same for every kind**
+** What is the same for every kind
 
 | Part | Page |
 |------+------|
@@ -133,7 +133,7 @@ whole of what a kind owns.
 | Telling a reader that a set moved | [[id:B3F03DBB-EBD1-4649-94E5-6C5C1B67A084][Notification of a change to a published market data set]] |
 | What a reader is given | [[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Reading a published market data set]] |
 
-** The record**
+** The record
 
 A publish is one record, whatever its kind, with the columns every kind shares.
 The subject is a part of its own, one table per kind, keyed by the publish. A
@@ -141,7 +141,7 @@ reader of any kind reads one shape. The record holds no values and no checks,
 because those belong to the candidate version the decision covered
 ([[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][The lifecycle record of a derived market object]]).
 
-** Where it lives**
+** Where it lives
 
 =ores.marketdata.service= holds the one implementation. A kind is a declaration
 beside it, never a copy of it: its subject part, its compute operation, its
@@ -150,7 +150,7 @@ compute, raise, apply, withdraw and read. The approval record is written by the
 inbox's library inside the same database transaction, because the inbox and
 market data share one database.
 
-** Where the kinds stand**
+** Where the kinds stand
 
 The lifecycle is one lifecycle in this page and three implementations in the
 tree. =curve_publish_gate.cpp=, =fx_forward_publish_service.cpp= and

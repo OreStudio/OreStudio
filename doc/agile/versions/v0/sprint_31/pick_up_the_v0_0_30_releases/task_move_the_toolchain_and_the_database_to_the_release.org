@@ -151,3 +151,34 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The ports and the compiler are picked up. The database stays on 18, with the 19
+move proven and its blocker named.
+
+The build compiled the whole tree on the new ports and the dist-upgraded
+compiler and standard library: 29 minutes 43 seconds, from a tree whose
+precompiled headers had to be rebuilt because the upgrade rewrote the C++
+standard library headers. No port failed against the new registry.
+
+The suite ran 108 tests. 104 passed. The four that failed were looked at one at
+a time:
+
+- =ores.refdata.core.tests=, =ores.inbox.core.tests= and =ores.workflow.core.tests=
+  failed because the fleet was stopped and their pooler, on port 20407, was not
+  listening. Started the fleet and all three passed: 99, 11 and 14 seconds.
+- =ores.marketdata.core.tests= failed on two assertions in the narrowed-export
+  test, which is main's fault and not this move's: =8f71717dfa= made a run carry
+  the interest rate quotes its curves are built from and left the test asserting
+  the older rule. The test was brought onto the rule and the whole binary passes:
+  478 cases, 45316 assertions.
+
+Every test that failed therefore passes when run against a running fleet, and
+nothing in the suite failed on the toolchain or the ports.
+
+The database move is recorded as the story's decision: TimescaleDB has no package
+for 19 in Debian, in PGDG or in its own repository, and the hypertables, the
+compression and the retention cost the fleet more than being one major version
+behind. =setup_extensions.sql= and =technical_space_sql.org= now say "18" rather
+than naming a major the environment cannot run.

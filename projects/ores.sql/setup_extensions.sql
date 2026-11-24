@@ -42,7 +42,10 @@
  *
  * PREREQUISITES FOR TIMESCALEDB (optional):
  *   - TimescaleDB must be installed on the system:
- *       Debian/Ubuntu: apt install postgresql-18-timescaledb
+ *       Debian/Ubuntu: apt install postgresql-<major>-timescaledb
+ *       No package for 19 exists yet (Debian, PGDG and TimescaleDB's own
+ *       repository all stop at 18), so the cluster stays on 18 unless the
+ *       extension is built or a package lands.
  *       macOS:         brew install timescaledb
  *   - TimescaleDB must be added to shared_preload_libraries in postgresql.conf:
  *       shared_preload_libraries = 'timescaledb'

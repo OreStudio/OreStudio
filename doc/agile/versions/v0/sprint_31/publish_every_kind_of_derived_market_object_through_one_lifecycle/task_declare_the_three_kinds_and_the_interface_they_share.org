@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :publish_every_kind_of_derived_market_object_through_one_lifecycle:sprint_31:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/declare-the-three-kinds-and-the-interface-they-share
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ A kind is a declaration of its subject, its compute, its checks and its approval
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -37,13 +37,38 @@ A kind is a declaration of its subject, its compute, its checks and its approval
 
 - The declaration names the subject, the compute, the checks and the two approval kinds, and the three kinds declare theirs in one place each.
 - The interface carries the four facts the lifecycle needs from a kind, and no step of raise, apply, supersede or notice reads a kind code.
-- A test proves that a kind which declares no withdrawal kind is refused a withdrawal at the raise, and not at the apply.
+- A test proves that a kind which declares no withdrawal kind is refused a withdrawal, and that the refusal names the kind. The shared raise calls it in the next task.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The declaration is data and the interface is the seam the shared lifecycle calls.
+This task fixes both, and the next task builds the acts over them.
+
+The declaration is one row per kind: the publish approval kind, the withdrawal
+approval kind or none, and the table its subject part lives in. The array is the
+only place a kind is named, and the kind codes are the constants the handlers
+already pass to =raise_permission_of=, so a rename reaches the declaration
+without a second edit.
+
+The interface carries the four facts of the acceptance, and each is per-kind code
+today, sitting inside its own service:
+
+| Part | What the lifecycle needs from the kind | Where it lives today |
+|------+----------------------------------------+----------------------|
+| Subject | Resolve a party, a subject and an as-of into the subject and its output series, refusing another party's subject | =resolve_publish_subject= for a curve; the forward ladder's pair and curves; the surface blueprint |
+| Compute | Compute a candidate for a subject at an as-of, and store it with its checks | the curve bootstrap; the forward compute; the surface calibration |
+| Checks | The blocking failure that refuses a raise, or nothing | the curve's non-convergence; the forward set's input state; =blocking_failure_of= for a surface |
+| Approval kinds | The publish kind and the withdrawal kind, read at the raise | the inbox kind rows, named by the declaration above |
+
+The methods the next task introduces, one per fact the shared acts need, are
+=resolve_subject=, =blocking_failure=, =write_publish=, =supersede_live_sets=,
+=mark_withdrawn=, =announce_published= and =announce_withdrawn=. Each kind
+implements them by calling what it already does, so the shared acts are a
+sequence and no kind loses behaviour.
+
+The one rule this task enforces already is the withdrawal: a kind that declares
+no withdrawal kind cannot take a set out of use, and the refusal is answered
+where the withdrawal is raised and not where it would be applied.
 
 * Measurements
 

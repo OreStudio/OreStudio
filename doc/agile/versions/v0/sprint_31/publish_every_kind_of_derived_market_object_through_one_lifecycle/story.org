@@ -21,7 +21,7 @@ ores.marketdata holds one implementation of the raise, the decide, the apply and
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -40,7 +40,7 @@ ores.marketdata holds one implementation of the raise, the decide, the apply and
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:E11F9816-9A61-44B2-852C-EE2F282CFD0B][Declare the three kinds and the interface they share]] | BACKLOG | | | State the four things a kind supplies, and the interface the one lifecycle calls through. |
+| [[id:E11F9816-9A61-44B2-852C-EE2F282CFD0B][Declare the three kinds and the interface they share]] | STARTED | 2026-11-24 | | State the four things a kind supplies, and the interface the one lifecycle calls through. |
 | [[id:B153E922-AE1D-48FB-9998-5AD72DF9113A][Serve the raise, the decide and the apply once]] | BACKLOG | | | One raise, one apply and one supersession, called for every kind through the declaration. |
 | [[id:AFAA7027-4896-4E22-B76F-A743DABF0CDC][Carry the forward set's supersession and notice]] | BACKLOG | | | Give the FX forward set the supersession columns and the publish notice every other kind has. |
 | [[id:88CDEB14-2F43-407C-847F-0D85C96C74C4][Delete the three publish implementations]] | BACKLOG | | | Remove the three copies of the lifecycle and the subject no caller serves. |

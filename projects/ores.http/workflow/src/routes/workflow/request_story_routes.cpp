@@ -67,7 +67,8 @@ void request_story_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/requests/{id}/story").catalogue("web_get_requests_id_story", "workflow", "requests", false)
+    add(router->get("/api/requests/{id}/story")
+            .catalogue("web_get_requests_id_story", "workflow", "requests", false)
             .summary("One request's whole story, newest first")
             .description("A composed view owned by ores.workflow: every row any component wrote "
                          "for the request, in one stream. The request's own versions, the answers "

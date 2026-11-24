@@ -69,7 +69,8 @@ void lookup_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/approvals-mode").catalogue("web_get_approvals_mode", "workflow", "approvals_mode", false)
+    add(router->get("/api/approvals-mode")
+            .catalogue("web_get_approvals_mode", "workflow", "approvals_mode", false)
             .summary("Whether the tenant enforces approvals, and who said so")
             .description("The mode the inbox holds for the caller's tenant, with its scope and "
                          "the person who set it, when and why. The read is the service's: the "
@@ -88,7 +89,8 @@ void lookup_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/hold-reasons").catalogue("web_get_hold_reasons", "workflow", "hold_reasons", false)
+    add(router->get("/api/hold-reasons")
+            .catalogue("web_get_hold_reasons", "workflow", "hold_reasons", false)
             .summary("The codes a decider may park a request with, and which kinds allow a hold")
             .description("A hold names a code from this list rather than free text, so the "
                          "decision panel offers it. The list is a tenant-wide lookup and carries "

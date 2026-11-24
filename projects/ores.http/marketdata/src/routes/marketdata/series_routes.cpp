@@ -137,7 +137,8 @@ void series_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/series/{id}/observations").catalogue("web_get_series_id_observations", "market-data", "series", false)
+    add(router->get("/api/series/{id}/observations")
+            .catalogue("web_get_series_id_observations", "market-data", "series", false)
             .summary("One series' observations inside a window, oldest first")
             .description("The window is turned into the earliest observation the read takes "
                          "here rather than in the browser, because the deployment's clock is the "

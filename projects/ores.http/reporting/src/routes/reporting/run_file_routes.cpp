@@ -685,7 +685,8 @@ void run_file_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/reporting/runs/{id}/files").catalogue("web_get_reporting_runs_id_files", "reporting", "runs", false)
+    add(router->get("/api/reporting/runs/{id}/files")
+            .catalogue("web_get_reporting_runs_id_files", "reporting", "runs", false)
             .summary("The files of one report run, and the tree they hang in")
             .description("The run, its batch, each job of the batch, and each job's input "
                          "package and output. A package that cannot be read leaves its archive "
@@ -712,7 +713,8 @@ void run_file_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/reporting/runs/{id}/files/{file}/info").catalogue("web_get_reporting_runs_id_files_file_info", "reporting", "runs", false)
+    add(router->get("/api/reporting/runs/{id}/files/{file}/info")
+            .catalogue("web_get_reporting_runs_id_files_file_info", "reporting", "runs", false)
             .summary("What one file of a report run is, and the parameters that name it")
             .description("The file, the ORE file the catalogue says it is, the parameters that "
                          "describe it, the engine version the job ran on and whether that "
@@ -778,7 +780,8 @@ void run_file_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/reporting/runs/{id}/files/{file}").catalogue("web_get_reporting_runs_id_files_file", "reporting", "runs", false)
+    add(router->get("/api/reporting/runs/{id}/files/{file}")
+            .catalogue("web_get_reporting_runs_id_files_file", "reporting", "runs", false)
             .summary("The bytes of one file of a report run")
             .description("A file inside a package is copied out of it as it is asked for, so "
                          "reading one result never reads the package that holds it.")

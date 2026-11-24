@@ -82,7 +82,8 @@ void reporting_routes::register_health_routes(
     nats_client& session) {
     using forwarding::guarded;
     const auto built =
-        router->get("/api/reporting/report-health").catalogue("web_get_reporting_report_health", "reporting", "report_health", false)
+        router->get("/api/reporting/report-health")
+            .catalogue("web_get_reporting_report_health", "reporting", "report_health", false)
             .summary("The report definitions of a party, counted by their health")
             .description("Each health word with the number of definitions that "
                          "carry it, in the service's own order, and the total it "

@@ -116,7 +116,8 @@ void timeline_routes::register_routes(
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
     const auto built =
-        router->get("/api/timeline").catalogue("web_get_timeline", "workflow", "timeline", false)
+        router->get("/api/timeline")
+            .catalogue("web_get_timeline", "workflow", "timeline", false)
             .summary("One subject's story, newest first")
             .description("A composed view owned by ores.workflow: every row any component wrote "
                          "for one subject, in one stream. The browser names a subject, never an "

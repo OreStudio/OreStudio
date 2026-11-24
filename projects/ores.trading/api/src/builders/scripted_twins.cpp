@@ -242,21 +242,21 @@ std::optional<twin_event> whole_schedule(const instrument_batch& batch,
         if (!row.shift)
             throw refuse("states no shift");
         return scripted_derived{.base = std::string(*source.base),
-                                    .shift = *row.shift,
-                                    .calendar = row.calendar,
-                                    .convention = row.convention};
+                                .shift = *row.shift,
+                                .calendar = row.calendar,
+                                .convention = row.convention};
     }
     if (row.schedule_kind != "rules")
         throw refuse("is " + row.schedule_kind + ", which a twin cannot read");
     if (!row.start_date || !row.end_date || !row.tenor)
         throw refuse("states no start, end or tenor");
     return scripted_schedule{.start = *row.start_date,
-                                 .end = *row.end_date,
-                                 .tenor = *row.tenor,
-                                 .calendar = row.calendar,
-                                 .convention = row.convention,
-                                 .term_convention = row.term_convention,
-                                 .rule = row.rule};
+                             .end = *row.end_date,
+                             .tenor = *row.tenor,
+                             .calendar = row.calendar,
+                             .convention = row.convention,
+                             .term_convention = row.term_convention,
+                             .rule = row.rule};
 }
 
 /**
@@ -268,9 +268,9 @@ std::optional<scripted_derived> derived_of(std::string_view source) {
     if (words.size() != 6 || words[1] != "shifted" || words[3] != "on")
         return std::nullopt;
     return scripted_derived{.base = std::string(words[0]),
-                                .shift = std::string(words[2]),
-                                .calendar = std::string(words[4]),
-                                .convention = std::string(words[5])};
+                            .shift = std::string(words[2]),
+                            .calendar = std::string(words[4]),
+                            .convention = std::string(words[5])};
 }
 
 /// Whether the source states an event: a whole schedule or a derived one.
@@ -290,8 +290,8 @@ std::optional<twin_event> event_of(const instrument_batch& batch, std::string_vi
     for (const auto part : parts)
         if (!schedule_source_of(part) && !derived_of(part))
             throw scripted_twin_error("The twin recipe source '" + std::string(source) +
-                                         "' mixes an event with the value '" + std::string(part) +
-                                         "'.");
+                                      "' mixes an event with the value '" + std::string(part) +
+                                      "'.");
     for (const auto part : parts) {
         if (auto derived = derived_of(part))
             return std::move(*derived);
@@ -308,11 +308,11 @@ std::vector<std::string> one_source(const instrument_batch& batch,
         return {std::string(source.substr(1, source.size() - 2))};
     if (schedule_source_of(source) || derived_of(source))
         throw scripted_twin_error("The twin recipe source '" + std::string(source) +
-                                     "' states an event, which a value cannot fall back to.");
+                                  "' states an event, which a value cannot fall back to.");
     const auto dot = source.rfind('.');
     if (dot == std::string_view::npos)
         throw scripted_twin_error("The twin recipe source '" + std::string(source) +
-                                     "' names no column.");
+                                  "' names no column.");
     // A column may pick one of its values by position, as <column>[<n>].
     if (const auto open = source.rfind('['); open != std::string_view::npos && open > dot) {
         std::size_t n = 0;
@@ -321,7 +321,7 @@ std::vector<std::string> one_source(const instrument_batch& batch,
         if (!source.ends_with(']') || error != std::errc{} ||
             end != digits.data() + digits.size() || n == 0)
             throw scripted_twin_error("The twin recipe source '" + std::string(source) +
-                                         "' picks no value by position.");
+                                      "' picks no value by position.");
         auto values = one_source(batch, trade_type_code, source.substr(0, open));
         if (values.size() < n)
             return {};
@@ -362,8 +362,8 @@ std::chrono::year_month_day date_of(const std::string& text) {
  * schedules must agree on their calendar and convention, which the event takes.
  */
 scripted_dates dated_list(const instrument_batch& batch,
-                              std::string_view trade_type_code,
-                              std::string_view source) {
+                          std::string_view trade_type_code,
+                          std::string_view source) {
     // A list of date values alone states no calendar, so ORE takes its dates as listed.
     scripted_dates out;
     bool adjusted = false;
@@ -372,7 +372,7 @@ scripted_dates dated_list(const instrument_batch& batch,
             const auto values = twin_source_values(batch, trade_type_code, part);
             if (values.empty())
                 throw scripted_twin_error("The twin recipe source '" + std::string(part) +
-                                             "' finds no date.");
+                                          "' finds no date.");
             for (const auto& value : values)
                 out.dates.push_back(date_of(value));
             continue;
@@ -381,10 +381,10 @@ scripted_dates dated_list(const instrument_batch& batch,
         auto* listed = event ? std::get_if<scripted_dates>(&*event) : nullptr;
         if (!listed)
             throw scripted_twin_error("The twin recipe source '" + std::string(part) +
-                                         "' states no listed dates, which an event list needs.");
+                                      "' states no listed dates, which an event list needs.");
         if (adjusted && (listed->calendar != out.calendar || listed->convention != out.convention))
             throw scripted_twin_error("The twin recipe source '" + std::string(source) +
-                                         "' lists schedules adjusted apart.");
+                                      "' lists schedules adjusted apart.");
         adjusted = true;
         out.calendar = listed->calendar;
         out.convention = listed->convention;
@@ -396,8 +396,8 @@ scripted_dates dated_list(const instrument_batch& batch,
     std::ranges::sort(sorted);
     if (const auto repeated = std::ranges::adjacent_find(sorted); repeated != sorted.end())
         throw scripted_twin_error("The twin recipe source '" + std::string(source) + "' lists " +
-                                     std::format("{:%Y-%m-%d}", *repeated) +
-                                     " twice, which ORE reads once.");
+                                  std::format("{:%Y-%m-%d}", *repeated) +
+                                  " twice, which ORE reads once.");
     return out;
 }
 
@@ -414,9 +414,9 @@ std::string transformed(std::string value, std::string_view transform) {
     }
     if (!known)
         throw scripted_twin_error("The twin recipe names the unknown transform '" +
-                                     std::string(transform) + "'.");
+                                  std::string(transform) + "'.");
     throw scripted_twin_error("The " + std::string(transform) + " transform reads no value '" +
-                                 value + "'.");
+                              value + "'.");
 }
 
 }
@@ -458,8 +458,8 @@ scripted_form scripted_form_of(const instrument_batch& instruments,
         inputs.push_back(std::move(input));
 
         scripted_variable variable{.name = std::string(row->input_name),
-                                       .type = std::string(row->data_type),
-                                       .value = std::string()};
+                                   .type = std::string(row->data_type),
+                                   .value = std::string()};
         if (std::string_view(row->data_type) == "Event" &&
             parts_of(row->source, " and ").size() > 1) {
             variable.value = dated_list(instruments, trade_type_code, row->source);
@@ -477,24 +477,22 @@ scripted_form scripted_form_of(const instrument_batch& instruments,
                     return other != row && other->input_name == derived->base &&
                            other->data_type == "Event";
                 }))
-                throw scripted_twin_error("The " + native_type + " " + script +
-                                             " form derives " + std::string(row->input_name) +
-                                             " from " + derived->base +
-                                             ", which is no other Event input.");
+                throw scripted_twin_error("The " + native_type + " " + script + " form derives " +
+                                          std::string(row->input_name) + " from " + derived->base +
+                                          ", which is no other Event input.");
             if (!event)
-                throw scripted_twin_error("The " + native_type + " " + script +
-                                             " form finds no schedule for " +
-                                             std::string(row->input_name) + " at " +
-                                             std::string(row->source) + ".");
+                throw scripted_twin_error(
+                    "The " + native_type + " " + script + " form finds no schedule for " +
+                    std::string(row->input_name) + " at " + std::string(row->source) + ".");
             std::visit([&](auto& e) { variable.value = std::move(e); }, *event);
             variables.push_back(std::move(variable));
             continue;
         }
         auto values = twin_source_values(instruments, trade_type_code, row->source);
         if (values.empty())
-            throw scripted_twin_error(
-                "The " + native_type + " " + script + " form finds no value for " +
-                std::string(row->input_name) + " at " + std::string(row->source) + ".");
+            throw scripted_twin_error("The " + native_type + " " + script +
+                                      " form finds no value for " + std::string(row->input_name) +
+                                      " at " + std::string(row->source) + ".");
         for (auto& value : values)
             value = transformed(std::move(value), row->transform);
         if (row->is_array)
@@ -508,9 +506,8 @@ scripted_form scripted_form_of(const instrument_batch& instruments,
             {.script_name = script, .inputs = std::move(inputs), .variables = std::move(variables)})
             .build();
     if (!built)
-        throw scripted_twin_error("The " + native_type + " " + script +
-                                     " form is refused at " + built.error().term + ": " +
-                                     built.error().message);
+        throw scripted_twin_error("The " + native_type + " " + script + " form is refused at " +
+                                  built.error().term + ": " + built.error().message);
 
     return {.script_name = script, .twin = recipe.front()->twin, .data = std::move(*built)};
 }
@@ -529,8 +526,8 @@ std::vector<std::vector<const script_twin_recipe*>> recipes_of(std::string_view 
             if (std::ranges::any_of(
                     out, [&](const auto& r) { return r.front()->script_name == row.script_name; }))
                 throw scripted_twin_error("The " + std::string(trade_type_code) +
-                                             " recipe rows of " + std::string(row.script_name) +
-                                             " are not together.");
+                                          " recipe rows of " + std::string(row.script_name) +
+                                          " are not together.");
             out.emplace_back();
         }
         out.back().push_back(&row);

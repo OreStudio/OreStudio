@@ -302,7 +302,8 @@ void request_proposal_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/requests/{id}/changes").catalogue("web_get_requests_id_changes", "workflow", "requests", false)
+    add(router->get("/api/requests/{id}/changes")
+            .catalogue("web_get_requests_id_changes", "workflow", "requests", false)
             .summary("What the request proposes, for any kind")
             .description("A composed view owned by ores.workflow: the request is read first, "
                          "because its kind decides where its lines are kept, and then the "
@@ -324,7 +325,8 @@ void request_proposal_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/requests/{id}/checks").catalogue("web_get_requests_id_checks", "workflow", "requests", false)
+    add(router->get("/api/requests/{id}/checks")
+            .catalogue("web_get_requests_id_checks", "workflow", "requests", false)
             .summary("What running the request's lines through the real write now says")
             .description("A composed view owned by ores.workflow: the live record may have moved "
                          "since the request was raised, so a decider reads the checks as they "

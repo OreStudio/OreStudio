@@ -339,7 +339,8 @@ void operations_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/operations/services").catalogue("web_get_operations_services", "operations", "services", false)
+    add(router->get("/api/operations/services")
+            .catalogue("web_get_operations_services", "operations", "services", false)
             .summary("Every expected service instance, with the age of its last report")
             .description("One row per expected instance, ordered by service name and then slot, "
                          "so a service that never reported keeps its row and its state word. The "
@@ -365,7 +366,8 @@ void operations_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/operations/logs").catalogue("web_get_operations_logs", "operations", "logs", false)
+    add(router->get("/api/operations/logs")
+            .catalogue("web_get_operations_logs", "operations", "logs", false)
             .summary("One page of the telemetry logs a filter selects")
             .description("The filters combine with and, which is the query's own rule, so one "
                          "call carries all of them and the read does the narrowing. The window "
@@ -413,7 +415,8 @@ void operations_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/operations/bus").catalogue("web_get_operations_bus", "operations", "bus", false)
+    add(router->get("/api/operations/bus")
+            .catalogue("web_get_operations_bus", "operations", "bus", false)
             .summary("The message bus over a window, newest first")
             .description("A composed view owned by ores.telemetry: the NATS server samples a "
                          "window holds, whole and newest first, because every counter is a "

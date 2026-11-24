@@ -75,7 +75,8 @@ void catalogue_routes::register_routes(
     nats_client& session) {
     using forwarding::guarded;
     const auto built =
-        router->get("/api/marketdata/catalogue").catalogue("web_get_marketdata_catalogue", "market-data", "catalogue", false)
+        router->get("/api/marketdata/catalogue")
+            .catalogue("web_get_marketdata_catalogue", "market-data", "catalogue", false)
             .summary("The providers and the feeds that serve them")
             .description("A composed view owned by ores.marketdata: every provider the area "
                          "holds, ordered by its code, and every feed ordered by the publisher "

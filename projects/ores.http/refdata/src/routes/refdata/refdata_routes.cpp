@@ -215,7 +215,8 @@ void refdata_routes::register_routes(
     // The screens read which resources they may name, and what each states,
     // from one catalogue rather than from a list of their own.
     auto catalogue =
-        router->get("/api/refdata").catalogue("web_get_refdata", "reference-data", "refdata", false)
+        router->get("/api/refdata")
+            .catalogue("web_get_refdata", "reference-data", "refdata", false)
             .summary("List the reference data resources a screen may name")
             .description("Each resource's key, key fields, search, sortable "
                          "fields, events and permissions.")

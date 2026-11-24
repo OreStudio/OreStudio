@@ -147,3 +147,4 @@ declares. The bus, its namespace and its message contract are described in
 - [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component Architecture]] — where a store's client sits in the api, core and service split.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity Lifecycle]] — the layer order a stored entity passes through.
 - [[id:7B477025-132E-4B20-80B4-D8C9420880B8][Component Clean Standard]] — the rules a storage component passes to be clean.
+- [[id:C45999F0-2B86-48D7-814F-F10727BC9565][Housekeeping]] — the neighbouring cluster: this page owns what each store is and who owns it, and that one owns how long each store keeps what it holds.

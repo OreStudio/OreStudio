@@ -32,9 +32,12 @@ The policy table of [[id:6F3F1A80-5B4C-4F33-ADF0-F42CDE8FF8C2][The tick ingest p
 ** Compression
 
 A closed chunk is compressed. The points hold no tenant and carry no row-level
-security ([[id:D71F9446-C62E-48A6-A87B-136EF598A59E][Storage and entitlement of stored ticks]]), which compression requires. The instance runs TimescaleDB
-under the Timescale licence, the edition that compresses chunks and runs the
-compression and retention jobs.
+security ([[id:D71F9446-C62E-48A6-A87B-136EF598A59E][Storage and entitlement of stored ticks]]), which compression requires.
+Both mechanisms are background jobs of the storage engine, and the engine runs
+jobs only under the edition that includes them. Where that edition is absent the
+policy is never created, and the window is held only if an executor applies it;
+that fallback, and the policy that declares the window, belong to
+[[id:E92D8CA4-C33F-4AE2-808B-9092B100E9C5][Housekeeping of retained data]].
 
 ** Retention and compression as jobs
 
@@ -54,3 +57,5 @@ compression the store reaches: about ten to one.
 
 - [[id:CE41E828-18EB-4E88-BB02-6A4930E7B67C][The data path]] — the structure note that orders this cluster.
 - [[id:BCD7D253-8B1E-4887-B476-EDD3EDE01BE6][Ticks reach the store through sharded binary COPY in bounded batches]] — how the rows arrive.
+- [[id:E92D8CA4-C33F-4AE2-808B-9092B100E9C5][Housekeeping of retained data]] — completes: it states the declaration, the executor and the telemetry that hold this window where the engine runs no job.
+- [[id:C45999F0-2B86-48D7-814F-F10727BC9565][Housekeeping]] — the structure note that orders that cluster, where this page is read as the market data class stated in full.

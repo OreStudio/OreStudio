@@ -249,3 +249,6 @@ Source: [[proj:doc/knowledge/architecture/approval_request_expiry_interaction.pu
   Specification]] — the grammar the expiry subject obeys.
 - [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — a
   sibling page, where a schedule and a durable consumer carry work instead.
+- [[id:C45999F0-2B86-48D7-814F-F10727BC9565][Housekeeping]] — the structure note
+  that orders this cluster, and where this page is read as the established shape
+  of a sweep: one row to fire, one rule over a deadline, one notice out.

@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 21D539CD-AF3B-4479-81D5-F195756C064F
+:END:
+#+title: Classification of retained data
+#+description: The retained data of the platform, classified by the treatment that holds each class.
+#+type: knowledge
+#+level: cross
+#+filetags: :housekeeping:retention:storage:architecture:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+
+* Summary
+
+The data the platform retains divides into a small number of classes, and the
+retention period or other treatment that suits a class follows from what the
+data is for rather than from the table or directory that holds it. Age-based
+retention suits only those classes whose worth decays with time. The classes
+that dominate a footprint are commonly superseded, derived or duplicated, and
+each takes a different treatment: overwriting, recomputation or deduplication. The classification assigns a treatment to each
+class, and the executor that applies it is described in
+[[id:E92D8CA4-C33F-4AE2-808B-9092B100E9C5][Housekeeping of retained data]].
+
+* Detail
+
+** The classes
+
+| Class | What it holds | Treatment |
+|-------+---------------+-----------|
+| Run outputs | report cashflows, metrics, text values | age-based retention: drop the chunks past the period |
+| Versioned counters | delivery counts, per subscription | overwrite the current row, keeping no history |
+| Market observations and fixings | quotes, fixings, calibration and scenario values | retention by financial as-of, never by wall clock |
+| Telemetry samples and logs | service samples, grid and node samples, log lines, auth events | age-based retention over a fixed window |
+| Durable stream records | the subjects a stream keeps | the stream's own limits: maximum age and maximum bytes |
+| Workflow and queue records | workflow instances and steps, messages, approval requests | archive on completion, expire after a period |
+| Derived reference data | calendar dates and the other tables a rule produces | recompute, or share one copy across owners |
+| Artefacts | objects under the store's key prefixes | a lifecycle rule: expire by key prefix and age |
+| Engine distributions | the packages a compute node caches | deduplication by digest, one copy per host, evicted by age |
+| Scratch | a job's working directory | release it once its output is stored |
+| Audit and validity history | the closed rows of the bitemporal tables | a stated retention policy, decided deliberately |
+
+** Why one treatment does not serve
+
+Age-based retention assumes that a row's worth decays with time. Three of the
+classes violate that assumption in different ways, and each takes its own
+treatment.
+
+A versioned counter is not aged but superseded: every row but the latest is
+already obsolete when it is written, so a retention period removes rows long
+after they stopped being useful. The treatment is an overwrite applied as the
+value is written, which prevents the rows.
+
+Derived reference data is not aged but reproduceable. A calendar's business days
+follow from its rule and its year range, so the treatment is to compute the data
+or share one copy.
+
+Engine distributions and per-owner copies are not aged but duplicated. The same
+package sits in the object store and again in each node's cache, often a third
+time as the extracted tree. Expiring a duplicate removes one copy of several.
+The treatment is deduplication: the content is addressed by its digest, so that a
+second copy cannot be made, and the remaining copy is evicted by age.
+
+** Two treatments that write nothing
+
+Overwriting a counter and recomputing derived data hold a store without removing
+anything from it. They are classified apart from retention: a retention policy
+reports what it deleted, and these report what they avoided writing. Both are
+subject to the same policy and the same telemetry as the deleting treatments, and
+neither depends on the storage engine's licence.
+
+** Where the treatment is applied
+
+Each class names the shape of its target rather than a particular table: a
+time-partitioned table, an ordinary table, a key prefix, a directory, or a
+transform applied as the value is written. Naming the shape keeps the
+classification stable as tables are added, and it tells the executor which of its
+actions applies. A new table joins an existing class by declaring it, and
+inherits the treatment and the cadence already stated for that class.
+
+* See also
+
+- [[id:C45999F0-2B86-48D7-814F-F10727BC9565][Housekeeping]] — the structure note that orders this cluster, which places this page after the model.
+- [[id:E92D8CA4-C33F-4AE2-808B-9092B100E9C5][Housekeeping of retained data]] — answers: it supplies the policy, the executor and the telemetry that this classification assigns actions to.
+- [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][Bounded retention in the tick store]] — exemplifies: the market data class, already stated with its numbers and mechanisms.
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — completes: it names the stores this page classifies.
+- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — completes: it owns the key contract whose prefixes the lifecycle rule expires.
+- [[id:F37D960D-9687-47DC-8737-605CA38D0CF2][Storage policy]] — answers: it assigns ownership of a key, which decides who may delete one.
+- [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a package]] — answers: it establishes the content-addressed artefact that makes deduplication possible.
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — completes: it owns how a job's directory comes to exist, whose release this page classifies as scratch.
+
+* Sources
+
+- NATS. /JetStream retention policies/. NATS Documentation, current.
+  https://docs.nats.io/learn/jetstream/retention-policies — cited for the fact
+  that a stream bounds itself through a retention policy and limits on its
+  stored messages, which is why the durable stream records are bounded at the
+  stream rather than by a sweep over its messages.

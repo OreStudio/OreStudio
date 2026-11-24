@@ -1,0 +1,372 @@
+:PROPERTIES:
+:ID: FEAF481D-C631-4452-9896-22E5486CF2F1
+:END:
+#+title: Investigation: Every dimension that grows without bound
+#+description: The inventory of every store that grows without bound: what each holds today, what writes it, how fast it grows, and which mechanism bounds it, including the ones that have none.
+#+type: investigation
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+
+A point-in-time record, written while the story that commissioned it was open,
+of an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into what
+this system keeps and what, if anything, makes it stop keeping it.
+
+It is a snapshot, not a description of the system. Whatever it concludes that
+the code must keep doing belongs on the page that owns the subject; cite that
+page from code, recipes and models, not this one.
+
+* Context
+
+The databases and the artefact stores grow with every run, and nothing in the
+system removes anything. The concern that opened the story was that report data
+would dominate, and the measurement confirms it, but it also shows the problem
+is wider: at least six kinds of store grow, each with a different shape and a
+different reason for not being bounded.
+
+Measured on the shared cluster on 2026-11-24 with =compass sql= and =psql=
+against =ores_dev_festive_dijkstra=, the largest database that would answer —
+the two largest, =ores_dev_merry_newton= (13 GB) and =ores_dev_prime_origin=
+(12 GB), cannot be queried at all until their TimescaleDB extension is
+repaired.
+
+| Database | Size |
+|----------+-----------|
+| =ores_dev_merry_newton= | 13 GB |
+| =ores_dev_prime_origin= | 12 GB |
+| =ores_dev_festive_dijkstra= | 5276 MB |
+| =ores_dev_eager_maxwell= | 4512 MB |
+| =ores_dev_brave_hopper= | 2172 MB |
+| =ores_dev_swift_curie= | 1752 MB |
+| =ores_dev_solid_dirac= | 1710 MB |
+| =ores_dev_jolly_knuth= | 571 MB |
+| =ores_dev_bright_faraday= | 416 MB |
+| =ores_dev_clever_dijkstra= | 415 MB |
+
+Inside the largest queryable one:
+
+| Store | Rows | Size | What it is |
+|-------+------+------+------------|
+| =ores_reporting_report_cashflows_tbl= | 2,188,990 | 1777 MB | a run's cashflows |
+| =ores_marketdata_delivery_counts_tbl= | 1,260,554 | 1270 MB | one counter per subscription |
+| =ores_refdata_calendar_dates_tbl= | 973,080 | 612 MB | every calendar × every day |
+| =ores_geo_ip2country_tbl= | 512,186 | 96 MB | static reference data |
+| =ores_marketdata_ticks_tbl= | 390,667 | 72 MB | market ticks |
+| =ores_reporting_report_error_events_tbl= | 86,649 | 45 MB | run errors |
+| =ores_telemetry_logs_tbl= | 88,213 | 44 MB | service logs |
+| =ores_reporting_report_metrics_tbl= | 58,656 | 34 MB | a run's metrics |
+
+Two of those numbers are the argument. The cashflows come from 1234 runs, and
+average **8,828 rows a run** at roughly 850 bytes a row: every report run writes
+about 7 MB of rows that a person reads once, if at all. The delivery counts hold
+**23 distinct party-and-feed pairs** behind 1,260,554 rows, every one of them
+written on 2026-11-24, because the recorder appends a new versioned row on every
+flush instead of carrying the counter forward. That is 1.27 GB of history for a
+counter whose only useful value is its latest.
+
+The file system tells the same story outside the database, in this worktree
+alone: a 6.3 GB build tree, 277 MB of compute-wrapper caches — one node's copy of
+one engine version, held both extracted and as a tarball — 195 MB of vendor
+packages, 152 MB of service logs in 24 files, and 143 MB of object storage
+serving the same engine packages that the node cache downloaded.
+
+* Methodology
+
+The database was measured, not estimated. Sizes came from =pg_database_size=,
+=hypertable_size()= for hypertables and =pg_total_relation_size()= for plain
+tables, since a hypertable's parent table reports only its own bytes. Row counts
+came from =count(*)= on the stores that matter, and =pg_stat_user_tables= for
+the rest. The chunk and job inventory came from =timescaledb_information=.
+
+The code was surveyed for every mechanism that could bound a store: the
+=:hypertable:= and =:hypertable_retention_interval:= frontmatter in
+=projects/*/modeling/*.org=, the create scripts under =projects/ores.sql/create=,
+the codegen template that writes them
+(=projects/ores.codegen/library/templates/sql_schema_domain_entity_create.mustache=),
+the C++ under =projects/=, the scheduler seeds under =projects/ores.sql/populate=,
+the storage service, and the compute wrapper.
+
+Two limits on what follows: the two largest databases could not be queried, so
+their composition is unknown and the ranking below is measured on a 5 GB one;
+and nothing here measures growth *over time*, because only one sample exists.
+Every statement about rate is inferred from what is written per run or per
+flush, not observed across days.
+
+* Paths taken
+
+** What declares a bound
+
+Twenty-five hypertables exist; seventeen are declared in an entity model and
+eight only in hand-written create SQL. Twelve declare no retention at all:
+
+| Entity model | Table | Retention |
+|--------------+-------+-----------|
+| =ores.iam.agent_call.org= | =ores_iam_agent_calls_tbl= | none |
+| =ores.iam.agent_token_issue.org= | =ores_iam_agent_token_issues_tbl= | none |
+| =ores.iam.run_token_issue.org= | =ores_iam_run_token_issues_tbl= | none |
+| =ores.iam.session.org= | =ores_iam_sessions_tbl= | none |
+| =ores.marketdata.market_calibration_value.org= | =ores_marketdata_market_calibration_values_tbl= | none |
+| =ores.marketdata.market_fixing.org= | =ores_marketdata_market_fixings_tbl= | none |
+| =ores.marketdata.market_input_value.org= | =ores_marketdata_market_input_values_tbl= | none |
+| =ores.marketdata.market_observation.org= | =ores_marketdata_market_observations_tbl= | none |
+| =ores.marketdata.market_scenario_value.org= | =ores_marketdata_market_scenario_values_tbl= | none |
+| =ores.reporting.report_cashflow.org= | =ores_reporting_report_cashflows_tbl= | none |
+| =ores.reporting.report_metric.org= | =ores_reporting_report_metrics_tbl= | none |
+| =ores.reporting.report_text_value.org= | =ores_reporting_report_text_values_tbl= | none |
+
+Five entity models do declare one: =grid_sample= 30 days, =node_sample= 30
+days, =session_sample= 30 days, =auth_event= 90 days, =tick= 7 days. Eight
+hand-written hypertables declare one inside their create script: the four
+telemetry tables 30 days, =mq_queue_stats= 30 days, =mq_message_archive= 90
+days, =scheduler_job_instances= 30 days and =compute_work_totals= 30 days.
+Compression is declared nowhere.
+
+** What applies a bound
+
+Nothing does. Every policy statement in the tree is a one-shot guard that runs
+while the schema is created, and it only acts when the cluster reports the
+Timescale licence:
+
+#+begin_src sql
+select current_setting('timescaledb.license', true) into current_license;
+if current_license = 'timescale' then
+    perform public.add_retention_policy(...);
+else
+    raise notice 'TimescaleDB community edition - no retention policy is set';
+end if;
+#+end_src
+
+=projects/ores.sql/create/marketdata/marketdata_ticks_create.sql:84-95= is
+typical. This host runs the community edition, so every such block takes the
+notice branch. =timescaledb_information.jobs= holds zero rows in the database
+that answered, and 19 hypertables with 194 chunks confirm that nothing has ever
+been dropped.
+
+No C++ code consults the licence tier, calls =drop_chunks=, or removes a
+retention policy — the only hits for those names are the create-time guards
+above.
+
+The model claims otherwise. =projects/ores.codegen/modeling/entity_meta_model_sql.org:195=
+says that without a retention interval "the block reports the interval and the
+service's own job drops the chunks that have aged out". No such job exists, so
+the document describes a mechanism nobody wrote.
+
+** What sweeps exist
+
+Four scheduled sweeps run, and none of them deletes a row:
+
+| Sweep | Where | What it does |
+|-------+-------+--------------|
+| =compute.v1.reap.stale_results=, every minute | =projects/ores.sql/populate/compute/compute_populate.sql:22-43= | re-queues results whose host went stale |
+| =ores.inbox.approval_expiry=, =*/5 * * * *= | =projects/ores.inbox/service/src/app/application.cpp:133= | sets an expired state code |
+| =ores.inbox.approval_reminder=, =0 8 * * *= | =projects/ores.inbox/service/src/app/application.cpp:139= | warns |
+| =ores.inbox.apply_retry=, =*/5 * * * *= | =projects/ores.inbox/service/src/app/application.cpp:154= | resumes stalled applies |
+
+The closest thing to deletion is the message queue, where an acknowledged
+message moves to the archive and leaves =ores_mq_messages_tbl=
+(=projects/ores.sql/create/mq/mq_messages_create.sql:107-120=); a failed one is
+marked failed and stays (=:126-138=). The archive itself is a hypertable that
+declares 90 days and gets none of them.
+
+The scheduler already runs four sweeps, and three of them take their cadence
+from configuration:
+=ores.inbox= registers its jobs at runtime from the system settings
+=inbox.approval_expiry.schedule= and its siblings
+(=projects/ores.inbox/service/src/app/approval_sweep_schedule.cpp:95-125=,
+settings at =projects/ores.sql/populate/variability/variability_system_settings_populate.sql:122,143=).
+That is the pattern this story should generalise rather than invent.
+
+** What holds artefacts
+
+Two services hold artefacts, on the database host and on each node, and neither
+has a lifecycle.
+
+*The object store.* One bucket, =ores=, backed by a directory
+(=--storage-dir=), holds every uploaded artefact
+(=projects/ores.storage/api/include/ores.storage.api/net/object_keys.hpp:71,77=).
+Measured in this worktree:
+
+| Key family | Size | Files |
+|------------+------+-------|
+| =compute/packages= | 138 MB | 3 |
+| =compute/output= | 1.3 MB | 36 |
+| =compute/logs= | 100 kB | 3 |
+| =ore/packages= | 1020 kB | 6 |
+| =reporting/runs= | 1.9 MB | 21 |
+| total | 143 MB | 69 |
+
+That total is small because this environment has run little, and the size is not
+the argument: nothing expires any of it. A remove operation exists
+(=projects/ores.storage/core/src/filesystem/local_store.cpp:188=) and only the
+shell calls it. There is no expiry, quota or scheduled deletion anywhere in
+=projects/ores.storage=, so the bucket only ever grows and grows fastest on the
+family that is largest, =compute/packages=, where every published engine version
+stays forever.
+
+*The node package caches.* The wrapper already implements the shared cache this
+problem needs, and the deployment defeats it. In =ensure_package=
+(=projects/ores.compute/wrapper/src/app/application.cpp:654-707=) the cache is
+locked per package so one wrapper downloads while the others wait, the transfer
+is checked against =evt.package_sha256= from the assignment event, and the
+archive is extracted beside the final directory and renamed into place, so a
+half-unpacked package is never visible. The cache root is =cfg.package_dir= when
+it is set and =work_dir/packages= when it is not (=:767-770=); =--package-dir=
+exists as an option (=config/parser.cpp:42,75,156=). The generated units pass
+only =--work-dir=, one directory per node
+(=systemd/units/ores.compute.wrapper-solid_dirac-N.service=), so every node
+falls back to its own cache and the sharing the code was written for never
+happens. For one ORE version on one node:
+
+| Item | Size |
+|------+------|
+| the extracted tree: =lib/=, the engine binary, =manifest.json= | 209 MB |
+| the =.tar.gz= kept beside it | 57 MB |
+| total | 266 MB |
+
+The tarball is a duplicate of a package the object store already serves, and the
+extracted tree is a third form of it. With five nodes and more than one version
+retained this is 5 × N × 266 MB, and no version is pruned: a newer fetch
+replaces only the directory it is fetching (=application.cpp:703-707=), leaving
+the old one behind.
+
+Keying by content closes the rest of it. The digest is already in hand as
+=evt.package_sha256= and is already verified, so a cache directory named after
+the digest downloads and unpacks once per machine per distinct content, makes a
+re-published identical package free, and lets the directory name prove what it
+holds. The tarball need not be kept once the tree is extracted.
+
+*The job folders.* Each job keeps =work_dir/jobs/{result_id}=
+(=application.cpp:778-948=) holding its extracted input, engine log, output tree
+and tarballs. Three jobs in this worktree hold 12 MB, about 3.8 MB each.
+Nothing deletes a job folder, and the output it duplicates has already been
+uploaded to =compute/output=.
+
+JetStream is the one store with a bound that works: every stream is created with
+=MaxAge= — 7 days by default, 1 day for step commands
+(=projects/ores.nats/src/service/jetstream_admin.cpp:107-143=,
+=projects/ores.service/include/ores.service/messaging/step_command_stream.hpp:87=).
+It has no =MaxMsgs= or =MaxBytes=, so a burst within the age window is
+unbounded, and no code purges a stream; two retired tick streams are the only
+ones ever deleted (=projects/ores.synthetic/service/src/app/application.cpp:600=).
+
+** What configuration exists
+
+Nothing configures storage lifecycle. The nearest artefact is
+=cut_kind.retention_months= with =retention_destination_code= and
+=legal_hold_default= (=projects/ores.reporting/modeling/ores.reporting.cut_kind.org:42-44=),
+copied onto every cut (=projects/ores.reporting/api/include/ores.reporting.api/domain/cut.hpp:259-271=)
+and read by nothing: no code deletes or archives a cut by its retention. It is
+a promise recorded on the row, not a policy.
+
+The rest of the surface is per-service system settings, and the hypertable
+knobs are compile-time model text that need a schema rebuild to change.
+
+* Conclusions
+
+1. *There are two distinct failures, and the story needs both.* Twelve
+   hypertables declare no bound at all, and the artefact stores have no
+   lifecycle. Separately, the thirteen tables that do declare a bound get
+   nothing from it on this host, because the only mechanism is licence-gated and
+   this host has no Timescale licence. Fixing declarations without fixing
+   enforcement leaves the larger half of the growth untouched.
+
+2. *Growth is concentrated, so order matters more than completeness.* Four
+   stores account for about 3.4 GB of the 5 GB measured: cashflows, delivery
+   counts, calendar dates and ticks. The cashflow store alone grows by about
+   7 MB per report run. A mechanism that bounds nothing but those four would
+   solve most of the problem.
+
+3. *The cheapest wins are not retention policies.* Delivery counts are 1.27 GB
+   for 23 values, and the fix is to stop appending versions, not to delete old
+   ones. The wrapper cache holds 266 MB per node per engine version, of which
+   the 57 MB tarball duplicates a package the object store already serves and
+   the 209 MB extracted tree is a third form of the same distribution. Bounding
+   either needs no scheduler at all.
+
+4. *Calendar dates are derived data held as if it were a fact.* 612 MB holds 36
+   calendars over 37 years, copied per tenant. It grows with tenant count, not
+   with use, and it is the one store here whose right answer might be "compute
+   it" rather than "expire it".
+
+5. *A declaration is not a policy.* Three artefacts already record a retention
+   and enforce none: the hypertable frontmatter, the cut's retention months and
+   the entity meta-model's promise of a service job. The story must produce one
+   mechanism that is enforced, and remove the claims that are not.
+
+6. *The mechanism exists; it is pointed at the wrong thing.* The scheduler
+   already runs jobs on configured cron expressions and already offers
+   =execute_sql= and =nats_request= actions. A housekeeping sweep is a new
+   payload and a new table of targets, not new infrastructure.
+
+7. *Artefacts multiply by node and by version, which the database numbers hide.*
+   A report run writes about 7 MB of rows once, but the same run also needs an
+   engine distribution on whichever node picks it up, and the nodes are
+   configured to each keep their own. The object store kept 3 packages, and one
+   node already held 266 MB for one of them. This is the dimension most likely
+   to surprise a capacity plan, because it grows with nodes × versions × jobs
+   rather than with either one alone — and it is the one where the intended
+   design is already written and only misconfigured.
+
+* Recommendations
+
+1. *Model the policy as data.* One entity — a housekeeping policy — carrying the
+   store it targets, the action (drop a chunk, delete rows older than, delete
+   an object prefix, carry the counter forward), the age or threshold, the
+   cadence, an enabled flag and the licence fallback. It must be a first-class
+   record with a screen, not frontmatter, so a person can change it without a
+   schema rebuild.
+
+2. *One sweep executes every policy.* A scheduled job reads the policy rows and
+   performs the action, using =execute_sql= for tables and the storage remove
+   operation for objects. Cadence comes from the same system settings the inbox
+   already uses.
+
+3. *Make the licence fallback explicit.* When the cluster cannot run a Timescale
+   retention job, the sweep drops the chunks itself. This is the gap the
+   meta-model already claims is closed; closing it either way removes the lie.
+
+4. *Bound the four big stores first, in this order:* carry the delivery count
+   forward instead of appending; bound report cashflows by run age; decide
+   whether calendar dates are stored or computed; then the ticks, whose
+   declaration is already written and only needs a mechanism.
+
+5. *Give artefacts a lifecycle, and stop duplicating them.* The object store's
+   =compute/packages=, =compute/output=, =ore/packages= and =reporting/runs=
+   prefixes accumulate with no reader after the fact, and a job folder is dead
+   the moment its output is uploaded. For the node caches, three changes in
+   order of cost, the first of which is configuration only:
+
+   a. Pass =--package-dir= to every wrapper unit, pointing all of a host's nodes
+      at one cache root. The locking, the digest check and the atomic rename are
+      already there; only the shared root is missing.
+   b. Key the cache directory by =evt.package_sha256= instead of
+      =app_version_id=, and drop the retained tarball once the tree is
+      extracted. Then one machine downloads and unpacks once per distinct
+      content, a re-published identical package costs nothing, and the directory
+      name proves what it holds.
+   c. Prune cache directories by age, through the same policy as everything
+      else, once that policy exists.
+   d. Release a job's folder once its output has been uploaded. By then the
+      output is in =compute/output= and the log in =compute/logs=, so the copy
+      buys nothing. A job that fails before its upload keeps its folder, which
+      is then the only evidence of what went wrong.
+
+   Both halves are cheaper than a policy engine and should come first.
+
+6. *Measure before and after.* The numbers above are one sample. The story
+   should record the same query as a baseline so the effect of each change is
+   visible, and the screen in (1) should show a store's size beside its policy.
+
+* See also
+
+- [[id:4890092C-22AA-47C8-8054-804C887209B7][Bound the delivery counts when the compute path stalls]] — the story that
+  already owns the delivery-count fix, and the source of the 2.3 million row
+  measurement.
+- [[id:2B553C18-5DC3-4443-AE79-2B3BBC071172][Compute wrappers never release their disk]] — the job folders.
+- [[id:CB2F97F2-5D7F-4986-A95F-2426FBECEA0E][The ticks hypertable grows without bound on the Apache edition]] — the
+  licence gap, seen from one table.
+- [[id:CDEFB4C6-1064-4917-8CF8-5490A0E30BFC][Declare the retention the result rows keep]] — the retention capture that
+  started the search.
+- =doc/recipes/sql/table_sizes.org= and =doc/recipes/sql/database_size.org= —
+  the measurement instruments.

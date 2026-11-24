@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 701FF7D7-23D5-49D0-BE2E-661AFEE24654
+:END:
+#+title: Task: Inventory every dimension that grows without bound
+#+description: Task for: Housekeeping: bound every store the system keeps
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: feature/housekeeping-bound-every-store-the-system-keeps
+#+pr: 5102
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every store that grows without bound is named, with what produces it, what it holds today, and which existing mechanism, if any, bounds it, so the story can decide one policy model that covers all of them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+- Each dimension records its size today, the rate it grows, and the artefacts that write it
+- The mechanisms already in the tree are inventoried, including Timescale retention policies, service sweeps and compute job folders, and the places that have none
+- The concepts a configuration needs are proposed: policy, scope, target store, action, schedule and licence fallback
+- The dimensions are ranked by what bounding them would save, so the remaining tasks can be ordered
+- The findings are written as an investigation page under this story
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The deliverable is
+[[id:FEAF481D-C631-4452-9896-22E5486CF2F1][Investigation: Every dimension that grows without bound]],
+filled in as the inventory is taken.
+
+Dimensions already known before the inventory starts, each with its own
+artefact: =ores_reporting_report_cashflows_tbl= (1777 MB), the delivery counts
+(1270 MB, and its own story recording 2.3 million rows), the compute wrappers
+that never release their job folders, the calendar dates (612 MB), and the
+ticks hypertable whose declared retention no job applies. The result rows
+retention capture is a sixth. The inventory is expected to find more than
+these, and to say which of them a single policy model covers.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5102][#5102]] | [agile] Open the housekeeping story and inventory what grows |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The inventory is written as
+[[id:FEAF481D-C631-4452-9896-22E5486CF2F1][Investigation: Every dimension
+that grows without bound]]. It measured the cluster and surveyed the code, and
+it separates the problem into two failures: twelve hypertables and every
+artefact store declare no bound at all, and the thirteen that do declare one
+get nothing from it because the only mechanism is licence-gated and this host
+runs the community edition. =timescaledb_information.jobs= holds zero rows.
+
+The growth is concentrated in four stores, and the two largest are measurable
+per unit of work: about 8,828 cashflow rows for each of 1234 report runs, and
+1,260,554 versioned rows behind 23 delivery counters.
+
+The artefacts are a dimension of their own, and the first pass under-weighted
+them. The storage bucket has no expiry on any of its nine key families, and the
+wrapper caches are worse than they look: each node keeps its own copy of an
+engine version, both extracted and as the tarball that storage already serves.
+One node held 266 MB for one version, and five nodes are configured.
+
+The recommendations order the work by what it saves rather than by what is
+tidiest: carry the delivery count forward, bound cashflows by run age, decide
+whether calendar dates are stored at all, then give the artefacts a lifecycle,
+and put a data-configured policy and a sweep behind all of it.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Environment databases, largest to smallest | 13 GB to 415 MB | =select pg_size_pretty(pg_database_size(datname))= | pending |
+| Report cashflow rows and size | 2,188,990 rows, 1777 MB | =count(*)= on =ores_reporting_report_cashflows_tbl= | pending |
+| Cashflow rows per report run | 8,828 | average of =count(*)= per =report_instance_id= over 1234 runs | pending |
+| Delivery count rows for distinct pairs | 1,260,554 rows, 23 pairs | =count(*)= and =count(distinct (party_id, feed_id))= | pending |
+| Timescale retention or compression jobs | 0 | =select * from timescaledb_information.jobs= | pending |
+| Hypertables and chunks in the measured database | 19 and 194 | =timescaledb_information.hypertables=, =.chunks= | pending |
+| Object storage, all key families | 143 MB, 69 files | =du -sh= and =find | wc -l= under =publish/storage/ores= | pending |
+| Object storage, =compute/packages= alone | 138 MB, 3 packages | =du -sh publish/storage/ores/compute/packages= | pending |
+| One node's cache for one engine version | 266 MB: 209 MB extracted plus a 57 MB tarball | =du -sh publish/run/wrappers/node_4/packages/f2ce9b84-*= | pending |
+| Wrapper job folders | 12 MB over 3 jobs, about 3.8 MB each | =du -sh publish/run/wrappers/node_4/jobs= | pending |
+
+The Commit column is pending because the investigation lands in the same commit
+as this Result; the next task that touches these numbers should stamp them.

@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: A7455A2F-DE2D-47F7-9240-5C1F9FA8450E
+:END:
+#+title: Task: Document the housekeeping hub and the classes it governs
+#+description: Task for: Housekeeping: bound every store the system keeps
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: feature/housekeeping-bound-every-store-the-system-keeps
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The target state of housekeeping is written in the knowledge graph: a hub that orders the cluster, a page that states the model, and a page that classifies the retained data by the mechanism that bounds it, with the pages that already owned parts of the subject refactored to defer to them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+- A housekeeping hub names the cluster, argues its reading order, and says which neighbouring cluster owns what it excludes
+- The model page states the policy, the sweep, the licence fallback and the telemetry, with a diagram of the parts
+- The classification page names every class of retained data and the mechanism that bounds it
+- The storage and tick pages defer to the new pages instead of restating them, and every page links both ways
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The target state is written as a cluster of three pages under the architecture
+section of the knowledge graph, plus the refactor of the pages that already
+owned parts of the subject.
+
+- The hub is [[id:C45999F0-2B86-48D7-814F-F10727BC9565][Housekeeping]], a
+  structure note. It argues the reading order, says what the cluster excludes
+  and which neighbouring cluster owns it, and holds two pages in an =# aside=
+  section because they bear on the cluster without belonging to its sequence.
+- The model is
+  [[id:E92D8CA4-C33F-4AE2-808B-9092B100E9C5][Housekeeping of retained data]]:
+  a bound requires a declaration, an executor and a measurement together, with
+  the shape of the policy record, four removing actions and two transforms, one
+  executor on the scheduler's configured cadence, the fallback where the engine
+  runs no job, and the telemetry each policy reports.
+- The classification is
+  [[id:21D539CD-AF3B-4479-81D5-F195756C064F][Classification of retained data]]:
+  eleven classes of retained data with the mechanism each takes, and the reason
+  one mechanism does not serve.
+
+The refactor touches four pages that already held parts of the subject.
+[[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] gains the
+boundary between what a store is and how long it keeps what it holds.
+[[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][Bounded retention in the tick
+store]] loses a false statement — it claimed the instance runs the licensed
+edition, which the measurement contradicts — and now states the licence as a
+requirement and defers the fallback to the model.
+[[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] and
+[[id:F37D960D-9687-47DC-8737-605CA38D0CF2][Storage policy]] both point at the
+classification for the lifecycle of their keys.
+
+Every page links both ways, and the gate's link lint confirms it: the first run
+failed with two =lint/missing_backlink= findings for the aside pages, which is
+the check that the aside section is read as cluster membership.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Pages added | 3 | =git diff --stat= | this commit |
+| Pages refactored | 4 | =git diff --stat= | this commit |
+| Link lint findings, first run | 2 | =./compass.sh check= | this commit |
+| Local checks after the fix | 5 of 5 passed | =./compass.sh check= | this commit |
+| Diagram | =housekeeping_sweep_structure.png= from .=puml= | =plantuml -tpng= | this commit |

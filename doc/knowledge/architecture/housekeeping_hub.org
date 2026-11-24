@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: C45999F0-2B86-48D7-814F-F10727BC9565
+:END:
+#+title: Housekeeping
+#+description: Structure note for the housekeeping cluster: the retention model every store follows, and the classes of retained data it governs.
+#+type: knowledge
+#+level: cross
+#+filetags: :housekeeping:retention:storage:architecture:structure_note:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+
+* Summary
+
+Housekeeping is the practice by which a store the platform retains is made
+subject to a retention policy. The cluster treats the subject in two pages, and
+the order between them is fixed by vocabulary: the first establishes the policy,
+the executor that applies it and the telemetry that records what it did, and the
+second assigns to each class of retained data the retention period or the other
+treatment that its contents require.
+
+* Detail
+
+** Terms
+
+The cluster uses the following terms in one sense each. The register that retires
+their synonyms is the [[proj:doc/meta/glossary.org][glossary]].
+
+| Term | Meaning |
+|------+---------|
+| Housekeeping | the practice of making every retained store subject to a retention policy |
+| Retention policy | the declared rule for one store: what it targets, what action is taken, the period or threshold, the cadence, and the fallback where the engine will not act |
+| Retention period | the length of time a store keeps a record before the policy acts on it |
+| Lifecycle rule | the object store's form of a retention policy, naming a key prefix and the age at which its objects expire |
+| TTL | the expiry carried by a single object or directory whose value ends at a known time |
+| Eviction | the removal of a cache entry, which a later use can rebuild |
+| Deduplication | the reduction of several identical copies to one, addressed by its content digest |
+| Executor | the scheduled process that reads policies and applies them; a sweep where it runs on a cadence |
+| Telemetry | the per-policy record of what the executor did, with the size before and after and the outcome |
+
+** The sequence
+
+1. [[id:E92D8CA4-C33F-4AE2-808B-9092B100E9C5][Housekeeping of retained
+   data]] states the model. It gives the shape of a retention policy, the actions
+   an executor takes, the path an executor follows where the storage engine will
+   not apply a policy itself, and the telemetry a policy reports. It precedes the
+   classification because an action is meaningful only as the application of a
+   declared policy, and the terms for declaring one are established there.
+
+2. [[id:21D539CD-AF3B-4479-81D5-F195756C064F][Classification of retained
+   data]] applies the model. It names the classes of data a platform retains and
+   the retention period or treatment each class takes, and it establishes why
+   age-based retention serves only those classes whose worth decays with time.
+
+** Scope
+
+The identity, ownership and interfaces of a store are described by
+[[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] and its spokes. The
+treatment of what a store holds is described here. The mechanics of the schedule
+that fires an executor are described by
+[[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]]; the cluster states that
+an executor runs on a configured cadence and takes the mechanics as given.
+
+** Reference pages
+# aside
+
+Two pages bear on the cluster without belonging to its sequence.
+
+- [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][Bounded retention in the tick
+  store]] states the market data class in full, with its numbers and its chunk
+  geometry. It belongs to the sequence of the data path cluster.
+- [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]] is an
+  instance of an executor rather than a statement of the model, and is reached
+  when the question is how a sweep is registered.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this structure note hangs from.
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the neighbouring cluster: it owns what each store is, and this one owns what treatment each store's contents receive.

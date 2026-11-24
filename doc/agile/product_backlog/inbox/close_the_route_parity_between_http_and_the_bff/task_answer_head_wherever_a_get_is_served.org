@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/answer-head-wherever-a-get-is-served
+#+pr: 5097
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
-#+updated: 2026-11-22
-#+environment:
+#+updated: 2026-11-25
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A HEAD request answers the status and headers the GET of the same path answers, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-22                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
 
 * Acceptance
 
@@ -42,9 +42,47 @@ A HEAD request answers the status and headers the GET of the same path answers, 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The answer side was already right, which is why this is a small change in one
+place. =http_session::write_response= takes a =send_body= flag and the session
+passes it false for a HEAD, and it states the =Content-Length= from the body the
+handler produced either way. So a HEAD that reaches a GET handler already
+answers the GET's status, its headers and its length, and sends nothing after
+them.
+
+What was missing was the match. =router::match= compared the request's method
+with each route's and skipped everything else, so a HEAD found only the one
+route that declares it, the storage object's, and every other path answered
+404.
+
+So the router now answers a HEAD from the GET of the same pattern when no HEAD
+route serves it. One place, and no route states a second declaration, so a
+route added tomorrow cannot omit it. Nothing is registered on the HEAD route's
+behalf either: the route table, the inventory, the pairing counts and the
+OpenAPI document are what they were, and the behaviour cannot drift out of step
+with them.
+
+Two boundaries the change keeps:
+
+- *The pattern's standing still decides first.* A literal path still beats a
+  parameter whether the answer comes from a HEAD or from its GET, and a route
+  that declares a HEAD keeps it where two patterns stand equally. That is what
+  leaves the storage object's HEAD — which states ranges and an =Accept-Ranges=
+  header — in charge of its own path.
+- *A path with no GET has nothing to read.* A HEAD on a path served only by a
+  write stays a 404, because answering the write route would tell a probe the
+  path exists to read when it does not.
+
+One thing beyond the router had to follow it. The browser reaches the gateway
+cross-origin in development, on the Vite port rather than the gateway's, so its
+preflight states the methods it may send; =HEAD= was not among them, and a
+cross-origin probe would have been refused by the browser before the server saw
+it. The allowed list now names it, and the preflight's own test asserts it.
+
+What is not done, and why: the generated OpenAPI document still lists only the
+methods the routes state, so a client that reads it does not learn that HEAD is
+served. Adding a HEAD row per GET would double the document and the registry
+for a method every HTTP client already assumes, so it is recorded here rather
+than done.
 
 * Measurements
 
@@ -58,9 +96,25 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The HTTP API suite | 240 cases, 7029 assertions, all passing | =./compass.sh test run -- -R ores.http.api= | the branch head |
+| Every suite | 108 of 108 | =./compass.sh check=, its =ctest= step | the branch head |
+| Its size before this task | 234 cases | the same command on =origin/main= | 5b22b5341b |
+| The routes that declared a HEAD | 1, the storage object's | =grep -rn 'router->head(' projects/ores.http= | 5b22b5341b |
+| The route table after the change | unchanged: no HEAD route is added | the inventory's own counts | the branch head |
 
 * Notes
+
+The three cases the acceptance names are in
+=projects/ores.http/api/tests/http_head_tests.cpp=, each against a server on a
+free port: a 200 whose =Content-Length= equals the GET's body and whose socket
+carries nothing after the headers, a 401 for a route that needs a session, and a
+404 where the path has only a POST. The router's own three cases — the
+fallback, the declared HEAD winning, and a path with no GET — are in
+=router_tests.cpp=.
+
+The 401 case needs no authenticator: the session refuses a protected route that
+arrives without its cookie, so the test proves the refusal happens for a HEAD
+as it does for a GET.
 
 * Test Scenarios
 
@@ -77,7 +131,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5097][#5097]] | [http] Answer HEAD wherever a GET is served |
 
 * Review
 
@@ -86,3 +140,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+A HEAD now answers what the GET of the same path answers, with no body, on
+every route that has one. A probe, a =curl -I= and a client that tests a
+resource before reading it no longer read the whole gateway as missing, and no
+route states a second declaration: the router answers a HEAD from the GET it
+already holds.
+
+The change is three places and one consequence:
+
+- *The router.* =match= accepts the GET of the same pattern for a HEAD, with the
+  pattern's standing still deciding first and a declared HEAD winning only at
+  equal standing, which leaves the storage object's own HEAD in charge of its
+  path. A path served only by a write stays a 404.
+- *The session already answered correctly.* =write_response= took its =send_body=
+  flag and states the =Content-Length= either way, so the headers and the length
+  are the GET's and nothing follows them.
+- *CORS.* A browser reaches the gateway cross-origin in development, so its
+  preflight states the methods it may send; =HEAD= was not among them and now is.
+- *The route table is what it was.* Nothing is registered on HEAD's behalf, so
+  the inventory, the pairing counts and the OpenAPI document are unchanged.
+
+Proved: the six new cases, and the whole gate's =108 of 108= suites. Not proved:
+HEAD over the live fleet, which no script exercises yet, and the OpenAPI
+document still does not advertise the method.

@@ -151,6 +151,7 @@ TEST_CASE("a_preflight_states_what_the_client_may_send", "[http_api][cors]") {
         cors_preflight_headers(listing("http://localhost:20402"), "http://localhost:20402");
 
     REQUIRE(header_of(headers, "Access-Control-Allow-Methods").find("PATCH") != std::string::npos);
+    REQUIRE(header_of(headers, "Access-Control-Allow-Methods").find("HEAD") != std::string::npos);
     REQUIRE(header_of(headers, "Access-Control-Allow-Headers").find("X-Ores-Request") !=
             std::string::npos);
     REQUIRE(header_of(headers, "Access-Control-Max-Age") == "86400");

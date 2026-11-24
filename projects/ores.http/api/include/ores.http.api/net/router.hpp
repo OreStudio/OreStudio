@@ -298,6 +298,9 @@ public:
      * A HEAD route answers with the status and the headers a GET would carry,
      * and no body, so a caller can learn whether a resource exists and how
      * large it is without transferring it.
+     *
+     * A route need not be declared: every GET is answered over HEAD as well,
+     * as stated at @ref match.
      */
     route_builder head(const std::string& pattern);
 
@@ -314,6 +317,12 @@ public:
      *
      * When several patterns match, a literal segment beats a parameter at the
      * first segment where they differ, whatever order they were added in.
+     *
+     * A HEAD request is answered by the GET route of the same pattern when no
+     * HEAD route serves it, so a probe reads the truth without every read
+     * stating a second route, and a new route cannot forget to. The answer it
+     * produces keeps the GET's status, headers and length, and the session
+     * sends no body for a HEAD.
      */
     std::optional<domain::route>
     match(domain::http_method method,

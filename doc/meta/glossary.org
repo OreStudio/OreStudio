@@ -48,6 +48,11 @@ retirement notice.
 | A position within a screen       | step      | stage, phase                             |
 | An FX pair whose vol surface is quoted and managed on its own | driver pair | — |
 | An FX pair whose vol surface is implied from driver pairs | driven pair | — |
+| How long a store keeps what it holds | retention period | bound, lifespan, age limit |
+| The declared rule that sets a store's retention | retention policy | bound, rule, config, setting |
+| The rule that expires an object-store key | lifecycle rule | — |
+| Several identical copies reduced to one addressable copy | deduplication | dedupe, single instance |
+| The practice of applying retention to every store | housekeeping | cleanup, purge, GC, pruning |
 
 Two terms admit a misreading, and both are worth stating negatively.
 

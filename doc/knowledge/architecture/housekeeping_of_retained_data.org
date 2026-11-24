@@ -2,7 +2,7 @@
 :ID: E92D8CA4-C33F-4AE2-808B-9092B100E9C5
 :END:
 #+title: Housekeeping of retained data
-#+description: Every retained store is bounded by a declared policy, executed by one sweep and observed as telemetry.
+#+description: Every retained store is made subject to a retention policy, applied by one executor and recorded as telemetry.
 #+type: knowledge
 #+level: cross
 #+filetags: :housekeeping:retention:storage:scheduler:architecture:
@@ -11,15 +11,17 @@
 
 * Summary
 
-Housekeeping is the means by which a store the platform keeps is held to a
-bound. A bound exists only where three parts are present together: a policy
-that declares it, an executor that applies it, and a measurement that records
-what it did. A declaration without an executor is an intention, and an executor
-without a measurement cannot be shown to work; the platform has held both kinds
-of half-measure, which is why the three are stated here as one mechanism. This
-page gives the shape of the policy record, the single executor that applies it,
-the path taken when the storage engine will not apply it itself, and the
-telemetry each policy reports.
+A store is housekept when three parts hold together: a retention policy declares
+what the store keeps and for how long, an executor applies the policy, and a
+telemetry record states what the executor did. Any two without the third leave
+the store growing. A policy alone is an intention, and an application with no
+record cannot be told apart from an inert one. Both failures are present in the
+platform today, and the second is the commoner: the schema installs a retention
+policy only where the storage engine reports the licensed edition, and reports
+the interval without installing anything where it does not. The page gives the
+shape of a retention policy, the actions an executor takes, the path an executor
+follows where the engine will not apply a policy itself, and the telemetry a
+policy reports.
 
 * Detail
 
@@ -27,38 +29,35 @@ telemetry each policy reports.
 
 | Part | Question it answers | What its absence produces |
 |------+---------------------+---------------------------|
-| Declaration | what is kept, and for how long | a constant in code, invisible to the operator and changed only by a rebuild |
-| Execution | who applies the bound | rows, objects and directories that accumulate while the declaration reads as satisfied |
-| Observation | whether it ran, and what it freed | no way to tell a working policy from an inert one |
-
-The platform's failure has been the middle one. Every hypertable that declares a
-retention interval and receives none is a declaration, and the schema guards
-that decide whether to install such a policy are the reason: the guard tests the
-storage engine's licence tier and takes a notice branch when the entry is
-missing, so the declaration reports itself as applied while nothing drops.
+| Retention policy | what is kept, and for how long | a constant in code, invisible to the operator and changed only by a rebuild |
+| Executor | who applies the policy | rows, objects and directories that accumulate while the policy reads as satisfied |
+| Telemetry | whether it ran, and what it freed | no way to tell a working policy from an inert one |
 
 ** The policy is a record
 
-A policy names the target, the action to take on it, the threshold past which
-the action applies, the cadence at which it is considered, whether it is
-enabled, and the fallback to take when the engine cannot act. It is stored as
-data rather than held in frontmatter or in code, for two reasons: a threshold
-changes without a schema rebuild, and one screen can show every policy at once
-beside the size of what it governs.
+A retention policy names its target, the action to take on it, the retention
+period or threshold past which the action applies, the cadence at which it is
+considered, whether it is enabled, and the fallback to take where the engine will
+not act. The policy is stored as data rather than held in frontmatter or in code,
+because two requirements follow from the operator's side: a period changes
+without a schema rebuild, and one screen shows every policy beside the size of
+what it governs.
 
 ** The actions
 
-Four actions bound a store by removing what it no longer needs:
+Four actions treat a store by removing what it no longer needs:
 
-- drop the chunks of a time-partitioned table that lie past a threshold;
-- delete the rows of an ordinary table that lie past a threshold;
-- delete the objects under a key prefix that lie past a threshold;
-- release a working directory as soon as what it produced is stored elsewhere.
+- drop the chunks of a time-partitioned table that lie beyond the retention
+  period;
+- delete the rows of an ordinary table that lie beyond the retention period;
+- expire the objects under a key prefix, which is the object store's lifecycle
+  rule;
+- release a working directory once what it produced is stored elsewhere.
 
-Two further transforms bound a store without removing anything, and belong to
+Two further treatments hold a store without removing anything, and belong to
 housekeeping for that reason:
 
-- carry a counter forward instead of appending a new version of it;
+- overwrite a counter instead of appending a new version of it;
 - recompute derived data instead of keeping a copy per owner.
 
 The action is a property of the class of data, not of the table. Which class
@@ -68,24 +67,22 @@ takes which action is the subject of
 ** One executor
 
 A single scheduled job reads the policies and performs their actions, taking its
-cadence from the configured setting that the platform's other sweeps already
-use ([[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]]). One executor
-serves every class because the classes differ in what they hold and in when
-their contents stop being useful, not in how a sweep runs. The established
-example is [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request
-expiry]], whose sweep a service registers at runtime from a system setting; it
-demonstrates the shape that housekeeping generalises from one subject to every
-store.
+cadence from the configured setting that the platform's other sweeps already use
+([[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]]). One executor serves
+every class because the classes differ in what they hold and in when their
+contents stop being useful, not in how a sweep runs. The established example is
+[[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]], whose
+sweep a service registers at runtime from a system setting.
 
 ** The fallback path
 
-A time-series engine applies a retention policy as a background job, and the
-job exists only where the engine's licensed edition includes it. Where that
-edition is absent the policy is never created and the declaration reads as
-satisfied. The executor therefore performs the action itself whenever the engine
-will not, and records which path ran, so that the same declaration is honoured
-on either edition and the difference is visible rather than inferred. This is
-the gap recorded for the tick store in
+A time-series engine applies a retention policy as a background job, and the job
+exists only where the engine's licensed edition includes it. Where that edition
+is absent the policy is never created and the declaration reads as satisfied. The
+executor therefore performs the action itself wherever the engine will not, and
+records which path ran, so that one declaration is honoured on either edition and
+the difference is visible rather than inferred. This is the gap recorded for the
+tick store in
 [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][Bounded retention in the tick store]],
 generalised to every class.
 
@@ -96,16 +93,16 @@ rows, chunks or objects removed, the time taken and the outcome. The measured
 size over time yields a growth rate, which is the quantity a capacity decision
 needs and the one an operator cannot obtain from a single reading.
 
-The telemetry belongs beside the declaration rather than in a separate console:
-a policy's row shows what it governs and what the last sweep freed, together, so
-that a policy which is enabled and freeing nothing is visible as such. The
-sources of the size are the database's own catalogues for tables and chunks, the
-object store's listing for key prefixes, and a directory walk for the caches and
+The telemetry sits beside the declaration rather than in a separate console: a
+policy's row shows what it governs and what the last sweep freed, together, so
+that a policy which is enabled and freeing nothing is visible as such. The size
+comes from the database's catalogues for tables and chunks, from the object
+store's listing for key prefixes, and from a directory walk for the caches and
 working directories a node holds.
 
 ** The parts
 
-#+caption: The housekeeping policy table, the one sweep that executes it, the four kinds of store it bounds, and the telemetry it writes back.
+#+caption: The retention policy table, the one executor that applies it, the four kinds of store it treats, and the telemetry it writes back.
 [[proj:doc/knowledge/architecture/housekeeping_sweep_structure.png]]
 
 Source: =housekeeping_sweep_structure.puml=, rendered with
@@ -115,13 +112,13 @@ Source: =housekeeping_sweep_structure.puml=, rendered with
 
 - [[id:C45999F0-2B86-48D7-814F-F10727BC9565][Housekeeping]] — the structure note that orders this cluster; this page states the model it introduces.
 - [[id:21D539CD-AF3B-4479-81D5-F195756C064F][Classification of retained data]] — completes: it names the action each class of data requires.
-- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — completes: that page owns what each store is and who owns it, and this one owns how each is bounded.
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — completes: that page owns what each store is and who owns it, and this one owns what treatment each store's contents receive.
 - [[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]] — answers: it provides the cadence and the firing the executor runs on.
 - [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]] — exemplifies: the one sweep already in the tree, from which the executor's shape is taken.
 - [[id:A79C25FA-9F70-453B-A52E-780B4402ABAA][Bounded retention in the tick store]] — exemplifies: the class whose numbers and mechanisms are already stated.
-- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — completes: it owns the key contract whose keys this page bounds.
+- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — completes: it owns the key contract whose prefixes the lifecycle rule expires.
 - [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a package]] — answers: it establishes the content-addressed key that makes a duplicated cache detectable and removable.
-- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — completes: it owns how a job's work is produced, and this page bounds what the job leaves on the node.
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — completes: it owns how a job's work is produced, and this page treats what the job leaves on the node.
 
 * Sources
 

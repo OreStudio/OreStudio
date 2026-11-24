@@ -8,7 +8,7 @@
 #+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/speed-up-the-public-rates-coverage
-#+pr:
+#+pr: 5108
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -232,7 +232,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5108][#5108]] | [marketdata,http] Answer the fixings coverage in one statement |
 
 * Review
 

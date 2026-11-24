@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
-#+branch: feature/housekeeping-bound-every-store-the-system-keeps
+#+branch: feature/release-a-jobs-folder-once-its-output-is-uploaded
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
 #+updated: 2026-11-24
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.

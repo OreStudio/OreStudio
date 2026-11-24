@@ -64,6 +64,21 @@ public:
     /// The file a browser asked for, or nothing when the bundle does not hold it.
     [[nodiscard]] const bundle_entry* find(const std::string& path) const;
 
+    /**
+     * @brief Reads one file the startup scan did not see.
+     *
+     * A build that publishes while the server runs writes an index naming assets
+     * this manifest has never seen, and the index itself is read from disk on
+     * every request. So a path the snapshot does not hold is asked of the
+     * directory before it is refused, and nothing is written back: the manifest
+     * stays the one table a request is resolved against, and no session pays for
+     * a lock it does not need.
+     *
+     * A path that would leave the root finds nothing, and so does a dot file,
+     * which the build keeps for itself.
+     */
+    [[nodiscard]] std::optional<bundle_entry> read(const std::string& path) const;
+
     /// The directory the files are read from.
     [[nodiscard]] const std::filesystem::path& root() const noexcept {
         return root_;

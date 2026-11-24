@@ -69,4 +69,29 @@ const bundle_entry* bundle_manifest::find(const std::string& path) const {
     return it == entries_.end() ? nullptr : &it->second;
 }
 
+std::optional<bundle_entry> bundle_manifest::read(const std::string& path) const {
+    /*
+     * The scan never joins a request to the root, and this does, so the two
+     * rules that keep a request inside the bundle are applied first: a component
+     * that climbs out of it, and a dot file, which is the build's own.
+     */
+    const auto climbs = path == ".." || path.starts_with("../") || path.ends_with("/..") ||
+                        path.find("/../") != std::string::npos;
+    if (climbs || path.starts_with(".") || path.find("/.") != std::string::npos)
+        return std::nullopt;
+
+    std::error_code ec;
+    const auto full = root_ / path;
+    if (!std::filesystem::is_regular_file(full, ec))
+        return std::nullopt;
+
+    bundle_entry entry;
+    entry.path = path;
+    entry.size = std::filesystem::file_size(full, ec);
+    if (ec)
+        return std::nullopt;
+    entry.compressed = std::filesystem::exists(full.string() + std::string(brotli_suffix), ec);
+    return entry;
+}
+
 }

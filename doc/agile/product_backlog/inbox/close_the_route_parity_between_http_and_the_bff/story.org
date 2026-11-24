@@ -56,7 +56,7 @@ remaining 15 here.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:3F1B0A52-6C7E-4A17-9D3E-51C2B8E7A904][A bundle rebuilt while the gateway runs serves an index it cannot load]] | BACKLOG | | | The gateway lists the bundle's files when it starts and answers from that list, while it reads index.html from disk on every request. A build that publishes a new hash while the process runs therefore serves the new index and refuses the file it names, and the browser shows a blank page until the gateway restarts. |
+| [[id:3F1B0A52-6C7E-4A17-9D3E-51C2B8E7A904][A bundle rebuilt while the gateway runs serves an index it cannot load]] | DONE | 2026-11-24 | 2026-11-24 | The gateway lists the bundle's files when it starts and answers from that list, while it reads index.html from disk on every request. A build that publishes a new hash while the process runs therefore serves the new index and refuses the file it names, and the browser shows a blank page until the gateway restarts. |
 | [[id:820AC660-C3FC-4A45-998D-A65818FA4BB8][A profile image over the payload cap cannot reach the validator]] | BACKLOG | | | The deployment's NATS takes the default 1 MB max_payload, and the upload body carries the image base64 so it grows by a third: an image over roughly three quarters of a megabyte fails in the transport with MAX_PAYLOAD_EXCEEDED and the caller gets a 503, so the validator's own image_too_large answer is unreachable while the picker and the validator both state 2 MB. Direction (product owner, 2026-10-05): an upload larger than 1 MB travels over HTTP storage, not the message fabric. |
 | [[id:CDEBF21E-BB63-491B-ABBB-48C1CAAECB33][Answer a session-layer refusal in the error contract]] | DONE | 2026-11-24 | 2026-11-24 | The gateway's session refuses with {"error": "..."} while every ported route and the BFF answer {"code", "message"}. The browser parses the second shape, so a refused write on the gateway shows "Request failed with status 403" and loses the words that said why. |
 | [[id:FC74EFF3-6DE3-49D3-8A8B-EE0F39FA99C3][Answer HEAD wherever a GET is served]] | DONE | 2026-11-24 | 2026-11-24 | The gateway answers 404 to HEAD on every API route: the router has a HEAD builder and only the storage routes use it. The BFF answered HEAD from its GET, so an uptime probe, a curl -I, or a client that tests a resource before reading it now sees every route as missing. |
@@ -101,6 +101,13 @@ remaining 15 here.
   left for the next call site to reach. The session's three cases are named
   apart: =invalid-credentials= for a refused credential, =session-expired= for a
   cookie the server no longer holds, =not-authenticated= for none at all.
+- *The bundle is served from the directory it lives in* (2026-11-25, task
+  3F1B0A52). The manifest is a snapshot taken at startup and the files are read
+  from disk, so a publish under a running gateway is reconciled on the read
+  path: a path the snapshot lacks is asked of the directory, and nothing is
+  written back, so no session pays for a lock. The alternative — rescanning the
+  directory when the index changes — would lock the table every request reads
+  and rescan hundreds of files because one changed.
 - *A recipe proves the wiring, not the data* (2026-11-25). A well-formed write
   reaches the service and may come back refused because the row it names does
   not exist; the corpus's own =HTTP 200= line is therefore a claim about wiring

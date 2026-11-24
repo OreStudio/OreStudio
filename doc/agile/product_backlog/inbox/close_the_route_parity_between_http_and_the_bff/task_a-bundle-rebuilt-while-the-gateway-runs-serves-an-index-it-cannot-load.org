@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/follow-the-bundle-the-directory-holds
+#+pr: 5105
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
-#+updated: 2026-11-22
-#+environment:
+#+updated: 2026-11-25
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,12 +28,12 @@ directory and serve it, or rebuild the list when =index.html= changes.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-22                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
 
 * Acceptance
 
@@ -43,9 +43,34 @@ directory and serve it, or rebuild the list when =index.html= changes.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The two halves of the answer disagreed. =file()= reads every body from disk at
+request time, so the index a browser loads is whatever the build last wrote. The
+manifest, though, is a snapshot taken when the server starts, and it is the only
+thing a path is resolved against. A build that publishes while the server runs
+therefore served the new index and refused the hashed asset it named, and the
+browser showed a blank page until a restart.
+
+The fix is the first of the two the goal offers, and the smaller one: a path the
+snapshot does not hold is asked of the directory before it is refused. Nothing
+is written back into the manifest, so there is no lock and no shared mutable
+state across sessions: the manifest stays the one table a request is resolved
+against, and a miss costs one =stat=.
+
+Rebuilding the whole manifest when =index.html= changes was the other option,
+and it is worse here: it needs a lock on the table every request reads, and it
+would rescan a directory of hundreds of files because one of them changed.
+
+The rules that keep a request inside the bundle are applied by
+=bundle_manifest::read= as they are by the scan: a component that climbs out of
+the root finds nothing, and a dot file is the build's own. The bundle's own
+answer stays what it was: an API path is refused rather than served the shell, a
+screen path still gets the shell, and a path that would leave the root is a
+screen path and gets the shell, which is what its test states.
+
+Only the =assets/= prefix takes the new path, and that is deliberate: an asset is
+a file the build wrote, so its absence is a breakage worth saying, while a path
+outside =assets/= is a screen and a screen is the application. A missing asset
+answers the 404 the previous change put in the contract, naming the file.
 
 * Measurements
 
@@ -59,9 +84,25 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The HTTP core suite | 102 cases, was 100 | =./compass.sh test run -- -R ores.http.core= | the branch head |
+| The files a request is resolved against | 1, the manifest; none is added | =grep -n 'bundle_manifest' projects/ores.http/core/src/routes/*.cpp= | the branch head |
+| What a miss costs | one =stat=, and no write | =bundle_manifest::read= | the branch head |
 
 * Notes
+
+The two cases are in =projects/ores.http/core/tests/web_bundle_routes_tests.cpp=.
+The first publishes under a running server, exactly as a build does: it writes a
+new asset and an index that names only it, then reads the index and fetches the
+asset it names, asserting the content type and the immutable cache rule as well
+as the bytes. Without the change that fetch is a 404, which is the blank page.
+
+The second fetches an asset neither the build nor the directory holds, and
+asserts the 404 carries the contract's code and names the file. The refusal a
+screen sees therefore says =gone-ZZZZ0000.js= rather than leaving the browser to
+fail at a script tag.
+
+The fixture's =write= was private, because nothing published after the bundle
+was built; it is public now, which is what makes the case possible.
 
 * Test Scenarios
 
@@ -78,15 +119,13 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5105][#5105]] | [http] Serve a bundle published under a running gateway |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
-
-* Result
 
 * Promoted from capture
 
@@ -132,3 +171,26 @@ the gateway is not restarted on every one.
 
 - =projects/ores.http/core/src/routes/web_bundle_routes.cpp=
 - =projects/ores.web/CMakeLists.txt= (=ores_web_bundle= publishes into the web dir)
+
+* Result
+
+A bundle published under a running gateway is served whole. The index was
+already read from disk on every request, so the browser followed the new build;
+the manifest was not, and it refused the assets the new index named. A path the
+startup scan does not hold is now read from the directory before it is refused,
+so the index and every file it names come from the same build and no restart is
+needed.
+
+The manifest stays the only table a request is resolved against and is never
+written back, so nothing is shared mutably across sessions and a miss costs one
+=stat=. The rules that keep a request inside the bundle are applied by the read
+as by the scan, and only the =assets/= prefix takes the new path: an API path is
+still refused rather than served the shell, and a screen path still gets the
+application.
+
+A missing asset answers the contract's 404 and names the file, so a screen fails
+loudly instead of loading a bundle that cannot work.
+
+Proved: the two new cases, and the HTTP core suite with them. Not proved: a real
+publish under the running fleet, which is a build-and-restart the local tests
+imitate rather than perform.

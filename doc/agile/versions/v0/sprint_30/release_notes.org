@@ -64,6 +64,12 @@ gave its trades./
 
 /A fixing series states its identity, its recent fixings and the provider that published them./
 - *Support volatility surfaces — the remaining work*: The system builds and serves volatility surfaces as market data.
+
+[[proj:assets/images/ore_studio-v0.0.30-fx-surface-compare.png]]
+
+/Two vendors' volatility surfaces compared: a cell states the gap between them
+in vol points, a mark says it passed the outlier limit, and the smile each
+vendor quotes is drawn beside the tenors they disagree on./
 - *Build the IR curves of every supported currency from public data — the remaining work*: Every currency the synthetic IR feeds support has a published overnight-index curve in the system tenant, bootstrapped from that currency's quotes, and those quotes start from the currency's public overnight rate.
 - *Port the market data screens from hedgr*: Hedgr prototyped five market-data screens for its own terminal.
 

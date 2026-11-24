@@ -75,12 +75,13 @@ public:
         return root_;
     }
 
-private:
+    /// Writes a file, as a build does when it publishes a new bundle.
     void write(const std::string& path, const std::string& content) {
         std::ofstream out(root_ / path, std::ios::binary | std::ios::trunc);
         out << content;
     }
 
+private:
     fs::path root_;
 };
 
@@ -261,4 +262,58 @@ TEST_CASE("a_prebuilt_brotli_copy_is_sent_when_the_client_offers_it", "[web_bund
     REQUIRE(plain.has_value());
     REQUIRE((*plain)[http::field::content_encoding].empty());
     REQUIRE(plain->body() == "console.log('the app');");
+}
+
+/**
+ * @brief A bundle published under a running server is served whole.
+ *
+ * The gateway reads the directory when it starts and the index from disk on
+ * every request, so a build that publishes while it runs used to leave the
+ * browser following an index to assets the snapshot refused: a blank page until
+ * a restart. The index and the files it names now come from the same build.
+ */
+TEST_CASE("a_bundle_published_under_a_running_server_is_served_whole", "[web_bundle]") {
+    auto lg(make_logger(test_suite));
+    ORES_LOG_SEV(lg, info) << "Testing a publish the startup scan never saw";
+
+    built_bundle bundle;
+    bundle_gateway gateway(bundle.root());
+
+    // The build publishes again: a new asset, and an index that names it and
+    // nothing the old one named.
+    bundle.write("assets/app-EFGH5678.js", "console.log('the new app');");
+    bundle.write("index.html", "<!doctype html><script src=\"/assets/app-EFGH5678.js\"></script>");
+
+    const auto index = fetch_bundle(gateway.port(), "/", "");
+    REQUIRE(index.has_value());
+    REQUIRE(index->result_int() == 200);
+    REQUIRE(index->body().find("app-EFGH5678.js") != std::string::npos);
+
+    // The asset the index names, which the scan at startup never saw.
+    const auto asset = fetch_bundle(gateway.port(), "/assets/app-EFGH5678.js", "");
+    REQUIRE(asset.has_value());
+    REQUIRE(asset->result_int() == 200);
+    REQUIRE(asset->body() == "console.log('the new app');");
+    REQUIRE((*asset)[http::field::content_type].starts_with("text/javascript"));
+    REQUIRE((*asset)[http::field::cache_control].find("immutable") != std::string::npos);
+}
+
+/**
+ * @brief An asset the directory does not hold is refused, and named.
+ *
+ * The screen fails loudly on a missing file rather than loading a bundle that
+ * cannot work, so the refusal says which file was asked for.
+ */
+TEST_CASE("an_asset_the_directory_does_not_hold_is_refused_by_name", "[web_bundle]") {
+    auto lg(make_logger(test_suite));
+    ORES_LOG_SEV(lg, info) << "Testing a missing asset after the publish";
+
+    built_bundle bundle;
+    bundle_gateway gateway(bundle.root());
+
+    const auto answered = fetch_bundle(gateway.port(), "/assets/gone-ZZZZ0000.js", "");
+    REQUIRE(answered.has_value());
+    REQUIRE(answered->result_int() == 404);
+    REQUIRE(answered->body().find(R"("code":"not-found")") != std::string::npos);
+    REQUIRE(answered->body().find("gone-ZZZZ0000.js") != std::string::npos);
 }

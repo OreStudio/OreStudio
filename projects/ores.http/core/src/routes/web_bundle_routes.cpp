@@ -144,9 +144,20 @@ web_bundle_routes::answer(const std::string& path,
     if (const auto* entry = manifest_.find(path); entry != nullptr)
         return file(*entry, path, request);
 
-    // A file the build should have written and did not is a breakage, not a screen.
-    if (path.starts_with(assets_prefix))
+    /*
+     * A build that publishes while this server runs writes a new index naming
+     * assets the startup scan never saw. The index is read from disk on every
+     * request, so the browser follows it here, and an asset the snapshot does
+     * not hold is asked of the directory before it is refused: the index and
+     * every file it names then come from the same build.
+     */
+    if (path.starts_with(assets_prefix)) {
+        if (const auto fresh = manifest_.read(path); fresh.has_value())
+            return file(*fresh, path, request);
+        // A file the build should have written and did not is a breakage, not
+        // a screen.
         return no_route(path);
+    }
 
     return index(request);
 }

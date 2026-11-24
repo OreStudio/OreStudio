@@ -50,7 +50,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 #+ATTR_HTML: :class hug-leading
 | Story | State | Start | End | Description |
 |-------+-------+-------+-----+-------------|
-|       |       |       |     |             |
+| [[id:23E4AD4B-3DBD-4A63-8430-4DB38E5DDEBF][Report the timescaledb library from the server that is running]] | DONE | | 2026-11-24 | compass db status trusts pg_config on PATH for the timescaledb library directory, and pg_config answers for the client's default installation, which can be a different major from the server that is running. A healthy database then reports that no library is on disk. The scan follows the server's own version number instead. |
 
 * Achievements
 

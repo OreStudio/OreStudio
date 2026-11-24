@@ -69,7 +69,7 @@ remaining 15 here.
 | [[id:A2165589-71E8-4107-856A-77FB5FDD32E0][Serve the grid composed views]] | DONE | 2026-11-21 | 2026-11-21 | Three grid views are answered only by the BFF. |
 | [[id:3E187C09-27F5-4D52-A14D-4647552FC023][Serve the IR coverage through ores.http]] | BACKLOG | | | The calibration screen's IR coverage is served by the BFF today: one row per currency with its source, policy window, bootstrap config, latest published set and the first gap. Implement the same read in the C++ HTTP server so the browser can leave the BFF. |
 | [[id:878A1153-2C81-4857-8CB8-A619EE74A7BE][Serve the message bus composed view]] | DONE | 2026-11-20 | 2026-11-21 | The message bus view is answered only by the BFF. |
-| [[id:16F7691D-9EFA-4440-9E6E-3124D7BA11E7][The public rates coverage closes the socket at the server's timeout]] | BACKLOG | | | GET /api/marketdata/public-rates/coverage on ores.http works for more than 45 seconds and the server closes the socket, so the browser gets no answer. The BFF composes the same view from the same service in about a second, and the route answered in its own live run when the market data views were ported, so something since then made it pathologically slow: the gateway reads two small pages per public series, and 142 series are 284 round trips. Time the reads to find which one stalls before changing the design. |
+| [[id:16F7691D-9EFA-4440-9E6E-3124D7BA11E7][The public rates coverage closes the socket at the server's timeout]] | STARTED | 2026-11-24 | | GET /api/marketdata/public-rates/coverage on ores.http works for more than 45 seconds and the server closes the socket, so the browser gets no answer. The BFF composes the same view from the same service in about a second, and the route answered in its own live run when the market data views were ported, so something since then made it pathologically slow: the gateway reads two small pages per public series, and 142 series are 284 round trips. Time the reads to find which one stalls before changing the design. |
 | [[id:7C83579B-4DA3-4EF8-BF5B-33E97C2E3874][Write an org page back through the service]] | BLOCKED | 2026-11-22 | | A version-checked page write on ores.orgmode.service, so a QA run can record its outcomes into the scenario page once the docs live in PostgreSQL. |
 
 * Decisions
@@ -101,6 +101,26 @@ remaining 15 here.
   left for the next call site to reach. The session's three cases are named
   apart: =invalid-credentials= for a refused credential, =session-expired= for a
   cookie the server no longer holds, =not-authenticated= for none at all.
+- *A read is designed data-oriented* (2026-11-25, task 16F7691D, direction of the
+  product owner). Load the data a transformation needs in one batch bounded by
+  resources, process it in large collections with standard algorithms, and write
+  back in batches with as few transactions as possible. For a composed view that
+  means one bulk read of the fact set — not a page per entity — and the join in
+  the gateway's memory over sorted collections. The coverage view's 284 forwards
+  for 142 series are the worked example of what the rule forbids.
+- *The service counts and the gateway joins* (2026-11-25). A composed view's
+  aggregate is the owning service's, answered as a vector in one call; the
+  gateway joins it to what else the view needs in one pass. A service is not
+  asked to shape a screen's answer, and the gateway is not allowed to compute by
+  looping over entities.
+- *PostgreSQL is considered for each aggregate, and not assumed* (2026-11-25).
+  For the coverage read a SQL function, a view and a continuous aggregate were
+  each rejected on measurement — the function and the view change no plan, and a
+  continuous aggregate would hold as many rows as the base table because the
+  data is already one row per series-day. A projection table is the strongest
+  PostgreSQL-side answer and is *deferred with a trigger*: add it if the read is
+  measured above 200 ms at p95 or a second reader needs the triples, with a
+  refresh on both write paths and a drift gate. The reasoning is on the task.
 - *The bundle is served from the directory it lives in* (2026-11-25, task
   3F1B0A52). The manifest is a snapshot taken at startup and the files are read
   from disk, so a publish under a running gateway is reconciled on the read

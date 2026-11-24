@@ -5,7 +5,7 @@
 #+description: Tick writers use binary COPY, sharded by series, with batches bounded by size or a short wait, idempotent on series, time and coordinate.
 #+type: task
 #+level: s1
-#+filetags: :carry_one_hundred_thousand_feeds_on_the_data_path-remaining:next:v0:
+#+filetags: :carry_one_hundred_thousand_feeds_on_the_data_path-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

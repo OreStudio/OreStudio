@@ -5,7 +5,7 @@
 #+description: ores.shell has no command for scripts or products, and every command needs a session.
 #+type: task
 #+level: s1
-#+filetags: :finish_the_scripted_trade_subsystem:next:product_backlog:
+#+filetags: :finish_the_scripted_trade_subsystem:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: The History tab of a party is empty. The server keys a party's versions by its short code, and the page asked with the identifier. The identifiers, contacts and business units may be keyed in their own way too.
 #+type: task
 #+level: s1
-#+filetags: :edit_parties_under_four_eyes:next:v0:
+#+filetags: :edit_parties_under_four_eyes:inbox:v0:
 #+owner: marco
 #+branch: feature/implement-edit-parties-under-four-eyes
 #+pr:

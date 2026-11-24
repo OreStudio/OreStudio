@@ -5,7 +5,7 @@
 #+description: Keep the transient conventions package inside ores.ore as typed family rows, not JSON strings, so the mapper, the joins and the diff work on values.
 #+type: task
 #+level: s1
-#+filetags: :conventions-import-and-export-redesign:next:v0:
+#+filetags: :conventions-import-and-export-redesign:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

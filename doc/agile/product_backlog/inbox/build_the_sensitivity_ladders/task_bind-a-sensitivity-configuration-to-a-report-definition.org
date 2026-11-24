@@ -5,7 +5,7 @@
 #+description: A sensitivity run must name the factors it shifts: bind a SensitivityAnalysis document into the configuration slot a report definition already has for it.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:reporting:sensitivity:ore:configuration:build_the_sensitivity_ladders:v0:
+#+filetags: :product_backlog:inbox:reporting:sensitivity:ore:configuration:build_the_sensitivity_ladders:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: Serve a versions read for the party_countries and party_currencies junctions, and settle whether the journey's membership history wants that read or the generic history route, which is blocked on a composite id.
 #+type: task
 #+level: s1
-#+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps-remaining:next:v0:
+#+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps-remaining:inbox:v0:
 #+owner: marco
 #+branch: feature/give-the-party-memberships-their-versions
 #+pr:

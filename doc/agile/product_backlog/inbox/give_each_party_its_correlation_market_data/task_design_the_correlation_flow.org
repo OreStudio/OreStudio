@@ -5,7 +5,7 @@
 #+description: Analysis first: trace a correlation from its source to its uses, naming what exists (the correlation datum and its classification, ORE's CORRELATION type, curve_correlation_config, the simulator's shared factors) and what is missing, and record the design as knowledge before any build.
 #+type: task
 #+level: s1
-#+filetags: :give_each_party_its_correlation_market_data:next:v0:
+#+filetags: :give_each_party_its_correlation_market_data:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

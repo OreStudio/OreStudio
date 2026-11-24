@@ -5,7 +5,7 @@
 #+description: The .1 family and the wider greek ladders are prose only; research ORE and design the reports before seeding.
 #+type: task
 #+level: s1
-#+filetags: :build_the_sensitivity_ladders:next:v0:
+#+filetags: :build_the_sensitivity_ladders:inbox:v0:
 #+owner: marco
 #+branch: feature/design-the-point-one-reports
 #+pr:

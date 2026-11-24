@@ -5,7 +5,7 @@
 #+description: The public sources step draws the credential fields of each publisher, fills each one from the environment of the service when the variable is set, and saves what the person continues with as a tenant secret.
 #+type: task
 #+level: s1
-#+filetags: :store_each_providers_keys_as_a_tenant_secret:next:product_backlog:
+#+filetags: :store_each_providers_keys_as_a_tenant_secret:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/configure-the-public-sources-in-a-setup-dialog
 #+pr:

@@ -5,7 +5,7 @@
 #+description: A party demands, is entitled to, and reads exactly the market data its trades name: every convention a trade references has a supplier, the supplier is chosen by a stated rank, and a booking that names a convention no entitled supplier covers is refused.
 #+type: task
 #+level: s1
-#+filetags: :value_the_generated_trades_against_ore:next:product_backlog:
+#+filetags: :value_the_generated_trades_against_ore:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/make-the-market-data-connection-follow-the-trades
 #+pr: 4990

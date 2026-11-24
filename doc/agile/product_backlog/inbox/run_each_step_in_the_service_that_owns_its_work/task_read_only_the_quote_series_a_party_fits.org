@@ -5,7 +5,7 @@
 #+description: The surface step reads one as-of snapshot of every series the party sees and keeps the ones that carry an expiry and a strike. The party also holds the curves, the fixings and the raw ticks, so the snapshot is mostly rows no surface reads.
 #+type: task
 #+level: s1
-#+filetags: :run_each_step_in_the_service_that_owns_its_work:next:product_backlog:
+#+filetags: :run_each_step_in_the_service_that_owns_its_work:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

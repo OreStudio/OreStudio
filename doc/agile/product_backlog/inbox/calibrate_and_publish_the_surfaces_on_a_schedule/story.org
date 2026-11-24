@@ -5,14 +5,14 @@
 #+description: The synthetic feeds calibrate and publish on their schedule, with the slices screens and the run's market.
 #+type: story
 #+level: s2
-#+filetags: :next:product_backlog:
+#+filetags: :inbox:product_backlog:
 #+created: 2026-11-24
 #+updated: 2026-11-24
 #+environment: festive-dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 #+predecessor: 95541791-E25C-44A5-9625-C8A1E44976D7
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 Continued from: [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility surfaces — the remaining work]].
 
@@ -25,7 +25,7 @@ Continued from: [[id:95541791-E25C-44A5-9625-C8A1E44976D7][Support volatility su
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
-| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
 | Next          | Break the story into tasks.            |

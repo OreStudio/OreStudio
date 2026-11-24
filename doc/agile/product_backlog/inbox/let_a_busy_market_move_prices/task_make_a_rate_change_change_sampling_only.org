@@ -5,7 +5,7 @@
 #+description: A process that steps once per nominal tick gains variance per wall-clock second when the rate rises, because more steps fit into the second; a curve process also runs its calendar faster. Make a rate change change only how often a series is observed, with a test that variance per wall-clock second is invariant under the rate factor.
 #+type: task
 #+level: s1
-#+filetags: :let_a_busy_market_move_prices:next:v0:
+#+filetags: :let_a_busy_market_move_prices:inbox:v0:
 #+owner: marco
 #+branch: feature/make-a-rate-change-change-sampling-only
 #+pr: 3894

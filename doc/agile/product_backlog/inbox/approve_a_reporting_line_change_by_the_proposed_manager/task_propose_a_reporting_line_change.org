@@ -5,7 +5,7 @@
 #+description: The operation a person calls to propose a line: it raises the inbox request as the proposer, records the detail, and compensates if the second half fails, as asking for a role does.
 #+type: task
 #+level: s1
-#+filetags: :approve_a_reporting_line_change_by_the_proposed_manager:next:v0:
+#+filetags: :approve_a_reporting_line_change_by_the_proposed_manager:inbox:v0:
 #+owner: marco
 #+branch: feature/address-the-people-screens-review
 #+pr:

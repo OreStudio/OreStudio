@@ -5,7 +5,7 @@
 #+description: The storage service checks storage::objects:read on the person's own token and holds no rule for one record, so the code is bucket-wide. The Member role lacks it, so a party member sees a stored address as text and cannot download it.
 #+type: task
 #+level: s1
-#+filetags: :browse_and_follow_the_grids_jobs-remaining:next:v0:
+#+filetags: :browse_and_follow_the_grids_jobs-remaining:inbox:v0:
 #+owner: marco
 #+branch: feature/let-a-party-member-download-its-own-files
 #+pr:

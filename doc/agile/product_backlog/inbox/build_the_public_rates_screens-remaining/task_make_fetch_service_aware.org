@@ -5,7 +5,7 @@
 #+description: A range fetch for end_of_day and historical, and a refusal with a health link for real_time.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:marketdata:implementation:build_the_public_rates_screens-remaining:v0:
+#+filetags: :product_backlog:inbox:marketdata:implementation:build_the_public_rates_screens-remaining:v0:
 #+owner: marco
 #+branch:
 #+pr:

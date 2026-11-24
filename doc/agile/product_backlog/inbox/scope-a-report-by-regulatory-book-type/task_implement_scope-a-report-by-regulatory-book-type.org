@@ -5,7 +5,7 @@
 #+description: Initial task for: Scope a report by regulatory book type
 #+type: task
 #+level: s1
-#+filetags: :scope-a-report-by-regulatory-book-type:next:v0:
+#+filetags: :scope-a-report-by-regulatory-book-type:inbox:v0:
 #+owner: marco
 #+branch: feature/scope-a-report-by-regulatory-book-type
 #+pr: 3613

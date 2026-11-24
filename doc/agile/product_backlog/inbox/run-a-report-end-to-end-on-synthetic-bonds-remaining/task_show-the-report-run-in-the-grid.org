@@ -5,7 +5,7 @@
 #+description: The grid views must show the jobs a report run sends to the grid, to every account that may watch it.
 #+type: task
 #+level: s1
-#+filetags: :run-a-report-end-to-end-on-synthetic-bonds-remaining:next:v0:
+#+filetags: :run-a-report-end-to-end-on-synthetic-bonds-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

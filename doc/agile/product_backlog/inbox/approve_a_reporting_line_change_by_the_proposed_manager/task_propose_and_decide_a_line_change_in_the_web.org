@@ -5,7 +5,7 @@
 #+description: Replace the direct edit of the reporting line with a proposal, and let the proposed manager decide it in Requests.
 #+type: task
 #+level: s1
-#+filetags: :approve_a_reporting_line_change_by_the_proposed_manager:next:v0:
+#+filetags: :approve_a_reporting_line_change_by_the_proposed_manager:inbox:v0:
 #+owner: marco
 #+branch: feature/address-the-people-screens-review
 #+pr:

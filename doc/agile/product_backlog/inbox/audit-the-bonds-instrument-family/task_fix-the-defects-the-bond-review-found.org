@@ -5,7 +5,7 @@
 #+description: The review found six money columns read through a binary float on import, one money column typed text, two option money columns at a scale the corpus exceeds, a schedule parent whose role check disagrees with its child, two nullable index columns that generate non-optional types, and a money-column check that cannot see any of it. Fix them, and replace a knowledge-page citation that points at a file that does not exist.
 #+type: task
 #+level: s1
-#+filetags: :audit-the-bonds-instrument-family:next:v0:
+#+filetags: :audit-the-bonds-instrument-family:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

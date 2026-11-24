@@ -5,7 +5,7 @@
 #+description: Check ir_curve_bootstrap_pillar.start_tenor_code and end_tenor_code against refdata_tenors when a pillar is saved, as the pillar already checks its curve_role_code.
 #+type: task
 #+level: s1
-#+filetags: :validate_a_curve_pillars_tenor_codes:next:v0:
+#+filetags: :validate_a_curve_pillars_tenor_codes:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

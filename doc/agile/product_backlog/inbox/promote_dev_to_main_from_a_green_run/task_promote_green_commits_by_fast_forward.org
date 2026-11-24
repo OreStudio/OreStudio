@@ -5,7 +5,7 @@
 #+description: Fast-forward integration on a green continuous Linux run and main on a green nightly matrix.
 #+type: task
 #+level: s1
-#+filetags: :ci:branching:promote_dev_to_main_from_a_green_run:next:product_backlog:
+#+filetags: :ci:branching:promote_dev_to_main_from_a_green_run:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

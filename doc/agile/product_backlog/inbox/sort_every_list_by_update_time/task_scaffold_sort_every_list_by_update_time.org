@@ -5,7 +5,7 @@
 #+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
 #+type: task
 #+level: s1
-#+filetags: :sort_every_list_by_update_time:next:v0:
+#+filetags: :sort_every_list_by_update_time:inbox:v0:
 #+owner: marco
 #+branch: feature/name-the-record-in-a-change-event
 #+pr:

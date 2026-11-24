@@ -5,7 +5,7 @@
 #+description: The Acme dataset links no counterparty to any party, so the Counterparties tab is empty. Add a set of counterparties and link each party to the ones it may trade with.
 #+type: task
 #+level: s1
-#+filetags: :edit_parties_under_four_eyes:next:v0:
+#+filetags: :edit_parties_under_four_eyes:inbox:v0:
 #+owner: marco
 #+branch: feature/implement-edit-parties-under-four-eyes
 #+pr:

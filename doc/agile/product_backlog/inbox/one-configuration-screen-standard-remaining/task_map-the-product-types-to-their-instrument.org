@@ -5,7 +5,7 @@
 #+description: Fill instrument_type_code from the guide's used_by for the added types, decide whether a cross-currency product maps to SWPTN or XCCY, and record the decision.
 #+type: task
 #+level: s1
-#+filetags: :one-configuration-screen-standard-remaining:next:v0:
+#+filetags: :one-configuration-screen-standard-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: Feed a party's correlation tables to the calibration of its correlation-driven crosses and to the ORE market it prices with, through curve_correlation_config.
 #+type: task
 #+level: s1
-#+filetags: :give_each_party_its_correlation_market_data:next:v0:
+#+filetags: :give_each_party_its_correlation_market_data:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

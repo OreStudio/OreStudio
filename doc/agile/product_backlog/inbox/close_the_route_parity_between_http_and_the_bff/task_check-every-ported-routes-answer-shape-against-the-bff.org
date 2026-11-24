@@ -5,7 +5,7 @@
 #+description: Two routes answered a bare array where the BFF answered an object with a member: a report's runs answered an array instead of {runs: [...]}, and the screen read the missing member as no rows. The inventory pairs addresses, and each port task proves a payload by hand, but nothing compares the shape a route answers with the shape the BFF answered, so a member the client reads can be absent and the screen reads it as empty.
 #+type: task
 #+level: s1
-#+filetags: :close_the_route_parity_between_http_and_the_bff:next:product_backlog:
+#+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

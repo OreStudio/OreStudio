@@ -5,7 +5,7 @@
 #+description: Initial task for: Author the report configurations on guided screens
 #+type: task
 #+level: s1
-#+filetags: :author_the_report_configurations:next:v0:
+#+filetags: :author_the_report_configurations:inbox:v0:
 #+owner: marco
 #+branch: feature/author-the-report-configurations
 #+pr: 3580

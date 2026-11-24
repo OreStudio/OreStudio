@@ -5,7 +5,7 @@
 #+description: Replace the generic stage request, which carries a family name and the row as a JSON string, with one generated stage message per family that carries the family's own value type.
 #+type: task
 #+level: s1
-#+filetags: :conventions-import-and-export-redesign:next:v0:
+#+filetags: :conventions-import-and-export-redesign:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: trading.v1.ops.export_trades_to_storage takes book ids and no date and stores one blob for all of them: the export_portfolio_response, holding the trades and their typed instrument batch. The opaque instrument payload is gone, so the ORE mapper can be driven from it - that is how the single-set run maps its portfolio today. What the export cannot do is answer for one set, because it names books and no as-of. Export one trade set at a time, by its batch key, and source everything the portfolio needs - trade headers, instruments and envelopes - into a zip whose shape is declared. The as-of travels on the set.
 #+type: task
 #+level: s1
-#+filetags: :gather-each-trade-set-and-its-market-data-remaining-2:next:v0:
+#+filetags: :gather-each-trade-set-and-its-market-data-remaining-2:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

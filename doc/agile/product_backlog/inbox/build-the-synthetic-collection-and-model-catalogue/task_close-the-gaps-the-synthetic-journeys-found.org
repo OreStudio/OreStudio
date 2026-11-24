@@ -5,7 +5,7 @@
 #+description: No subject lists the vintages a price source offers; several lists filter on id_one_of where the screen needs the parent; the parameter definition's wire key drops the process type.
 #+type: task
 #+level: s1
-#+filetags: :build-the-synthetic-collection-and-model-catalogue:next:v0:
+#+filetags: :build-the-synthetic-collection-and-model-catalogue:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

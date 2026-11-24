@@ -5,7 +5,7 @@
 #+description: The Memberships tab shows the heading Countries it operates in twice, and the Contacts tab shows the raw key refdata.parties.address for its Address column. Find why and fix both, and check every string the party page uses exists in English, French and Portuguese.
 #+type: task
 #+level: s1
-#+filetags: :edit_parties_under_four_eyes:next:v0:
+#+filetags: :edit_parties_under_four_eyes:inbox:v0:
 #+owner: marco
 #+branch: feature/implement-edit-parties-under-four-eyes
 #+pr:

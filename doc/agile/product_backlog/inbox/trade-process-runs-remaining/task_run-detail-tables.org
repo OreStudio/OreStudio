@@ -5,7 +5,7 @@
 #+description: Add one detail table per kind of process run, keyed by the run: compression (provider, cycle reference), allocation (block, source, template), merge (policy, expiry-netting style), roll and sweep runs (process, run date) and bulk book move (books, cash flows moved).
 #+type: task
 #+level: s1
-#+filetags: :trade-process-runs-remaining:next:v0:
+#+filetags: :trade-process-runs-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

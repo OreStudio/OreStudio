@@ -5,7 +5,7 @@
 #+description: Hand-written SQL is declared once with typed parameters and typed rows, prepared once per connection and read in the binary format.
 #+type: task
 #+level: s1
-#+filetags: :carry_one_hundred_thousand_feeds_on_the_data_path-remaining:next:v0:
+#+filetags: :carry_one_hundred_thousand_feeds_on_the_data_path-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

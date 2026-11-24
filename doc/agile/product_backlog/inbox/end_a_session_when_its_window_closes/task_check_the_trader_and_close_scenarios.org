@@ -5,7 +5,7 @@
 #+description: The end-to-end check that the story keeps its promise to traders and still ends a closed window.
 #+type: task
 #+level: s1
-#+filetags: :end_a_session_when_its_window_closes:next:v0:
+#+filetags: :end_a_session_when_its_window_closes:inbox:v0:
 #+owner: marco
 #+branch: feature/address-the-people-screens-review
 #+pr:

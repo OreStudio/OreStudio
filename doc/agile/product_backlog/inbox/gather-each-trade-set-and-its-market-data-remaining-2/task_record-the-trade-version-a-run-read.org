@@ -7,7 +7,7 @@
 The error rows also need the defects the review of PR 3775 named. Recording is not idempotent, so a redelivered collect_results stores the same reasons twice. The Report-scope row repeats the verdict's sentences, so Split shows a long duplicate beside the per-reason rows. One unknown engine scope rejects the whole batch, losing every per-reason row. The as-of move is only a log line; the run's acceptance says the instance records which date it used and why it moved.
 #+type: task
 #+level: s1
-#+filetags: :gather-each-trade-set-and-its-market-data-remaining-2:next:v0:
+#+filetags: :gather-each-trade-set-and-its-market-data-remaining-2:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

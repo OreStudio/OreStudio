@@ -5,7 +5,7 @@
 #+description: A system-level Fixings screen lets the super administrator view every FX and IR observation across every source, read only.
 #+type: task
 #+level: s1
-#+filetags: :derive_term_indices_from_their_overnight_curves:next:product_backlog:
+#+filetags: :derive_term_indices_from_their_overnight_curves:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

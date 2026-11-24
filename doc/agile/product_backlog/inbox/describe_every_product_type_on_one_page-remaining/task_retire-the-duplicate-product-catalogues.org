@@ -5,7 +5,7 @@
 #+description: Fold the instrument codes into the product type, delete the English asset-class switch, the label and colour maps and the hardcoded Bond, and give the report results column a real value.
 #+type: task
 #+level: s1
-#+filetags: :describe_every_product_type_on_one_page-remaining:next:v0:
+#+filetags: :describe_every_product_type_on_one_page-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

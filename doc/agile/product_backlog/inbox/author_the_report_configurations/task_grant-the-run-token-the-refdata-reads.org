@@ -5,7 +5,7 @@
 #+description: A report export that reads currency pairs, their conventions and their calendars was refused with 'Service error on refdata.v1.currency_pairs.list: forbidden'. The cause is not the authorisation code: a role permission lives in the tenant that holds it, and a tenant gets its copy from the system tenant when it is provisioned. The grant was added to the system tenant, this tenant was provisioned before it, so the run token never held it. The seed adds the reads to the report run role, which every fresh tenant copies; an environment provisioned earlier needs the same assign run in that tenant.
 #+type: task
 #+level: s1
-#+filetags: :author_the_report_configurations:next:v0:
+#+filetags: :author_the_report_configurations:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: The simulator announces one simulated session and serves its feeds on the same contract.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:marketdata:implementation:run_the_adapter_per_session:v0:
+#+filetags: :product_backlog:inbox:marketdata:implementation:run_the_adapter_per_session:v0:
 #+owner: marco
 #+branch:
 #+pr:

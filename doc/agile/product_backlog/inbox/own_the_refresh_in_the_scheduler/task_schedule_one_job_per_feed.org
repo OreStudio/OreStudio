@@ -5,7 +5,7 @@
 #+description: A scheduler job per feed, seeded from the feed schedule, sending the refresh request.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:marketdata:implementation:own_the_refresh_in_the_scheduler:v0:
+#+filetags: :product_backlog:inbox:marketdata:implementation:own_the_refresh_in_the_scheduler:v0:
 #+owner: marco
 #+branch:
 #+pr:

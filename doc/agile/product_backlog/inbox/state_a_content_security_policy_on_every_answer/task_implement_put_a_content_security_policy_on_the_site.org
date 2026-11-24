@@ -5,7 +5,7 @@
 #+description: Initial task for: Put a content security policy on the site
 #+type: task
 #+level: s1
-#+filetags: :state_a_content_security_policy_on_every_answer:next:product_backlog:
+#+filetags: :state_a_content_security_policy_on_every_answer:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

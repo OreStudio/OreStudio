@@ -5,7 +5,7 @@
 #+description: Initial task for: Data model clean up
 #+type: task
 #+level: s1
-#+filetags: :close_the_document_loophole_in_the_data_rules:next:product_backlog:
+#+filetags: :close_the_document_loophole_in_the_data_rules:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

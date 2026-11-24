@@ -5,7 +5,7 @@
 #+description: Five trading types are one arm of the schema's leg-data choice per row, or a rule block and a date list in one row: instrument option, bond leg rate, bond issue leg rate, instrument schedule and bond issue leg schedule. This is the trading owner's call, handed over with the inventory's reading.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:data-oriented-design:modeling:trading:codegen:split_the_types_that_carry_too_many_columns-remaining:v0:
+#+filetags: :product_backlog:inbox:data-oriented-design:modeling:trading:codegen:split_the_types_that_carry_too_many_columns-remaining:v0:
 #+owner: marco
 #+branch:
 #+pr:

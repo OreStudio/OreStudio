@@ -5,7 +5,7 @@
 #+description: The parsers read their environment variables through ores.platform's environment provider instead of boost's parse_environment, so a test's fake environment is the only one the parser sees and no test lists variables to strip.
 #+type: task
 #+level: s1
-#+filetags: :give_the_tests_a_running_pooler:next:product_backlog:
+#+filetags: :give_the_tests_a_running_pooler:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

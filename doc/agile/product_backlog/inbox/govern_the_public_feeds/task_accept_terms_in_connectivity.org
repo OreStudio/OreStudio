@@ -5,7 +5,7 @@
 #+description: Terms acceptance moves to the publisher record in Connectivity, with the version shown.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:marketdata:implementation:govern_the_public_feeds:v0:
+#+filetags: :product_backlog:inbox:marketdata:implementation:govern_the_public_feeds:v0:
 #+owner: marco
 #+branch:
 #+pr:

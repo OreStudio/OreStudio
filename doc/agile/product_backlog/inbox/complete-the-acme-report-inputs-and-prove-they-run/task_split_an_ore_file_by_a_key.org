@@ -5,7 +5,7 @@
 #+description: Let the export write one file for each value of a key, such as one portfolio file for each book, using the name pattern of the file types table.
 #+type: task
 #+level: s1
-#+filetags: :complete-the-acme-report-inputs-and-prove-they-run:next:v0:
+#+filetags: :complete-the-acme-report-inputs-and-prove-they-run:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

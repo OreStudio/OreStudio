@@ -5,7 +5,7 @@
 #+description: An open window tells the server it is there, separately from the reads it makes, so presence can be told from activity.
 #+type: task
 #+level: s1
-#+filetags: :end_a_session_when_its_window_closes:next:v0:
+#+filetags: :end_a_session_when_its_window_closes:inbox:v0:
 #+owner: marco
 #+branch: feature/address-the-people-screens-review
 #+pr:

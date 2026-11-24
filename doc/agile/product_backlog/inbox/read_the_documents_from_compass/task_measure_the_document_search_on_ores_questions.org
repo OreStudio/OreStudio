@@ -5,7 +5,7 @@
 #+description: Run at least twenty real questions about ORE, each with the documents that should answer it, through the ores.http document route, and record how many find their document in the first five.
 #+type: task
 #+level: s1
-#+filetags: :read_the_documents_from_compass:next:v0:
+#+filetags: :read_the_documents_from_compass:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

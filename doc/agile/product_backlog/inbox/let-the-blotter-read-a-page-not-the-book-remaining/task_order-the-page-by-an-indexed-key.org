@@ -5,7 +5,7 @@
 #+description: A keyset page compares its sort column as text, so no index can serve the order. Compare in the column own type, read the page keys from the bookings alone, and index that order; then measure the first page at a hundred thousand trades.
 #+type: task
 #+level: s1
-#+filetags: :let-the-blotter-read-a-page-not-the-book-remaining:next:v0:
+#+filetags: :let-the-blotter-read-a-page-not-the-book-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: Task for: Keep the record screens up to date
 #+type: task
 #+level: s1
-#+filetags: :keep_the_record_screens_up_to_date-remaining:next:v0:
+#+filetags: :keep_the_record_screens_up_to_date-remaining:inbox:v0:
 #+owner: marco
 #+branch: feature/keep-the-record-screens-up-to-date
 #+pr:

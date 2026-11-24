@@ -5,7 +5,7 @@
 #+description: Every service publishes its started and stopping events, and the synthetic auto start publishes what it started and skipped.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:service:telemetry:eventing:record-system-events-in-a-central-event-log:v0:
+#+filetags: :product_backlog:inbox:service:telemetry:eventing:record-system-events-in-a-central-event-log:v0:
 #+owner: marco
 #+branch:
 #+pr:

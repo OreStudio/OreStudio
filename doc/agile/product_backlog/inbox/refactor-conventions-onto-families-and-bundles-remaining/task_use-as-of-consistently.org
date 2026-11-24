@@ -5,7 +5,7 @@
 #+description: Every exported set is read at one bitemporal instant. Route paged reads through the generated as_of path and record the instant in the manifest.
 #+type: task
 #+level: s1
-#+filetags: :refactor-conventions-onto-families-and-bundles-remaining:next:v0:
+#+filetags: :refactor-conventions-onto-families-and-bundles-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

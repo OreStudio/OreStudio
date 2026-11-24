@@ -5,7 +5,7 @@
 #+description: Give each rate curve pillar of Bloomberg and LSEG a vendor id, so the native simulator can serve curves.
 #+type: task
 #+level: s1
-#+filetags: :rework-the-market-data-feeds-remaining-2:next:v0:
+#+filetags: :rework-the-market-data-feeds-remaining-2:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

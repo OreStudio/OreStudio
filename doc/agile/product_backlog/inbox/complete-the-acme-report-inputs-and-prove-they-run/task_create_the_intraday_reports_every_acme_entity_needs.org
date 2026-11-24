@@ -5,7 +5,7 @@
 #+description: ACME's reports are end of day. Every ACME entity needs intraday reports as well. Begin by reading the report documentation to establish which intraday reports are required and for which entity, then build them. A report that runs intraday values at the present moment rather than at the previous close, so it also decides what the market data must supply during the day.
 #+type: task
 #+level: s1
-#+filetags: :complete-the-acme-report-inputs-and-prove-they-run:next:v0:
+#+filetags: :complete-the-acme-report-inputs-and-prove-they-run:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

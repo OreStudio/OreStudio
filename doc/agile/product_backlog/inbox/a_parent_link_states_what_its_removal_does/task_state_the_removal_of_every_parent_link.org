@@ -5,7 +5,7 @@
 #+description: Give every existing foreign key its removal behaviour, report the orphans the seeded data holds today, and decide for each owned child whether it bumps its parent's version.
 #+type: task
 #+level: s1
-#+filetags: :a_parent_link_states_what_its_removal_does:next:v0:
+#+filetags: :a_parent_link_states_what_its_removal_does:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: Write the design note the volatility work is built from: what the factor does to a price law, business time against sampling, the volatility loading and its normalisation, the tail channel through the mixture, and the bivariate Hawkes whose one coordinate is today's heat. State the control plane, the tests each part must pass, and what is deliberately out of scope.
 #+type: task
 #+level: s1
-#+filetags: :let_a_busy_market_move_prices:next:v0:
+#+filetags: :let_a_busy_market_move_prices:inbox:v0:
 #+owner: marco
 #+branch: feature/document-the-market-s-volatility-channel
 #+pr: 3892

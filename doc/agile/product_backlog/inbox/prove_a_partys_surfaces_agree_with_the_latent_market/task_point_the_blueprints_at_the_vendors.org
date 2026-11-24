@@ -5,7 +5,7 @@
 #+description: Every system blueprint pillar reads the derived source, and every Acme party subscribes to it; point the pillars at the vendor contributors' series and take the derived source off the tenant subscriptions, so it only seeds the latent surface.
 #+type: task
 #+level: s1
-#+filetags: :prove_a_partys_surfaces_agree_with_the_latent_market:next:product_backlog:
+#+filetags: :prove_a_partys_surfaces_agree_with_the_latent_market:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

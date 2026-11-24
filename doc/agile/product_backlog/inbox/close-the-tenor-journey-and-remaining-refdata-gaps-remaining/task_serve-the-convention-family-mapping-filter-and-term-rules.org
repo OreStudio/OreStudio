@@ -5,7 +5,7 @@
 #+description: Give the server the family-to-entity mapping, a term filter on the convention lists, an existence check on each term column, and a draft version in the history view.
 #+type: task
 #+level: s1
-#+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps-remaining:next:v0:
+#+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps-remaining:inbox:v0:
 #+owner: marco
 #+branch: feature/serve-the-convention-family-mapping-filter-and-term-rules
 #+pr:

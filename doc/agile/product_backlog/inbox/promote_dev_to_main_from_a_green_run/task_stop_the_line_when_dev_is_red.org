@@ -5,7 +5,7 @@
 #+description: Make compass pr merge refuse a non-fix merge while the latest continuous run on dev is red.
 #+type: task
 #+level: s1
-#+filetags: :ci:compass:promote_dev_to_main_from_a_green_run:next:product_backlog:
+#+filetags: :ci:compass:promote_dev_to_main_from_a_green_run:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

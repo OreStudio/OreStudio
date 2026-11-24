@@ -5,7 +5,7 @@
 #+description: Bring curves, FX forward sets and FX volatility surfaces to the one publish lifecycle the architecture states, with auto-approval read and shown as documented and a transaction-bound context that refuses a change of tenant or party.
 #+type: task
 #+level: s1
-#+filetags: :marketdata:publish:approval:auto_approval:database:calibrate_and_publish_the_surfaces_on_a_schedule:next:product_backlog:
+#+filetags: :marketdata:publish:approval:auto_approval:database:calibrate_and_publish_the_surfaces_on_a_schedule:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr: 4624

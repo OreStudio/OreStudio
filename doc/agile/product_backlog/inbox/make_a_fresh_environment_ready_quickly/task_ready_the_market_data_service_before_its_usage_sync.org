@@ -5,7 +5,7 @@
 #+description: On a fresh database the market data service writes thousands of demand intervals before it tells systemd it is ready, misses the 90-second start timeout, and takes the official rates service down with it.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:marketdata:services:systemd:startup:make_a_fresh_environment_ready_quickly:v0:
+#+filetags: :product_backlog:inbox:marketdata:services:systemd:startup:make_a_fresh_environment_ready_quickly:v0:
 #+owner: marco
 #+branch:
 #+pr:

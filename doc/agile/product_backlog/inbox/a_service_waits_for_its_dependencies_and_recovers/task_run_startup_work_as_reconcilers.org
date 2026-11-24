@@ -5,7 +5,7 @@
 #+description: A service registers its startup work with the runner as reconcilers that are safe to repeat; the runner runs them when the service is ready, each time it leaves the degraded state, and at an interval.
 #+type: task
 #+level: s1
-#+filetags: :a_service_waits_for_its_dependencies_and_recovers:next:v0:
+#+filetags: :a_service_waits_for_its_dependencies_and_recovers:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

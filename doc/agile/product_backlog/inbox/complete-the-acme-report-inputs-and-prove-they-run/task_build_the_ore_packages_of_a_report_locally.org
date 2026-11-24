@@ -5,7 +5,7 @@
 #+description: Shell commands that build, on the developer's machine, exactly the packages the compute grid would receive for a report, and fetch the packages of an earlier report instance.
 #+type: task
 #+level: s1
-#+filetags: :complete-the-acme-report-inputs-and-prove-they-run:next:v0:
+#+filetags: :complete-the-acme-report-inputs-and-prove-they-run:inbox:v0:
 #+owner: marco
 #+branch: feature/build-the-ore-packages-of-a-report-locally
 #+pr: 3395

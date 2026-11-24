@@ -5,7 +5,7 @@
 #+description: Implement the join the analysis decided, seed the mapping, and make the pricing-engine screens read the name and the documentation from the product type.
 #+type: task
 #+level: s1
-#+filetags: :describe_every_product_type_on_one_page-remaining:next:v0:
+#+filetags: :describe_every_product_type_on_one_page-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

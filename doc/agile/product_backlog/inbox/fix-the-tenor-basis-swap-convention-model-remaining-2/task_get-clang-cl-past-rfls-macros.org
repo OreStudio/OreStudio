@@ -5,7 +5,7 @@
 #+description: The windows-clang job fails inside rfl's own headers: 'too few arguments provided for function-like macro invocation'. The macro is Windows.h's min/max, which breaks std::numeric_limits<T>::max(); NOMINMAX removes it. It blocks the same nightly the configuration document split needs to prove itself.
 #+type: task
 #+level: s1
-#+filetags: :fix-the-tenor-basis-swap-convention-model-remaining-2:next:v0:
+#+filetags: :fix-the-tenor-basis-swap-convention-model-remaining-2:inbox:v0:
 #+owner: marco
 #+branch: feature/get-clang-cl-past-rfls-macros
 #+pr: 4033

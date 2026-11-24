@@ -5,7 +5,7 @@
 #+description: A running feed whose pair has a newly approved calibration, or whose spread was recalibrated, takes it at its next market day roll without a restart.
 #+type: task
 #+level: s1
-#+filetags: :calibrate_and_publish_the_surfaces_on_a_schedule:next:product_backlog:
+#+filetags: :calibrate_and_publish_the_surfaces_on_a_schedule:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

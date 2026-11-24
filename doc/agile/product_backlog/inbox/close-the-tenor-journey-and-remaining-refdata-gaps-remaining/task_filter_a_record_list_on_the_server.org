@@ -5,7 +5,7 @@
 #+description: Let a record list offer a type and a status filter that the server applies, starting with the party list.
 #+type: task
 #+level: s1
-#+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps-remaining:next:v0:
+#+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

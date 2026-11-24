@@ -5,7 +5,7 @@
 #+description: The curve configuration document is the same defect: one aggregate carrying every curve family, still on the wire in the translation unit that failed on MSVC. Move it onto its families and a bundle, as the conventions document was moved.
 #+type: task
 #+level: s1
-#+filetags: :refactor-conventions-onto-families-and-bundles-remaining:next:v0:
+#+filetags: :refactor-conventions-onto-families-and-bundles-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

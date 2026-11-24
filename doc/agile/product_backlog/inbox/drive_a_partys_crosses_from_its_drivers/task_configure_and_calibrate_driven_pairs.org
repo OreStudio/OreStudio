@@ -5,7 +5,7 @@
 #+description: Model the party's driven pairs, their drivers and their relationship, copy them with the party's blueprints, and calibrate a driven surface from its driver surfaces.
 #+type: task
 #+level: s1
-#+filetags: :drive_a_partys_crosses_from_its_drivers:next:v0:
+#+filetags: :drive_a_partys_crosses_from_its_drivers:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

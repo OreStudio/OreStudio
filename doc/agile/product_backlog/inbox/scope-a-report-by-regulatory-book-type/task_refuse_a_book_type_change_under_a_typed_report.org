@@ -5,7 +5,7 @@
 #+description: A book whose regulatory book type changes after a typed report binds it is dropped from that report without a word, so the report reads fewer books or none.
 #+type: task
 #+level: s1
-#+filetags: :scope-a-report-by-regulatory-book-type:next:v0:
+#+filetags: :scope-a-report-by-regulatory-book-type:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

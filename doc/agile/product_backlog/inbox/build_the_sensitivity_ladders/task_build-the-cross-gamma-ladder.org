@@ -5,7 +5,7 @@
 #+description: The cross terms are present in the sensitivity report as rows with two factors; crossgamma.csv has no writer at 1.8.17.0, so the ladder reads the rows.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:reporting:sensitivity:gamma:ladder:build_the_sensitivity_ladders:v0:
+#+filetags: :product_backlog:inbox:reporting:sensitivity:gamma:ladder:build_the_sensitivity_ladders:v0:
 #+owner: marco
 #+branch:
 #+pr:

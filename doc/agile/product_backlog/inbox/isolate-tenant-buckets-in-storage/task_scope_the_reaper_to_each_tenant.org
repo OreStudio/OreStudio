@@ -5,7 +5,7 @@
 #+description: The compute service's reap() lists InProgress results and hosts with the service's own system-tenant context. Results are tenant rows and the RLS policy scopes each tenant to its own, so the reaper sees nothing and a stale host's work is never requeued. It needs the same tenant scoping the submit path now uses: act inside each tenant, or iterate the tenants that have work in flight.
 #+type: task
 #+level: s1
-#+filetags: :isolate-tenant-buckets-in-storage:next:v0:
+#+filetags: :isolate-tenant-buckets-in-storage:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

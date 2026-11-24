@@ -5,7 +5,7 @@
 #+description: A codegen catalogue of event types and one publish call in the shared service library, on telemetry.v1.events subjects.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:telemetry:eventing:codegen:record-system-events-in-a-central-event-log:v0:
+#+filetags: :product_backlog:inbox:telemetry:eventing:codegen:record-system-events-in-a-central-event-log:v0:
 #+owner: marco
 #+branch:
 #+pr:

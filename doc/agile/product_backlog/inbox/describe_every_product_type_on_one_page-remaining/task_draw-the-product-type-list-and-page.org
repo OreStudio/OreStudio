@@ -5,7 +5,7 @@
 #+description: Draw the list and the detail page under trading: the list grouped by home market and family with search and counts, the page with the description and its source, the markets it references, the note, the routing table, the books and permission, and the engines.
 #+type: task
 #+level: s1
-#+filetags: :describe_every_product_type_on_one_page-remaining:next:v0:
+#+filetags: :describe_every_product_type_on_one_page-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

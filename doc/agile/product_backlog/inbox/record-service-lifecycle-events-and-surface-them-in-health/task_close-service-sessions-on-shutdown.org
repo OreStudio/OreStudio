@@ -5,7 +5,7 @@
 #+description: A service that logged in as its service account logs out through iam.v1.auth.logout when it shuts down gracefully, so a restart leaves no open session behind.
 #+type: task
 #+level: s1
-#+filetags: :record-service-lifecycle-events-and-surface-them-in-health:next:v0:
+#+filetags: :record-service-lifecycle-events-and-surface-them-in-health:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

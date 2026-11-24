@@ -5,7 +5,7 @@
 #+description: Initial task for: Restore the trading guards the versioned model dropped
 #+type: task
 #+level: s1
-#+filetags: :restore-the-trading-guards-remaining:next:v0:
+#+filetags: :restore-the-trading-guards-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

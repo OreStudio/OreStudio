@@ -5,7 +5,7 @@
 #+description: Make the shell counterparty identifier commands raise approval requests, because the gate now refuses a direct write.
 #+type: task
 #+level: s1
-#+filetags: :raise-approval-requests-from-the-remaining-gated-write-paths:next:v0:
+#+filetags: :raise-approval-requests-from-the-remaining-gated-write-paths:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

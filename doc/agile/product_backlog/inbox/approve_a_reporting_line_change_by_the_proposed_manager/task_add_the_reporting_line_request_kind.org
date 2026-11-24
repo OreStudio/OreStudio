@@ -5,7 +5,7 @@
 #+description: A new inbox kind, iam.reporting_line, and IAM's detail record of what a request proposes: the person and the proposed manager.
 #+type: task
 #+level: s1
-#+filetags: :approve_a_reporting_line_change_by_the_proposed_manager:next:v0:
+#+filetags: :approve_a_reporting_line_change_by_the_proposed_manager:inbox:v0:
 #+owner: marco
 #+branch: feature/address-the-people-screens-review
 #+pr:

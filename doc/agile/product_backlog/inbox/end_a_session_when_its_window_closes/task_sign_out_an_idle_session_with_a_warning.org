@@ -5,7 +5,7 @@
 #+description: When a tenant turns idle sign-out on, a person with no input for the timeout is warned and then signed out, unless their role is exempt.
 #+type: task
 #+level: s1
-#+filetags: :end_a_session_when_its_window_closes:next:v0:
+#+filetags: :end_a_session_when_its_window_closes:inbox:v0:
 #+owner: marco
 #+branch: feature/address-the-people-screens-review
 #+pr:

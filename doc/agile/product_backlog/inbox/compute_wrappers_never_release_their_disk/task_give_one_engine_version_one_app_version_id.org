@@ -5,7 +5,7 @@
 #+description: Make the seeded app version ID stable for one engine, so a wrapper reuses its unpacked package after a database recreate.
 #+type: task
 #+level: s1
-#+filetags: :compute_wrappers_never_release_their_disk:next:v0:
+#+filetags: :compute_wrappers_never_release_their_disk:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr: 4947

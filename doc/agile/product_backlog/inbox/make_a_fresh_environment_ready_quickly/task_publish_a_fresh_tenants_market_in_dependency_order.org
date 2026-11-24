@@ -5,7 +5,7 @@
 #+description: On a fresh database Acme's provisioning leaves 12 party curves deferred on discount curves not yet published, 105 surface blueprints ungiven for want of the derived vol series, and so every party without a surface.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:provisioning:marketdata:curves:surfaces:make_a_fresh_environment_ready_quickly:v0:
+#+filetags: :product_backlog:inbox:provisioning:marketdata:curves:surfaces:make_a_fresh_environment_ready_quickly:v0:
 #+owner: marco
 #+branch:
 #+pr:

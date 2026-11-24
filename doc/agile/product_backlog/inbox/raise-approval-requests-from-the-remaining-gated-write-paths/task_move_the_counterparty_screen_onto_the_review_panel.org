@@ -5,7 +5,7 @@
 #+description: Build the counterparty as a record screen like the parties screen, where a gated change raises a request and a contact change is written directly.
 #+type: task
 #+level: s1
-#+filetags: :raise-approval-requests-from-the-remaining-gated-write-paths:next:v0:
+#+filetags: :raise-approval-requests-from-the-remaining-gated-write-paths:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

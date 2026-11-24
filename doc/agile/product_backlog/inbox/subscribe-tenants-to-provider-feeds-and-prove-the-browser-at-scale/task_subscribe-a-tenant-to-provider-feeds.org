@@ -5,7 +5,7 @@
 #+description: A screen that shows what each provider offers, what a tenant or party consumes and since when, and writes the subscription and the route that subscribe and unsubscribe.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:marketdata:web:subscribe-tenants-to-provider-feeds-and-prove-the-browser-at-scale:v0:
+#+filetags: :product_backlog:inbox:marketdata:web:subscribe-tenants-to-provider-feeds-and-prove-the-browser-at-scale:v0:
 #+owner: marco
 #+branch:
 #+pr:

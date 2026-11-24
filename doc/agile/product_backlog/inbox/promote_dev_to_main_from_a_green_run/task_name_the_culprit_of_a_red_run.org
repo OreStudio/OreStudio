@@ -5,7 +5,7 @@
 #+description: On a red continuous run, list the PRs between the last green commit and the run's commit and match them to the failing tests.
 #+type: task
 #+level: s1
-#+filetags: :ci:promote_dev_to_main_from_a_green_run:next:product_backlog:
+#+filetags: :ci:promote_dev_to_main_from_a_green_run:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

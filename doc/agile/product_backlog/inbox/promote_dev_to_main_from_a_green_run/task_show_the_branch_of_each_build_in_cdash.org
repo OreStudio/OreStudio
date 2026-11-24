@@ -5,7 +5,7 @@
 #+description: Submit each CI build to a CDash group named after the branch it built: dev, integration or main.
 #+type: task
 #+level: s1
-#+filetags: :ci:cdash:promote_dev_to_main_from_a_green_run:next:product_backlog:
+#+filetags: :ci:cdash:promote_dev_to_main_from_a_green_run:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

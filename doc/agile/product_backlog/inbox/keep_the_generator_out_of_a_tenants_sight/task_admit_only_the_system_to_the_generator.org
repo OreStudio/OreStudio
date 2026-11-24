@@ -5,7 +5,7 @@
 #+description: A search finds the synthetic tables read only by the synthetic service, its HTTP routes, its shell commands and its SQL tests; encode that as a check, so a tenant-side process that starts to read the generator fails the gate.
 #+type: task
 #+level: s1
-#+filetags: :keep_the_generator_out_of_a_tenants_sight:next:v0:
+#+filetags: :keep_the_generator_out_of_a_tenants_sight:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: The official rates adapter hosts the providers whose terms the tenant accepted, with the credential each row names, so the deployment passes no source list and holds no key.
 #+type: task
 #+level: s1
-#+filetags: :store_each_providers_keys_as_a_tenant_secret:next:product_backlog:
+#+filetags: :store_each_providers_keys_as_a_tenant_secret:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/configure-the-public-sources-in-a-setup-dialog
 #+pr:

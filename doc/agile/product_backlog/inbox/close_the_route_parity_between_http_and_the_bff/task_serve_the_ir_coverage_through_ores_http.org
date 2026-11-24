@@ -5,7 +5,7 @@
 #+description: The calibration screen's IR coverage is served by the BFF today: one row per currency with its source, policy window, bootstrap config, latest published set and the first gap. Implement the same read in the C++ HTTP server so the browser can leave the BFF.
 #+type: task
 #+level: s1
-#+filetags: :close_the_route_parity_between_http_and_the_bff:next:product_backlog:
+#+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/serve-the-ir-coverage-through-ores-http
 #+pr:

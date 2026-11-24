@@ -5,7 +5,7 @@
 #+description: Give each host a cost rate and each result a cost, apportion idle cost, and open the grid screens to a tenant's administrator with a breakdown by party. Carries on from Operate the grid across tenants and by party.
 #+type: task
 #+level: s1
-#+filetags: :draw-the-node-heatmap-and-carry-the-engine-run-statistics:next:v0:
+#+filetags: :draw-the-node-heatmap-and-carry-the-engine-run-statistics:inbox:v0:
 #+owner: marco
 #+branch: feature/attribute-job-cost-and-show-the-grid-to-a-tenant
 #+pr:

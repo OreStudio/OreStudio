@@ -5,7 +5,7 @@
 #+description: Rename the synthetic component to ores.marketdata.synthetic, with the codegen identity, the paths and the namespaces.
 #+type: task
 #+level: s1
-#+filetags: :rework-the-market-data-feeds-remaining-2:next:v0:
+#+filetags: :rework-the-market-data-feeds-remaining-2:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

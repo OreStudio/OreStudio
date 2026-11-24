@@ -5,7 +5,7 @@
 #+description: The Follow a job journey ends with two ways on: a failed run continues in Diagnose and reproduce a failure, and the load the job sat in continues in Watch the grid. The job page offers neither.
 #+type: task
 #+level: s1
-#+filetags: :browse_and_follow_the_grids_jobs-remaining:next:v0:
+#+filetags: :browse_and_follow_the_grids_jobs-remaining:inbox:v0:
 #+owner: marco
 #+branch: feature/link-a-job-to-the-failure-and-grid-screens
 #+pr:

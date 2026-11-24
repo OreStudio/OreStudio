@@ -5,7 +5,7 @@
 #+description: The engine has no risk reversal factor, so the RR and STR ladders are a change of basis over the surface-point deltas of the surface run.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:reporting:sensitivity:volatility:fx:ladder:build_the_sensitivity_ladders:v0:
+#+filetags: :product_backlog:inbox:reporting:sensitivity:volatility:fx:ladder:build_the_sensitivity_ladders:v0:
 #+owner: marco
 #+branch:
 #+pr:

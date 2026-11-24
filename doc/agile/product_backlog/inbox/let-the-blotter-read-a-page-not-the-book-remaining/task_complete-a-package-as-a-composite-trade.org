@@ -5,7 +5,7 @@
 #+description: The completion writes a structure with no book, date or state, so a package cannot be a blotter row. Write the package as a composite trade with its own booking and state, and name its legs as component trades.
 #+type: task
 #+level: s1
-#+filetags: :let-the-blotter-read-a-page-not-the-book-remaining:next:v0:
+#+filetags: :let-the-blotter-read-a-page-not-the-book-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

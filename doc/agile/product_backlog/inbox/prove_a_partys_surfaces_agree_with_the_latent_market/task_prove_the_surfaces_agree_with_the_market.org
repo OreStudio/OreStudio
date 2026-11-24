@@ -5,7 +5,7 @@
 #+description: Provision Acme and compare each party's published surfaces with the clean contributor's quotes and with the forwards they were struck against, so consistency with the generated spot and forwards is measured rather than assumed.
 #+type: task
 #+level: s1
-#+filetags: :prove_a_partys_surfaces_agree_with_the_latent_market:next:product_backlog:
+#+filetags: :prove_a_partys_surfaces_agree_with_the_latent_market:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: Seed a trade_status domain in the badge catalogue with one badge for each code the trading status lookup holds, and a mapping for each, so a trade's status has a badge to be painted with. The web reads it through the labels read the classifications screens already use.
 #+type: task
 #+level: s1
-#+filetags: :draw_a_trades_status_as_its_badge:next:v0:
+#+filetags: :draw_a_trades_status_as_its_badge:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr: 4255

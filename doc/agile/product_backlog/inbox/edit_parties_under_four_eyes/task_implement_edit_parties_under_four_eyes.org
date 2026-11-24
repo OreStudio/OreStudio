@@ -5,7 +5,7 @@
 #+description: Build the party list, page and dialogs from the shared record parts, and remove the party wizards.
 #+type: task
 #+level: s1
-#+filetags: :edit_parties_under_four_eyes:next:v0:
+#+filetags: :edit_parties_under_four_eyes:inbox:v0:
 #+owner: marco
 #+branch: feature/implement-edit-parties-under-four-eyes
 #+pr: 3096

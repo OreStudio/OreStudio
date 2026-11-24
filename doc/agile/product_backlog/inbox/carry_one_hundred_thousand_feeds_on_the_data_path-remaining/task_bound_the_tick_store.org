@@ -5,7 +5,7 @@
 #+description: The tick store compresses closed chunks, sizes chunks so the hot index fits in memory, and drops chunks past retention on a schedule the service owns.
 #+type: task
 #+level: s1
-#+filetags: :carry_one_hundred_thousand_feeds_on_the_data_path-remaining:next:v0:
+#+filetags: :carry_one_hundred_thousand_feeds_on_the_data_path-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

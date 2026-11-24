@@ -5,7 +5,7 @@
 #+description: The HTTP server skips its whole auth middleware block when no authenticator is configured, and warns rather than refusing; the NATS request context comes back unauthenticated when no verifier is configured; and has_permission returns true for an empty permission list to keep pre-RBAC tokens working. A deployment that forgets to configure either transport therefore accepts everything, and nothing reports it.
 #+type: task
 #+level: s1
-#+filetags: :close_the_route_parity_between_http_and_the_bff:next:product_backlog:
+#+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: Add the trade group a run creates and the membership table that names each trade and the role it played. The trade activity is a stamp on an amendment and is not the parent of this table.
 #+type: task
 #+level: s1
-#+filetags: :trade-process-runs-remaining:next:v0:
+#+filetags: :trade-process-runs-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

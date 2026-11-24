@@ -5,7 +5,7 @@
 #+description: An operator re-anchors an asset class: its feeds restart from the latest calibrated levels, a deliberate and recorded jump, since otherwise a running feed's level follows its own path.
 #+type: task
 #+level: s1
-#+filetags: :calibrate_and_publish_the_surfaces_on_a_schedule:next:product_backlog:
+#+filetags: :calibrate_and_publish_the_surfaces_on_a_schedule:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

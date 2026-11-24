@@ -5,7 +5,7 @@
 #+description: Compare unity batch sizes 16, 8, 4 and off on GitHub runners, for a cold build and an incremental PR build.
 #+type: task
 #+level: s1
-#+filetags: :ci:build:cut_the_build_time:next:product_backlog:
+#+filetags: :ci:build:cut_the_build_time:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/measure-the-unity-batch-size
 #+pr: 4610

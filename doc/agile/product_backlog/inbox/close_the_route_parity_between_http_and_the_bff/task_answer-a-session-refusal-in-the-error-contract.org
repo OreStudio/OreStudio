@@ -5,7 +5,7 @@
 #+description: The gateway's session refuses with {"error": "..."} while every ported route and the BFF answer {"code", "message"}. The browser parses the second shape, so a refused write on the gateway shows "Request failed with status 403" and loses the words that said why.
 #+type: task
 #+level: s1
-#+filetags: :close_the_route_parity_between_http_and_the_bff:next:product_backlog:
+#+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

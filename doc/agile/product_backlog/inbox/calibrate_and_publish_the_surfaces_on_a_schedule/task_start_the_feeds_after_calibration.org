@@ -5,7 +5,7 @@
 #+description: The synthetic adapters serve no demand for an asset class until it is released, so every feed starts once, from its calibrated level, and the recorded spots have no jump.
 #+type: task
 #+level: s1
-#+filetags: :calibrate_and_publish_the_surfaces_on_a_schedule:next:product_backlog:
+#+filetags: :calibrate_and_publish_the_surfaces_on_a_schedule:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: Replace every stored image of an ORE document (the curve configuration, today's market and their kin) with one data-oriented native model, and project ORE XML from it at the export boundary, in one go.
 #+type: task
 #+level: s1
-#+filetags: :refdata:analytics:data_model:dod:close_the_document_loophole_in_the_data_rules:next:product_backlog:
+#+filetags: :refdata:analytics:data_model:dod:close_the_document_loophole_in_the_data_rules:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

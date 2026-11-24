@@ -5,7 +5,7 @@
 #+description: The raw query helpers take a session from the service's pool instead of opening a connection per query.
 #+type: task
 #+level: s1
-#+filetags: :carry_one_hundred_thousand_feeds_on_the_data_path-remaining:next:v0:
+#+filetags: :carry_one_hundred_thousand_feeds_on_the_data_path-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

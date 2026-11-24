@@ -5,7 +5,7 @@
 #+description: counterparty's Qt detail dialog has a hand-added logo/flag picker (entityImageId(), initFlagButton, flagGroup box, flagEdited wiring, save-on-change) that isn't modeled/templated -- discovered because regenerating counterparty via compass codegen entity generate silently deletes it. counterparty is excluded from the fix-refdata-model-drift task until this facet exists (mirrors the existing image_id/logo support other entities already have modeled).
 #+type: task
 #+level: s1
-#+filetags: :add-entity-groups-and-finish-the-remaining-codegen-work-remaining:next:v0:
+#+filetags: :add-entity-groups-and-finish-the-remaining-codegen-work-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

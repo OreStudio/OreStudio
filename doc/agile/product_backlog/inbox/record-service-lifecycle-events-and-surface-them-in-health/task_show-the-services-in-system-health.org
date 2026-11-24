@@ -5,7 +5,7 @@
 #+description: The system administrator's home splits System health into sections, one for tenants and one for services; the services section summarises the roster and links to the services screen.
 #+type: task
 #+level: s1
-#+filetags: :record-service-lifecycle-events-and-surface-them-in-health:next:v0:
+#+filetags: :record-service-lifecycle-events-and-surface-them-in-health:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

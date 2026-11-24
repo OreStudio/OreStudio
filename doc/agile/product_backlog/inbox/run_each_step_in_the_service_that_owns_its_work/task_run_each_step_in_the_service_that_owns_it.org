@@ -5,7 +5,7 @@
 #+description: Each provisioning step is dispatched to the service that owns its work, so iam runs only identity steps and links no synthetic, marketdata or reporting core library.
 #+type: task
 #+level: s1
-#+filetags: :run_each_step_in_the_service_that_owns_its_work:next:product_backlog:
+#+filetags: :run_each_step_in_the_service_that_owns_its_work:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/serve-the-forward-and-surface-steps-in-marketdata
 #+pr: 4827

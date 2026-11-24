@@ -5,7 +5,7 @@
 #+description: A change to a person's reporting line is proposed, and the person it would make their manager approves it, like a role request. Today anyone with the update permission changes it directly.
 #+type: task
 #+level: s1
-#+filetags: :approve_a_reporting_line_change_by_the_proposed_manager:next:v0:
+#+filetags: :approve_a_reporting_line_change_by_the_proposed_manager:inbox:v0:
 #+owner: marco
 #+branch: feature/address-the-people-screens-review
 #+pr:

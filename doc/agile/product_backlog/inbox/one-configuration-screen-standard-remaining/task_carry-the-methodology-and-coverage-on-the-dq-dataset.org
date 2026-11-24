@@ -5,7 +5,7 @@
 #+description: Record on the pricing DQ dataset: the ORE source commit, the curation file version, the methodology link, and the coverage counts (types mapped, exempt, settings and globals documented, rows authored). The generator writes them and the publication carries them, so a consumer reads coverage without running the generator.
 #+type: task
 #+level: s1
-#+filetags: :one-configuration-screen-standard-remaining:next:v0:
+#+filetags: :one-configuration-screen-standard-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

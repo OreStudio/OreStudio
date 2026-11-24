@@ -5,7 +5,7 @@
 #+description: Every write endpoint answers 400 where its recipe asserts 200: the ores.doc.http-recipe template emits no body, so 57 of the 82 generated recipes never reach the handler they exist to check.
 #+type: task
 #+level: s1
-#+filetags: :close_the_route_parity_between_http_and_the_bff:next:product_backlog:
+#+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

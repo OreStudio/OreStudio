@@ -5,7 +5,7 @@
 #+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
 #+type: task
 #+level: s1
-#+filetags: :bring_the_service_code_onto_the_nats_patterns-remaining:next:v0:
+#+filetags: :bring_the_service_code_onto_the_nats_patterns-remaining:inbox:v0:
 #+owner: marco
 #+branch: feature/bring-the-service-code-onto-the-nats-patterns
 #+pr: 3311

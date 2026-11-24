@@ -5,7 +5,7 @@
 #+description: A scoped read is list exactly, so it carries as_of when the entity's list does. The generator emits no as_of on a list_by request; this task makes it so.
 #+type: task
 #+level: s1
-#+filetags: :find-a-trade-from-one-list-remaining:next:v0:
+#+filetags: :find-a-trade-from-one-list-remaining:inbox:v0:
 #+owner: marco
 #+branch: feature/carry-as-of-on-a-scoped-read
 #+pr:

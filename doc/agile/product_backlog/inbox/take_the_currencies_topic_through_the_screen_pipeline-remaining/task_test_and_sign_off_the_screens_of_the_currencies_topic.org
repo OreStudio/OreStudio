@@ -5,7 +5,7 @@
 #+description: Write and drive the test scenario on a fresh database, run the harness and the sheet, file the gaps, and record the owner's sign off.
 #+type: task
 #+level: s1
-#+filetags: :take_the_currencies_topic_through_the_screen_pipeline-remaining:next:v0:
+#+filetags: :take_the_currencies_topic_through_the_screen_pipeline-remaining:inbox:v0:
 #+owner: marco
 #+branch: feature/test-and-sign-off-the-screens-of-the-currencies-topic
 #+pr: 4507

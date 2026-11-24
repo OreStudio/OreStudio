@@ -5,7 +5,7 @@
 #+description: The scripted engine reads three more parameters that a pricing engine configuration cannot state once per product type. BaseCcy is the numeraire the script prices in and belongs to the trade's own currency, TimeGridPerYear belongs to the model, and the basket products want a BasketData or a reference data manager. 79, 1 and 11 rows of the last run ask for them. The decision is whether the scripted trade's script should take the currency from the trade, whether our document should state one value per currency, and whether basket trades carry their own basket data; all three are trade-level facts rather than configuration-level ones.
 #+type: task
 #+level: s1
-#+filetags: :author_the_report_configurations:next:v0:
+#+filetags: :author_the_report_configurations:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

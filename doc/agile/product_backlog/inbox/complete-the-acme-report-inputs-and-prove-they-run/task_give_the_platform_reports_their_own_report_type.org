@@ -5,7 +5,7 @@
 #+description: Take System Health, Audit Trail Summary and the three trade repository reports off the ORE report type, and give them a type and a workflow of their own.
 #+type: task
 #+level: s1
-#+filetags: :complete-the-acme-report-inputs-and-prove-they-run:next:v0:
+#+filetags: :complete-the-acme-report-inputs-and-prove-they-run:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: market_series_identity is the widest type in the tree at 57 members and 54 nullable columns, with one column per identity field of a series kind and no discriminator to say which kind a row is. This is the market data owner's call, handed over with the inventory's reading.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:data-oriented-design:modeling:marketdata:codegen:split_the_types_that_carry_too_many_columns-remaining:v0:
+#+filetags: :product_backlog:inbox:data-oriented-design:modeling:marketdata:codegen:split_the_types_that_carry_too_many_columns-remaining:v0:
 #+owner: marco
 #+branch:
 #+pr:

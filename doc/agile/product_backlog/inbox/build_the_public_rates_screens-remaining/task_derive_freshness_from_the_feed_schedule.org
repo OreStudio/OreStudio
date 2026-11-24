@@ -5,7 +5,7 @@
 #+description: Fresh, late, no data and no route, from the last fixing and the feed's rhythm.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:marketdata:implementation:build_the_public_rates_screens-remaining:v0:
+#+filetags: :product_backlog:inbox:marketdata:implementation:build_the_public_rates_screens-remaining:v0:
 #+owner: marco
 #+branch:
 #+pr:

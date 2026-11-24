@@ -5,7 +5,7 @@
 #+description: Journey 4: the process types and their parameter definitions, as a record screen over the two catalogues.
 #+type: task
 #+level: s1
-#+filetags: :build-the-synthetic-collection-and-model-catalogue:next:v0:
+#+filetags: :build-the-synthetic-collection-and-model-catalogue:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

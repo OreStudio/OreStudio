@@ -5,7 +5,7 @@
 #+description: The deployment's NATS takes the default 1 MB max_payload, and the upload body carries the image base64 so it grows by a third: an image over roughly three quarters of a megabyte fails in the transport with MAX_PAYLOAD_EXCEEDED and the caller gets a 503, so the validator's own image_too_large answer is unreachable while the picker and the validator both state 2 MB. Direction (product owner, 2026-10-05): an upload larger than 1 MB travels over HTTP storage, not the message fabric.
 #+type: task
 #+level: s1
-#+filetags: :close_the_route_parity_between_http_and_the_bff:next:product_backlog:
+#+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

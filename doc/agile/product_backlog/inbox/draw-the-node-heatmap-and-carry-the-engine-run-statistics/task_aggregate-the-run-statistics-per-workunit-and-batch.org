@@ -5,7 +5,7 @@
 #+description: A grouped read returns, for a workunit or a batch, the earliest start, the latest finish, the summed bytes and the largest peak memory of its results.
 #+type: task
 #+level: s1
-#+filetags: :draw-the-node-heatmap-and-carry-the-engine-run-statistics:next:v0:
+#+filetags: :draw-the-node-heatmap-and-carry-the-engine-run-statistics:inbox:v0:
 #+owner: marco
 #+branch: feature/aggregate-the-run-statistics-per-workunit-and-batch
 #+pr:

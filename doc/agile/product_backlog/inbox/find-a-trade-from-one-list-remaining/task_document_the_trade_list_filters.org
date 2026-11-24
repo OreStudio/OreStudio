@@ -5,7 +5,7 @@
 #+description: State in the specification, the review journey and the backlog capture what the trade list now filters.
 #+type: task
 #+level: s1
-#+filetags: :find-a-trade-from-one-list-remaining:next:v0:
+#+filetags: :find-a-trade-from-one-list-remaining:inbox:v0:
 #+owner: marco
 #+branch: feature/document-the-trade-list-filters
 #+pr:

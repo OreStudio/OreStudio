@@ -5,7 +5,7 @@
 #+description: Add a removal behaviour to a foreign key in the codegen model, cascade, refuse or keep, and derive the parent's delete rule from the links that name it.
 #+type: task
 #+level: s1
-#+filetags: :a_parent_link_states_what_its_removal_does:next:v0:
+#+filetags: :a_parent_link_states_what_its_removal_does:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr: 4941

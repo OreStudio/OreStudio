@@ -5,7 +5,7 @@
 #+description: Read each convention family through its generated list request at one instant and for the run's party, in place of the untyped rfl::Generic reads in ores.ore.
 #+type: task
 #+level: s1
-#+filetags: :conventions-import-and-export-redesign:next:v0:
+#+filetags: :conventions-import-and-export-redesign:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: A composite leg names its constituent in free text, so the row points at a word and not at a trade. Give the leg a uuid reference to the trade and a role, and give the composite the kind and template the deal states.
 #+type: task
 #+level: s1
-#+filetags: :let-the-blotter-read-a-page-not-the-book-remaining:next:v0:
+#+filetags: :let-the-blotter-read-a-page-not-the-book-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

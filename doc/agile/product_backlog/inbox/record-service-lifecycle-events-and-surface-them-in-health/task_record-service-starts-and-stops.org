@@ -5,7 +5,7 @@
 #+description: Every process announces its start and its graceful stop through the shared service lifecycle; telemetry stores the events, so the roster tells stopped from lost and counts restarts.
 #+type: task
 #+level: s1
-#+filetags: :record-service-lifecycle-events-and-surface-them-in-health:next:v0:
+#+filetags: :record-service-lifecycle-events-and-surface-them-in-health:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

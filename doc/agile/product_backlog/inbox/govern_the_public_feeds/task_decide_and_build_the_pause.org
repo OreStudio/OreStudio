@@ -5,7 +5,7 @@
 #+description: Settle whether pause disables a feed's schedule, a session, or a route, and build the chosen one.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:marketdata:implementation:govern_the_public_feeds:v0:
+#+filetags: :product_backlog:inbox:marketdata:implementation:govern_the_public_feeds:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: Task for: Read each tenant's cache partition inside its tenant
 #+type: task
 #+level: s1
-#+filetags: :audit-the-system-tenant-policy-widenings:next:v0:
+#+filetags: :audit-the-system-tenant-policy-widenings:inbox:v0:
 #+owner: marco
 #+branch: feature/read-each-tenant-cache-partition-inside-its-tenant
 #+pr:

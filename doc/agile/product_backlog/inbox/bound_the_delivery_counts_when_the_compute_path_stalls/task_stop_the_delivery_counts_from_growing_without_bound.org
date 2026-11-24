@@ -5,7 +5,7 @@
 #+description: The marketdata usage recorder flushes every thirty seconds and writes one new versioned row per party and feed through delivery_count_repository::write, which is an INSERT into a versioned table. On pauli this reached 2.3 million rows, 2.4 GB, one day of a counter that only needs its current value. Make the flush carry the counter forward instead of appending history, or state and enforce a retention, so the table's size follows the number of subscriptions rather than the number of flushes.
 #+type: task
 #+level: s1
-#+filetags: :bound_the_delivery_counts_when_the_compute_path_stalls:next:product_backlog:
+#+filetags: :bound_the_delivery_counts_when_the_compute_path_stalls:inbox:product_backlog:
 #+owner: eager_maxwell
 #+branch: feature/stop-the-delivery-counts-from-growing-without-bound
 #+pr:

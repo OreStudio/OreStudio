@@ -5,7 +5,7 @@
 #+description: The report run names the scheduler job instance that fired it, and the scheduler has no read that returns one instance by id. The lineage cannot reach the scheduled job without it.
 #+type: task
 #+level: s1
-#+filetags: :browse_and_follow_the_grids_jobs-remaining:next:v0:
+#+filetags: :browse_and_follow_the_grids_jobs-remaining:inbox:v0:
 #+owner: marco
 #+branch: feature/read-a-scheduled-job-by-id
 #+pr:

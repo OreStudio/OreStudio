@@ -5,7 +5,7 @@
 #+description: Journey 3: the feed tree, the selection, the live chart and the folder-scoped start and stop.
 #+type: task
 #+level: s1
-#+filetags: :build-the-synthetic-collection-and-model-catalogue:next:v0:
+#+filetags: :build-the-synthetic-collection-and-model-catalogue:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

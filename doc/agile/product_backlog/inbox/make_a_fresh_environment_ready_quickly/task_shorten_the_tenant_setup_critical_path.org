@@ -5,7 +5,7 @@
 #+description: The tenant setup workflow takes 18 minutes on a fresh database; publish_party_curves alone runs 12 minutes while the market data service misses its own adapters' heartbeats.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:provisioning:workflow:performance:make_a_fresh_environment_ready_quickly:v0:
+#+filetags: :product_backlog:inbox:provisioning:workflow:performance:make_a_fresh_environment_ready_quickly:v0:
 #+owner: marco
 #+branch:
 #+pr:

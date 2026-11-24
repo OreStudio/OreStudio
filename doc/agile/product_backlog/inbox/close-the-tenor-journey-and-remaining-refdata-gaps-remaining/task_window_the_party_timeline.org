@@ -5,7 +5,7 @@
 #+description: Read a party's history a window at a time with a load-older control, and replace the read for each part row with one read for the party.
 #+type: task
 #+level: s1
-#+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps-remaining:next:v0:
+#+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

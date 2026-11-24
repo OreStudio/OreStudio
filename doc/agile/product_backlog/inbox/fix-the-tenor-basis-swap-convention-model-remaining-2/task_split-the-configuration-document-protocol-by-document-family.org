@@ -5,7 +5,7 @@
 #+description: Split configuration_document_protocol.hpp and its handler so each translation unit reaches one document family, and restore the Windows MSVC build without a compiler-flag workaround.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:refdata:codegen:msvc:c1202:fix-the-tenor-basis-swap-convention-model-remaining-2:v0:
+#+filetags: :product_backlog:inbox:refdata:codegen:msvc:c1202:fix-the-tenor-basis-swap-convention-model-remaining-2:v0:
 #+owner: marco
 #+branch: feature/split-the-configuration-document-protocol-by-document-family
 #+pr: 4051

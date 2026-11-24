@@ -5,7 +5,7 @@
 #+description: No surface states which model and engine prices a booked trade: ORE chooses the engine type from the trade's terms and resolves a script's product tag with its asset class, and nothing in ORE Studio holds that rule.
 #+type: task
 #+level: s1
-#+filetags: :finish_the_scripted_trade_subsystem:next:product_backlog:
+#+filetags: :finish_the_scripted_trade_subsystem:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

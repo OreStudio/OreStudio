@@ -5,7 +5,7 @@
 #+description: A floating leg that has already reset needs the fixing of its index on each past reset date, and ores.synthetic generates only FX spot and IR curves. Generate the index fixings back from the as-of for the indices the population uses, derived from the generated curve of that index and tenor, deterministic for a seed, in the series the conventions' oresmd URIs name.
 #+type: task
 #+level: s1
-#+filetags: :value_the_generated_trades_against_ore:next:product_backlog:
+#+filetags: :value_the_generated_trades_against_ore:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/generate-the-historical-fixings-the-trades-need
 #+pr: 4914

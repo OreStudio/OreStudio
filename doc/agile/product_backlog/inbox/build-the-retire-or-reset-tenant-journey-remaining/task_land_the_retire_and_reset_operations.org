@@ -5,7 +5,7 @@
 #+description: Build the server path behind the Retire or reset a tenant journey: a suspend operation with its subject, subjects for terminate, deprovision and purge, a subject for the party-level reset, and the roster's row menu item.
 #+type: task
 #+level: s1
-#+filetags: :build-the-retire-or-reset-tenant-journey-remaining:next:v0:
+#+filetags: :build-the-retire-or-reset-tenant-journey-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

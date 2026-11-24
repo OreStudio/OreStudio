@@ -5,7 +5,7 @@
 #+description: The forward publish was left on the one-request-one-subject key when curves and surfaces moved to a set. It raises a request per pair, about twenty a party, and its repository still reads a request's subject with read_latest_by_request.
 #+type: task
 #+level: s1
-#+filetags: :run_each_step_in_the_service_that_owns_its_work:next:product_backlog:
+#+filetags: :run_each_step_in_the_service_that_owns_its_work:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

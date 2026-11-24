@@ -5,7 +5,7 @@
 #+description: A party codename ends in letters, such as purple_dream_d, because the table forbids digits and the generator encodes its sequence in base 26. A codename should end in a number, such as purple_dream_4.
 #+type: task
 #+level: s1
-#+filetags: :edit_parties_under_four_eyes:next:v0:
+#+filetags: :edit_parties_under_four_eyes:inbox:v0:
 #+owner: marco
 #+branch: feature/implement-edit-parties-under-four-eyes
 #+pr:

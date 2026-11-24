@@ -5,7 +5,7 @@
 #+description: check_handler_permissions.py compares only the four components in its registry, and only their generated messaging handlers. An operation model generates no handler, so its handler is hand-written and can ship with no permission check at all: ores.scheduler's operation handlers call has_permission zero times. The HTTP server has no route-level permission hook either, and only iam_routes checks codes.
 #+type: task
 #+level: s1
-#+filetags: :close_the_route_parity_between_http_and_the_bff:next:product_backlog:
+#+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

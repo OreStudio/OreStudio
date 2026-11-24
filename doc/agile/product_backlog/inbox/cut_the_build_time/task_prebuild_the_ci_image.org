@@ -5,7 +5,7 @@
 #+description: Build a CI container image with clang, packages, PostgreSQL and vcpkg dependencies installed.
 #+type: task
 #+level: s1
-#+filetags: :ci:build:cut_the_build_time:next:product_backlog:
+#+filetags: :ci:build:cut_the_build_time:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/prebuild-the-ci-image
 #+pr: 4649

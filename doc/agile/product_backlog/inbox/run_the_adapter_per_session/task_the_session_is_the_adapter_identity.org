@@ -5,7 +5,7 @@
 #+description: One announce, demand and heartbeat per session; feeds are scopes inside it; the service registry and status key on the session.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:marketdata:implementation:run_the_adapter_per_session:v0:
+#+filetags: :product_backlog:inbox:marketdata:implementation:run_the_adapter_per_session:v0:
 #+owner: marco
 #+branch:
 #+pr:

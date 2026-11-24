@@ -5,7 +5,7 @@
 #+description: Find why the slowest compile units take 7 to 24 min and fix the cause.
 #+type: task
 #+level: s1
-#+filetags: :build:cut_the_build_time:next:product_backlog:
+#+filetags: :build:cut_the_build_time:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/split-the-slowest-compile-units
 #+pr: 4631

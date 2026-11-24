@@ -5,7 +5,7 @@
 #+description: Classify every NATS call site in projects/ against the NATS service pattern library, record the deviations with the pattern each breaks, and fix them.
 #+type: task
 #+level: s1
-#+filetags: :bring_the_service_code_onto_the_nats_patterns-remaining:next:v0:
+#+filetags: :bring_the_service_code_onto_the_nats_patterns-remaining:inbox:v0:
 #+owner: marco
 #+branch: feature/bring-the-service-code-onto-the-nats-patterns
 #+pr: 3355

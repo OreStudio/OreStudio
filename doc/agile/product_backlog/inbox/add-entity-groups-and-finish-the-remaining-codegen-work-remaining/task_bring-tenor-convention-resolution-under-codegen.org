@@ -5,7 +5,7 @@
 #+description: tenor_convention_resolution (junction) has a hand-authored messaging layer (protocol/handler, read-only list) wired inline in registrar.cpp with the comment 'codegen doesn't generate a service/protocol/handler/sub-registrar for it'. Regenerating it via compass codegen entity generate produces a codegen-shaped handler with a different API (no .list(), different request-type naming) that breaks the hand-wired call site in registrar.cpp -- a real compile error, not a diff nit. Excluded from the fix-refdata-model-drift task until junction messaging codegen (see the junction-messaging-codegen-missing-service capture) covers this shape.
 #+type: task
 #+level: s1
-#+filetags: :add-entity-groups-and-finish-the-remaining-codegen-work-remaining:next:v0:
+#+filetags: :add-entity-groups-and-finish-the-remaining-codegen-work-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

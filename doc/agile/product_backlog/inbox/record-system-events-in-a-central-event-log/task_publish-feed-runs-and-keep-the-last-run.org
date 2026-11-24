@@ -5,7 +5,7 @@
 #+description: The synthetic service publishes feed started and stopped events; the BFF keys tick buffers by feed and tenant from them so the Ticks tab shows the last run, and a feed's History shows its runs.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:synthetic:web:eventing:record-system-events-in-a-central-event-log:v0:
+#+filetags: :product_backlog:inbox:synthetic:web:eventing:record-system-events-in-a-central-event-log:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: The journey asks whether a job is normal, whether one node is slow and whether the batch is nearly done. It draws a timeline of the batch's jobs, a duration distribution and a duration by node.
 #+type: task
 #+level: s1
-#+filetags: :browse_and_follow_the_grids_jobs-remaining:next:v0:
+#+filetags: :browse_and_follow_the_grids_jobs-remaining:inbox:v0:
 #+owner: marco
 #+branch: feature/draw-the-neighbour-charts-of-a-job
 #+pr:

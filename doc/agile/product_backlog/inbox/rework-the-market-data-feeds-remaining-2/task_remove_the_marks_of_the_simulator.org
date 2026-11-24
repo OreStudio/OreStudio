@@ -5,7 +5,7 @@
 #+description: Remove the synthetic prefix, subjects, constraints and screen marks so that nothing in the system depends on the simulator.
 #+type: task
 #+level: s1
-#+filetags: :rework-the-market-data-feeds-remaining-2:next:v0:
+#+filetags: :rework-the-market-data-feeds-remaining-2:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

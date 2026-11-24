@@ -5,7 +5,7 @@
 #+description: A scripted trade is a script plus the variables it reads. Without an editor a person can only see it as rows, and a free text box would let them state a variable the script never reads or miss one it needs.
 #+type: task
 #+level: s1
-#+filetags: :finish_the_scripted_trade_subsystem:next:product_backlog:
+#+filetags: :finish_the_scripted_trade_subsystem:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

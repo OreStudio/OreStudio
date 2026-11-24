@@ -5,7 +5,7 @@
 #+description: The last unmet line of the latent market's acceptance: the market regime read answers with the run's factors, each series' loadings and each driver's value, and the tab draws them in three languages, showing an undriven series as undriven rather than as zero.
 #+type: task
 #+level: s1
-#+filetags: :calibrate_and_publish_the_surfaces_on_a_schedule:next:product_backlog:
+#+filetags: :calibrate_and_publish_the_surfaces_on_a_schedule:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

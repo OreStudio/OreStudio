@@ -5,13 +5,13 @@
 #+description: Rebuild the data path so the system carries 100,000 feeds on one machine shared by ten environments: pooled long-lived connections, a transaction API, bounded concurrency, ticks stored once and written in bulk, a bounded tick store, work pushed to the grid, and built-in measurement.
 #+type: story
 #+level: s2
-#+filetags: :product_backlog:next:architecture:database:marketdata:compute:scale:v0:
+#+filetags: :product_backlog:inbox:architecture:database:marketdata:compute:scale:v0:
 #+created: 2026-11-08
 #+updated: 2026-11-24
 #+environment: festive-dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]], carried out of [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] at its close, carried unfinished from [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried out of [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] at its close, carried unfinished from [[id:F05B672B-C054-42DF-91B5-27B47B72EAA3][Sprint 29]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 

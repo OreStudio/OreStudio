@@ -5,7 +5,7 @@
 #+description: The Details card calls the party's picture Flag, which is the currency's word. A party's picture is its logo.
 #+type: task
 #+level: s1
-#+filetags: :edit_parties_under_four_eyes:next:v0:
+#+filetags: :edit_parties_under_four_eyes:inbox:v0:
 #+owner: marco
 #+branch: feature/implement-edit-parties-under-four-eyes
 #+pr:

@@ -5,7 +5,7 @@
 #+description: The tick store holds each source tick once, owned by the installation, and entitlement is applied when a tick is read or republished.
 #+type: task
 #+level: s1
-#+filetags: :carry_one_hundred_thousand_feeds_on_the_data_path-remaining:next:v0:
+#+filetags: :carry_one_hundred_thousand_feeds_on_the_data_path-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

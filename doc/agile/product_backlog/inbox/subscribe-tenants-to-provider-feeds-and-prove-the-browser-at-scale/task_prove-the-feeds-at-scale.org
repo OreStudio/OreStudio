@@ -5,7 +5,7 @@
 #+description: Generate tens of thousands of feeds, measure the tree, the lists, the running read, the folder cascade and the tick buffers, fix what does not hold, and record the numbers.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:synthetic:performance:bff:subscribe-tenants-to-provider-feeds-and-prove-the-browser-at-scale:v0:
+#+filetags: :product_backlog:inbox:synthetic:performance:bff:subscribe-tenants-to-provider-feeds-and-prove-the-browser-at-scale:v0:
 #+owner: marco
 #+branch:
 #+pr:

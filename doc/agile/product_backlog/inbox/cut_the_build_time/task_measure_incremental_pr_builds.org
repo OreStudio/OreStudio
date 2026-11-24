@@ -5,7 +5,7 @@
 #+description: Replay the last 20 merged PRs on GitHub runners to measure incremental build and affected-test times.
 #+type: task
 #+level: s1
-#+filetags: :ci:build:cut_the_build_time:next:product_backlog:
+#+filetags: :ci:build:cut_the_build_time:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

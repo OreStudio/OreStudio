@@ -5,7 +5,7 @@
 #+description: Document and script how a developer outside the fleet installs compass-ng, and keep the project usable when they do not.
 #+type: task
 #+level: s1
-#+filetags: :install_compass_ng_for_external_developers:next:product_backlog:
+#+filetags: :install_compass_ng_for_external_developers:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

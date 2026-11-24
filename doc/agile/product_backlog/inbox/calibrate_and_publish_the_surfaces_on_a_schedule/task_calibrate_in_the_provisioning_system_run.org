@@ -5,7 +5,7 @@
 #+description: The system run of provisioning starts the calibration workflow after it publishes the system data, and a profile may release the feeds once it completes.
 #+type: task
 #+level: s1
-#+filetags: :calibrate_and_publish_the_surfaces_on_a_schedule:next:product_backlog:
+#+filetags: :calibrate_and_publish_the_surfaces_on_a_schedule:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

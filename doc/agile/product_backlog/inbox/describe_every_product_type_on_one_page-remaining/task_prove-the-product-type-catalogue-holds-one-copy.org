@@ -5,7 +5,7 @@
 #+description: Add the checks that keep one catalogue and prove the story end to end: every type described and sourced, no second list, every mention linked, every page opening.
 #+type: task
 #+level: s1
-#+filetags: :describe_every_product_type_on_one_page-remaining:next:v0:
+#+filetags: :describe_every_product_type_on_one_page-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

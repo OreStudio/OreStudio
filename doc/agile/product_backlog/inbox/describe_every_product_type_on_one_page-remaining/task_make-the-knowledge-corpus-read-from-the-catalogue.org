@@ -5,7 +5,7 @@
 #+description: Point the 88 product notes at the catalogue page instead of restating the identifiers, generate the products-by-asset-class entry page from the catalogue, and make the taxonomy notes name the code sets.
 #+type: task
 #+level: s1
-#+filetags: :describe_every_product_type_on_one_page-remaining:next:v0:
+#+filetags: :describe_every_product_type_on_one_page-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

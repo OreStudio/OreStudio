@@ -5,7 +5,7 @@
 #+description: Commodity, workflow and reporting merges left generated artefacts, seeded permissions and pgTAP expectations stale.
 #+type: task
 #+level: s1
-#+filetags: :rework-the-market-data-feeds-remaining-2:next:v0:
+#+filetags: :rework-the-market-data-feeds-remaining-2:inbox:v0:
 #+owner: marco
 #+branch: fix/green-the-baseline
 #+pr: 3774

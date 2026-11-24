@@ -5,7 +5,7 @@
 #+description: Implement the signed-off prototype with the standard record infrastructure.
 #+type: task
 #+level: s1
-#+filetags: :rework-the-market-data-feeds-remaining-2:next:v0:
+#+filetags: :rework-the-market-data-feeds-remaining-2:inbox:v0:
 #+owner: marco
 #+branch: feature/close-the-blueprint-review
 #+pr: 4009

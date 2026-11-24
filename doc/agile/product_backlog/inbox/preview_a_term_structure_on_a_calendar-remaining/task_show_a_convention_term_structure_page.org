@@ -5,7 +5,7 @@
 #+description: A page in ores.web lists each tenor of a chosen convention with the date it resolves to on a chosen calendar and horizon date.
 #+type: task
 #+level: s1
-#+filetags: :preview_a_term_structure_on_a_calendar-remaining:next:v0:
+#+filetags: :preview_a_term_structure_on_a_calendar-remaining:inbox:v0:
 #+owner: marco
 #+branch: feature/show-a-convention-term-structure-page
 #+pr:

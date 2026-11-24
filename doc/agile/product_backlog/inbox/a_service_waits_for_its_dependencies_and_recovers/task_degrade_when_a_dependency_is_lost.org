@@ -5,7 +5,7 @@
 #+description: The service runner watches each dependency's heartbeat, marks the service degraded when one is lost, refuses the requests that need it with a stated outcome, and returns to ready when it comes back.
 #+type: task
 #+level: s1
-#+filetags: :a_service_waits_for_its_dependencies_and_recovers:next:v0:
+#+filetags: :a_service_waits_for_its_dependencies_and_recovers:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

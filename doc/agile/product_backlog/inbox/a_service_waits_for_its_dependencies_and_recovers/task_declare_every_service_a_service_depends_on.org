@@ -5,7 +5,7 @@
 #+description: The service registry's depends_on becomes a list of every service a service calls, and the systemd units and the service runner both read it.
 #+type: task
 #+level: s1
-#+filetags: :a_service_waits_for_its_dependencies_and_recovers:next:v0:
+#+filetags: :a_service_waits_for_its_dependencies_and_recovers:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

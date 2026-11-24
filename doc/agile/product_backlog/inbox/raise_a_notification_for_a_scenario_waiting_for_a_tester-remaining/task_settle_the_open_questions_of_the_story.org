@@ -5,7 +5,7 @@
 #+description: Answer the four open questions of the story, record the answers in its Decisions, and break the story into tasks. The questions are who raises the notification and when, whether the module runs in production, what once for each scenario means, and whether assignment is in the story.
 #+type: task
 #+level: s1
-#+filetags: :raise_a_notification_for_a_scenario_waiting_for_a_tester-remaining:next:v0:
+#+filetags: :raise_a_notification_for_a_scenario_waiting_for_a_tester-remaining:inbox:v0:
 #+owner: marco
 #+branch: feature/settle-the-open-questions-of-the-story
 #+pr:

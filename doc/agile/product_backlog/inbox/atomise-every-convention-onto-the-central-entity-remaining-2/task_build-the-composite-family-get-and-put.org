@@ -5,7 +5,7 @@
 #+description: Generate the family get, get_many, put and put_many for a composite entity, so one round trip reads a central row with its parts at one instant and one transaction writes them together. Prove the generated operations on an existing composite before the convention pilot depends on them. The generic get and put stay as they are, and the family names follow the codegen pattern library.
 #+type: task
 #+level: s1
-#+filetags: :atomise-every-convention-onto-the-central-entity-remaining-2:next:v0:
+#+filetags: :atomise-every-convention-onto-the-central-entity-remaining-2:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

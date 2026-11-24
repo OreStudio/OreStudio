@@ -5,7 +5,7 @@
 #+description: Eighteen prototypes across eight groups still have no design note, and their group pages still describe the note as optional.
 #+type: task
 #+level: s1
-#+filetags: :give-the-other-prototype-groups-their-design-notes:next:v0:
+#+filetags: :give-the-other-prototype-groups-their-design-notes:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

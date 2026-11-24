@@ -5,7 +5,7 @@
 #+description: The web server tracks the last heartbeat of each session. A session silent longer than the grace period is signed out as if the person had pressed Sign out, including the end time in IAM.
 #+type: task
 #+level: s1
-#+filetags: :end_a_session_when_its_window_closes:next:v0:
+#+filetags: :end_a_session_when_its_window_closes:inbox:v0:
 #+owner: marco
 #+branch: feature/address-the-people-screens-review
 #+pr:

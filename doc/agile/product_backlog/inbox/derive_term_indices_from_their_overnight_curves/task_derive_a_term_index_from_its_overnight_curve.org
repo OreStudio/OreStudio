@@ -5,7 +5,7 @@
 #+description: Give a term index of a currency that has an overnight curve its curve and fixings from that curve: term SOFR and IBR from the compounded overnight forward, EYTIBOR, WIBOR and the generic indices with a stated spread.
 #+type: task
 #+level: s1
-#+filetags: :derive_term_indices_from_their_overnight_curves:next:product_backlog:
+#+filetags: :derive_term_indices_from_their_overnight_curves:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

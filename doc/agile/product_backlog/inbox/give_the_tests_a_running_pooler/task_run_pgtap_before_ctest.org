@@ -5,7 +5,7 @@
 #+description: The local gate runs the pgtap check before ctest rather than beside it, so the two no longer write to the same database at the same time and iam_tenant_purge_test stops deadlocking.
 #+type: task
 #+level: s1
-#+filetags: :give_the_tests_a_running_pooler:next:product_backlog:
+#+filetags: :give_the_tests_a_running_pooler:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

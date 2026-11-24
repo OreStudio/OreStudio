@@ -5,7 +5,7 @@
 #+description: Every generated trade type has the market data and the pricing engine configuration ORE needs to value it, or is left out of the generator with the reason stated.
 #+type: task
 #+level: s1
-#+filetags: :value_the_generated_trades_against_ore:next:product_backlog:
+#+filetags: :value_the_generated_trades_against_ore:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

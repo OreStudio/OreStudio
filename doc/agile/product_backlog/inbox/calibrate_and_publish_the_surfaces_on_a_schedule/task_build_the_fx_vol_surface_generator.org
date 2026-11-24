@@ -5,7 +5,7 @@
 #+description: A generator of kind fx_vol_surface whose SSVI state evolves through bounded processes correlated with spot, observed by contributors with noise profiles; see the approach note and A synthetic contributor publishes noisy observations of a latent surface.
 #+type: task
 #+level: s1
-#+filetags: :calibrate_and_publish_the_surfaces_on_a_schedule:next:product_backlog:
+#+filetags: :calibrate_and_publish_the_surfaces_on_a_schedule:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/build-the-fx-vol-surface-generator-2
 #+pr: 4655

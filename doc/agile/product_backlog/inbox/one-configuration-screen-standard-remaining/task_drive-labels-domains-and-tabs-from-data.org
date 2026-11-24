@@ -5,7 +5,7 @@
 #+description: Read asset class names from refdata, map a value domain to a control through a registry, and carry the section and tab metadata instead of hard-coding them in the page.
 #+type: task
 #+level: s1
-#+filetags: :one-configuration-screen-standard-remaining:next:v0:
+#+filetags: :one-configuration-screen-standard-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

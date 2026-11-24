@@ -5,7 +5,7 @@
 #+description: Make every surface that names a product type link to its page: the blotter, the trade page, structure legs, the authorisation queue, the report results, the pricing-engine select and the allowed lists.
 #+type: task
 #+level: s1
-#+filetags: :describe_every_product_type_on_one_page-remaining:next:v0:
+#+filetags: :describe_every_product_type_on_one_page-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

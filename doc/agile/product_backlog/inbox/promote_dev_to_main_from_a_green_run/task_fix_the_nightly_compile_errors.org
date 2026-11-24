@@ -5,7 +5,7 @@
 #+description: Fix the gcc, macOS and Windows compile errors that stop the nightly builds, and keep warnings as warnings on those compilers until they are clean.
 #+type: task
 #+level: s1
-#+filetags: :promote_dev_to_main_from_a_green_run:next:product_backlog:
+#+filetags: :promote_dev_to_main_from_a_green_run:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/fix-the-nightly-compile-errors
 #+pr: 4659

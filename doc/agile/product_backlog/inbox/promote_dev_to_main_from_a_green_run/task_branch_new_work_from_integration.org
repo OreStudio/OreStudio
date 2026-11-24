@@ -5,7 +5,7 @@
 #+description: Make compass task start, story start and worktree provisioning branch from integration.
 #+type: task
 #+level: s1
-#+filetags: :ci:branching:compass:promote_dev_to_main_from_a_green_run:next:product_backlog:
+#+filetags: :ci:branching:compass:promote_dev_to_main_from_a_green_run:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

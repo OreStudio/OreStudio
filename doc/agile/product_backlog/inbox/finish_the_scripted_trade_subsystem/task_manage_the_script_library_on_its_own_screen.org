@@ -5,7 +5,7 @@
 #+description: The script library is reference data only the database and the shell can read: no ores.http route and no BFF route serves a script, its versions or a tenant's publish, so no screen can show or change it.
 #+type: task
 #+level: s1
-#+filetags: :finish_the_scripted_trade_subsystem:next:product_backlog:
+#+filetags: :finish_the_scripted_trade_subsystem:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

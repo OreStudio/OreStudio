@@ -5,7 +5,7 @@
 #+description: The telemetry service collects events into their own tenant-scoped table with retention per category, and answers queries by subject, type, source, severity and time.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:telemetry:eventing:sql:record-system-events-in-a-central-event-log:v0:
+#+filetags: :product_backlog:inbox:telemetry:eventing:sql:record-system-events-in-a-central-event-log:v0:
 #+owner: marco
 #+branch:
 #+pr:

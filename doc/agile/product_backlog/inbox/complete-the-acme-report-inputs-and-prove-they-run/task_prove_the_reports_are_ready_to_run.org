@@ -5,7 +5,7 @@
 #+description: Add a readiness check that states, for each definition, what it lacks to run, and show it passes for every ACME definition after a clean provision.
 #+type: task
 #+level: s1
-#+filetags: :complete-the-acme-report-inputs-and-prove-they-run:next:v0:
+#+filetags: :complete-the-acme-report-inputs-and-prove-they-run:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

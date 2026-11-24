@@ -5,7 +5,7 @@
 #+description: A correlation-driven surface needs a correlation between its drivers that no quote states; decide whether it is read from the party's own spot history, implied from a previous cross surface, or set by the party, and record why.
 #+type: task
 #+level: s1
-#+filetags: :drive_a_partys_crosses_from_its_drivers:next:v0:
+#+filetags: :drive_a_partys_crosses_from_its_drivers:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,13 +5,13 @@
 #+description: The grid screen counts batches, workunits and results and shows no row of any of them. The journeys Browse the grid's jobs and Follow a job are written and prototyped. This story builds the screens: the paged tree of batches, workunits and results, the details of each, the job page, and the file download, for the operator, the tenant administrator and the party member.
 #+type: story
 #+level: s2
-#+filetags: :product_backlog:next:compute:web:ux:journeys:grid:v0:
+#+filetags: :product_backlog:inbox:compute:web:ux:journeys:grid:v0:
 #+created: 2026-10-24
 #+updated: 2026-11-24
 #+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]], carried out of [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] at its close, carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]], carried out of [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] at its close, carried unfinished from [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] at close. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 

@@ -5,7 +5,7 @@
 #+description: A tenant administrator sees the definitions of every party under the login party, and an amend of one that belongs to a party other than the acting party is refused by the store with a duplicate-key fault on report_definitions_name_party_id_uniq_idx. The write's row-level scope cannot see the current row the insert trigger must close, so the trigger inserts a new current row instead of superseding the old one, and the unique index on (tenant, name, party) refuses it. Either the write scope must reach the parties the person reads, or the refusal must say in words that a definition of another party cannot be amended here. Measured on the live environment: a PUT by id of the ACCOHK definition returned that fault while a PUT of the ACMCOR definition wrote version 2 of the row it read.
 #+type: task
 #+level: s1
-#+filetags: :manage-reports-from-the-list-a-party-runs-remaining:next:v0:
+#+filetags: :manage-reports-from-the-list-a-party-runs-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: ores.http lists the bundle's files once at start, so a rebuild names a script it answers with a 404 and the page is blank until a restart.
 #+type: task
 #+level: s1
-#+filetags: :http:web:give_every_synthetic_feed_node_a_state:next:product_backlog:
+#+filetags: :http:web:give_every_synthetic_feed_node_a_state:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

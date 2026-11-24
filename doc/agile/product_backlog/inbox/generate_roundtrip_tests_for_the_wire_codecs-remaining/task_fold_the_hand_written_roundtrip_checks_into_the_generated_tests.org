@@ -5,7 +5,7 @@
 #+description: Delete the roundtrip parts of the hand-written codec tests that the generated tests now cover, and keep only the reflect-cpp byte comparisons.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:codegen:codec:tests:generate_roundtrip_tests_for_the_wire_codecs-remaining:v0:
+#+filetags: :product_backlog:inbox:codegen:codec:tests:generate_roundtrip_tests_for_the_wire_codecs-remaining:v0:
 #+owner: marco
 #+branch:
 #+pr:

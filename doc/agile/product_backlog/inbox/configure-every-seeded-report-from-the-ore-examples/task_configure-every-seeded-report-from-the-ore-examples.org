@@ -5,7 +5,7 @@
 #+description: Every report ACME is seeded with needs a risk report configuration, built from the external/ore examples, and scoped to a root portfolio. A report names a root portfolio, and a method resolves that root to every book under it, which is the scope the run executes over.
 #+type: task
 #+level: s1
-#+filetags: :prove-the-report-grid-run-end-to-end-remaining:next:v0:
+#+filetags: :prove-the-report-grid-run-end-to-end-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

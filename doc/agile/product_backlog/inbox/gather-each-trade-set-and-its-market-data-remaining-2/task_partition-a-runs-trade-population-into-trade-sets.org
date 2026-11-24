@@ -5,7 +5,7 @@
 #+description: Nothing in ores.trading can group trades. The run resolves its scope once, in gather_trades, and treats it as one bag of books, so one export object answers for every book. Give ores.trading a batcher with a pluggable strategy that partitions a report's trade population into trade sets, each with a name and an as-of; the simplest strategy batches by book. The set name is the batch key the rest of the run fans out over.
 #+type: task
 #+level: s1
-#+filetags: :gather-each-trade-set-and-its-market-data-remaining-2:next:v0:
+#+filetags: :gather-each-trade-set-and-its-market-data-remaining-2:inbox:v0:
 #+owner: marco
 #+branch: feature/batch-a-trade-population
 #+pr: 2875

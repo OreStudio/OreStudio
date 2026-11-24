@@ -5,7 +5,7 @@
 #+description: A nightly format pass changed the measured XML code and no benchmark row followed it, so the local check gate refused every branch cut from main.
 #+type: task
 #+level: s1
-#+filetags: :promote_dev_to_main_from_a_green_run:next:product_backlog:
+#+filetags: :promote_dev_to_main_from_a_green_run:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

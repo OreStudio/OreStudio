@@ -5,7 +5,7 @@
 #+description: Bring the four remaining populate pipelines onto the ores.codegen.dataset archetypes now that the populate archetypes are generic.
 #+type: task
 #+level: s1
-#+filetags: :finish-moving-the-hand-written-sql-onto-models:next:v0:
+#+filetags: :finish-moving-the-hand-written-sql-onto-models:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

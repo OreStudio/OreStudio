@@ -5,7 +5,7 @@
 #+description: The report_definition model declares the name as the row key while the table is unique on (tenant, name, party), so a change event carries a name that four rows share. Declare the id, or the name and the party, as the key, and let the generated read by key take it. The reporting screens open a definition by its id already, so only the event and the read by key move.
 #+type: task
 #+level: s1
-#+filetags: :manage-reports-from-the-list-a-party-runs-remaining:next:v0:
+#+filetags: :manage-reports-from-the-list-a-party-runs-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

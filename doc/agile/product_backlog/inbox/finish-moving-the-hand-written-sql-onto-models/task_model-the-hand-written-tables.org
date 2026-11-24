@@ -5,7 +5,7 @@
 #+description: Twenty-three tables have no model: junctions such as iam account roles and role permissions and the reporting risk report config books and portfolios, time series such as iam auth events and session samples, and the DQ publication logs. Model the ones a codegen shape covers and record why the rest, such as mq and telemetry, stay hand-written.
 #+type: task
 #+level: s1
-#+filetags: :finish-moving-the-hand-written-sql-onto-models:next:v0:
+#+filetags: :finish-moving-the-hand-written-sql-onto-models:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

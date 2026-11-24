@@ -5,7 +5,7 @@
 #+description: Seed the process enumeration and add the run table with its identity, its process and its state machine.
 #+type: task
 #+level: s1
-#+filetags: :trade-process-runs-remaining:next:v0:
+#+filetags: :trade-process-runs-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

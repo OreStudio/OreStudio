@@ -5,7 +5,7 @@
 #+description: The Acme dataset has no controller, no Finance account, no quant or IT user, and no second person for each approving part, so the book controls cannot be walked as Acme. Add the actors, and decide the roles their approvals use.
 #+type: task
 #+level: s1
-#+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps-remaining:next:v0:
+#+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

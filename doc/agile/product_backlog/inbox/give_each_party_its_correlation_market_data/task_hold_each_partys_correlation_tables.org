@@ -5,7 +5,7 @@
 #+description: Give each party its own correlation tables, built from the quotes it receives and copied with its configuration at provisioning, and screens to browse, override and audit them, as its other market data has.
 #+type: task
 #+level: s1
-#+filetags: :give_each_party_its_correlation_market_data:next:v0:
+#+filetags: :give_each_party_its_correlation_market_data:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: The gate's ctest step and compass test run start the pooler and NATS when ORES_DB_POOLER_ENABLED is 1, and the test-run preflight refuses to run without a pooler and names the fix.
 #+type: task
 #+level: s1
-#+filetags: :give_the_tests_a_running_pooler:next:product_backlog:
+#+filetags: :give_the_tests_a_running_pooler:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

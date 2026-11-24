@@ -5,7 +5,7 @@
 #+description: The service runner holds a waiting state until each declared dependency answers, tells systemd what it waits for and extends its start timeout, and only then sends READY.
 #+type: task
 #+level: s1
-#+filetags: :a_service_waits_for_its_dependencies_and_recovers:next:v0:
+#+filetags: :a_service_waits_for_its_dependencies_and_recovers:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

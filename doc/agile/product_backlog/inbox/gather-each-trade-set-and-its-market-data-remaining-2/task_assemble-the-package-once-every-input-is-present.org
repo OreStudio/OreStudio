@@ -5,7 +5,7 @@
 #+description: prepare_ore_package downloads whatever it is handed and packs it, so it cannot tell a run that is still gathering from one that is broken, and it fails on a missing input only when the engine reads it. Make the step consume the declared artifact set, run only when every artifact the run declared exists, and name the ones that are missing when it cannot.
 #+type: task
 #+level: s1
-#+filetags: :gather-each-trade-set-and-its-market-data-remaining-2:next:v0:
+#+filetags: :gather-each-trade-set-and-its-market-data-remaining-2:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: The structure tables, their code and their tests go once nothing reads or writes them, so the tree holds one way to state a package.
 #+type: task
 #+level: s1
-#+filetags: :let-the-blotter-read-a-page-not-the-book-remaining:next:v0:
+#+filetags: :let-the-blotter-read-a-page-not-the-book-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,14 +5,14 @@
 #+description: Seed the fixings and engines the generated trades need, follow them into a run, and match ORE on a fresh database.
 #+type: story
 #+level: s2
-#+filetags: :next:product_backlog:
+#+filetags: :inbox:product_backlog:
 #+created: 2026-11-24
 #+updated: 2026-11-24
 #+environment: festive-dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 #+predecessor: 0E718054-03B7-43A5-9289-61E505235BBD
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 Continued from: [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the generated trades with the market data they need]].
 
@@ -25,7 +25,7 @@ Continued from: [[id:0E718054-03B7-43A5-9289-61E505235BBD][Run a report on the g
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
-| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
 | Next          | Break the story into tasks.            |

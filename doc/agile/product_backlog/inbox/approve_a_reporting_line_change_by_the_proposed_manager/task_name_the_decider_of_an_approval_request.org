@@ -5,7 +5,7 @@
 #+description: The inbox decides by permission only. Add a kind rule that the decider is the person the request names, and enforce it where the decision is made.
 #+type: task
 #+level: s1
-#+filetags: :approve_a_reporting_line_change_by_the_proposed_manager:next:v0:
+#+filetags: :approve_a_reporting_line_change_by_the_proposed_manager:inbox:v0:
 #+owner: marco
 #+branch: feature/address-the-people-screens-review
 #+pr:

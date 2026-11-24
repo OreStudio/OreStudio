@@ -5,7 +5,7 @@
 #+description: The exporter exists as ores.ore.xml::exporter::export_portfolio, which reverse-maps every instrument a trade carries and renders the portfolio with save_data(const portfolio&); the run path now calls it. Two things about it are wrong for a run that fans out over trade sets. It consumes the run's single export response rather than a trade set's archive, and it never fails: a trade it cannot reverse-map goes out as its type and envelope alone, and a trade whose ORE type the schema does not name is dropped. This task moves the mapper onto a trade set's archive and makes an inexpressible trade stop the step, naming the trade.
 #+type: task
 #+level: s1
-#+filetags: :gather-each-trade-set-and-its-market-data-remaining-2:next:v0:
+#+filetags: :gather-each-trade-set-and-its-market-data-remaining-2:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

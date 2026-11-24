@@ -5,7 +5,7 @@
 #+description: The official service serves a step that backfills each accepted public source and completes once its fixings are stored, so a workflow can order calibration after the rates exist.
 #+type: task
 #+level: s1
-#+filetags: :calibrate_and_publish_the_surfaces_on_a_schedule:next:product_backlog:
+#+filetags: :calibrate_and_publish_the_surfaces_on_a_schedule:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

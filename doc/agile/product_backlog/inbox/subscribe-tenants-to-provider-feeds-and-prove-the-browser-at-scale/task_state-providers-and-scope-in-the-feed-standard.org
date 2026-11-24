@@ -5,7 +5,7 @@
 #+description: The feed screen standard gains the browser, the two scopes and the subscription, and the FX price feed screen is brought to it.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:docs:ux:standards:subscribe-tenants-to-provider-feeds-and-prove-the-browser-at-scale:v0:
+#+filetags: :product_backlog:inbox:docs:ux:standards:subscribe-tenants-to-provider-feeds-and-prove-the-browser-at-scale:v0:
 #+owner: marco
 #+branch:
 #+pr:

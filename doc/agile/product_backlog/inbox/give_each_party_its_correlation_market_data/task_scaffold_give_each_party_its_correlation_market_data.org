@@ -5,7 +5,7 @@
 #+description: Story scaffolding rides this task: the correlation story, the generator story re-scoped to see but never use, and the driven story pointed at the correlation tables.
 #+type: task
 #+level: s1
-#+filetags: :give_each_party_its_correlation_market_data:next:v0:
+#+filetags: :give_each_party_its_correlation_market_data:inbox:v0:
 #+owner: marco
 #+branch: feature/correlation-and-generator-stories
 #+pr: 4816

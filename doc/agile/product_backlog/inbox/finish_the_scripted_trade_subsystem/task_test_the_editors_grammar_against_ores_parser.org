@@ -5,7 +5,7 @@
 #+description: The scripted trade editor needs a grammar that parses as one types, which ORE's parser cannot do, and a grammar of ORE Studio's own drifts from ORE's unless a test holds it there.
 #+type: task
 #+level: s1
-#+filetags: :finish_the_scripted_trade_subsystem:next:product_backlog:
+#+filetags: :finish_the_scripted_trade_subsystem:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

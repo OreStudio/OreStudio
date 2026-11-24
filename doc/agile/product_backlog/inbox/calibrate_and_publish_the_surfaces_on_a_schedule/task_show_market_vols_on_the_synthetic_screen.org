@@ -5,7 +5,7 @@
 #+description: The synthetic screen shows the system's raw FX volatility quotes as a vendor would, ATM, risk reversal and butterfly by expiry for each pair, from the derived source now and the surface generator later.
 #+type: task
 #+level: s1
-#+filetags: :marketdata:web:volatility:calibrate_and_publish_the_surfaces_on_a_schedule:next:product_backlog:
+#+filetags: :marketdata:web:volatility:calibrate_and_publish_the_surfaces_on_a_schedule:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: A report binds to a published surface, and its ORE export writes the grid as ORE volatility quotes with the matching fx_volatility_config.
 #+type: task
 #+level: s1
-#+filetags: :calibrate_and_publish_the_surfaces_on_a_schedule:next:product_backlog:
+#+filetags: :calibrate_and_publish_the_surfaces_on_a_schedule:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/export-a-published-surface-to-ore-4
 #+pr: 4640

@@ -5,7 +5,7 @@
 #+description: Testing after the vendor view task: the dashboard shows Latent no Start, Stop or state; a latent surface's log has no start or stop; a view page fails for want of its provider and run state.
 #+type: task
 #+level: s1
-#+filetags: :synthetic:web:http:graph:give_every_synthetic_feed_node_a_state:next:product_backlog:
+#+filetags: :synthetic:web:http:graph:give_every_synthetic_feed_node_a_state:inbox:product_backlog:
 #+owner: marco
 #+branch: fix/make-latent-and-views-behave-like-every-feed
 #+pr: 5079

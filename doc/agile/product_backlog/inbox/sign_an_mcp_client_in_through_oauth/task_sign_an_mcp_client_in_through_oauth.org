@@ -5,7 +5,7 @@
 #+description: ORE becomes an OAuth 2.1 authorization server for MCP clients, its consent page creating the same agent grant a key does, for Claude Desktop and claude.ai.
 #+type: task
 #+level: s1
-#+filetags: :sign_an_mcp_client_in_through_oauth:next:product_backlog:
+#+filetags: :sign_an_mcp_client_in_through_oauth:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

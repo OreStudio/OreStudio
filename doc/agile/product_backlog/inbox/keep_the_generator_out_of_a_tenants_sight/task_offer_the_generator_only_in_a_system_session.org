@@ -5,7 +5,7 @@
 #+description: A tenant administrator's Synthetic card lists the system's generator configurations, which a tenant does not use (whether it can change them is the other task's to show); decide whether any of it helps a tenant, keep that with its reason, and offer the rest only in a system session.
 #+type: task
 #+level: s1
-#+filetags: :keep_the_generator_out_of_a_tenants_sight:next:v0:
+#+filetags: :keep_the_generator_out_of_a_tenants_sight:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

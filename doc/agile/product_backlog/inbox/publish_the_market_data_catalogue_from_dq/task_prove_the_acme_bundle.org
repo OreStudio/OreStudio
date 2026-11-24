@@ -5,7 +5,7 @@
 #+description: A tenant provisioned from the bundle reaches serving feeds with no manual row.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:marketdata:implementation:publish_the_market_data_catalogue_from_dq:v0:
+#+filetags: :product_backlog:inbox:marketdata:implementation:publish_the_market_data_catalogue_from_dq:v0:
 #+owner: marco
 #+branch:
 #+pr:

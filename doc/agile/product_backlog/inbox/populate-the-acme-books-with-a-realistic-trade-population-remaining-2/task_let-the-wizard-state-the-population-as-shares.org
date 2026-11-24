@@ -5,7 +5,7 @@
 #+description: Task for: Populate the ACME books with a realistic trade population — the remaining work
 #+type: task
 #+level: s1
-#+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining-2:next:v0:
+#+filetags: :populate-the-acme-books-with-a-realistic-trade-population-remaining-2:inbox:v0:
 #+owner: marco
 #+branch: feature/let-the-wizard-state-the-population-as-shares
 #+pr: 4304

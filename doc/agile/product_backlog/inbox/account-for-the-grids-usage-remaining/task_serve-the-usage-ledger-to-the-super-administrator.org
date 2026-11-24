@@ -5,7 +5,7 @@
 #+description: The ledger answers the global question, but nothing reads it yet. Serve it whole to the operator, and draw per-tenant usage on the grid's load and capacity screens.
 #+type: task
 #+level: s1
-#+filetags: :account-for-the-grids-usage-remaining:next:v0:
+#+filetags: :account-for-the-grids-usage-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

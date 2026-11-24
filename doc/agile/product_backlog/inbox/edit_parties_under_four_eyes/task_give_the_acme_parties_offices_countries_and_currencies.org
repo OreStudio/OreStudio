@@ -5,7 +5,7 @@
 #+description: The four Acme parties have no contact information, no countries and no currencies in the sample data, so the Contacts and Memberships tabs are empty. Add an office for each contact type to every party, and the countries and currencies each one operates in, to the Acme dataset and to the way it is published.
 #+type: task
 #+level: s1
-#+filetags: :edit_parties_under_four_eyes:next:v0:
+#+filetags: :edit_parties_under_four_eyes:inbox:v0:
 #+owner: marco
 #+branch: feature/implement-edit-parties-under-four-eyes
 #+pr:

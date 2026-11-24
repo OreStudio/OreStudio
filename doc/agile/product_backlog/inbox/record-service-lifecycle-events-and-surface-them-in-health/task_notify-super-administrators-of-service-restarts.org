@@ -5,7 +5,7 @@
 #+description: Telemetry raises a service-restarted notification to the super administrators when a service starts again, marking a restart whose previous instance never stopped gracefully.
 #+type: task
 #+level: s1
-#+filetags: :record-service-lifecycle-events-and-surface-them-in-health:next:v0:
+#+filetags: :record-service-lifecycle-events-and-surface-them-in-health:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

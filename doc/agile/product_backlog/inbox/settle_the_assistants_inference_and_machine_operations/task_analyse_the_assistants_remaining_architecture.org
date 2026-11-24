@@ -5,7 +5,7 @@
 #+description: The questions the first analysis left open once MCP, the catalogue and the knowledge base moved to their own stories: user and machine operations, the agent loop, the chat in ores.web, confirmation, the inference server, tenancy, evaluation and the prototype.
 #+type: task
 #+level: s1
-#+filetags: :settle_the_assistants_inference_and_machine_operations:next:product_backlog:
+#+filetags: :settle_the_assistants_inference_and_machine_operations:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

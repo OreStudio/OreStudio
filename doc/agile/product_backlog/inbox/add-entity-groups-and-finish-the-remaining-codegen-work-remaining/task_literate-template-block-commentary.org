@@ -5,7 +5,7 @@
 #+description: For every template org under ores.codegen/library/templates, split the single mustache tangle block into multiple same-target blocks interleaved with detailed human-level prose explaining what each block does and why; generated code stays comment-free.
 #+type: task
 #+level: s1
-#+filetags: :add-entity-groups-and-finish-the-remaining-codegen-work-remaining:next:v0:
+#+filetags: :add-entity-groups-and-finish-the-remaining-codegen-work-remaining:inbox:v0:
 #+owner: marco
 #+branch: feature/literate-template-block-commentary
 #+pr: 1743

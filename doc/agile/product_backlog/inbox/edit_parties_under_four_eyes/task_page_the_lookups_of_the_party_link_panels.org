@@ -5,7 +5,7 @@
 #+description: The Memberships and Counterparties tabs read every country, currency and counterparty to name the few a party links, and a tenant holds about 13000 counterparties. The panels should look up the few rows they draw and search the rest on the server, as the entity specification says.
 #+type: task
 #+level: s1
-#+filetags: :edit_parties_under_four_eyes:next:v0:
+#+filetags: :edit_parties_under_four_eyes:inbox:v0:
 #+owner: marco
 #+branch: feature/implement-edit-parties-under-four-eyes
 #+pr:

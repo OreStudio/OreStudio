@@ -5,7 +5,7 @@
 #+description: The run document's configuration documents are pulled synchronously inside prepare_ore_package: export_run calls each owner's document operation and waits, with the run token, one document at a time. A run that fans out over trade sets must be able to ask for one configuration by its id and as-of, have the owner write it to storage, and let the mapping happen later, so the package step waits on declared artifacts rather than on a call that blocks it.
 #+type: task
 #+level: s1
-#+filetags: :gather-each-trade-set-and-its-market-data-remaining-2:next:v0:
+#+filetags: :gather-each-trade-set-and-its-market-data-remaining-2:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

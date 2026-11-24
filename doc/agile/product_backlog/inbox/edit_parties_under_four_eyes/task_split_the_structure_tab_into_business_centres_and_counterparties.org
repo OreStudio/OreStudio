@@ -5,7 +5,7 @@
 #+description: The Structure tab holds the business units and the counterparties a party can see. Rename it to Business centres, and give the counterparties the party may trade with a tab of their own.
 #+type: task
 #+level: s1
-#+filetags: :edit_parties_under_four_eyes:next:v0:
+#+filetags: :edit_parties_under_four_eyes:inbox:v0:
 #+owner: marco
 #+branch: feature/implement-edit-parties-under-four-eyes
 #+pr:

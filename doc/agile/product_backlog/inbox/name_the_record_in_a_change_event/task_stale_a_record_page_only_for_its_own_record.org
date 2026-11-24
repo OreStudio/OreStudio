@@ -5,7 +5,7 @@
 #+description: Task for: Name the record in a change event
 #+type: task
 #+level: s1
-#+filetags: :name_the_record_in_a_change_event:next:v0:
+#+filetags: :name_the_record_in_a_change_event:inbox:v0:
 #+owner: marco
 #+branch: feature/name-the-record-in-a-change-event
 #+pr:

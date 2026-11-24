@@ -5,7 +5,7 @@
 #+description: The wrapper measures the start and end of the engine run, the input and output bytes, and the engine's peak memory per job, and sends them with the result.
 #+type: task
 #+level: s1
-#+filetags: :draw-the-node-heatmap-and-carry-the-engine-run-statistics:next:v0:
+#+filetags: :draw-the-node-heatmap-and-carry-the-engine-run-statistics:inbox:v0:
 #+owner: marco
 #+branch: feature/measure-the-run-statistics-in-the-wrapper
 #+pr:

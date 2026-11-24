@@ -5,7 +5,7 @@
 #+description: An Operations Events screen that lists, filters and follows events live, and each record's History stream showing the events about it as acts.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:web:operations:eventing:record-system-events-in-a-central-event-log:v0:
+#+filetags: :product_backlog:inbox:web:operations:eventing:record-system-events-in-a-central-event-log:v0:
 #+owner: marco
 #+branch:
 #+pr:

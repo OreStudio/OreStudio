@@ -5,7 +5,7 @@
 #+description: ORE accepts several spellings for one value, and a compiled table in the codec converts them. This task moves the spellings into the value set, converts at the write boundary so the store holds one rendering, offers only canonical forms to a screen, and fails a check when a table holds two renderings of one fact.
 #+type: task
 #+level: s1
-#+filetags: :normalise-every-ore-parameter-representation-remaining:next:v0:
+#+filetags: :normalise-every-ore-parameter-representation-remaining:inbox:v0:
 #+owner: marco
 #+branch: feature/carry-one-canonical-form-for-each-fact
 #+pr:

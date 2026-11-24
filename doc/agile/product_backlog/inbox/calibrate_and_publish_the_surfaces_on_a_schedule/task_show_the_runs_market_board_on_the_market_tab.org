@@ -5,7 +5,7 @@
 #+description: The run shares its latent curves and spots through a market board that nothing shows. A read answers with every member, its values and when it was last published, and a seventh view on the synthetic Market tab draws them beside the arrivals dashboard, in three languages, after a prototype is signed off.
 #+type: task
 #+level: s1
-#+filetags: :calibrate_and_publish_the_surfaces_on_a_schedule:next:product_backlog:
+#+filetags: :calibrate_and_publish_the_surfaces_on_a_schedule:inbox:product_backlog:
 #+owner: marco
 #+branch:
 +#+pr:

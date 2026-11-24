@@ -5,7 +5,7 @@
 #+description: Run one report with two configurations and explain the difference.
 #+type: task
 #+level: s1
-#+filetags: :author_the_report_configurations:next:v0:
+#+filetags: :author_the_report_configurations:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

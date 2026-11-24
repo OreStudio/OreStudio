@@ -5,7 +5,7 @@
 #+description: An MSVC job compiles the new translation units. Success is the C1202 failure gone with the old aggregate, and the build green on Windows, Linux and macOS.
 #+type: task
 #+level: s1
-#+filetags: :refactor-conventions-onto-families-and-bundles-remaining:next:v0:
+#+filetags: :refactor-conventions-onto-families-and-bundles-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

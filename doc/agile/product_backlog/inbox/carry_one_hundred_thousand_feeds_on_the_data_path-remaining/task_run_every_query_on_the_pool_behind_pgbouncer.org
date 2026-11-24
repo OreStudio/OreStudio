@@ -5,7 +5,7 @@
 #+description: Move the raw-SQL helpers onto the context's pool and unit of work, and run pgbouncer in transaction mode as a systemd unit of each environment, so every service connects through it.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:database:postgres:devops:carry_one_hundred_thousand_feeds_on_the_data_path-remaining:v0:
+#+filetags: :product_backlog:inbox:database:postgres:devops:carry_one_hundred_thousand_feeds_on_the_data_path-remaining:v0:
 #+owner: marco
 #+branch:
 #+pr:

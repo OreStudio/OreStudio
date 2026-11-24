@@ -5,7 +5,7 @@
 #+description: The portfolio right's wire key is its code alone, so a grant collides across accounts and a removal reaches whichever account's row is found first. Give the right a key that names the account, the portfolio and the code, so the book structure screen can grant and remove rights.
 #+type: task
 #+level: s1
-#+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps-remaining:next:v0:
+#+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: Following the same pattern as the refdata sweep (task fix-refdata-model-drift): regenerate every ores.controller domain_entity and junction model against current codegen templates, updating any model found using an outdated format/convention before regenerating, and commit the resulting drift-free tree. compass build and rat must pass after.
 #+type: task
 #+level: s1
-#+filetags: :add-entity-groups-and-finish-the-remaining-codegen-work-remaining:next:v0:
+#+filetags: :add-entity-groups-and-finish-the-remaining-codegen-work-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: A report over every generated trade type completes, and each trade values correctly: a trade built on an ORE sample's terms reproduces ORE's own NPV for that sample.
 #+type: task
 #+level: s1
-#+filetags: :value_the_generated_trades_against_ore:next:product_backlog:
+#+filetags: :value_the_generated_trades_against_ore:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr: 4708

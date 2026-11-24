@@ -5,7 +5,7 @@
 #+description: The marketdata service runs two provisioning steps at once and each step now runs four lanes, so up to eight units ask a connection pool that defaults to two connections for a statement. The retry rides it out; the sizing is unstated. State the pool and the lane count as one decision.
 #+type: task
 #+level: s1
-#+filetags: :run_each_step_in_the_service_that_owns_its_work:next:product_backlog:
+#+filetags: :run_each_step_in_the_service_that_owns_its_work:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

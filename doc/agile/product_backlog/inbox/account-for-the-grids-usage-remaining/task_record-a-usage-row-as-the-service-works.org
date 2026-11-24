@@ -5,7 +5,7 @@
 #+description: The compute service already enters each tenant to dispatch its work and to take its result back. Record what it did there as installation data.
 #+type: task
 #+level: s1
-#+filetags: :account-for-the-grids-usage-remaining:next:v0:
+#+filetags: :account-for-the-grids-usage-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

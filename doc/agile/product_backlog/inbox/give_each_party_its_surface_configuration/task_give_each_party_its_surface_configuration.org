@@ -5,7 +5,7 @@
 #+description: A surface belongs to a party, so the settings that build it belong to the party too: trading days, minimum window, prior, level multiplier, history days, minimum expiries and which CRM supplies its rates.
 #+type: task
 #+level: s1
-#+filetags: :give_each_party_its_surface_configuration:next:product_backlog:
+#+filetags: :give_each_party_its_surface_configuration:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

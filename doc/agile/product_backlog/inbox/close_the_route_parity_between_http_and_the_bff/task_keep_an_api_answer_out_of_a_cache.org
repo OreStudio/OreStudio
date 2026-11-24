@@ -5,7 +5,7 @@
 #+description: The BFF stamped Cache-Control: private, no-store on every /api/ answer that set none. The gateway sets it only on views, images and downloads, so an authenticated read, a refusal, or a not-found can be held by a browser or an intermediary, which shows as a screen that is wrong until it is hard-refreshed.
 #+type: task
 #+level: s1
-#+filetags: :close_the_route_parity_between_http_and_the_bff:next:product_backlog:
+#+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/keep-an-api-answer-out-of-a-cache
 #+pr: 5073

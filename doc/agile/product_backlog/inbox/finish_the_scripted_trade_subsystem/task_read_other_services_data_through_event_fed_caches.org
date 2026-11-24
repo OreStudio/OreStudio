@@ -5,7 +5,7 @@
 #+description: Hand-written C++ in some services reads another service's tables or functions in raw SQL, which couples a service's code to another's schema; the standard way to hold another service's data is an entity-mirror cache fed by its events.
 #+type: task
 #+level: s1
-#+filetags: :finish_the_scripted_trade_subsystem:next:product_backlog:
+#+filetags: :finish_the_scripted_trade_subsystem:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

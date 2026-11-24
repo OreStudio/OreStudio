@@ -5,7 +5,7 @@
 #+description: Write and run a scenario with one party routed to the simulated source and one to the live-kind source, both running.
 #+type: task
 #+level: s1
-#+filetags: :rework-the-market-data-feeds-remaining-2:next:v0:
+#+filetags: :rework-the-market-data-feeds-remaining-2:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

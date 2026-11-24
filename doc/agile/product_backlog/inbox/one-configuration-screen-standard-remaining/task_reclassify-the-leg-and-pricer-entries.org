@@ -5,7 +5,7 @@
 #+description: Decide whether the leg, coupon, cashflow and pricer subsections belong in the pricing engine types or in a separate catalogue, and move them.
 #+type: task
 #+level: s1
-#+filetags: :one-configuration-screen-standard-remaining:next:v0:
+#+filetags: :one-configuration-screen-standard-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

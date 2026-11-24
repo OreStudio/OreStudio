@@ -5,7 +5,7 @@
 #+description: A static DQ snapshot holds five years of daily public fixings and seeds every environment, it is refreshed only now and then, and the public sources adapter fills the gap from the latest stored fixing to today.
 #+type: task
 #+level: s1
-#+filetags: :value_the_generated_trades_against_ore:next:product_backlog:
+#+filetags: :value_the_generated_trades_against_ore:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: The generator books scripted forms by evaluating recipes over native rows, and script-only products from a carrier type's rows with barriers no underlying reaches; scripts whose product has an element of its own have no scripted form.
 #+type: task
 #+level: s1
-#+filetags: :finish_the_scripted_trade_subsystem:next:product_backlog:
+#+filetags: :finish_the_scripted_trade_subsystem:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

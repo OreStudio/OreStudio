@@ -5,7 +5,7 @@
 #+description: Write endpoints and permissions for sessions, feeds, scopes, schedules and routes.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:marketdata:implementation:build_the_connectivity_screens-remaining:v0:
+#+filetags: :product_backlog:inbox:marketdata:implementation:build_the_connectivity_screens-remaining:v0:
 #+owner: marco
 #+branch:
 #+pr:

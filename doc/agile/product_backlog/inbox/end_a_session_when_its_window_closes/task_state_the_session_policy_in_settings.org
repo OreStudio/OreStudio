@@ -5,7 +5,7 @@
 #+description: The grace period and the optional idle sign-out are settings with defaults, and a role can be exempted from idle sign-out.
 #+type: task
 #+level: s1
-#+filetags: :end_a_session_when_its_window_closes:next:v0:
+#+filetags: :end_a_session_when_its_window_closes:inbox:v0:
 #+owner: marco
 #+branch: feature/address-the-people-screens-review
 #+pr:

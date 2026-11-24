@@ -5,7 +5,7 @@
 #+description: Add source, source reference, curation note and review fields to the ore parameter contract, and make the generator fail on a row without them or without a text.
 #+type: task
 #+level: s1
-#+filetags: :one-configuration-screen-standard-remaining:next:v0:
+#+filetags: :one-configuration-screen-standard-remaining:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

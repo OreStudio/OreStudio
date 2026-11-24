@@ -5,7 +5,7 @@
 #+description: A publish function does not correspond to one entity: 122 models opt into an artefact table and 57 functions publish them, and curve_configuration alone publishes 31 artefact tables. Decide what a single declaration is — one per publish function, or a document that groups the artefact tables a publication writes — and record it, because no other task in the story can be cut until it is settled.
 #+type: task
 #+level: s1
-#+filetags: :publish_from_dq_codegen_facet:next:v0:
+#+filetags: :publish_from_dq_codegen_facet:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: A search bar, a list of results and a document view in ores.web over the ores.http document routes, showing the HTML compass renders, with links between documents and anchors on headings.
 #+type: task
 #+level: s1
-#+filetags: :read_the_documents_from_compass:next:v0:
+#+filetags: :read_the_documents_from_compass:inbox:v0:
 #+owner: marco
 #+branch:
 #+pr:

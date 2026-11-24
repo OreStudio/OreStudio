@@ -5,7 +5,7 @@
 #+description: The gateway answers 404 to HEAD on every API route: the router has a HEAD builder and only the storage routes use it. The BFF answered HEAD from its GET, so an uptime probe, a curl -I, or a client that tests a resource before reading it now sees every route as missing.
 #+type: task
 #+level: s1
-#+filetags: :close_the_route_parity_between_http_and_the_bff:next:product_backlog:
+#+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:

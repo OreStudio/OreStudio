@@ -5,7 +5,7 @@
 #+description: A supplier switch is one new route with a reason; the old route stays in history.
 #+type: task
 #+level: s1
-#+filetags: :product_backlog:next:marketdata:implementation:govern_the_public_feeds:v0:
+#+filetags: :product_backlog:inbox:marketdata:implementation:govern_the_public_feeds:v0:
 #+owner: marco
 #+branch:
 #+pr:

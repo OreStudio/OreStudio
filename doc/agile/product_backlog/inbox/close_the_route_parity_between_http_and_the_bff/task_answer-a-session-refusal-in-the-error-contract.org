@@ -8,7 +8,7 @@
 #+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/answer-a-session-refusal-in-the-error-contract
-#+pr:
+#+pr: 5101
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -133,7 +133,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5101][#5101]] | [http] Answer every refusal in the error contract |
 
 * Review
 

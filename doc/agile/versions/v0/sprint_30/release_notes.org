@@ -207,12 +207,32 @@ on as a story in the product backlog whose title states it.
 
 * 📸 Screenshots
 
-The screens this release changed are captured by two scenarios:
+[[proj:assets/images/ore_studio-v0.0.30-rate-ladder.png]]
+
+/The rates ladder reads every published instrument of a currency, against the
+market data the party holds./
+
+[[proj:assets/images/ore_studio-v0.0.30-quotes.png]]
+
+/The quotes view shows the market as each vendor quotes it, one board per
+vendor, live./
+
+[[proj:assets/images/ore_studio-v0.0.30-identity-shapes.png]]
+
+/An identity shape is a record: a code, a description and the field rules that
+make a series identifiable./
+
+[[proj:assets/images/ore_studio-v0.0.30-setup-report.png]]
+
+/The setup report states each step of the provisioning, and the one that ended
+with a warning says why./
+
+The screens are captured by two scenarios:
 [[id:AD1C422D-0CFC-494F-88CD-AF6FFE22240A][Capture the sprint 30 release screenshots]]
 for the market data screens and the roles, and
 [[id:FC6494C7-B467-4A4B-B593-600865858D0E][Capture the ladder, the fixings and the setup report]]
-for the three the first run could not take. Each step names the file it saves
-under =assets/images/=.
+for the ladder, the fixing series and the setup report. Each step names the
+file it saves under =assets/images/=.
 
 * 📊 Time Summary
 

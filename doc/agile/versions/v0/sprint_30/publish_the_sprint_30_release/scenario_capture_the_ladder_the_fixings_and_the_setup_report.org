@@ -40,7 +40,7 @@ Rules for every capture:
 | Parent story  | [[id:728FB790-CE79-4833-856C-5075BCED287C][Publish the sprint 30 release]]   |
 | Target screen | The rate ladder, a fixing series, and the setup report |
 | Clients       |                                          |
-| State         | PENDING |
+| State         | PASSED |
 
 * Steps
 
@@ -142,14 +142,15 @@ Each step captures one image for the release notes. Record PASS, FAIL or PENDING
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
+| Notes  | [[file:scenario_capture_the_ladder_the_fixings_and_the_setup_report_step6_20261124_094235.png]] |
 
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        | PENDING |
-| Completed at  |  |
+| Status        | PASSED |
+| Completed at  | 2026-11-24T09:42:38Z |
 | Branch        |       |
 | Commit        |       |
 | Worktree      |       |

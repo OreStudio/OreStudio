@@ -203,7 +203,23 @@ These stories closed with part of their work done. Each remaining scope lives on
 
 # 📸 Screenshots
 
-The screens this release changed are captured by [Capture the sprint 30 release screenshots](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_30/publish_the_sprint_30_release/scenario_capture_the_sprint_30_release_screenshots.html). Each step of that scenario names the file it saves under `assets/images/`, and the captures are added to this page as they are taken.
+![ore_studio-v0.0.30-rate-ladder.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.30-rate-ladder.png)
+
+*The rates ladder reads every published instrument of a currency, against the market data the party holds.*
+
+![ore_studio-v0.0.30-quotes.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.30-quotes.png)
+
+*The quotes view shows the market as each vendor quotes it, one board per vendor, live.*
+
+![ore_studio-v0.0.30-identity-shapes.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.30-identity-shapes.png)
+
+*An identity shape is a record: a code, a description and the field rules that make a series identifiable.*
+
+![ore_studio-v0.0.30-setup-report.png](https://raw.githubusercontent.com/OreStudio/OreStudio/main/assets/images/ore_studio-v0.0.30-setup-report.png)
+
+*The setup report states each step of the provisioning, and the one that ended with a warning says why.*
+
+The screens are captured by two scenarios: [Capture the sprint 30 release screenshots](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_30/publish_the_sprint_30_release/scenario_capture_the_sprint_30_release_screenshots.html) for the market data screens and the roles, and [Capture the ladder, the fixings and the setup report](https://orestudio.github.io/OreStudio/doc/agile/versions/v0/sprint_30/publish_the_sprint_30_release/scenario_capture_the_ladder_the_fixings_and_the_setup_report.html) for the ladder, the fixing series and the setup report. Each step names the file it saves under `assets/images/`.
 
 
 # 📊 Time Summary

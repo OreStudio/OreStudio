@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/carry-the-delivery-counts-forward
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ One row per subscription carries the delivery count forward, so the table's size
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,44 @@ One row per subscription carries the delivery count forward, so the table's size
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+What the counter is. =ores_marketdata_delivery_counts_tbl= is the metering record
+behind billing: how many messages a party received, per provider and item, in a
+metering period. =usage_recorder= drains the in-memory meter every thirty seconds,
+and =bill_handler= reads the counts to bill. It is state, not a series: for one
+subscription and one period there is one number that goes up.
+
+It is not TimescaleDB. The create script contains no =create_hypertable= and the
+table is absent from =timescaledb_information.hypertables=. TimescaleDB would not
+help: chunk retention and compression are irrelevant to 23 mutable rows, and a
+hypertable's unique index must include the partition column, which the natural
+key does not carry.
+
+Why it grows. The entity is modelled with the default temporal axis, so every
+write appends: a new id, a new version, and the previous row closed. The
+natural-key index includes =flushed_at=, so each flush is a distinct row even for
+the same subscription and period. Measured on one environment: 1,260,554 rows
+behind 23 subscriptions, all written in a day.
+
+The right shape already exists in the codegen. =:current_state: true= drops the
+temporal axis: no =valid_from=/=valid_to=, no version, no audit tail, no history
+surface, and the model's own primary key. That is precisely a counter table, one
+row per key.
+
+The change:
+
+1. Model =delivery_count= with =:current_state: true=, its natural key as the
+   primary key: tenant, party, provider, item, period, feed.
+2. Regenerate, which removes the version column, the exclusion constraint and the
+   history messages, and makes the primary key the natural key.
+3. Make the recorder accumulate rather than append: it holds the running total for
+   each key across drains and writes that total, so the store holds one row per
+   subscription and period.
+4. Adapt =bill_handler= and the event registrar to the generated shape without a
+   history surface.
+
+If the delivery rate over time is wanted, that is a different question with a
+different answer: a sample per interval in the telemetry store, which is already a
+hypertable with a retention period, and not a second life for the billing counter.
 
 * Measurements
 

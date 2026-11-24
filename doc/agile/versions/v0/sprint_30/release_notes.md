@@ -20,21 +20,6 @@ Sprint 30 was named for finishing the move off sqlgen and reflect-cpp, and that 
 # 🛠️ Key Improvements
 
 
-## Hotfixes
-
--   **Hotfix: nightly CI failures**: The nightly builds on Linux, macOS and Windows and the valgrind run are red.
--   **Hotfix: two changes on main fail four local checks**: Make the local gate pass on main again.
--   **Hotfix: recent changes on main fail five local checks**: Make the local gate pass on main again.
--   **Hotfix: Main CI is red on Windows, GCC, and tests**: Restore a green main branch: the GCC and the Windows builds compile, and the test suites that main runs pass.
--   **Hotfix: Fix the warnings and the macOS database tests**: Make the macOS nightly pass its database tests, and clear compiler warnings from the tree so warnings-as-errors can be switched back on.
--   **Start the synthetic service on a fresh database**: A recreated database reaches a running fleet: the synthetic service registers, announces ready, and starts its adapters, and a start-up failure reports itself instead of hanging.
--   **Hotfix: Clear the Windows, GCC and test breakages CI now reports**: Clear the four breakages CI reports on main: the Windows export collision, the GCC 16 name collision, the banxico test that the environment lookup change broke, and the PostgreSQL build that fails our queries.
--   **Hotfix: Fix the AppleClang min call and the generated link drift**: Make macOS compile again, and bring three generated CMake files back in line with the models they are generated from.
--   **Hotfix: Publish the catalogues the booking test reads**: Make the generated-trade booking test pass by publishing the refdata catalogues a basket constituent is resolved against.
--   **Hotfix: Give the booking test its own refdata**: Let the booking test run against its own reference data, instead of depending on a publish step that only provisioning should perform.
--   **Hotfix: Main stops at the surface set test**: A full build of main compiles every target again, and the two raise functions agree on whether a caller may discard what they return.
-
-
 ## Financial Features
 
 -   **Design and seed the reports, configurations and portfolio trees each ACME party runs**: Each ACME party gets the reports it would really run, with the configuration those reports need and a realistic portfolio tree, root portfolio and currencies.
@@ -237,6 +222,21 @@ Compass is no longer a directory of Python scripts inside this repository. It is
 -   **CI installs the pinned release.** Every workflow that configures an environment or runs a gate downloads the release the pin names and verifies its checksum, so a build runs the same compass a developer does.
 -   **The Python it replaced is gone.** The generator, the tier 2 and tier 3 gates and the codegen scaffold verifier were deleted as compass took them over, and a marker that names a compass codec is now linted as a codec rather than as a missing script.
 -   **The pin is the contract.** Bumping `compass_ng.pin` is the whole upgrade; nothing in the tree depends on a compass path any more.
+
+
+## Hotfixes
+
+-   **Hotfix: nightly CI failures**: The nightly builds on Linux, macOS and Windows and the valgrind run are red.
+-   **Hotfix: two changes on main fail four local checks**: Make the local gate pass on main again.
+-   **Hotfix: recent changes on main fail five local checks**: Make the local gate pass on main again.
+-   **Hotfix: Main CI is red on Windows, GCC, and tests**: Restore a green main branch: the GCC and the Windows builds compile, and the test suites that main runs pass.
+-   **Hotfix: Fix the warnings and the macOS database tests**: Make the macOS nightly pass its database tests, and clear compiler warnings from the tree so warnings-as-errors can be switched back on.
+-   **Start the synthetic service on a fresh database**: A recreated database reaches a running fleet: the synthetic service registers, announces ready, and starts its adapters, and a start-up failure reports itself instead of hanging.
+-   **Hotfix: Clear the Windows, GCC and test breakages CI now reports**: Clear the four breakages CI reports on main: the Windows export collision, the GCC 16 name collision, the banxico test that the environment lookup change broke, and the PostgreSQL build that fails our queries.
+-   **Hotfix: Fix the AppleClang min call and the generated link drift**: Make macOS compile again, and bring three generated CMake files back in line with the models they are generated from.
+-   **Hotfix: Publish the catalogues the booking test reads**: Make the generated-trade booking test pass by publishing the refdata catalogues a basket constituent is resolved against.
+-   **Hotfix: Give the booking test its own refdata**: Let the booking test run against its own reference data, instead of depending on a publish step that only provisioning should perform.
+-   **Hotfix: Main stops at the surface set test**: A full build of main compiles every target again, and the two raise functions agree on whether a caller may discard what they return.
 
 
 # ⚠️ Known Issues & Postponed

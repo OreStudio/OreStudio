@@ -52,6 +52,16 @@ struct stored_fixing final {
 };
 
 /**
+ * @brief How much a series holds: its first and last date, and its count.
+ */
+struct series_coverage final {
+    boost::uuids::uuid series_id;
+    std::chrono::year_month_day first;
+    std::chrono::year_month_day last;
+    std::uint32_t count = 0;
+};
+
+/**
  * @brief The provider's own id of an item.
  */
 struct vendor_key final {
@@ -103,6 +113,17 @@ public:
                                        std::chrono::year_month_day from,
                                        std::chrono::year_month_day to,
                                        std::size_t limit);
+
+    /**
+     * @brief The coverage of each of @p series_ids that holds a value, ordered by id.
+     *
+     * One statement for the whole batch: the aggregate is the database's, and a set
+     * costs one plan whatever its size. The tenant and the party travel as parameters
+     * so the statement can use the index that starts with them, and a session that sees
+     * more than one party reads across them.
+     */
+    std::vector<series_coverage> coverage(const context& ctx,
+                                          const std::vector<boost::uuids::uuid>& series_ids);
 
     /**
      * @brief The vendor id that @p provider_code maps to @p item, if a mapping names it.

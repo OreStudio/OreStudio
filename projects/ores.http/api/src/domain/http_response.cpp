@@ -69,6 +69,8 @@ std::string_view http_response::code_for_status(http_status status) {
         case http_status::bad_gateway:
         case http_status::service_unavailable:
             return "upstream-unavailable";
+        case http_status::gateway_timeout:
+            return "upstream-timeout";
         default:
             break;
     }

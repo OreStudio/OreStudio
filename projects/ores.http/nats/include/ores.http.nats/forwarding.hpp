@@ -25,6 +25,7 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.nats/export.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.nats/service/nats_connect_error.hpp"
 #include "ores.nats/service/request_helpers.hpp"
 #include "ores.nats/service/request_refused_error.hpp"
 #include "ores.nats/service/session_expired_error.hpp"
@@ -113,12 +114,13 @@ template <typename Request>
 typename Request::response_type forward_on(const ores::http::domain::http_request& req,
                                            ores::nats::service::nats_client& session,
                                            std::string_view subject,
-                                           const Request& msg) {
+                                           const Request& msg,
+                                           std::chrono::milliseconds timeout) {
     auto delegated = caller_client(req, session);
     try {
         auto reply =
             ores::nats::service::authenticated_request_and_decode<typename Request::response_type>(
-                delegated, subject, msg, ores::nats::service::default_request_timeout);
+                delegated, subject, msg, timeout);
         if (!reply)
             refuse_undecodable(subject, reply.error().what());
         return std::move(*reply);
@@ -129,9 +131,83 @@ typename Request::response_type forward_on(const ores::http::domain::http_reques
     }
 }
 
+template <typename Request>
+typename Request::response_type forward_on(const ores::http::domain::http_request& req,
+                                           ores::nats::service::nats_client& session,
+                                           std::string_view subject,
+                                           const Request& msg) {
+    return forward_on(req, session, subject, msg, ores::nats::service::default_request_timeout);
+}
+
+/**
+ * @brief The waiting time a composed view states for itself.
+ *
+ * The NATS client waits 30 seconds by default, which is longer than the HTTP
+ * server's idle timeout, so a service that stays silent takes the socket down
+ * instead of answering. A view that makes several reads declares the time it may
+ * take instead, and a read that cannot be made inside what is left is refused as
+ * the service not answering in time.
+ */
+inline constexpr std::chrono::milliseconds composed_view_budget =
+    std::chrono::milliseconds(std::chrono::seconds(10));
+
+/**
+ * @brief The shortest wait a read is given, so a spent budget refuses rather than
+ * sends a request that cannot be waited for.
+ */
+inline constexpr std::chrono::milliseconds shortest_read =
+    std::chrono::milliseconds(std::chrono::milliseconds(1000));
+
+/**
+ * @brief Thrown when a composed view has spent the time it declared.
+ */
+struct ORES_HTTP_NATS_EXPORT budget_spent_error final : std::runtime_error {
+    budget_spent_error()
+        : std::runtime_error("the view spent its time budget") {}
+};
+
+/**
+ * @brief The time one request may spend across the reads a view makes.
+ *
+ * A view opens one at its first read and passes =next()= to each forward, so the
+ * time is the request's and not each read's.
+ */
+class ORES_HTTP_NATS_EXPORT budget final {
+public:
+    explicit budget(std::chrono::milliseconds total = composed_view_budget)
+        : opened_(std::chrono::steady_clock::now())
+        , total_(total) {}
+
+    /**
+     * @brief How long the next read may wait.
+     *
+     * @throws budget_spent_error when less than the shortest read is left.
+     */
+    [[nodiscard]] std::chrono::milliseconds next() const {
+        const auto spent = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - opened_);
+        const auto left = total_ - spent;
+        if (left < shortest_read)
+            throw budget_spent_error();
+        return left;
+    }
+
+private:
+    std::chrono::steady_clock::time_point opened_;
+    std::chrono::milliseconds total_;
+};
+
 /**
  * @brief Send one canonical request as the caller on its own subject, and answer its decoded reply.
  */
+template <typename Request>
+typename Request::response_type forward(const ores::http::domain::http_request& req,
+                                        ores::nats::service::nats_client& session,
+                                        const Request& msg,
+                                        std::chrono::milliseconds timeout) {
+    return forward_on(req, session, Request::nats_subject, msg, timeout);
+}
+
 template <typename Request>
 typename Request::response_type forward(const ores::http::domain::http_request& req,
                                         ores::nats::service::nats_client& session,
@@ -246,6 +322,20 @@ ORES_HTTP_NATS_EXPORT void require_deployment_read(const ores::http::domain::htt
 unanswered(std::string_view subject, const std::exception& e);
 
 /**
+ * @brief The answer a request that waited out its time states.
+ *
+ * A read that no service answered in time is the gateway's own 504 in the error
+ * contract, not a failure of the route: the browser reads the code and says the
+ * service did not answer in time.
+ */
+[[nodiscard]] inline ores::http::domain::http_response
+timed_out(const ores::nats::service::nats_connect_error&) {
+    return ores::http::domain::http_response::error(
+        ores::http::domain::http_status::gateway_timeout,
+        "The service did not answer within the time this request allows.");
+}
+
+/**
  * @brief Run a route's forwards, answering a refusal with its own status and any
  * other failure as the service not answering.
  *
@@ -259,6 +349,13 @@ guarded(const std::function<ores::http::domain::http_response()>& work) {
         return work();
     } catch (const ores::http::net::record_routes::refusal& r) {
         return ores::http::net::record_routes::answer(r);
+    } catch (const budget_spent_error& e) {
+        return ores::http::domain::http_response::error(
+            ores::http::domain::http_status::gateway_timeout, e.what());
+    } catch (const ores::nats::service::nats_connect_error& e) {
+        if (e.kind() == ores::nats::service::nats_error_kind::request_timeout)
+            return timed_out(e);
+        return unanswered(Request::nats_subject, e);
     } catch (const std::exception& e) {
         return unanswered(Request::nats_subject, e);
     }
@@ -280,6 +377,10 @@ ores::http::domain::http_response respond(const ores::http::domain::http_request
                 forward(req, session, msg)));
     } catch (const ores::http::net::record_routes::refusal& r) {
         return ores::http::net::record_routes::answer(r);
+    } catch (const ores::nats::service::nats_connect_error& e) {
+        if (e.kind() == ores::nats::service::nats_error_kind::request_timeout)
+            return timed_out(e);
+        return unanswered(Request::nats_subject, e);
     } catch (const std::exception& e) {
         return unanswered(Request::nats_subject, e);
     }

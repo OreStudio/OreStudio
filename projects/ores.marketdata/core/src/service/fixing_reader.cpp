@@ -128,4 +128,32 @@ fixing_reader::window(const ores::database::context& ctx,
     return response;
 }
 
+
+messaging::get_fixing_coverage_response
+fixing_reader::coverage(const ores::database::context& ctx,
+                        const messaging::get_fixing_coverage_request& request) {
+    messaging::get_fixing_coverage_response response;
+    if (request.series_ids.size() > max_coverage_batch) {
+        response.result =
+            refuse(outcome_code::filter_too_large,
+                   {.field = "series_ids", .limit = std::to_string(max_coverage_batch)});
+        return response;
+    }
+    // One statement for the whole set: the aggregate is the database's, and a
+    // batch costs one plan whatever its size.
+    const auto found = repository::fixing_read_repository{}.coverage(ctx, request.series_ids);
+    response.series_ids.reserve(found.size());
+    response.first_dates.reserve(found.size());
+    response.last_dates.reserve(found.size());
+    response.counts.reserve(found.size());
+    for (const auto& one : found) {
+        response.series_ids.push_back(one.series_id);
+        response.first_dates.push_back(one.first);
+        response.last_dates.push_back(one.last);
+        response.counts.push_back(one.count);
+    }
+    response.result.outcome = ores::utility::domain::outcome::ok;
+    return response;
+}
+
 }

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/speed-up-the-public-rates-coverage
+#+pr: 5108
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
-#+updated: 2026-11-22
-#+environment:
+#+updated: 2026-11-25
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ GET /api/marketdata/public-rates/coverage on ores.http works for more than 45 se
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-22                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
 
 * Acceptance
 
@@ -41,9 +41,133 @@ GET /api/marketdata/public-rates/coverage on ores.http works for more than 45 se
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The task asks for the reads to be timed before the design changes, and the
+timing answers it.
+
+*What the route costs.* For each of the 142 public series the route reads two
+one-row pages, ascending and descending, and the service runs two statements for
+each: a count and the page. That is 284 forwards and 568 statements.
+
+*What a statement costs.* Measured on the environment's database, with the
+tenant and the party stated so the index is used:
+
+| Query | Planning | Execution |
+|-------+----------+-----------|
+| the last date of one series | 30.7 ms | 0.74 ms |
+| the count of one series | ~26 ms | 3.76 ms |
+
+The plan is what costs: the fixings table is a TimescaleDB hypertable with more
+than 130 chunks, and every statement plans against all of them. Execution is
+under a millisecond, and the index does its work — the read is an index-only
+scan per chunk. So the route's cost is roughly 568 statements × ~30 ms, about
+17 seconds of planning alone, and the forwards' own latency on top takes it past
+the socket's timeout. The table holds 346,893 fixings across 224 series,
+2016-11-22 to 2026-11-24, so the data is not the problem: the statement count is.
+
+*What follows.* The statements have to collapse into one: a read that answers,
+for a set of series, each one's first date, last date and count, which is one
+=group by= statement. Nothing smaller closes the gap: halving the forwards is
+still hundreds of statements, and a prepared statement cannot help because the
+parameter changes per series and the plan expands the chunks either way.
+
+** The design, which the product owner set as data-oriented
+
+The rule the design is held to: load the data the transformation needs in one
+batch, bounded by resources; transform it with standard algorithms over large
+collections; write back in batches with as few transactions as possible. The
+view as it stands is the opposite — it treats each series as an object to
+interrogate, so the cost is per object rather than per collection.
+
+*** The unit of work is the fact set, not the row
+
+The transformation needs one fact per series: =(series_id, first, last, count)=.
+For 142 series that is 142 rows. It does not need the 346,893 fixings, and it
+does not need one series at a time.
+
+*** As built: the columns, not a vector of rows
+
+The message shape was refined while building it. The response is four parallel
+columns — =series_ids=, =first_dates=, =last_dates=, =counts= — rather than a
+vector of one row struct, which is what the model's other bulk reads already do
+(the fixings window answers =dates=, =values=, =sources=, =received_at=). It is
+the columnar form the principle asks for: one contiguous array per field, no
+per-row allocation, and the caller reads them in one pass.
+
+*** One bulk read on the service
+
+=list_market_fixing_coverage=, an operation of =ores.marketdata=:
+
+#+begin_example
+request:  series_ids : std::vector<boost::uuids::uuid>
+response: entries    : std::vector<coverage_row>
+          coverage_row { uuid series_id; year_month_day first; year_month_day last; uint64 count; }
+#+end_example
+
+Behind it one statement, whose shape is the whole point:
+
+#+begin_src sql
+select series_id, min(fixing_date), max(fixing_date), count(*)
+from ores_marketdata_market_fixings_tbl
+where tenant_id = $1 and party_id = $2 and series_id = any($3)
+group by series_id
+order by series_id
+#+end_src
+
+The batch is the fact set and it is bounded by a constant — 1,000 ids, so 142
+series is one call and a larger catalogue costs =ceil(n / 1000)= calls. The
+response is ordered by the database, so the caller never sorts, and the dates
+stay =year_month_day= at the boundary, formatted once at the JSON edge.
+
+It is deliberately not a paged =list_*= with a =series_id_one_of= filter: a page
+plus a total is two statements per call and it forces the caller into a loop,
+which is the shape that produced this task.
+
+*** The gateway joins in memory, in one pass
+
+#+begin_example
+catalogue = read_public_catalogue(req, session)   // already collection-oriented, unchanged
+coverage  = one forward(list_market_fixing_coverage, the catalogue's series ids)
+rows      = merge(catalogue.series by id, coverage.entries by id)   // both sorted, linear
+body      = one reserve, one pass: each row with count > 0 formatted
+#+end_example
+
+No I/O inside the loop. The view keeps its address, its
+={series: {id: {first, last, count}}}= shape, its ETag and its five-minute
+freshness, because the bytes it answers do not change.
+
+This is the house rule the grid views were ported under: *the service counts,
+the gateway joins*.
+
+*** The budget belongs to the forwarding step
+
+=forwarding::forward= takes a deadline, computed once per request; when it is
+spent the answer is 504 with code =upstream-timeout=, which the error contract
+already states. Every composed view inherits it, so no route can outlive the
+socket again. The worst honest answer is measured under a second and the socket
+dies at 45, so the declared budget is 10 s with a floor of 1 s per forward.
+
+** Where the computation could have lived, and why it does not
+
+The product owner asked whether part of this belongs in PostgreSQL itself. It
+was deliberated candidate by candidate; the measurements above are what decide
+most of them.
+
+| Candidate | What it buys | Why it is not the design |
+|-----------+--------------+--------------------------|
+| A SQL function, =..._coverage_fn(uuid[])= | Reuse, pgTAP testability, the set operation in the database | No time: the body is the same =group by= over the hypertable, planned per call, expanding the same chunks. It also invents a second place SQL lives, beside the repositories that hold every other read |
+| A plain view | Nothing the function does not | Inlined into the caller's query, so the same plan |
+| A continuous aggregate | Incremental refresh, the obvious TimescaleDB answer | The data is already one fixing per series per day, so a daily bucket holds as many rows as the base table: the same plan and the same scan. A coarser bucket makes =first= and =last= wrong. The bitemporal =valid_to= filter also makes incremental refresh ambiguous, since a correction closes a row in a past bucket |
+| A projection table, refreshed by the write batch | 224 rows, a ~1 ms read, no chunk expansion, every reader served | It is derived state on a bitemporal table: two write paths must refresh it, and a path that writes fixings without refreshing leaves a triple wrong. It needs a full-recompute fallback and a drift gate |
+| =plan_cache_mode = force_generic_plan= | Cuts the 568 plans to one | A false economy: the 284 round trips dominate anyway, so it cannot save the loop |
+| The whole view as one SQL query | ~30 ms, one statement | It moves presentation into the database and makes the view un-inventoriable: the composed-view contract says the gateway composes from service reads, and the inventory must be able to state the computation |
+
+*** Deferred, with a trigger
+
+The projection is the strongest Postgres-side answer and it is deferred, not
+rejected: if the coverage read is measured above 200 ms at p95, or a second
+reader needs the same triples, add =..._market_fixing_coverage_tbl=, refreshed
+in one statement by both write paths, with a drift gate that compares it with a
+live aggregate. It is premature while one statement answers in 30 ms.
 
 * Measurements
 
@@ -57,9 +181,41 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Public series in the coverage read | 142 | the task's own measurement | 2026-11-22 |
+| Forwards, and statements, for one answer | 284 and 568 | two per series, two statements per forward | the branch head |
+| Planning a one-row read | 30.7 ms | =compass sql -- -c "explain (analyze, timing on) select fixing_date ... order by fixing_date desc limit 1"= | the branch-head database |
+| Executing the same read | 0.74 ms | the same command | the branch-head database |
+| Planning and executing a one-series count | 26 ms and 3.76 ms | the same command with =count(*)= | the branch-head database |
+| The fixings the table holds | 346,893 over 224 series, 2016-11-22 to 2026-11-24 | =compass sql -- -c "select count(*), count(distinct series_id) ..."= | the branch-head database |
+| The NATS client's default wait per request | 30 s | =ores.nats/service/timeouts.hpp= | the branch head |
+| The one statement on real data | 77.4 ms planning, 236.8 ms executing | =compass sql -- -c "explain (analyze, timing on) select f.series_id, min(...), max(...), count(*) ... group by f.series_id"= | the branch-head database, 224 series |
+| The statement's shape after the change | one plan, one scan, 224 rows out | the same command | the branch-head database |
+| The view's budget, and the shortest read | 10 s, and 1 s | =ores.http.nats/forwarding.hpp= | the branch head |
+| The suites the change touches | =ores.marketdata.api=, =ores.marketdata.core=, =ores.http.nats=, =ores.http.marketdata=, all passing | =./compass.sh test run -- -R "..."= | the branch head |
 
 * Notes
+
+The rule the design answers to, in the product owner's words: load the data the
+transformation needs in memory, as much as possible in one batch bounded only by
+the resources available; process it in large collections with standard
+algorithms; write back in batches with as few transactions as possible. It is
+recorded here because it is the reason the design looks the way it does, and it
+applies to every composed view, not to this one alone.
+
+How the acceptance is met by it:
+
+- *About a second on the data the BFF answered in about a second.* One statement
+  of ~30 ms of planning and ~1 ms of execution, one round trip, plus the
+  catalogue's handful of calls: 0.3 to 0.5 s.
+- *Bounded below the socket timeout when the service does not answer.* The
+  deadline is the forwarding step's, so the answer is 504 =upstream-timeout=
+  within the declared 10 s rather than a request that outlives the socket at 45.
+- *A test with a service that stays silent.* The budget is injectable, so the
+  case spends it with no network at all, and the service's own read is proved by
+  its round-trip test and by the repository's test on the statement's shape.
+
+What the change deletes is the reason the task exists: 284 forwards and 568
+statements per answer, on a route a screen reads on every visit.
 
 * Test Scenarios
 
@@ -76,7 +232,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5108][#5108]] | [marketdata,http] Answer the fixings coverage in one statement |
 
 * Review
 
@@ -85,3 +241,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The coverage read answers in one statement. The service's =get_fixing_coverage= takes the batch of series ids and answers four parallel columns — the ids, the first and last dates
+and the counts — for each series that holds a value, ordered by id. The gateway
+makes one call and joins it to the catalogue in memory in one pass.
+
+Measured on the environment's own data, over all 224 series: **77.4 ms planning,
+236.8 ms executing**, against 568 statements that spent about 17 seconds
+planning alone. The one-second acceptance is met with three times the headroom,
+and the plan cost is paid once instead of once per statement.
+
+The view also states the time it may take. A composed view opens a budget at its
+first read and passes what is left to each forward; a spent budget answers 504
+=upstream-timeout= and a reply that never arrives answers the same code through
+the error contract, so no route can outlive the socket again.
+
+What is proved: the statement's cost on real data, and the four suites of the
+components the change touches. What is not: a browser call over HTTP against the
+fleet, which needs a session and was not replayed; the budget is proved by a
+spent budget and a request timeout, not by a service that hangs.
+
+The PostgreSQL-side alternatives are deliberated in the Plan and the deferral of
+a coverage projection carries its trigger there.

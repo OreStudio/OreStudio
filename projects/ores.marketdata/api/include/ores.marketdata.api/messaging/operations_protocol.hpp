@@ -1634,12 +1634,13 @@ struct export_market_data_to_storage_request {
      * @brief The oresmd addresses the run needs, or empty for every series of the tenant.
      *
      * A run gathers the market data its trade set resolves to, so the body carries the series
-     * that answer those addresses and no others. An address no series answers fails the export
-     * and is named, because a run that quietly lacks a quote fails much later, in an engine that
-     * can only report a curve it could not build. Absent keeps the whole-tenant export, which is
-     * what a caller that names no set still needs, and a list that is present but empty writes no
-     * series: a set whose trades name no market data needs none, and that is not the same request
-     * as a caller that asked for everything.
+     * that answer those addresses and no others. An address no series answers is named in the
+     * answer and left out of the body rather than failing the export: a market that answers some
+     * of a run's requirements is still the market the run has, and a run left a curve short says
+     * so when it reaches that curve. Absent keeps the whole-tenant export, which is what a caller
+     * that names no set still needs, and a list that is present but empty writes no series: a set
+     * whose trades name no market data needs none, and that is not the same request as a caller
+     * that asked for everything.
      */
     std::optional<std::vector<std::string>> requirements;
 
@@ -1649,6 +1650,13 @@ struct export_market_data_to_storage_request {
 
 struct export_market_data_to_storage_response {
     bool success = false;
+    /**
+     * @brief What the export wrote, and what the market did not hold.
+     *
+     * The answer states the series it wrote and names every requirement no series answered, so a
+     * caller can put the gap on the run rather than infer it later from a curve that would not
+     * build.
+     */
     std::string message;
     int series_count = 0;
     std::string storage_key;

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 36766B90-DC27-49BA-B667-5EC96D35C6C6
+:END:
+#+title: Take release screenshots with Playwright, not a test scenario
+#+description: Release-note images are captured by the agent against the running GUI; no test scenario is written for them.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+
+Release-note screenshots are captured by the agent against the running GUI, with Playwright, and no test scenario is written for them. A screen a person must click through is still a scenario; a screen whose image only has to exist is a capture the agent takes itself.
+
+*Why:* Screenshots were filed as test scenarios and waited on a person to run them. The agent can drive the browser, so the wait was the cost and the doc added nothing.
+
+*How to apply:* When a release note or a doc needs an image of the running GUI: log in over the BFF with curl, add the ores_web_session cookie to a Playwright context at 1600 pixels with colorScheme dark, open the route, dismiss the setup banner, and screenshot. Save under assets/images/ with the release prefix. Do not create a test_scenario doc for it.

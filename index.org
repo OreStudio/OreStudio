@@ -24,8 +24,8 @@
 #+HTML: </div>
 #+HTML: </figure>
 #+HTML: <figure class="carousel-slide">
-#+HTML: <img src="./assets/images/ore_studio-v0.0.29.png" alt="Market Data Feeds">
-#+HTML: <figcaption class="carousel-caption"><strong>Operations Dashboard</strong><span>See tenants, services, the compute grid and the message queue at a glance, with a status for each.</span></figcaption>
+#+HTML: <img src="./assets/images/ore_studio-v0.0.30.png" alt="Report Run Results">
+#+HTML: <figcaption class="carousel-caption"><strong>Report Results</strong><span>Read what a report run priced: one row per trade, or the same run rolled up to its book or its counterparty.</span></figcaption>
 #+HTML: </figure>
 #+HTML: <figure class="carousel-slide">
 #+HTML: <img src="./assets/images/ore_studio-v0.0.28-grid-overview.png" alt="Compute Grid Overview">

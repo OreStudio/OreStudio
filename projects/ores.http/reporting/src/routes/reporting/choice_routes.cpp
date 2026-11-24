@@ -98,7 +98,8 @@ void choice_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/reporting/choices").catalogue("web_get_reporting_choices", "reporting", "reporting", false)
+    add(router->get("/api/reporting/choices")
+            .catalogue("web_get_reporting_choices", "reporting", "reporting", false)
             .summary("The codes a report's edit form offers")
             .description("The report types, the concurrency policies a report may be published "
                          "under, and the regulatory book types it may scope by. The book types "

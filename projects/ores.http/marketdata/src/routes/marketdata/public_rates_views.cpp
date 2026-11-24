@@ -289,7 +289,8 @@ void public_rates_views::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/marketdata/public-rates").catalogue("web_get_marketdata_public_rates", "market-data", "public_rates", false)
+    add(router->get("/api/marketdata/public-rates")
+            .catalogue("web_get_marketdata_public_rates", "market-data", "public_rates", false)
             .summary("Every public publisher, with its feeds and the series it fills")
             .description("A composed view owned by ores.marketdata: the publishers that state a "
                          "terms page, each with the feeds that carry it and the series it fills. "
@@ -395,7 +396,8 @@ void public_rates_views::register_routes(
                 });
             }));
 
-    add(router->get("/api/marketdata/public-rates/coverage").catalogue("web_get_marketdata_public_rates_coverage", "market-data", "coverage", false)
+    add(router->get("/api/marketdata/public-rates/coverage")
+            .catalogue("web_get_marketdata_public_rates_coverage", "market-data", "coverage", false)
             .summary("The coverage of every series a public publisher fills")
             .description("A composed view owned by ores.marketdata: each public series' first "
                          "date, last date and count of values, which the list reads to say "
@@ -436,7 +438,9 @@ void public_rates_views::register_routes(
                 });
             }));
 
-    add(router->get("/api/marketdata/public-rates/fixings.csv").catalogue("web_get_marketdata_public_rates_fixings_csv", "market-data", "fixings_csv", false)
+    add(router->get("/api/marketdata/public-rates/fixings.csv")
+            .catalogue(
+                "web_get_marketdata_public_rates_fixings_csv", "market-data", "fixings_csv", false)
             .summary("One public publisher's historical fixings, as a file")
             .description("A composed view owned by ores.marketdata: the publisher's series, "
                          "filtered to the date range and the item when the query names them, "

@@ -171,8 +171,7 @@ mm::get_rate_ladder_response get_rate_ladder(const ores::database::context& ctx,
         if (!request.forward_start.empty()) {
             const auto series_start = field_text(*parsed, dt::field::fwd_start);
             const auto spot_starting = request.forward_start == "0D";
-            if (series_start != request.forward_start &&
-                !(spot_starting && series_start.empty()))
+            if (series_start != request.forward_start && !(spot_starting && series_start.empty()))
                 continue;
         }
         if (!request.providers.empty() &&

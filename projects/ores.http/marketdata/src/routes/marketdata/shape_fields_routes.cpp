@@ -111,7 +111,11 @@ void shape_fields_routes::register_routes(
     nats_client& session) {
     using forwarding::guarded;
     const auto rules =
-        router->get("/api/marketdata/series-classification-rules").catalogue("web_get_marketdata_series_classification_rules", "market-data", "series_classification_rules", false)
+        router->get("/api/marketdata/series-classification-rules")
+            .catalogue("web_get_marketdata_series_classification_rules",
+                       "market-data",
+                       "series_classification_rules",
+                       false)
             .summary("The rules that give a series its subclass")
             .description("A composed view owned by ores.marketdata: every classification rule "
                          "the catalogue holds, ordered by the kind of identity it is keyed by, "
@@ -155,7 +159,11 @@ void shape_fields_routes::register_routes(
     registry->register_route(rules);
 
     const auto fields =
-        router->get("/api/marketdata/series-identity-shape-fields").catalogue("web_get_marketdata_series_identity_shape_fields", "market-data", "series_identity_shape_fields", false)
+        router->get("/api/marketdata/series-identity-shape-fields")
+            .catalogue("web_get_marketdata_series_identity_shape_fields",
+                       "market-data",
+                       "series_identity_shape_fields",
+                       false)
             .summary("Every field a family requires or forbids")
             .description("A composed view owned by ores.marketdata: the identity shapes and "
                          "their entries read together, one row per field with the family's "

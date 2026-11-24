@@ -520,7 +520,8 @@ void trading_view_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/books/tree").catalogue("web_get_books_tree", "trading", "tree", false)
+    add(router->get("/api/books/tree")
+            .catalogue("web_get_books_tree", "trading", "tree", false)
             .summary("Every portfolio and every book, woven into the tree a person navigates")
             .description("A composed view owned by ores.trading: one read of the portfolios and "
                          "one of the books, woven into the tree. The answer carries an ETag and "
@@ -535,7 +536,8 @@ void trading_view_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/blotter").catalogue("web_get_blotter", "trading", "blotter", false)
+    add(router->get("/api/blotter")
+            .catalogue("web_get_blotter", "trading", "blotter", false)
             .summary("One page of the blotter, with the rail it is read by")
             .description("A composed view owned by ores.trading: a row is a trade or a whole "
                          "structure, placed on the book it sits in or on the lowest portfolio "

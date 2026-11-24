@@ -208,7 +208,8 @@ void configuration_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/reporting/configurations/{id}").catalogue("web_get_reporting_configurations_id", "reporting", "configurations", false)
+    add(router->get("/api/reporting/configurations/{id}")
+            .catalogue("web_get_reporting_configurations_id", "reporting", "configurations", false)
             .summary("One configuration with what its keys point at")
             .description("The configuration, the name of its type and of its party, the "
                          "analytics it runs and the reports that bind it, so the page shows "

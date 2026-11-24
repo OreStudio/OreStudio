@@ -213,7 +213,8 @@ void party_page_routes::register_routes(
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
     const auto built =
-        router->get("/api/parties").catalogue("web_get_parties", "tenancy", "parties", false)
+        router->get("/api/parties")
+            .catalogue("web_get_parties", "tenancy", "parties", false)
             .summary("Read a page of the parties of the session's own tenant")
             .tags({"parties"})
             .auth_required()

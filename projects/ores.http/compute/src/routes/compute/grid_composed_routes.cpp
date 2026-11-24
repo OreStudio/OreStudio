@@ -339,7 +339,8 @@ void grid_composed_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/operations/grid").catalogue("web_get_operations_grid", "grid", "grid", false)
+    add(router->get("/api/operations/grid")
+            .catalogue("web_get_operations_grid", "grid", "grid", false)
             .summary("The grid's summary, and every node with its machine and its runner")
             .description("A composed view owned by ores.compute: the newest stored sample, the "
                          "host registry that names each node's machine and holds its hardware, "
@@ -411,7 +412,8 @@ void grid_composed_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/operations/grid/series").catalogue("web_get_operations_grid_series", "grid", "series", false)
+    add(router->get("/api/operations/grid/series")
+            .catalogue("web_get_operations_grid_series", "grid", "series", false)
             .summary("The grid's counters and every node's, on one time axis")
             .description("A composed view owned by ores.compute: the counters per bucket, and "
                          "one row of buckets per node with the host registry joined on so a node "
@@ -495,7 +497,8 @@ void grid_composed_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/operations/grid/usage").catalogue("web_get_operations_grid_usage", "grid", "usage", false)
+    add(router->get("/api/operations/grid/usage")
+            .catalogue("web_get_operations_grid_usage", "grid", "usage", false)
             .summary("Who uses the grid: one group for each tenant, or for each party")
             .description("A composed view owned by ores.compute. An operator of the installation "
                          "reads one group for each tenant, entered one at a time because no "

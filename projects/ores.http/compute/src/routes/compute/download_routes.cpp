@@ -127,7 +127,9 @@ void download_routes::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/operations/grid/jobs/workunits/{id}/input").catalogue("web_get_operations_grid_jobs_workunits_id_input", "grid", "workunits", false)
+    add(router->get("/api/operations/grid/jobs/workunits/{id}/input")
+            .catalogue(
+                "web_get_operations_grid_jobs_workunits_id_input", "grid", "workunits", false)
             .summary("The input bundle of one work unit")
             .description("The record is read first on the caller's own token, so a caller who "
                          "may not read the work unit is refused before any byte is read.")
@@ -149,7 +151,8 @@ void download_routes::register_routes(
                 });
             }));
 
-    add(router->get("/api/operations/grid/jobs/results/{id}/output").catalogue("web_get_operations_grid_jobs_results_id_output", "grid", "results", false)
+    add(router->get("/api/operations/grid/jobs/results/{id}/output")
+            .catalogue("web_get_operations_grid_jobs_results_id_output", "grid", "results", false)
             .summary("The output archive of one run")
             .description("The record is read first on the caller's own token, so a caller who "
                          "may not read the run is refused before any byte is read.")

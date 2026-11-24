@@ -322,7 +322,8 @@ void authorisation_queue_routes::register_routes(
     using namespace queue;
     using forwarding::guarded;
     const auto built =
-        router->get("/api/queue/authorisations").catalogue("web_get_queue_authorisations", "operations", "authorisations", false)
+        router->get("/api/queue/authorisations")
+            .catalogue("web_get_queue_authorisations", "operations", "authorisations", false)
             .summary("The authorisation queue, with the deal each request names")
             .description("A composed view owned by ores.inbox: the requests this person may "
                          "decide, read from the inbox service, and the answered tail beside "

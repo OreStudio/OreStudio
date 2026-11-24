@@ -97,7 +97,8 @@ void fixing_series_routes::register_routes(
     nats_client& session) {
     using forwarding::guarded;
     const auto built =
-        router->get("/api/marketdata/fixing-series").catalogue("web_get_marketdata_fixing_series", "market-data", "fixing_series", false)
+        router->get("/api/marketdata/fixing-series")
+            .catalogue("web_get_marketdata_fixing_series", "market-data", "fixing_series", false)
             .summary("One item's fixing series, with the publisher and feeds behind it")
             .description("A composed view owned by ores.marketdata: the series the oresmd URI "
                          "names, its fixings oldest first, the publisher that fills it, and the "

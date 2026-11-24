@@ -423,7 +423,9 @@ void pricing_vocabulary::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/reporting/pricing-engines/vocabulary").catalogue("web_get_reporting_pricing_engines_vocabulary", "reporting", "vocabulary", false)
+    add(router->get("/api/reporting/pricing-engines/vocabulary")
+            .catalogue(
+                "web_get_reporting_pricing_engines_vocabulary", "reporting", "vocabulary", false)
             .summary("The lookups a pricing engine editor draws its controls from")
             .description("The product types, the model and engine pairs, the settings each pair "
                          "carries, the globals, the models, the methods, the sensitivity "

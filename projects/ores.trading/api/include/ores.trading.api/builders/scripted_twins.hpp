@@ -20,8 +20,8 @@
 #ifndef ORES_TRADING_API_BUILDERS_SCRIPTED_TWINS_HPP
 #define ORES_TRADING_API_BUILDERS_SCRIPTED_TWINS_HPP
 
-#include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
+#include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/export.hpp"
 #include <stdexcept>
 #include <string>

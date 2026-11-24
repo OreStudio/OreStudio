@@ -215,7 +215,8 @@ void access_read_routes::register_routes(
         [&session](const http_request& req) {
             return answer(req, session, messaging::get_my_roles_request{}, access_json);
         });
-    add(router->get("/api/accounts/{accountId}/access").catalogue("web_get_accounts_accountid_access", "access", "accounts", false),
+    add(router->get("/api/accounts/{accountId}/access")
+            .catalogue("web_get_accounts_accountid_access", "access", "accounts", false),
         "Read the roles one account holds",
         [&session](const http_request& req) {
             const auto account = req.get_path_param("accountId");
@@ -224,7 +225,8 @@ void access_read_routes::register_routes(
                     http_status::not_found, "not-found", "No account has this identifier."});
             return answer(req, session, messaging::get_account_roles_request{account}, access_json);
         });
-    add(router->get("/api/me/permissions").catalogue("web_get_me_permissions", "access", "permissions", false),
+    add(router->get("/api/me/permissions")
+            .catalogue("web_get_me_permissions", "access", "permissions", false),
         "Read a page of what the caller's roles let them do",
         [&session](const http_request& req) {
             const auto query = read_permission_query(req);
@@ -236,7 +238,8 @@ void access_read_routes::register_routes(
                               query->area, query->search, query->offset, query->limit},
                           page_json);
         });
-    add(router->get("/api/accounts/{accountId}/permissions").catalogue("web_get_accounts_accountid_permissions", "access", "accounts", false),
+    add(router->get("/api/accounts/{accountId}/permissions")
+            .catalogue("web_get_accounts_accountid_permissions", "access", "accounts", false),
         "Read a page of what one account's roles let it do",
         [&session](const http_request& req) {
             const auto account = req.get_path_param("accountId");
@@ -265,7 +268,8 @@ void access_read_routes::register_routes(
                                                              query->limit},
                           roles_json);
         });
-    add(router->get("/api/roles/{roleId}/permissions").catalogue("web_get_roles_roleid_permissions", "access", "roles", false),
+    add(router->get("/api/roles/{roleId}/permissions")
+            .catalogue("web_get_roles_roleid_permissions", "access", "roles", false),
         "Read a page of the catalogue against what one role grants",
         [&session](const http_request& req) {
             const auto role = req.get_path_param("roleId");
@@ -280,7 +284,8 @@ void access_read_routes::register_routes(
                     role, query->area, query->search, *unheld, query->offset, query->limit},
                 page_json);
         });
-    add(router->get("/api/roles/{roleId}/holders").catalogue("web_get_roles_roleid_holders", "access", "roles", false),
+    add(router->get("/api/roles/{roleId}/holders")
+            .catalogue("web_get_roles_roleid_holders", "access", "roles", false),
         "Read a page of the people who hold one role",
         [&session](const http_request& req) {
             const auto role = req.get_path_param("roleId");

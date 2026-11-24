@@ -171,7 +171,8 @@ void feed_key_routes::register_routes(
     ORES_LOG_SEV(lg(), info) << "Registering the feed key reads";
 
     auto fx_route =
-        router->get("/api/synthetic/fx-feeds/key/{key}").catalogue("web_get_synthetic_fx_feeds_key_key", "simulation", "fx_feeds", false)
+        router->get("/api/synthetic/fx-feeds/key/{key}")
+            .catalogue("web_get_synthetic_fx_feeds_key_key", "simulation", "fx_feeds", false)
             .summary("Read one FX feed for a screen")
             .description("The feed's row with its provider, whether it runs, and where its run "
                          "started.")
@@ -182,20 +183,26 @@ void feed_key_routes::register_routes(
     router->add_route(fx_built);
     registry->register_route(fx_built);
 
-    auto ir_route = router->get("/api/synthetic/ir-curve-feeds/key/{key}").catalogue("web_get_synthetic_ir_curve_feeds_key_key", "simulation", "ir_curve_feeds", false)
-                        .summary("Read one IR curve feed for a screen")
-                        .description("The feed's row with its provider, whether it runs, and "
-                                     "where its run started.")
-                        .tags({"synthetic"})
-                        .auth_required()
-                        .handler([&session](const http_request& req) {
-                            return handle_ir_curve_feed(req, session);
-                        });
+    auto ir_route =
+        router->get("/api/synthetic/ir-curve-feeds/key/{key}")
+            .catalogue(
+                "web_get_synthetic_ir_curve_feeds_key_key", "simulation", "ir_curve_feeds", false)
+            .summary("Read one IR curve feed for a screen")
+            .description("The feed's row with its provider, whether it runs, and "
+                         "where its run started.")
+            .tags({"synthetic"})
+            .auth_required()
+            .handler(
+                [&session](const http_request& req) { return handle_ir_curve_feed(req, session); });
     const auto ir_built = ir_route.build();
     router->add_route(ir_built);
     registry->register_route(ir_built);
 
-    auto vol_route = router->get("/api/synthetic/fx-vol-surface-feeds/key/{key}").catalogue("web_get_synthetic_fx_vol_surface_feeds_key_key", "simulation", "fx_vol_surface_feeds", false)
+    auto vol_route = router->get("/api/synthetic/fx-vol-surface-feeds/key/{key}")
+                         .catalogue("web_get_synthetic_fx_vol_surface_feeds_key_key",
+                                    "simulation",
+                                    "fx_vol_surface_feeds",
+                                    false)
                          .summary("Read one FX vol surface feed for a screen")
                          .description("The feed's row with its provider and whether it runs: a "
                                       "surface runs while a provider's simulated source holds it.")

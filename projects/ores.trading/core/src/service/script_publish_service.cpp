@@ -18,7 +18,6 @@
  *
  */
 #include "ores.trading.core/service/script_publish_service.hpp"
-#include "script_diagnostics.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading.core/repository/script_calibration_repository.hpp"
@@ -30,6 +29,7 @@
 #include "ores.trading.core/repository/script_variant_repository.hpp"
 #include "ores.trading.scripting/inputs.hpp"
 #include "ores.trading.scripting/parse.hpp"
+#include "script_diagnostics.hpp"
 #include <algorithm>
 #include <format>
 #include <optional>

@@ -63,7 +63,8 @@ void change_reason_routes::register_routes(
     std::shared_ptr<ores::http::openapi::endpoint_registry> registry,
     nats_client& session) {
     const auto built =
-        router->get("/api/change-reasons").catalogue("web_get_change_reasons", "reference-data", "change_reasons", false)
+        router->get("/api/change-reasons")
+            .catalogue("web_get_change_reasons", "reference-data", "change_reasons", false)
             .summary("Read the reasons a screen offers for a write")
             .tags({"change-reasons"})
             .query_param("offset", "integer", "", false, "Reasons to skip", "0")

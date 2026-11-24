@@ -152,7 +152,8 @@ void tenant_inside_routes::register_routes(
     };
     using ores::http::forwarding::guarded;
 
-    add(router->get("/api/tenants/{code}/parties").catalogue("web_get_tenants_code_parties", "tenancy", "tenants", false),
+    add(router->get("/api/tenants/{code}/parties")
+            .catalogue("web_get_tenants_code_parties", "tenancy", "tenants", false),
         "Read one page of a tenant's parties, inside the tenant",
         [&session](const http_request& req) {
             const auto query = party_page_routes::read_page_query(req);
@@ -166,7 +167,8 @@ void tenant_inside_routes::register_routes(
             });
         });
 
-    add(router->get("/api/tenants/{code}/people").catalogue("web_get_tenants_code_people", "tenancy", "tenants", false),
+    add(router->get("/api/tenants/{code}/people")
+            .catalogue("web_get_tenants_code_people", "tenancy", "tenants", false),
         "Read one page of a tenant's people, inside the tenant",
         [&session](const http_request& req) {
             const auto offset =
@@ -185,7 +187,9 @@ void tenant_inside_routes::register_routes(
             });
         });
 
-    add(router->get("/api/tenants/{code}/accounts/{username}/sign-ins").catalogue("web_get_tenants_code_accounts_username_sign_ins", "tenancy", "tenants", false),
+    add(router->get("/api/tenants/{code}/accounts/{username}/sign-ins")
+            .catalogue(
+                "web_get_tenants_code_accounts_username_sign_ins", "tenancy", "tenants", false),
         "Read one account of a tenant and its sign-ins, inside the tenant",
         [&session](const http_request& req) {
             const auto page = sign_in_routes::read_sign_ins_page(req);
@@ -204,7 +208,8 @@ void tenant_inside_routes::register_routes(
             });
         });
 
-    add(router->get("/api/tenants/{code}/images/{id}").catalogue("web_get_tenants_code_images_id", "tenancy", "tenants", false),
+    add(router->get("/api/tenants/{code}/images/{id}")
+            .catalogue("web_get_tenants_code_images_id", "tenancy", "tenants", false),
         "Read one picture or flag of a tenant, inside the tenant",
         [&session](const http_request& req) {
             const auto id = req.get_path_param("id");

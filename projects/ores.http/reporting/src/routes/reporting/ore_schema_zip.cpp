@@ -204,7 +204,8 @@ void ore_schema_zip::register_routes(
         registry->register_route(built);
     };
 
-    add(router->get("/api/reporting/ore-files/{code}/schema").catalogue("web_get_reporting_ore_files_code_schema", "reporting", "ore_files", false)
+    add(router->get("/api/reporting/ore-files/{code}/schema")
+            .catalogue("web_get_reporting_ore_files_code_schema", "reporting", "ore_files", false)
             .summary("An ORE schema and every schema it includes, as one archive")
             .description("The schema is read at the engine version asked for, and so is every "
                          "schema it includes at once or through another, because a schema is "

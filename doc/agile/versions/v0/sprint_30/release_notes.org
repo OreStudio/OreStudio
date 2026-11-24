@@ -137,6 +137,42 @@ Sprint 30 was named for finishing the move off sqlgen and reflect-cpp, and that 
 
 ** Market Data & Curves
 
+[[proj:assets/images/ore_studio-v0.0.30-instruments.png]]
+
+/Instrument search over the market data the party actually holds./
+
+[[proj:assets/images/ore_studio-v0.0.30-fx-montage.png]]
+
+/The FX spot montage draws one pair's spot, its move and the points behind it./
+
+[[proj:assets/images/ore_studio-v0.0.30-curve.png]]
+
+/A published curve states its pillars, the quotes it was built from, and the moment it published./
+
+[[proj:assets/images/ore_studio-v0.0.30-curve-analytics.png]]
+
+/Curves compared within a currency by default, and across currencies only like for like./
+
+[[proj:assets/images/ore_studio-v0.0.30-calibration.png]]
+
+/IR calibration coverage: one row per curve, and a state that is true./
+
+[[proj:assets/images/ore_studio-v0.0.30-fixings-fx.png]]
+
+/A fixing series states its series identity, its recent fixings and the provider that published them./
+
+[[proj:assets/images/ore_studio-v0.0.30-fixings-ir.png]]
+
+/The same page for an interest rate index: an overnight rate and the history its publisher states./
+
+[[proj:assets/images/ore_studio-v0.0.30-feed-graph.png]]
+
+/The feed graph names what feeds what, each node's state, and the reason a node stopped./
+
+[[proj:assets/images/ore_studio-v0.0.30-quotes-2.png]]
+
+/A second moment of the same board, as the next tick lands./
+
 [[proj:assets/images/ore_studio-v0.0.30-quotes.png]]
 
 /The quotes view shows the market as each vendor quotes it, one board per
@@ -153,6 +189,14 @@ make a series identifiable./
 
 /The setup report states each step of the provisioning, and the one that ended
 with a warning says why./
+
+[[proj:assets/images/ore_studio-v0.0.30-setup-report-rerun.png]]
+
+/A step that ended with warnings can be run again from its report, and the warnings stay in front of the person until none remain./
+
+[[proj:assets/images/ore_studio-v0.0.30-roles.png]]
+
+/Roles on the shared record parts, with a paged list and the people who hold a role./
 
 * ⚠️ Known Issues & Postponed
 

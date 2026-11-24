@@ -11,7 +11,7 @@
 
 * Summary
 
-ORE Studio derives each FX forward from one spot and two published funding curves, and it accepts no keyed points. The result is a parity forward, so it holds no cross-currency basis. A forward set is a published record, written to the database with its provenance. It is computed into a candidate, raised, decided and applied through the lifecycle every derived market object shares ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]]), so it supersedes the set it replaces, tells its readers, and is withdrawn through a request of its own.
+ORE Studio derives each FX forward from one spot and two published funding curves, and it accepts no keyed points. The result is a parity forward, so it holds no cross-currency basis. A forward set is a published record, written to the database with its provenance. It is computed into a candidate, raised, decided and applied through the lifecycle every derived market object shares ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][Publication of derived market data sets]]), so it supersedes the set it replaces, tells its readers, and is withdrawn through a request of its own.
 
 * Detail
 

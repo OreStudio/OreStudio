@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 186B44DD-51EA-45AA-971E-0C2D4D21A6DD
 :END:
-#+title: The publication lifecycle of derived market objects
+#+title: Publication of derived market data sets
 #+description: Every curve, FX forward set and volatility surface becomes authoritative the same way: compute a candidate, raise, decide, apply, and later supersede or withdraw, implemented once and parameterised by the kind.
 #+type: knowledge
 #+level: cross
@@ -31,7 +31,7 @@ closes it, an apply publishes a set, and a withdrawal ends one.
 | Object | What it is | Its states | Its record |
 |--------+------------+------------+------------|
 | The request | The approval that authorises one candidate version of one subject at one as-of | Waiting, held, approved, refused, expired, withdrawn | The inbox's approval request |
-| The set | The published rows of the subject's output series, with the authority over them | Candidate, raised, published, superseded, withdrawn, closed | The publish record ([[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][The lifecycle record of a derived market object]]) |
+| The set | The published rows of the subject's output series, with the authority over them | Candidate, raised, published, superseded, withdrawn, closed | The publication record ([[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][Publication record of a derived market data set]]) |
 
 The distinction keeps the two questions apart. The request answers who authorised the
 act and on what grounds; the set answers which numbers are in use and until
@@ -93,8 +93,8 @@ Six acts make up the lifecycle, and each is documented once for every kind.
 Two further subjects run across the acts, and both are documented once for every
 kind: a person may correct a candidate by hand before the apply, and every act
 that moves a published set tells its readers
-([[id:C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4][Manual marks on a derived market object]],
-[[id:B3F03DBB-EBD1-4649-94E5-6C5C1B67A084][Notification of a change to a published market data set]]).
+([[id:C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4][Manual correction of a derived market data set]],
+[[id:B3F03DBB-EBD1-4649-94E5-6C5C1B67A084][Announcement of change in a published market data set]]).
 
 ** What a kind supplies
 
@@ -132,10 +132,10 @@ states the whole of what a kind owns.
 | The apply, the supersession and the notice | [[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]] |
 | The withdrawal | [[id:E474FB93-2ACE-4981-9761-33E214B3D268][Withdrawal of published market data sets]] |
 | The read | [[id:86158AAD-423A-421A-8BE2-CC5123109297][As-of resolution of published market data sets]] |
-| The record and its subject part | [[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][The lifecycle record of a derived market object]] |
-| A hand value over an automatic write | [[id:C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4][Manual marks on a derived market object]] |
-| Telling a reader that a set moved | [[id:B3F03DBB-EBD1-4649-94E5-6C5C1B67A084][Notification of a change to a published market data set]] |
-| What a reader is given | [[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Reading a published market data set]] |
+| The record and its subject part | [[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][Publication record of a derived market data set]] |
+| A hand value over an automatic write | [[id:C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4][Manual correction of a derived market data set]] |
+| Telling a reader that a set moved | [[id:B3F03DBB-EBD1-4649-94E5-6C5C1B67A084][Announcement of change in a published market data set]] |
+| What a reader is given | [[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Retrieval of a published market data set]] |
 
 ** The record
 
@@ -143,7 +143,7 @@ A publish is one record, whatever its kind, with the columns every kind shares.
 The subject is a part of its own, one table per kind, keyed by the publish. A
 reader of any kind reads one shape. The record holds no values and no checks,
 because those belong to the candidate version the decision covered
-([[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][The lifecycle record of a derived market object]]).
+([[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][Publication record of a derived market data set]]).
 
 ** Where it lives
 

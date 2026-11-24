@@ -17,7 +17,7 @@
 '
 @startuml
 
-title Reading a published market data set: four reads, one record
+title Retrieval of a published market data set: four reads, one record
 
 actor "Reader" as reader
 participant "Screen" as screen

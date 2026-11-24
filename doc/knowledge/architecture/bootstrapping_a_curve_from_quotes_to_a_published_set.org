@@ -156,7 +156,7 @@ state is what makes a set authoritative, and the next section is that act.
 * The hand-off to publication
 
 The candidate becomes authoritative through the lifecycle every derived market
-object shares ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]]). The maker raises a publish naming the subject, the as-of and
+object shares ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][Publication of derived market data sets]]). The maker raises a publish naming the subject, the as-of and
 the candidate's version; a second person decides under the kind's maker and
 checker permissions and the record's four-eyes rule, or a stated rule closes the
 request ([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][Rules for the automatic approval of requests]]); the trader applies the approved request once, which stamps the

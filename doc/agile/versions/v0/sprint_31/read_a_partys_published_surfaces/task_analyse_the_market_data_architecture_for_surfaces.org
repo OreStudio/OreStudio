@@ -81,7 +81,7 @@ claim here is a quotation or a paraphrase of a named page.
 
 *** One lifecycle for every derived object
 
-[[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]] states the rule: a
+[[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][Publication of derived market data sets]] states the rule: a
 curve, an FX forward set and a volatility surface become authoritative the same
 way, and the lifecycle is "implemented once in =ores.marketdata= and
 parameterised by the kind". A kind supplies four things and nothing else:
@@ -331,11 +331,11 @@ every kind, with the kind-specific parts stated once each.
 
 | Page | What it settles |
 |------+-----------------|
-| [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]] | The two objects, the two state machines, the six acts, the declaration a kind supplies, and where the kinds stand |
-| [[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][The lifecycle record of a derived market object]] | One record, its five groups of columns, the subject part per kind, and what the record does not hold |
-| [[id:C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4][Manual marks on a derived market object]] | The precedence rule, where it is enforced, its limit, and the act that has no manual form |
-| [[id:B3F03DBB-EBD1-4649-94E5-6C5C1B67A084][Notification of a change to a published market data set]] | The two channels, what a notice may carry, the recipients and the per-kind seed |
-| [[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Reading a published market data set]] | The list, the record, the comparison and the values, and the per-kind state of each |
+| [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][Publication of derived market data sets]] | The two objects, the two state machines, the six acts, the declaration a kind supplies, and where the kinds stand |
+| [[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][Publication record of a derived market data set]] | One record, its five groups of columns, the subject part per kind, and what the record does not hold |
+| [[id:C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4][Manual correction of a derived market data set]] | The precedence rule, where it is enforced, its limit, and the act that has no manual form |
+| [[id:B3F03DBB-EBD1-4649-94E5-6C5C1B67A084][Announcement of change in a published market data set]] | The two channels, what a notice may carry, the recipients and the per-kind seed |
+| [[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Retrieval of a published market data set]] | The list, the record, the comparison and the values, and the per-kind state of each |
 
 Five diagrams were added: the states of a request, the record and its subject
 parts, the manual precedence at the write and at the read, the withdrawal

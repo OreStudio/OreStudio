@@ -17,7 +17,7 @@
 '
 @startuml
 
-title The lifecycle record of a derived market object
+title Publication record of a derived market data set
 
 hide circle
 skinparam linetype ortho

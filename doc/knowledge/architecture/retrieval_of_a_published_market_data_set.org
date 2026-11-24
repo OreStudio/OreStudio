@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E
 :END:
-#+title: Reading a published market data set
+#+title: Retrieval of a published market data set
 #+description: A party reads the sets it published as a list, a record with its history, a comparison as of, and the points or slices behind them.
 #+type: knowledge
 #+level: cross
@@ -15,9 +15,9 @@ A party reads what it published in four shapes, and the four share one rule. The
 shapes are a list of its sets, a record of one set with the history behind it, a
 comparison of two instants, and the values themselves, read as a curve's points,
 a forward set's ladder or a surface's grid and one of its smiles. Every shape
-answers from the publish record and never from a candidate, and every one of them
-is the same shape whatever the kind, because the lifecycle record is one record
-([[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][The lifecycle record of a derived market object]]).
+answers from the publication record and never from a candidate, and every one of them
+is the same shape whatever the kind, because the publication record is one record
+([[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][Publication record of a derived market data set]]).
 
 The list answers the question a desk asks first, which is not what the numbers
 are but which set is in use. For each subject of the party it states the live
@@ -42,7 +42,7 @@ smile in each row.
 
 ** The list
 
-A row of the list is a publish record with its subject read into the words a
+A row of the list is a publication record with its subject read into the words a
 person recognises, and with the two facts that a reader cannot derive: the state
 and the counts of what the set holds.
 
@@ -106,10 +106,10 @@ second read: the grid already holds it.
 
 #+caption: The four reads a party makes of a published set, and the records each one answers from.
 #+attr_html: :width 100%
-[[proj:doc/knowledge/architecture/reading_a_published_set.png]]
+[[proj:doc/knowledge/architecture/retrieval_of_a_published_set.png]]
 
-Source: [[proj:doc/knowledge/architecture/reading_a_published_set.puml][=reading_a_published_set.puml=]]. Regenerate with
-=plantuml -tpng doc/knowledge/architecture/reading_a_published_set.puml=.
+Source: [[proj:doc/knowledge/architecture/retrieval_of_a_published_set.puml][=retrieval_of_a_published_set.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/retrieval_of_a_published_set.puml=.
 
 ** What a reader never receives
 
@@ -146,7 +146,7 @@ the facts [[id:9487E120-6D43-4EFB-8E28-E9CEBA7EB43A][Read a published surface]] 
 * See also
 
 - [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — the structure note that orders this cluster.
-- [[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][The lifecycle record of a derived market object]] — the record every read answers from.
+- [[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][Publication record of a derived market data set]] — the record every read answers from.
 - [[id:86158AAD-423A-421A-8BE2-CC5123109297][As-of resolution of published market data sets]] — which set a read by as-of takes.
 - [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]] — the comparison as a person uses it.
 - [[id:9487E120-6D43-4EFB-8E28-E9CEBA7EB43A][Read a published surface]] — the reader's journey for a surface.

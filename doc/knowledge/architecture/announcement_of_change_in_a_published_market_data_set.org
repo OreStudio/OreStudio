@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: B3F03DBB-EBD1-4649-94E5-6C5C1B67A084
 :END:
-#+title: Notification of a change to a published market data set
+#+title: Announcement of change in a published market data set
 #+description: Two channels tell a reader that a published set moved: the entity change event and the notice the apply writes, retried until it is delivered.
 #+type: knowledge
 #+level: cross
@@ -58,7 +58,7 @@ field.
 The notice names the subject and the act and never the values. A notice that
 carried the points would be a second copy of the set, and the two copies would
 drift. It carries a link to the record page instead, which is where the values
-are read ([[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Reading a published market data set]]).
+are read ([[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Retrieval of a published market data set]]).
 
 ** The outbox
 
@@ -102,7 +102,7 @@ The gap in the table is the lifecycle's own gap seen from the reader's side. A
 forward set is published and superseded by no notice, and a surface can be
 published but not withdrawn, so it needs no withdrawal notice yet. A kind whose
 row is empty here is a kind whose readers find the change only at their next read
-([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]]).
+([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][Publication of derived market data sets]]).
 
 * See also
 
@@ -110,5 +110,5 @@ row is empty here is a kind whose readers find the change only at their next rea
 - [[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]] — the act that writes the notice.
 - [[id:E474FB93-2ACE-4981-9761-33E214B3D268][Withdrawal of published market data sets]] — the second act that writes one.
 - [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] — the subsystem's contract, which governs both channels.
-- [[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Reading a published market data set]] — where the values are read instead.
-- [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]] — the acts, of which these are the announcements.
+- [[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Retrieval of a published market data set]] — where the values are read instead.
+- [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][Publication of derived market data sets]] — the acts, of which these are the announcements.

@@ -17,7 +17,7 @@
 '
 @startuml
 
-title Manual marks: the precedence of a hand value over an automatic write
+title Manual corrections: the precedence of a hand value over an automatic write
 
 |An automatic writer|
 start

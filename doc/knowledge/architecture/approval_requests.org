@@ -226,7 +226,7 @@ on the next run rather than turning the request back to =waiting=.
 
 A request is approved as it is raised, without a person, only under a stated rule: the tenant's or the installation's approvals mode, or the kind's own code. A request that names parts never closes this way. The system is the decider of record, and the request names the rule. The rules, their order, why each exists and how a screen shows them are [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][Rules for the automatic approval of requests]].
 
-A published market object, such as a curve, is applied by the trader who raised it, through the lifecycle every such object shares ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]]).
+A published market object, such as a curve, is applied by the trader who raised it, through the lifecycle every such object shares ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][Publication of derived market data sets]]).
 
 ** What is generic and what a kind adds
 

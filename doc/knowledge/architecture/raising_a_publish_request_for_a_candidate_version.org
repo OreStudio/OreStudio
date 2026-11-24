@@ -45,7 +45,7 @@ If [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][Rules for the automatic approval o
 
 
 - [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — the structure note that orders this cluster, and where to read this page in it.
-- [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]]
+- [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][Publication of derived market data sets]]
 - [[id:24950B8E-7FC4-4F0A-8AA4-9603B344F970][Candidate computation and storage before publication]]
 - [[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]
 - [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][Rules for the automatic approval of requests]]

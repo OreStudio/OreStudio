@@ -21,8 +21,8 @@ This page orders the cluster. Read it top to bottom when changing how a derived 
 
 The order follows dependency: each page needs the one before it.
 
-1. [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]] — the shape every kind shares, its states, and what a kind supplies.
-2. [[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][The lifecycle record of a derived market object]] — the one record every kind writes, its subject part, and what it does not hold.
+1. [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][Publication of derived market data sets]] — the shape every kind shares, its states, and what a kind supplies.
+2. [[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][Publication record of a derived market data set]] — the one record every kind writes, its subject part, and what it does not hold.
 3. [[id:24950B8E-7FC4-4F0A-8AA4-9603B344F970][Candidate computation and storage before publication]] — where the numbers come from, and why they exist before anyone is asked.
 4. [[id:BF14C932-D699-4224-98DA-0481E49FA394][Raising a publish request for a candidate version]] — how a request is raised for one candidate version, and what it refuses.
 5. [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][Rules for the automatic approval of requests]] — when a raised request closes without a person, and why.
@@ -30,9 +30,9 @@ The order follows dependency: each page needs the one before it.
 7. [[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]] — how an approved request becomes the live set, and how readers learn of it.
 8. [[id:E474FB93-2ACE-4981-9761-33E214B3D268][Withdrawal of published market data sets]] — how a live set is taken out of use.
 9. [[id:86158AAD-423A-421A-8BE2-CC5123109297][As-of resolution of published market data sets]] — what every reader is given.
-10. [[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Reading a published market data set]] — the list, the record, the comparison and the values, as a party reads them.
-11. [[id:C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4][Manual marks on a derived market object]] — a hand value that owns its coordinate against every automatic write.
-12. [[id:B3F03DBB-EBD1-4649-94E5-6C5C1B67A084][Notification of a change to a published market data set]] — the two channels that say a set moved, and what they may not carry.
+10. [[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Retrieval of a published market data set]] — the list, the record, the comparison and the values, as a party reads them.
+11. [[id:C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4][Manual correction of a derived market data set]] — a hand value that owns its coordinate against every automatic write.
+12. [[id:B3F03DBB-EBD1-4649-94E5-6C5C1B67A084][Announcement of change in a published market data set]] — the two channels that say a set moved, and what they may not carry.
 13. [[id:31F9FEF5-4693-4C63-AE93-E74BA88DE175][Fixed tenant and party in transaction-bound contexts]] — the database rule that lets the raise be one transaction and still read the tenant's approval rule.
 
 ** The kinds of object

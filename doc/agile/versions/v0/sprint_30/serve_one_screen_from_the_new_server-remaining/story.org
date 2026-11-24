@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_30:v0:
 #+created: 2026-11-08
-#+updated: 2026-11-12
+#+updated: 2026-11-25
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -27,7 +27,7 @@ it lands, and the browser keeps calling the BFF until the last one does.
 | Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. |
-| Last touched  | 2026-11-13 |
+| Last touched  | 2026-11-25 |
 
 * Acceptance
 
@@ -81,8 +81,8 @@ carries the remaining work from sprint 30's close. This story ships
 | [[id:504FD469-B1A1-4480-9694-34724AD2F2A5][Stand up the reporting part and serve its resources]] | DONE | 2026-11-13 | 2026-11-17 | The gateway has no reporting part. |
 | [[id:DB8C451C-87BE-40B0-A78F-3FC88BEC9D6C][Stand up the compute part and serve the grid resources]] | DONE | 2026-11-17 | 2026-11-17 | The gateway has no compute part. |
 | [[id:2577BE37-74B3-4F0E-8CD2-5918EAEE1E39][Stand up the workflow part and serve workflow and operations]] | DONE | 2026-11-17 | 2026-11-18 | The gateway has no workflow part. |
-| [[id:3727E9F4-3FE9-4B8A-A067-5F7AB6504CE0][Serve the sensitivity templates]] | STARTED | 2026-11-19 | | The analytics area has six BFF routes and no C++ route. |
-| [[id:46F3605C-09F6-469D-AC2A-BD0AE1751541][Decide an owner for the file-backed agile and QA routes]] | STARTED | 2026-11-20 | | Twelve BFF routes read the agile and QA files. No service owns them, and two of them are the sprint board and charts views. |
+| [[id:3727E9F4-3FE9-4B8A-A067-5F7AB6504CE0][Serve the sensitivity templates]] | DONE | 2026-11-19 | 2026-11-20 | The analytics area has six BFF routes and no C++ route. |
+| [[id:46F3605C-09F6-469D-AC2A-BD0AE1751541][Decide an owner for the file-backed agile and QA routes]] | DONE | 2026-11-20 | 2026-11-21 | Twelve BFF routes read the agile and QA files. No service owns them, and two of them are the sprint board and charts views. |
 | [[id:B5C7B068-DA18-4D42-8FC9-D914FE521C77][Serve the reporting composed views]] | DONE | 2026-11-21 | 2026-11-21 | Seven reporting views are answered only by the BFF. |
 | [[id:E3322004-3E88-448F-A5D1-75B705F8F148][Serve the market data composed views]] | DONE | 2026-11-21 | 2026-11-21 | Six market data views are answered only by the BFF. |
 | [[id:ABDC11EE-7538-4BF0-A9A5-E73F553FBDBB][Serve the workflow composed views]] | DONE | 2026-11-18 | 2026-11-19 | Five workflow views and the authorisation queue are answered only by the BFF. |
@@ -186,3 +186,15 @@ carries the remaining work from sprint 30's close. This story ships
 
 -
 
+* Result
+
+The story shipped 67 of its 82 tasks and moved the other 15 to
+[[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]],
+which is where the rest of the parity work is tracked.
+
+Its last two rows were recorded late. [[id:3727E9F4-3FE9-4B8A-A067-5F7AB6504CE0][Serve the sensitivity templates]]
+and [[id:46F3605C-09F6-469D-AC2A-BD0AE1751541][Decide an owner for the file-backed agile and QA routes]]
+had merged as #4916 on 2026-11-20 and #4939 on 2026-11-21, but their rows still
+read STARTED, so the story closed with a table that disagreed with the tasks it
+names. On 2026-11-25 both were closed against their merged pull requests, and
+the table now agrees with the record.

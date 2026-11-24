@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: F493BDDA-C4B5-4E48-A115-6650F224E0F6
+:END:
+#+title: Task: Bootstrap the NOK and BRL overnight curves
+#+description: The curve bootstrap does not implement ACT/ACT.ISMA (NOK-NOWA) or BUS/252 (BRL-CDI), so neither currency has an overnight curve config, and the stored NOWA fixings are read by no curve.
+#+type: task
+#+level: s1
+#+filetags: :clear_the_ir_snags:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A1B95ECA-8526-4859-91EF-E9A46B0BCAA9][Clear the interest rate snags in the backlog]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Seed an overnight curve config for NOK and for BRL. The bootstrap engine must first implement the day count that each index convention states: ACT/ACT.ISMA for =NOK-NOWA= and BUS/252 for =BRL-CDI=.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A1B95ECA-8526-4859-91EF-E9A46B0BCAA9][Clear the interest rate snags in the backlog]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-11-10 in the product backlog; promoted preserving the UUID.
+
+** Why
+
+The synthetic feed quotes both currencies, but the overnight curve configs skip them, because the bootstrap engine does not implement these two day counts. Norges Bank's NOWA is now stored as fixings in the system tenant, so its fixings wait only on the curve. BRL waits also on the terms of the CDI.
+
+** References
+
+- [[id:86EA85AC-87C0-40AB-B102-0BAE47329890][Add the Norges Bank adapter]], which stores NOWA.
+- [[id:F305CDA3-C48F-45B5-B43F-5B220D744528][Add the Banco Central do Brasil adapter]], blocked on the CDI's terms.
+- =projects/ores.sql/populate/refdata/refdata_ir_curve_overnight_configs_populate.sql=, whose header states the gap.
+
+** See also
+
+-

@@ -5,35 +5,47 @@
 #+description: A term index takes its fixings from its overnight curve, and the fixings screen shows both series.
 #+type: story
 #+level: s2
-#+filetags: :inbox:product_backlog:
+#+filetags: :ir:curves:marketdata:sprint_31:v0:
 #+created: 2026-11-24
 #+updated: 2026-11-24
 #+environment: festive-dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 #+predecessor: 0F936789-FEBE-4330-97B9-DFE0837E4466
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 Continued from: [[id:0F936789-FEBE-4330-97B9-DFE0837E4466][Every index a generated trade floats on has a curve and fixings]].
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+A currency whose market serves only an overnight index can still price a
+trade that floats on the term index of that currency: the term index's fixings
+are derived from its overnight curve, so the trade has a curve to discount and
+project with. A person sees both series, the overnight one and the derived
+term one, on the fixings screen and on the curve screens, and each says which
+it is.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
-| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Start with the term index derivation.  |
 | Last touched  | 2026-11-24                               |
 
 * Acceptance
 
--
+- A term index of a currency with an overnight curve holds fixings derived
+  from that curve, at each tenor the trades book.
+- The derived series is named by the term index's own oresmd identity, and its
+  fixings carry the source that states where they came from.
+- The fixings screen lists the derived term series beside the overnight series
+  it comes from.
+- A term index whose currency has no overnight curve stays unserved, and a
+  check says so.
 
 * Tasks
 

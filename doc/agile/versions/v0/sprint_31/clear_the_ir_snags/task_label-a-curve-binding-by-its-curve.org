@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: 9125B649-96F6-4B1E-B245-62082D9E1C37
+:END:
+#+title: Task: Label a curve binding by its curve
+#+description: The Series column of a curve binding shows one arbitrary pillar of the curve and hides that the binding writes the whole curve. Label the binding by its curve and say how many pillars it writes.
+#+type: task
+#+level: s1
+#+filetags: :clear_the_ir_snags:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A1B95ECA-8526-4859-91EF-E9A46B0BCAA9][Clear the interest rate snags in the backlog]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A binding of an interest rate index writes one series for each maturity of the
+curve, such as 12 series for synthetic.bloomberg.dkkdestr, from 1M to 30Y. The
+list and the record page show only the series of the newest observation. All
+pillars tick at the same instant, so the observation id decides which pillar
+shows. The title of that series names =fwd_start= and =tenor= but not =term=, so
+"DKK swap rate, fwd_start=0D, tenor=1D" reads as one overnight series and not as
+a curve. Show the binding by its curve and say how many pillars it writes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A1B95ECA-8526-4859-91EF-E9A46B0BCAA9][Clear the interest rate snags in the backlog]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-10-24 in the product backlog; promoted preserving the UUID.
+
+** Why
+
+The screen states a fact that is not true. A person reading a curve binding sees
+one pillar and concludes the binding writes one series. The count of pillars is
+the fact the person needs, and it is already known when the binding is read.
+
+The task was scaffolded at sprint 28 for the story [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]],
+which closed without it. The scaffold lived only on an unmerged branch, so the
+finding is carried here rather than lost.
+
+** Acceptance
+
+- The list and the record page of an IR curve binding name the curve and the
+  number of pillars it writes, and do not name one pillar.
+- The label does not depend on which pillar has the newest observation.
+- A binding of a single series, such as an FX spot, keeps its series title.
+- A test covers a curve label and a single series label.
+- Check how the series title builder leaves out =term=, and how the bindable
+  sources and the held-by-a-running-feed check treat a curve that has one oresmd
+  URI for many pillars. Record the result in the task.
+
+** References
+
+- Sprint 28 story: Build the bindings screen and clear the oresmd snags
+  ([[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][0EF4BCEC]]), closed 2026-10-21 without this task.
+- The original scaffold is at commit =4e6bc13a74= on
+  =feature/label-a-curve-binding-by-its-curve=.
+
+** See also
+
+-

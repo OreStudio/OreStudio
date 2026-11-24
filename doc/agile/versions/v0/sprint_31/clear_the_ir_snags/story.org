@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: A1B95ECA-8526-4859-91EF-E9A46B0BCAA9
+:END:
+#+title: Story: Clear the interest rate snags in the backlog
+#+description: One task per snag the interest rate work left in the inbox: the TIIE indices, the SWESTR fixing, the seeded curve quotes, the curve configuration, the segment and binding checks, and the fixing source times, so the interest rate data path carries no known defect in the backlog.
+#+type: story
+#+level: s2
+#+filetags: :sprint_31:v0:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The interest rate data path carries no known defect that the backlog still
+holds. Every snag the IBOR arc left behind is a task here, with the evidence
+that named it, and each one either ships a fix with a test or records why the
+system's behaviour is right.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Take the SWESTR and the export failures first. |
+| Last touched  | 2026-11-24                               |
+
+* Acceptance
+
+- Every interest rate snag the inbox held is a task on this story, under the
+  UUID its capture had, carrying the evidence the capture gathered.
+- Each task closes DONE with the fix and the test that holds it, or ABANDONED
+  with the reason the behaviour is right.
+- The product backlog inbox holds no interest rate capture when the story
+  closes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E018113F-F2C6-4723-8376-08F09E0C4BF0][Give the TIIE term indices conventions of their own]] | BACKLOG | | | The TIIE term indices are priced on conventions the curated set does not hold, so a trade on one cannot name its index. |
+| [[id:E70334BC-17DF-49A2-8B54-F9F8DA210B8C][Split MXN-TIIE into the indices it names]] | BACKLOG | | | The MXN overnight curve config names MXN-TIIE as an overnight index, but a fresh database seeds MXN-TIIE only as an IBOR, so refdata_overnight_curve_configs_test fails until provisioning imports the corpus row. |
+| [[id:26C81317-8DD0-48F3-80EB-9A4A6F85406B][Give the MXN-TIIE curve its overnight convention]] | BACKLOG | | | refdata_overnight_curve_configs_test fails on a fresh database: the seeded MXN-TIIE config has no overnight index convention of that id. |
+| [[id:05DA24C9-7A5E-4601-A23C-0C7C504B8279][Check the SWESTR fixing of 2025-12-30]] | BACKLOG | | | A fresh environment stores SWESTR for 2025-12-30 as -0.0603, between 0.01649 and 0.01675 on the days beside it. |
+| [[id:20D96191-9FBE-455C-B2EA-529C31867A76][Project a published curve's series in the same act]] | BACKLOG | | | The refdata curve publish inserts each curve's series in SQL and nothing projects its identity, so the resolver cannot see it and its shape is not checked until a later marketdata publish or a manual backfill runs. |
+| [[id:F493BDDA-C4B5-4E48-A115-6650F224E0F6][Bootstrap the NOK and BRL overnight curves]] | BACKLOG | | | The curve bootstrap does not implement ACT/ACT.ISMA (NOK-NOWA) or BUS/252 (BRL-CDI), so neither currency has an overnight curve config, and the stored NOWA fixings are read by no curve. |
+| [[id:769AED76-EF98-41E1-A38D-1D46E2946147][Seed the quotes every currency curve bootstraps from]] | BACKLOG | | | On a freshly provisioned environment the acme_demo seed gives FX spot series with observations and IR swap series with none, so a run reaches the grid and the engine fails building every yield curve with 'Could not find quote for Mandatory ID IR_SWAP/RATE/<ccy>/0D/1D/1M'. The series the seed writes are type=series with no term, while the engine asks for term-shapen quotes, so an export cannot match them either way. |
+| [[id:09236ECF-1728-4193-ACE7-7E35B9B909C4][Stop the seeded IR swap series breaking the export]] | BACKLOG | | | A fresh database seeds oresmd://ir/<ccy>?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D rows, and the export refuses them with 'has no ORE key: a series has no ORE key'. One such observation fails the whole export, so every report run dies at gather_market_data until the rows are deleted by hand. |
+| [[id:20AC7FA7-F7E2-4154-AF4D-3E922B914FFD][Rename the retired index conventions ACME UK names]] | BACKLOG | | | The curated convention set renamed ILS-SHIR to ILS-TELBORON and HUF-HUFONIA to HUF-BUBORON, but the committed conventions SQL kept the old rows until a regeneration dropped them. The ACME UK curve configuration and today's market still name ILS-SHIR and HUF-HUFONIA, so an ORE run that builds the ILS or HUF overnight curve for ACME UK reads a convention that no longer exists. |
+| [[id:F0CAA6A8-0BD4-4C06-A93A-30AFFA620CDB][Stop the planner drawing an index the FRA builder refuses]] | BACKLOG | | | On a freshly recreated database provisioned acme_demo at main 0d2e6758d7, generate_trades writes 14 of its 16 configs: both interest rate configs are refused, 'The ForwardRateAgreement builder refuses the drawn index: a forward rate agreement needs an Ibor index', so 308 of the 1100 planned trades are missing and 808 are booked. |
+| [[id:624B1770-2694-4868-9E21-87E31E13AECD][State the fixings the inflation curve has]] | BACKLOG | | | The seeded inflation curve states its index, its conventions and its calendar, and states no fixings: the market data series identity view holds zero rows for inflation and the seasonality factors table is empty. An inflation swap that names the index therefore resolves the curve and cannot be priced, because the engine has no fixing series to read and no seasonality to apply. Seed a fixing series per index — monthly values against the currency's calendar, the last fixing the curve's use_last_fixing_date points at — and the seasonality factors the index's convention names, so the family's trades price rather than only book. |
+| [[id:4315AE33-04CE-458E-806B-22D51D4C5D61][Check each fixing source's time against its publisher]] | BACKLOG | | | The seeded publication times of the NDF settlement rate options and of the BOC, IMF and TCMB rates come from market convention and need checking against Annex A and each publisher. |
+| [[id:D8898283-95D2-43A5-938D-34AB1232E2DB][Open a fixing series from the instrument catalogue]] | BACKLOG | | | A fixing series has no page to open from: the instrument catalogue deliberately omits fixing instruments because a fixing is read from the fixings table rather than from observations, so nothing in Market data links to /market-data/fixings and a direct visit is refused for want of an oresmd uri. Catalogue its fixing-bearing series, on the instruments list or a fixings card, so a person can reach the page and a bookmark can address it. |
+| [[id:FB59FE7A-B0D1-4DF7-AFB1-07F426D0C9D9][Inspect a curve's pillars and conventions]] | BACKLOG | | | A row of the IR coverage screen should open one curve: its pillars, conventions, published as-of, and the day's movement. Gemini prototyped the dialog; it needs a server contract before it is built. |
+| [[id:9125B649-96F6-4B1E-B245-62082D9E1C37][Label a curve binding by its curve]] | BACKLOG | | | The Series column of a curve binding shows one arbitrary pillar of the curve and hides that the binding writes the whole curve. Label the binding by its curve and say how many pillars it writes. |
+| [[id:C6D34C20-252A-4C04-9752-1D615B4842CE][Recheck a curve segment's parts when its type changes]] | BACKLOG | | | A curve segment part's insert trigger checks that the segment's element has that part (ores_refdata_validate_curve_segment_part_fn), but writing a new version of the segment with a segment_type of another kind does not re-check the parts it already has. The ORE export refuses the mismatch, so a document never leaves the store wrong, but the store can hold it. A trigger validation sees one column, so the check needs the segment's id and type together: a check on the segment's insert that reads its live parts, or a statement the projection generator writes beside the part validators. Raised in the review of PR #4385. |
+| [[id:0AF5EC1B-A84B-419E-8DDE-78DA92AC19C2][Add the curve publication record and its approval chain]] | BACKLOG | | | Add the curve publication record and the approval chain. The ask, decide, publish and withdraw journeys need a publication record, a market data approval kind and a publish operation. The decision on the record is in the story Add proper curve support to ores.marketdata. |
+
+* Decisions
+
+* Out of scope
+
+-

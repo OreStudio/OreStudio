@@ -8,7 +8,7 @@
 #+filetags: :sprint_health_review:sprint_30:v0:
 #+owner: marco
 #+branch: doc/sprint-30-health-review
-#+pr:
+#+pr: 5083
 #+blocked_on:
 +#+blocked_since:
 #+created: 2026-11-24
@@ -116,7 +116,7 @@ Every number below is measured at commit =fa5d1bfa1c= on =origin/main=, on
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5083][#5083]] | [agile] Close sprint 30 with its review, notes and retrospective |
 
 * Review
 

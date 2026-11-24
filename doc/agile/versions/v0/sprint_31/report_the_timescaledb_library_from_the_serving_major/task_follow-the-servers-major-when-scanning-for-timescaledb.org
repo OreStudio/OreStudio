@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 28BCDF52-82A1-403F-A6FF-683134C1723A
+:END:
+#+title: Task: Follow the server's major when scanning for the timescaledb library
+#+description: Task for: Report when a database's timescaledb version is not on disk
+#+type: task
+#+level: s1
+#+filetags: :report_the_timescaledb_library_from_the_serving_major:sprint_31:v0:
+#+owner: marco
+#+branch: feature/follow-the-servers-major-when-scanning-for-timescaledb
+#+pr: 5099
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:23E4AD4B-3DBD-4A63-8430-4DB38E5DDEBF][Report the timescaledb library from the server that is running]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+compass db status names the timescaledb library directory from the server that is running, not from the client's default installation, so a host whose pg_config reports a different major than the server no longer reports a false no-library-on-disk.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:23E4AD4B-3DBD-4A63-8430-4DB38E5DDEBF][Report the timescaledb library from the server that is running]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+- server_libdir maps the server's version number onto /usr/lib/postgresql/<major>/lib
+- timescaledb_state asks the server for server_version_num, with pg_config kept only as a fallback
+- A database recording the installed version reads as healthy on a host whose pg_config names another major
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5099][#5099]] | [compass] Follow the server's major in the timescaledb scan |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+compass db status now resolves the timescaledb library directory from the
+server that is running.
+
+The defect was in the lookup, not in the scan. =pg_config= on PATH answers for
+the client's default installation, which on this host is PostgreSQL 19, while
+the server that serves every environment database is PostgreSQL 18 and holds
+=timescaledb-2.32.0.so= in its own library directory. The scan therefore read
+=/usr/lib/postgresql/19/lib=, found nothing, and told a database that records
+the installed version that no library was on disk.
+
+- =server_libdir()= takes the server's version number and maps it onto
+  =/usr/lib/postgresql/<major>/lib=, returning None when no such tree exists.
+- =timescaledb_state()= asks the server for =server_version_num= and uses that
+  answer as the key. =pg_config= stays only as the fallback for a host whose
+  server cannot be asked.
+- Two regression tests cover the failure as observed: a tree holding both major
+  18 and 19 must select 18, and a major with no tree must return None.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Library directory the scan reads | /usr/lib/postgresql/18/lib | =_server_libdir()= against the live server | 3f2779d060 |
+| Library directory pg_config names | /usr/lib/postgresql/19/lib | =pg_config --pkglibdir= | 3f2779d060 |
+| Recorded extension version after the fix | 2.32.0 | =select extversion from pg_extension where extname='timescaledb'= | 3f2779d060 |
+| Tests in the timescaledb module | 8 passed | =python3 -m pytest projects/ores.compass/tests/test_compass_timescaledb.py -q= | 3f2779d060 |
+| Tests across the four database modules | 53 passed | =python3 -m pytest= on the timescaledb, env-status, db-connections and schema-fingerprint modules | 3f2779d060 |

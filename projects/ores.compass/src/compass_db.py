@@ -289,6 +289,26 @@ def timescaledb_libraries(pkglibdir=None):
     return sorted(found)
 
 
+def server_libdir(version_num, root=None):
+    """The library directory of the server major that reports @p version_num.
+
+    Debian keeps one tree per major. The directory follows from the server's
+    own version number, not from `pg_config`: that answers for the client's
+    default installation, which can be a different major from the server that
+    is running, and then the scan looks in a directory that never held the
+    extension. Returns None when no such tree exists.
+    """
+    root = Path("/usr/lib/postgresql") if root is None else Path(root)
+    try:
+        major = int(str(version_num).strip()) // 10000
+    except (TypeError, ValueError):
+        return None
+    if major < 1:
+        return None
+    candidate = root / str(major) / "lib"
+    return str(candidate) if candidate.is_dir() else None
+
+
 def timescaledb_verdict(recorded, installed):
     """What to say about one database's timescale extension.
 
@@ -303,6 +323,19 @@ def timescaledb_verdict(recorded, installed):
         return f"{recorded}, and its library is on disk", "ok"
     on_disk = ", ".join(installed)
     return (f"recorded {recorded}, but only {on_disk} is on disk", "critical")
+
+
+def _server_libdir(env, db_name, pw):
+    """Ask the server for its version, and take the directory that follows."""
+    try:
+        out = _psql(env, "-At", "-c",
+                    "SELECT current_setting('server_version_num');",
+                    password=pw, database=db_name, check=False, capture=True)
+    except OSError:
+        return None
+    if out.returncode:
+        return None
+    return server_libdir((out.stdout or "").strip())
 
 
 def timescaledb_state(env):
@@ -326,14 +359,15 @@ def timescaledb_state(env):
     version = (out.stdout or "").strip()
     if version:
         recorded = version
-    pkglibdir = None
-    try:
-        probe = subprocess.run(["pg_config", "--pkglibdir"], capture_output=True,
-                               text=True, check=False)
-        if probe.returncode == 0 and probe.stdout.strip():
-            pkglibdir = probe.stdout.strip()
-    except OSError:
-        pkglibdir = None
+    pkglibdir = _server_libdir(env, db_name, pw)
+    if pkglibdir is None:
+        try:
+            probe = subprocess.run(["pg_config", "--pkglibdir"],
+                                   capture_output=True, text=True, check=False)
+            if probe.returncode == 0 and probe.stdout.strip():
+                pkglibdir = probe.stdout.strip()
+        except OSError:
+            pkglibdir = None
     return {"recorded": recorded, "installed": timescaledb_libraries(pkglibdir)}
 
 

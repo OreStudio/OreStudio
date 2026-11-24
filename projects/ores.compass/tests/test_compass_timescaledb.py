@@ -58,3 +58,19 @@ def test_the_libraries_on_disk_are_read_from_the_directory(tmp_path):
 def test_the_fix_statement_is_the_documented_one():
     assert compass_db.TIMESCALEDB_FIX == (
         'compass sql -- -c "alter extension timescaledb update;"')
+
+
+def test_the_library_directory_follows_the_servers_own_major(tmp_path):
+    """pg_config on PATH answers for the client's default installation, and
+    that can be a different major from the server that is running."""
+    (tmp_path / "18" / "lib").mkdir(parents=True)
+    (tmp_path / "19" / "lib").mkdir(parents=True)
+
+    assert compass_db.server_libdir(180004, root=tmp_path) == str(
+        tmp_path / "18" / "lib")
+
+
+def test_a_major_with_no_tree_has_no_directory(tmp_path):
+    (tmp_path / "18" / "lib").mkdir(parents=True)
+
+    assert compass_db.server_libdir(190000, root=tmp_path) is None

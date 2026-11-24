@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :housekeeping:retention:storage:architecture:structure_note:
 #+created: 2026-11-24
-+#+updated: 2026-11-24
+#+updated: 2026-11-24
 
 * Summary
 

@@ -2,7 +2,7 @@
 :ID: 70D7AC45-8FD9-4C82-939B-6150605EAF84
 :END:
 #+title: Story: Pick up the v0.0.30 release across the fleet
-#+description: Take the release the v0.0.30 tag names onto this environment before any other: the newest vcpkg ports, the compiler and standard library the dist-upgrade installed, and PostgreSQL 19 in place of 18, so the fleet moves once rather than twice.
+#+description: Take the release the v0.0.30 tag names onto this environment before any other: the newest vcpkg ports and the compiler and standard library the dist-upgrade installed. PostgreSQL 19 was proven on a throwaway cluster and stays out of this move: TimescaleDB has no package for 19 in Debian, in PGDG or in its own repository, so the database stays on 18 until it does.
 #+type: story
 #+level: s2
 #+filetags: :sprint_31:v0:
@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-This environment runs the released toolchain, the released ports and PostgreSQL 19, proven here before the fleet is touched.
+This environment runs the released toolchain and the released ports, and the database move to PostgreSQL 19 is proven here and waits on the one package that blocks it.
 
 * Status
 
@@ -32,7 +32,7 @@ This environment runs the released toolchain, the released ports and PostgreSQL 
 
 - The vcpkg submodule is at the commit the release move names, and the manifest resolves against it.
 - The whole build compiles on the dist-upgraded compiler and standard library.
-- PostgreSQL 19 holds the database, and its schema and populate match the 18 it replaced.
+- PostgreSQL 19 builds the whole database on a throwaway cluster, with the schema and populate matching the 18 it replaces, and the move waits on a TimescaleDB package for 19.
 - The fleet starts and answers on the new toolchain and the new database.
 - The move is written down, with the root steps recorded, so the fleet rollout is the same list.
 
@@ -40,9 +40,25 @@ This environment runs the released toolchain, the released ports and PostgreSQL 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:95518D2B-205D-4B37-B362-A63D7A83BCA2][Move the toolchain and the database to the release]] | STARTED | 2026-11-24 | | The vcpkg submodule moves to the released ports, the environment is compiled by the compiler the dist-upgrade installed, and PostgreSQL 19 replaces 18 with the same schema and populate. Every step is proven here first, and the root steps are recorded for the fleet. |
+| [[id:95518D2B-205D-4B37-B362-A63D7A83BCA2][Move the toolchain and the database to the release]] | STARTED | 2026-11-24 | | The vcpkg submodule moves to the released ports and the environment is compiled by the compiler the dist-upgrade installed. PostgreSQL 19 is proven on a throwaway cluster and the move itself waits: TimescaleDB has no 19 package. |
 
 * Decisions
+
+** 2026-11-24 — the database stays on PostgreSQL 18 for this release
+
+The 19 move was proven end to end on a throwaway cluster: =initdb= on 19.0, the
+whole =compass db recreate=, 853 tables against 18's 855 with the difference being
+pgTAP's own two, and both required extensions present. It stops there because
+TimescaleDB has no package for 19 in any of the three places it could come from:
+the Debian forky archive, PGDG's forky and trixie suites (both stop at
+=postgresql-18-timescaledb=), and TimescaleDB's own packagecloud repository, whose
+forky index is empty.
+
+Without it the create scripts guard each hypertable and keep plain tables, so
+nothing breaks. The loss is hypertables, compression and retention on the
+market-data and session tables, which is a heavier cost for the fleet than being
+one major version behind. The move becomes its own work when the package lands,
+and the tables convert in place then.
 
 * Out of scope
 

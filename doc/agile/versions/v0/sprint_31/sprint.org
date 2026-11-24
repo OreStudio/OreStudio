@@ -44,6 +44,9 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 |-------+-------+-------+-----+-------|
 | [[id:C664D147-7520-4C4E-A421-51AE184DBF3D][Story: Open sprint 31]] | DONE | 2026-11-24 | 2026-11-24 | Scaffold and wire sprint 31, and carry the leftovers. |
 | [[id:70D7AC45-8FD9-4C82-939B-6150605EAF84][Pick up the v0.0.30 release across the fleet]] | DONE | | 2026-11-24 | Take the release the v0.0.30 tag names onto this environment before any other: the newest vcpkg ports, the compiler the dist-upgrade installed, and PostgreSQL 19. |
+| [[id:58E7AD14-ED53-478B-AA37-34FE6607E794][Read a party's published surfaces]] | BACKLOG | | | A party's surfaces get the published-curve pattern: a list, a record page with its grid and smiles, a comparison as of and its history. |
+| [[id:305E3F4D-6A79-40F3-9F57-5D149A142B73][Drive a party's crosses from its driver pairs]] | BACKLOG | | | A cross is driven: its surface implied from driver pairs by correlation, or by a basis spread over one driver, configured per party. |
+| [[id:91E40364-DB1A-4EA4-AE99-4904849AED22][Give each party its correlation market data, end to end]] | BACKLOG | | | Correlations reach a party: the simulator's quotes, the party's own correlation tables, the screens that maintain them, and their use in driven surfaces and ORE. |
 
 ** Hotfixes
 

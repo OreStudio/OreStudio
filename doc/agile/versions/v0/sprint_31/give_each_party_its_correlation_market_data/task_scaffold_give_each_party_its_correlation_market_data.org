@@ -5,14 +5,14 @@
 #+description: Story scaffolding rides this task: the correlation story, the generator story re-scoped to see but never use, and the driven story pointed at the correlation tables.
 #+type: task
 #+level: s1
-#+filetags: :give_each_party_its_correlation_market_data:inbox:v0:
+#+filetags: :sprint_31:v0:
 #+owner: marco
 #+branch: feature/correlation-and-generator-stories
 #+pr: 4816
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
-#+updated: 2026-11-17
+#+updated: 2026-11-24
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 

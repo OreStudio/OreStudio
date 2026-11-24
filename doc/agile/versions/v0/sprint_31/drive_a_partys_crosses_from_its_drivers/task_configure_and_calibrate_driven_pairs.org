@@ -1,18 +1,18 @@
 :PROPERTIES:
-:ID: 7A39E1DC-6F9D-46D5-8932-FDA6588095E5
+:ID: 6C8D07FA-8CF8-48DB-A2FD-9C8CF5B05EA6
 :END:
-#+title: Task: Choose where a correlation-driven cross reads its correlation
-#+description: A correlation-driven surface needs a correlation between its drivers that no quote states; decide whether it is read from the party's own spot history, implied from a previous cross surface, or set by the party, and record why.
+#+title: Task: Configure a party's driven pairs and calibrate their surfaces
+#+description: Model the party's driven pairs, their drivers and their relationship, copy them with the party's blueprints, and calibrate a driven surface from its driver surfaces.
 #+type: task
 #+level: s1
-#+filetags: :drive_a_partys_crosses_from_its_drivers:inbox:v0:
+#+filetags: :sprint_31:v0:
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: 29A8F8A2-25FC-4858-B233-B3F985C4FE43
+#+blocked_since: 2026-11-17
 #+created: 2026-11-17
-#+updated: 2026-11-17
+#+updated: 2026-11-24
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,22 +20,23 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The correlation a driven cross uses has a stated, replaceable source.
+A party's driven cross is published from its drivers.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | ABANDONED                              |
+| State        | BACKLOG                              |
 | Parent story | [[id:305E3F4D-6A79-40F3-9F57-5D149A142B73][Drive a party's crosses from its driver pairs]] |
-| Now          | Abandoned: the correlation is read from the party's tables. |
+| Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing; the work is the correlation story. |
-| Last touched | 2026-11-17 |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-17                               |
 
 * Acceptance
 
-- The choice and its reasons are recorded in the story's Decisions, with the data each option needs and whether a real vendor could supply it.
+- A party configures EUR/GBP as correlation-driven by EUR/USD and GBP/USD, and its published surface names those drivers.
+- A basis-driven pair publishes its driver's ATM plus the stated spread.
 
 * Plan
 
@@ -58,10 +59,6 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
-
-- Abandoned (2026-11-17, with the person): each party holds its own correlation tables,
-  maintained on screens like its other market data, so the source of a driven cross's
-  correlation is the party's tables. The whole flow is the story [[id:91E40364-DB1A-4EA4-AE99-4904849AED22][Give each party its correlation market data, end to end]].
 
 * Test Scenarios
 

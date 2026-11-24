@@ -5,14 +5,14 @@
 #+description: The latent run quotes a spot only for the USD pairs, so 21 of the 35 blueprint pairs, the crosses, have no latent surface; imply each cross's surface from its two legs' latent surfaces and the simulator's correlation between them, never from the cross's own spot.
 #+type: task
 #+level: s1
-#+filetags: :give_each_party_its_correlation_market_data:inbox:v0:
+#+filetags: :sprint_31:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-17
-#+updated: 2026-11-18
+#+updated: 2026-11-24
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 

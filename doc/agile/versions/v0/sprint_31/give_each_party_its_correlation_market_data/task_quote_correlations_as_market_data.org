@@ -1,18 +1,18 @@
 :PROPERTIES:
-:ID: 48A82366-AD5C-44E6-B6C3-777EC54B9DB8
+:ID: C28EAA6E-D6F2-42B5-A71F-AA2099CEA3D3
 :END:
-#+title: Task: Hold each party's correlation tables and maintain them on screens
-#+description: Give each party its own correlation tables, built from the quotes it receives and copied with its configuration at provisioning, and screens to browse, override and audit them, as its other market data has.
+#+title: Task: Quote correlations as market data from the simulator
+#+description: The simulator correlates its series through shared factors but publishes no correlation; quote the correlations it simulates through vendor contributors, under the correlation datum's identity, as it quotes rates and volatilities.
 #+type: task
 #+level: s1
-#+filetags: :give_each_party_its_correlation_market_data:inbox:v0:
+#+filetags: :sprint_31:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on: DF7C448C-77D8-42D3-B35D-E33493BE1A24
 #+blocked_since: 2026-11-17
 #+created: 2026-11-17
-#+updated: 2026-11-17
+#+updated: 2026-11-24
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A party maintains its own correlations and can say where each value came from.
+A party subscribed to a vendor receives correlation quotes consistent with the spot and volatility it receives.
 
 * Status
 
@@ -35,8 +35,8 @@ A party maintains its own correlations and can say where each value came from.
 
 * Acceptance
 
-- A provisioned party holds correlation tables built from its received quotes.
-- A screen shows a party's correlations, lets an authorised person override a value with a reason, and shows each value's lineage and history.
+- Each correlation quote names its two operands under the correlation datum and is classified by them.
+- The quoted correlations match the simulator's within its contributors' noise.
 
 * Plan
 

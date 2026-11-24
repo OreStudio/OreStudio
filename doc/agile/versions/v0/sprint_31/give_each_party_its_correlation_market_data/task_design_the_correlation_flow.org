@@ -1,18 +1,18 @@
 :PROPERTIES:
-:ID: 29A8F8A2-25FC-4858-B233-B3F985C4FE43
+:ID: DF7C448C-77D8-42D3-B35D-E33493BE1A24
 :END:
-#+title: Task: Use a party's correlations in its driven surfaces and its ORE runs
-#+description: Feed a party's correlation tables to the calibration of its correlation-driven crosses and to the ORE market it prices with, through curve_correlation_config.
+#+title: Task: Design the end-to-end flow of correlation data
+#+description: Analysis first: trace a correlation from its source to its uses, naming what exists (the correlation datum and its classification, ORE's CORRELATION type, curve_correlation_config, the simulator's shared factors) and what is missing, and record the design as knowledge before any build.
 #+type: task
 #+level: s1
-#+filetags: :give_each_party_its_correlation_market_data:inbox:v0:
+#+filetags: :sprint_31:v0:
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on: 48A82366-AD5C-44E6-B6C3-777EC54B9DB8
-#+blocked_since: 2026-11-17
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-11-17
-#+updated: 2026-11-17
+#+updated: 2026-11-24
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A party's correlations are the ones its driven surfaces and its prices use.
+One recorded design for how a correlation is quoted, received, held, maintained and used.
 
 * Status
 
@@ -30,13 +30,13 @@ A party's correlations are the ones its driven surfaces and its prices use.
 | Parent story | [[id:91E40364-DB1A-4EA4-AE99-4904849AED22][Give each party its correlation market data, end to end]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Begin the design.                      |
 | Last touched | 2026-11-17                               |
 
 * Acceptance
 
-- A correlation-driven cross reads its correlation from the party's tables, and the publish names it.
-- An ORE run of the party carries its correlations as CORRELATION quotes.
+- A knowledge doc states the source (simulated, and later a vendor's), the identity of a correlation quote, the party's tables, the maintenance screens, and the consumers (driven surfaces, ORE), each with what exists and what is missing.
+- The doc says how a correlation stays consistent with the spot and volatility data it relates.
 
 * Plan
 

@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: F0CAA6A8-0BD4-4C06-A93A-30AFFA620CDB
+:END:
+#+title: Task: Stop the planner drawing an index the FRA builder refuses
+#+description: On a freshly recreated database provisioned acme_demo at main 0d2e6758d7, generate_trades writes 14 of its 16 configs: both interest rate configs are refused, 'The ForwardRateAgreement builder refuses the drawn index: a forward rate agreement needs an Ibor index', so 308 of the 1100 planned trades are missing and 808 are booked.
+#+type: task
+#+level: s1
+#+filetags: :clear_the_ir_snags:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A1B95ECA-8526-4859-91EF-E9A46B0BCAA9][Clear the interest rate snags in the backlog]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+On a freshly recreated database provisioned with acme_demo at main 0d2e6758d7,
+the generate_trades step writes fourteen of its sixteen configs. The two
+interest rate configs, ACME ACCOUK rates and ACME ACCOUS rates, are not written:
+
+  warn: not written: ACME ACCOUK rates for ACME Corporation UK plc: The
+  ForwardRateAgreement builder refuses the drawn index: a forward rate
+  agreement needs an Ibor index
+
+The other classes are written; the population holds 808 trades where the mix
+states 1100, and the 308 missing ones are those two configs.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A1B95ECA-8526-4859-91EF-E9A46B0BCAA9][Clear the interest rate snags in the backlog]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-11-17 in the product backlog; promoted preserving the UUID.
+
+** Why
+
+The rates planner draws a forward rate agreement over an overnight index for
+some slots, and the builder refuses it because a forward rate agreement's index
+must be an IBOR by definition. Either the planner should draw an IBOR index for
+that product, or the builder should accept what the planner draws; the
+definition settles it in the planner's favour, so the planner is the side to fix.
+
+Until it is fixed, a fresh provision loses a third of the rate trades, and any
+measurement over the rate book is over two thirds of it. Found while proving the
+population fix in #4828 on a recreated database.
+
+** References
+
+-
+
+** See also
+
+-

@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: 4315AE33-04CE-458E-806B-22D51D4C5D61
+:END:
+#+title: Task: Check each fixing source's time against its publisher
+#+description: The seeded publication times of the NDF settlement rate options and of the BOC, IMF and TCMB rates come from market convention and need checking against Annex A and each publisher.
+#+type: task
+#+level: s1
+#+filetags: :clear_the_ir_snags:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A1B95ECA-8526-4859-91EF-E9A46B0BCAA9][Clear the interest rate snags in the backlog]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Check the seeded publication time, zone and calendar of each fixing source
+whose time came from market convention against its primary source, and correct
+the seed where they differ:
+
+| Source | Seeded time and zone | Check against |
+|--------+----------------------+---------------|
+| =KFTC18= | 15:30 Asia/Seoul | Annex A, Seoul Money Brokerage Services |
+| =TAIFX1= | 11:00 Asia/Taipei | Annex A, Taipei Forex Inc. |
+| =SAEC= | 09:15 Asia/Shanghai | Annex A, CFETS |
+| =FBIL= | 13:30 Asia/Kolkata | Annex A, Financial Benchmarks India |
+| =PDSPESO= | 11:30 Asia/Manila | Annex A, Philippine Dealing System |
+| =JISDOR= | 10:00 Asia/Jakarta | Annex A, Bank Indonesia |
+| =PTAX= | 13:00 America/Sao_Paulo | Annex A, Banco Central do Brasil |
+| =BOC= | 16:30 America/Toronto | Bank of Canada |
+| =IMF= | 12:00 Europe/London | International Monetary Fund |
+| =TCMB= | 15:30 Europe/Istanbul | Central Bank of the Republic of Türkiye |
+
+=PDSPESO= also takes the =WeekendsOnly= calendar, because the calendar dataset
+holds no Philippine calendar.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A1B95ECA-8526-4859-91EF-E9A46B0BCAA9][Clear the interest rate snags in the backlog]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-11-23 in the product backlog; promoted preserving the UUID.
+
+** Why
+
+The seeds are live reference data: a non-deliverable trade settles on its
+source's fixing at its time, so a wrong time fixes the wrong market. The task
+Hold the fixing sources and their cuts as reference data seeded these times from
+market convention, and the review of #5052 asked for the check to be tracked.
+
+** References
+
+- =projects/ores.sql/populate/refdata/refdata_fixing_sources_populate.sql=
+- Annex A to the 1998 FX and Currency Option Definitions.
+
+** See also
+
+- [[id:5AF9CEEF-A878-443A-8C32-C6E9F6C26FC9][Fixing sources for option cuts and non-deliverable currencies]]
+- [[id:D8405F74-8E0A-43FF-96DA-C846E988911A][Hold the fixing sources and their cuts as reference data]]

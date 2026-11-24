@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: C6D34C20-252A-4C04-9752-1D615B4842CE
+:END:
+#+title: Task: Recheck a curve segment's parts when its type changes
+#+description: A curve segment part's insert trigger checks that the segment's element has that part (ores_refdata_validate_curve_segment_part_fn), but writing a new version of the segment with a segment_type of another kind does not re-check the parts it already has. The ORE export refuses the mismatch, so a document never leaves the store wrong, but the store can hold it. A trigger validation sees one column, so the check needs the segment's id and type together: a check on the segment's insert that reads its live parts, or a statement the projection generator writes beside the part validators. Raised in the review of PR #4385.
+#+type: task
+#+level: s1
+#+filetags: :clear_the_ir_snags:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A1B95ECA-8526-4859-91EF-E9A46B0BCAA9][Clear the interest rate snags in the backlog]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(One paragraph: the idea.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A1B95ECA-8526-4859-91EF-E9A46B0BCAA9][Clear the interest rate snags in the backlog]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-11-02 in the product backlog; promoted preserving the UUID.
+
+** Why
+
+(Motivation, problem being solved, related context.)
+
+** References
+
+-
+
+** See also
+
+-

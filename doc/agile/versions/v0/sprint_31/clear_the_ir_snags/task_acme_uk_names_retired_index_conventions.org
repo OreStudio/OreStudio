@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 20AC7FA7-F7E2-4154-AF4D-3E922B914FFD
+:END:
+#+title: Task: Rename the retired index conventions ACME UK names
+#+description: The curated convention set renamed ILS-SHIR to ILS-TELBORON and HUF-HUFONIA to HUF-BUBORON, but the committed conventions SQL kept the old rows until a regeneration dropped them. The ACME UK curve configuration and today's market still name ILS-SHIR and HUF-HUFONIA, so an ORE run that builds the ILS or HUF overnight curve for ACME UK reads a convention that no longer exists.
+#+type: task
+#+level: s1
+#+filetags: :clear_the_ir_snags:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A1B95ECA-8526-4859-91EF-E9A46B0BCAA9][Clear the interest rate snags in the backlog]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=conventions.tsv= on main states =ILS-TELBORON= and =HUF-BUBORON= as the overnight indices of
+the ILS and HUF deposit and OIS conventions, and has no =ILS-SHIR= or =HUF-HUFONIA= index row.
+The committed =refdata_conventions_artefact_populate.sql= still carried the old names until a
+regeneration, so main's own =conventions-dataset= check fails against it. Regenerating, as
+[[id:13EA0CF7-5C33-4A0E-A218-5EBB1BC51CB8][the ten-year surface task]] had to, drops the two index rows.
+
+Four places still name them:
+
+- =projects/ores.seeder/datasets/acme_corporation/generate_configuration_data.py=, lines 314-315.
+- =projects/ores.sql/populate/acme/acme_uk_curve_configuration_artefact_populate.sql=, lines 80-81.
+- =projects/ores.sql/populate/acme/acme_uk_todays_market_artefact_populate.sql=, lines 109-110.
+- =projects/ores.sql/populate/fpml/fpml_business_center_artefact_populate.sql=, line 1182, the
+  publication calendar of the index.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A1B95ECA-8526-4859-91EF-E9A46B0BCAA9][Clear the interest rate snags in the backlog]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-11-16 in the product backlog; promoted preserving the UUID.
+
+** Why
+
+An ORE run that builds ACME UK's ILS or HUF overnight curve asks for a convention the curated set
+no longer publishes. Provisioning does not notice: a recreated database with the regenerated SQL
+provisions through all 17 steps. The fault waits for the first valuation that needs one of the
+two curves. The fix is to regenerate the ACME configuration from the curated names, and to decide
+whether the business-centre calendar follows the index or keeps its own name.
+
+** References
+
+- =grep -rn "ILS-SHIR\|HUF-HUFONIA" projects= lists the four sites above.
+- Commit d02f80d7df, "[sql] Publish one curated convention set through DQ", which brought the
+  new names into the TSV.
+
+** See also
+
+- [[id:13EA0CF7-5C33-4A0E-A218-5EBB1BC51CB8][Surface every pair the ladder carries, out to ten years]] -- the regeneration that exposed it.

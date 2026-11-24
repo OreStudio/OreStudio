@@ -1,17 +1,24 @@
 :PROPERTIES:
 :ID: E70334BC-17DF-49A2-8B54-F9F8DA210B8C
 :END:
-#+title: MXN-TIIE means two indices, and a fresh database holds only one
+#+title: Task: Split MXN-TIIE into the indices it names
 #+description: The MXN overnight curve config names MXN-TIIE as an overnight index, but a fresh database seeds MXN-TIIE only as an IBOR, so refdata_overnight_curve_configs_test fails until provisioning imports the corpus row.
-#+type: capture
-#+level: cross
-#+filetags: :refdata:conventions:ir_curves:sql_tests:
-#+created: 2026-11-11
-#+updated: 2026-11-11
+#+type: task
+#+level: s1
+#+filetags: :clear_the_ir_snags:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A1B95ECA-8526-4859-91EF-E9A46B0BCAA9][Clear the interest rate snags in the backlog]] story. It captures the goal, current status, acceptance, and any notes or results.
 
-* What
+* Goal
 
 Decide what the MXN overnight curve is named after, and make a fresh database agree with a provisioned one.
 
@@ -22,7 +29,73 @@ The id =MXN-TIIE= has two meanings:
 
 =refdata_ir_curve_overnight_configs_populate.sql= seeds an overnight curve config named =MXN-TIIE=. Test 3 of =refdata_overnight_curve_configs_test.sql= looks that name up among the overnight conventions. On a recreated database, 18 of the 19 configs it checks find a seeded convention and =MXN-TIIE= finds none, so the test fails. After system provisioning the corpus row arrives and the test passes.
 
-* Why
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A1B95ECA-8526-4859-91EF-E9A46B0BCAA9][Clear the interest rate snags in the backlog]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-11-11 in the product backlog; promoted preserving the UUID.
+
+** Why
 
 A pgTAP suite that passes only after provisioning hides real failures behind a known one: on 2026-11-11 the full suite on a recreated database reported 1 failure in 89 files, and it took a trace to show the failure was this gap and not the change under test.
 
@@ -35,7 +108,7 @@ Options:
 - Hold MXN back with the other misnamed indices until that decision.
 - At least, make test 3 state that it needs the =ore.conventions= rows, so a failure on a fresh database says why.
 
-* References
+** References
 
 - =projects/ores.sql/test/refdata_overnight_curve_configs_test.sql=, test 3.
 - =projects/ores.sql/populate/refdata/refdata_ir_curve_overnight_configs_populate.sql=, the =MXN-TIIE= config.
@@ -44,6 +117,6 @@ Options:
 - =external/ore/examples/Products/Input/conventions.xml=, the =OvernightIndex= definition.
 - Commits 46a56a2f94 (configs and test) and 5c3bcca095 (builtin index seed).
 
-* See also
+** See also
 
 - The IR curves work in progress in the clever_dijkstra environment, which owns the party funding curves.

@@ -1,17 +1,24 @@
 :PROPERTIES:
 :ID: FB59FE7A-B0D1-4DF7-AFB1-07F426D0C9D9
 :END:
-#+title: Inspect a curve's pillars and conventions
+#+title: Task: Inspect a curve's pillars and conventions
 #+description: A row of the IR coverage screen should open one curve: its pillars, conventions, published as-of, and the day's movement. Gemini prototyped the dialog; it needs a server contract before it is built.
-#+type: capture
-#+level: cross
-#+filetags: :capture:ir:curves:
-#+created: 2026-11-13
-#+updated: 2026-11-13
+#+type: task
+#+level: s1
+#+filetags: :clear_the_ir_snags:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A1B95ECA-8526-4859-91EF-E9A46B0BCAA9][Clear the interest rate snags in the backlog]] story. It captures the goal, current status, acceptance, and any notes or results.
 
-* What
+* Goal
 
 A dialog that opens one curve from its coverage row: the conventions it was
 built on (index, day count, interpolation, tenor convention), one row per
@@ -23,7 +30,73 @@ drill-in of the coverage row, not a second place to look.
 Gemini produced a prototype at =~/Downloads/aud_aonia_curve_dialog_prototype.html=
 on 2026-11-13. Read it as a design sketch, not as a contract.
 
-* Why
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A1B95ECA-8526-4859-91EF-E9A46B0BCAA9][Clear the interest rate snags in the backlog]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-11-13 in the product backlog; promoted preserving the UUID.
+
+** Why
 
 The coverage screen answers "is this currency covered". The next question is
 "what does its curve say", and today that means the curves topic's tables and
@@ -45,20 +118,20 @@ movement is measured against. The inspector adds no new computation: the zero
 rate and the forward are the pricer's, and the UI reads them or states that it
 cannot.
 
-* References
+** References
 
 - The prototype: =~/Downloads/aud_aonia_curve_dialog_prototype.html= (2026-11-13).
 - [[id:7FC9444F-77FA-44E2-A288-A8ED85A48DA7][Show the IR coverage of each currency]]: the screen this dialog opens from.
 - =doc/knowledge/ui/feed_screen_standard.org= and =doc/knowledge/ui/ux_language.org=: the shape and colour rules.
 - =doc/knowledge/architecture/bootstrapping_a_curve_from_quotes_to_a_published_set.org=: what the store holds about a curve.
 
-* See also
+** See also
 
 - The coverage screen this dialog opens from; the prototype's full analysis is in References.
 - =doc/prototypes/market_data/ibor-beside-overnight/index.html=: the comparison view this dialog
   grows into when a currency has a term curve beside its overnight curve.
 
-* Update 2026-11-13: the server contract exists
+** Update 2026-11-13: the server contract exists
 
 The read this capture asked for is now on the wire:
 =marketdata.v1.ops.get_curve_analytics= answers the curve's conventions, the

@@ -194,7 +194,8 @@ jobs:
         # compass env generate writes .env with compass-ng, so every job that
         # configures an environment needs the build the pin names on PATH. The
         # release calls its binary compass, and env generate looks for the tool
-        # under its release name, so the copy carries that name.
+        # under its release name: a shim carries that name and runs the binary
+        # under the name it was built with.
         shell: bash
         run: |
           tag=$(sed -n 's/^release: *//p' build/scripts/compass_ng.pin)
@@ -210,8 +211,9 @@ jobs:
           sha256sum -c "${asset}.sha256"
           unzip -q "${asset}" -d compass-ng
           dir=$(dirname "$(find "$RUNNER_TEMP/compass-ng" -type f -name 'compass.exe' | head -1)")
-          cp "${dir}/compass.exe" "${dir}/compass-ng.exe"
+          printf '@echo off\r\n"%%~dp0compass.exe" %%*\r\n' > "${dir}/compass-ng.cmd"
           cygpath -w "${dir}" >> $GITHUB_PATH
+          "${dir}/compass.exe" --version
 
       - name: Init environment
         shell: bash

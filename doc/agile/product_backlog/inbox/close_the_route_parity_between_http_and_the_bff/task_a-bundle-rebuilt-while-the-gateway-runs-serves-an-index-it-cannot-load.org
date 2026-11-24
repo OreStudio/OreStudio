@@ -8,7 +8,7 @@
 #+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/follow-the-bundle-the-directory-holds
-#+pr:
+#+pr: 5105
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -119,7 +119,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5105][#5105]] | [http] Serve a bundle published under a running gateway |
 
 * Review
 

@@ -153,8 +153,10 @@ market data share one database.
 ** Where the kinds stand**
 
 The lifecycle is one lifecycle in this page and three implementations in the
-tree. Each kind carries its own copy of the raise, the apply, the supersession
-and the notice, and each copy has fallen behind the others in a different place.
+tree. =curve_publish_gate.cpp=, =fx_forward_publish_service.cpp= and
+=fx_vol_surface_publish_service.cpp= each carry their own raise, apply,
+supersession and notice, and each copy has fallen behind the others in a
+different place.
 
 | Capability | IR curve | FX forward set | FX volatility surface |
 |------------+----------+----------------+-----------------------|

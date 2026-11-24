@@ -27,13 +27,13 @@ values: who asked, who decided, who published, when, and what ended it.
 
 * Detail
 
-** The three records of one publish
+** The three parts of one act
 
 A publish is an act over a candidate that an approval request authorised, and
-each of the three is a record of its own. The separation decides where a fact is
+each of the three is stored apart. The separation decides where a fact is
 written, and every act of the lifecycle writes to one of them.
 
-| Record | What it holds | Who writes it |
+| Part | What it holds | Who writes it |
 |--------+---------------+---------------|
 | The approval request | Who asked, the kind, the reason, the decisions, the rule that closed it | The inbox's library, in the act's transaction |
 | The candidate | The points, their lineage, and the result of every check | The kind's compute |
@@ -136,7 +136,9 @@ does not yet need are absent rather than empty.
 | FX volatility surface | identity, authority, the published version, supersession | its own table, carrying the blueprint and the calibration it published | absent |
 
 The surface table also carries the calibration's verdict, which belongs to the
-candidate and not to the publish. That is the clearest sign that the three
+candidate and not to the publish. The three tables are
+=curve_publish= (=projects/ores.marketdata/modeling/ores.marketdata.curve_publish.org=),
+=fx_forward_publish= and =fx_vol_surface_publish=. That is the clearest sign that the three
 records are copies rather than one record with three subject parts.
 
 * See also

@@ -81,7 +81,7 @@ publish records themselves, as an FX forward set holds the two curves it read.
 That is what lets the apply refuse a set whose input was withdrawn after it was
 computed ([[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]).
 
-#+caption: The target shape of the lifecycle record: one publish record that every kind shares, a subject part per kind, and the two records of the candidate and the request.
+#+caption: The target shape of the lifecycle record: one publish record that every kind shares, a subject part per kind, and the candidate and the request beside it.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/architecture/the_lifecycle_record.png]]
 

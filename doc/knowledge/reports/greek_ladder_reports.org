@@ -292,7 +292,7 @@ That the market data carries the three components as separate keys while the
 sensitivity configuration addresses surface points is the gap this design has
 to bridge.
 
-** The sensitivity configuration**
+** The sensitivity configuration
 
 The same document serves every ladder. A report's ladder family is therefore a
 property of which document it binds, and the differences a trader cares about —
@@ -307,7 +307,7 @@ should therefore hold one document per *risk class* and let the shift size vary
 through the keyed =ShiftSize= override the schema already provides, rather than
 one document per report.
 
-** Engine and analytic settings**
+** Engine and analytic settings
 
 Beyond the configuration, a run needs:
 
@@ -321,7 +321,7 @@ Beyond the configuration, a run needs:
 - for par ladders, the conventions the =ParConversion= instruments name, and the
   =ParConversionExcludes= list for curves that must stay in the zero domain.
 
-** What the cross terms need, and what 1.8.17.0 does not write**
+** What the cross terms need, and what 1.8.17.0 does not write
 
 Cross-gamma needs =ComputeGamma= and a =CrossGammaFilter= listing the pairs as
 substrings of factor keys. The shipped filter names three pairs:

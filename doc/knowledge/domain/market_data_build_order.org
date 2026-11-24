@@ -88,7 +88,7 @@ to different sets. All three take their order from the plan, so a fresh
 environment builds the same rows in the same sequence as a running one, and
 the outcome vocabulary is the same wherever it is read.
 
-** Within a level, order does not matter**
+** Within a level, order does not matter
 
 Nodes in one level share no edge, so they may be built in any order or in
 parallel; the level boundary is the only barrier. A projection level of a

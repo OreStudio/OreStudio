@@ -231,7 +231,7 @@ or a curve configuration: it reads the version in force and records it.
     decision on a refused request. The remedy is a new take, offered as *Take it
     again*, and the new cut carries the next ordinal in its label.
 
-** The audit of the take**
+** The audit of the take
 
 19. *Read the cut's history.* The record's *History* tab is the shared timeline:
     the acts, each with its account and instant, and the body's own facts. A cut

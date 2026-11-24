@@ -15,6 +15,8 @@ A published set that is wrong is taken out of use by a withdrawal: a request of 
 
 * Detail
 
+#+caption: The withdrawal of a published set, from the raise to the notice, with both endings of the raise.
+#+attr_html: :width 100%
 [[proj:doc/knowledge/architecture/withdrawal_sequence.png]]
 
 Source: [[proj:doc/knowledge/architecture/withdrawal_sequence.puml][=withdrawal_sequence.puml=]]. Regenerate with

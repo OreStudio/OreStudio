@@ -40,6 +40,8 @@ withdrawal act on.
 
 ** The states of a set
 
+#+caption: The states of a published set, from the candidate to its supersession or its withdrawal.
+#+attr_html: :width 100%
 [[proj:doc/knowledge/architecture/publish_lifecycle_states.png]]
 
 Source: [[proj:doc/knowledge/architecture/publish_lifecycle_states.puml][=publish_lifecycle_states.puml=]]. Regenerate with
@@ -62,6 +64,8 @@ so it passes from Raised to Published at once and is never left approved.
 
 ** The states of a request
 
+#+caption: The states of the approval request that authorises a set, and the apply that publishes it.
+#+attr_html: :width 100%
 [[proj:doc/knowledge/architecture/publish_request_states.png]]
 
 Source: [[proj:doc/knowledge/architecture/publish_request_states.puml][=publish_request_states.puml=]]. Regenerate with

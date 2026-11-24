@@ -128,17 +128,6 @@ jobs:
           max-size: 1000M
           save: false
 
-      - name: Install Clang
-        uses: KyleMayes/install-llvm-action@v2
-        if: ${{ matrix.compiler == 'clang' }}
-        with:
-          # The runner image ships an MSVC STL that refuses any compiler older
-          # than Clang 22 (error STL1000 in yvals_core.h), so the toolchain
-          # asked for here has to keep up with it. Bumping this is how the leg
-          # follows the image; pinning it lower fails before our code compiles.
-          version: "22"
-          arch: x64
-
       - name: Install NSIS
         if: ${{ matrix.compiler == 'clang' }}
         run: choco install nsis
@@ -153,6 +142,35 @@ jobs:
 
       - name: Enable Developer Command Prompt
         uses: ilammy/msvc-dev-cmd@v1.13.0
+
+      - name: Use the Clang Visual Studio ships
+        # The runner image's MSVC standard library refuses any compiler older than
+        # the Clang that ships with it (error STL1000 in yvals_core.h), and no
+        # standalone LLVM release exists for Windows that satisfies it. The
+        # toolchain that always matches the image's STL is the one inside Visual
+        # Studio, so the leg uses that and installs nothing.
+        if: ${{ matrix.compiler == 'clang' }}
+        shell: pwsh
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+          $component = 'Microsoft.VisualStudio.Component.VC.Llvm.Clang'
+          $find = { & $vswhere -latest -products * -requires $component -find 'VC\Tools\Llvm\x64\bin\clang++.exe' }
+
+          $clang = & $find
+          if (-not $clang) {
+              Write-Host "The Visual Studio instance lacks the Clang component; adding it."
+              $instance = & $vswhere -latest -products * -property installationPath
+              $setup = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\setup.exe'
+              & $setup modify --installPath $instance --add $component --quiet --norestart --wait | Out-Null
+              $clang = & $find
+          }
+          if (-not $clang) {
+              Write-Error 'No clang++.exe came with Visual Studio, so the clang leg cannot build.'
+              exit 1
+          }
+          $dir = Split-Path $clang
+          (& $clang --version 2>&1 | Select-Object -First 1) | Write-Host
+          $dir | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Generate postgres password
         id: pg_password
@@ -171,6 +189,29 @@ jobs:
           port: 5432
           postgres-version: "18"
         id: postgres
+
+      - name: Install the pinned compass release
+        # compass env generate writes .env with compass-ng, so every job that
+        # configures an environment needs the build the pin names on PATH. The
+        # release calls its binary compass, and env generate looks for the tool
+        # under its release name, so the copy carries that name.
+        shell: bash
+        run: |
+          tag=$(sed -n 's/^release: *//p' build/scripts/compass_ng.pin)
+          if [ -z "$tag" ]; then
+              echo "build/scripts/compass_ng.pin names no release" >&2
+              exit 1
+          fi
+          asset="compass-${tag#v}-Windows-AMD64.zip"
+          base="https://github.com/MASD-Project/compass/releases/download/${tag}"
+          cd "$RUNNER_TEMP"
+          curl -fsSLO "${base}/${asset}"
+          curl -fsSLO "${base}/${asset}.sha256"
+          sha256sum -c "${asset}.sha256"
+          unzip -q "${asset}" -d compass-ng
+          dir=$(dirname "$(find "$RUNNER_TEMP/compass-ng" -type f -name 'compass.exe' | head -1)")
+          cp "${dir}/compass.exe" "${dir}/compass-ng.exe"
+          cygpath -w "${dir}" >> $GITHUB_PATH
 
       - name: Init environment
         shell: bash

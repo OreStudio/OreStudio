@@ -198,6 +198,28 @@ jobs:
           postgres-version: "18"
         id: postgres
 
+      - name: Install the pinned compass release
+        # compass env generate writes .env with compass-ng, so every job that
+        # configures an environment needs the build the pin names on PATH.
+        run: |
+          tag=$(sed -n 's/^release: *//p' build/scripts/compass_ng.pin)
+          if [ -z "$tag" ]; then
+              echo "build/scripts/compass_ng.pin names no release" >&2
+              exit 1
+          fi
+          asset="compass-${tag#v}-Darwin-arm64.tar.gz"
+          base="https://github.com/MASD-Project/compass/releases/download/${tag}"
+          cd "$RUNNER_TEMP"
+          curl -fsSLO "${base}/${asset}"
+          curl -fsSLO "${base}/${asset}.sha256"
+          shasum -a 256 -c "${asset}.sha256"
+          tar -xzf "${asset}"
+          dir=$(dirname "$(find "$RUNNER_TEMP/${asset%.tar.gz}" -type f -name compass | head -1)")
+          chmod +x "${dir}/compass"
+          # compass env generate looks for the tool under its release name.
+          ln -sf compass "${dir}/compass-ng"
+          echo "${dir}" >> $GITHUB_PATH
+
       - name: Init environment
         env:
           ORES_DATABASE_NAME: ores_ci

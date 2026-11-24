@@ -112,6 +112,12 @@ The growth is concentrated in four stores, and the two largest are measurable
 per unit of work: about 8,828 cashflow rows for each of 1234 report runs, and
 1,260,554 versioned rows behind 23 delivery counters.
 
+The artefacts are a dimension of their own, and the first pass under-weighted
+them. The storage bucket has no expiry on any of its nine key families, and the
+wrapper caches are worse than they look: each node keeps its own copy of an
+engine version, both extracted and as the tarball that storage already serves.
+One node held 266 MB for one version, and five nodes are configured.
+
 The recommendations order the work by what it saves rather than by what is
 tidiest: carry the delivery count forward, bound cashflows by run age, decide
 whether calendar dates are stored at all, then give the artefacts a lifecycle,
@@ -125,7 +131,10 @@ and put a data-configured policy and a sweep behind all of it.
 | Delivery count rows for distinct pairs | 1,260,554 rows, 23 pairs | =count(*)= and =count(distinct (party_id, feed_id))= | pending |
 | Timescale retention or compression jobs | 0 | =select * from timescaledb_information.jobs= | pending |
 | Hypertables and chunks in the measured database | 19 and 194 | =timescaledb_information.hypertables=, =.chunks= | pending |
-| Compute wrapper package cache | 277 MB on one node | =du -sh publish/run/wrappers/*= | pending |
+| Object storage, all key families | 143 MB, 69 files | =du -sh= and =find | wc -l= under =publish/storage/ores= | pending |
+| Object storage, =compute/packages= alone | 138 MB, 3 packages | =du -sh publish/storage/ores/compute/packages= | pending |
+| One node's cache for one engine version | 266 MB: 209 MB extracted plus a 57 MB tarball | =du -sh publish/run/wrappers/node_4/packages/f2ce9b84-*= | pending |
+| Wrapper job folders | 12 MB over 3 jobs, about 3.8 MB each | =du -sh publish/run/wrappers/node_4/jobs= | pending |
 
 The Commit column is pending because the investigation lands in the same commit
 as this Result; the next task that touches these numbers should stamp them.

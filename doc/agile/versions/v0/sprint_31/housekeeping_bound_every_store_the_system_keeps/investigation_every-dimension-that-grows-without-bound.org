@@ -66,9 +66,10 @@ flush instead of carrying the counter forward. That is 1.27 GB of history for a
 counter whose only useful value is its latest.
 
 The file system tells the same story outside the database, in this worktree
-alone: a 6.3 GB build tree, 277 MB of compute-wrapper package caches, 195 MB of
-vendor packages, 152 MB of service logs in 24 files, and 143 MB of object
-storage holding three ORE packages.
+alone: a 6.3 GB build tree, 277 MB of compute-wrapper caches — one node's copy of
+one engine version, held both extracted and as a tarball — 195 MB of vendor
+packages, 152 MB of service logs in 24 files, and 143 MB of object storage
+serving the same engine packages that the node cache downloaded.
 
 * Methodology
 
@@ -178,23 +179,56 @@ That is the pattern this story should generalise rather than invent.
 
 ** What holds artefacts
 
-The object store has no lifecycle. One bucket, =ores=, backs everything
-(=projects/ores.storage/api/include/ores.storage.api/net/object_keys.hpp:71,77=):
-=compute/packages=, =compute/input=, =compute/config=, =compute/output=,
-=compute/logs=, =ore/imports=, =ore/packages=, =ore/package_logs= and
-=reporting/runs/{id}/= for each run's inputs and output. A remove operation
-exists (=projects/ores.storage/core/src/filesystem/local_store.cpp:188=) and
-only the shell calls it. There is no expiry, quota or scheduled deletion
-anywhere in =projects/ores.storage=.
+Two services hold artefacts, on the database host and on each node, and neither
+has a lifecycle.
 
-The compute wrapper is worse, because it writes to the host file system and
-never looks back. Each job gets =work_dir/jobs/{result_id}=
-(=projects/ores.compute/wrapper/src/app/application.cpp:778-948=), holding the
-extracted input, the engine log, an output tree and two tarballs. Each engine
-version gets =work_dir/packages/{app_version_id}= (=:655-707=). Nothing deletes
-either. In this worktree =publish/run/wrappers/node_4= holds 277 MB of package
-cache from a single job; the other four node directories hold an empty lock
-file each, so the cost is per node that has ever run a job.
+*The object store.* One bucket, =ores=, backed by a directory
+(=--storage-dir=), holds every uploaded artefact
+(=projects/ores.storage/api/include/ores.storage.api/net/object_keys.hpp:71,77=).
+Measured in this worktree:
+
+| Key family | Size | Files |
+|------------+------+-------|
+| =compute/packages= | 138 MB | 3 |
+| =compute/output= | 1.3 MB | 36 |
+| =compute/logs= | 100 kB | 3 |
+| =ore/packages= | 1020 kB | 6 |
+| =reporting/runs= | 1.9 MB | 21 |
+| total | 143 MB | 69 |
+
+That total is small because this environment has run little, and the size is not
+the argument: nothing expires any of it. A remove operation exists
+(=projects/ores.storage/core/src/filesystem/local_store.cpp:188=) and only the
+shell calls it. There is no expiry, quota or scheduled deletion anywhere in
+=projects/ores.storage=, so the bucket only ever grows and grows fastest on the
+family that is largest, =compute/packages=, where every published engine version
+stays forever.
+
+*The node package caches.* Each of the five wrappers is given its own
+=--work-dir= (=systemd/units/ores.compute.wrapper-solid_dirac-N.service=), so a
+package fetched to serve a job is fetched again for the next node. The cache at
+=work_dir/packages/{app_version_id}= holds both the extracted tree and the
+tarball it came from
+(=projects/ores.compute/wrapper/src/app/application.cpp:655-707=). For one ORE
+version on one node:
+
+| Item | Size |
+|------+------|
+| the extracted tree: =lib/=, the engine binary, =manifest.json= | 209 MB |
+| the =.tar.gz= it was extracted from | 57 MB |
+| total | 266 MB |
+
+The tarball is a second copy of a package the object store already serves, and
+the extracted tree is a third form of it. With five nodes and more than one
+version retained this is 5 × N × 266 MB, and no version is pruned: a newer
+fetch replaces only the directory it is fetching
+(=application.cpp:703-707=), leaving the old one behind.
+
+*The job folders.* Each job keeps =work_dir/jobs/{result_id}=
+(=application.cpp:778-948=) holding its extracted input, engine log, output tree
+and tarballs. Three jobs in this worktree hold 12 MB, about 3.8 MB each.
+Nothing deletes a job folder, and the output it duplicates has already been
+uploaded to =compute/output=.
 
 JetStream is the one store with a bound that works: every stream is created with
 =MaxAge= — 7 days by default, 1 day for step commands
@@ -233,8 +267,10 @@ knobs are compile-time model text that need a schema rebuild to change.
 
 3. *The cheapest wins are not retention policies.* Delivery counts are 1.27 GB
    for 23 values, and the fix is to stop appending versions, not to delete old
-   ones. The wrapper package cache is 277 MB of packages that are already in
-   object storage. Bounding those needs no scheduler at all.
+   ones. The wrapper cache holds 266 MB per node per engine version, of which
+   the 57 MB tarball duplicates a package the object store already serves and
+   the 209 MB extracted tree is a third form of the same distribution. Bounding
+   either needs no scheduler at all.
 
 4. *Calendar dates are derived data held as if it were a fact.* 612 MB holds 36
    calendars over 37 years, copied per tenant. It grows with tenant count, not
@@ -250,6 +286,14 @@ knobs are compile-time model text that need a schema rebuild to change.
    already runs jobs on configured cron expressions and already offers
    =execute_sql= and =nats_request= actions. A housekeeping sweep is a new
    payload and a new table of targets, not new infrastructure.
+
+7. *Artefacts multiply by node and by version, which the database numbers hide.*
+   A report run writes about 7 MB of rows once, but the same run also needs an
+   engine distribution on whichever node picks it up, and each node keeps its
+   own copy in its own form. The object store kept 3 packages, and one node
+   already held 266 MB for one of them. This is the dimension most likely to
+   surprise a capacity plan, because it grows with nodes × versions × jobs
+   rather than with either one alone.
 
 * Recommendations
 
@@ -274,11 +318,13 @@ knobs are compile-time model text that need a schema rebuild to change.
    whether calendar dates are stored or computed; then the ticks, whose
    declaration is already written and only needs a mechanism.
 
-5. *Give artefacts a lifecycle before giving them a policy screen.* The wrapper
-   job folders and the object store's =reporting/runs=, =compute/output= and
-   =ore/packages= prefixes are pure accumulation with no reader after the fact.
-   Deleting a job folder once its output is uploaded costs nothing and frees
-   the largest single artefact in the worktree.
+5. *Give artefacts a lifecycle, and stop duplicating them.* The object store's
+   =compute/packages=, =compute/output=, =ore/packages= and =reporting/runs=
+   prefixes accumulate with no reader after the fact, and a job folder is dead
+   the moment its output is uploaded. Beyond deletion, the node caches should
+   not exist per node at all: one copy per host, or a cache that storage backs,
+   removes the 5 × N multiplication before any sweep is written. Both halves are
+   cheaper than a policy engine and should come first.
 
 6. *Measure before and after.* The numbers above are one sample. The story
    should record the same query as a baseline so the effect of each change is

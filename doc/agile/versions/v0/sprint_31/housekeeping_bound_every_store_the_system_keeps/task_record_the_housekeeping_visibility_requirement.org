@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 856BA64E-96AE-47A7-940F-E8BEEFFAAD31
+:END:
+#+title: Task: Record the housekeeping visibility requirement
+#+description: Task for: Housekeeping: bound every store the system keeps
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: feature/record-the-housekeeping-visibility-requirement
+#+pr: 5107
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The requirement that every housekeeping run is visible in the system as a scheduled task, and can be tuned from the screens a person already uses, is recorded in the story's acceptance, in a task of its own, and in the model.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+- The story's acceptance states that housekeeping runs are visible as scheduled tasks with their last run, what they freed and whether they are enabled
+- A task states how a sweep registers as a scheduler job and appears in the scheduler's screens
+- The model states that each firing is a scheduler job instance
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5107][#5107]] | [agile] Record that housekeeping runs are visible as scheduled tasks |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The requirement is recorded in three places, so that it survives whichever of
+them a later reader reaches first.
+
+- The story's acceptance now states that every housekeeping run is visible in the
+  system as a scheduled task, with when it last ran, what it freed and whether it
+  is enabled, so a person can tell what housekeeping is running and tune it.
+- The task
+  [[id:8F23F8FE-1951-441C-A866-27EE12733832][Show housekeeping work as
+  scheduled tasks]] states how a sweep registers as a scheduler job, appears in
+  the screens a person already uses, and is enabled, disabled or retuned from
+  there.
+- The model now states that each firing is recorded as a scheduler job instance
+  and that the housekeeping jobs appear in the scheduler's screens beside every
+  other job.
+
+The distinction that made a separate task necessary: a screen listing policies
+and their sizes shows what a store is allowed to keep, and says nothing about
+whether housekeeping is running, when it last ran or what it freed. The
+visibility of runs belongs with the scheduler, which already records job
+definitions and their instances, rather than a console of its own.

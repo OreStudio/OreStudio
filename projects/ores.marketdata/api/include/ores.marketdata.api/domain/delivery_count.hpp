@@ -41,23 +41,14 @@ namespace ores::marketdata::domain {
  * time is one increment in memory, and one row is written for each party, item and hour at each
  * write.
  *
- * A row counts the deliveries since the last write, so the rating step adds the rows of an hour.
+ * A row holds the deliveries counted so far in an hour, so a flush adds to the total and the rating
+ * step reads one row for the hour.
  */
 struct delivery_count final {
-    /**
-     * @brief Version number for optimistic locking and change tracking.
-     */
-    int version = 0;
-
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
-
-    /**
-     * @brief Surrogate UUID uniquely identifying this count.
-     */
-    boost::uuids::uuid id;
 
     /**
      * @brief The party that used the feed. Set from the service that records the event and enforced
@@ -71,6 +62,12 @@ struct delivery_count final {
     std::string provider_code;
 
     /**
+     * @brief References feed.id: the source that served the party when the event happened. A rate
+     * card is on the source, so the rating step needs it.
+     */
+    boost::uuids::uuid feed_id;
+
+    /**
      * @brief The item whose ticks were delivered, as its oresmd quote URI.
      */
     std::string oresmd_uri;
@@ -81,55 +78,21 @@ struct delivery_count final {
     std::chrono::system_clock::time_point period_start;
 
     /**
-     * @brief When the service wrote the count. The counts of one hour that were written at
-     * different times are separate rows, and the rating step adds them.
+     * @brief UUID identifying this count, and the identifier its events and screen use.
+     */
+    boost::uuids::uuid id;
+
+    /**
+     * @brief When the service last wrote the count. The row holds the running total for the hour,
+     * so a later write replaces it rather than adding a row, and the rating step reads the total
+     * instead of summing the rows of the hour.
      */
     std::chrono::system_clock::time_point flushed_at;
 
     /**
-     * @brief References feed.id: the source that served the party when the event happened. A rate
-     * card is on the source, so the rating step needs it.
-     */
-    boost::uuids::uuid feed_id;
-
-    /**
-     * @brief How many ticks of the item the fan-out delivered to the party in the hour, since the
-     * last write.
+     * @brief How many ticks of the item the fan-out has delivered to the party in the hour so far.
      */
     std::int64_t deliveries = 0;
-
-    /**
-     * @brief Username of the person who last modified this delivery count.
-     */
-    std::string modified_by;
-
-    /**
-     * @brief Username of the account that performed this action.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Code identifying the reason for the change.
-     *
-     * References change_reasons table (soft FK).
-     */
-    std::string change_reason_code;
-
-    /**
-     * @brief Free-text commentary explaining the change.
-     */
-    std::string change_commentary;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded.
-     *
-     * The transaction-time window's start, which the store sets from its own
-     * clock. It travels with the audit members because it is only ever read
-     * with them: the history builder takes a version type that carries an
-     * actor *and* this timestamp, so an entity without the actor has no use
-     * for the timestamp either.
-     */
-    std::chrono::system_clock::time_point recorded_at;
 
     /**
      * @brief Value equality.

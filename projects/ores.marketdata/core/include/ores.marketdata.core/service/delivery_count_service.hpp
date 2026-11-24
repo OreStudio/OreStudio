@@ -89,11 +89,6 @@ public:
         const ::ores::marketdata::messaging::delete_delivery_count_request& request);
     ::ores::marketdata::messaging::delete_many_delivery_counts_response delete_many_delivery_counts(
         const ::ores::marketdata::messaging::delete_many_delivery_counts_request& request);
-    ::ores::marketdata::messaging::list_delivery_count_versions_response
-    list_delivery_count_versions(
-        const ::ores::marketdata::messaging::list_delivery_count_versions_request& request);
-    ::ores::marketdata::messaging::get_delivery_count_version_response get_delivery_count_version(
-        const ::ores::marketdata::messaging::get_delivery_count_version_request& request);
     /**@}*/
 
     /**
@@ -115,32 +110,19 @@ public:
 
 
     /**
-     * @brief Retrieves a single delivery count as it stood at a specific
-     * version. See the "Temporal composite entity versioning" architecture doc.
-     *
-     * @param version The version to fetch.
-     * @return The delivery count at that version if found, std::nullopt otherwise.
-     */
-    std::optional<domain::delivery_count>
-    get_delivery_count_at_version(const boost::uuids::uuid& id, std::uint32_t version);
-
-    /**
      * @brief Retrieves a single delivery count by its primary key.
-     *
-     * The storage key is a uuid, so the signature says which key is meant and
-     * the human-readable key cannot be passed here by mistake.
      *
      * @return The delivery count if found, std::nullopt otherwise.
      */
-    std::optional<domain::delivery_count> get_delivery_count(const boost::uuids::uuid& id);
+    std::optional<domain::delivery_count> get_delivery_count(const std::string& party_id,
+                                                             const std::string& provider_code,
+                                                             const std::string& feed_id,
+                                                             const std::string& oresmd_uri,
+                                                             const std::string& period_start);
 
     /**
      * @brief Retrieves a single delivery count by the key the model
      * declares -- the human-readable key a caller holds.
-     *
-     * This is the counterpart of the uuid overload above: the two keys an
-     * entity holds are different keys, and a call site has to say which one it
-     * means.
      *
      * @return The delivery count if found, std::nullopt otherwise.
      */
@@ -150,7 +132,12 @@ public:
     /**
      * @brief Retrieves a batch of delivery counts by primary key.
      */
-    std::vector<domain::delivery_count> get_delivery_counts(const std::vector<std::string>& ids);
+    std::vector<domain::delivery_count>
+    get_delivery_counts(const std::vector<std::string>& party_ids,
+                        const std::vector<std::string>& provider_codes,
+                        const std::vector<std::string>& feed_ids,
+                        const std::vector<std::string>& oresmd_uris,
+                        const std::vector<std::string>& period_starts);
 
     /**
      * @brief Saves a delivery count (creates or updates).
@@ -173,21 +160,21 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_delivery_count(const boost::uuids::uuid& id);
+    void delete_delivery_count(const std::string& party_id,
+                               const std::string& provider_code,
+                               const std::string& feed_id,
+                               const std::string& oresmd_uri,
+                               const std::string& period_start);
 
     /**
      * @brief Deletes delivery counts by their primary keys.
      */
-    void delete_delivery_counts(const std::vector<std::string>& ids);
+    void delete_delivery_counts(const std::vector<std::string>& party_ids,
+                                const std::vector<std::string>& provider_codes,
+                                const std::vector<std::string>& feed_ids,
+                                const std::vector<std::string>& oresmd_uris,
+                                const std::vector<std::string>& period_starts);
 
-    /**
-     * @brief Retrieves all historical versions of a delivery count.
-     *
-     * Addressed by the key the model declares, which is the one a caller
-     * holds; the storage key is resolved from it here, the same step every
-     * other read makes.
-     */
-    std::vector<domain::delivery_count> get_delivery_count_history(const std::string& key);
 
 private:
     context ctx_;

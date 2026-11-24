@@ -33,13 +33,13 @@ export interface DeliveryCountKey {
 }
 
 export interface DeliveryCountWrite {
-    id: string;
     party_id: string;
     provider_code: string;
+    feed_id: string;
     oresmd_uri: string;
     period_start: string;
+    id: string;
     flushed_at: string;
-    feed_id: string;
     deliveries: number;
 }
 
@@ -62,7 +62,6 @@ export interface DeliveryCountsFilter {
     party_id: string | null;
     provider_code: string | null;
     feed_id: string | null;
-    id_one_of: string[] | null;
     party_id_one_of: string[] | null;
     provider_code_one_of: string[] | null;
     feed_id_one_of: string[] | null;
@@ -77,23 +76,11 @@ export interface DeliveryCountEvent {
     correlation_id: string | null;
 }
 
-export interface DeliveryCountVersionKey {
-    delivery_count: DeliveryCountKey;
-    version: number;
-}
-
-export interface DeliveryCountVersionsFilter {
-    version: number | null;
-    from_version: number | null;
-    to_version: number | null;
-}
-
 export interface ListDeliveryCountsRequest {
     offset: number;
     limit: number;
     order: Order;
     filter: DeliveryCountsFilter | null;
-    as_of: string | null;
 }
 
 export interface ListDeliveryCountsResponse {
@@ -158,29 +145,6 @@ export interface DeleteManyDeliveryCountsResponse {
     result: Result;
 }
 
-export interface ListDeliveryCountVersionsRequest {
-    key: DeliveryCountKey;
-    offset: number;
-    limit: number;
-    order: Order;
-    filter: DeliveryCountVersionsFilter | null;
-}
-
-export interface ListDeliveryCountVersionsResponse {
-    result: Result;
-    versions: DeliveryCount[];
-    total: number;
-}
-
-export interface GetDeliveryCountVersionRequest {
-    key: DeliveryCountVersionKey;
-}
-
-export interface GetDeliveryCountVersionResponse {
-    result: Result;
-    version: DeliveryCount | null;
-}
-
 export const subjects = {
     list_delivery_counts_request: 'marketdata.v1.delivery_counts.list',
     get_delivery_count_request: 'marketdata.v1.delivery_counts.get',
@@ -189,8 +153,6 @@ export const subjects = {
     put_many_delivery_counts_request: 'marketdata.v1.delivery_counts.put_many',
     delete_delivery_count_request: 'marketdata.v1.delivery_counts.delete',
     delete_many_delivery_counts_request: 'marketdata.v1.delivery_counts.delete_many',
-    list_delivery_count_versions_request: 'marketdata.v1.delivery_counts_versions.list',
-    get_delivery_count_version_request: 'marketdata.v1.delivery_counts_versions.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -205,8 +167,6 @@ export const requiresSession = {
     put_many_delivery_counts_request: true,
     delete_delivery_count_request: true,
     delete_many_delivery_counts_request: true,
-    list_delivery_count_versions_request: true,
-    get_delivery_count_version_request: true,
 } as const;
 
 /**

@@ -76,14 +76,6 @@ register_delivery_count_handlers(ores::nats::service::client& nats,
         delete_many_delivery_counts_request::nats_subject,
         delivery_count_queue_group,
         [h](ores::nats::message msg) { h->delete_many_delivery_counts(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        list_delivery_count_versions_request::nats_subject,
-        delivery_count_queue_group,
-        [h](ores::nats::message msg) { h->list_delivery_count_versions(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        get_delivery_count_version_request::nats_subject,
-        delivery_count_queue_group,
-        [h](ores::nats::message msg) { h->get_delivery_count_version(std::move(msg)); }));
     return subs;
 }
 

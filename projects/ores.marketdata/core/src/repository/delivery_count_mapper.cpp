@@ -44,21 +44,15 @@ domain::delivery_count delivery_count_mapper::map(const delivery_count_entity& v
     ORES_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::delivery_count r;
-    r.version = v.version;
     r.tenant_id = v.tenant_id;
-    r.id = v.id;
     r.party_id = v.party_id;
     r.provider_code = v.provider_code;
+    r.feed_id = v.feed_id;
     r.oresmd_uri = v.oresmd_uri;
     r.period_start = v.period_start;
+    r.id = v.id;
     r.flushed_at = v.flushed_at;
-    r.feed_id = v.feed_id;
     r.deliveries = v.deliveries;
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
-    r.recorded_at = v.valid_from;
 
     ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -68,20 +62,15 @@ delivery_count_entity delivery_count_mapper::map(const domain::delivery_count& v
     ORES_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     delivery_count_entity r;
-    r.id = v.id;
-    r.tenant_id = v.tenant_id;
-    r.version = v.version;
     r.party_id = v.party_id;
     r.provider_code = v.provider_code;
+    r.feed_id = v.feed_id;
     r.oresmd_uri = v.oresmd_uri;
     r.period_start = v.period_start;
+    r.tenant_id = v.tenant_id;
+    r.id = v.id;
     r.flushed_at = v.flushed_at;
-    r.feed_id = v.feed_id;
     r.deliveries = v.deliveries;
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
 
     ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

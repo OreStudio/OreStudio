@@ -20,7 +20,7 @@ A delivery count is a fact about usage. The fan-out counts the ticks it delivers
 and writes the counts in batches. A count holds no price. The only cost at tick time is one increment in
 memory, and one row is written for each party, item and hour at each write.
 
-A row counts the deliveries since the last write, so the rating step adds the rows of an hour.
+A row holds the deliveries counted so far in an hour, so a flush adds to the total and the rating step reads one row for the hour.
 
 * Flags
 :PROPERTIES:
@@ -36,16 +36,15 @@ A row counts the deliveries since the last write, so the rating step adds the ro
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
-:primary_key: true
 :END:
 
-Surrogate UUID uniquely identifying this count.
+UUID identifying this count, and the identifier its events and screen use.
 
 ** party_id
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
-:natural_key: true
+:primary_key: true
 :filterable: true
 :nullable: false
 :END:
@@ -60,7 +59,7 @@ ctx.generate_uuid()
 :PROPERTIES:
 :type:        text
 :cpp_type:    std::string
-:natural_key: true
+:primary_key: true
 :filterable: true
 :nullable: false
 :no_generator_suffix: true
@@ -76,6 +75,7 @@ std::string("bloomberg")
 :PROPERTIES:
 :type:        uuid
 :cpp_type:    boost::uuids::uuid
+:primary_key: true
 :filterable: true
 :nullable: false
 :END:
@@ -90,7 +90,7 @@ ctx.generate_uuid()
 :PROPERTIES:
 :type:        text
 :cpp_type:    std::string
-:natural_key: true
+:primary_key: true
 :nullable: false
 :END:
 
@@ -104,7 +104,7 @@ std::string("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD")
 :PROPERTIES:
 :type:        timestamp with time zone
 :cpp_type:    std::chrono::system_clock::time_point
-:natural_key: true
+:primary_key: true
 :nullable: false
 :END:
 
@@ -118,11 +118,10 @@ std::chrono::system_clock::now()
 :PROPERTIES:
 :type:        timestamp with time zone
 :cpp_type:    std::chrono::system_clock::time_point
-:natural_key: true
 :nullable: false
 :END:
 
-When the service wrote the count. The counts of one hour that were written at different times are separate rows, and the rating step adds them.
+When the service last wrote the count. The row holds the running total for the hour, so a later write replaces it rather than adding a row, and the rating step reads the total instead of summing the rows of the hour.
 
 #+begin_src cpp :name generator
 std::chrono::system_clock::now()
@@ -136,7 +135,7 @@ std::chrono::system_clock::now()
 :default_value: 0
 :END:
 
-How many ticks of the item the fan-out delivered to the party in the hour, since the last write.
+How many ticks of the item the fan-out has delivered to the party in the hour so far.
 
 #+begin_src cpp :name generator
 faker::number::integer(1, 1000)
@@ -147,6 +146,7 @@ faker::number::integer(1, 1000)
 ** Flags
 :PROPERTIES:
 :tablename:                 ores_marketdata_delivery_counts_tbl
+:current_state:             true
 :rls_tenant_isolation:      true
 :rls_party_isolation:       true
 :rls_system_tenant_visible:      true
@@ -186,9 +186,9 @@ faker::number::integer(1, 1000)
 :ID: E033C7C4-19A5-4A9F-8A85-64EEE4213E8B
 :END:
 
-Reads the latest delivery counts across all tenants. The service that meters usage reads the intervals
-that are open for every party, so it cannot filter on one tenant. Queries only on
-=valid_to == max=.
+Reads the delivery counts across all tenants. The service that meters usage reads the counts of every
+party, so it cannot filter on one tenant. There is one row per subscription, item and period, so no
+temporal filter is needed.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
 std::vector<domain::delivery_count> read_latest_all_tenants(const context& ctx);
@@ -197,9 +197,7 @@ std::vector<domain::delivery_count> read_latest_all_tenants(const context& ctx);
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::delivery_count>
 delivery_count_repository::read_latest_all_tenants(const context& ctx) {
-    static constexpr auto max = db_timestamp::max();
     const auto query = query_builder::read<std::vector<delivery_count_entity>> |
-                       query_builder::where("valid_to"_c == max) |
                        query_builder::order_by("id"_c);
 
     return query_builder::execute_read_query<delivery_count_entity, domain::delivery_count>(

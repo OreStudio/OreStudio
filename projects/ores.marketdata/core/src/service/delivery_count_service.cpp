@@ -26,11 +26,8 @@
 #include "ores.marketdata.api/domain/delivery_count.hpp"
 #include "ores.marketdata.api/messaging/delivery_count_protocol.hpp"
 #include "ores.marketdata.core/repository/delivery_count_repository.hpp"
-#include <boost/uuid/uuid.hpp>
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <iterator>
 #include <map>
 #include <optional>
 #include <stdexcept>
@@ -42,7 +39,7 @@
 // does not count as a use.
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.database/repository/valid_at.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -138,13 +135,13 @@ messaging::delivery_count_key delivery_count_key_from(const domain::delivery_cou
  */
 domain::delivery_count delivery_count_to_domain(const messaging::delivery_count_write& write) {
     domain::delivery_count v;
-    v.id = write.id;
     v.party_id = write.party_id;
     v.provider_code = write.provider_code;
+    v.feed_id = write.feed_id;
     v.oresmd_uri = write.oresmd_uri;
     v.period_start = write.period_start;
+    v.id = write.id;
     v.flushed_at = write.flushed_at;
-    v.feed_id = write.feed_id;
     v.deliveries = write.deliveries;
     return v;
 }
@@ -159,12 +156,6 @@ messaging::list_delivery_counts_response delivery_count_service::list_delivery_c
         !repository::delivery_count_repository::is_sortable(request.order.field)) {
         response.result = refuse(outcome_code::order_not_supported,
                                  {.entity = "delivery counts", .field = request.order.field});
-        return response;
-    }
-    if (request.filter && request.filter->id_one_of &&
-        request.filter->id_one_of->size() > max_batch_size) {
-        response.result = refuse(outcome_code::filter_too_large,
-                                 {.field = "id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->party_id_one_of &&
@@ -188,20 +179,9 @@ messaging::list_delivery_counts_response delivery_count_service::list_delivery_c
                    {.field = "feed_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
-    // A stated instant is checked here, so a malformed one is the caller's
-    // mistake rather than a database error. The caller's text is what the
-    // store reads, so a fraction of a second is kept.
-    std::optional<std::string> as_of;
-    if (request.as_of) {
-        as_of = ores::database::repository::parse_as_of(*request.as_of);
-        if (!as_of) {
-            response.result = refuse(outcome_code::as_of_invalid, {.value = *request.as_of});
-            return response;
-        }
-    }
-    response.delivery_counts = repo_.read_latest(
-        ctx_, request.offset, request.limit, request.order, request.filter, as_of);
-    response.total = repo_.get_total_delivery_count_count(ctx_, request.filter, as_of);
+    response.delivery_counts =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, request.filter);
+    response.total = repo_.get_total_delivery_count_count(ctx_, request.filter);
     return response;
 }
 
@@ -329,23 +309,26 @@ messaging::delete_delivery_count_response delivery_count_service::delete_deliver
         return response;
     }
     const auto& row = named.front();
-    switch (repo_.remove(ctx_, boost::uuids::to_string(row.id), expected)) {
+    switch (repo_.remove(ctx_,
+                         boost::uuids::to_string(row.party_id),
+                         row.provider_code,
+                         boost::uuids::to_string(row.feed_id),
+                         row.oresmd_uri,
+                         ores::platform::time::datetime::to_db_string(row.period_start),
+                         expected)) {
         case repository::delivery_count_repository::remove_status::removed:
             break;
         case repository::delivery_count_repository::remove_status::missing:
             response.result = refuse(outcome_code::not_found, {.entity = "delivery_count"});
             break;
         case repository::delivery_count_repository::remove_status::conflicting: {
-            // A conflicting removal states the version it expected but not the one
-            // the row now holds, and the sentence wants both. The row is read only
-            // on the refusal path.
-            const auto live = delivery_count_read_one(repo_, ctx_, request.removal.key);
-            response.result = refuse(
-                outcome_code::version_conflict,
-                {.entity = "delivery_count",
-                 .field = "id",
-                 .expected = expected ? std::to_string(*expected) : std::string{},
-                 .current = live.empty() ? std::string{} : std::to_string(live.front().version)});
+            // A resource that keeps no version cannot reach this status, so there
+            // is no current version for its sentence to state.
+            response.result =
+                refuse(outcome_code::version_conflict,
+                       {.entity = "delivery_count",
+                        .field = "party_id",
+                        .expected = expected ? std::to_string(*expected) : std::string{}});
             break;
         }
         case repository::delivery_count_repository::remove_status::unsupported:
@@ -393,64 +376,28 @@ messaging::delete_many_delivery_counts_response delivery_count_service::delete_m
         if (!named.empty())
             resolved.push_back(std::move(named.front()));
     }
-    std::vector<std::string> id_keys;
-    id_keys.reserve(resolved.size());
+    std::vector<std::string> party_id_keys;
+    party_id_keys.reserve(resolved.size());
     for (const auto& row : resolved)
-        id_keys.push_back(boost::uuids::to_string(row.id));
-    repo_.remove(ctx_, id_keys);
-    return response;
-}
-
-messaging::list_delivery_count_versions_response
-delivery_count_service::list_delivery_count_versions(
-    const messaging::list_delivery_count_versions_request& request) {
-    messaging::list_delivery_count_versions_response response;
-    if (!request.order.field.empty() || request.order.descending) {
-        response.result = refuse(outcome_code::order_not_supported,
-                                 {.entity = "delivery counts", .field = request.order.field});
-        return response;
-    }
-    if (request.filter) {
-        response.result = refuse(outcome_code::filter_not_supported, {.entity = "delivery counts"});
-        return response;
-    }
-    // The versions of the row the caller's key names. The repository reads by
-    // the storage key, so the declared key is resolved once here.
-    const auto named = delivery_count_read_one(repo_, ctx_, request.key);
-    if (named.empty()) {
-        response.result = refuse(outcome_code::not_found, {.entity = "delivery_count"});
-        return response;
-    }
-    const auto& row = named.front();
-    auto all = repo_.read_all(ctx_, boost::uuids::to_string(row.id));
-    // The store reads versions newest first, and the order a caller gets when
-    // it states none is key order, which for a version key is oldest first.
-    std::reverse(all.begin(), all.end());
-    response.total = all.size();
-    const auto begin = std::min<std::size_t>(request.offset, all.size());
-    const auto end = std::min<std::size_t>(begin + request.limit, all.size());
-    response.versions.assign(std::make_move_iterator(all.begin() + begin),
-                             std::make_move_iterator(all.begin() + end));
-    return response;
-}
-
-messaging::get_delivery_count_version_response delivery_count_service::get_delivery_count_version(
-    const messaging::get_delivery_count_version_request& request) {
-    messaging::get_delivery_count_version_response response;
-    // The version key nests the entity's own key, which is the declared one.
-    // The repository reads by the storage key, so it is resolved once here.
-    const auto named = delivery_count_read_one(repo_, ctx_, request.key.delivery_count);
-    if (named.empty()) {
-        response.result = refuse(outcome_code::not_found, {.entity = "delivery_count"});
-        return response;
-    }
-    const auto& row = named.front();
-    auto found = repo_.read_at_version(ctx_, boost::uuids::to_string(row.id), request.key.version);
-    if (!found) {
-        response.result = refuse(outcome_code::not_found, {.entity = "delivery_count"});
-        return response;
-    }
-    response.version = std::move(*found);
+        party_id_keys.push_back(boost::uuids::to_string(row.party_id));
+    std::vector<std::string> provider_code_keys;
+    provider_code_keys.reserve(resolved.size());
+    for (const auto& row : resolved)
+        provider_code_keys.push_back(row.provider_code);
+    std::vector<std::string> feed_id_keys;
+    feed_id_keys.reserve(resolved.size());
+    for (const auto& row : resolved)
+        feed_id_keys.push_back(boost::uuids::to_string(row.feed_id));
+    std::vector<std::string> oresmd_uri_keys;
+    oresmd_uri_keys.reserve(resolved.size());
+    for (const auto& row : resolved)
+        oresmd_uri_keys.push_back(row.oresmd_uri);
+    std::vector<std::string> period_start_keys;
+    period_start_keys.reserve(resolved.size());
+    for (const auto& row : resolved)
+        period_start_keys.push_back(ores::platform::time::datetime::to_db_string(row.period_start));
+    repo_.remove(
+        ctx_, party_id_keys, provider_code_keys, feed_id_keys, oresmd_uri_keys, period_start_keys);
     return response;
 }
 
@@ -467,24 +414,10 @@ delivery_count_service::prepare_change(const messaging::delivery_count_change& c
         case precondition_kind::must_not_exist:
             if (!current.empty())
                 return refuse(outcome_code::already_exists,
-                              {.entity = "delivery_count", .field = "id"});
+                              {.entity = "delivery_count", .field = "party_id"});
             break;
         case precondition_kind::must_match_version:
-            if (current.empty())
-                return refuse(outcome_code::not_found, {.entity = "delivery_count"});
-            // The protocol states the version as a uint32 and the row carries it
-            // as an int, so the comparison states the conversion.
-            if (!change.precondition.version ||
-                static_cast<std::uint32_t>(current.front().version) !=
-                    *change.precondition.version) {
-                return refuse(outcome_code::version_conflict,
-                              {.entity = "delivery_count",
-                               .field = "id",
-                               .expected = change.precondition.version ?
-                                               std::to_string(*change.precondition.version) :
-                                               std::string{},
-                               .current = std::to_string(current.front().version)});
-            }
+            return refuse(outcome_code::precondition_not_supported);
             break;
         case precondition_kind::any:
             break;
@@ -497,7 +430,6 @@ delivery_count_service::prepare_change(const messaging::delivery_count_change& c
           intent.reason_code.empty() ?
               std::string(ores::service::messaging::change_reasons::new_record) :
               intent.reason_code);
-    out.change_commentary = intent.commentary;
     return result;
 }
 
@@ -515,17 +447,16 @@ std::uint32_t delivery_count_service::count_delivery_counts() {
 
 
 std::optional<domain::delivery_count>
-delivery_count_service::get_delivery_count_at_version(const boost::uuids::uuid& id,
-                                                      std::uint32_t version) {
-    ORES_LOG_SEV(lg(), debug) << "Getting delivery count at version. " << "id: " << id
-                              << " version: " << version;
-    return repo_.read_at_version(ctx_, boost::uuids::to_string(id), version);
-}
-
-std::optional<domain::delivery_count>
-delivery_count_service::get_delivery_count(const boost::uuids::uuid& id) {
-    ORES_LOG_SEV(lg(), debug) << "Getting delivery count. " << "id: " << id;
-    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(id));
+delivery_count_service::get_delivery_count(const std::string& party_id,
+                                           const std::string& provider_code,
+                                           const std::string& feed_id,
+                                           const std::string& oresmd_uri,
+                                           const std::string& period_start) {
+    ORES_LOG_SEV(lg(), debug) << "Getting delivery count. " << "party_id: " << party_id
+                              << " provider_code: " << provider_code << " feed_id: " << feed_id
+                              << " oresmd_uri: " << oresmd_uri << " period_start: " << period_start;
+    auto results =
+        repo_.read_latest(ctx_, party_id, provider_code, feed_id, oresmd_uri, period_start);
     if (results.empty())
         return std::nullopt;
     return results.front();
@@ -543,25 +474,47 @@ delivery_count_service::get_delivery_count_by_oresmd_uri(const std::string& ores
 }
 
 std::vector<domain::delivery_count>
-delivery_count_service::get_delivery_counts(const std::vector<std::string>& ids) {
-    return repo_.read_latest(ctx_, ids);
+delivery_count_service::get_delivery_counts(const std::vector<std::string>& party_ids,
+                                            const std::vector<std::string>& provider_codes,
+                                            const std::vector<std::string>& feed_ids,
+                                            const std::vector<std::string>& oresmd_uris,
+                                            const std::vector<std::string>& period_starts) {
+    return repo_.read_latest(ctx_, party_ids, provider_codes, feed_ids, oresmd_uris, period_starts);
 }
 
 void delivery_count_service::save_delivery_count(const domain::delivery_count& v) {
-    if (v.id.is_nil())
-        throw std::invalid_argument("Delivery Count id cannot be empty.");
-    ORES_LOG_SEV(lg(), debug) << "Saving delivery count. " << "id: " << v.id;
+    if (v.party_id.is_nil())
+        throw std::invalid_argument("Delivery Count party_id cannot be empty.");
+    if (v.provider_code.empty())
+        throw std::invalid_argument("Delivery Count provider_code cannot be empty.");
+    if (v.feed_id.is_nil())
+        throw std::invalid_argument("Delivery Count feed_id cannot be empty.");
+    if (v.oresmd_uri.empty())
+        throw std::invalid_argument("Delivery Count oresmd_uri cannot be empty.");
+    ORES_LOG_SEV(lg(), debug) << "Saving delivery count. " << "party_id: " << v.party_id
+                              << " provider_code: " << v.provider_code << " feed_id: " << v.feed_id
+                              << " oresmd_uri: " << v.oresmd_uri
+                              << " period_start: " << v.period_start;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    ORES_LOG_SEV(lg(), info) << "Saved delivery count. " << "id: " << v.id;
+    ORES_LOG_SEV(lg(), info) << "Saved delivery count. " << "party_id: " << v.party_id
+                             << " provider_code: " << v.provider_code << " feed_id: " << v.feed_id
+                             << " oresmd_uri: " << v.oresmd_uri
+                             << " period_start: " << v.period_start;
 }
 
 void delivery_count_service::save_delivery_counts(
     const std::vector<domain::delivery_count>& delivery_counts) {
     for (const auto& e : delivery_counts) {
-        if (e.id.is_nil())
-            throw std::invalid_argument("Delivery Count id cannot be empty.");
+        if (e.party_id.is_nil())
+            throw std::invalid_argument("Delivery Count party_id cannot be empty.");
+        if (e.provider_code.empty())
+            throw std::invalid_argument("Delivery Count provider_code cannot be empty.");
+        if (e.feed_id.is_nil())
+            throw std::invalid_argument("Delivery Count feed_id cannot be empty.");
+        if (e.oresmd_uri.empty())
+            throw std::invalid_argument("Delivery Count oresmd_uri cannot be empty.");
     }
     ORES_LOG_SEV(lg(), debug) << "Saving " << delivery_counts.size() << " delivery counts";
     auto ts = delivery_counts;
@@ -571,36 +524,27 @@ void delivery_count_service::save_delivery_counts(
     repo_.write(ctx_, ts);
 }
 
-void delivery_count_service::delete_delivery_count(const boost::uuids::uuid& id) {
-    ORES_LOG_SEV(lg(), debug) << "Removing delivery count. " << "id: " << id;
-    repo_.remove(ctx_, boost::uuids::to_string(id));
-    ORES_LOG_SEV(lg(), info) << "Removed delivery count. " << "id: " << id;
+void delivery_count_service::delete_delivery_count(const std::string& party_id,
+                                                   const std::string& provider_code,
+                                                   const std::string& feed_id,
+                                                   const std::string& oresmd_uri,
+                                                   const std::string& period_start) {
+    ORES_LOG_SEV(lg(), debug) << "Removing delivery count. " << "party_id: " << party_id
+                              << " provider_code: " << provider_code << " feed_id: " << feed_id
+                              << " oresmd_uri: " << oresmd_uri << " period_start: " << period_start;
+    repo_.remove(ctx_, party_id, provider_code, feed_id, oresmd_uri, period_start);
+    ORES_LOG_SEV(lg(), info) << "Removed delivery count. " << "party_id: " << party_id
+                             << " provider_code: " << provider_code << " feed_id: " << feed_id
+                             << " oresmd_uri: " << oresmd_uri << " period_start: " << period_start;
 }
 
-void delivery_count_service::delete_delivery_counts(const std::vector<std::string>& ids) {
-    repo_.remove(ctx_, ids);
+void delivery_count_service::delete_delivery_counts(const std::vector<std::string>& party_ids,
+                                                    const std::vector<std::string>& provider_codes,
+                                                    const std::vector<std::string>& feed_ids,
+                                                    const std::vector<std::string>& oresmd_uris,
+                                                    const std::vector<std::string>& period_starts) {
+    repo_.remove(ctx_, party_ids, provider_codes, feed_ids, oresmd_uris, period_starts);
 }
 
-std::vector<domain::delivery_count>
-delivery_count_service::get_delivery_count_history(const std::string& key) {
-    ORES_LOG_SEV(lg(), debug) << "Getting history for delivery count. key: " << key;
-    // The caller holds the key the model declares and this reads by the
-    // storage key, so the two are joined here exactly as they are for any
-    // other read. Without this step a provider looks the versions up under a
-    // value the storage key never holds, and reports an entity that has a
-    // history as having none.
-    messaging::delivery_count_key k;
-    k.oresmd_uri = key;
-    // A delete here closes the transaction-time window and leaves every version
-    // in place, so resolving through a latest read would lose the history at
-    // exactly the moment it is wanted. This takes the newest row carrying the
-    // declared key whether or not it is still current, which for a record that
-    // still exists is the same row the latest read would have returned.
-    const auto found = repo_.read_any_by_oresmd_uri(ctx_, k.oresmd_uri);
-    if (found.empty())
-        return {};
-    const auto& row = found.front();
-    return repo_.read_all(ctx_, boost::uuids::to_string(row.id));
-}
 
 }

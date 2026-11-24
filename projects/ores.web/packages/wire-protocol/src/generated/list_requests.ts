@@ -1384,22 +1384,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['versions'],
     },
     'marketdata.v1.delivery_counts.list': {
-        asOf: true,
+        asOf: false,
         filter: [
             'party_id',
             'provider_code',
             'feed_id',
-            'id_one_of',
             'party_id_one_of',
             'provider_code_one_of',
             'feed_id_one_of',
         ],
         rows: ['delivery_counts'],
-    },
-    'marketdata.v1.delivery_counts_versions.list': {
-        asOf: false,
-        filter: ['version', 'from_version', 'to_version'],
-        rows: ['versions'],
     },
     'marketdata.v1.demand_intervals.list': {
         asOf: true,

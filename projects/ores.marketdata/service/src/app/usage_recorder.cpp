@@ -123,6 +123,33 @@ void usage_recorder::flush(std::chrono::system_clock::time_point now) {
     if (counts.empty())
         return;
 
+    if (!totals_seeded_) {
+        try {
+            for (const auto& row :
+                 repository::delivery_count_repository{}.read_latest_all_tenants(ctx_)) {
+                delivery_key key;
+                key.tenant_id = row.tenant_id;
+                key.party_id = row.party_id;
+                key.provider_code = row.provider_code;
+                key.feed_id = row.feed_id;
+                key.oresmd_uri = row.oresmd_uri;
+                key.period_start = row.period_start;
+                running_totals_[key] = row.deliveries;
+            }
+            totals_seeded_ = true;
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(lg(), warn)
+                << "Could not read the counts already recorded, so this flush starts its totals "
+                   "from zero: "
+                << e.what();
+        }
+    }
+
+    const auto oldest_period = now - std::chrono::hours(2);
+    for (auto it = running_totals_.begin(); it != running_totals_.end();) {
+        it = it->first.period_start < oldest_period ? running_totals_.erase(it) : std::next(it);
+    }
+
     std::map<std::string, std::vector<domain::delivery_count>> by_tenant;
     std::map<std::string, std::vector<delivery_entry>> entries_by_tenant;
     boost::uuids::random_generator gen;
@@ -136,11 +163,8 @@ void usage_recorder::flush(std::chrono::system_clock::time_point now) {
         row.oresmd_uri = c.key.oresmd_uri;
         row.period_start = c.key.period_start;
         row.flushed_at = now;
-        row.deliveries = c.deliveries;
-        row.modified_by = ctx_.service_account();
-        row.performed_by = ctx_.service_account();
-        row.change_reason_code = "system.new_record";
-        row.change_commentary = "Deliveries counted by the fan-out";
+        running_totals_[c.key] += c.deliveries;
+        row.deliveries = running_totals_[c.key];
         const auto tenant = c.key.tenant_id.to_string();
         by_tenant[tenant].push_back(std::move(row));
         entries_by_tenant[tenant].push_back(c);

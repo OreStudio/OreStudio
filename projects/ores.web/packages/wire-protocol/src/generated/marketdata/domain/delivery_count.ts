@@ -31,19 +31,13 @@
  * See the sibling protocol module for the messages that carry this type.
  */
 export interface DeliveryCount {
-    version: number;
     tenant_id: string;
-    id: string;
     party_id: string;
     provider_code: string;
+    feed_id: string;
     oresmd_uri: string;
     period_start: string;
+    id: string;
     flushed_at: string;
-    feed_id: string;
     deliveries: number;
-    modified_by: string;
-    performed_by: string;
-    change_reason_code: string;
-    change_commentary: string;
-    recorded_at: string;
 }

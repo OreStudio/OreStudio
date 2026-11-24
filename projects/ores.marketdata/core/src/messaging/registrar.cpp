@@ -30,7 +30,6 @@
 #include "ores.marketdata.core/messaging/curve_publish_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/curve_publish_registrar.hpp"
 #include "ores.marketdata.core/messaging/curve_snapshot_handler.hpp"
-#include "ores.marketdata.core/messaging/delivery_count_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/delivery_count_registrar.hpp"
 #include "ores.marketdata.core/messaging/demand_interval_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/demand_interval_registrar.hpp"
@@ -416,7 +415,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_composite_input_history_provider(hist_registry);
         register_composite_history_provider(hist_registry);
         register_rate_card_component_history_provider(hist_registry);
-        register_delivery_count_history_provider(hist_registry);
         register_demand_interval_history_provider(hist_registry);
         register_subscription_interval_history_provider(hist_registry);
         register_observation_lineage_history_provider(hist_registry);

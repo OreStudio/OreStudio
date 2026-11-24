@@ -29,7 +29,6 @@ set(files
     "datum_ore_index_codec_tests.cpp"
     "datum_ore_key_codec_tests.cpp"
     "datum_oresmd_uri_codec_tests.cpp"
-    "delivery_count_eventing_integration_tests.cpp"
     "demand_interval_eventing_integration_tests.cpp"
     "feed_eventing_integration_tests.cpp"
     "feed_scope_eventing_integration_tests.cpp"

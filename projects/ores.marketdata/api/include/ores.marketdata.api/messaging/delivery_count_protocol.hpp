@@ -49,13 +49,13 @@ struct delivery_count_key {
 };
 
 struct delivery_count_write {
-    boost::uuids::uuid id;
     boost::uuids::uuid party_id;
     std::string provider_code;
+    boost::uuids::uuid feed_id;
     std::string oresmd_uri;
     std::chrono::system_clock::time_point period_start;
+    boost::uuids::uuid id;
     std::chrono::system_clock::time_point flushed_at;
-    boost::uuids::uuid feed_id;
     std::int64_t deliveries{};
 
     friend bool operator==(const delivery_count_write&, const delivery_count_write&) = default;
@@ -86,7 +86,6 @@ struct delivery_counts_filter {
     std::optional<boost::uuids::uuid> party_id;
     std::optional<std::string> provider_code;
     std::optional<boost::uuids::uuid> feed_id;
-    std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> party_id_one_of;
     std::optional<std::vector<std::string>> provider_code_one_of;
     std::optional<std::vector<boost::uuids::uuid>> feed_id_one_of;
@@ -105,23 +104,6 @@ struct delivery_count_event {
     friend bool operator==(const delivery_count_event&, const delivery_count_event&) = default;
 };
 
-struct delivery_count_version_key {
-    delivery_count_key delivery_count;
-    std::uint32_t version{};
-
-    friend bool operator==(const delivery_count_version_key&,
-                           const delivery_count_version_key&) = default;
-};
-
-struct delivery_count_versions_filter {
-    std::optional<std::uint32_t> version;
-    std::optional<std::uint32_t> from_version;
-    std::optional<std::uint32_t> to_version;
-
-    friend bool operator==(const delivery_count_versions_filter&,
-                           const delivery_count_versions_filter&) = default;
-};
-
 struct list_delivery_counts_request {
     using response_type = struct list_delivery_counts_response;
     static constexpr std::string_view nats_subject = "marketdata.v1.delivery_counts.list";
@@ -136,7 +118,6 @@ struct list_delivery_counts_request {
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
     std::optional<delivery_counts_filter> filter;
-    std::optional<std::string> as_of;
 
     friend bool operator==(const list_delivery_counts_request&,
                            const list_delivery_counts_request&) = default;
@@ -297,59 +278,6 @@ struct delete_many_delivery_counts_response {
                            const delete_many_delivery_counts_response&) = default;
 };
 
-struct list_delivery_count_versions_request {
-    using response_type = struct list_delivery_count_versions_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.delivery_counts_versions.list";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    delivery_count_key key;
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-    ores::utility::domain::order order;
-    std::optional<delivery_count_versions_filter> filter;
-
-    friend bool operator==(const list_delivery_count_versions_request&,
-                           const list_delivery_count_versions_request&) = default;
-};
-
-struct list_delivery_count_versions_response {
-    ores::utility::domain::result result;
-    std::vector<ores::marketdata::domain::delivery_count> versions;
-    std::uint64_t total{};
-
-    friend bool operator==(const list_delivery_count_versions_response&,
-                           const list_delivery_count_versions_response&) = default;
-};
-
-struct get_delivery_count_version_request {
-    using response_type = struct get_delivery_count_version_response;
-    static constexpr std::string_view nats_subject = "marketdata.v1.delivery_counts_versions.get";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    delivery_count_version_key key;
-
-    friend bool operator==(const get_delivery_count_version_request&,
-                           const get_delivery_count_version_request&) = default;
-};
-
-struct get_delivery_count_version_response {
-    ores::utility::domain::result result;
-    std::optional<ores::marketdata::domain::delivery_count> version;
-
-    friend bool operator==(const get_delivery_count_version_response&,
-                           const get_delivery_count_version_response&) = default;
-};
-
 /**
  * @brief The subjects this resource's changes are announced on.
  *
@@ -387,13 +315,13 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delivery_count_write>) {
     return ::ores::utility::codec::field_list{
-        utility::codec::field{"id", &delivery_count_write::id},
         utility::codec::field{"party_id", &delivery_count_write::party_id},
         utility::codec::field{"provider_code", &delivery_count_write::provider_code},
+        utility::codec::field{"feed_id", &delivery_count_write::feed_id},
         utility::codec::field{"oresmd_uri", &delivery_count_write::oresmd_uri},
         utility::codec::field{"period_start", &delivery_count_write::period_start},
+        utility::codec::field{"id", &delivery_count_write::id},
         utility::codec::field{"flushed_at", &delivery_count_write::flushed_at},
-        utility::codec::field{"feed_id", &delivery_count_write::feed_id},
         utility::codec::field{"deliveries", &delivery_count_write::deliveries},
     };
 }
@@ -456,7 +384,6 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
         utility::codec::field{"party_id", &delivery_counts_filter::party_id},
         utility::codec::field{"provider_code", &delivery_counts_filter::provider_code},
         utility::codec::field{"feed_id", &delivery_counts_filter::feed_id},
-        utility::codec::field{"id_one_of", &delivery_counts_filter::id_one_of},
         utility::codec::field{"party_id_one_of", &delivery_counts_filter::party_id_one_of},
         utility::codec::field{"provider_code_one_of",
                               &delivery_counts_filter::provider_code_one_of},
@@ -484,37 +411,6 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
 }
 
 /**
- * @brief The members of delivery_count_version_key, named as the wire names them and in the order
- * the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<delivery_count_version_key>) {
-    return ::ores::utility::codec::field_list{
-        utility::codec::field{"delivery_count", &delivery_count_version_key::delivery_count},
-        utility::codec::field{"version", &delivery_count_version_key::version},
-    };
-}
-
-/**
- * @brief The members of delivery_count_versions_filter, named as the wire names them and in the
- * order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<delivery_count_versions_filter>) {
-    return ::ores::utility::codec::field_list{
-        utility::codec::field{"version", &delivery_count_versions_filter::version},
-        utility::codec::field{"from_version", &delivery_count_versions_filter::from_version},
-        utility::codec::field{"to_version", &delivery_count_versions_filter::to_version},
-    };
-}
-
-/**
  * @brief The members of list_delivery_counts_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -528,7 +424,6 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
         utility::codec::field{"limit", &list_delivery_counts_request::limit},
         utility::codec::field{"order", &list_delivery_counts_request::order},
         utility::codec::field{"filter", &list_delivery_counts_request::filter},
-        utility::codec::field{"as_of", &list_delivery_counts_request::as_of},
     };
 }
 
@@ -725,70 +620,6 @@ inline constexpr std::string_view deleted = "marketdata.v1.events.delivery_count
     };
 }
 
-/**
- * @brief The members of list_delivery_count_versions_request, named as the wire names them and in
- * the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_delivery_count_versions_request>) {
-    return ::ores::utility::codec::field_list{
-        utility::codec::field{"key", &list_delivery_count_versions_request::key},
-        utility::codec::field{"offset", &list_delivery_count_versions_request::offset},
-        utility::codec::field{"limit", &list_delivery_count_versions_request::limit},
-        utility::codec::field{"order", &list_delivery_count_versions_request::order},
-        utility::codec::field{"filter", &list_delivery_count_versions_request::filter},
-    };
-}
-
-/**
- * @brief The members of list_delivery_count_versions_response, named as the wire names them and in
- * the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto
-wire_fields(std::type_identity<list_delivery_count_versions_response>) {
-    return ::ores::utility::codec::field_list{
-        utility::codec::field{"result", &list_delivery_count_versions_response::result},
-        utility::codec::field{"versions", &list_delivery_count_versions_response::versions},
-        utility::codec::field{"total", &list_delivery_count_versions_response::total},
-    };
-}
-
-/**
- * @brief The members of get_delivery_count_version_request, named as the wire names them and in the
- * order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_delivery_count_version_request>) {
-    return ::ores::utility::codec::field_list{
-        utility::codec::field{"key", &get_delivery_count_version_request::key},
-    };
-}
-
-/**
- * @brief The members of get_delivery_count_version_response, named as the wire names them and in
- * the order the type declares them.
- *
- * This is the one statement of the message's shape. The carriers find it by
- * argument-dependent lookup, so no caller passes a list, and a message that
- * holds another message or a domain type encodes it as its own object.
- */
-[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_delivery_count_version_response>) {
-    return ::ores::utility::codec::field_list{
-        utility::codec::field{"result", &get_delivery_count_version_response::result},
-        utility::codec::field{"version", &get_delivery_count_version_response::version},
-    };
-}
-
 
 }
 namespace ores::utility::codec {
@@ -861,32 +692,6 @@ struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::deliv
     static ores::marketdata::messaging::delivery_count_event read_json(std::string_view text);
     static std::string write_msgpack(const ores::marketdata::messaging::delivery_count_event& v);
     static ores::marketdata::messaging::delivery_count_event
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_MARKETDATA_API_EXPORT
-    wire_traits<ores::marketdata::messaging::delivery_count_version_key> {
-    static constexpr bool is_generated = true;
-
-    static std::string write_json(const ores::marketdata::messaging::delivery_count_version_key& v);
-    static ores::marketdata::messaging::delivery_count_version_key read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::marketdata::messaging::delivery_count_version_key& v);
-    static ores::marketdata::messaging::delivery_count_version_key
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_MARKETDATA_API_EXPORT
-    wire_traits<ores::marketdata::messaging::delivery_count_versions_filter> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::marketdata::messaging::delivery_count_versions_filter& v);
-    static ores::marketdata::messaging::delivery_count_versions_filter
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::marketdata::messaging::delivery_count_versions_filter& v);
-    static ores::marketdata::messaging::delivery_count_versions_filter
     read_msgpack(std::span<const std::byte> data);
 };
 template <>
@@ -1079,62 +884,6 @@ struct ORES_MARKETDATA_API_EXPORT
     static std::string
     write_msgpack(const ores::marketdata::messaging::delete_many_delivery_counts_response& v);
     static ores::marketdata::messaging::delete_many_delivery_counts_response
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_MARKETDATA_API_EXPORT
-    wire_traits<ores::marketdata::messaging::list_delivery_count_versions_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::marketdata::messaging::list_delivery_count_versions_request& v);
-    static ores::marketdata::messaging::list_delivery_count_versions_request
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::marketdata::messaging::list_delivery_count_versions_request& v);
-    static ores::marketdata::messaging::list_delivery_count_versions_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_MARKETDATA_API_EXPORT
-    wire_traits<ores::marketdata::messaging::list_delivery_count_versions_response> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::marketdata::messaging::list_delivery_count_versions_response& v);
-    static ores::marketdata::messaging::list_delivery_count_versions_response
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::marketdata::messaging::list_delivery_count_versions_response& v);
-    static ores::marketdata::messaging::list_delivery_count_versions_response
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_MARKETDATA_API_EXPORT
-    wire_traits<ores::marketdata::messaging::get_delivery_count_version_request> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::marketdata::messaging::get_delivery_count_version_request& v);
-    static ores::marketdata::messaging::get_delivery_count_version_request
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::marketdata::messaging::get_delivery_count_version_request& v);
-    static ores::marketdata::messaging::get_delivery_count_version_request
-    read_msgpack(std::span<const std::byte> data);
-};
-template <>
-struct ORES_MARKETDATA_API_EXPORT
-    wire_traits<ores::marketdata::messaging::get_delivery_count_version_response> {
-    static constexpr bool is_generated = true;
-
-    static std::string
-    write_json(const ores::marketdata::messaging::get_delivery_count_version_response& v);
-    static ores::marketdata::messaging::get_delivery_count_version_response
-    read_json(std::string_view text);
-    static std::string
-    write_msgpack(const ores::marketdata::messaging::get_delivery_count_version_response& v);
-    static ores::marketdata::messaging::get_delivery_count_version_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

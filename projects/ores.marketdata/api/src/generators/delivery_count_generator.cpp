@@ -36,30 +36,20 @@ using ores::utility::generation::generation_keys;
 
 domain::delivery_count
 generate_synthetic_delivery_count(utility::generation::generation_context& ctx) {
-    [[maybe_unused]] static std::atomic<int> counter{0};
-    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
     const auto tid_str =
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::delivery_count r;
-    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
-    r.id = ctx.generate_uuid();
-    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
     r.provider_code = std::string("bloomberg");
-    r.oresmd_uri = std::string("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD") +
-                   "-" + std::to_string(idx);
-    r.period_start = std::chrono::system_clock::now();
-    r.flushed_at = std::chrono::system_clock::now();
     r.feed_id = ctx.generate_uuid();
+    r.oresmd_uri = std::string("oresmd://fx/EUR?type=quote&instrument=fx_spot&quote=rate&ccy=USD");
+    r.period_start = std::chrono::system_clock::now();
+    r.id = ctx.generate_uuid();
+    r.flushed_at = std::chrono::system_clock::now();
     r.deliveries = faker::number::integer(1, 1000);
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 

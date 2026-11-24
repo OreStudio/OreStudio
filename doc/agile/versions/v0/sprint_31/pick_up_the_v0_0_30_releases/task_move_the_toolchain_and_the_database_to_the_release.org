@@ -8,7 +8,7 @@
 #+filetags: :pick_up_the_v0_0_30_releases:sprint_31:v0:
 #+owner: marco
 #+branch: feature/pick-up-the-v0-0-30-releases
-#+pr:
+#+pr: 5094
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -142,7 +142,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5094][#5094]] | [build] Pick up the v0.0.30 toolchain |
 
 * Review
 

@@ -34,22 +34,23 @@
  * a risk that a timeout must not hide. It allows a hold and asks for a comment
  * on every decision, as the operational authorisation queue does.
  *
- * A curve publish is decided by Market Risk, one person, inside a two-week
- * window: a candidate curve that nobody answers leaves the desk pricing from
- * the published one, which is the safe failure. It allows a hold, because the
- * approver's third answer is "not yet" and the journey asks for it, and it asks
- * for no comment on an approval, because a refusal already carries the one the
- * asker reads. It names no apply workflow: the trader applies an approved
- * request through marketdata.v1.ops.publish_curve, as the third journey draws it.
+ * A market data publish is decided by Market Risk, one person, inside a
+ * two-week window: a candidate that nobody answers leaves the desk pricing from
+ * the published set, which is the safe failure. The three publish kinds carry
+ * the same decision, hold, expiry and count, because a wrong set is wrong in the
+ * same way whatever kind it is: an IR curve, an FX forward set and an FX
+ * volatility surface. None names an apply workflow, because the trader applies
+ * an approved request through the market data service's own operations.
  *
  * Every kind asks one person, and every kind says through =auto_approval_code=
- * which raises close without one. Only a curve publish does: the installation's
- * own curves are bootstrapped from the quotes its own feeds publish, which is no
- * person's judgement, so a raise in the system tenant closes at once and a raise
- * in any other tenant -- a desk's candidate, and the tenant's own party's curve
- * no less -- waits here for Market Risk. So a fresh environment holds each
- * currency's curve published with no person acting, and a desk still asks before
- * it prices from a curve of its own.
+ * which raises close without one. The three market data publish kinds do: the
+ * installation's own curves are bootstrapped, and its own forward sets and
+ * surfaces computed, from the quotes its own feeds publish, which is no
+ * person's judgement. So a raise in the system tenant closes at once, and a
+ * raise in any other tenant -- a desk's candidate, and the tenant's own
+ * party's set no less -- waits for Market Risk. A fresh environment therefore
+ * holds each set published with no person acting, and a desk still asks before
+ * it prices from a set of its own.
  *
  * A curve withdrawal is decided by Market Risk, as a publish is, because taking
  * a curve out of use is the same risk decision read backwards. It does not
@@ -75,12 +76,14 @@
  * because a proposal nobody applies leaves the version in force as it was and
  * the person who asked waiting.
  *
- * The maker and checker pair is per kind. Only the two market data kinds name a
- * raise permission, and it is the code the market data service's own operations
- * already check: marketdata::curve_bootstrap:publish. A curve withdrawal is
- * raised by the account that may publish, as the withdrawal journey states, so
- * it names the same code. Every other kind names none, which keeps the rule it
- * had: the raise is the owning component's to gate.
+ * The maker and checker pair is per kind. The four market data kinds name a
+ * raise permission, and each names the code its own service's operations
+ * already check: marketdata::curve_bootstrap:publish for the curve, the forward
+ * set and the curve withdrawal, and marketdata::fx_vol_surface:publish for the
+ * surface. A curve withdrawal is raised by the account that may publish, as the
+ * withdrawal journey states, so it names the curve's code. Every other kind
+ * names none, which keeps the rule it had: the raise is the owning component's
+ * to gate.
  */
 
 \echo '--- Approval Kinds ---'

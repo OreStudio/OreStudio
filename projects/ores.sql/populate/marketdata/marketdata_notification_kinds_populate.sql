@@ -21,16 +21,21 @@
 /**
  * Market Data Notification Kinds Population Script
  *
- * The two notices the market data service raises about a published curve. A
+ * The three notices the market data service raises about a published set: a
+ * curve is published, a curve is withdrawn, and a surface is published. A
  * component that raises its own kinds seeds them in its own populate script, so
  * these live here and not with the inbox's own four.
  *
- * A publish tells the people who read the curve that a new version is live. A
+ * The kinds follow the lifecycle they announce. The FX forward set supersedes
+ * no set and tells nobody, and the surface can be published but not withdrawn,
+ * so neither seeds a notice for an act it does not have. A kind gains its
+ * notice when it gains the act.
+ *
+ * A publish tells the people who read the set that a new version is live. A
  * withdrawal tells them it left use, and carries the reason in words, because a
- * withdrawn curve is a change a reader must act on. Both name the subject and
- * the act and never the values: a notice that carried the points would duplicate
- * the curve and drift from it, and the link it carries is where the values are
- * read.
+ * withdrawn set is a change a reader must act on. Both name the subject and the
+ * act and never the values: a notice that carried the points would duplicate the
+ * set and drift from it, and the link it carries is where the values are read.
  *
  * The message key is the server's own dotted path, so a screen asks for the key
  * it was sent rather than mapping it. The mail copy is optional for both: the

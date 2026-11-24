@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :bring_the_market_data_journeys_up_to_the_delivered_state:sprint_31:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/correct-the-withdrawal-journey-and-the-two-seed-comments
+#+pr: 5104
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -26,11 +26,11 @@ The withdrawal journey describes the withdrawal as delivered for curves and name
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9C8F48B9-9B03-4C0A-8D57-12E8481272C8][Bring the market data journeys up to the delivered state]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-24                               |
 
 * Acceptance
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5104][#5104]] | [doc] Correct the withdrawal journey and the seed headers |
 
 * Review
 
@@ -85,3 +85,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The withdrawal journey now describes the act as the tree performs it. The four
+columns that end a set are named, with the three that name its successor; the
+operation is =marketdata.v1.ops.withdraw_curve=, which refuses a set that is
+withdrawn, superseded or never published, and which accepts an approved
+withdrawal request or none when the tenant's count lets the trader act alone. A
+replacement is a publish, not a second operation, and the notice is
+=marketdata.curve_withdrawn=.
+
+The gaps the page now states are the real ones: the withdrawal exists for the
+IR curve alone, no read maps a set to its consumers, and no single delta read
+exists.
+
+The two population scripts describe the rows they seed. The notification kinds
+header names all three kinds and says why two kinds have no notice; the approval
+kinds header names the three publish kinds, the curve withdrawal, and the two
+raise permission codes they name.
+
+The change to the two scripts is a change to their block comments alone: every
+changed line begins with the comment marker, which a check of the diff confirms.
+The rows are unchanged, so the database checks were excluded and the seeds were
+not re-run.

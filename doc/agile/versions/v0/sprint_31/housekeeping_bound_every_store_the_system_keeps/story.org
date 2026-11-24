@@ -46,6 +46,15 @@ No store the system keeps grows without bound: each one has a declared policy, h
 
 * Decisions
 
+- The node package cache is keyed by content, not by app version. A machine
+  downloads and unpacks a package once per distinct digest, into a directory
+  named after the digest, and every node on that host shares it. The wrapper
+  already locks per package, verifies the transfer against
+  =evt.package_sha256= and renames an extracted tree into place, so the digest
+  is in hand and the change is to key on it and to drop the retained tarball.
+  The first step is configuration only: pass =--package-dir= to every wrapper
+  unit so the sharing the code already implements actually happens.
+
 * Out of scope
 
 -

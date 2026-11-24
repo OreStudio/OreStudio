@@ -204,25 +204,37 @@ shell calls it. There is no expiry, quota or scheduled deletion anywhere in
 family that is largest, =compute/packages=, where every published engine version
 stays forever.
 
-*The node package caches.* Each of the five wrappers is given its own
-=--work-dir= (=systemd/units/ores.compute.wrapper-solid_dirac-N.service=), so a
-package fetched to serve a job is fetched again for the next node. The cache at
-=work_dir/packages/{app_version_id}= holds both the extracted tree and the
-tarball it came from
-(=projects/ores.compute/wrapper/src/app/application.cpp:655-707=). For one ORE
-version on one node:
+*The node package caches.* The wrapper already implements the shared cache this
+problem needs, and the deployment defeats it. In =ensure_package=
+(=projects/ores.compute/wrapper/src/app/application.cpp:654-707=) the cache is
+locked per package so one wrapper downloads while the others wait, the transfer
+is checked against =evt.package_sha256= from the assignment event, and the
+archive is extracted beside the final directory and renamed into place, so a
+half-unpacked package is never visible. The cache root is =cfg.package_dir= when
+it is set and =work_dir/packages= when it is not (=:767-770=); =--package-dir=
+exists as an option (=config/parser.cpp:42,75,156=). The generated units pass
+only =--work-dir=, one directory per node
+(=systemd/units/ores.compute.wrapper-solid_dirac-N.service=), so every node
+falls back to its own cache and the sharing the code was written for never
+happens. For one ORE version on one node:
 
 | Item | Size |
 |------+------|
 | the extracted tree: =lib/=, the engine binary, =manifest.json= | 209 MB |
-| the =.tar.gz= it was extracted from | 57 MB |
+| the =.tar.gz= kept beside it | 57 MB |
 | total | 266 MB |
 
-The tarball is a second copy of a package the object store already serves, and
-the extracted tree is a third form of it. With five nodes and more than one
-version retained this is 5 × N × 266 MB, and no version is pruned: a newer
-fetch replaces only the directory it is fetching
-(=application.cpp:703-707=), leaving the old one behind.
+The tarball is a duplicate of a package the object store already serves, and the
+extracted tree is a third form of it. With five nodes and more than one version
+retained this is 5 × N × 266 MB, and no version is pruned: a newer fetch
+replaces only the directory it is fetching (=application.cpp:703-707=), leaving
+the old one behind.
+
+Keying by content closes the rest of it. The digest is already in hand as
+=evt.package_sha256= and is already verified, so a cache directory named after
+the digest downloads and unpacks once per machine per distinct content, makes a
+re-published identical package free, and lets the directory name prove what it
+holds. The tarball need not be kept once the tree is extracted.
 
 *The job folders.* Each job keeps =work_dir/jobs/{result_id}=
 (=application.cpp:778-948=) holding its extracted input, engine log, output tree
@@ -289,11 +301,12 @@ knobs are compile-time model text that need a schema rebuild to change.
 
 7. *Artefacts multiply by node and by version, which the database numbers hide.*
    A report run writes about 7 MB of rows once, but the same run also needs an
-   engine distribution on whichever node picks it up, and each node keeps its
-   own copy in its own form. The object store kept 3 packages, and one node
-   already held 266 MB for one of them. This is the dimension most likely to
-   surprise a capacity plan, because it grows with nodes × versions × jobs
-   rather than with either one alone.
+   engine distribution on whichever node picks it up, and the nodes are
+   configured to each keep their own. The object store kept 3 packages, and one
+   node already held 266 MB for one of them. This is the dimension most likely
+   to surprise a capacity plan, because it grows with nodes × versions × jobs
+   rather than with either one alone — and it is the one where the intended
+   design is already written and only misconfigured.
 
 * Recommendations
 
@@ -321,10 +334,21 @@ knobs are compile-time model text that need a schema rebuild to change.
 5. *Give artefacts a lifecycle, and stop duplicating them.* The object store's
    =compute/packages=, =compute/output=, =ore/packages= and =reporting/runs=
    prefixes accumulate with no reader after the fact, and a job folder is dead
-   the moment its output is uploaded. Beyond deletion, the node caches should
-   not exist per node at all: one copy per host, or a cache that storage backs,
-   removes the 5 × N multiplication before any sweep is written. Both halves are
-   cheaper than a policy engine and should come first.
+   the moment its output is uploaded. For the node caches, three changes in
+   order of cost, the first of which is configuration only:
+
+   a. Pass =--package-dir= to every wrapper unit, pointing all of a host's nodes
+      at one cache root. The locking, the digest check and the atomic rename are
+      already there; only the shared root is missing.
+   b. Key the cache directory by =evt.package_sha256= instead of
+      =app_version_id=, and drop the retained tarball once the tree is
+      extracted. Then one machine downloads and unpacks once per distinct
+      content, a re-published identical package costs nothing, and the directory
+      name proves what it holds.
+   c. Prune cache directories by age, through the same policy as everything
+      else, once that policy exists.
+
+   Both halves are cheaper than a policy engine and should come first.
 
 6. *Measure before and after.* The numbers above are one sample. The story
    should record the same query as a baseline so the effect of each change is

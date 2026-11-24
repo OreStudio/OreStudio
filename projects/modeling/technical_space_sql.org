@@ -12,7 +12,7 @@
 [[https://en.wikipedia.org/wiki/SQL][SQL]] (Structured Query Language) is the standard declarative language
 for defining and manipulating relational data — schemas, tables,
 constraints, and the queries and procedural functions that operate on
-them. ORE Studio runs on PostgreSQL 18+, an open-source relational
+them. ORE Studio runs on PostgreSQL 18, an open-source relational
 database that extends standard SQL with its own procedural language
 (=PL/pgSQL=) for functions and triggers, plus extensions the schema
 relies on (=pg_trgm=, =btree_gist=, =pgcrypto=).

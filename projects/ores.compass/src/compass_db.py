@@ -278,10 +278,10 @@ def timescaledb_libraries(pkglibdir=None):
     Reads the server's own library directory when psql can tell us where it
     is, and every installed postgres cluster's directory otherwise, because a
     database can outlive the server package that created it."""
-    dirs = []
     if pkglibdir:
-        dirs.append(Path(pkglibdir))
-    dirs.extend(sorted(Path("/usr/lib/postgresql").glob("*/lib")))
+        dirs = [Path(pkglibdir)]
+    else:
+        dirs = sorted(Path("/usr/lib/postgresql").glob("*/lib"))
     found = set()
     for directory in dirs:
         for path in directory.glob("timescaledb-*.so"):

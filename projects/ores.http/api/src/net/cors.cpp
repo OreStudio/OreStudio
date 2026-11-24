@@ -25,8 +25,9 @@ namespace ores::http::net {
 
 namespace {
 
-/// The methods a browser may send. PATCH is here because the routes take it.
-constexpr std::string_view allowed_methods = "GET, POST, PUT, PATCH, DELETE, OPTIONS";
+/// The methods a browser may send. PATCH is here because the routes take it, and
+/// HEAD because every GET is answered over it.
+constexpr std::string_view allowed_methods = "GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS";
 
 /**
  * The headers a browser may send. =X-Ores-Request= is the one every write of the web

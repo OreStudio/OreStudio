@@ -309,21 +309,35 @@ router::match(domain::http_method method,
      * framework sent it: a literal segment beats a parameter at the first place
      * they differ, so /parties/children never reaches /parties/{id}. Order of
      * registration decides only between patterns of equal standing.
+     *
+     * A HEAD is answered by the GET of the same pattern when no HEAD route
+     * serves it, which is how every read becomes probeable without a second
+     * declaration per route. The pattern's standing still decides first, so a
+     * literal path beats a parameter whether the answer comes from a HEAD or
+     * from its GET; a declared HEAD route wins only where the patterns stand
+     * equally.
      */
+    const bool answering_head = method == domain::http_method::head;
     const domain::route* best = nullptr;
     const std::vector<int>* best_rank = nullptr;
+    bool best_names_the_method = false;
     std::unordered_map<std::string, std::string> best_params;
     std::unordered_map<std::string, std::string> params;
     for (std::size_t i = 0; i < routes_.size(); ++i) {
         const auto& route = routes_[i];
-        if (route.method != method)
+        const bool names_the_method = route.method == method;
+        if (!names_the_method && !(answering_head && route.method == domain::http_method::get))
             continue;
         params.clear();
         if (!route.match(path, params))
             continue;
-        if (best == nullptr || ranks_[i] > *best_rank) {
+        // The standing of the pattern decides; the method only breaks a tie.
+        const bool beats = best == nullptr || ranks_[i] > *best_rank ||
+                           (ranks_[i] == *best_rank && names_the_method && !best_names_the_method);
+        if (beats) {
             best = &route;
             best_rank = &ranks_[i];
+            best_names_the_method = names_the_method;
             std::swap(best_params, params);
         }
     }

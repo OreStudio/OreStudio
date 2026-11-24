@@ -206,3 +206,80 @@ TEST_CASE("router_refuses_a_route_assembled_without_a_builder", "[router]") {
     router r;
     REQUIRE_THROWS_AS(r.add_route(raw), std::logic_error);
 }
+
+/*
+ * A HEAD is answered by the GET of the same pattern, so an uptime probe, a
+ * curl -I or a client that tests a resource before reading it learns what the
+ * GET would have answered. No route declares a HEAD of its own, and a route
+ * added tomorrow cannot omit one.
+ */
+TEST_CASE("router_answers_head_with_the_get_of_the_same_pattern", "[router][head]") {
+    auto lg(make_logger(test_suite));
+    ORES_LOG_SEV(lg, info) << "Testing that a HEAD is answered by its GET";
+
+    router r;
+    r.add_route(r.get("/api/v1/things/{id}")
+                    .auth_optional()
+                    .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
+                        co_return http_response::json(R"({"id":"one"})");
+                    })
+                    .build());
+
+    std::unordered_map<std::string, std::string> params;
+    const auto matched = r.match(http_method::head, "/api/v1/things/one", params);
+
+    REQUIRE(matched.has_value());
+    CHECK(matched->pattern == "/api/v1/things/{id}");
+    CHECK(matched->method == http_method::get);
+    REQUIRE(params.contains("id"));
+    CHECK(params.at("id") == "one");
+}
+
+/*
+ * A path served only by a method that changes something has no GET, so a HEAD
+ * on it is not a read of anything and must stay a not-found.
+ */
+TEST_CASE("router_does_not_answer_head_where_a_path_has_no_get", "[router][head]") {
+    auto lg(make_logger(test_suite));
+    ORES_LOG_SEV(lg, info) << "Testing that a HEAD without a GET is not found";
+
+    router r;
+    r.add_route(r.post("/api/v1/things")
+                    .auth_optional()
+                    .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
+                        co_return http_response::json(R"({})");
+                    })
+                    .build());
+
+    std::unordered_map<std::string, std::string> params;
+    CHECK_FALSE(r.match(http_method::head, "/api/v1/things", params).has_value());
+}
+
+/*
+ * A route that does declare a HEAD keeps it, which is how a file is checked for
+ * its size and its ranges without being transferred.
+ */
+TEST_CASE("router_prefers_a_declared_head_route", "[router][head]") {
+    auto lg(make_logger(test_suite));
+    ORES_LOG_SEV(lg, info) << "Testing that a declared HEAD route stands";
+
+    router r;
+    r.add_route(r.get("/files/{name}")
+                    .auth_optional()
+                    .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
+                        co_return http_response::json(R"({"method":"get"})");
+                    })
+                    .build());
+    r.add_route(r.head("/files/{name}")
+                    .auth_optional()
+                    .handler([](const http_request&) -> boost::asio::awaitable<http_response> {
+                        co_return http_response::json(R"({"method":"head"})");
+                    })
+                    .build());
+
+    std::unordered_map<std::string, std::string> params;
+    const auto matched = r.match(http_method::head, "/files/report.xml", params);
+
+    REQUIRE(matched.has_value());
+    CHECK(matched->method == http_method::head);
+}

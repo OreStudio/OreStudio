@@ -15,6 +15,15 @@ A published set that is wrong is taken out of use by a withdrawal: a request of 
 
 * Detail
 
+#+caption: The withdrawal of a published set, from the raise to the notice, with both endings of the raise.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/withdrawal_sequence.png]]
+
+Source: [[proj:doc/knowledge/architecture/withdrawal_sequence.puml][=withdrawal_sequence.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/withdrawal_sequence.puml=. The
+diagram follows one withdrawal from the raise to the notice, with both endings of
+the raise.
+
 ** The act
 
 The withdrawal follows the publish's shape. The trader raises it naming the published set and a reason. It is refused if the set is already withdrawn or a withdrawal of it is open. A person decides it, or a stated rule closes it ([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][Rules for the automatic approval of requests]]), in which case the apply runs in the raise's transaction. Otherwise the trader applies it within the kind's apply window: the apply checks that the request is approved and the set not yet withdrawn, then marks it withdrawn and writes the notice in one transaction.
@@ -31,11 +40,25 @@ A run that bound the set before the withdrawal names it by its publish record ([
 
 A correction is a new publish at the same or a newer as-of, which supersedes the wrong set ([[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]). A withdrawal is for a set that must not be used at all. The two are distinct acts with distinct approval kinds, as [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] describes.
 
+** What a kind must supply
+
+A withdrawal is part of a kind's declaration and not a capability the lifecycle
+adds by itself ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][Publication of derived market data sets]]). A kind
+that may be withdrawn supplies three things: the approval kind, with its raise
+permission, its decide permission, its auto-approval code and its count; the
+columns on the publish record that say who withdrew the set, when and why; and
+the notice kind its readers are told with
+([[id:B3F03DBB-EBD1-4649-94E5-6C5C1B67A084][Announcement of change in a published market data set]]).
+
+A kind without those three parts has no withdrawal, whatever the lifecycle
+permits in principle. Of the three kinds in the tree, only the IR curve supplies
+all three today.
+
 * See also
 
 
 - [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — the structure note that orders this cluster, and where to read this page in it.
-- [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]]
+- [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][Publication of derived market data sets]]
 - [[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]
 - [[id:86158AAD-423A-421A-8BE2-CC5123109297][As-of resolution of published market data sets]]
 - [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]]

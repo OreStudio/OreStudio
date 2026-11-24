@@ -1,0 +1,140 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Publication record of a derived market data set
+
+hide circle
+skinparam linetype ortho
+skinparam shadowing false
+
+package "Inbox" #E8F4FD {
+    entity "approval_request" as request <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        --
+        * kind_code : text
+        * state_code : text
+        * auto_approval_code : text
+        * reason : text
+    }
+}
+
+package "Market data: the record every kind shares" #F7E5FF {
+    entity "market_publish" as publish <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        --
+        * approval_request_id : uuid <<FK>>
+        * subject_id : uuid <<FK>>
+        * candidate_id : uuid <<FK>>
+        * candidate_version : integer
+        * party_id : uuid <<FK>>
+        * output_series_id : uuid <<FK>>
+        * as_of : timestamptz
+        * published_by : text
+        * published_at : timestamptz
+        --
+        * superseded_at : timestamptz
+        * superseded_by_request_id : uuid <<FK>>
+        * superseded_as_of : timestamptz
+        --
+        * withdrawn_by : text
+        * withdrawn_at : timestamptz
+        * withdrawn_reason_code : text
+        * withdrawal_request_id : uuid <<FK>>
+    }
+}
+
+package "The subject part: one per kind" #F7E5FF {
+    entity "curve_publish_subject" as curve_subject {
+        * publish_id : uuid <<PK>>
+        --
+        * bootstrap_config_id : uuid <<FK>>
+    }
+
+    entity "fx_forward_publish_subject" as forward_subject {
+        * publish_id : uuid <<PK>>
+        --
+        * pair_code : text
+        * spot_date : date
+        * spot_rate : numeric
+        * base_curve_publish_id : uuid <<FK>>
+        * quote_curve_publish_id : uuid <<FK>>
+        * convention_version : integer
+        * calendar_codes : text
+        * method_code : text
+    }
+
+    entity "fx_vol_surface_publish_subject" as surface_subject {
+        * publish_id : uuid <<PK>>
+        --
+        * blueprint_id : uuid <<FK>>
+    }
+}
+
+package "Market data: the candidate" #F7E5FF {
+    entity "derived_candidate" as candidate <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        * version : integer <<PK>>
+        --
+        * subject_id : uuid <<FK>>
+        * as_of : timestamptz
+        * checks : jsonb
+    }
+
+    entity "market_observation" as points <<temporal>> #C6F0D8 {
+        * series_id : uuid <<FK>>
+        * observation_datetime : timestamptz <<PK>>
+        --
+        * value : text
+    }
+
+    entity "observation_lineage" as lineage <<temporal>> #C6F0D8 {
+        * series_id : uuid <<FK>>
+        * observation_datetime : timestamptz <<PK>>
+        --
+        * derivation_config_id : uuid <<FK>>
+        * derivation_config_version : integer
+        * source_series_ids : jsonb
+        * source_weights : jsonb
+    }
+}
+
+entity "market_series" as series <<temporal>> #C6F0D8 {
+    * id : uuid <<PK>>
+    --
+    * oresmd_uri : text
+}
+
+request ||--o| publish : "authorises"
+publish ||--|| curve_subject : "the set is of"
+publish ||--|| forward_subject : "the set is of"
+publish ||--|| surface_subject : "the set is of"
+publish }o--|| candidate : "publishes one version"
+publish }o--|| series : "writes"
+candidate ||--o{ points : "its values"
+points ||--o| lineage : "its sources"
+
+note right of publish
+  One record for every kind. The state is read
+  from these columns and is not stored: a set
+  with a published instant is published, one
+  with a successor is superseded, one with a
+  withdrawing account is withdrawn.
+end note
+
+@enduml

@@ -1,42 +1,43 @@
 :PROPERTIES:
-:ID: C28EAA6E-D6F2-42B5-A71F-AA2099CEA3D3
+:ID: 5DC1D494-FA15-44CB-96B3-33DD64380D0F
 :END:
-#+title: Task: Quote correlations as market data from the simulator
-#+description: The simulator correlates its series through shared factors but publishes no correlation; quote the correlations it simulates through vendor contributors, under the correlation datum's identity, as it quotes rates and volatilities.
+#+title: Task: Create the shared record and the three subject parts
+#+description: One table of the columns every kind shares, and one subject part per kind keyed by the publish.
 #+type: task
 #+level: s1
-#+filetags: :give_each_party_its_correlation_market_data:inbox:v0:
+#+filetags: :hold_one_publish_record_with_a_subject_part_per_kind:sprint_31:v0:
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on: DF7C448C-77D8-42D3-B35D-E33493BE1A24
-#+blocked_since: 2026-11-17
-#+created: 2026-11-17
-#+updated: 2026-11-17
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:91E40364-DB1A-4EA4-AE99-4904849AED22][Give each party its correlation market data, end to end]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CBA99FC1-9BEA-49A9-AF58-575ECBFE30A2][Hold one publish record with a subject part per kind]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A party subscribed to a vendor receives correlation quotes consistent with the spot and volatility it receives.
+The tree holds one publish record with the five groups of shared columns, and one subject part per kind that says what the set is of. The existing rows are migrated into the new shape.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:91E40364-DB1A-4EA4-AE99-4904849AED22][Give each party its correlation market data, end to end]] |
+| Parent story | [[id:CBA99FC1-9BEA-49A9-AF58-575ECBFE30A2][Hold one publish record with a subject part per kind]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-11-17                               |
+| Last touched | 2026-11-24                               |
 
 * Acceptance
 
-- Each correlation quote names its two operands under the correlation datum and is classified by them.
-- The quoted correlations match the simulator's within its contributors' noise.
+- The shared record holds identity, authority, the published version, supersession and withdrawal, and no column that belongs to one kind alone.
+- Each subject part is keyed by the publish and carries that kind's own foreign keys, checks and lookups.
+- The three existing publish tables are migrated into the new shape, and a party's published sets survive with their publisher, instant, as-of and supersession intact.
 
 * Plan
 

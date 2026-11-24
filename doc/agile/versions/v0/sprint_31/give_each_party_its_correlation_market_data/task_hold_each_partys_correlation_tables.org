@@ -1,18 +1,18 @@
 :PROPERTIES:
-:ID: 29A8F8A2-25FC-4858-B233-B3F985C4FE43
+:ID: 48A82366-AD5C-44E6-B6C3-777EC54B9DB8
 :END:
-#+title: Task: Use a party's correlations in its driven surfaces and its ORE runs
-#+description: Feed a party's correlation tables to the calibration of its correlation-driven crosses and to the ORE market it prices with, through curve_correlation_config.
+#+title: Task: Hold each party's correlation tables and maintain them on screens
+#+description: Give each party its own correlation tables, built from the quotes it receives and copied with its configuration at provisioning, and screens to browse, override and audit them, as its other market data has.
 #+type: task
 #+level: s1
-#+filetags: :give_each_party_its_correlation_market_data:inbox:v0:
+#+filetags: :sprint_31:v0:
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on: 48A82366-AD5C-44E6-B6C3-777EC54B9DB8
+#+blocked_on: DF7C448C-77D8-42D3-B35D-E33493BE1A24
 #+blocked_since: 2026-11-17
 #+created: 2026-11-17
-#+updated: 2026-11-17
+#+updated: 2026-11-24
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A party's correlations are the ones its driven surfaces and its prices use.
+A party maintains its own correlations and can say where each value came from.
 
 * Status
 
@@ -35,8 +35,8 @@ A party's correlations are the ones its driven surfaces and its prices use.
 
 * Acceptance
 
-- A correlation-driven cross reads its correlation from the party's tables, and the publish names it.
-- An ORE run of the party carries its correlations as CORRELATION quotes.
+- A provisioned party holds correlation tables built from its received quotes.
+- A screen shows a party's correlations, lets an authorised person override a value with a reason, and shows each value's lineage and history.
 
 * Plan
 

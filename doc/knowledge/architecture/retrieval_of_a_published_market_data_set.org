@@ -1,0 +1,154 @@
+:PROPERTIES:
+:ID: A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E
+:END:
+#+title: Retrieval of a published market data set
+#+description: A party reads the sets it published as a list, a record with its history, a comparison as of, and the points or slices behind them.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:marketdata:publish:read:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+
+* Summary
+
+A party reads what it published in four shapes, and the four share one rule. The
+shapes are a list of its sets, a record of one set with the history behind it, a
+comparison of two instants, and the values themselves, read as a curve's points,
+a forward set's ladder or a surface's grid and one of its smiles. Every shape
+answers from the publication record and never from a candidate, and every one of them
+is the same shape whatever the kind, because the publication record is one record
+([[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][Publication record of a derived market data set]]).
+
+The list answers the question a desk asks first, which is not what the numbers
+are but which set is in use. For each subject of the party it states the live
+set, when it was published, and what ended the set before it. The record answers
+what the set is and who put it there, and the values answer what it says.
+
+* Detail
+
+** The four reads
+
+| Read | The question it answers | What it takes | What it gives |
+|------+-------------------------+---------------+---------------|
+| The list | Which sets does this party have, and which is live? | A party, optionally a subject, a state or a search | One row per published set, newest first |
+| The record | What is this set, who published it and how was it decided? | The publish, or the subject and an as-of | The header facts, the approval, the state and the values |
+| The comparison | What changed between these two sets? | Two publishes of one subject | The signed difference per node, and the nodes that appeared or dropped |
+| The values | What does the set say at this expiry and strike? | The publish, and a slice | The points, the grid, or one row of the grid |
+
+The list, the record and the comparison are the same for every kind. The values
+are the only read that a kind shapes for itself, because a curve is read as points
+against a tenor, a forward set as a ladder of dates, and a surface as a grid with a
+smile in each row.
+
+** The list
+
+A row of the list is a publication record with its subject read into the words a
+person recognises, and with the two facts that a reader cannot derive: the state
+and the counts of what the set holds.
+
+| Group | The row states |
+|-------+----------------|
+| What | The subject in words: the curve's currency and index, the pair, the blueprint's name and model |
+| Whose | The party that holds it |
+| When | The as-of the set was built at, and the instant it was published |
+| State | Published, superseded or withdrawn, and the account and reason of the end where there is one |
+| Size | How many points, or how many expiries and strikes, the set holds |
+| Freshness | Whether the set is stale against the server's threshold for its kind |
+
+The state and the freshness are the two columns the client must not compute for
+itself. The threshold that decides staleness is the server's, and a client that
+applied its own could not agree with another client; the state is derived from
+the record's own columns, and a list that recomputed it would be a second
+statement of the rule ([[id:86158AAD-423A-421A-8BE2-CC5123109297][As-of resolution of published market data sets]]).
+
+A list takes the ended sets too, because the question "which set was in use
+yesterday" is a question about a superseded or withdrawn one. The filter is a
+field of the request and not a property of the endpoint.
+
+** The record and its history
+
+The record is one set, read by its publish or by its subject and an as-of. It
+gives the header facts, the approval that authorised it, the rule that closed the
+request where no person decided it
+([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][Rules for the automatic approval of requests]]), the state and the values.
+
+The history is the same record read across its versions: every published set of
+one subject, newest as-of first, each with its state. A history is not a second
+store. It is the record's own rows, which is why a withdrawal appears in it as a
+new version of one row and not as a deletion.
+
+** The comparison
+
+A comparison takes two publishes of one subject and gives the difference per
+node. Two details decide whether the difference means anything, and both are the
+server's to state.
+
+The first is the node set. A node that the subject's shape declares and one
+instant does not carry is not the same as a node that was never part of the
+shape, so the comparison reads the shape and not the observations it happens to
+find. The second is the age of each side. A difference between two points
+recorded far apart is not a move in the market, so each side carries the instant
+it represents beside its value.
+
+** The values
+
+The values are read from the published set and never from the candidate. What
+differs by kind is only the shape of the answer.
+
+A curve is read as its pillars: one value per pillar, with the pillar's role and
+tenor. A forward set is read as its ladder: one price per value date, with the
+spot and the two curves it was built from. A surface is read as a grid whose rows
+are expiries and whose columns are strikes, with the strike code available and
+not guessed, because a column headed by a delta is not a strike until the
+convention that turned one into the other is stated
+([[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]]). One smile is one row of that grid, and it is not a
+second read: the grid already holds it.
+
+#+caption: The four reads a party makes of a published set, and the records each one answers from.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/retrieval_of_a_published_set.png]]
+
+Source: [[proj:doc/knowledge/architecture/retrieval_of_a_published_set.puml][=retrieval_of_a_published_set.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/retrieval_of_a_published_set.puml=.
+
+** What a reader never receives
+
+Two refusals and one allowance hold for every kind, and one fact belongs to the
+read rather than to the set.
+
+A candidate is never returned by a read by as-of, by a list or by a comparison.
+A set that no rule selects is refused with the subject and the as-of named,
+rather than answered with an empty series, because an empty series cannot be told
+from a subject that was never published. A withdrawn set is still readable, with
+its values and the words that say it was withdrawn, because the set a desk priced
+from must remain readable after it leaves use
+([[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]]).
+
+The fact that belongs to the read is the staleness verdict: it compares the read's
+instant with the instant the set was built at, so the same set is fresh in one
+read and stale in another.
+
+** Where the kinds stand
+
+| Read | IR curve | FX forward set | FX volatility surface |
+|------+----------+----------------+-----------------------|
+| The list | =list_published_curves= | none | none |
+| The record | =get_published_curve_sets= | =get_published_fx_forward= | =get_published_fx_vol_surface= |
+| The history | the list with the ended sets | none | a repository method with no operation |
+| The comparison | read by the screen from two sets | none | none |
+| The values | points against a tenor | the ladder | a grid, without its axes in draw order or its conventions |
+
+The surface's record read states its model, its strike convention and its delta
+type, and it does not state its axes in draw order, the convention at each tenor,
+the approval that authorised it or the check its calibration recorded. Those are
+the facts [[id:9487E120-6D43-4EFB-8E28-E9CEBA7EB43A][Read a published surface]] names as the reader's need.
+
+* See also
+
+- [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — the structure note that orders this cluster.
+- [[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][Publication record of a derived market data set]] — the record every read answers from.
+- [[id:86158AAD-423A-421A-8BE2-CC5123109297][As-of resolution of published market data sets]] — which set a read by as-of takes.
+- [[id:28D1545F-1BE8-4C14-8B69-292DC12BC45F][Watch a curve or surface evolve]] — the comparison as a person uses it.
+- [[id:9487E120-6D43-4EFB-8E28-E9CEBA7EB43A][Read a published surface]] — the reader's journey for a surface.
+- [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] — why a withdrawn set is still readable.
+- [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — what a strike column means.

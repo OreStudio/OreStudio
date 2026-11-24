@@ -1,42 +1,43 @@
 :PROPERTIES:
-:ID: DF7C448C-77D8-42D3-B35D-E33493BE1A24
+:ID: E11F9816-9A61-44B2-852C-EE2F282CFD0B
 :END:
-#+title: Task: Design the end-to-end flow of correlation data
-#+description: Analysis first: trace a correlation from its source to its uses, naming what exists (the correlation datum and its classification, ORE's CORRELATION type, curve_correlation_config, the simulator's shared factors) and what is missing, and record the design as knowledge before any build.
+#+title: Task: Declare the three kinds and the interface they share
+#+description: State the four things a kind supplies, and the interface the one lifecycle calls through.
 #+type: task
 #+level: s1
-#+filetags: :give_each_party_its_correlation_market_data:inbox:v0:
+#+filetags: :publish_every_kind_of_derived_market_object_through_one_lifecycle:sprint_31:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-11-17
-#+updated: 2026-11-17
+#+created: 2026-11-24
+#+updated: 2026-11-24
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:91E40364-DB1A-4EA4-AE99-4904849AED22][Give each party its correlation market data, end to end]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-One recorded design for how a correlation is quoted, received, held, maintained and used.
+A kind is a declaration of its subject, its compute, its checks and its approval kinds, and the lifecycle reaches a kind only through one interface. The interface is small enough that a fourth kind adds a declaration and no branch.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:91E40364-DB1A-4EA4-AE99-4904849AED22][Give each party its correlation market data, end to end]] |
+| Parent story | [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin the design.                      |
-| Last touched | 2026-11-17                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-24                               |
 
 * Acceptance
 
-- A knowledge doc states the source (simulated, and later a vendor's), the identity of a correlation quote, the party's tables, the maintenance screens, and the consumers (driven surfaces, ORE), each with what exists and what is missing.
-- The doc says how a correlation stays consistent with the spot and volatility data it relates.
+- The declaration names the subject, the compute, the checks and the two approval kinds, and the three kinds declare theirs in one place each.
+- The interface carries the four facts the lifecycle needs from a kind, and no step of raise, apply, supersede or notice reads a kind code.
+- A test proves that a kind which declares no withdrawal kind is refused a withdrawal at the raise, and not at the apply.
 
 * Plan
 

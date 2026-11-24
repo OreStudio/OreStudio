@@ -155,7 +155,7 @@ which cut a report prices from, which is
     run's own page starts. The screen says plainly that a second LIVE run is a view of
     a later instant and not a repeated result.
 
-** The audit across the day**
+** The audit across the day
 
 16. *Read the day's sequence.* From the cuts list, a person reads one day's cuts in
     order: the cut taken at the close, the retake that superseded it, and the runs

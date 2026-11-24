@@ -1,0 +1,66 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Retrieval of a published market data set: four reads, one record
+
+actor "Reader" as reader
+participant "Screen" as screen
+participant "Market data" as md
+database "Publish record\nand its subject part" as publish
+database "The candidate's points\nand their lineage" as points
+
+== The list ==
+reader -> screen : open the party's sets
+screen -> md : list(subject, state, party, search)
+md -> publish : the sets of the party,\nnewest first
+md -> md : state from the columns;\nstaleness from the threshold
+md --> screen : one row per set
+screen --> reader : which set is in use, and what ended\nthe set before it
+
+== The record ==
+reader -> screen : open one set
+screen -> md : record(subject, as-of)
+md -> publish : the set the read rule selects
+alt a set is published
+  md -> points : the values of the set
+  md --> screen : the header facts, the approval,\nthe state and the values
+  screen --> reader : what the set says, and who put it there
+else nothing is published
+  md --> screen : a refusal naming the subject and the as-of
+  screen --> reader : nothing was ever published
+end
+
+== The comparison ==
+reader -> screen : compare two instants
+screen -> md : record(the same subject, each as-of)
+md --> screen : two sets, each with its own as-of
+screen -> screen : the difference per node,\nand the nodes that appeared or dropped
+screen --> reader : what changed, with the age of each side
+
+== The values ==
+note over screen, points
+  A curve answers with its pillars, a forward set
+  with its ladder, and a surface with a grid whose
+  rows are expiries and whose columns are strikes.
+  One smile is one row of the grid, not a second read.
+end note
+md -> points : read at the instant the record names
+md --> screen : the points, the grid or one row of it
+
+@enduml

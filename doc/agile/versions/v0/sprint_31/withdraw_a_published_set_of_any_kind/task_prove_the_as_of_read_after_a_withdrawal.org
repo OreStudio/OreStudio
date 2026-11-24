@@ -1,41 +1,43 @@
 :PROPERTIES:
-:ID: 7A39E1DC-6F9D-46D5-8932-FDA6588095E5
+:ID: 03F6149D-99F1-495C-BECD-13C40E1BD74B
 :END:
-#+title: Task: Choose where a correlation-driven cross reads its correlation
-#+description: A correlation-driven surface needs a correlation between its drivers that no quote states; decide whether it is read from the party's own spot history, implied from a previous cross surface, or set by the party, and record why.
+#+title: Task: Prove the as-of read after a withdrawal
+#+description: For each kind, prove that the read rule follows the withdrawal page, including the set that becomes live again.
 #+type: task
 #+level: s1
-#+filetags: :drive_a_partys_crosses_from_its_drivers:inbox:v0:
+#+filetags: :withdraw_a_published_set_of_any_kind:sprint_31:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-11-17
-#+updated: 2026-11-17
+#+created: 2026-11-24
+#+updated: 2026-11-24
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:305E3F4D-6A79-40F3-9F57-5D149A142B73][Drive a party's crosses from its driver pairs]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A3C64267-3320-4CD1-944E-EB2CB79E43A1][Withdraw a published set of any kind]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The correlation a driven cross uses has a stated, replaceable source.
+For each of the three kinds, a test states the read rule after a withdrawal: the withdrawn set is never taken, the newest remaining set at or before the as-of is, and the set a superseded withdrawal left behind becomes live again.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | ABANDONED                              |
-| Parent story | [[id:305E3F4D-6A79-40F3-9F57-5D149A142B73][Drive a party's crosses from its driver pairs]] |
-| Now          | Abandoned: the correlation is read from the party's tables. |
+| State        | BACKLOG                              |
+| Parent story | [[id:A3C64267-3320-4CD1-944E-EB2CB79E43A1][Withdraw a published set of any kind]] |
+| Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing; the work is the correlation story. |
-| Last touched | 2026-11-17 |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-24                               |
 
 * Acceptance
 
-- The choice and its reasons are recorded in the story's Decisions, with the data each option needs and whether a real vendor could supply it.
+- For each kind, a read at an as-of before the withdrawn set takes the set before it.
+- For each kind, withdrawing the live set makes the set it had superseded live again for the as-ofs it covered.
+- A read of a withdrawn set by its publish still returns its values and the words that say it is withdrawn.
 
 * Plan
 
@@ -58,10 +60,6 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
-
-- Abandoned (2026-11-17, with the person): each party holds its own correlation tables,
-  maintained on screens like its other market data, so the source of a driven cross's
-  correlation is the party's tables. The whole flow is the story [[id:91E40364-DB1A-4EA4-AE99-4904849AED22][Give each party its correlation market data, end to end]].
 
 * Test Scenarios
 

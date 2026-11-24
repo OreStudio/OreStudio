@@ -352,7 +352,7 @@ the atomicity of the classifications they are converted into.
 so the file's element structure becomes the schema; and a field of
 self-describing archive bytes inside a message.
 
-** The anti-type: the hand-written union**
+** The anti-type: the hand-written union
 
 Name it, because it is what the missing classification produced. The
 anti-type is a hand-written union of unrelated entities presented as one
@@ -401,7 +401,7 @@ joined by anything, because each is an independent population. If the
 arrays cannot be joined on a key, the set is not a read; it is the
 anti-type.
 
-** The decision rule**
+** The decision rule
 
 This is the spine of the
 [[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][data classification checklist]].

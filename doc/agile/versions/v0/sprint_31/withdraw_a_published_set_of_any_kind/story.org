@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: A3C64267-3320-4CD1-944E-EB2CB79E43A1
+:END:
+#+title: Story: Withdraw a published set of any kind
+#+description: Every kind that publishes can take a set out of use: a withdrawal approval kind, the columns that record it, the operation and the notice.
+#+type: story
+#+level: s2
+#+filetags: :sprint_31:v0:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every kind that publishes can take a published set out of use. The withdrawal is part of the kind's declaration: its approval kind, the record columns that say who withdrew the set, when and why, the operation that applies it, and the notice kind its readers are told with.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-24                               |
+
+* Acceptance
+
+- The FX forward set and the FX volatility surface name a withdrawal approval kind, with the permission that raises it, the permission that decides it, the approval count and the auto-approval code.
+- A withdrawal of either kind records the withdrawing account, the instant, the reason and the request, and no read by as-of takes the set afterwards.
+- A withdrawal notice reaches the party's readers for every kind, seeded under its own code.
+- A withdrawal of a set already withdrawn, or of one with an open withdrawal, is refused.
+- The withdrawal is reachable from the screens that show a published set.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:73EE02E5-22D3-4AF0-88BA-20A865FA669A][Seed the withdrawal kinds and the withdrawal notices]] | BACKLOG | | | A withdrawal approval kind and a withdrawal notice kind for the forward set and for the surface. |
+| [[id:516B3358-A5B1-4BBF-922D-C08413A38C4F][Carry the withdrawal for the forward set and the surface]] | BACKLOG | | | The columns, the operation and the apply of a withdrawal, for the two kinds that lack them. |
+| [[id:03F6149D-99F1-495C-BECD-13C40E1BD74B][Prove the as-of read after a withdrawal]] | BACKLOG | | | For each kind, prove that the read rule follows the withdrawal page, including the set that becomes live again. |
+
+* Decisions
+
+* Out of scope
+
+-

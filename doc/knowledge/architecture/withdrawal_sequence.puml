@@ -1,0 +1,62 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Withdrawing a published set: raise, decide, apply, tell
+
+actor "Trader\n(maker)" as maker
+participant "Market data" as md
+participant "Inbox\n(library, same database)" as inbox
+actor "Decider\n(checker)" as checker
+participant "Readers" as readers
+
+== Raise ==
+maker -> md : raise withdrawal(publish, reason code, commentary)
+md -> md : the set is published and not withdrawn;\nno withdrawal of it is open;\nits kind name a withdrawal kind
+md -> inbox : write the request under the kind,\nwith the party and the reason
+inbox --> md : the rule in force, if any
+
+== Decide ==
+alt a stated rule closes it
+  inbox -> inbox : approve, decided by the system
+  md -> md : apply (below), in the raise's transaction
+else a person decides
+  inbox -> checker : a withdrawal waits
+  checker -> inbox : approve or refuse (not the maker)
+  inbox -> maker : the request is approved
+end
+
+== Apply ==
+maker -> md : apply withdrawal(request), within the window
+md -> md : the request is approved and in its window;\nthe set is not withdrawn yet
+group one transaction
+  md -> md : mark the set withdrawn: the account,\nthe instant, the reason, the request
+  md -> md : write the notice (outbox row)
+end
+md -> readers : deliver the notice after the commit\n(retried until delivered)
+md --> maker : withdrawn
+
+note over md
+  The set keeps its values, its publisher and its
+  instant. A read by as-of skips it and takes the
+  newest remaining set at or before the as-of, so
+  withdrawing the live set makes the set it had
+  superseded live again.
+end note
+
+@enduml

@@ -51,7 +51,7 @@ The trader who raised the publish is the one who knows when the desk should move
 
 - [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]] — the structure note that orders this cluster, and where to read this page in it.
-- [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]]
+- [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][Publication of derived market data sets]]
 - [[id:BF14C932-D699-4224-98DA-0481E49FA394][Raising a publish request for a candidate version]]
 - [[id:86158AAD-423A-421A-8BE2-CC5123109297][As-of resolution of published market data sets]]
 - [[id:53F31919-86FA-4E35-8594-9E72197C4A3B][Publish the approved set]]

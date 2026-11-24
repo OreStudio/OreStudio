@@ -1,18 +1,18 @@
 :PROPERTIES:
-:ID: 6DC1DD9A-ADF8-41FA-9154-FEF8FA4C0152
+:ID: C28EAA6E-D6F2-42B5-A71F-AA2099CEA3D3
 :END:
-#+title: Task: Quote cross surfaces consistent with their legs
-#+description: The latent run quotes a spot only for the USD pairs, so 21 of the 35 blueprint pairs, the crosses, have no latent surface; imply each cross's surface from its two legs' latent surfaces and the simulator's correlation between them, never from the cross's own spot.
+#+title: Task: Quote correlations as market data from the simulator
+#+description: The simulator correlates its series through shared factors but publishes no correlation; quote the correlations it simulates through vendor contributors, under the correlation datum's identity, as it quotes rates and volatilities.
 #+type: task
 #+level: s1
-#+filetags: :give_each_party_its_correlation_market_data:inbox:v0:
+#+filetags: :sprint_31:v0:
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on:
-#+blocked_since:
+#+blocked_on: DF7C448C-77D8-42D3-B35D-E33493BE1A24
+#+blocked_since: 2026-11-17
 #+created: 2026-11-17
-#+updated: 2026-11-18
+#+updated: 2026-11-24
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,9 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Every blueprint cross has a latent surface implied from its two USD legs' latent
-surfaces and the correlation between them that the simulator also quotes, so a
-cross's volatility is consistent with its legs by construction.
+A party subscribed to a vendor receives correlation quotes consistent with the spot and volatility it receives.
 
 * Status
 
@@ -37,22 +35,8 @@ cross's volatility is consistent with its legs by construction.
 
 * Acceptance
 
-- A cross's latent ATM vol at each expiry is
-  $\sigma_{cross}^2 = \sigma_1^2 + \sigma_2^2 + 2 s \rho \sigma_1 \sigma_2$, with
-  $\sigma_1, \sigma_2$ its legs' latent ATM vols and $\rho$ the correlation the
-  simulator quotes for that pair of legs at that tenor; no cross surface is
-  simulated from the cross's own spot.
-- The cross's spot and forwards, which set its strikes, are its legs' spot and
-  forwards triangulated; they set no volatility.
-- The rule for the cross's smile (risk reversals and butterflies) is decided and
-  recorded before it is built, because the correlation fixes only the ATM vol.
-- The 21 crosses are added to the dataset from the blueprints, with no pair
-  listed by hand.
-
-* Dependencies
-
-- [[id:DF7C448C-77D8-42D3-B35D-E33493BE1A24][Design the end-to-end flow of correlation data]] names the correlation the simulator has.
-- [[id:C28EAA6E-D6F2-42B5-A71F-AA2099CEA3D3][Quote correlations as market data from the simulator]] quotes the $\rho$ this task reads, so a cross surface and the correlation a party receives agree.
+- Each correlation quote names its two operands under the correlation datum and is classified by them.
+- The quoted correlations match the simulator's within its contributors' noise.
 
 * Plan
 

@@ -1,42 +1,43 @@
 :PROPERTIES:
-:ID: 6C8D07FA-8CF8-48DB-A2FD-9C8CF5B05EA6
+:ID: 2DAA95EE-E0FF-433B-AA1C-03ED0ADE7CD4
 :END:
-#+title: Task: Configure a party's driven pairs and calibrate their surfaces
-#+description: Model the party's driven pairs, their drivers and their relationship, copy them with the party's blueprints, and calibrate a driven surface from its driver surfaces.
+#+title: Task: Re-point the repositories, the reads and the notification triggers
+#+description: Every reader and repository keeps returning the same facts for its kind, over the one record.
 #+type: task
 #+level: s1
-#+filetags: :drive_a_partys_crosses_from_its_drivers:inbox:v0:
+#+filetags: :hold_one_publish_record_with_a_subject_part_per_kind:sprint_31:v0:
 #+owner: marco
 #+branch:
 #+pr:
-#+blocked_on: 29A8F8A2-25FC-4858-B233-B3F985C4FE43
-#+blocked_since: 2026-11-17
-#+created: 2026-11-17
-#+updated: 2026-11-17
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:305E3F4D-6A79-40F3-9F57-5D149A142B73][Drive a party's crosses from its driver pairs]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CBA99FC1-9BEA-49A9-AF58-575ECBFE30A2][Hold one publish record with a subject part per kind]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A party's driven cross is published from its drivers.
+The repositories, the reads and the notification triggers work over the shared record and the subject parts, and each kind's read returns the facts it returned before.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:305E3F4D-6A79-40F3-9F57-5D149A142B73][Drive a party's crosses from its driver pairs]] |
+| Parent story | [[id:CBA99FC1-9BEA-49A9-AF58-575ECBFE30A2][Hold one publish record with a subject part per kind]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-11-17                               |
+| Last touched | 2026-11-24                               |
 
 * Acceptance
 
-- A party configures EUR/GBP as correlation-driven by EUR/USD and GBP/USD, and its published surface names those drivers.
-- A basis-driven pair publishes its driver's ATM plus the stated spread.
+- The three kinds' reads return the same fields as before the migration, and a test holds each read's shape.
+- The notification triggers exist on the new tables and fire once for the act that moved a set, as they do today.
+- The list read for curves is unaffected, and a superseded or withdrawn set still appears in it.
 
 * Plan
 

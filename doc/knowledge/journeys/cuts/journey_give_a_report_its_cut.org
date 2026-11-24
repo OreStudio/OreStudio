@@ -188,7 +188,7 @@ published curve, and it does not read what a run produced, which is
     comparison verdict says *cannot be compared* for the retake reason, which is the
     same verdict a retaken daily cut draws.
 
-** The audit of the selection**
+** The audit of the selection
 
 16. *Read the definition's history.* The selection is a field of the definition, so
     its changes merge into the report's *History* tab: the selection before and

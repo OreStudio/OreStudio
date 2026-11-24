@@ -1,0 +1,423 @@
+:PROPERTIES:
+:ID: 977FD666-571A-4B85-85CC-435319DF9085
+:END:
+#+title: Task: Analyse the market data architecture for surfaces
+#+description: Read the market data knowledge base and the code, state the target picture for the party side of market data across calibration, publishing, manual marks, events and four eyes, and list the gaps between it and the code.
+#+type: task
+#+level: s1
+#+filetags: :read_a_partys_published_surfaces:sprint_31:v0:
+#+owner: marco
+#+branch: feature/read-a-partys-published-surfaces
+#+pr: 5100
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:58E7AD14-ED53-478B-AA37-34FE6607E794][Read a party's published surfaces]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A written target picture, agreed with the reader, that defines how a party's volatility surfaces are calibrated, published, marked, withdrawn and read, stated as a specialisation of the same architecture the IR curves already follow. A gap list against the code, each gap small enough to become a task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:58E7AD14-ED53-478B-AA37-34FE6607E794][Read a party's published surfaces]] |
+| Now          | Nothing. |
+| Waiting on   | Agreement on the story outline in =* Notes=. |
+| Next         | Nothing. |
+| Last touched | 2026-11-24                               |
+
+* Acceptance
+
+- The knowledge base pages that define the party-side market data architecture are read and named, and the pages that are silent or contradictory are named too.
+- The target picture covers calibration, publishing, manual marks, events and four eyes for surfaces, and shows where each is the same as the IR curve path and where it must differ.
+- The gaps are listed with the page or code they contradict or omit, and each becomes a task in this story.
+
+* Plan
+
+1. Read the structure notes that define the party side of market data: the
+   market data architecture hub, the publish structure note and the pages of
+   the publication lifecycle.
+2. Read the construction note for a volatility surface and its curve
+   counterpart, because the surface is defined as the curve's specialisation.
+3. Read the market data journeys, which state what a person does and what the
+   code owes them.
+4. Read the code and the seeds: the operation models, the publish services,
+   the approval kinds, the notification kinds and the web tree.
+5. Compare three statements: what the knowledge base says, what the code does,
+   and what the journeys claim is missing.
+6. Write the target picture, the documentation defects and the gaps.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Market data operations declared | 53 | =grep -rhoE "marketdata.v1.ops.[a-z_]+" projects/ores.marketdata/modeling/*.org \| sort -u \| wc -l= | 66b749b9e9 |
+| Publish lifecycle implementations | 3 | =wc -l projects/ores.marketdata/service/src/app/{curve_publish_gate,fx_forward_publish_service,fx_vol_surface_publish_service}.cpp= | 66b749b9e9 |
+| Lines in those three implementations | 1365 | as above | 66b749b9e9 |
+| Operations on FX volatility surfaces | 4 | =grep -oE "marketdata.v1.ops.[a-z_]+" projects/ores.marketdata/modeling/ores.marketdata.fx_vol_surface_operations.org= | 66b749b9e9 |
+
+* Notes
+
+** The target picture
+
+The knowledge base already states the architecture. This section states it in
+one place so we can agree on it before we measure the code against it. Every
+claim here is a quotation or a paraphrase of a named page.
+
+*** One lifecycle for every derived object
+
+[[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][Publication of derived market data sets]] states the rule: a
+curve, an FX forward set and a volatility surface become authoritative the same
+way, and the lifecycle is "implemented once in =ores.marketdata= and
+parameterised by the kind". A kind supplies four things and nothing else:
+
+| Part | What the kind states |
+|------+----------------------|
+| Subject | What one set is a set of: a bootstrap configuration, a currency pair, a surface blueprint |
+| Compute | The operation that computes a candidate for a subject at an as-of |
+| Checks | What a candidate is checked against, which checks block a raise, which a decider reads |
+| Approval kinds | One kind for a publish and one for a withdrawal, each with a raise permission, a decide permission, an auto-approval code and an apply window |
+
+Everything else is shared: the candidate record, the states, the raise, the
+apply, the supersession, the withdrawal, the notices and the read.
+
+The states are one set: candidate, raised, approved, published, superseded,
+withdrawn, closed.
+
+*** The acts
+
+1. *Compute.* The compute writes the candidate before anybody is asked
+   ([[id:24950B8E-7FC4-4F0A-8AA4-9603B344F970][Candidate computation and storage before publication]]). It writes the
+   points against the subject's output series, with a lineage record naming the
+   series it read and the version of the recipe. It stores the checks with the
+   version, each blocking or advisory. A compute over an unchanged recipe and
+   unchanged inputs converges on the version it already wrote. A request names
+   one version, so a decision never covers numbers computed after it.
+2. *Raise.* The maker raises a publish naming the subject, the as-of and the
+   candidate's version ([[id:BF14C932-D699-4224-98DA-0481E49FA394][Raising a publish request for a candidate version]]).
+   The raise refuses a candidate with a failed blocking check.
+3. *Decide.* A second person decides under the kind's maker and checker
+   permissions ([[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]],
+   [[id:E21DFC83-9F3F-45BE-AD3F-48262126DFAC][Four-eyes framework]]). The person who
+   asked never decides. One person approves a part once. A refusal is final.
+   A stated rule may close the request instead ([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][Rules for the automatic approval of requests]]).
+4. *Apply.* The trader applies the approved request
+   ([[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]).
+   The apply re-checks the request, the candidate version and the candidate's
+   inputs. Then, in one transaction, it publishes the set, supersedes every
+   live set of the series that this one replaces, and writes the notice. An
+   approved request nobody applies lapses after the kind's apply window.
+5. *Withdraw.* A published set leaves use through its own kind, raised with a
+   reason and decided under four eyes ([[id:E474FB93-2ACE-4981-9761-33E214B3D268][Withdrawal of published market data sets]]).
+   No read by as-of takes a withdrawn set afterwards.
+6. *Read.* Every read by as-of answers with the newest published set at or
+   before the as-of that is not withdrawn, with its state, its approval and the
+   candidate it published ([[id:86158AAD-423A-421A-8BE2-CC5123109297][As-of resolution of published market data sets]]).
+   A read never returns a candidate.
+
+*** Manual marks
+
+The knowledge base does not state this rule. It exists in the code, in the
+header comment of =manual_point_guard=, and this gap is listed below. The rule
+the code holds is this. A manual point owns its coordinate until it is cleared.
+An automatic write at a later instant leaves the manual row in place. An as-of
+read prefers the manual point to whatever later value the feed wrote. An
+automatic write at the very same instant is dropped, because it would replace
+the manual row. One rule covers the feed, the import and the republish, because
+all three write through the one insert. Only =write_manual_point= writes a
+manual point and it does not pass through the guard.
+
+A manual point needs a change reason code and a commentary, and the server
+stamps its author.
+
+*** Eventing
+
+Two channels exist and they answer different questions.
+
+- *Change events.* A database notify trigger on each published table raises an
+  entity change on the bus. The event says a row changed. It does not say that
+  the live set moved.
+- *Notices.* The apply writes a notice row in its own transaction, as an
+  outbox ([[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]]).
+  The notice names the series, the set published, the set it replaced, the
+  as-of, the publisher and the request. It never carries the values, because a
+  notice that carried them would drift from the set. A delivery that fails is
+  retried and never undoes the publish. A withdrawal notice carries the reason.
+
+*** Four eyes
+
+The approval machinery is one record and one queue. What is per kind is the
+seeded =approval_kind= row: the raise permission, the decide permission, the
+approval count, the expiry, the hold rule and the auto-approval code. For
+market data the decider is Market Risk. The installation's own curves close at
+once under the =system_tenant= auto-approval code, because nobody judges them,
+and a desk's candidate waits.
+
+*** How a surface connects to the IR curves
+
+[[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]] states
+the connection as a one-for-one correspondence with
+[[id:446F28DF-155A-47EC-8D66-FDB90A8FBFA7][Bootstrapping a curve: from quotes to a published set]]:
+
+| Curve | Surface |
+|-------+---------|
+| Bootstrap configuration | Surface blueprint |
+| Pillar: a tenor and a role | Pillar: an expiry and a strike label, one series per contributor |
+| The bootstrap, ordered because one pillar feeds the next | The calibration, unordered, minimising weighted squared error |
+| One check, before the quotes are read | Two kinds: the recipe before the quotes, the result after |
+| A tenor is resolved to a date | An expiry is resolved to a date, and a strike label to a strike |
+
+The surface depends on the curves in two ways, and both are structural:
+
+1. A strike label is resolved to a strike through the pair's delta and ATM
+   conventions and *the forward to the expiry, which the compute reads from the
+   party's own published curves of the two currencies, not from the curves of
+   whoever published the quotes*.
+2. An FX forward set is itself a published kind, computed by covered interest
+   parity from two published curves.
+
+So a surface sits downstream of the IR curves and the forward sets, and it reads
+them by the same as-of rule. The candidate records the published sets it read,
+and the apply refuses a candidate whose inputs were withdrawn after the compute.
+
+*** The reader's side
+
+[[id:9487E120-6D43-4EFB-8E28-E9CEBA7EB43A][Read a published surface]] states what a person reads: the header facts, the
+axes in draw order, the surface, the grid and one smile, and a stale verdict.
+The curve's reader gets the same thing in the published-curve pattern: a list of
+the party's sets, then one record with the values, the state, the history and a
+comparison as of.
+
+** Where the code stands
+
+The lifecycle is not one implementation. It is three, and each carries its own
+copy of the raise, the apply, the supersession and the notice:
+
+| Capability | IR curve | FX forward set | FX volatility surface |
+|------------+----------+----------------+-----------------------|
+| Compute into a candidate | =compute_curve= | =publish_fx_forward= | =calibrate_fx_vol_surface= |
+| Publish record | =curve_publish= | =fx_forward_publish= | =fx_vol_surface_publish= |
+| Approval kind | =marketdata.curve_publish= | =marketdata.fx_forward_publish= | =marketdata.fx_vol_surface_publish= |
+| Supersession columns | yes | no | yes |
+| Withdrawal | op, kind, columns, notice | none | none |
+| Publish notice | yes | none | yes |
+| Withdrawal notice | yes | none | no kind seeded |
+| List the party's sets | =list_published_curves= | none | none |
+| History of one subject | generic history read | generic history read | repository method only |
+| Scheduled publish | =publish_due_curves= | none | none |
+| Web | list, record, compare, points | rate ladder read | none |
+
+The surface operation model declares four operations: the calibration, the
+publish, the subject for a raise, and one read. The curve model declares the
+list, the sets, the withdraw, the republish and the scheduled publish.
+
+** Documentation defects
+
+The knowledge base defines the target. Four journey pages and two seed comments
+still describe the tree before sprints 28 to 30 landed, so a reader cannot tell
+a gap from a closed gap. These must be corrected first, because a gap list
+drawn against a stale page is a list of work already done.
+
+1. [[id:9487E120-6D43-4EFB-8E28-E9CEBA7EB43A][Read a published surface]] says the read "does not return the model, the
+   strike convention, the delta type, the conventions, the axes in a stated
+   order, the publish instant or the staleness verdict". The read returns
+   =model=, =strike_convention=, =delta_type=, =published_at=, =published_by=
+   and =stale=. What is still absent is the axes in draw order, the conventions
+   block and the instrument identity for a slice.
+2. [[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]] says there is no surface model, no calibration
+   engine, no typed identity and no as-of. The blueprint, the calibration record
+   and the read exist. The slice subject exists in name and the service does not
+   subscribe to it, so it is unreachable.
+3. [[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]] lists seven gaps, of which six are closed:
+   the surface model, the calibration operation, the quoting convention, the
+   calibration error, the surface read and the as-of.
+4. [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] lists seven gaps, of which six are closed by
+   =key_manual_point=, =clear_manual_point= and the manual point guard. The
+   spread overlay is the one that remains: =marketdata.v1.curve.shift= and
+   =.surface.shift= do not exist.
+5. [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] says a published curve cannot be
+   withdrawn: no operation, no withdrawn state, no kind, no notice, no link to a
+   successor. All five exist for curves. The page now describes the surface and
+   the forward set, and not the curve.
+6. The header of the market data notification kinds seed says "the two notices"
+   and seeds three.
+7. The header of the approval kinds seed says "only the two market data kinds
+   name a raise permission, and it is =marketdata::curve_bootstrap:publish=".
+   Three kinds name one and there are two codes.
+8. [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface]] ends with "four changes remain". All four
+   are done: the shared publish, the validation operation, the ORE projection
+   and the synthetic surface feed.
+
+** The gaps
+
+Each gap names what is missing, the page or code it contradicts, and the change
+that closes it. They are ordered so that the model settles before the screens
+are built on it.
+
+1. *The lifecycle has three implementations and no parameterisation.* The
+   architecture states one implementation parameterised by the kind. The code
+   has =curve_publish_gate.cpp=, =fx_forward_publish_service.cpp= and
+   =fx_vol_surface_publish_service.cpp=, 1365 lines, each with its own raise,
+   apply, supersession and notice. The three publish tables also carry the
+   shared columns three times. A fourth kind would be a fourth copy. The change
+   is one lifecycle service over a kind declaration, with the per-kind record
+   reduced to its subject and its checks.
+2. *A surface cannot be withdrawn.* There is no operation, no
+   =marketdata.fx_vol_surface_withdrawal= kind, no =withdrawn_by/at/reason=
+   columns and no withdrawal notice kind. The page that states the rule says
+   every kind has a withdrawal kind. The change is the withdrawal act for
+   surfaces, on the same shape the curve uses.
+3. *A surface publish notifies but the FX forward publish notifies nobody.*
+   =fx_forward_publish_service.cpp= calls no announcer and the seed has no
+   =marketdata.fx_forward_published= kind. The apply page says the apply tells
+   its readers, for every kind.
+4. *The party cannot list its surfaces.* There is no
+   =list_published_fx_vol_surfaces=-like read, so the story's first screen has
+   no data. The change is a list over the party's blueprints with the live
+   publish, in the shape of =published_curve_set=: party, blueprint, model,
+   as-of, publish instant, state, expiry and strike counts, staleness.
+5. *The read drops the calibration verdict the record already holds.* The
+   publish row stores =calibration_id=, =calibration_version=, =converged=,
+   =max_abs_error=, =pillars_beyond_tolerance= and =violation_count=. The read
+   returns none of them, and it also drops =blueprint_id=, returning only the
+   name. The story asks for the calibration error.
+6. *The read does not state its axes or its conventions in the terms a reader
+   needs.* The read returns the expiries and the strikes as label strings and a
+   row-major grid. It does not state the axes in draw order, the display label
+   beside each code, or the per-tenor option convention. The journey asks for
+   all three. The convention is a join to refdata, not new data.
+7. *The history of one blueprint is a repository method with no operation.*
+   =read_published_for_blueprint= already returns every published surface of a
+   blueprint, newest first, superseded ones included. Nothing serves it.
+8. *=get_series_slice= is a dead subject.* The operation exists in the protocol
+   and the codec, and the service subscribes to nothing, so no caller can reach
+   it. The journey calls it "exists, unreachable". The change is either to serve
+   it or to delete it.
+9. *There is no surface web tree at all.* No list page, no record page with the
+   grid and the smiles, no comparison as of, no history tab, no bff module and
+   no contract types. The curve pattern has all of them, and the journey names
+   the page as *Market data / Vol surface*.
+10. *The manual point precedence rule is not in the knowledge base.* It exists
+    as the header comment of =manual_point_guard= and nowhere else, while the
+    journey that describes manual marks calls the rule missing. A rule that
+    shapes every derived write belongs in the knowledge base.
+11. *A surface publish cannot be scheduled.* =publish_due_curves= exists for
+    curves and nothing corresponds for surfaces. This is the subject of the
+    deferred story that will schedule the surface publishes.
+12. *The four documentation defects above* are gaps in their own right: they
+    make the target picture disagree with the code, and the user's requirement
+    is that the docs define the architecture and the code implement it.
+
+** What this task produced
+
+The target picture now lives in the knowledge base and not only in this task, so
+that the code has a specification to match. The pages are one description for
+every kind, with the kind-specific parts stated once each.
+
+| Page | What it settles |
+|------+-----------------|
+| [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][Publication of derived market data sets]] | The two objects, the two state machines, the six acts, the declaration a kind supplies, and where the kinds stand |
+| [[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][Publication record of a derived market data set]] | One record, its five groups of columns, the subject part per kind, and what the record does not hold |
+| [[id:C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4][Manual correction of a derived market data set]] | The precedence rule, where it is enforced, its limit, and the act that has no manual form |
+| [[id:B3F03DBB-EBD1-4649-94E5-6C5C1B67A084][Announcement of change in a published market data set]] | The two channels, what a notice may carry, the recipients and the per-kind seed |
+| [[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Retrieval of a published market data set]] | The list, the record, the comparison and the values, and the per-kind state of each |
+
+Five diagrams were added: the states of a request, the record and its subject
+parts, the manual precedence at the write and at the read, the withdrawal
+sequence, and the four reads. The states of a set already had one. The withdrawal page and the publish
+structure note were brought into the same reading order.
+
+Gap 10 of the list is closed by this work, because the manual point rule now has
+a page rather than a comment in a header. The remaining gaps become stories
+rather than tasks, because four of them share one cause.
+
+** The stories the gaps become
+
+Four of the twelve gaps share one cause, so they are one story and not four
+tasks. The other eight belong to stories that already exist or that carry one
+cause each.
+
+| Story | Closes | Depends on |
+|-------+--------+------------|
+| Bring the market data journeys up to the delivered state | gap 12, and the stale seeds | nothing |
+| Publish every kind of derived market object through one lifecycle | gaps 1, 2, 3 | the correction above |
+| Hold one publish record with a subject part per kind | the three copies of the record inside gap 1 | the lifecycle story |
+| Read a party's published surfaces | gaps 4, 5, 6, 7, 8, 9 | the lifecycle story |
+| Adjust a published set by a spread overlay | the spread overlay inside gap 10, and the guard's race | nothing |
+| Calibrate and publish the surfaces on a schedule | gap 11 | the lifecycle story |
+
+The reading story is the one already in this sprint, and the scheduling story is
+the one already in the product backlog. The other four are new.
+
+The order is the correction first, because a gap measured against a stale page is
+a gap in the wrong place; the lifecycle second, because it is the cause of three
+gaps and because the reading story cannot state a surface's withdrawal until the
+withdrawal exists; and the record third, because it is a migration behind the
+interface the lifecycle story introduces and it need not block the reader.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5100][#5100]] | [agile,marketdata] Scaffold the lifecycle stories and document the lifecycle for every kind |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The target picture is in the knowledge base and the gaps are in the backlog.
+
+Five pages now state the lifecycle once for every kind: the lifecycle itself, its
+record, the manual marks, the notifications and the read. Five diagrams were
+added: the states of a request, the record and its subject parts, the manual
+precedence at the write and at the read, the withdrawal sequence, and the four
+reads. The states of a set already had one. The withdrawal page and the publish
+structure note were brought into the same reading order.
+
+The twelve gaps became five stories and one existing one. That departs from the
+third acceptance criterion, which asked for one task per gap, and the departure
+is the finding: four of the twelve share one cause, so a task per gap would have
+built one cause four times.
+
+| Story | Closes |
+|-------+--------|
+| [[id:9C8F48B9-9B03-4C0A-8D57-12E8481272C8][Bring the market data journeys up to the delivered state]] | the documentation defects |
+| [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] | the three copies, the forward's supersession and notice, the dead subject |
+| [[id:CBA99FC1-9BEA-49A9-AF58-575ECBFE30A2][Hold one publish record with a subject part per kind]] | the three records |
+| [[id:A3C64267-3320-4CD1-944E-EB2CB79E43A1][Withdraw a published set of any kind]] | the withdrawal the surface and the forward set lack |
+| [[id:58E7AD14-ED53-478B-AA37-34FE6607E794][Read a party's published surfaces]] | the list, the verdict, the axes, the history and the web |
+| [[id:D13B9134-652D-4CE5-A39C-EA0ACE8E90C7][Adjust a published set by a spread overlay]] | the overlay, and the guard's window |
+
+The manual point rule was the one gap with no page at all; it now has one, and
+that is the only gap this task closed in the tree. The checks are green: five of
+five on the docs class.

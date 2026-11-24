@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: D13B9134-652D-4CE5-A39C-EA0ACE8E90C7
+:END:
+#+title: Story: Adjust a published set by a spread overlay
+#+description: A parallel shift or a twist over a node or a segment, with a reason, applied as one act and preferred at read time like a manual point.
+#+type: story
+#+level: s2
+#+filetags: :sprint_31:v0:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person applies a parallel shift or a twist over a node or a segment of a candidate, with a reason, and the overlay behaves as one act rather than as a loop of manual points. The read prefers the overlay to the automatic values, and a person clears it as one act.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-24                               |
+
+* Acceptance
+
+- The overlay operation takes the kind, the node or the segment, the shift and the reason, and writes the corrected candidate.
+- The read prefers the overlay at the nodes it covers, and clearing it restores the automatic values.
+- A refusal names a shift the object's shape cannot apply.
+- The guard's one round trip window is closed, or the page that states the rule states it as a limit.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:36A2845F-5E14-4C8F-A782-0764A4D9FE8C][Add the shift operation and its reason]] | BACKLOG | | | A parallel shift or a twist, over a node or a segment, with the reason a person states. |
+| [[id:D3708127-0EE6-4AE2-80FE-18BFE1D9B05A][Apply the overlay at read time and clear it as one act]] | BACKLOG | | | The read prefers the overlay at the nodes it covers, and a clear restores the automatic values. |
+| [[id:B702CE1A-90FE-47DD-9665-AF89B6B50859][Close the manual guard's window]] | BACKLOG | | | Move the guard's check inside the insert statement, or state the limit where the rule is written. |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 5B1FC1A7-F99C-43FA-9C28-BBB1FF08E329
+:END:
+#+title: Story: Close the document loophole in the data-oriented rules
+#+description: One native model for the stored ORE documents, and a rule that refuses a document-shaped column.
+#+type: story
+#+level: s2
+#+filetags: :next:product_backlog:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+#+predecessor: 14807059-043D-4866-974D-B835151D61E8
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Continued from: [[id:14807059-043D-4866-974D-B835151D61E8][Data model clean up]].
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-24                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A633E777-6E06-4542-98F0-5302318C7DC2][Close the document-shaped loophole in the data-oriented design rules]] | BACKLOG | | | No model may persist a document tree, a list or a serialised payload, whatever it calls itself. |
+| [[id:E4380005-BE99-42F3-AB06-C7A6212FDE25][One native model for the stored ORE documents]] | BACKLOG | | | Replace every stored ORE document image with one native model, in one go, and project ORE XML at export. |
+
+* Decisions
+
+* Out of scope
+
+-

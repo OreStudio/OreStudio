@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: DD582F54-DF67-45DB-9948-5BF744C4358B
+:END:
+#+title: Story: Store each provider's keys as a tenant secret
+#+description: The sources step records the keys as tenant secrets, so the adapter starts from the accepted sources alone.
+#+type: story
+#+level: s2
+#+filetags: :next:product_backlog:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+#+predecessor: 5F23EDE1-2076-4A0C-8DAA-48A7812BDE2E
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Continued from: [[id:5F23EDE1-2076-4A0C-8DAA-48A7812BDE2E][Configure the public sources in a setup dialog]].
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-24                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A7910524-BE3B-422A-8EB6-F6C1A3BC2142][Ask for the source keys on the sources step]] | BACKLOG | | | The public sources step draws the credential fields of each publisher, fills each one from the environment of the service when the variable is set, and saves what the person continues with as a tenant secret. |
+| [[id:F41E92B0-9A06-44CA-B88B-51D71EE1885E][Implement Configure the public sources in a setup dialog]] | BACKLOG | | | Initial task for: Configure the public sources in a setup dialog |
+| [[id:1DF9EF52-D9D2-43D2-A1BA-40CDA62EEFC4][Name the stored secret on the provider row]] | BACKLOG | | | A provider row states where its credential comes from. It gains a form that names a stored secret, and the official rates adapter resolves that secret instead of a variable when it starts. |
+| [[id:BE9974B8-3AB8-4D23-BEB9-0DE096858230][Start the adapter from the accepted sources]] | BACKLOG | | | The official rates adapter hosts the providers whose terms the tenant accepted, with the credential each row names, so the deployment passes no source list and holds no key. |
+| [[id:0CC501C4-DAFB-4707-83DA-1AE98E9A024A][Store a tenant secret in the database]] | BACKLOG | | | A value that a service needs and a person supplies, such as the key of a public source, is stored against the tenant, is written once and is read only by name. The browser learns that a value is stored, never the value. |
+
+* Decisions
+
+* Out of scope
+
+-

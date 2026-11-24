@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 49690308-2D8B-43E7-A8C3-7096B4D70298
+:END:
+#+title: Story: State a content security policy on every answer the BFF serves
+#+description: A policy says where a script, a style and a connection may come from, and the bundle is served under it.
+#+type: story
+#+level: s2
+#+filetags: :next:product_backlog:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+#+environment: festive-dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+#+predecessor: C5CD23A5-4F84-4D3A-AF9C-370FD08A7B8E
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Continued from: [[id:C5CD23A5-4F84-4D3A-AF9C-370FD08A7B8E][Put a content security policy on the site]].
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-24                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:986AABE6-7898-4202-A240-427B462AD114][Implement Put a content security policy on the site]] | BACKLOG | | | Initial task for: Put a content security policy on the site |
+
+* Decisions
+
+* Out of scope
+
+-

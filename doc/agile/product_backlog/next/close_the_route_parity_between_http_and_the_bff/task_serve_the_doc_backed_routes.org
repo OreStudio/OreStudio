@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: F8172A06-6927-4085-9901-B5F62A58A6EC
+:END:
+#+title: Task: Serve the doc-backed agile and QA routes
+#+description: Serve the twelve routes the BFF answered from the checkout's doc tree, on ores.orgmode, so the QA scenarios and the agile browser work without the BFF.
+#+type: task
+#+level: s1
+#+filetags: :close_the_route_parity_between_http_and_the_bff:next:product_backlog:
+#+owner: marco
+#+branch: feature/switch-ores-web-to-the-cpp-server
+#+pr:
+#+blocked_on: 7C83579B-4DA3-4EF8-BF5B-33E97C2E3874
+#+blocked_since: 2026-11-22
+#+created: 2026-11-21
+#+updated: 2026-11-21
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Serve the twelve routes the BFF answered from the checkout's doc tree, so the QA
+scenarios and the agile browser keep working when the BFF goes. The routes are
+=GET /api/qa/scenarios=, =GET /api/qa/scenarios/:id=, =GET /api/qa/docs/:id=,
+=PUT /api/qa/scenarios/:id/run=, =POST /api/qa/scenarios/:id/steps/:step/images=,
+=GET /api/qa/scenarios/:id/files/:name=, and the six =/api/agile/*= reads.
+
+The earlier decision left these out because they read and write the checkout and
+a deployed gateway holds none. That left the QA and agile screens with no home
+once the BFF goes, and a QA run is how the product is proved in a browser, so
+they have to be served.
+
+They are not served from the checkout. The knowledge base story moves the org
+pages into PostgreSQL and serves them through a knowledge service, so these
+routes read the docs where they then live, and a run writes back through the
+same service. The addresses and shapes stay the BFF's.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BLOCKED                              |
+| Parent story | [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] |
+| Now          | Delayed: the docs are moving into the database, so a port of the BFF's file reading would be thrown away. |
+| Waiting on   | [[id:05FE6068-3CBD-4B93-B6AE-47A5689F1FCB][Search the knowledge base from ores.web]], which loads the whole doc tree and serves a page by its id, and [[id:7C83579B-4DA3-4EF8-BF5B-33E97C2E3874][Write an org page back through the service]], which the run needs. |
+| Next         | Serve the scenario reads over the page read, then the run write, then the six agile reads. |
+| Last touched | 2026-11-21                               |
+
+* Acceptance
+
+- The twelve routes answer the same shapes the BFF answered, at the same addresses.
+- The docs are read and written through the service that holds them, not from the checkout.
+- An id that is not a document id is refused rather than used as a path.
+- The org docs are parsed by =ores.orgmode=, so the two servers read the format through one parser.
+- A scenario run writes its outcomes back through the page write at the version it read, and the next read sees them.
+- A screenshot is served back as an image and nothing else in the scenario's folder is.
+- The inventory pairs the twelve routes and the local gate is green.
+
+* Plan
+
+The routes are served over the database read, not from the checkout. The gateway
+asks the knowledge service for a page by its org id, parses the text with
+=ores.orgmode=, and answers the shape the BFF answered. The service holds pages
+and nothing about steps or sprints: a scenario's shape and an agile tree's shape
+are this part's reading of the text, which is also what makes them testable
+without a database.
+
+The units:
+
+1. The scenario reads: =GET /api/qa/scenarios= reads the pages of the scenario
+   kind and answers one summary per page, =.../:id= one page parsed whole, and
+   =GET /api/qa/docs/:id= any page of a served type, its text as it stands.
+2. The run write: =PUT /api/qa/scenarios/:id/run= writes the outcomes it names
+   into the page's =Result= tables with =ores.orgmode= and puts the page back
+   through [[id:7C83579B-4DA3-4EF8-BF5B-33E97C2E3874][Write an org page back through the service]],
+   at the version it read. The scenario's verdict follows from the steps: it
+   closes when none is pending, failed if any failed, passed otherwise.
+3. The images: =POST .../steps/:step/images= writes the screenshot to object
+   storage under the scenario and the step, and =GET .../files/:name= reads it
+   back by its bytes, serving only a PNG, JPEG, GIF or WebP. Keeping the address
+   means the doc's own links and the web client need no change.
+4. The agile reads: the six =/api/agile/*= routes read the pages of the agile
+   kinds and derive the sprints, the board, the charts, the backlog and one doc
+   by id. The work trees are the repository's own and are answered empty until a
+   repository is stated beside the service, which is what the BFF answered
+   without one.
+
+The twelve pair in the inventory as they are served, and the gate covers the
+part's parsing with org strings, so a format change fails a test rather than a
+screen.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- Delayed on 2026-11-22, before any code was written, then planned over the
+  database read the same day. The first plan read the checkout's doc tree, which
+  is what the BFF does; that is the wrong target, because the knowledge base
+  story loads the org pages into PostgreSQL and serves them through a service. A
+  port of the file reading would be deleted the day the load lands.
+- Two things the knowledge base story must state for this to work, both agreed
+  on 2026-11-22: the loader takes every doc that has an =:ID:= and a =#+title:=,
+  not only the user-facing pages, and the service states a page write, which is
+  [[id:7C83579B-4DA3-4EF8-BF5B-33E97C2E3874][Write an org page back through the service]].
+- The consequence for the switch: the QA and the agile screens stay on the BFF
+  until this task lands. Every other screen can move, so the BFF outlives the
+  switch and is retired after this task.
+- The BFF's own file reading is not kept as a fallback. A deployment states no
+  doc root any more, so there is one way to read a doc and not two.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

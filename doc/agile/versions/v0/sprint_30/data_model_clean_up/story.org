@@ -21,11 +21,11 @@ One data-oriented, consistent model of the system's persisted data. A document a
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Scaffolded; no clean-up task started.  |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Close the document-shaped loophole.    |
+| Next          | Nothing. |
 | Last touched  | 2026-11-11                               |
 
 * Acceptance
@@ -34,13 +34,15 @@ One data-oriented, consistent model of the system's persisted data. A document a
 - The market configuration (curves, FX volatility surfaces, today's market) has one native model, and ORE XML is projected from it at the export boundary.
 - Every other stored document image found on the way has a task of its own in this story.
 
+The bullets above are the acceptance of [[id:5B1FC1A7-F99C-43FA-9C28-BBB1FF08E329][Close the document loophole in the data-oriented rules]], which
+carries the remaining work from sprint 30's close. This story ships
+2 of its 4 tasks; see * Tasks.
+
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:547323C3-0563-4E7F-AA3C-4B22BF26B148][Scaffold story: Data model clean up]] | DONE | 2026-11-11 | 2026-11-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:A633E777-6E06-4542-98F0-5302318C7DC2][Close the document-shaped loophole in the data-oriented design rules]] | BACKLOG | | | No model may persist a document tree, a list or a serialised payload, whatever it calls itself. |
-| [[id:E4380005-BE99-42F3-AB06-C7A6212FDE25][One native model for the stored ORE documents]] | BACKLOG | | | Replace every stored ORE document image with one native model, in one go, and project ORE XML at export. |
 | [[id:43D4AFA3-00CC-4BA1-ACAD-6BC26EF4647B][Retire the raw query helpers]] | DONE | 2026-11-11 | 2026-11-12 | Move every caller of the raw query helpers onto the transaction-aware query_builder API, and delete them. |
 
 * Decisions

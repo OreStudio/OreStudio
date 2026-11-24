@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 688649E4-FBB3-4E21-A58E-B0281DD75676
+:END:
+#+title: Task: Manage the script library on its own screen
+#+description: The script library is reference data only the database and the shell can read: no ores.http route and no BFF route serves a script, its versions or a tenant's publish, so no screen can show or change it.
+#+type: task
+#+level: s1
+#+filetags: :finish_the_scripted_trade_subsystem:next:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C7F0C5F8-097E-4E4A-8702-DE7A55C24BA3][Finish the scripted trade subsystem]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person browses the script library on a screen of its own: each script with its variants, inputs, results and code, each version of it and which trades are booked on it; and a tenant's administrator publishes the tenant's own script there, seeing the parser's diagnostics and the warning on a name the world library holds.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C7F0C5F8-097E-4E4A-8702-DE7A55C24BA3][Finish the scripted trade subsystem]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-22                               |
+
+* Acceptance
+
+- ores.http serves the scripts, the version history of a script, the state of any version and a tenant's publish, as JSON routes over the trading service's operations
+- the BFF serves the same under /api/trading/scripts, with unit tests of each route
+- the screen lists the scripts of the world library and of the tenant, marks a tenant script that shadows a world script of the same name, and shows a script's variants, inputs, results and code read-only
+- the screen shows a script's versions and the rows of any version, and the trades booked on each
+- a publish shows the diagnostics located by line and column, and refuses a script with an error
+- a publish names the version it edited, and a publish over a newer version is refused as a conflict rather than writing
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -28,11 +28,11 @@ The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serv
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Sign-in decided; the architecture is next. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Set out the architecture of agents acting through ores.http. |
+| Next          | Nothing. |
 | Last touched  | 2026-11-22                               |
 
 * Acceptance
@@ -63,6 +63,10 @@ The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serv
   many steps.
 - The gates cover the new code.
 
+The bullets above are the acceptance of [[id:AD45EAE5-2FC9-4BCA-BD6B-437054135BF7][Sign an MCP client in through OAuth]], which
+carries the remaining work from sprint 30's close. This story ships
+12 of its 13 tasks; see * Tasks.
+
 * Tasks
 
 | Task | State | Start | End | Description |
@@ -76,7 +80,6 @@ The analysis is in [[id:FC0847D1-9F09-42EF-A4BD-D5E3C34398EA][How ores.http serv
 | [[id:CCFD0961-9152-442D-AB7A-27366543CBF9][Declare each route's place in the catalogue]] | DONE | 2026-11-23 | 2026-11-23 | Every ores.http route declares its tool name, area, entity and whether it writes, and its body schema; a gate refuses a route that does not. |
 | [[id:24864EC2-233C-4943-B381-3AD69DE2DAB0][Browse, search and call operations through five tools]] | DONE | 2026-11-23 | 2026-11-23 | tools/list answers five tools whatever the catalogue holds: list areas, entities and operations, find operations by words, and call one, filtered to what the person may call. |
 | [[id:529DBF0E-9AE6-448A-AD46-AA836FF33572][Measure how a small model reaches ORE's operations]] | DONE | 2026-11-23 | 2026-11-23 | Run a set of real requests with a small model through browsing and through search, and record how often it reaches the right operation and in how many steps. |
-| [[id:213D3539-9792-4C49-86A9-62B41A907992][Sign an MCP client in through OAuth]] | BACKLOG | | | ORE becomes an OAuth 2.1 authorization server for MCP clients, its consent page creating the same agent grant a key does, for Claude Desktop and claude.ai. |
 | [[id:A869A8BE-78DC-44AA-A403-FF7DEB30A3A6][Show administrators every agent grant]] | DONE | 2026-11-23 | 2026-11-23 | An administrator who holds iam::agent_grants:read sees every agent grant and key in their parties in ores.web, and revokes one with iam::agent_grants:revoke. |
 | [[id:84655C5D-C156-42B4-A6EA-9BD42B6590B1][Declare a typed body on every hand-written route]] | DONE | 2026-11-23 | 2026-11-23 | Every hand-written ores.http route that takes a body declares its typed body schema, so an agent's call_operation can answer a tool's input schema; a gate refuses one that does not. |
 | [[id:83CA0DEA-C89F-426B-B5B3-5D84DD0711CA][Declare the permission each route needs]] | DONE | 2026-11-23 | 2026-11-23 | Every ores.http route declares the permission its service checks, so the catalogue's lists show an agent only what its person may call. |

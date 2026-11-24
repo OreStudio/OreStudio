@@ -24,11 +24,11 @@ BFF's, so it holds on any host the service runs on, not only behind the proxy.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Nothing. The site answers with HSTS, X-Content-Type-Options, X-Frame-Options and a referrer policy, and with no content security policy. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Implement the policy in the BFF.       |
+| Next          | Nothing. |
 | Last touched  | 2026-11-18                               |
 
 * Acceptance
@@ -53,12 +53,16 @@ BFF's, so it holds on any host the service runs on, not only behind the proxy.
   release before it is enforced, with a =report-to= endpoint that accepts the
   reports, and the reports are read.
 
+The bullet above is the acceptance of [[id:49690308-2D8B-43E7-A8C3-7096B4D70298][State a content security
+policy on every answer the BFF serves]], which carries the policy itself from
+sprint 30's close. This story ships the design in * Decisions and the
+scaffolded handler; see * Tasks.
+
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:B1CCF799-5B9D-4AE2-A69C-AD87009AAE97][Scaffold story: Put a content security policy on the site]] | DONE | 2026-11-18 | 2026-11-18 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:986AABE6-7898-4202-A240-427B462AD114][Implement Put a content security policy on the site]] | BACKLOG | | | Initial task for: Put a content security policy on the site |
 
 * Decisions
 

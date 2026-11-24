@@ -68,11 +68,11 @@ problem from the market data side.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The served-index draw is shipped as #4996. The next slice is [[id:1993E4E7-A59B-4473-8635-C9F6DF974EB5][Derive a term index from its overnight curve]], which needs the derived fixings. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Make the fixing writer wait for the market data service. |
+| Next          | Nothing. |
 | Last touched  | 2026-11-21                               |
 
 * Acceptance
@@ -90,6 +90,10 @@ problem from the market data side.
   named gap with its own task. The task Draw only the indices the market can
   serve owns this.
 
+The bullets above are the acceptance of [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]], which
+carries the remaining work from sprint 30's close. This story ships
+11 of its 15 tasks; see * Tasks.
+
 * Tasks
 
 | Task | State | Start | End | Description |
@@ -102,12 +106,10 @@ problem from the market data side.
 | [[id:B3E547A5-941B-439E-A10E-EE9EEE2900E4][Add a time-of-day column type to the codegen]] | DONE | 2026-11-22 | 2026-11-23 | A model column of type time is a PostgreSQL time and a branded std::chrono time_of_day in C++, so fixing sources and cuts hold their times as times. |
 | [[id:D8405F74-8E0A-43FF-96DA-C846E988911A][Hold the fixing sources and their cuts as reference data]] | DONE | 2026-11-22 | 2026-11-23 | A fixing source is an entity with its administrator, label, time, zone, calendar, rounding and status, and each cut names its source. |
 | [[id:A18D3933-9817-4885-BC5A-B343427651CE][Generate simulated fixings through the simulator adapter]] | DONE | 2026-11-23 | 2026-11-23 | A fixing generator fixes each simulated source from the run's market at its time and publishes durable fixing ticks; the direct writer goes. |
-| [[id:161BEF65-6824-4C10-A056-151FA8CBCB46][Write the FX fixing history from the spot feeds]] | ABANDONED | 2026-11-22 | | An FX spot feed writes the daily fixing history of its pair under the system party, as an IR curve feed does for its index, so a trade that names an FX fixing finds one. |
-| [[id:51AB9126-26A5-4819-ABF9-AC9E0CDA7901][State the FX fixing source on the spot config]] | ABANDONED | | | The FX spot generation config names the fixing source its feed writes, TR20H by default, and the trade planner reads it from there instead of from a constant. |
 | [[id:6E48185B-9F1C-473D-818E-0CF9222D96FB][List the market data a party expects]] | DONE | 2026-11-22 | 2026-11-22 | Each generator kind lists the addresses it publishes, and the party's expected market data is the outputs of the generators it demands an item of, plus what it derives, read from configuration before any tick arrives. |
 | [[id:3A2A66B0-C8C1-4EB7-99ED-A3503D79DD66][Plan trades on the expected market data and report them]] | DONE | 2026-11-23 | 2026-11-23 | Every draw of the planner filters by the address it would name against the party's expected set, a trade type with no candidate leaves the cycle, and the provisioning report states the trades of each type and why a type has none. |
-| [[id:DC6F4D69-5E3E-4562-9503-88C74329FF1E][Show the FX and IR fixings on a fixings screen]] | BACKLOG | | | A system-level Fixings screen lets the super administrator view every FX and IR observation across every source, read only. |
-| [[id:1993E4E7-A59B-4473-8635-C9F6DF974EB5][Derive a term index from its overnight curve]] | BACKLOG | | | Give a term index of a currency that has an overnight curve its curve and fixings from that curve: term SOFR and IBR from the compounded overnight forward, EYTIBOR, WIBOR and the generic indices with a stated spread. |
+| [[id:51AB9126-26A5-4819-ABF9-AC9E0CDA7901][State the FX fixing source on the spot config]] | ABANDONED | | | The FX spot generation config names the fixing source its feed writes, TR20H by default, and the trade planner reads it from there instead of from a constant. |
+| [[id:161BEF65-6824-4C10-A056-151FA8CBCB46][Write the FX fixing history from the spot feeds]] | ABANDONED | 2026-11-22 | | An FX spot feed writes the daily fixing history of its pair under the system party, as an IR curve feed does for its index, so a trade that names an FX fixing finds one. |
 
 * Decisions
 

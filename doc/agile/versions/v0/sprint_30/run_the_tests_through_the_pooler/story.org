@@ -53,11 +53,11 @@ pooler. The gate and the tests around them do not.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | One task done: the environment names one database endpoint. The other three are open. |
+| Now           | Nothing. |
 | Waiting on    | The merge of the database endpoint pull request. |
-| Next          | Start the pooler before the tests run. |
+| Next          | Nothing. |
 | Last touched  | 2026-11-23                               |
 
 * Acceptance
@@ -70,13 +70,14 @@ pooler. The gate and the tests around them do not.
   test lists variables to strip.
 - The pgtap check and the ctest check never run at the same time.
 
+The bullets above are the acceptance of [[id:DA793070-8333-4502-A231-A0752BE20377][Give the tests a running pooler and a clean parse]], which
+carries the remaining work from sprint 30's close. This story ships
+1 of its 4 tasks; see * Tasks.
+
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:49A91902-32C2-49DB-A761-FC7FD2F2D126][Start the pooler before the tests run]] | BACKLOG | | | The gate's ctest step and compass test run start the pooler and NATS when ORES_DB_POOLER_ENABLED is 1, and the test-run preflight refuses to run without a pooler and names the fix. |
-| [[id:CB04682B-706D-4AEF-BABB-E7F00A0FB63B][Read the options' environment through the provider]] | BACKLOG | | | The parsers read their environment variables through ores.platform's environment provider instead of boost's parse_environment, so a test's fake environment is the only one the parser sees and no test lists variables to strip. |
-| [[id:9F0DCC25-CE62-41A3-9C5A-7BDED6BE5A30][Run pgTAP before ctest]] | BACKLOG | | | The local gate runs the pgtap check before ctest rather than beside it, so the two no longer write to the same database at the same time and iam_tenant_purge_test stops deadlocking. |
 | [[id:6C325B2F-8018-4637-9176-B4709898F89D][Give the environment one database endpoint]] | DONE | 2026-11-23 | 2026-11-23 | The environment names one database endpoint and no client reads the pooler; a machine states its topology. |
 
 * Decisions

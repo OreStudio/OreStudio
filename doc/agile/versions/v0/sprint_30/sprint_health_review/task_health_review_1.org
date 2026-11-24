@@ -34,9 +34,9 @@ and it tests whether the limit exists as anything a person can be held to.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:BB602F81-7F6F-4ABC-81A3-4D2CD3782E55][Sprint health review — System 2 analysis]] |
-| Now          | Complete. The verdict is RED. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close the ten finished stories and sync the sprint table, before the sprint is closed. |
+| Next         | Nothing. |
 | Last touched | 2026-11-24                               |
 
 * Acceptance
@@ -347,3 +347,33 @@ Before the sprint closes, three mechanical steps follow from this review:
 close the ten finished stories, return =Make the build faster= to the backlog,
 and sync the sprint table to the documents. Each is cheap, and each inflates
 what the closure reports until it is done.
+
+*** Closure executed on 2026-11-24
+
+This section records what the closure did, which differs from the dispositions
+this review recommended.
+
+| Action | Count | Detail |
+|--------+-------+--------|
+| Stories closed with every task done | 10 | seven hotfixes, =Make the generated trades value correctly in ORE=, =Move the Linux CI image to Ubuntu 26.04= and =Run the Linux CI on GCC 16= |
+| Stories closed and split | 19 | each keeps its finished tasks and its =* Tasks= record, and its remaining tasks moved to a successor |
+| Successor stories created | 19 | under =doc/agile/product_backlog/next/=, each with a =#+predecessor= link and a name that states the remaining work |
+| Tasks moved to successors | 84 | =compass task move=, so each task keeps its UUID and history |
+| Unstarted stories carried to the product backlog | 81 | =BACKLOG= folders moved to =doc/agile/product_backlog/next/= with their 282 tasks, their sprint rows removed, and their parent links rewritten |
+| Sprint table rows changed | 92 | 10 flipped to DONE by =compass story done=, 81 removed with the carried stories, 1 added that had never been in the table, and 1 drifted row corrected |
+
+The review recommended closing ten, finishing three, returning one to the
+backlog, and carrying fifteen. The owner took a different decision: close all
+29 and split every remainder into the product backlog instead of a next
+sprint, because sprint 31 is not open yet. The three that were one task from
+done (19 of 21, 12 of 13, 5 of 6) went with the rest rather than being
+finished first.
+
+The audit went from 100 findings to 51: no story is left open, none is left
+with all its tasks done, no sprint row disagrees with its story, and no closed
+story holds an open task. All 51 that remain are =Now= style violations on
+closed documents, the rule this review already judged belongs in the audit
+rather than in 51 documents.
+
+The sprint is closed with =End= 2026-11-24, nine days past its planned end,
+holding 73 stories delivered and 6 abandoned, and nothing in flight.

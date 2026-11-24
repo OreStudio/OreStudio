@@ -241,3 +241,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The coverage read answers in one statement. The service's
+=list_market_fixing_coverage='s sibling =get_fixing_coverage= takes the batch of
+series ids and answers four parallel columns — the ids, the first and last dates
+and the counts — for each series that holds a value, ordered by id. The gateway
+makes one call and joins it to the catalogue in memory in one pass.
+
+Measured on the environment's own data, over all 224 series: **77.4 ms planning,
+236.8 ms executing**, against 568 statements that spent about 17 seconds
+planning alone. The one-second acceptance is met with three times the headroom,
+and the plan cost is paid once instead of once per statement.
+
+The view also states the time it may take. A composed view opens a budget at its
+first read and passes what is left to each forward; a spent budget answers 504
+=upstream-timeout= and a reply that never arrives answers the same code through
+the error contract, so no route can outlive the socket again.
+
+What is proved: the statement's cost on real data, and the four suites of the
+components the change touches. What is not: a browser call over HTTP against the
+fleet, which needs a session and was not replayed; the budget is proved by a
+spent budget and a request timeout, not by a service that hangs.
+
+The PostgreSQL-side alternatives are deliberated in the Plan and the deferral of
+a coverage projection carries its trigger there.

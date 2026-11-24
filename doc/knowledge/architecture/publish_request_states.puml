@@ -1,0 +1,49 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title A publish request: the states of the approval that authorises a set
+
+[*] --> Waiting : raise a publish\n(no stated rule closes it)
+Waiting --> Held : hold
+Held --> Waiting : resume
+Waiting --> Approved : a person approves,\nor a stated rule\ncloses the request
+Held --> Withdrawn : the asker takes it back
+Waiting --> Withdrawn : the asker takes it back
+Waiting --> Refused : a person refuses
+Waiting --> Expired : the window passes\nwith nobody deciding
+Approved --> [*] : the trader applies it,\nwhich publishes the set
+Refused --> [*]
+Expired --> [*]
+Withdrawn --> [*]
+
+Waiting : one open request\nper subject and as-of
+Held : parked pending a question
+Approved : waits on the trader,\nwho is not the decider
+Refused : final; a new request\nis a new raise
+Expired : final; the subject is\nfree for a new raise
+Withdrawn : final; nothing\nwas published
+
+note right of Approved
+  The apply is a separate act and not a state
+  of the request. A request publishes once;
+  a second apply is refused, and the next
+  publish is a new request.
+end note
+
+@enduml

@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: B3F03DBB-EBD1-4649-94E5-6C5C1B67A084
+:END:
+#+title: Notification of a change to a published market data set
+#+description: Two channels tell a reader that a published set moved: the entity change event and the notice the apply writes, retried until it is delivered.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:marketdata:publish:notification:events:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+
+* Summary
+
+A change to a published set is told on two channels, and the two answer different
+questions. The entity change event, raised by a database trigger on the publish
+tables, says that a row changed. The notice, written as an outbox row in the
+apply's own transaction, says that the set the party prices from has moved, and
+it names the subject, the act and the instant without carrying a single value.
+The first channel serves code that follows a table; the second serves a person who
+must know that the market moved under them.
+
+Only the second is a promise. It is written with the publish or not at all, it is
+delivered after the commit, and a delivery that fails is retried rather than
+allowed to undo the act.
+
+* Detail
+
+** The two channels
+
+| | The change event | The notice |
+|--+------------------+------------|
+| What raises it | A database trigger on the publish table | The apply, in its own transaction |
+| What it says | A row of a table changed | The live set of a subject moved, and by which act |
+| What it carries | The row's identity and its new state | The subject, the party, the as-of, the instant, the publisher, the request and the set it replaced |
+| Who consumes it | Services that mirror or follow the table | The people who read the set, through the bell and optionally by mail |
+| If delivery fails | The consumer catches up at its next read | The notice is retried until it is delivered |
+| What it never carries | Meaning | Values, secrets or trade economics |
+
+The change event is not sufficient as the notice, and the reason is not the
+failure path. One act of the apply supersedes every live set of the series, so a
+trigger fires once for the set published and once for each set it ended, and no
+reader could tell from those rows which of them was the act. The notice is
+written once, by the act, and says what the act meant.
+
+** What the notice names**
+
+The same shape serves a publish and a withdrawal, and the difference is one
+field.
+
+- The subject, in the words of its kind: the series' oresmd identity and the
+  party that holds it.
+- The as-of the set was built at, and the instant it moved.
+- The account that published it, and the request it stands on.
+- The as-of it replaced, where it replaced one.
+- For a withdrawal: the reason, in words, because a reader must act on the
+  reason and not on the fact alone.
+
+The notice names the subject and the act and never the values. A notice that
+carried the points would be a second copy of the set, and the two copies would
+drift. It carries a link to the record page instead, which is where the values
+are read ([[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Reading a published market data set]]).
+
+** The outbox**
+
+The notice is a row written in the transaction that publishes or withdraws the
+set, and it is delivered from there after the commit
+([[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]).
+The order matters in both directions. Written outside the transaction, a publish
+that rolled back would have told its readers of a move that never happened.
+Delivered inside the transaction, a mail server that was down would hold a
+database transaction open and could undo a publish that had nothing wrong with
+it.
+
+Telling is therefore never the act. A failure is logged, retried and left in the
+outbox, and the set stays published.
+
+** The recipients**
+
+The recipients are the accounts of the party that holds the set and the accounts
+of the tenant that may read market series, resolved when the notice is raised so
+that a new reader is not told about yesterday's move.
+
+The consuming services are not reached this way, and that is a deliberate limit.
+The bell hangs on an account and the subscription names a party, so a service is
+not an account. A service that must react to a published set binds it and reads
+it, and it learns of a move from its own read and from the change event, not from
+the notice.
+
+** The kinds, per kind**
+
+Every kind that publishes must seed a notice kind for its publish, and every kind
+that withdraws must seed one for its withdrawal. The rule is the same for each,
+and the seed is the only per-kind part.
+
+| Kind | Publish notice | Withdrawal notice |
+|------+----------------+-------------------|
+| IR curve | =marketdata.curve_published= | =marketdata.curve_withdrawn= |
+| FX forward set | none | none |
+| FX volatility surface | =marketdata.surface_published= | none |
+
+The gap in the table is the lifecycle's own gap seen from the reader's side. A
+forward set is published and superseded by no notice, and a surface can be
+published but not withdrawn, so it needs no withdrawal notice yet. A kind whose
+row is empty here is a kind whose readers find the change only at their next read
+([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]]).
+
+* See also
+
+- [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — the structure note that orders this cluster.
+- [[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]] — the act that writes the notice.
+- [[id:E474FB93-2ACE-4981-9761-33E214B3D268][Withdrawal of published market data sets]] — the second act that writes one.
+- [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] — the subsystem's own contract, which this page does not repeat.
+- [[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Reading a published market data set]] — where the values are read instead.
+- [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]] — the acts, of which these are the announcements.

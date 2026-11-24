@@ -1,0 +1,151 @@
+:PROPERTIES:
+:ID: EEE9DBF4-F190-4FCD-8193-40B583184BD4
+:END:
+#+title: The lifecycle record of a derived market object
+#+description: One publish record for every kind of derived market object: the columns every kind shares, the subject part each kind adds, and what a reader of any kind reads.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:marketdata:publish:approval:data:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+
+* Summary
+
+A published derived market object is one record, and the record has one shape
+whatever the kind. It names the approval request that authorised it, the party,
+the as-of, the candidate version it published and the output series it wrote,
+the account and the instant of the publication, the set it superseded and, where
+the kind has one, the withdrawal that ended it. The kind adds a subject part and
+nothing else: the bootstrap configuration of a curve, the currency pair of a
+forward set, the blueprint of a surface. The separation is what makes a single
+lifecycle possible, because the parts that the acts read and write are the same
+for every kind, and only the words that say what the set is of differ.
+
+The record holds no numbers. The values of a set are the candidate's, and its
+checks are the candidate's too. The record holds the authority over those
+values: who asked, who decided, who published, when, and what ended it.
+
+* Detail
+
+** The three records of one publish
+
+A publish is an act over a candidate that an approval request authorised, and
+each of the three is a record of its own. The separation decides where a fact is
+written, and every act of the lifecycle writes to one of them.
+
+| Record | What it holds | Who writes it |
+|--------+---------------+---------------|
+| The approval request | Who asked, the kind, the reason, the decisions, the rule that closed it | The inbox's library, in the act's transaction |
+| The candidate | The points, their lineage, and the result of every check | The kind's compute |
+| The publish | The authority: party, as-of, subject, candidate version, output series, publisher, instant, and the end of the set | The apply, and the withdrawal's apply |
+
+** The columns every kind shares**
+
+The publish record is one table of the lifecycle, and the columns fall into five
+groups. A reader of any kind reads all five, so a screen that lists sets, or a
+report that binds one, does not know which kind it reads.
+
+| Group | Columns | What it states |
+|-------+---------+----------------|
+| Identity | the publish id, the output series id | Which set this is, and which series it was written to |
+| Authority | the approval request, the party, the as-of, the publisher, the published instant | Who put it in use, over which party's data, at which as-of |
+| The published version | the candidate id and its version | Which numbers were decided. A request names one version, so a decision never covers numbers computed after it |
+| Supersession | the superseded instant, the request that replaced it, the as-of that replaced it | That a newer or equal as-of was applied after it, and by which act |
+| Withdrawal | the withdrawing account, the instant, the reason code, the withdrawal request | That the set left use, why, and by which act |
+
+The state of the set is read from those columns and is not a column of its own,
+because a state that were stored could disagree with the facts beside it.
+[[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] states the derivation: a set with a
+published instant is published; one that also carries a successor is superseded;
+one that carries a withdrawing account is withdrawn. The supersession columns
+record a fact and do not decide what a read takes, because the read's own rule
+decides that ([[id:86158AAD-423A-421A-8BE2-CC5123109297][As-of resolution of published market data sets]]). A superseded
+set is taken for an as-of before its successor's, and again after its successor
+is withdrawn.
+
+** The subject part**
+
+The subject part is the only table a kind owns in the record, and it is keyed by
+the publish. It states what the set is a set of, in the words of the kind's own
+domain, and it carries the foreign keys of that domain so the database checks
+them as it checks every other row.
+
+| Kind | The subject part names | The columns it adds |
+|------+------------------------+---------------------|
+| IR curve | A bootstrap configuration of the party | the configuration's id |
+| FX forward set | A currency pair of the party | the pair, the spot date and rate, the two curve publishes it was built from, the convention version, the calendars and the method |
+| FX volatility surface | A surface blueprint of the party | the blueprint's id |
+
+The subject part holds the inputs a set was computed from where those inputs are
+publish records themselves, as an FX forward set holds the two curves it read.
+That is what lets the apply refuse a set whose input was withdrawn after it was
+computed ([[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]]).
+
+#+caption: The target shape of the lifecycle record: one publish record that every kind shares, a subject part per kind, and the two records of the candidate and the request.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/the_lifecycle_record.png]]
+
+Source: [[proj:doc/knowledge/architecture/the_lifecycle_record.puml][=the_lifecycle_record.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/the_lifecycle_record.puml=. The
+diagram states the target shape and not the live schema, which is drawn by the
+generated diagram in [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram conventions]].
+
+** What the record does not hold**
+
+Three kinds of fact are deliberately outside the record, and a reader that wants
+them reads the record they belong to.
+
+- *The values of the set.* They are observations of the output series, each with
+  its own oresmd identity, written by the compute and never by the apply.
+- *The result of the checks.* A blocking check that failed stops the raise, so a
+  published set passed every blocking check; an advisory one, such as the
+  largest pillar error of a calibration, is a fact the decider weighs and it
+  belongs to the candidate version the decision covered.
+- *The source series the set was computed from.* Each derived point carries a
+  lineage row naming the series it read, their weights and the version of the
+  recipe ([[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve point provenance]]). The source is therefore a fact of
+  the point and not of the publish, and a set whose blueprint gained a
+  contributor after the publish does not thereby change its own record.
+
+** Why one record**
+
+Two consequences follow from the shape, and both are the reason for it.
+
+The history of a set is a stream of versions of one row, and not a join across
+tables. A withdrawal adds the end of the act to the row that already holds its
+beginning, so the set a desk priced from is still readable after it leaves use,
+with the reason beside it. A list of a party's sets answers one question in one
+read: which set is in use for each subject, and what ended the one before it.
+
+The lifecycle can then be implemented once. Every act reads and writes the same
+columns, and the kind supplies the compute, the checks, the subject part and its
+two approval kinds ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]]).
+Nothing in the raise, the apply, the withdrawal or the read branches on which
+kind it serves.
+
+** The distance to the code**
+
+The record is one shape in this page and three shapes in the tree. Each kind
+carries its own table with the shared columns repeated, and the columns a kind
+does not yet need are absent rather than empty.
+
+| Kind | Shared columns | Subject part | Withdrawal columns |
+|------+----------------+--------------+--------------------|
+| IR curve | all five groups | its own table, carrying the configuration | present |
+| FX forward set | identity, authority, the published version | its own table, carrying the pair and the inputs | absent, and no supersession columns either |
+| FX volatility surface | identity, authority, the published version, supersession | its own table, carrying the blueprint and the calibration it published | absent |
+
+The surface table also carries the calibration's verdict, which belongs to the
+candidate and not to the publish. That is the clearest sign that the three
+records are copies rather than one record with three subject parts.
+
+* See also
+
+- [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — the structure note that orders this cluster, and where to read this page in it.
+- [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]] — the acts this record is written by.
+- [[id:24950B8E-7FC4-4F0A-8AA4-9603B344F970][Candidate computation and storage before publication]] — the record that holds the numbers and the checks.
+- [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] — the record that holds the decision.
+- [[id:B05A31CC-FA22-4534-848E-601A30822992][Withdraw or replace a published curve]] — states the derivation of the state from the columns.
+- [[id:86158AAD-423A-421A-8BE2-CC5123109297][As-of resolution of published market data sets]] — the rule that reads the record.
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve point provenance]] — the lineage that names the sources.
+- [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram conventions]] — the generated diagram of the live schema.

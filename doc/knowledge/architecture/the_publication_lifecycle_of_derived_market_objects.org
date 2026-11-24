@@ -2,25 +2,50 @@
 :ID: 186B44DD-51EA-45AA-971E-0C2D4D21A6DD
 :END:
 #+title: The publication lifecycle of derived market objects
-#+description: Every curve, FX forward set and volatility surface becomes authoritative the same way: compute a candidate, raise, decide, apply, and later supersede or withdraw, implemented once and parameterised by the kind of object.
+#+description: Every curve, FX forward set and volatility surface becomes authoritative the same way: compute a candidate, raise, decide, apply, and later supersede or withdraw, implemented once and parameterised by the kind.
 #+type: knowledge
 #+level: cross
 #+filetags: :architecture:marketdata:publish:approval:four_eyes:
 #+created: 2026-11-11
-#+updated: 2026-11-11
+#+updated: 2026-11-24
 
 * Summary
 
-Every kind of derived market object, a curve, an FX forward set, a volatility surface and any kind added later, goes through one lifecycle, implemented once in =ores.marketdata= and parameterised by the kind. A kind supplies only what differs in finance: its subject, its compute, its checks and its approval kinds. The record of a publish, its states, the raise, the apply, the supersession, the withdrawal, the notices and the read are the same for every kind, so the same act behaves the same way whatever is published.
+Every kind of derived market object, a curve, an FX forward set, a volatility
+surface and any kind added later, goes through one lifecycle, implemented once in
+=ores.marketdata= and parameterised by the kind. A kind supplies only what
+differs in finance: its subject, its compute, its checks and its approval kinds.
+Everything else, the record of a publish, the states, the raise, the apply, the
+supersession, the withdrawal, the notices, the manual marks and the read, is the
+same for every kind, so the same act behaves the same way whatever is published.
+
+The lifecycle has two objects and not one. A *request* asks, and a *set* is what
+the request makes authoritative. The two have their own states, and the acts of
+the lifecycle are the transitions of both: a raise opens a request, a decision
+closes it, an apply publishes a set, and a withdrawal ends one.
 
 * Detail
 
-** The states
+** The two objects
+
+| Object | What it is | Its states | Its record |
+|--------+------------+------------+------------|
+| The request | The approval that authorises one candidate version of one subject at one as-of | Waiting, held, approved, refused, expired, withdrawn | The inbox's approval request |
+| The set | The published rows of the subject's output series, with the authority over them | Candidate, raised, published, superseded, withdrawn, closed | The publish record ([[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][The lifecycle record of a derived market object]]) |
+
+The split is what keeps the two questions apart. The request answers who allowed
+this and on what grounds; the set answers which numbers are in use and until
+when. A set can outlive its request, which is what a supersession and a
+withdrawal act on.
+
+** The states of a set
 
 [[proj:doc/knowledge/architecture/publish_lifecycle_states.png]]
 
 Source: [[proj:doc/knowledge/architecture/publish_lifecycle_states.puml][=publish_lifecycle_states.puml=]]. Regenerate with
-=plantuml -tpng doc/knowledge/architecture/publish_lifecycle_states.puml=. The states are those of a set: a candidate, the request raised for it, and the published set that comes of it.
+=plantuml -tpng doc/knowledge/architecture/publish_lifecycle_states.puml=. The
+states are those of a set: a candidate, the request raised for it, and the
+published set that comes of it.
 
 | State | Meaning |
 |-------+---------|
@@ -32,18 +57,68 @@ Source: [[proj:doc/knowledge/architecture/publish_lifecycle_states.puml][=publis
 | Withdrawn | Taken out of use under an approved withdrawal. No read by as-of takes it. |
 | Closed | The request was refused, withdrawn, expired or lapsed, or its apply was refused, so nothing was published. |
 
-A request closed under a stated rule is applied in the transaction that raised it, so it passes from Raised to Published at once and is never left approved.
+A request closed under a stated rule is applied in the transaction that raised it,
+so it passes from Raised to Published at once and is never left approved.
 
-** What a kind supplies
+** The states of a request
+
+[[proj:doc/knowledge/architecture/publish_request_states.png]]
+
+Source: [[proj:doc/knowledge/architecture/publish_request_states.puml][=publish_request_states.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/publish_request_states.puml=. The
+request has the inbox's states for every kind, and the apply is an act over it
+rather than a state of it.
+
+A request publishes once. The apply refuses a request that has published
+already, and the next publish is a new request, because an approval is a decision
+on one candidate version and a second publish decides different numbers.
+
+** The acts**
+
+Six acts make up the lifecycle, and each is documented once for every kind.
+
+| Act | What it does | The page that states it |
+|-----+--------------+-------------------------|
+| Compute | Writes the candidate and its checks as a version, before anybody is asked | [[id:24950B8E-7FC4-4F0A-8AA4-9603B344F970][Candidate computation and storage before publication]] |
+| Raise | Asks for one candidate version to become the set of its series at its as-of | [[id:BF14C932-D699-4224-98DA-0481E49FA394][Raising a publish request for a candidate version]] |
+| Decide | A second person answers, or a stated rule closes the request | [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][Rules for the automatic approval of requests]], [[id:0FE6BDD9-EB24-4B07-8B0C-D816AAF1BEBF][Approval requests]] |
+| Apply | Publishes the set, supersedes the sets it replaces and writes the notice, in one transaction | [[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]] |
+| Withdraw | Takes a published set out of use, with its reason kept | [[id:E474FB93-2ACE-4981-9761-33E214B3D268][Withdrawal of published market data sets]] |
+| Read | Answers with the set the as-of rule selects, and never with a candidate | [[id:86158AAD-423A-421A-8BE2-CC5123109297][As-of resolution of published market data sets]] |
+
+Two further subjects run across the acts and are documented once for every kind:
+a person may correct a candidate by hand at any point before the apply, and every
+act that moves a published set tells its readers
+([[id:C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4][Manual marks on a derived market object]],
+[[id:B3F03DBB-EBD1-4649-94E5-6C5C1B67A084][Notification of a change to a published market data set]]).
+
+** What a kind supplies**
+
+A kind is a declaration and never a copy of the lifecycle. It states four things.
 
 | Part | What the kind states |
 |------+----------------------|
 | Subject | What one set is a set of, and the party that owns it: a bootstrap configuration, a currency pair, a surface blueprint. The subject names the output series the set is written to. |
 | Compute | The operation that computes a candidate for a subject at an as-of. |
 | Checks | What a candidate is checked against, which checks block a raise, and which a decider reads. |
-| Approval kinds | One kind for a publish and one for a withdrawal, each with the permission that raises it, the permission that decides it, its auto-approval code ([[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][Rules for the automatic approval of requests]]) and its apply window. |
+| Approval kinds | One kind for a publish and one for a withdrawal, each with the permission that raises it, the permission that decides it, its auto-approval code and its apply window. |
 
-** What is the same for every kind
+The two approval kinds are part of the declaration and not an afterthought. A
+kind that names a publish kind and no withdrawal kind cannot take a wrong set out
+of use, and a kind that names neither cannot be published at all.
+
+** The kinds**
+
+The three kinds in the tree, with the declaration each supplies. The row is the
+whole of what a kind owns.
+
+| Kind | Subject | Compute | Checks | Publication kind | Withdrawal kind |
+|------+---------+---------+--------+------------------+-----------------|
+| IR curve | a bootstrap configuration | the bootstrap | one, on the recipe | =marketdata.curve_publish= | =marketdata.curve_withdrawal= |
+| FX forward set | a currency pair | the forward compute, by covered interest parity from two published curves | the recipe and the inputs' state | =marketdata.fx_forward_publish= | none |
+| FX volatility surface | a surface blueprint | the calibration | two: the recipe, and the result's freedom from arbitrage | =marketdata.fx_vol_surface_publish= | none |
+
+** What is the same for every kind**
 
 | Part | Page |
 |------+------|
@@ -53,14 +128,49 @@ A request closed under a stated rule is applied in the transaction that raised i
 | The apply, the supersession and the notice | [[id:86D8986F-5247-4138-85C7-F8899C029F24][The trader applies an approved publish, which supersedes the live set and tells its readers]] |
 | The withdrawal | [[id:E474FB93-2ACE-4981-9761-33E214B3D268][Withdrawal of published market data sets]] |
 | The read | [[id:86158AAD-423A-421A-8BE2-CC5123109297][As-of resolution of published market data sets]] |
+| The record and its subject part | [[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][The lifecycle record of a derived market object]] |
+| A hand value over an automatic write | [[id:C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4][Manual marks on a derived market object]] |
+| Telling a reader that a set moved | [[id:B3F03DBB-EBD1-4649-94E5-6C5C1B67A084][Notification of a change to a published market data set]] |
+| What a reader is given | [[id:A541CB69-7CB6-4FF6-9AF5-DA0179C59B5E][Reading a published market data set]] |
 
-** The record
+** The record**
 
-A publish is one record, whatever its kind, with the columns every kind shares: the request, the party, the as-of, the candidate and its version, the output series, who published it and when, who superseded it, when and as of which instant, and who withdrew it, when and why. The subject is a part of its own, one table per kind, keyed by the publish. A reader of any kind reads one shape.
+A publish is one record, whatever its kind, with the columns every kind shares.
+The subject is a part of its own, one table per kind, keyed by the publish. A
+reader of any kind reads one shape. The record holds no values and no checks,
+because those belong to the candidate version the decision covered
+([[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][The lifecycle record of a derived market object]]).
 
-** Where it lives
+** Where it lives**
 
-=ores.marketdata.service= holds the one implementation. A kind is a declaration beside it, never a copy of it: its subject part, its compute operation, its checks and its approval kinds. The messages of every kind name the same steps: compute, raise, apply, withdraw and read. The approval record is written by the inbox's library inside the same database transaction, because the inbox and market data share one database.
+=ores.marketdata.service= holds the one implementation. A kind is a declaration
+beside it, never a copy of it: its subject part, its compute operation, its
+checks and its approval kinds. The messages of every kind name the same steps:
+compute, raise, apply, withdraw and read. The approval record is written by the
+inbox's library inside the same database transaction, because the inbox and
+market data share one database.
+
+** Where the kinds stand**
+
+The lifecycle is one lifecycle in this page and three implementations in the
+tree. Each kind carries its own copy of the raise, the apply, the supersession
+and the notice, and each copy has fallen behind the others in a different place.
+
+| Capability | IR curve | FX forward set | FX volatility surface |
+|------------+----------+----------------+-----------------------|
+| Compute into a candidate | yes | yes | yes |
+| Publish under an approval | yes | yes | yes |
+| Supersede the set it replaces | yes | no | yes |
+| Withdraw a published set | yes | no | no |
+| Publish notice | yes | no | yes |
+| Withdrawal notice | yes | no | no |
+| List the party's sets | yes | no | no |
+| Publish on a schedule | yes | no | no |
+
+A fourth kind written today would be a fourth copy, and the copies would diverge
+as these three have. The correction is one implementation over the declaration in
+the table above, which is what the stories that follow this page set out to
+build.
 
 * See also
 

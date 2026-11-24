@@ -1,0 +1,46 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Manual marks: the precedence of a hand value over an automatic write
+
+|An automatic writer|
+start
+:an automatic write arrives\nfor a coordinate;
+if (a manual point\nowns it?) then (no)
+  :store the value;
+else (yes)
+  if (the same\ninstant?) then (yes)
+    :drop the write;
+  else (no)
+    :store the value beside the manual row;
+  endif
+endif
+stop
+
+|A reader|
+start
+:read the observations\nat the as-of;
+if (a manual point\nowns it?) then (yes)
+  :answer the manual value;
+else (no)
+  :answer the latest\nvalue at or before the as-of;
+endif
+stop
+
+@enduml

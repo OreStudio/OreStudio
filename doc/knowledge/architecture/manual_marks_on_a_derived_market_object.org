@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4
+:END:
+#+title: Manual marks on a derived market object
+#+description: A person keys a point by hand, the value owns its coordinate until it is cleared, and an automatic write never takes it back.
+#+type: knowledge
+#+level: cross
+#+filetags: :architecture:marketdata:publish:manual:
+#+created: 2026-11-24
+#+updated: 2026-11-24
+
+* Summary
+
+A person may key a point of a derived market object by hand, and the value then
+owns its coordinate until it is cleared. An automatic write at a later instant
+leaves the manual row in place, the read at an as-of prefers the manual point to
+whatever later value an automatic writer produced, and an automatic write at the
+very same instant is dropped rather than allowed to replace it. The rule is one
+rule, applied in one place below every automatic writer, so the feed, the import,
+the scheduled refresh and the compute are held to it equally and none of them
+needs to know that a manual point exists.
+
+A manual mark is a candidate correction. It never publishes anything, and the
+decision to publish the corrected candidate is the ordinary four-eyes act
+([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]]).
+
+* Detail
+
+** Why a person keys a point
+
+Three reasons, and the record names which one applies. The market is wrong, so
+the hand value corrects a value a contributor published. The market is thin or
+absent, so the hand value stands in for a value nobody quoted. The person wants a
+what-if, so the hand value is a candidate and nothing more. The first two change
+what a set would be if it were published; the third never leaves the desk.
+
+** What a manual mark carries**
+
+| Fact | Why it is needed |
+|------+------------------|
+| The coordinate | Which node of the object the value belongs to, one coordinate per declared axis in the shape's order |
+| The value | Written as a number in text, and checked against the shape the object declares |
+| The change reason code | A person's reason is a code the tenant states, not free text alone, so a desk can count its corrections |
+| A commentary | The reason in words, which the code refuses to accept empty |
+| The author and the instant | Stamped by the server when it receives the request, so the mark says who made it and when |
+
+The coordinate is checked against the shape the object declares, so a node the
+shape does not hold is refused. A curve carries a tenor on its coordinate; a
+surface carries an expiry and a strike label.
+
+** The precedence rule**
+
+The rule is stated in five parts, and each part is load-bearing.
+
+1. A manual point owns its coordinate until it is cleared.
+2. An automatic write at a later instant leaves the manual row where it is.
+3. A read at an as-of prefers the manual point to a later value an automatic
+   writer produced.
+4. An automatic write at the very same instant is dropped, because it would
+   replace the manual row while the record still named the manual value.
+5. Clearing releases every manual point on the coordinate, and the automatic
+   value shows again.
+
+Part 3 is why the rule is a precedence and not a lock. A feed does not stop
+publishing because a desk keyed a value; it keeps publishing into the series, and
+the read decides which of the two it shows. A person who wants the feed's value
+back clears the mark rather than waiting for the market to overwrite it.
+
+#+caption: The precedence of a manual mark over an automatic write, at the write and at the read.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/manual_mark_precedence.png]]
+
+Source: [[proj:doc/knowledge/architecture/manual_mark_precedence.puml][=manual_mark_precedence.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/manual_mark_precedence.puml=.
+
+** Where the rule is enforced
+
+The rule is one guard that sits before the shared insert of an observation, and
+not a condition in each writer. Every writer that is not a person reaches the
+store through that insert: the feed's ingest, the import of an ORE market data
+vintage, the scheduled refresh, and the compute that writes a candidate. A
+recalibration therefore cannot take a hand value back, and no writer is aware of
+the rule.
+
+Only the operation that keys a manual point writes a manual point, and it does
+not pass through the guard.
+
+** What a mark leaves behind**
+
+Each key writes a new observation row, so a node adjusted twice holds two rows,
+and the history keeps every correction rather than the last one. An annex row
+records that the point was written by hand, with the author and the reason, so a
+reader can tell a manual point from a feed point without asking the value. A
+clear releases them all, and the read returns the automatic value.
+
+** The limit of the rule**
+
+The guard reads the annex and the insert is a separate statement. A manual point
+committed between those two statements, by another transaction, can therefore
+still be replaced by an automatic write at its instant. The window is one round
+trip wide. Closing it needs the check inside the insert statement itself, which
+is a single statement and not a second round trip.
+
+** What has no manual form**
+
+A mark is one point. A spread overlay is many points moved by one decision: a
+parallel shift or a twist, over a node or a segment, with its own reason. That
+act does not exist, and it is not a loop of marks, because the overlay applies to
+whatever the automatic values are at the time it is read and a mark fixes one
+value forever.
+
+** Where the kinds stand**
+
+The operation is shape-driven, so it addresses a curve and a surface by the axes
+the shape declares, and it serves both. What differs is the way in, and the
+surface screens do not exist yet
+([[id:9487E120-6D43-4EFB-8E28-E9CEBA7EB43A][Read a published surface]]).
+
+* See also
+
+- [[id:B74CEF18-B533-45A1-B65E-F7DF836988D6][Publishing derived market data]] — the structure note that orders this cluster.
+- [[id:24950B8E-7FC4-4F0A-8AA4-9603B344F970][Candidate computation and storage before publication]] — the candidate a mark corrects.
+- [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve point provenance]] — the lineage a mark's annex extends.
+- [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] — the journey the rule serves.
+- [[id:86158AAD-423A-421A-8BE2-CC5123109297][As-of resolution of published market data sets]] — the read that applies the preference.
+- [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][The publication lifecycle of derived market objects]] — the act that publishes a corrected set.

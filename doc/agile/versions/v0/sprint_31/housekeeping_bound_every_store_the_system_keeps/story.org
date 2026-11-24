@@ -40,9 +40,9 @@ No store the system keeps grows without bound: each one has a declared policy, h
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:093C2CAE-AA56-4317-B10B-9AD0BF1E7593][Scaffold story: Housekeeping: bound every store the system keeps]] | STARTED | 2026-11-24 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:093C2CAE-AA56-4317-B10B-9AD0BF1E7593][Scaffold story: Housekeeping: bound every store the system keeps]] | DONE | 2026-11-24 | 2026-11-24 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:B510B5D5-CA8B-4936-B289-508579036354][Implement Housekeeping: bound every store the system keeps]] | BACKLOG | | | Initial task for: Housekeeping: bound every store the system keeps |
-| [[id:701FF7D7-23D5-49D0-BE2E-661AFEE24654][Inventory every dimension that grows without bound]] | BACKLOG | | | Task for: Housekeeping: bound every store the system keeps |
+| [[id:701FF7D7-23D5-49D0-BE2E-661AFEE24654][Inventory every dimension that grows without bound]] | DONE | 2026-11-24 | 2026-11-24 | Task for: Housekeeping: bound every store the system keeps |
 
 * Decisions
 

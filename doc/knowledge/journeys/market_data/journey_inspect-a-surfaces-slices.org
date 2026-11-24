@@ -40,36 +40,35 @@ check the maker runs before the candidate goes to a second pair of eyes.
 * Steps
 
 1. *Open the candidate surface.* The person opens *Curves and surfaces* and
-   selects the candidate surface. The system reads the =market_series= row and
-   its =derivation_kind=/config/version, which says the surface is derived and
-   by which recipe.
-2. *Read the surface.* The person chooses *Read surface*. There is no surface
-   read: =marketdata.v1.curve_snapshot.get= is keyed by an =oresmd_uri= and
-   reconstructs curve or grid points, and it has no surface shape. The system
-   lists the surface series row and the quotes it holds, and marks the surface
-   itself as not served. See /What is missing/.
+   selects the candidate surface. The system reads the blueprint that produced
+   it, which names the pair, the model, the output grid and the series the
+   points were written to.
+2. *Read the surface.* The person chooses *Read surface*. A candidate is read
+   from the reply of the calibration that produced it, which carries the grid
+   the fit sampled; a published set is read from
+   =marketdata.v1.ops.get_published_fx_vol_surface=. Both give the grid, its
+   expiries and its strikes, so the surface on the screen is the surface the
+   server computed.
 3. *Read the smiles across tenors.* The person picks a set of tenors and reads
    the smile at each. Each smile is a slice: the vol at a fixed expiry across
    strikes, from the low-strike put wing through the at-the-money point to the
-   high-strike call wing. There is no slice read, so no smile can be drawn. See
-   /What is missing/.
+   high-strike call wing. A smile is one row of the grid, so the screen draws it
+   without a second call.
 4. *Overlay the quotes on a smile.* The person reads each raw quote of that
-   tenor against the fitted smile. The quotes come from
-   =marketdata.v1.market_observations.list_by_series_id=, one row per
-   =oresmd_uri=, but the fitted smile does not exist to overlay them on.
+   tenor against the fitted smile. The calibration reply carries one fit per
+   pillar, with the quoted vol, the fitted vol and their difference, so the
+   overlay is read and not recomputed.
 5. *Read the mesh.* The person reads the mesh: the vol across expiry and
-   strike at once, either as a grid or as a shaded total-variance view. The
-   mesh needs the surface read of step 2 and a mesh read, and neither exists.
-   See /What is missing/.
+   strike at once, either as a grid or as a shaded total-variance view. The mesh
+   is the grid the reply carries, viewed whole rather than a row at a time.
 6. *Check calendar arbitrage.* The person checks that total variance does not
-   fall as expiry grows, at a fixed strike. No operation returns total
-   variance along an expiry axis and no check runs, so the screen states the
-   check it needs and marks it as absent. See /What is missing/.
+   fall as expiry grows, at a fixed strike. The calibration runs the check and
+   the reply reports each breach it found, with its expiry and its description.
 7. *Check butterfly arbitrage.* The person checks that the risk-neutral
    density implied by each smile is non-negative, which fails when a smile is
-   too concave. No operation returns a density or a butterfly check, so the
-   screen states the check it needs and marks it as absent. See /What is
-   missing/.
+   too concave. The calibration runs the check, reports each breach with its
+   expiry, and any breach stops the candidate being published under any rule
+   ([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][Publication of derived market data sets]]).
 8. *Leave.* The person returns to the list. The candidate surface is unchanged;
    the person did not write or publish anything.
 
@@ -107,68 +106,63 @@ no build step and no session. It argues that a surface is read a slice at a time
 | =observation_lineage= | The provenance of each derived surface point: which config/version and which source series it read | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
 | =market_series_asset_class= | The asset class the surface list filters on | [[id:8E9E03CE-9B64-4A1C-B201-A96AE159B4CE][ores.marketdata.market_series_asset_class]] |
 | =tenor= | The expiry axis labels the slices are named by | [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][ores.refdata.tenor]] |
+| =fx_vol_surface_blueprint= | The recipe the candidate was calibrated under: the model, the grid and the series it writes to | [[id:4E6A70AD-E26F-49DF-B15F-EC01986F8FB6][ores.refdata.fx_vol_surface_blueprint]] |
+| =fx_vol_surface_calibration= | The fit itself: the verdict, the pillar fits, the grid and the arbitrage breaches | [[id:1A88AD06-3C1A-4FAB-B3AD-D5CC95195D5F][ores.marketdata.fx_vol_surface_calibration]] |
 | =currency= | The currency the surface is quoted in | [[id:035402B2-0136-44A5-BDB0-601F6864A9FA][ores.refdata.currency]] |
 
-There is no surface model and no slice model, so the smiles, the mesh and the
-two arbitrage checks have no entity to compose. The screen can read the series
-row and its quotes only; see /What is missing/.
+The calibration record is the surface's fit as computed: the smiles are its grid
+by row, the mesh is the grid whole, and the two arbitrage checks are the
+violations it recorded. The screen composes those rows rather than a surface
+model of its own.
 
 * Operations and messages
 
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Open the candidate surface | List the series that may be a surface | =marketdata.v1.market_series.list= | exists |
-| Open the candidate surface | Read one series | =marketdata.v1.market_series.get= | exists |
-| Read the surface | Read the surface | =marketdata.v1.surface.get= | missing |
-| Read the smiles | Read one smile (slice) | =marketdata.v1.surface-slice.get= | missing |
-| Overlay the quotes | List the observations of one series | =marketdata.v1.market_observations.list_by_series_id= | exists |
-| Read the mesh | Read the surface mesh | =marketdata.v1.surface-mesh.get= | missing |
-| Check calendar arbitrage | Read the calendar-arbitrage check | =marketdata.v1.surface.arbitrage= | missing |
-| Check butterfly arbitrage | Read the butterfly-arbitrage check | =marketdata.v1.surface.arbitrage= | missing |
+| Open the candidate surface | List the party's blueprints | =refdata.v1.fx_vol_surface_blueprints.list= | exists |
+| Open the candidate surface | Read one blueprint | =refdata.v1.fx_vol_surface_blueprints.get= | exists |
+| Read the surface | Calibrate, and read the grid from the reply | =marketdata.v1.ops.calibrate_fx_vol_surface= | exists |
+| Read the surface | Read a published set's grid | =marketdata.v1.ops.get_published_fx_vol_surface= | exists |
+| Read the smiles | Read one row of the grid | the same two subjects | exists |
+| Overlay the quotes | Read the pillar fits the calibration recorded | the calibration reply | exists |
+| Read the mesh | Read the grid whole | the same two subjects | exists |
+| Check calendar arbitrage | Read the calendar breaches | the calibration reply and the record | exists |
+| Check butterfly arbitrage | Read the butterfly breaches | the calibration reply and the record | exists |
 | Read the recipe lineage | Read the lineage of a derived point | =marketdata.v1.observation_lineages.list= | exists |
-| Check the change trail | Read the series' history | =marketdata.v1.history.get= | exists |
+| Check the change trail | Read the calibration's history | =marketdata.v1.history.get= | exists |
+| Read a stored calibration | Read the record by its id | (no subject) | missing |
+| Read a slice | Read one expiry's smile as its own subject | =marketdata.v1.ops.get_series_slice= | declared, unserved |
 
-No surface subject exists. Every surface read above is a candidate subject, not
-a subject the server serves today. Only the series and observation reads, the
-lineage read and the generic history read are real. The generic history read is
-=marketdata.v1.history.get= with =entity_type= =ores.marketdata.market_series=;
-=market_series= and =observation_lineage= register history providers.
+The checks are computed once, by the calibration, and both the reply and the
+record carry them. A surface that breaches one cannot be published under any
+rule, so the person reads the breaches on the candidate and does not need a
+second opinion at the published set.
 
 * What is missing
 
-1. *There is no surface read.* The subject =marketdata.v1.surface.get= would
-   have to be added to return the fitted surface for an =oresmd_uri= and an
-   as-of. Until then the screen shows the series row and marks the surface
-   panel as not served. A surface model is the precondition: there is no table
-   that carries the surface's axes, its quoting convention or its
-   parameterisation.
-2. *There is no slice read.* The subject =marketdata.v1.surface-slice.get=
-   would have to be added to return the smile at one expiry: the vol at each
-   strike, with the strike labels. Until then no smile can be drawn and the
-   screen shows the raw quotes of that tenor alone. A strike-label vocabulary
-   does not exist, so a strike axis cannot yet be labelled.
-3. *There is no mesh read.* The subject =marketdata.v1.surface-mesh.get= would
-   have to be added, or the surface read extended, to return the vol across
-   expiry and strike as a grid. Until then the mesh panel is empty and
-   labelled.
-4. *There is no arbitrage check of any kind.* No operation exposes a residual,
-   a slice, a total variance or a density, so neither the calendar check nor
-   the butterfly check can run. The candidate is a subject such as
-   =marketdata.v1.surface.arbitrage=, returning the total variance along an
-   expiry axis and the implied density along a smile. Until then the screen
-   names both checks and marks them as absent, and it does not compute them on
-   the client, because the client has no fitted surface to check.
-5. *The surface has no typed identity at the wire.* Every read is keyed by the
-   =oresmd_uri= string, so a caller cannot ask for "the USD swaption surface"
-   without knowing the URI spelling, and a slice cannot be addressed by expiry
-   and strike. The candidate is a typed surface and slice read,
-   =marketdata.v1.surfaces.*=. Until then the screen shows the URI as the
-   identity.
-6. *A read cannot be taken as of a time in the past.* The snapshot read always
-   reads now, so the person cannot inspect the surface as of the instant it
-   was calibrated. The candidate is an =as_of= parameter on the surface read.
-   Until then the screen reads the current surface only.
+1. *A stored calibration has no read.* The record holds the grid, the pillar
+   fits and the breaches, and nothing serves it by its id. A candidate can be
+   inspected only in the reply that produced it, so the person cannot return to
+   yesterday's calibration, and the person who decides cannot open the fit the
+   maker saw. The change history states that the row changed and when; it does
+   not give back the grid.
+2. *The slice subject is declared and unserved.* =marketdata.v1.ops.get_series_slice=
+   is in the protocol and the codec and the service subscribes to nothing, so no
+   caller reaches it. The smile is a row of the grid and needs no slice; either
+   the subject is served for the views that want one expiry alone, or it is
+   deleted.
+3. *The grid is as fine as the blueprint says.* The mesh is the output grid, so a
+   strike between two columns has no value until something interpolates. The
+   blueprint names the interpolation across expiries and not across strikes, so
+   a view finer than the grid would have to state which rule it used.
+4. *The arbitrage checks are the calibration's.* The reply reports breaches and
+   a breach blocks a publish, but nothing returns total variance along an expiry
+   axis or the implied density along a smile, so a person cannot see why a check
+   failed beyond the description the breach carries.
+5. *A published surface has no calibration read.* The publish row names the
+   calibration it published and nothing serves that record, so the read of a
+   published set cannot show the fit behind it.
 
 * Related journeys
 

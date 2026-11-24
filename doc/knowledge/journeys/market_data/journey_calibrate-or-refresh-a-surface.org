@@ -37,43 +37,44 @@ list of curves and surfaces and ends when the trader leaves the surface
 unpublished.
 
 A surface is a *derived* object. It is a candidate until it is approved and
-published, and only the published object is visible to pricing and reporting;
-see /What is missing/ for the model and the engine that do not exist yet.
+published, and only the published object is visible to pricing and reporting
+([[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][Publication of derived market data sets]]).
 
 * Steps
 
 1. *Find the surface.* The person opens *Curves and surfaces* and filters to
-   surfaces. The system lists the market series whose =series_subclass= is
-   volatility, one row per =oresmd_uri=, with its asset class and its
-   =derivation_kind=. There is no surface table to list, so the catalogue row
-   is the only row the screen can show.
-2. *Choose the surface and an as-of.* The person selects a series and an as-of
-   timestamp. The system reads the =market_series= row and the observations
-   at or before that instant. The chosen as-of is the snapshot the calibration
-   would read; the point-in-time read is a repository method
-   (=read_as_of=), not an operation on the wire.
+   surfaces. The system lists the party's blueprints, one row per pair and
+   smile model, with the output series each writes to and the instant it was
+   last calibrated. The blueprint is the surface's recipe and its name; the
+   series holds the points.
+2. *Choose the surface and an as-of.* The person selects a blueprint and an
+   as-of timestamp. The system reads the blueprint's output series and the
+   quotes at or before that instant. The calibration takes the as-of as a
+   field of its request, so the instant the person chooses is the one the
+   quotes are read at.
 3. *Read the market it is built from.* The system lists the quotes the surface
    is built from, one row per =oresmd_uri=: the value, the =source= tag that
    published it, and its =observation_datetime=. An observation is evidence the
    market sent; nobody signs it off.
-4. *Confirm the parameterisation.* The person checks the surface's axes, its
-   strike or moneyness convention, and the model the fit would use. The system
-   carries none of these: it shows the series' =derivation_kind= and its
-   =derivation_config_id=/=derivation_config_version=, and it marks the fields
-   the model does not hold as absent rather than showing them empty. See
-   /What is missing/.
+4. *Confirm the parameterisation.* The person reads the blueprint: the smile
+   model, the interpolation between expiries, the output expiries and strikes,
+   and the pair's convention with its ATM type, delta type and switch tenor.
+   The recipe lives on the blueprint, so the screen reads it there rather than
+   inferring it from a series.
 5. *Fit the quotes to the parameterisation.* The person chooses *Calibrate
-   candidate*. The system has no calibration engine and no operation to call,
-   so the step names the subject it needs and changes nothing. See /What is
-   missing/.
-6. *Read the calibration error.* The person reads the fit error for the
-   candidate, by slice and overall. Nothing serves it: the only curve compute
-   the server offers returns bootstrapped discount points, not a surface fit
-   error.
+   candidate*. The service checks the recipe, reads the quotes the pillars name
+   and the party's published forwards, fits the smile model and writes the
+   candidate: the grid as observations of the output series, and the checks as
+   a calibration record. The reply carries the fit.
+6. *Read the calibration error.* The person reads the largest pillar error,
+   the fit of each pillar with its error, the converged verdict and the count
+   of pillars beyond the blueprint's tolerance. The calibrate reply carries
+   them, and the calibration record stores them against the blueprint version
+   the fit used.
 7. *Read the slices.* The person inspects the smiles across tenors and the
-   surface mesh. The snapshot read is keyed by an =oresmd_uri= and reconstructs
-   curve or grid points; it has no surface or slice shape, so the screen shows
-   the quotes alone.
+   mesh. The reply carries the grid the calibration sampled, so a smile is one
+   row of it and the mesh is the whole of it; the screen draws both without a
+   second read.
 8. *Refresh or leave.* The person either excludes a quote, changes the as-of
    and refits, or accepts the candidate. Refitting repeats step 5.
 9. *Leave unpublished.* The person chooses *Leave unpublished* and returns to
@@ -116,80 +117,60 @@ no build step and no session. It argues that a surface fit is a calibration erro
 | =observation_lineage= | The provenance of each derived surface point: which config/version and which source series it read | [[id:B900C531-535D-48CA-97E7-02CCE556A70B][ores.marketdata.observation_lineage]] |
 | =market_series_asset_class= | The asset class the surface list filters on | [[id:8E9E03CE-9B64-4A1C-B201-A96AE159B4CE][ores.marketdata.market_series_asset_class]] |
 | =tenor= | The tenor axis labels the quotes and smiles are named by | [[id:9A2E4D6B-7C1F-4B8A-A5D3-2F6E9B1C4A87][ores.refdata.tenor]] |
-| =ir_curve_bootstrap_config= | The nearest existing derivation recipe: the config whose id/version the series carries | [[id:73A5FAA1-377C-45A6-999E-4AD4DE406F78][ores.refdata.ir_curve_bootstrap_config]] |
+| =fx_vol_surface_blueprint= | The recipe: the pair, the smile model, the interpolation, the output expiries and strikes, and the series it writes to | [[id:4E6A70AD-E26F-49DF-B15F-EC01986F8FB6][ores.refdata.fx_vol_surface_blueprint]] |
+| =fx_option_convention= | The ATM type, the delta type, the switch tenor and the long-term types that say what a strike label means | [[id:10E9D9B1-1141-4F80-B211-49069D228956][ores.refdata.fx_option_convention]] |
+| =fx_vol_surface_calibration= | The fit of one calibration: the version it used, its verdict, the pillar fits and the violations | [[id:1A88AD06-3C1A-4FAB-B3AD-D5CC95195D5F][ores.marketdata.fx_vol_surface_calibration]] |
 | =currency= | The currency the surface is quoted in | [[id:035402B2-0136-44A5-BDB0-601F6864A9FA][ores.refdata.currency]] |
 
-The models above are what the screen can read today. There is no surface
-model, so the parameterisation, the strike labels and the calibration-error
-rows have no entity to compose; see /What is missing/.
+The blueprint carries the parameterisation, the convention carries what a strike
+label means, and the calibration record carries the fit, so the screen reads
+three rows rather than inferring any of them.
 
 * Operations and messages
 
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| Find the surface | List the series that may be a surface | =marketdata.v1.market_series.list= | exists |
-| Choose the surface | Read one series | =marketdata.v1.market_series.get= | exists |
+| Find the surface | List the party's blueprints | =refdata.v1.fx_vol_surface_blueprints.list= | exists |
+| Choose the surface | Read one blueprint | =refdata.v1.fx_vol_surface_blueprints.get= | exists |
 | Read the market | List the observations of one series | =marketdata.v1.market_observations.list_by_series_id= | exists |
-| Read the slices | Read the curve/grid snapshot for an =oresmd_uri= | =marketdata.v1.curve_snapshot.get= | partial |
-| Confirm the parameterisation | Read the derivation config | =refdata.v1.ir_curve_bootstrap_configs.get= | partial |
-| Fit the quotes | Calibrate the surface | =marketdata.v1.surface.calibrate= | missing |
-| Read the calibration error | Read the fit error | =marketdata.v1.surface.calibration.get= | missing |
-| Read the slices | Read one smile | =marketdata.v1.surface-slice.get= | missing |
+| Confirm the parameterisation | Read the pair's convention | =refdata.v1.fx_option_conventions.get= | exists |
+| Fit the quotes | Calibrate the surface into a candidate | =marketdata.v1.ops.calibrate_fx_vol_surface= | exists |
+| Read the calibration error | Read the fit, its pillars and its violations | =marketdata.v1.ops.calibrate_fx_vol_surface= | exists, on the reply |
+| Read the slices | Read the grid the calibration sampled | =marketdata.v1.ops.calibrate_fx_vol_surface= | exists, on the reply |
+| Read the slices | Read a stored calibration | (no subject) | missing |
 | Refresh the surface | Re-read the observations over a range | =marketdata.v1.ops.get_series_evolution= | exists |
 | Leave unpublished | Arrange the approval later | =inbox.v1.ops.raise_approval= | exists |
-| Check the change trail | Read the series' history | =marketdata.v1.history.get= | exists |
+| Check the change trail | Read the calibration's history | =marketdata.v1.history.get= | exists |
 
-The generic history read is the one with =entity_type=
-=ores.marketdata.market_series=; =market_series= registers a history provider.
-The snapshot and buckets reads are keyed by the =oresmd_uri=, not by a typed
-surface identity, and both read now: =.get= has no as-of parameter and
-=.buckets= serves five half-hour buckets ending now. The approval subject is
-the generic one; the approval kind that would carry how many approvals a
-surface publish needs and which group decides it does not exist yet.
+The calibrate reply carries the whole fit, so the error and the slices are read
+in the call that produced them. The calibration record and the surface publish
+both register history providers, so =marketdata.v1.history.get= shows what was
+calibrated and when. A surface publish is decided under
+=marketdata.fx_vol_surface_publish=, one approval by Market Risk, and a raise in
+the system tenant closes at once.
 
 * What is missing
 
-1. *There is no surface model.* No table carries a surface's axes, its
-   quoting convention or its parameterisation, so the screen cannot show what
-   the surface is. The candidate is a surface entity, and its axe and
-   parameter entities, in =ores.marketdata= or =ores.refdata=. Until then the
-   screen lists =market_series= rows whose =series_subclass= is volatility and
-   marks the missing fields as absent.
-2. *There is no calibration engine and no operation to call it.* The subject
-   =marketdata.v1.surface.calibrate= would have to be added, with a request
-   that names the surface and the as-of and a response that carries the
-   fitted points and the fit error. Until then the *Calibrate candidate*
-   button names the step and stays inert.
-3. *There is no quoting convention and no strike-label vocabulary.* Nothing
-   says whether a strike is an absolute level, a delta, or a moneyness, so a
-   strike axis cannot be labelled and the quotes cannot be mapped to the
-   surface's parameterisation. The candidate is a vol quoting convention in
-   =ores.refdata=. Until then the screen shows the raw =oresmd_uri=
-   coordinates and no axis labels.
-4. *There is no calibration-error read.* The subject
-   =marketdata.v1.surface.calibration.get= would have to be added to return
-   the residual per quote and the error per slice. Until then the calibration
-   error panel is empty and labelled.
-5. *There is no surface or slice read.* =marketdata.v1.curve_snapshot.get=
-   reconstructs curve or grid points at one instant and has no surface shape,
-   and there is no slice subject. The candidate is a surface read, with a
-   slice subject such as =marketdata.v1.surface-slice.get=, on top of the
-   modelled surface. Until then the screen shows the quotes alone; the
-   concurrent slices journey
-   [[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]]
-   records the same gap from the reading side.
-6. *A read cannot be taken as of a time in the past.* Both snapshot reads
-   always read now, so the as-of the person chooses cannot be served over the
-   wire; the point-in-time read exists only as the repository method
-   =read_as_of=. The candidate is an =as_of= parameter on the snapshot
-   request. Until then the screen offers the current snapshot and cannot
-   reproduce yesterday's calibration.
-7. *The surface has no typed identity at the wire.* Every read is keyed by
-   the =oresmd_uri= string, so a caller cannot ask for "the USD swaption
-   surface" without knowing the URI spelling. The candidate is a typed
-   surface read, =marketdata.v1.surfaces.*=. Until then the screen shows the
-   URI as the identity.
+1. *A calibration cannot be read after the reply.* The record is stored with the
+   grid's metadata, the pillar fits and the violations, and nothing serves it by
+   its id. So a candidate inspected yesterday cannot be inspected today, and a
+   published set's calibration is reachable only through the publish row's id.
+   The row's versions are in the change history, which states what changed and
+   when; the fit itself needs a read of the record. The candidate is that read.
+2. *There is no candidate grid read.* The points are observations of the output
+   series, and the as-of read takes only published sets. A person who wants the
+   candidate's grid after leaving the calibration has no read for it.
+3. *The mesh and the slices are the reply's grid.* A smile is a row of it, which
+   is enough for the reading the journey needs, but there is no slice by expiry,
+   no mesh read finer than the output grid, and no view of total variance along
+   an expiry axis, which is what the arbitrage check reads.
+4. *The read states two of the convention's seven fields.* The ATM type, the
+   switch tenor, the long-term ATM and delta types, the risk-reversal preference
+   and the butterfly style are held in =ores.refdata= and are not returned with
+   the fit, so a strike label past the switch tenor is not explained
+   ([[id:9487E120-6D43-4EFB-8E28-E9CEBA7EB43A][Read a published surface]] records
+   the same gap from the reading side).
 
 * Related journeys
 

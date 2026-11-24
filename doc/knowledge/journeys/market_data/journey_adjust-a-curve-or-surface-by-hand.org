@@ -39,8 +39,9 @@ pricing to mark a point by hand. The journey starts at a candidate curve or
 surface and ends when the trader leaves it, still a candidate.
 
 A manual point is a candidate correction. It stays a candidate until it is
-approved and published; see /What is missing/ for the override and shift
-operations and the precedence rule that do not exist yet.
+approved and published, and the rule that keeps it against a later feed write is
+[[id:C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4][Manual correction of a derived market data set]].
+The one act this journey asks for that does not exist is the spread overlay.
 
 * Steps
 
@@ -48,35 +49,35 @@ operations and the precedence rule that do not exist yet.
    the candidate curve or surface. The system reads the =market_series= row
    and lists its points with =marketdata.v1.market_observations.list_by_series_id=.
 2. *Read the points.* The system shows one row per =oresmd_uri= with its
-   value, its =source= tag and its =observation_datetime=. The row carries no
-   actor and no marker that says the value was written by hand, so the screen
-   cannot yet tell a manual point from a feed point. See /What is missing/.
+   value, its =source= tag and its =observation_datetime=. A point keyed by hand
+   carries the source =manual.operator=, so the screen marks it as a correction
+   and never as a feed value.
 3. *Key a curve point.* The person chooses *Set manual point*, picks a tenor,
    types a value and states a reason, and confirms. For a curve the coordinate
-   is the tenor. The system has no override operation, so the button names the
-   subject it needs and changes nothing. See /What is missing/.
+   is the tenor. The service checks the coordinate against the shape the series
+   declares and writes the point with an annex that names the author.
 4. *Key a surface point.* For a surface the coordinate is an expiry and a
-   strike. The person picks both, types a value and states a reason. There is
-   no strike-label vocabulary and no surface point coordinate, so the screen
-   cannot address the point; it marks the strike picker as absent.
+   strike. The person picks both, types a value and states a reason. The shape
+   declares both axes, so the point is addressed by the two labels the grid is
+   indexed by, and a label the shape does not hold is refused.
 5. *Clear a manual point.* The person selects a manual point and chooses
-   *Clear manual point*. The system would drop the override so the feed value
-   shows again. There is no way to identify which point is manual and no
-   operation to clear one, so the button is inert. See /What is missing/.
+   *Clear manual point*. The service closes the point's annex row, so the feed
+   value shows again, and the closed row stays in the annex's history.
 6. *Apply a spread overlay.* The person chooses *Apply spread overlay*, picks a
    parallel shift or a twist, picks a node or a segment to apply it over, types
    the shift and states a reason, and confirms. The system has no shift
    operation, so the button names the subject it needs and changes nothing.
    See /What is missing/.
-7. *Read the corrected candidate.* The system would redraw the curve or
-   surface with the manual points and the overlay applied, and mark each
-   correction with its reason. Because no correction was written, the screen
-   shows the feed values unchanged.
+7. *Read the corrected candidate.* The system redraws the curve or surface
+   with the manual points applied and marks each correction with its reason; the
+   automatic values stay beneath, so the person reads what the market sent and
+   what the desk replaced.
 8. *Confirm the hand value survives a feed update.* The person waits for, or
-   forces, a feed update. The hand value should stay until it is cleared: a
-   feed tick writes the point again and the manual value must win. No
-   precedence rule exists, so a feed write is indistinguishable from a hand
-   write and either can overwrite the other. See /What is missing/.
+   forces, a feed update. The hand value stays until it is cleared: the guard
+   drops an automatic write to a coordinate an operator owns at the manual
+   point's own instant, leaves the manual row in place at later instants, and
+   the read prefers the manual point
+   ([[id:C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4][Manual correction of a derived market data set]]).
 9. *Leave unpublished.* The person chooses *Leave unpublished* and returns to
    the list. The corrected candidate is still a candidate.
 
@@ -132,67 +133,41 @@ missing/.
 |------+-----------+---------+--------|
 | Open the candidate | Read one series | =marketdata.v1.market_series.get= | exists |
 | Read the points | List the observations of one series | =marketdata.v1.market_observations.list_by_series_id= | exists |
-| Read the recipe | Read the pillars a point sits against | =refdata.v1.ir_curve_bootstrap_pillars.list= | exists |
-| Key a curve point | Write a manual point | =marketdata.v1.market_observations.put= | partial |
+| Read the recipe | Read the blueprint the points sit against | =refdata.v1.fx_vol_surface_blueprints.get= | exists |
+| Key a curve point | Write a manual point on one tenor | =marketdata.v1.ops.key_manual_point= | exists |
 | Key a point | Offer the reasons | =dq.v1.change_reasons.list= | exists |
-| Key a surface point | Write a manual surface point | =marketdata.v1.market_observations.put= | partial |
-| Clear a manual point | Remove the manual point | =marketdata.v1.market_observations.override.clear= | missing |
-| Apply a spread overlay | Apply a parallel or twist shift | =marketdata.v1.curve.shift= | missing |
-| Apply a spread overlay | Apply a surface shift | =marketdata.v1.surface.shift= | missing |
-| Confirm survival | Keep the manual point against a feed write | (no precedence rule) | missing |
+| Key a surface point | Write a manual point on an expiry and a strike | =marketdata.v1.ops.key_manual_point= | exists |
+| Clear a manual point | Release the manual point on one coordinate | =marketdata.v1.ops.clear_manual_point= | exists |
+| Apply a spread overlay | Apply a parallel or twist shift | =marketdata.v1.curve.shift=, =marketdata.v1.surface.shift= | missing |
+| Confirm survival | Keep the manual point against a feed write | the guard before the shared insert | exists |
 | Leave unpublished | Arrange the approval later | =inbox.v1.ops.raise_approval= | exists |
 
-=marketdata.v1.market_observations.put= exists, but it writes a row
-indistinguishable from a feed write: the =market_observation= table has no
-actor, no source kind and no reason, and its =source= column is a producer
-channel tag, not a marker that a person wrote the value. The subject is
-therefore =partial= as an override. The generic history read is
-=marketdata.v1.history.get= with =entity_type= =ores.marketdata.market_series=;
-=market_observation= registers no history provider, so an override would
-leave no readable trail.
+The operation is shape-driven: one subject serves a curve and a surface, because
+the coordinate is one value per axis the shape declares. The observation row says
+=manual.operator=, the annex row keeps the author, the reason code and the
+commentary, and the annex registers a history provider, so the trail of a
+correction is readable through =marketdata.v1.history.get=. Clearing closes the
+annex row and keeps it in the history.
 
 * What is missing
 
-1. *Observations carry no actor and no source kind.* The
-   =market_observation= table is append-only, bitemporal and deliberately
-   carries no audit columns; its =source= column names the producer channel,
-   so a row cannot say that a person wrote it. The candidate is a source kind
-   on the point, or a separate override entity that records the actor, the
-   value and the reason. Until then the screen cannot mark a row as manual and
-   shows every row as a feed value.
-2. *There is no override operation.* The subject
-   =marketdata.v1.market_observations.override= (with a matching clear) would
-   have to be added to write a manual point and to remove one. Until then
-   *Set manual point* and *Clear manual point* name the step and stay inert;
-   the screen does not fall back to =.put=, because that would write a feed
-   row with no reason and no actor.
-3. *There is no precedence rule between a manual point and a later feed
-   write.* Nothing decides whether a hand value or the next tick wins, so a
-   manual point cannot be promised to survive. The candidate is a stated
-   precedence: a manual point wins for its coordinate until it is cleared,
-   and a feed write to that coordinate is held or rejected. Until then the
-   screen warns that a feed update may overwrite a hand value.
-4. *There is no spread overlay operation.* The subjects
-   =marketdata.v1.curve.shift= and =marketdata.v1.surface.shift= would have to
-   be added, each naming the kind (parallel or twist), the node or segment it
-   applies over, the shift and the reason. Until then *Apply spread overlay*
-   names the step and stays inert.
-5. *There is no strike-label vocabulary and no surface point coordinate.* A
-   surface point is an expiry and a strike, and nothing says whether a strike
-   is an absolute level, a delta or a moneyness, so a surface override cannot
-   be addressed. The candidate is a vol quoting convention, and with it a
-   strike coordinate in the =oresmd_uri=. Until then the screen shows the
-   expiry and marks the strike picker as absent.
-6. *A correction cannot carry a reason.* The change reasons exist
-   (=dq.v1.change_reasons.list=), but a point has no field to hold one, so the
-   reason the person types has nowhere to go. The candidate is a reason field
-   on the override entity from item 1, or a reason on the observation. Until
-   then the reason field is shown but not stored.
-7. *The correction leaves no history.* =market_observation= registers no
-   history provider, so even if a manual point were written, =marketdata.v1.history.get=
-   could not show when it was made or by whom. The candidate is a history
-   provider for the override entity. Until then the screen cannot show the
-   trail of a by-hand correction.
+One act is missing.
+
+1. *There is no spread overlay operation.* A mark moves one point by hand. A
+   shift moves many by one decision: a parallel shift or a twist, over a node or
+   a segment, with its own reason. The subjects =marketdata.v1.curve.shift= and
+   =marketdata.v1.surface.shift= would each name the kind of shift, the node or
+   segment it applies over, the shift and the reason. An overlay is not a loop
+   of manual points, because it applies to whatever the automatic values are at
+   the time the read happens, and a mark fixes one value forever. Until it
+   exists, *Apply spread overlay* names the step and stays inert.
+
+The precedence rule has one limit, and it is a limit and not a gap: the guard
+reads the annex and the insert is a separate statement, so a manual point
+committed between them, by another transaction, can still be replaced by an
+automatic write at its own instant. Closing the window needs the check inside the
+insert statement. The rule and its limit are stated in
+[[id:C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4][Manual correction of a derived market data set]].
 
 * Related journeys
 

@@ -27,7 +27,7 @@ namespace {
 namespace vendor = ores::marketdata::vendor;
 namespace msg = ores::marketdata::messaging;
 
-const std::string sofr("oresmd://ir/USD?type=fixing&index=ibor&name=SOFR");
+const std::string sofr_notation("oresmd://ir/USD?type=fixing&index=ibor&name=SOFR");
 const std::string libor_3m("oresmd://ir/GBP?type=fixing&index=ibor&name=LIBOR&tenor=3M");
 
 msg::vendor_id id_of(std::string item) {
@@ -45,7 +45,7 @@ TEST_CASE("the_simulated_fixing_notation_is_registered", "[vendor_notation][simu
 TEST_CASE("a_fixing_is_written_as_its_address_and_read_back",
           "[vendor_notation][simulated_fixings]") {
     const vendor::simulated_fixing_notation sut;
-    for (const auto& item : {sofr, libor_3m}) {
+    for (const auto& item : {sofr_notation, libor_3m}) {
         const auto written = sut.write(vendor::quote_description{vendor::index_fixing{item}});
         REQUIRE(written.has_value());
         CHECK(*written == id_of(item));
@@ -62,10 +62,10 @@ TEST_CASE("the_simulated_fixing_notation_refuses_what_is_not_a_fixing",
     CHECK_FALSE(sut.write(vendor::quote_description{vendor::index_fixing{"not an address"}}));
     CHECK_FALSE(sut.read(id_of(
         "oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=1Y")));
-    auto wrong_field = id_of(sofr);
+    auto wrong_field = id_of(sofr_notation);
     wrong_field.field = "PX_LAST";
     CHECK(sut.read(wrong_field).error().reason == vendor::notation_error::kind::wrong_field);
-    auto wrong_scheme = id_of(sofr);
+    auto wrong_scheme = id_of(sofr_notation);
     wrong_scheme.id_scheme = "bbg";
     CHECK(sut.read(wrong_scheme).error().reason == vendor::notation_error::kind::wrong_scheme);
 }

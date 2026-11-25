@@ -64,8 +64,15 @@ std::shared_ptr<ores::marketdata::domain::i_feed> build_fx_spot(const feed_build
                              ctx.clock.get());
 }
 
+std::shared_ptr<ores::marketdata::domain::i_feed>
+build_derived_fixing(const feed_build_context& ctx, const derived_fixing_feed_build_input& in);
+
 std::shared_ptr<ores::marketdata::domain::i_feed> build_ir_curve(const feed_build_context& ctx,
                                                                  const feed_build_input& input) {
+    // One kind, two nodes: a curve feed that runs a process, or a derived index that
+    // states the fixings of one index from its currency's overnight curve.
+    if (const auto* derived = std::get_if<derived_fixing_feed_build_input>(&input))
+        return build_derived_fixing(ctx, *derived);
     const auto& in = std::get<ir_curve_feed_build_input>(input);
     std::optional<ir_curve_start> start;
     if (in.config.price_source == "fixing")
@@ -79,6 +86,20 @@ std::shared_ptr<ores::marketdata::domain::i_feed> build_ir_curve(const feed_buil
                               ctx.market,
                               in.adapter_targets,
                               std::move(start));
+}
+
+std::shared_ptr<ores::marketdata::domain::i_feed>
+build_derived_fixing(const feed_build_context& ctx, const derived_fixing_feed_build_input& in) {
+    return std::make_shared<index_fixing_feed>(
+        ctx.nats,
+        index_fixing_feed_input{.source_name = in.source_name,
+                                .target = in.target,
+                                .item = in.item,
+                                .level_codes = {},
+                                .derived = in.rule,
+                                .when = {},
+                                .run_seed = ctx.market.loop().run_seed()},
+        ctx.market);
 }
 
 std::shared_ptr<ores::marketdata::domain::i_feed>

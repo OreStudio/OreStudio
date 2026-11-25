@@ -22,6 +22,7 @@
 
 #include "fx_spot_feed.hpp"
 #include "fx_vol_surface_feed.hpp"
+#include "index_fixing_feed.hpp"
 #include "ir_curve_feed.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
@@ -154,10 +155,30 @@ struct ir_curve_feed_build_input final {
 };
 
 /**
+ * @brief Build inputs for a derived index: the one fixing it states, and where it publishes.
+ *
+ * A derived index runs no curve and no process. Its node states the fixings of one
+ * index from the currency's overnight curve, under the provider that owns the
+ * computation, so the node is startable and stoppable like any other.
+ */
+struct derived_fixing_feed_build_input final {
+    /// The node's name, and the source the fixing generator publishes as.
+    std::string source_name;
+    /// The fixing's oresmd address, which the generator states each day.
+    std::string item;
+    /// The fixing the node states, and the adapter id it publishes through.
+    adapter_target target;
+    /// The rule that states its rate from the overnight curve.
+    derived_fixing rule;
+};
+
+/**
  * @brief One of the per-kind build inputs, discriminated by the kind string passed to make().
  */
-using feed_build_input = std::
-    variant<fx_spot_feed_build_input, ir_curve_feed_build_input, fx_vol_surface_feed_build_input>;
+using feed_build_input = std::variant<fx_spot_feed_build_input,
+                                      ir_curve_feed_build_input,
+                                      fx_vol_surface_feed_build_input,
+                                      derived_fixing_feed_build_input>;
 
 /**
  * @brief Maps a feed kind to the producer builder that constructs that kind from its persisted

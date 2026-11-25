@@ -103,6 +103,17 @@ inline feed_graph build_feed_graph(const std::vector<feed_start_target>& targets
         if (!target.container_is_system)
             continue;
         const auto& c = target.row.candidate;
+        if (c.derived) {
+            // A derived index reads its currency's overnight curve, so it is a view of
+            // that curve rather than an upstream with nothing above it.
+            out.nodes.push_back({.name = c.source_name,
+                                 .kind = std::string(node_kind::view),
+                                 .provider_code = target.container_provider_code,
+                                 .feed_config_id = c.feed_config_id});
+            edge(c.source_name, c.derived->curve_code, "curve");
+            source_edges(c.source_name, target.container_provider_code);
+            continue;
+        }
         if (target.row.kind->kind != fx_vol_surface_feed_kind) {
             out.nodes.push_back({.name = c.source_name,
                                  .kind = std::string(node_kind::upstream),

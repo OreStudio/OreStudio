@@ -136,15 +136,11 @@ inline std::vector<generator_offer> fixing_offers(const std::vector<feed_start_t
         const auto& candidate = target.row.candidate;
         if (!target.startable() || !target.container_is_system)
             continue;
-        if (candidate.fixing_item && candidate.derived)
-            // A term index no feed quotes: the curve states its rate and this
-            // generator fixes the index from it.
-            offer(*candidate.fixing_item,
-                  ores::analytics::quant::domain::market_member_kind::index_rate,
-                  {},
-                  {},
-                  candidate.derived);
-        else if (candidate.fixing_item)
+        // A derived index is its own node: the config builds the generator, so this
+        // pass leaves it alone or it would be started twice.
+        if (candidate.derived)
+            continue;
+        if (candidate.fixing_item)
             offer(*candidate.fixing_item,
                   ores::analytics::quant::domain::market_member_kind::index_rate,
                   {*candidate.fixing_item},

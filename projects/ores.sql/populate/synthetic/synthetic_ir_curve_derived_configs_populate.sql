@@ -243,10 +243,10 @@ insert into ores_marketdata_market_data_vendor_instruments_tbl (
     deviation_note, modified_by, performed_by, change_reason_code, change_commentary,
     valid_from, valid_to
 )
-select md5('simulated-fixings|oresmd|' || d.item || '|value')::uuid,
-       ores_utility_system_tenant_id_fn(), 0, 'simulated-fixings', 'oresmd', d.item, 'value',
+select md5('derived|oresmd|' || d.item || '|value')::uuid,
+       ores_utility_system_tenant_id_fn(), 0, 'derived', 'oresmd', d.item, 'value',
        false, '', current_user, current_user, 'system.initial_load',
-       'The derived term indices the simulated fixing publisher states',
+       'The derived term indices the platform states',
        now(), ores_utility_infinity_timestamp_fn()
 from (values
     ('oresmd://ir/USD?type=fixing&index=ibor&name=SOFR&tenor=1M'),
@@ -258,7 +258,7 @@ from (values
 where not exists (
     select 1 from ores_marketdata_market_data_vendor_instruments_tbl v
     where v.tenant_id = ores_utility_system_tenant_id_fn()
-      and v.provider_code = 'simulated-fixings'
+      and v.provider_code = 'derived'
       and v.external_id = d.item
       and v.field = 'value'
       and v.valid_to = ores_utility_infinity_timestamp_fn()
@@ -270,11 +270,11 @@ insert into ores_marketdata_market_data_mappings_tbl (
 )
 select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, v.id, v.external_id,
        timestamptz '2026-01-01 00:00:00+00', current_user, current_user, 'system.initial_load',
-       'The derived term indices the simulated fixing publisher states',
+       'The derived term indices the platform states',
        now(), ores_utility_infinity_timestamp_fn()
 from ores_marketdata_market_data_vendor_instruments_tbl v
 where v.tenant_id = ores_utility_system_tenant_id_fn()
-  and v.provider_code = 'simulated-fixings'
+  and v.provider_code = 'derived'
   and v.field = 'value'
   and v.valid_to = ores_utility_infinity_timestamp_fn()
   and v.external_id in (

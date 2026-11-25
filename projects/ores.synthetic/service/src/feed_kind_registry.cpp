@@ -24,13 +24,14 @@
 #include "ores.analytics.quant/service/fx_vol_surface_generator.hpp"
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.core/vendor/derived_notation.hpp"
 #include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.refdata.core/repository/fx_option_convention_repository.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
 #include "ores.refdata.core/service/pair_expiry_date_rule.hpp"
-#include "ores.logging/logger.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
@@ -459,9 +460,8 @@ feed_kind make_ir_curve_kind() {
                     return other.currency_code == cfg.currency_code &&
                            feed::ir_curve_discounts_its_currency(other);
                 };
-                auto funding = std::ranges::find_if(rows, [&](const auto& other) {
-                    return funds(other) && other.auto_start;
-                });
+                auto funding = std::ranges::find_if(
+                    rows, [&](const auto& other) { return funds(other) && other.auto_start; });
                 if (funding == rows.end())
                     funding = std::ranges::find_if(rows, funds);
                 // A tenor is a count and a unit: 1M, 3M, 6M or 1Y. The rule needs the
@@ -478,8 +478,8 @@ feed_kind make_ir_curve_kind() {
                 if (funding == rows.end())
                     ORES_LOG_SEV(registry_lg(), warn)
                         << "The derived index " << cfg.source_name
-                        << " names no currency curve to read: no config of "
-                        << cfg.currency_code << " funds and takes no tenor.";
+                        << " names no currency curve to read: no config of " << cfg.currency_code
+                        << " funds and takes no tenor.";
                 if (months <= 0)
                     ORES_LOG_SEV(registry_lg(), warn)
                         << "The derived index " << cfg.source_name << " has no term in its tenor '"
@@ -504,7 +504,7 @@ feed_kind make_ir_curve_kind() {
                         << "The derived index " << cfg.source_name << " is offered: it fixes "
                         << c.fixing_item.value_or("(no address)") << " as "
                         << (cfg.rate_source == "compounded_overnight" ? "the compounded" :
-                                                                       "the spread")
+                                                                        "the spread")
                         << " rate of " << c.derived->curve_code << " over "
                         << c.derived->term_months << " month(s).";
             }
@@ -516,12 +516,29 @@ feed_kind make_ir_curve_kind() {
                                                                 e.start_tenor_code,
                                                                 e.end_tenor_code,
                                                                 index_tenor});
-            c.build_input = [ctx, cfg](const feed::feed_adapter& adapter) -> feed_build_outcome {
-                if (cfg.rate_source != "process")
-                    return {.input = std::nullopt,
-                            .skip_reason =
-                                "Curve " + cfg.source_name +
-                                " states its rate from the overnight curve; it runs no process"};
+            c.build_input = [ctx, cfg, derived = c.derived, item = c.fixing_item](
+                                const feed::feed_adapter& adapter) -> feed_build_outcome {
+                if (cfg.rate_source != "process") {
+                    // A derived index is a node of its own: the config builds the generator
+                    // that states its fixings, so starting the config starts the node and
+                    // stopping it stops the node. It reads the curve its rule names and
+                    // publishes under its provider.
+                    if (!derived || !item)
+                        return {.input = std::nullopt,
+                                .skip_reason = "Derived index " + cfg.source_name +
+                                               " states no rule or no fixing address"};
+                    const auto target =
+                        adapter_target_of(adapter.id,
+                                          ores::marketdata::vendor::derived_provider,
+                                          ores::marketdata::vendor::index_fixing{.item = *item});
+                    if (!target)
+                        return {.input = std::nullopt,
+                                .skip_reason = "Derived index " + cfg.source_name +
+                                               " has no id under the derived provider"};
+                    return {
+                        .input = feed::derived_fixing_feed_build_input{
+                            .source_name = cfg.source_name, .target = *target, .rule = *derived}};
+                }
 
                 repo::ir_curve_template_entry_repository entry_repo;
                 std::vector<ores::synthetic::domain::ir_curve_template_entry> entries;

@@ -113,8 +113,13 @@ join ores_marketdata_market_data_mappings_tbl m
   on m.vendor_instrument_id = v.id
  and m.tenant_id = ores_utility_system_tenant_id_fn()
  and m.valid_to = ores_utility_infinity_timestamp_fn()
+-- The derived provider serves two kinds of id, and each of its sources serves one: a route
+-- demands every item of its provider unless the feed is scoped, so this scope keeps the
+-- volatility points with their own adapter and leaves the term index fixings to derived-a.
 where v.tenant_id = ores_utility_system_tenant_id_fn()
   and v.provider_code = 'derived'
+  and v.id_scheme = 'derived_fx_vol'
+  and v.field = 'rate_lnvol'
   and v.valid_to = ores_utility_infinity_timestamp_fn()
   and not exists (
       select 1 from ores_marketdata_feed_scopes_tbl s

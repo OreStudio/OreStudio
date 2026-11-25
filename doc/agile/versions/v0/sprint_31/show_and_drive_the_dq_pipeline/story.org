@@ -34,9 +34,9 @@ from the shared parts rather than from the prototype markup.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
-| Now           | ores.http serves the DQ reads, and the coverage screen draws them. Four screens remain. |
+| Now           | ores.http serves the DQ reads, and the coverage screen draws them. Eight tasks carry the rest: four operations, then the four screens that read them. |
 | Waiting on    | Nothing.                               |
-| Next          | Close the reads task, then build the publish-a-dataset screen. |
+| Next          | Close the reads task, then serve the two counts the coverage screen waits on. |
 | Last touched  | 2026-11-25                               |
 
 * Acceptance
@@ -53,10 +53,24 @@ from the shared parts rather than from the prototype markup.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:43B17B69-D1CA-4333-98BF-462AA5ECD8EF][Serve the DQ reads from the C++ server]] | STARTED | 2026-11-22 | | The C++ server has no DQ HTTP part, so the reads the screens need are served by nobody. The BFF is not served: it is being decommissioned. |
-| [[id:E25ACD77-495D-4D8E-832B-69B44C213D18][Build the DQ screens from the signed-off prototypes]] | STARTED | 2026-11-25 | | The five DQ journeys and their signed-off prototypes are on main; the screens themselves are not built, and three of the five need operations the server does not serve. |
+| [[id:E25ACD77-495D-4D8E-832B-69B44C213D18][Show the reference data coverage]] | STARTED | 2026-11-25 | | The coverage screen answers whether the tenant holds what its valuations read: the bundles by level, the members of one bundle, and the reason each cannot publish. |
+| [[id:4940C4D1-CB24-4257-9C3A-BDD0C85CFA8E][Serve the bundle roster with its level and staged counts]] | BACKLOG | | | The bundle roster answers over the bus with the level each bundle publishes at and the staged count per member, so the coverage screen's staged column becomes a number and the publish screen can order its work. |
+| [[id:16FD5B35-83E7-4F85-9578-8AD20D33667E][Count the rows a dataset published]] | BACKLOG | | | A published-row count per dataset, read from the provenance the publish writes, so the coverage screen's published column becomes a number and a run that wrote nothing stays visible. |
+| [[id:F041B47F-5F26-4231-9DC2-6D7975334679][Preview one dataset and refuse a publish that names no level]] | BACKLOG | | | A per-dataset preview over the bus, and a level on the dataset publish verb, so one catalogue can be published deliberately and a tenant cannot publish a world dataset into itself. |
+| [[id:88F9E5B4-20FF-4EEC-B8A0-97B35970E120][Read and write an artefact row over the bus]] | BACKLOG | | | The artefact table reads and writes over the bus, so a staged row can be seen and corrected from a screen instead of from psql. |
+| [[id:6EE40AA2-927D-41FB-8119-21932B3DC6A5][Publish one dataset from its screen]] | BACKLOG | | | The publish-a-dataset prototype as a screen: the destination read from the artefact type and the level, the preview, the run and the four counts it returns. |
+| [[id:BE40AF90-534D-4A6A-B103-6AF9056E8E06][Publish a bundle as a run a person reads]] | BACKLOG | | | The publish-a-bundle prototype as a screen: the members in the closure's order, the optional ones, the mode, the preview, the run, the receipt, and a run log with a writer behind it. |
+| [[id:23FB17A7-814C-4985-8381-910F124C3502][Correct one artefact and republish its dataset]] | BACKLOG | | | The correct-one-artefact prototype as a screen: one staged row read, changed and written, then its dataset republished, with what the correction wrote. |
+| [[id:B6239647-6FC1-43CB-9F04-538FDA1F6314][Trace a published value to the dataset that wrote it]] | BACKLOG | | | The trace prototype as a screen: a published value to the dataset and artefact that wrote it, with the used-by question stated as the trading change it needs. |
 
 * Decisions
 
+- *The single screens task is decomposed into four operations and four screens*
+  (2026-11-25, marco). One task covering five screens and five server
+  operations could not close on anything: the coverage screen landed inside it
+  and the task still read as unstarted work. The operations are their own tasks
+  because each unblocks more than one screen, and the screens follow them in the
+  order the journeys imply.
 - *The reads are served by ores.http, not the BFF* (2026-11-22, marco). The BFF
   is being decommissioned, so a screen wired to it would spend its life on a path
   with no future.

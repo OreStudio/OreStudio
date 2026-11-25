@@ -1,18 +1,18 @@
 :PROPERTIES:
 :ID: E25ACD77-495D-4D8E-832B-69B44C213D18
 :END:
-#+title: Task: Build the DQ screens from the signed-off prototypes
-#+description: The five DQ journeys and their signed-off prototypes are on main; the screens themselves are not built, and three of the five need operations the server does not serve.
+#+title: Task: Show the reference data coverage
+#+description: The coverage screen answers whether the tenant holds what its valuations read: the bundles by level, the members of one bundle, and the reason each cannot publish.
 #+type: task
 #+level: s1
 #+filetags: :show_and_drive_the_dq_pipeline:sprint_31:v0:
 #+owner: marco
 #+branch: feature/build-the-dq-screens
 #+pr:
-#+blocked_on: the DQ reads on the C++ server, the coverage operation, the per-dataset preview, the artefact read and write, and the published-row count
+#+blocked_on: the staged count and the published count, which no operation serves yet
 #+blocked_since: 2026-11-22
 #+created: 2026-11-22
-#+updated: 2026-11-22
+#+updated: 2026-11-25
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -35,23 +35,24 @@ ores.web shows each dataset, its artefacts, whether it is published, and offers 
 
 * Acceptance
 
-- Each of the five signed-off prototypes has a screen, and each draws what its design note records.
-- The coverage operation, the per-dataset preview, the artefact read and write, and the published-row count exist, or the screen states which is absent.
-- A person who has never seen the Qt client completes every journey on a fresh database.
+- The coverage screen draws what [[file:doc/prototypes/dq/reference-data-coverage.org][its design note]] records: the bundles
+  grouped by level, the chosen bundle's members, and the reason each cannot
+  publish with the owner of that reason.
+- A fresh database reads as a sentence and not as a failure.
+- The staged and published figures are numbers once the two operations serve
+  them, and a stated gap until then.
 
 * Plan
 
-1. Serve the reads the screens need from both deployments, as
+1. Serve the four collections the screen reads, as
    [[id:43B17B69-D1CA-4333-98BF-462AA5ECD8EF][Serve the DQ reads from the C++ server]]
-   does: one web API module against =ores.http=. The BFF is not served, because
-   it is being decommissioned.
-2. Build the operations the journeys read: the coverage operation over the three
-   discovery functions, the per-dataset preview, and the published-row count.
-3. Build the artefact read and write, without which the correction cannot start.
-4. Build the five screens from the shared parts, in the order the journeys
-   imply: coverage, publish a dataset, publish a bundle, correct one artefact,
-   trace a published value.
-5. Prove each journey on a fresh database, as the story's last acceptance asks.
+   does: one web API module against =ores.http=.
+2. Build the area, the menu entry and the card, gated on the four reads.
+3. Draw the three cards the design note argues for, from the shared parts.
+4. Draw the two counts once
+   [[id:4940C4D1-CB24-4257-9C3A-BDD0C85CFA8E][Serve the bundle roster with its level and staged counts]]
+   and [[id:16FD5B35-83E7-4F85-9578-8AD20D33667E][Count the rows a dataset published]]
+   serve them, replacing the dash and the gap note.
 
 Notes
 

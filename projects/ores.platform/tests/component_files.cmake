@@ -36,4 +36,5 @@ set(files
     "time_relative_time_formatter_tests.cpp"
     "time_time_of_day_tests.cpp"
     "time_utils_tests.cpp"
+    "time_zone_offset_tests.cpp"
 )

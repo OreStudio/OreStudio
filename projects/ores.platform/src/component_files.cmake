@@ -34,6 +34,7 @@ set(files
     "time/relative_time_formatter.cpp"
     "time/time_of_day.cpp"
     "time/time_utils.cpp"
+    "time/zone_offset.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -69,4 +70,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/time/relative_time_formatter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/time/time_of_day.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/time/time_utils.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/time/zone_offset.hpp"
 )

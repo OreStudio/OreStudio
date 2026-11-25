@@ -22,6 +22,7 @@
 #include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.platform/time/zone_offset.hpp"
 #include "ores.synthetic.api/feeds/index_fixings.hpp"
 #include <chrono>
 #include <format>
@@ -49,6 +50,25 @@ std::chrono::year_month_day previous_business_day(std::chrono::year_month_day da
     return std::chrono::year_month_day{day};
 }
 
+/// The offset @p zone keeps from UTC at @p instant.
+///
+/// The C++ library is not required to carry std::chrono's time zone database,
+/// and libc++ does not, so a call to locate_zone does not compile on macOS even
+/// with <chrono> included. Where the library has the database it is asked, and
+/// where it has not the offset is read from the system's own.
+std::chrono::seconds zone_offset(const std::string& zone,
+                                 std::chrono::system_clock::time_point instant) {
+#if defined(__cpp_lib_chrono) && __cpp_lib_chrono >= 201907L
+    return std::chrono::locate_zone(zone)->get_info(instant).offset;
+#else
+    const auto offset = ores::platform::time::zone_offset_at(zone, instant);
+    if (!offset)
+        throw std::runtime_error("the fixing's zone '" + zone +
+                                 "' is not one the time zone database describes.");
+    return *offset;
+#endif
+}
+
 }
 
 std::optional<std::chrono::year_month_day>
@@ -58,11 +78,15 @@ fixing_due(const fixing_time& when,
     using namespace std::chrono;
     year_month_day day;
     if (when.at) {
-        const auto* zone = locate_zone(when.zone);
-        const auto local = zoned_time(zone, observed_at).get_local_time();
+        const auto offset = zone_offset(when.zone, observed_at);
+        const auto local = observed_at + offset;
         day = year_month_day{floor<days>(local)};
-        const auto instant =
-            zoned_time(zone, local_days{day} + when.at->since_midnight()).get_sys_time();
+        /// The wall clock the cut is read on, held as though it were UTC, which
+        /// is what makes the date and the time of day line up.
+        const auto wall_clock = floor<days>(local) + when.at->since_midnight();
+        /// The offset at the cut is not always the offset now: a saving change
+        /// can fall between the two, so the instant is read with its own.
+        const auto instant = wall_clock - zone_offset(when.zone, wall_clock - offset);
         if (observed_at < instant)
             return std::nullopt;
     } else {

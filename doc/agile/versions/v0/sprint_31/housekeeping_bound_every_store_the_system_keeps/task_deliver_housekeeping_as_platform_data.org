@@ -8,7 +8,7 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch: feature/deliver-housekeeping-as-platform-data
-#+pr:
+#+pr: 5130
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
@@ -138,7 +138,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5130][#5130]] | [scheduler] Deliver housekeeping as platform data |
 
 * Review
 

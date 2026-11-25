@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 47474E4A-82F1-4695-9B48-5B8A297C12EC
+:END:
+#+title: Task: Fix the builds that fail and suppress what libraries leak
+#+description: Three defects: the synthetic feed uses chrono without including it, the site workflow installs no compass, and four memcheck records come from boost and Catch2.
+#+type: task
+#+level: s1
+#+filetags: :ci:build:green_the_three_platforms:sprint_31:v0:
+#+owner: marco
+#+branch: hotfix/ci-green-all-platforms
+#+pr: 5112
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5DD6A6E-A836-4FF8-A07B-01247D5157E8][Green the three platforms at once]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Clear the three red results whose cause is in this repository.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                                |
+| Parent story | [[id:B5DD6A6E-A836-4FF8-A07B-01247D5157E8][Green the three platforms at once]] |
+| Now          | The three fixes are made and checked. The chrono include and the site workflow pass the local check gate; the suppressions are proved against a local reproduction of both stacks. |
+| Waiting on   | The nightly runs, which the owner starts by hand. |
+| Next         | Commit, then read the nightly results. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- index_fixing_feed.cpp names the header that declares locate_zone.
+- site-cdash.yml installs the compass release the pin names before it configures the environment.
+- custom.supp suppresses the boost static exception objects and the Catch2 reporter stream, proved against a reproduction.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5112][#5112]] | [ci] Green macOS, the site workflow and the memcheck run |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- =index_fixing_feed.cpp= includes =<chrono>=. Only =<format>= and
+  =<stdexcept>= were named, and libstdc++ happens to declare =locate_zone=
+  through them, which is why Linux built and libc++ did not.
+- =site-cdash.yml= installs the pinned compass release before it configures
+  the environment, on the same lines =nightly-linux.yml= uses: the pin names a
+  release, the checksum is verified, and =compass-ng= links to the binary. The
+  job previously reached =env configure= with no =compass-ng= on PATH.
+- =custom.supp= gains two entries, both anchored on the distinctive frame
+  rather than on the allocator or on a compiler's initializer name: the boost
+  exception factory for the two static exception objects, and the Catch2
+  reporter stream for the file and its buffer. Proved against a sixty-line
+  reproduction that leaks the same four shapes: three records fall to one, and
+  the survivor is a libc-global allocation that matches neither entry.

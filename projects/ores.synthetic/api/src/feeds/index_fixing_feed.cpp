@@ -23,6 +23,7 @@
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/feeds/index_fixings.hpp"
+#include <chrono>
 #include <format>
 #include <stdexcept>
 

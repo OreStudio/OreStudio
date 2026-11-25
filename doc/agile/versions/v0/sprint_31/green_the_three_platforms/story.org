@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: B5DD6A6E-A836-4FF8-A07B-01247D5157E8
+:END:
+#+title: Story: Green the three platforms at once
+#+description: macOS cannot build, Windows is unverified and the site workflow cannot configure an environment, so main is red on three of its four platforms.
+#+type: story
+#+level: s2
+#+filetags: :ci:build:sprint_31:v0:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: festive_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make continuous integration report a true state on Linux, macOS and Windows, so a red result names a defect in the code rather than a defect in the pipeline.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                                |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
+| Now           | The three fixes are in the working tree on hotfix/ci-green-all-platforms, and the suppressions are proved against a local reproduction. |
+| Waiting on    | The nightly runs, which the owner will start by hand. |
+| Next          | Commit the branch, then read what the nightlies report. |
+| Last touched  | 2026-11-25                               |
+
+* Acceptance
+
+- The macOS nightly builds both presets and reaches its tests.
+- The site workflow configures its environment with the pinned compass release.
+- The memcheck run reports no defect that a library's static object explains.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:47474E4A-82F1-4695-9B48-5B8A297C12EC][Fix the builds that fail and suppress what libraries leak]] | STARTED | 2026-11-25 | | Three defects: the synthetic feed uses chrono without including it, the site workflow installs no compass, and four memcheck records come from boost and Catch2. |
+
+* Decisions
+
+* Out of scope
+
+-

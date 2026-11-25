@@ -2255,3 +2255,38 @@
    fun:nats_asyncCbsThreadf
    ...
 }
+#
+# Boost.Exception static exception objects
+#
+# Boost.Exception keeps a bad_alloc_ and a bad_exception_ object alive for the
+# lifetime of the process: exception_ptr.hpp builds each one inside a
+# function-local static during library load, and nothing ever frees it. Both
+# are reachable from then on, so no call site in a test can release them.
+# Anchored on the factory, which exists only for these two objects, so the
+# compiler-specific initializer frames above it do not matter.
+#
+{
+   Boost Exception Static Exception Objects
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   ...
+   fun:*get_static_exception_object*
+   ...
+}
+#
+# Catch2 Reporter File Stream
+#
+# A test that sends its report to a file makes Catch2 open the stream while it
+# prepares its reporters, before Catch::Session runs. Catch2 never closes it,
+# so the stream, and the buffer the iostream lays behind it, outlive the
+# session. Anchored on the stream type, which covers the FILE* and the
+# filebuf buffer whichever allocator each one comes from.
+#
+{
+   Catch2 Reporter File Stream
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   ...
+   fun:*FileStream*
+   ...
+}

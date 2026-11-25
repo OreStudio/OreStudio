@@ -88,9 +88,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| The jobs the scheduler runs | 7 definitions, all of them the system tenant's | =compass sql -- -c "select job_name, tenant_id = ores_utility_system_tenant_id_fn() from ores_scheduler_job_definitions_tbl where valid_to = ores_utility_infinity_timestamp_fn()"= | dac3a1f |
-| What the screens showed before the change | 3 jobs: the tenant's own, and none of the platform's | =scheduler status= in a scripted shell session | bb49cb7aec |
-| What the screens show after it | 7 jobs, including =ores.scheduler.housekeeping_sweep= with its next firing and last run | the same command | bb49cb7aec |
+| The jobs the scheduler runs | 7 definitions, all of them the system tenant's | =compass sql -- -c "select job_name, tenant_id = ores_utility_system_tenant_id_fn() from ores_scheduler_job_definitions_tbl where valid_to = ores_utility_infinity_timestamp_fn()"= | a647ccd27a |
+| What the screens showed before the change | 3 jobs: the ones that had a tenant, and none of the platform's | =scheduler status= in a scripted shell session | bb49cb7aec |
+| What the screens show after it | 7 jobs, including =ores.scheduler.housekeeping_sweep= with its next firing and last run | the same command | a647ccd27a |
 | The sweep's firings are recorded | a job instance per firing, =succeeded=, 42 to 43 ms | =compass sql -- -c "select ... from ores_scheduler_job_instances_tbl"= with the job's cadence set to every minute | bb49cb7aec |
 | A sweep's removals are readable | 3 rows, one per policy, with the period and the policy's current state | =housekeeping runs= | bb49cb7aec |
 | Turning a policy off | the policy reads =[off]= and the change is recorded | =housekeeping disable report_metrics_90d= then =housekeeping policies= | bb49cb7aec |

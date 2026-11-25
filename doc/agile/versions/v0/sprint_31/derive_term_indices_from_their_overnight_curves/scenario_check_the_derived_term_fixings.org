@@ -64,17 +64,31 @@ These are yours to ready, before the tester opens the client:
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+
 ** Read the rule on the curve feed
 
-- Go to *Market data* → *Feed calibration*, then the *Interest rates* class.
-- Open the USD/SOFR feed whose tenor is 1M — the derived one, whose
-  source name begins =synthetic.derived.=.
+- Go to *Market data* → *Simulated market*, the collection whose provider
+  is *Derived*.
+- Open the feed =synthetic.derived.USD.sofr.1M=.
+- The *Feed calibration* screen is not the one to use here: its interest
+  rates list is the coverage of the curves that get published, and a row
+  there opens Curve analytics.
 - Read the *Rate from* field: it shows *The overnight rate compounded
   over the tenor*.
 - Confirm *Spread over the overnight rate* is 0 and *Who states the
   spread* is empty.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | The fields are not on this screen: the step sent the tester to Feed calibration, which lists published curves. Corrected above. |
+
 
 ** Read a spread index's stated source
 
@@ -85,6 +99,12 @@ These are yours to ready, before the tester opens the client:
   and a non-empty *Who states the spread*.
 
 *** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | Same cause: the coverage list holds only the curves that get published, so a derived index with no bootstrap config is absent from it. |
+
 
 ** Open a derived fixing series
 
@@ -100,6 +120,11 @@ These are yours to ready, before the tester opens the client:
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+
 ** Compare the term fixing with its curve
 
 - Note the latest one-month term SOFR fixing on that page.
@@ -112,11 +137,18 @@ These are yours to ready, before the tester opens the client:
 
 *** Result
 
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+
 * Results
 
 | Step | Outcome | Notes |
 |------+---------+-------|
 |      |         |       |
+| Status        | PENDING |
+| Completed at  |  |
 
 Attempt 1, 2026-11-25, failed at the second step before the product was
 reached: the scenario named a tenant administrator for the calibration

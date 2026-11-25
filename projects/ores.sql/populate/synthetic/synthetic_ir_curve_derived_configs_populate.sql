@@ -49,6 +49,51 @@
  * alone, so a rerun never resets a config a person has edited.
  */
 
+\echo '--- Derived provider and collection ---'
+
+-- A derived index is a collection of its own, so it has a provider and a
+-- container like every other generated feed. The provider is the one the
+-- parties already subscribe to; the container hangs under the same dataset and
+-- party as the demo collection it refines, so one publish carries both.
+insert into ores_synthetic_market_data_providers_tbl (
+    code, tenant_id, version, name, kind, description, display_order,
+    modified_by, performed_by, change_reason_code, change_commentary,
+    valid_from, valid_to
+)
+select 'derived', ores_utility_system_tenant_id_fn(), 0, 'Derived', 'reference',
+       'Market data the platform computes from data it already holds: the term indices no publisher quotes in the run, stated from their currency''s overnight curve.',
+       40, current_user, current_user, 'system.initial_load',
+       'Initial population of the derived provider', now(),
+       ores_utility_infinity_timestamp_fn()
+where not exists (
+    select 1 from ores_synthetic_market_data_providers_tbl p
+    where p.tenant_id = ores_utility_system_tenant_id_fn()
+      and p.code = 'derived'
+      and p.valid_to = ores_utility_infinity_timestamp_fn()
+);
+
+insert into ores_synthetic_market_data_generation_configs_tbl (
+    id, tenant_id, version, party_id, name, description, enabled, dataset_id,
+    provider_code, modified_by, performed_by, change_reason_code,
+    change_commentary, valid_from, valid_to
+)
+select gen_random_uuid(), d.tenant_id, 0, d.party_id, 'Derived',
+       'The term indices the run states from its overnight curves, for the trades that float on them.',
+       true, d.dataset_id, 'derived', current_user, current_user,
+       'system.initial_load', 'Initial population of the derived collection',
+       now(), ores_utility_infinity_timestamp_fn()
+from ores_synthetic_market_data_generation_configs_tbl d
+where d.tenant_id = ores_utility_system_tenant_id_fn()
+  and d.provider_code = 'demo'
+  and d.valid_to = ores_utility_infinity_timestamp_fn()
+  and not exists (
+      select 1 from ores_synthetic_market_data_generation_configs_tbl c
+      where c.tenant_id = ores_utility_system_tenant_id_fn()
+        and c.provider_code = 'derived'
+        and c.valid_to = ores_utility_infinity_timestamp_fn()
+  )
+limit 1;
+
 \echo '--- Derived Term Index Configs ---'
 
 insert into ores_synthetic_ir_curve_generation_configs_tbl (
@@ -66,7 +111,7 @@ select
     gen_random_uuid(),
     0,
     overnight.party_id,
-    overnight.config_id,
+    derived_container.id,
     overnight.folder_id,
     d.currency_code,
     d.index_family,
@@ -111,6 +156,15 @@ from (values
      'WIBOR at 6M: POLONIA plus its stated spread, as the ACCOHK cross-currency legs fix.')
 ) as d(currency_code, index_family, tenor, rate_source, spread_basis_points, spread_source,
        description)
+join lateral (
+    select c.id
+    from ores_synthetic_market_data_generation_configs_tbl c
+    where c.tenant_id = ores_utility_system_tenant_id_fn()
+      and c.provider_code = 'derived'
+      and c.enabled
+      and c.valid_to = ores_utility_infinity_timestamp_fn()
+    limit 1
+) as derived_container on true
 join lateral (
     select c.party_id, c.config_id, c.folder_id
     from ores_synthetic_ir_curve_generation_configs_tbl c

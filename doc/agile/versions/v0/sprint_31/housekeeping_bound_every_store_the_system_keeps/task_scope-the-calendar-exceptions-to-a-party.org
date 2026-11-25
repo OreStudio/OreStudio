@@ -8,7 +8,7 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch: feature/scope-the-calendar-exceptions-to-a-party
-#+pr:
+#+pr: 5139
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
@@ -123,7 +123,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5139][#5139]] | [refdata] Scope the calendar exceptions to a party |
 
 * Review
 

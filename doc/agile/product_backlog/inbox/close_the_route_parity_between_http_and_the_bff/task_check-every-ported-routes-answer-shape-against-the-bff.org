@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/check-every-ported-routes-answer-shape-against-the-bff
+#+pr: 5127
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
-#+updated: 2026-11-22
-#+environment:
+#+updated: 2026-11-25
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,25 +26,67 @@ Two routes answered a bare array where the BFF answered an object with a member:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-22                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
 
 * Acceptance
 
-- A harness sends the same request to the gateway and to the BFF and compares the status and the payload shape: member names and their types, not values.
-- It covers every route pair the inventory records, not a sample chosen by hand.
-- Every difference is either fixed or written down with the reason it stays.
-- The check runs in the gate, so a later port cannot drift without failing it.
+- [X] A harness sends the same request to the gateway and to the BFF and compares the status and the payload shape: member names and their types, not values. The BFF's answers are recorded once into a corpus, because the BFF need not run for the comparison to mean something; the harness replays the same requests against the gateway.
+- [X] It covers every route pair the inventory records, not a sample chosen by hand. Every pair is compared or skipped with its reason, and a pair the corpus does not name fails the check.
+- [X] Every difference is either fixed or written down with the reason it stays. One was a defect and is fixed here; one is a defect of another route and is captured; the rest are recorded with their reasons.
+- [X] The check runs in the gate, so a later port cannot drift without failing it. It joins the heavy phase beside the consumer check and fails rather than skips when the gateway is not up.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The shapes are recorded rather than compared live both ways: the BFF is being
+retired, and a check that needs both servers cannot run once it is gone. So the
+BFF is asked once, into a corpus that is committed beside the script, and the
+check replays the same requests against the gateway. The BFF is not needed to
+run the check.
+
+** What a shape is
+
+A shape states member names, nesting and types, and no value. Three facts about
+the data are not facts about the answer and are dropped: a member that is null
+in every row of a page (it is still that member), a member that is null in one
+row and set in another (the type the other rows state is the answer's), and an
+array no row filled (it states nothing about an element). A bare array where the
+BFF answered an object is a difference, and so is a member the gateway leaves
+out, because those are the two bugs that started this task.
+
+** Which pairs are compared
+
+The inventory pairs each address the BFF answered with the gateway route that
+replaced it, with each parameter written the same way through the two spellings.
+A pair is compared or skipped with a reason, and the reason is in the corpus:
+an address that names a path parameter names no record to read, and a write
+would change the data. A pair the corpus does not name fails the check, so a
+route ported later is captured or excused rather than forgotten.
+
+** The gate
+
+The check stands beside the consumer check in the heavy phase, because it needs
+the gateway up, and it fails rather than skips when the gateway does not answer:
+a check that says "nothing to do" when it cannot see what it checks silently
+stops checking.
+
+** The differences it found
+
+- =GET /api/structures= answered =["kinds":[Package,Swap]=: the page's kinds were
+  written through =array_of=, which joins already-written JSON, so the answer was
+  not JSON at all and no client could parse it. Fixed here.
+- =GET /api/marketdata/public-rates/coverage= answers no series where the BFF
+  answers 142, because the gateway reads the durable fixings table and the
+  deployment holds none. That is a question about which store the coverage
+  belongs to, so it is captured rather than guessed at.
+- Seven differences are recorded in the exceptions file with the reason each
+  stays: the operations routes' permission model, two status mappings for the
+  same code, a nullable member the codec writes where the BFF omitted it, and
+  two counts the gateway states that the BFF did not.
 
 * Measurements
 
@@ -58,9 +100,26 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Route pairs the inventory records | 309 | =python3 build/scripts/check_answer_shapes.py . --capture= (the run states the pair count) | the branch head |
+| Compared against the BFF's recorded shape | 108 | the same | the branch head |
+| Skipped, with the reason in the corpus | 201 — 121 name a path parameter, 79 write, 1 the BFF never answered | =grep skipped build/scripts/answer_shapes.json= | the branch head |
+| Differences the sweep found | 9, of which one was a defect fixed here and one is captured | the check's report | the branch head |
+| Differences excused with a reason | 8 entries, 14 excused members | =build/scripts/answer_shapes_exceptions.json= | the branch head |
+| The script's own cases | 12 | =python3 -m pytest build/scripts/tests/test_check_answer_shapes.py= | the branch head |
 
 * Notes
+
+- The corpus is captured from the BFF this environment runs, so it holds the
+  shapes of the data that environment holds: a member that only appears when a
+  row exists is recorded as an empty array, and the check reads that as no
+  evidence either way. That is the honest limit of a shape recorded once.
+- The BFF's =/api/events= never answered inside two minutes and is recorded as
+  failed rather than skipped. Whatever it streams, the gateway answers a closed
+  connection, and neither is compared.
+- The check compares a *session's* view, signed in as the seeded tenant
+  administrator, which is the account the harness and every other script use.
+  A route that needs an installation-wide grant is compared as that account
+  sees it, which is why the operations routes' answers differ.
 
 * Test Scenarios
 
@@ -77,7 +136,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5127][#5127]] | [ores.http] Check every ported route answer shape against the BFF |
 
 * Review
 
@@ -86,6 +145,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The gate now compares every paired route's answer with the shape the BFF gave.
+It covers 309 pairs: 109 are replayed against the gateway and compared, and the
+rest are recorded as skipped with their reason, so no pair is unaccounted for
+and a route ported later must be captured or excused. The BFF's shapes are
+recorded once into a corpus beside the script, and the check needs only the
+gateway, which is why it can run after the BFF is gone.
+
+It found a route whose answer was not JSON at all: the structures page wrote its
+kinds through a helper that joins already-written JSON, so =Package= and =Swap=
+went out unquoted. That is fixed here. It also found that the public rates
+coverage answers no series where the BFF answered 142, because the gateway reads
+the durable fixings table and this deployment holds none; that is captured, not
+guessed at. Seven further differences are recorded with the reason each stays:
+the operations routes' permission model, two status mappings for one code, a
+nullable member where the BFF omitted it, and two counts the gateway adds.
+
+What is proved: the shapes and the comparison, by 12 cases; the sweep itself,
+against the running fleet, twice — once as the pair count and once as the empty
+report after the exceptions were recorded. What is not: the 200 skipped pairs,
+which name a path parameter or write, and the BFF's =/api/events=, which never
+answered.
 
 * Promoted from capture
 

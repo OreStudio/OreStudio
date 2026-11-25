@@ -59,13 +59,13 @@ def test_a_prose_only_change_builds_the_pages_and_nothing_else_heavy():
 
 def test_a_header_change_builds_and_tests():
     assert heavy(["projects/ores.iam/core/include/ores.iam.core/x.hpp"]) == {
-        "build", "db", "ctest", "step-consumers", "ticks-smoke",
+        "answer-shapes", "build", "db", "ctest", "step-consumers", "ticks-smoke",
     }
 
 
 def test_a_source_change_builds_and_tests():
     assert heavy(["projects/ores.marketdata/core/src/a.cpp"]) == {
-        "build", "db", "ctest", "step-consumers", "ticks-smoke",
+        "answer-shapes", "build", "db", "ctest", "step-consumers", "ticks-smoke",
     }
 
 
@@ -185,7 +185,9 @@ def test_the_heavy_checks_are_the_ones_that_need_a_built_tree():
     }
     # step-consumers reads a live server, which no ordinary run has, so it is
     # heavy: the phase where the infrastructure it needs is expected to be up.
+    # answer-shapes reads the running gateway for the same reason.
     assert heavy_ids == {
+        "answer-shapes",
         "build",
         "db",
         "ctest",
@@ -376,7 +378,8 @@ def _run_heavy(monkeypatch, changed, build_status="PASS", skips=None):
     monkeypatch.setattr(local_checks, "run_one", fake_run_one)
     monkeypatch.setattr(local_checks, "fleet_skips", lambda changed, preset: skips)
     selected = [c for c in local_checks.CATALOGUE
-                if c.id in ("build", "db", "ctest", "ticks-smoke", "step-consumers")]
+                if c.id in ("build", "db", "ctest", "ticks-smoke", "step-consumers",
+                    "answer-shapes")]
     results = local_checks.run_all(selected, "origin/main", "p", 1, changed=changed)
     return ran, {r.check.id: r for r in results}
 
@@ -391,7 +394,8 @@ def test_the_heavy_phase_skips_the_fleet_after_the_build(monkeypatch):
 
 def test_a_run_of_every_check_or_a_failed_build_skips_nothing(monkeypatch):
     ran, _ = _run_heavy(monkeypatch, None)
-    assert ran == ["build", "db", "ctest", "ticks-smoke", "step-consumers"]
+    assert ran == ["build", "db", "ctest", "ticks-smoke", "step-consumers",
+                   "answer-shapes"]
     ran, _ = _run_heavy(monkeypatch, [TEST_CPP], build_status="FAIL")
     assert "db" in ran
 
@@ -409,7 +413,8 @@ def test_the_report_names_why_a_check_was_skipped():
 
 def test_a_database_from_another_schema_is_rebuilt(monkeypatch):
     skips = {"ticks-smoke": "the change compiles only into x.tests",
-             "step-consumers": "the change compiles only into x.tests"}
+             "step-consumers": "the change compiles only into x.tests",
+             "answer-shapes": "the change compiles only into x.tests"}
     ran, results = _run_heavy(monkeypatch, [TEST_CPP], skips=skips)
     assert ran == ["build", "db", "ctest"]
     assert results["ticks-smoke"].status == "SKIP"
@@ -419,7 +424,8 @@ def test_the_database_keeps_its_check_unless_its_schema_matches(monkeypatch):
     monkeypatch.setattr(local_checks, "read_reach",
                         lambda build_dir, wanted: {TEST_CPP: {"ores.trading.api.tests"}})
     monkeypatch.setattr(local_checks, "database_in_sync", lambda: False)
-    assert set(local_checks.fleet_skips([TEST_CPP], "p")) == {"ticks-smoke", "step-consumers"}
+    assert set(local_checks.fleet_skips([TEST_CPP], "p")) == {
+        "ticks-smoke", "step-consumers", "answer-shapes"}
     monkeypatch.setattr(local_checks, "database_in_sync", lambda: True)
     assert set(local_checks.fleet_skips([TEST_CPP], "p")) == set(local_checks.FLEET_CHECKS)
 

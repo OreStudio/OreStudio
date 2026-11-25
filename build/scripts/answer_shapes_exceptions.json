@@ -1,0 +1,37 @@
+{
+  "explanations": [
+    {
+      "address": "GET /api/operations/services",
+      "why": "The BFF refused a tenant administrator with 403 for want of installation::deployment:read, and the gateway answers 200: the route delegates the reach to the telemetry service's own check rather than checking the permission itself. The difference is the permission model, not the answer, so it is recorded for the handler-permission task (CCB1D9D1) rather than excused as harmless."
+    },
+    {
+      "address": "GET /api/operations/bus",
+      "why": "The gateway refuses the query before it asks who may read (400 for a missing range), where the BFF refused the permission first (403). Same cause as services: the route holds no deployment-read check of its own."
+    },
+    {
+      "address": "GET /api/operations/logs",
+      "why": "Same cause as services and bus: the permission is the service's judgement in the gateway and the route's own check in the BFF."
+    },
+    {
+      "address": "GET /api/conventions/pick-lists",
+      "why": "Both servers refuse with the code upstream-unavailable, and only the status differs: 502 in the gateway, 503 in the BFF. No screen branches on the status when the code names the reason."
+    },
+    {
+      "address": "GET /api/images",
+      "why": "Both refuse while the assets read is unavailable, and the two name it differently: 409 conflict in the BFF, 502 upstream-unavailable in the gateway. Recorded rather than fixed because the gateway's answer carries the code the browser branches on."
+    },
+    {
+      "address": "GET /api/site/deployment",
+      "why": "The gateway writes the three tls members as null where the BFF omitted them, because the codec writes every member the type names. The client's schema defaults them, so a site with no tls reads the same."
+    },
+    {
+      "address": "GET /api/synthetic/feed-folders",
+      "why": "The gateway states two counts the BFF did not (running_feeds and idle_auto_feeds on each folder). The answer is a superset, and no screen that read the BFF's answer reads either member."
+    },
+    {
+      "address": "GET /api/marketdata/public-rates/coverage",
+      "path": "series",
+      "why": "The gateway answers no series where the BFF answers 142: it reads the durable fixings table, which this deployment holds empty, and the BFF reads the public rates' own series. Captured as 2C4E2094-15C2-44FE-959C-20D4D4A7E203 so the difference is tracked rather than excused as harmless."
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 2C4E2094-15C2-44FE-959C-20D4D4A7E203
+:END:
+#+title: The gateway's public rates coverage reads an empty fixings table
+#+description: GET /api/marketdata/public-rates/coverage answers no series on ores.http where the BFF answers 142: the gateway reads the durable fixings table, which this deployment has not filled, and the BFF reads the public rates' own series.
+#+type: capture
+#+level: cross
+#+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=GET /api/marketdata/public-rates/coverage= answers ={"series":{}}= on ores.http
+where the BFF answers 142 series, each with its first and last date and its
+count. The gateway's route reads the durable fixings table
+(=ores_marketdata_market_fixings_tbl=, empty in this deployment) and the BFF
+reads the public rates' own series, so the two are reading different stores and
+answering different screens.
+
+* Why
+
+Found by the answer-shape sweep on 2026-11-25, comparing every paired route's
+answer with the shape the BFF gave: every other difference the sweep found is
+either fixed or excused, and this one is a member the screen reads answered
+empty. The availability tab reads this route to say how far back a publisher's
+data goes, so an empty answer reads as "no data" while the BFF said 142 series
+hold it.
+
+The market fixings table holds no rows here at all, so the read is not wrong:
+the question is which store the coverage belongs to, and the sweep cannot answer
+it. Either the durable fixings are the source and the deployment must fill them,
+or the route should read the public rates' series the BFF read.
+
+* References
+
+-
+
+* See also
+
+-

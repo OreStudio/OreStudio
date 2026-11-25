@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
-#+branch: feature/gate-a-hand-written-operation-handler
-#+pr:
+#+branch:
+#+pr: 5110
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -159,15 +159,13 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5110][#5110]] | [agile] Record the permission census and block the handler task |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
-
-* Result
 
 * Promoted from capture
 

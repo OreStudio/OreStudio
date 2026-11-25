@@ -26,11 +26,11 @@ A kind is a declaration of its subject, its compute, its checks and its approval
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-24                               |
 
 * Acceptance
@@ -110,3 +110,34 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The declaration is in the tree as data, with three rows and one rule.
+
+=derived_market_object_kind.hpp= holds the array, and each row names the publish
+approval kind, the withdrawal approval kind or none, and the subject part's
+table. The kind codes are the constants the handlers already pass to
+=raise_permission_of=, so a rename reaches the declaration without a second edit.
+=declaration_of= and =declaration_of_publish_kind= are the two lookups, and
+=withdrawal_refusal_of_publish_kind= is the rule: a kind that declares no
+withdrawal kind is refused a withdrawal, and the refusal names the kind and says
+why the set stays in use.
+
+The test states four things: every kind is found by its publish kind and by its
+own value; an unknown publish kind names no declaration and its refusal names the
+code asked for; only the curve can take a set out of use; and the forward set and
+the surface are refused with a message that names them and the absent kind.
+
+Building it broke =rate_ladder_reader.cpp=, which reads the context without
+including it: the new source changed the unity order and the file saw only the
+forward declaration. Twelve service sources read the context that way, so each
+now includes the header it uses. That is a fix to a latent defect and not to the
+declaration, and it is recorded here because it was found by this task.
+
+The full gate: 14 of 14 checks pass, with ctest at 108 of 108 suites.
+
+The first full run lost three database suites to =connection refused= on the
+pooler's port: the suites passed when re-run on their own and again in a second
+full run, so the cause was the pooler not accepting connections during the
+transition out of the database recreate and not the code. It is recorded because
+a gate that flakes is worth knowing about, and because the three suites were the
+only thing between the first run and green.

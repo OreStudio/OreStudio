@@ -34,9 +34,9 @@ from the shared parts rather than from the prototype markup.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
-| Now           | ores.http serves the DQ reads. The coverage screen is not built. |
+| Now           | ores.http serves the DQ reads, and the coverage screen draws them. Four screens remain. |
 | Waiting on    | Nothing.                               |
-| Next          | Close the reads task, then build coverage and the two publish journeys. |
+| Next          | Close the reads task, then build the publish-a-dataset screen. |
 | Last touched  | 2026-11-25                               |
 
 * Acceptance
@@ -53,7 +53,7 @@ from the shared parts rather than from the prototype markup.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:43B17B69-D1CA-4333-98BF-462AA5ECD8EF][Serve the DQ reads from the C++ server]] | STARTED | 2026-11-22 | | The C++ server has no DQ HTTP part, so the reads the screens need are served by nobody. The BFF is not served: it is being decommissioned. |
-| [[id:E25ACD77-495D-4D8E-832B-69B44C213D18][Build the DQ screens from the signed-off prototypes]] | BACKLOG | | | The five DQ journeys and their signed-off prototypes are on main; the screens themselves are not built, and three of the five need operations the server does not serve. |
+| [[id:E25ACD77-495D-4D8E-832B-69B44C213D18][Build the DQ screens from the signed-off prototypes]] | STARTED | 2026-11-25 | | The five DQ journeys and their signed-off prototypes are on main; the screens themselves are not built, and three of the five need operations the server does not serve. |
 
 * Decisions
 

@@ -26,12 +26,12 @@ ores.web shows each dataset, its artefacts, whether it is published, and offers 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
-| Now          | Not yet started. The design it builds from is signed off and on main. |
-| Waiting on   | The DQ reads on the C++ server, and the operations the journeys name. |
-| Next         | The coverage screen, once its reads answer on both deployments. |
-| Last touched | 2026-11-22                               |
+| Now          | The coverage screen is drawn and reads ores.http: the DQ area, its menu entry and its card, the bundles grouped by level, the members with the reason each cannot publish, and the reasons with their owners. The other four screens are not built. |
+| Waiting on   | The operations the journeys name: the coverage operation, the per-dataset preview, the artefact read and write, and the published-row count. The screen states which figure is absent. |
+| Next         | Publish a dataset, then the two operations it waits on. |
+| Last touched | 2026-11-25                               |
 
 * Acceptance
 
@@ -75,9 +75,30 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Typecheck of the web package | exit 0 | =npx tsc --build= in =projects/ores.web/packages/web= | 5960983888 |
+| Tests of the areas this screen touches | 150 passed, 10 files | =npx vitest run src/shell src/dq src/i18n src/AppRoutes.test.tsx= | 5960983888 |
+| Route tests the screen joins | 43 passed | =npx vitest run src/AppRoutes.test.tsx= | 5960983888 |
+| Tests of the whole web package | 2684 passed, 219 files | =npx vitest run= in =projects/ores.web/packages/web= | 5960983888 |
 
 * Notes
+
+- *The screen draws a dash and states the gap, rather than a zero.* The staged
+  count needs the coverage operation and the published count needs a provenance
+  read, and neither is served. A zero in that column would say the run wrote
+  nothing, which is the failure this arc exists to find, so the screen says what
+  is absent and why. The note is the one place the screen admits a gap, and the
+  task closes it when the operations land.
+- *Readiness answers three of its four reasons today.* No dataset row, no
+  artefact type and no target subject are all readable from the four
+  collections, so =readinessOf= decides them. The fourth, no staged rows, waits
+  on the coverage operation; the reasons card names it with its owner so a
+  reader is not misled into thinking the metadata check is the whole answer.
+- *The area is gated on the four reads it makes*, in the menu entry and in the
+  card, so a person without =dq::datasets:read= and its three siblings is not
+  offered a screen that would answer 403.
+- *The screen is written from the shared parts*, not from the prototype markup:
+  =ScreenFrame=, =PageHeader=, =Notice=, =Tag=, =AreaTrail= and the house table
+  rows. The prototypes stay the design record; nothing is imported from them.
 
 * Test Scenarios
 

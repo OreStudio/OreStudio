@@ -146,7 +146,7 @@ raise_publish_request_set(const ores::database::context& ctx,
         ores::marketdata::service::app::derived_kind::curve,
         requests,
         reason,
-        subjects.empty() ? boost::uuids::uuid{} : subjects.front().party_id,
+        subjects.front().party_id,
         ores::marketdata::service::app::set_raise::whole_set);
     return read_request(ctx, raised.request_id);
 }
@@ -174,22 +174,6 @@ record_publication(const ores::database::context& ctx,
     if (stored.empty())
         throw std::runtime_error("The published set was written but cannot be read back.");
     return stored.front();
-}
-
-/// The as-of of the set a series has in use, or nothing when it has none.
-inline std::optional<std::chrono::system_clock::time_point>
-live_as_of(const ores::database::context& ctx, const boost::uuids::uuid& output_series_id) {
-    if (output_series_id.is_nil())
-        return std::nullopt;
-    ores::marketdata::repository::curve_publish_repository repo;
-    std::optional<std::chrono::system_clock::time_point> newest;
-    for (const auto& live : repo.read_live_for_series(ctx, output_series_id)) {
-        if (!live.published_at)
-            continue;
-        if (!newest || live.as_of > *newest)
-            newest = live.as_of;
-    }
-    return newest;
 }
 
 }

@@ -20,7 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A caller either reaches the series slice or the subject is gone from every
+layer that names it, so an operation nobody serves is not advertised on four
+surfaces.
 
 * Status
 
@@ -35,7 +37,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Either the market data service subscribes to =marketdata.v1.ops.get_series_slice= and answers it from the reads it already has, or the subject is gone from the protocol, the codec, the BFF, the gateway and the web client.
+- A test proves the choice: a served subject answers, or a retired one has no subject constant and no caller.
+- The knowledge page that calls the subject unreachable states what happened to it.
 
 * Plan
 

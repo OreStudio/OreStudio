@@ -152,69 +152,38 @@ public:
                        publish_curve_response& resp) {
         using namespace ores::marketdata::service::app;
 
-        if (req.approval_request_id.empty()) {
-            const auto raised =
-                raise_publication(req_ctx,
-                                  derived_kind::curve,
-                                  {{.subject_key = req.bootstrap_config_id, .as_of = req.as_of}},
-                                  req.reason);
-            const auto& id = raised.request_id;
-            resp.approval_request_id = id;
-            resp.state_code = raised.state_code;
-            if (raised.state_code != "approved") {
-                resp.success = false;
-                resp.status = service::app::publish_status_raised;
-                resp.message = "Raised. The publish waits on the decision.";
-                ORES_LOG_SEV(curve_publish_handler_lg(), info)
-                    << "Raised publish request " << id << " for curve " << req.bootstrap_config_id
-                    << " as of " << req.as_of;
-                return;
-            }
-            ORES_LOG_SEV(curve_publish_handler_lg(), info)
-                << "Request " << id << " needs no approval, so the raise is the publish";
-            apply(req_ctx, id, raised.raised.front(), resp);
-            return;
-        }
-
-        const auto attempted = resolve_publication_subject(
-            req_ctx, derived_kind::curve, req.bootstrap_config_id, req.as_of);
-        resp.approval_request_id = req.approval_request_id;
-        apply(req_ctx, req.approval_request_id, attempted, resp);
-    }
-
-private:
-    /**
-     * @brief Applies the approved request, or says why it may not.
-     *
-     * The lifecycle runs the five steps: the verdict, a deferred build, the
-     * publication and its supersession in one transaction, and the notice. A
-     * deferral writes nothing and stamps nothing, so the request is not spent on
-     * a curve whose inputs have not arrived.
-     */
-    static void apply(const ores::database::context& req_ctx,
-                      const std::string& request_id,
-                      const service::app::publication_subject& attempted,
-                      publish_curve_response& resp) {
-        using namespace ores::marketdata::service::app;
-
-        const auto applied = apply_publication(req_ctx, derived_kind::curve, request_id, attempted);
-        resp.state_code = applied.state_code;
-        switch (applied.status) {
-            case publication_status::published:
+        const auto answered = answer_publication(req_ctx,
+                                                 derived_kind::curve,
+                                                 req.bootstrap_config_id,
+                                                 req.as_of,
+                                                 req.approval_request_id,
+                                                 req.reason);
+        resp.approval_request_id = answered.request_id;
+        resp.state_code = answered.state_code;
+        switch (answered.outcome) {
+            case publication_outcome::published:
                 resp.success = true;
                 resp.status = service::app::publish_status_published;
-                resp.published_at = applied.facts.published_at;
-                resp.published_by = applied.facts.published_by;
+                resp.published_at = answered.published_at;
+                resp.published_by = answered.published_by;
                 break;
-            case publication_status::deferred:
-                resp.status = service::app::publish_status_deferred;
-                resp.message = "Deferred. " + applied.message;
+            case publication_outcome::raised:
+                resp.success = false;
+                resp.status = service::app::publish_status_raised;
+                resp.message = answered.message;
                 ORES_LOG_SEV(curve_publish_handler_lg(), info)
-                    << "Deferred curve " << attempted.subject_key << ": " << applied.message;
+                    << "Raised publish request " << answered.request_id << " for curve "
+                    << req.bootstrap_config_id << " as of " << req.as_of;
                 break;
-            case publication_status::refused:
+            case publication_outcome::deferred:
+                resp.status = service::app::publish_status_deferred;
+                resp.message = "Deferred. " + answered.message;
+                ORES_LOG_SEV(curve_publish_handler_lg(), info)
+                    << "Deferred curve " << req.bootstrap_config_id << ": " << answered.message;
+                break;
+            case publication_outcome::refused:
                 resp.status = service::app::publish_status_refused;
-                resp.message = applied.message;
+                resp.message = answered.message;
                 break;
         }
     }

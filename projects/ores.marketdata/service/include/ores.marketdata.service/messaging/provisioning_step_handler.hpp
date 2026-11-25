@@ -1053,10 +1053,10 @@ private:
                     .pair = pair,
                     .detail = applied.message};
         } catch (const ores::database::pq::store_error&) {
+            // A busy store is the wrapper's to retry, not this call's to report.
             throw;
         } catch (const std::exception& e) {
-            // A set the raise refuses before a request exists reads as a skip,
-            // as the publish service's own answer did.
+            // A raise the service refuses leaves the set unpublished this run.
             return {.how = forward_outcome::state::skipped, .pair = pair, .detail = e.what()};
         }
     }

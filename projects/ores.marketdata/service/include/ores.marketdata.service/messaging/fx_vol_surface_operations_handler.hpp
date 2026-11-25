@@ -23,7 +23,6 @@
 #include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/fx_vol_surface_operation_protocol.hpp"
 #include "ores.marketdata.service/app/derived_market_object_kind.hpp"
-#include "ores.marketdata.service/app/fx_forward_publication_kind.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_publication_kind.hpp"
 #include "ores.marketdata.service/app/publication_kind_codes.hpp"
@@ -212,47 +211,20 @@ private:
                        publish_fx_vol_surface_response& resp) {
         using namespace ores::marketdata::service::app;
         const auto party = ores::service::messaging::session_party(ctx, "A surface");
-        const auto as_of = std::chrono::floor<std::chrono::microseconds>(req.as_of);
-        const auto attempted =
-            resolve_publication_subject(ctx, derived_kind::fx_vol_surface, req.blueprint_id, as_of);
-        if (!req.approval_request_id.empty()) {
-            apply_answer(ctx, req.approval_request_id, attempted, resp);
-            return;
-        }
-        const auto raised = raise_publication(ctx,
-                                              derived_kind::fx_vol_surface,
-                                              {{.subject_key = req.blueprint_id, .as_of = as_of}},
-                                              req.reason,
-                                              party);
-        resp.approval_request_id = raised.request_id;
-        resp.state_code = raised.state_code;
-        if (raised.state_code != "approved") {
-            resp.success = true;
-            resp.message = "Raised. The publish waits on the decision.";
-            return;
-        }
-        apply_answer(ctx, raised.request_id, raised.raised.front(), resp);
-    }
-
-    static void apply_answer(const ores::database::context& ctx,
-                             const std::string& request_id,
-                             const ores::marketdata::service::app::publication_subject& attempted,
-                             publish_fx_vol_surface_response& resp) {
-        const auto applied = ores::marketdata::service::app::apply_publication(
-            ctx,
-            ores::marketdata::service::app::derived_kind::fx_vol_surface,
-            request_id,
-            attempted);
-        resp.approval_request_id = request_id;
-        resp.state_code = applied.state_code;
-        if (applied.status == ores::marketdata::service::app::publication_status::published) {
-            resp.success = true;
-            resp.message = "Published.";
-            resp.published_at = applied.facts.published_at;
-            resp.published_by = applied.facts.published_by;
-        } else {
-            resp.message = applied.message;
-        }
+        const auto answered =
+            answer_publication(ctx,
+                               derived_kind::fx_vol_surface,
+                               req.blueprint_id,
+                               std::chrono::floor<std::chrono::microseconds>(req.as_of),
+                               req.approval_request_id,
+                               req.reason,
+                               party);
+        resp.approval_request_id = answered.request_id;
+        resp.state_code = answered.state_code;
+        resp.success = answered.outcome == publication_outcome::published;
+        resp.message = answered.message;
+        resp.published_at = answered.published_at;
+        resp.published_by = answered.published_by;
     }
 
     ores::nats::service::client& nats_;

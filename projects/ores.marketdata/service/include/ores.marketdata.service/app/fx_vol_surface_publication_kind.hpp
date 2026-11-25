@@ -43,58 +43,13 @@ namespace ores::marketdata::service::app {
 [[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT std::optional<std::string>
 blocking_failure_of(const ores::marketdata::domain::fx_vol_surface_calibration& calibration);
 
-/// One surface a set of publishes asks a decider to authorise.
-struct surface_publish_subject {
-    boost::uuids::uuid blueprint_id{};
-    std::chrono::system_clock::time_point as_of{};
-};
-
 /**
- * @brief What a set raise did: the request, and the members it could not carry.
+ * @brief The published surface a person reads, and the subject a request states.
  *
- * An empty request_id means nothing was raised, because no member could be.
- * Each refusal names its blueprint and the reason, so a caller reports the
- * surface it left out rather than failing the set for it.
- */
-struct surface_publish_raise {
-    std::string request_id;
-    std::string state_code;
-    /// The blueprints whose subjects the request names, in the order asked for.
-    std::vector<boost::uuids::uuid> raised;
-    /// The blueprints the request could not name, each with the reason.
-    std::vector<std::pair<boost::uuids::uuid, std::string>> refused;
-};
-
-/**
- * @brief Raises one request that authorises a set of a party's surfaces.
- *
- * One decision for a party's set: the request names every surface it authorises,
- * and each is judged on its own at its apply. A member with no calibration, with
- * a blocking failure, or with a raise already open is left out and named, so a
- * decider never answers for a surface the service would refuse.
- *
- * The raise judges each member before anything is raised, so a decider never
- * answers for a surface the service would refuse; what it does not judge is
- * whether the surface holds at its apply, which the apply answers per member.
- *
- * @throws std::invalid_argument when no member can be raised, the reason is
- * empty, or a surface is named twice.
- */
-[[nodiscard]] ORES_MARKETDATA_SERVICE_EXPORT surface_publish_raise
-raise_surface_publish_set(const ores::database::context& ctx,
-                          const boost::uuids::uuid& party_id,
-                          const std::vector<surface_publish_subject>& subjects,
-                          const std::string& reason);
-
-/**
- * @brief The approval-gated publish of a party's calibrated FX volatility surface, and the read of
- * a publish request's subject.
- *
- * A surface belongs to its blueprint's party, and only a person acting for that party raises its
- * publish. The raise names the calibration of the blueprint at the as-of and copies its checks to
- * the request's subject, so the decider reads the fit they approve. The apply publishes that
- * calibration once, ends every live surface of the output series in the same act, and sends the
- * notice.
+ * The read answers with the surface the as-of rule selects, never with a
+ * candidate: the publish records which calibration became the set in use, and
+ * this class finds that set and hands it to the screen. The publish itself is
+ * the lifecycle's, in publication_lifecycle.cpp.
  */
 class ORES_MARKETDATA_SERVICE_EXPORT fx_vol_surface_published_reader final {
 public:

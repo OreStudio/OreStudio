@@ -20,7 +20,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A declared operation subject with no registered handler fails the gate, so a
+dead subject cannot be declared and advertised while nobody answers it.
 
 * Status
 
@@ -35,7 +36,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- A repo-owned check fails when a protocol model declares a subject that no handler registers, and names the subject and the file.
+- The check runs in the local gate for a change to a protocol model, a handler or the service that subscribes.
+- A test proves the check fails on a declared subject with no handler and passes when the handler is registered.
 
 * Plan
 

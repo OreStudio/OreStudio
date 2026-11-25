@@ -29,13 +29,11 @@
 namespace ores::marketdata::service::app {
 
 /**
- * @brief The approval-gated publish of a party's FX forward set, and its read.
+ * @brief The published FX forward set a person reads.
  *
- * A forward set is derived data and belongs to the caller's party. The raise computes the set
- * from the party's own spot and published funding curves and stores it as the request's
- * candidate, so the decider reads the numbers they approve. The apply publishes exactly those
- * numbers. A set never changes once written, so a read returns the published numbers after the
- * market has moved.
+ * A forward set never changes once written, so the read returns the published
+ * numbers after the market has moved, with the state of the curves it was built
+ * from. The publish itself is the lifecycle's, in publication_lifecycle.cpp.
  */
 class ORES_MARKETDATA_SERVICE_EXPORT fx_forward_published_reader final {
 public:

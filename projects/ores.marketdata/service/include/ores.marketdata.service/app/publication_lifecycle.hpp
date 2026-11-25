@@ -100,6 +100,47 @@ ORES_MARKETDATA_SERVICE_EXPORT std::string raise_permission_of(const ores::datab
                                                                std::string_view kind_code);
 
 /**
+ * @brief How one publish request was answered.
+ *
+ * Published moved the set. Raised waits on a decision and moved nothing.
+ * Deferred did not run because an input the set declares is not there yet.
+ * Refused did not move it, and @c message says why in the words a person reads.
+ */
+enum class publication_outcome { published, raised, refused, deferred };
+
+/**
+ * @brief What one publish request came to, in the shape every message maps back.
+ */
+struct publication_answer {
+    publication_outcome outcome{publication_outcome::refused};
+    std::string message;
+    std::string request_id;
+    std::string state_code;
+    std::optional<std::chrono::system_clock::time_point> published_at;
+    std::string published_by;
+};
+
+/**
+ * @brief Answers one publish request: the raise, or the apply of an approved one.
+ *
+ * The one place a message handler's publish goes through, so two messages
+ * cannot answer the same act differently. A request identifier names the
+ * decision to apply; an empty one raises a request for the subject and applies
+ * it too when the rule closed it without a person.
+ *
+ * @param request_id The approved request to apply, or empty to raise for one.
+ * @param party_id The party the raise acts for; empty takes the session's.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT publication_answer
+answer_publication(const ores::database::context& ctx,
+                   derived_kind kind,
+                   const std::string& subject_key,
+                   std::chrono::system_clock::time_point as_of,
+                   const std::string& request_id,
+                   const std::string& reason,
+                   const boost::uuids::uuid& party_id = {});
+
+/**
  * @brief The subject a caller names, read through the kind the declaration names.
  *
  * @throws std::invalid_argument when the subject cannot be named.

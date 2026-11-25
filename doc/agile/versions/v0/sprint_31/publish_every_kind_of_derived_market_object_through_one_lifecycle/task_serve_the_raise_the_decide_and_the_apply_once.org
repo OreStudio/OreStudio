@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :publish_every_kind_of_derived_market_object_through_one_lifecycle:sprint_31:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-the-raise-the-decide-and-the-apply-once
+#+pr: 5131
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -26,12 +26,12 @@ One implementation serves the raise, the decide and the apply for every kind, an
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-24                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
 
 * Acceptance
 
@@ -41,9 +41,45 @@ One implementation serves the raise, the decide and the apply for every kind, an
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two files hold the lifecycle and nothing else holds a copy of it.
+
+=publication_kind.hpp= states what one kind supplies: the subject it resolves,
+the refusals its raise answers, the subject part it writes, the verdict it reads,
+anything it computes before the publication, the publication itself with its
+supersession, and the notice. The facts travel in one shape, =publication_subject=
+and =publication_facts=, so the acts never read a kind code and a fourth kind is
+an implementation of the interface and a row in the declaration.
+
+=publication_lifecycle.cpp= holds the acts:
+
+- =raise_publication= judges every member before anything is raised, reads the
+  kind, the asker and the rule that may close the raise before the transaction
+  opens, then writes the request and every subject part in one unit of work. Two
+  set policies exist because the kinds' callers differ: the curve raises a set
+  whole or not at all, and a party's surface set keeps the members it can carry
+  and names the ones it cannot.
+- =apply_publication= asks the verdict, runs the kind's compute and stops on a
+  deferral, then publishes and supersedes in one unit of work and only then
+  tells. Telling after the commit keeps the rule that telling is never the act.
+
+Each kind's implementation lives beside the words it already holds --
+=curve_publish_gate.cpp=, =fx_forward_publish_service.cpp=,
+=fx_vol_surface_publish_service.cpp= -- so the refusals, the supersession and
+the notice are moved into the interface and not rewritten. The exported
+functions those files already carry keep their signatures and now delegate, so
+the tests that state the curve's behaviour state the behaviour of the one
+implementation.
+
+Three things are deliberately not in this task, and each has its own owner:
+
+- The withdrawal hooks, because two kinds have no withdrawal columns and the
+  story that adds them owns the act ([[id:A3C64267-3320-4CD1-944E-EB2CB79E43A1][Withdraw a published set of any kind]]).
+- The forward set's supersession and notice, because its row has no superseded
+  columns and the seed has no notice kind (the next task in this story).
+- The checks a raise answers for a curve, because a curve has no candidate
+  before its apply: the bootstrap runs at the apply and a request whose inputs
+  have not arrived is deferred. Implementing the page's candidate checks needs
+  the compute to move before the raise, which is a change of its own.
 
 * Measurements
 
@@ -57,7 +93,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Changed files, and the new ones | 8 C++ files, 3 new | =git status --porcelain= | branch off =4abd485bfa= |
+| Local checks | 16 of 18, ctest and answer-shapes the two | =compass check= | branch off =4abd485bfa= |
+| Marketdata service suite | passes, including the four new cases | =compass check= (ctest step) | branch off =4abd485bfa= |
+| ctest suites | 104 of 108 | =compass check= (ctest step) | branch off =4abd485bfa= |
+| The three suites that look like failures | pass on a re-run | =compass test run -- -R "ores.refdata.core.tests\|ores.workflow.core.tests\|ores.inbox.core.tests"= | branch off =4abd485bfa= |
+| =answer-shapes= | passes on a re-run, no code change | =compass check --only answer-shapes= | branch off =4abd485bfa= |
 
 * Notes
 
@@ -76,7 +117,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5131][#5131]] | [marketdata] Serve the raise, the decide and the apply once |
 
 * Review
 
@@ -85,3 +126,89 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The acts exist once. =publication_kind.hpp= states what a kind supplies and
+=publication_lifecycle.cpp= runs the raise, the decide and the apply, with the
+per-kind implementations beside the words they already held.
+
+One raise writes the request and every subject part in one unit of work, judges
+the members before anything is raised, and reads the kind, the asker and the
+closing rule before the transaction opens. One apply asks the verdict, runs the
+kind's compute and stops on a deferral, publishes and supersedes in one unit of
+work, and tells afterwards. The curve's five exported functions, the forward's
+and the surface's operations, and the scheduler's path all go through the two
+acts, so the behaviour the tests state is the behaviour of one implementation.
+
+The curve's regression is the gate's own evidence: its eighteen cases pass
+unchanged through the shared acts, including the supersession, the notice, the
+refusals that name both subjects and the auto-approved raise.
+
+Three parts of the acceptance are not met, and each is a decision rather than a
+missed edit.
+
+1. The refusals the page states are answered by the surface only. The gap is
+   filed as [[id:D4945061-7E98-4E52-8EFA-C00D59EB700A][The curve's raise answers none of the page's candidate checks]],
+   because closing it is a decision about where a curve is computed and not an
+   edit this task can make. The page's
+   raise refuses a subject of another party, a candidate that is missing or
+   failed a blocking check, a second request open for the same subject and
+   as-of, and a candidate older than the live set. The surface answers all five.
+   The forward answers the pair and the as-of and refuses a set whose input
+   curve is not there, because its compute runs in the raise's transaction; it
+   answers neither the open request nor the older-than-live rule. The curve
+   answers none of them, because it has no candidate before its apply: its
+   bootstrap runs at the apply and a request whose inputs have not arrived is
+   deferred, so there is nothing to check and no version the decision covers.
+2. The forward's supersession and notice are the next task in this story, and
+   the interface carries both hooks: its =publish= writes the published facts
+   and returns, and its =announce_published= does nothing, because the row has
+   no superseded columns and the seed has no notice kind yet.
+3. The withdrawal hooks are not in the interface yet. Two kinds have no
+   withdrawal columns, and [[id:A3C64267-3320-4CD1-944E-EB2CB79E43A1][Withdraw a published set of any kind]] owns that act;
+   adding two methods now would be dead code with no caller and no rule.
+
+The gate, run on the branch rebased onto =4abd485bfa=: 16 of 18 checks pass. The
+two classes of failure are not this branch's.
+
+- =ctest= is 104 of 108. Three of the four suites, =ores.refdata.core.tests=,
+  =ores.workflow.core.tests= and =ores.inbox.core.tests=, are the pooler not
+  accepting connections in the window right after the database recreate: all
+  three pass when re-run on their own.
+- =ores.reporting.core.tests= is a real failure on main and not in this branch.
+  It arrived with PR #5118, whose two commits are =73c9f7ee72=, which re-chunked
+  the three run output tables on =valid_from= and declared the column as the
+  partitioning column in the model, and =1059f9d59b=, which gave the column a
+  default. A hypertable routes a row by the partitioning column *before* any
+  BEFORE INSERT trigger runs, and the table's insert trigger then rewrites
+  =valid_from= to the transaction's clock. A caller that supplies the column is
+  therefore routed to a chunk for the instant it supplied and then fails that
+  chunk's range check. Every reporting insert supplies it, because the entity
+  defaults it to the maximum instant:
+
+#+begin_src text
+  insert into ores_reporting_report_metrics_tbl (..., valid_from, valid_to)
+  values (..., '9999-12-31 00:00:00+00', '9999-12-31 23:59:59+00');
+  ERROR:  new row for relation "_hyper_12_156_chunk" violates check constraint
+          "constraint_156"
+  DETAIL: Failing row contains (..., 1234.5, 2026-11-25 13:50:42.085034+00,
+          9999-12-31 23:59:59+00).
+#+end_src
+
+The work is task 4499B9AF, *Bound the report run outputs by age*, under story
+8D2AD473, and it was done in the =solid_dirac= environment. Its own record
+states the SQL probes it ran and no test result, so its gate either did not run
+the suite after the partitioning landed or read the failure as something else.
+The fix belongs to that work and not to this branch, which touches no reporting
+file and no SQL.
+
+The reproduction is a plain insert, run in a transaction that was rolled back,
+so no row was written.
+
+The other failing check is =answer-shapes=, which main added in =d0abfdc17f=
+(PR #5127, the =brave_hopper= environment). It replays the BFF's recorded answer
+shapes against the gateway, and the recorded shape of
+=GET /api/marketdata/quotes/feeds= states =feeds[].last_at= as a string while the
+gateway answered null. The gateway states null until its board has heard a tick
+for the feed, and the gate runs the check on a gateway that has just started. It
+passed on a second run with no code change, so the check reads live traffic
+rather than the tree. That is a defect of the check and not of this branch.

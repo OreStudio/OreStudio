@@ -162,7 +162,7 @@ What each System sees by default, counted from the levels the skills carry. Atte
 #+ATTR_HTML: :class hug-leading
 | Level | System | Horizon | Sees | Attenuation |
 |-------+--------+---------+------+-------------|
-| =s1= | Agent | Hours | 64 skills | advisory |
+| =s1= | Agent | Hours | 65 skills | advisory |
 | =s2= | Orchestrator | Days | 19 skills | advisory |
 | =s3= | Sprint Planner | Weeks | 21 skills | advisory |
 | =s3star= | Auditor | Continuous | 5 skills | binding |
@@ -177,7 +177,7 @@ What each System sees by default, counted from the levels the skills carry. Atte
 
 The skills a session at each level sees by default. At a binding level they are the read-only skills and nothing else; at an advisory one, the skills of that level and of the cross level.
 
-=s1=, advisory: 64 of 76 skills.
+=s1=, advisory: 65 of 77 skills.
 
 - compass-agile-close-task
 - compass-agile-find-bearings
@@ -186,6 +186,7 @@ The skills a session at each level sees by default. At a binding level they are 
 - compass-code-add-domain-type
 - compass-code-add-tests
 - compass-code-investigate-test-failure
+- compass-code-investigate-trunk-break
 - compass-code-review-comments
 - compass-code-review-component
 - compass-code-review-data-model
@@ -244,7 +245,7 @@ The skills a session at each level sees by default. At a binding level they are 
 - compass-skill-review
 - compass-skill-show-catalogue
 
-=s2=, advisory: 19 of 76 skills.
+=s2=, advisory: 19 of 77 skills.
 
 - compass-agile-find-bearings
 - compass-agile-start-story
@@ -266,7 +267,7 @@ The skills a session at each level sees by default. At a binding level they are 
 - compass-skill-review
 - compass-skill-show-catalogue
 
-=s3=, advisory: 21 of 76 skills.
+=s3=, advisory: 21 of 77 skills.
 
 - compass-agile-add-timeline-snapshot
 - compass-agile-find-bearings
@@ -290,7 +291,7 @@ The skills a session at each level sees by default. At a binding level they are 
 - compass-skill-review
 - compass-skill-show-catalogue
 
-=s3star=, binding: 5 of 76 skills.
+=s3star=, binding: 5 of 77 skills.
 
 - compass-agile-find-bearings
 - compass-agile-find-heading
@@ -298,7 +299,7 @@ The skills a session at each level sees by default. At a binding level they are 
 - compass-doc-show
 - compass-skill-show-catalogue
 
-=s4=, advisory: 16 of 76 skills.
+=s4=, advisory: 16 of 77 skills.
 
 - compass-agile-add-release-notes
 - compass-agile-find-bearings
@@ -317,7 +318,7 @@ The skills a session at each level sees by default. At a binding level they are 
 - compass-skill-review
 - compass-skill-show-catalogue
 
-=s5=, advisory: 16 of 76 skills.
+=s5=, advisory: 16 of 77 skills.
 
 - compass-agile-brainstorm-idea
 - compass-agile-find-bearings
@@ -336,7 +337,7 @@ The skills a session at each level sees by default. At a binding level they are 
 - compass-skill-review
 - compass-skill-show-catalogue
 
-=cross=, advisory: 15 of 76 skills.
+=cross=, advisory: 15 of 77 skills.
 
 - compass-agile-find-bearings
 - compass-doc-add

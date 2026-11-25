@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF
+:END:
+#+title: Story: Value only the trades the market can answer
+#+description: A report resolves every trade's market data requirements before the engine runs, excludes each trade the market cannot answer and names the cause against its book, splits a run's errors into preprocessing, engine and postprocessing, and lets a product approval matrix at party and book level decide which types a book carries.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:reporting:trading:synthetic:requirements:sprint_31:v0:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A report values the trades whose market data the system can answer, and states plainly why it left the others out. The run resolves each trade's market data requirements before the engine sees it, excludes every trade the market cannot answer, and records where each error came from: the preprocessing of the run, the engine, or the postprocessing of its results. A product approval matrix at party level states what the party may trade, a book level matrix states what that book may carry, and the generator fills each book from the second.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
+| Now           | The story is scaffolded and the arc is stated. The decision comes first, because it fixes the phases, the readiness record and the two matrices the rest uses. |
+| Waiting on    | Nothing. The demand work of [[id:03554F8C-7FFF-4735-BC5B-2CA45E58C621][Make the market data connection follow the trades]] follows this story's readiness read rather than preceding it. |
+| Next          | [[id:7B4089F8-EE63-4056-9B67-A750CC0A99F4][Write the decision: what a run may value, and what it reports]]. |
+| Last touched  | 2026-11-25                               |
+
+* Acceptance
+
+- A party level product approval matrix states the product types the party may trade, and a book level matrix states the types that book may carry and is a subset of the party's.
+- The generator fills a book with the product types its approval matrix names, and no other.
+- A run resolves every trade's market data requirements before the engine and excludes each trade whose requirements the market does not answer, naming the cause for each gap.
+- A book stated in a report names the trades that were not valued, with the cause of each.
+- A run with no complete trade does not reach the engine and fails in preprocessing with the cause summary.
+- Every error a run records states the phase that produced it: preprocessing, the engine, or postprocessing.
+- A trade is never both excluded in preprocessing and failed by the engine, so an engine error means the trade's market data was complete.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:825E12E1-F068-4630-B5A0-CF7E2F2F6871][Scaffold story: Value only the trades the market can answer]] | DONE | 2026-11-25 | 2026-11-25 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:7B4089F8-EE63-4056-9B67-A750CC0A99F4][Write the decision: what a run may value, and what it reports]] | BACKLOG | | | State the four phases of a run, the three grains of its market readiness, the phase axis on every error, and the two approval matrices, so the rest of the story builds one model rather than six. |
+| [[id:9EC5A975-0FD7-44F4-9C70-7921E0F7AD3D][State what a party may trade and what a book may carry]] | BACKLOG | | | A party level approval matrix states the product types a party may trade, a book level matrix states the types that book may carry, and a book's matrix is refused unless it is a subset of its party's. |
+| [[id:68C4B58E-0801-4770-98B8-3A8294D7220F][Fill each book from its approval matrix]] | BACKLOG | | | The generator fills a book with the product types its approval matrix names, books no type the matrix does not name, and states per book what it booked and what it left out. |
+| [[id:90951C94-E994-400F-A7D1-F2E1FDF68FC9][Resolve a trade set's requirements per trade]] | BACKLOG | | | The trading operation that answers what a trade set needs returns the addresses of each trade rather than one flat set, so a caller can say which trade needs what. |
+| [[id:8574E05C-8C76-4B37-9C64-61B3C1E0EEC5][Record a run's market readiness and leave incomplete trades out]] | BACKLOG | | | Before the engine runs, a run resolves each trade's requirements, records which addresses the market answers at the as-of, excludes every trade with an unanswered requirement, and fails in preprocessing when no trade is complete. |
+| [[id:E6B29704-7BEF-4C2A-B95F-32623AF49200][State the phase of every error a run records]] | BACKLOG | | | An error a run records carries the phase that produced it, the preprocessing of the run, the engine, or the postprocessing of its results, beside the scope the engine names. |
+| [[id:110CE18D-C64C-4C40-8E8E-D0664176707C][Name the trades a book did not value]] | BACKLOG | | | A report states, for each of its books, the trades that were left out and the cause of each, and shows the run's errors by the phase that produced them. |
+
+* Decisions
+
+Settled on 2026-11-25, when the story was formed.
+
+1. *One run, three phases, and every error states its phase.* The phases are the
+   preprocessing of the run, the engine, and the postprocessing of its results.
+   =report_error_event= keeps =scope_code= as the engine's own group name, which
+   its model page argues it must be, and gains a phase beside it. A run that
+   never reached the engine states scope =Report= and phase =preprocess=, which
+   is the shape the model already describes.
+2. *An incomplete trade is a state, not an error.* It is recorded in the run's
+   market readiness, not in the error table, so that table keeps meaning
+   "something went wrong" rather than "something was absent".
+3. *Exclude per trade, not per book.* The book states the count it lost and the
+   causes, so a half valued book is visible rather than silently short.
+4. *An incomplete trade never reaches the engine.* A trade is excluded or
+   failed, never both, so an engine error means the trade's market data was
+   complete: that is what makes an engine error a real valuation error.
+5. *A run with no complete trade fails in preprocessing.* An empty valuation is
+   not a valuation, and the grid is not spent on one.
+6. *Two approval matrices, at party and at book.* The party's states what it may
+   trade, the book's what that book may carry, and the book's is a subset of the
+   party's. The generator fills a book from its own matrix, which is what makes
+   a population plausible: the book that trades cable holds cable options.
+7. *Book affinity is data and not code.* It is the product approval matrix a real
+   firm keeps, so the simulator and a real desk share it. No rule enters the
+   platform for the simulator's sake: =expected_market_data= and
+   =plan_on_expected_market_data= stay utilities of the simulator, and the truth
+   about what a run can value comes from the run's own resolution.
+8. *Market readiness has three grains.* By address, because each gap has a cause;
+   by trade, because a trade is excluded as a whole; and by run, because a reader
+   wants the counts. Each answers a different question and none is derived at
+   read time from the others.
+9. *The requirement resolution already exists per trade.*
+   =ores_trading_market_references_fn= returns =trade_id= and the address, and
+   the repository collapses it to a distinct set before the run ever sees it. The
+   first code change is to stop discarding the trade, not to build a new
+   resolver.
+
+* Out of scope
+
+- Supplying market data for credit, equity, commodity, inflation or security.
+  That is [[id:B1234477-CF4C-4358-AB45-67998AF91CDB][Value the generated trades against ORE's own NPVs]] and the
+  types it holds.
+- The trade set fan-out and its per set archives.
+- The demand policy that makes an adapter publish exactly the items a party's
+  trades name. This story produces the read the policy needs; the wiring is
+  [[id:03554F8C-7FFF-4735-BC5B-2CA45E58C621][Make the market data connection follow the trades]].
+- Booking real trades. The generator is the only population this story fills,
+  although every record it adds is meant for a real one.

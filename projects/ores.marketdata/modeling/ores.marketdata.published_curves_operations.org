@@ -44,6 +44,7 @@ as-of, and they are read beside it.
 
 #+begin_src cpp :name includes
 #include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
 #include <optional>

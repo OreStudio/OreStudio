@@ -43,29 +43,44 @@ A provisioned ACME states an initial approval matrix that is comprehensive acros
 
 * Plan
 
-The gap is in the book population and not in the approval model.
-=ores_refdata_publish_books_from_dq_fn= writes =restricts_product_types = true= on
-every book and then takes *every* code the system catalogue holds, so the matrix
-a provisioned tenant receives says nothing about the book; and no provision
-states a party's set, so the party permits everything by its flag.
+The approval is data quality data and belongs beside the books it constrains.
+The books are staged in =ores_dq_books_artefact_tbl=, written by the ACME
+seeder's generated scripts, and published into refdata by
+=ores_refdata_publish_books_from_dq_fn=. The book's approved set follows the same
+path, and the gap is that it does not exist yet: the publish states
+=restricts_product_types = true= on every book and then takes *every* code the
+catalogue holds, so the matrix says nothing about the book, and no provision
+states a party's set.
 
-1. *The affinity is data, keyed by the book.* A curated table states, per book
-   name or desk family, the product types a book of that name carries. The book
-   population reads it to write the junction, and the generator reads the same
-   rows to choose the types it books, so there is one list and not two.
-2. *The publish writes the book's own set.* The DQ books artefact carries the
-   affinity key, the publish resolves it to codes, and a book whose key states
-   nothing is refused rather than published open.
-3. *The party's set is the union of its books.* The provision states it after the
-   books are published, so the subset rule holds from the first write and no
-   book is ever outside a party that has not yet spoken.
-4. *The population is checked against the matrix.* A published population states,
-   per book, the trades booked and the types its matrix permits, and a check
-   fails when a booked type is not permitted; the same check proves the union of
-   the books covers the trade type population.
-5. *The seed test changes with it.* =refdata_book_product_types_seed_test.sql=
-   asserts today that a published book takes every code; it asserts the book's
-   own set instead, and that the union across the group covers the population.
+1. *The approval is a junction artefact beside the books.*
+   =ores.refdata.book_product_type= gains the junction artefact facet
+   (=:ores.sql.schema.junction_artefact_create.enabled: true=), which generates
+   =ores_dq_book_product_types_artefact_tbl(dataset_id, tenant_id, book_id,
+   product_type_code, version)= — the template's default columns, because unlike
+   =party_currencies= this dataset holds many books and each row must name the
+   book it approves. The row is keyed by the book's artefact id, which the books
+   dataset already mints.
+2. *The seeder states the affinity.* The ACME seeder generates the books and their
+   approved types in one pass from the curated book data, so the cable book
+   carries the FX option types, the CDS book the credit types, and the books
+   together cover the population. The affinity is data in the dataset and not a
+   rule in code; a book whose name states no affinity is a defect the seeder
+   refuses rather than publishes open.
+3. *The publish keeps the artefact id.* The publish mints a fresh uuid per book
+   today and drops =a.id=, so nothing can join the artefact rows to the published
+   books. It keeps the pair (artefact id, published id), writes the junction from
+   the artefact rows, and removes the insert that takes every code.
+4. *The party's set is the union of its books.* Parties are not DQ artefacts, so
+   nothing stages their set. The provision states it after the books are
+   published, as the union of the sets of that party's books, which is the
+   smallest set the subset rule accepts and is not a second curation.
+5. *One list, two readers.* The generator reads the published book's set to choose
+   the types it books, so the affinity is stated once and cannot drift between
+   the matrix and the population.
+6. *The seed test changes with the behaviour.*
+   =refdata_book_product_types_seed_test.sql= asserts today that a published book
+   takes every code. It asserts the book's own set instead, that the party's set
+   covers every book, and that the union across the group covers the population.
 
 * Measurements
 

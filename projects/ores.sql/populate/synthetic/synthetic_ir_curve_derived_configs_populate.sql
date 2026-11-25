@@ -42,6 +42,9 @@
  * uniform demo, which seeds those curves, and it skips a currency with no
  * overnight config rather than inventing one.
  *
+ * They start with the service, as the overnight curves they read do: a derived
+ * index that needed a person to start it would answer on no fresh provision.
+ *
  * This script is idempotent: a row already present on its natural key is left
  * alone, so a rerun never resets a config a person has edited.
  */
@@ -72,7 +75,7 @@ select
     'VASICEK',
     60,
     true,
-    false,
+    true,
     'fixed',
     d.rate_source,
     d.spread_basis_points,

@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 41603F5F-7F14-4BDA-913E-227A98F002AD
+:END:
+#+title: Test Scenario: Check the derived term fixings
+#+description: Walk the IR curve feed screen and the fixing series page to see a term index no publisher quotes take its rate from its currency's overnight curve.
+#+type: test_scenario
+#+level: s1
+#+filetags: :derive_term_indices_from_their_overnight_curves:sprint_31:v0:
+#+target_dialog: IR curve feeds; Fixing series
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: clever_dijkstra
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:1993E4E7-A59B-4473-8635-C9F6DF974EB5][Task: Derive a term index from its overnight curve]] in [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+These are yours to ready, before the tester opens the client:
+
+- The fleet is up: =compass services start=, and =compass services
+  status= shows every unit active.
+- The database carries the five derived configs. On a database built
+  from this branch:
+
+  #+begin_src sql
+  select currency_code, index_family, tenor, rate_source,
+         derived_spread_basis_points
+  from ores_synthetic_ir_curve_generation_configs_tbl
+  where rate_source <> 'process'
+    and valid_to = ores_utility_infinity_timestamp_fn()
+  order by currency_code;
+  #+end_src
+
+  Expect five rows: COP ibr 3M, JPY eytibor 3M, KRW generic 3M, PLN
+  wibor 6M and USD sofr 1M, each with =auto_start = true=.
+- Acme Corporation is provisioned, because the steps log in as its
+  tenant administrator:
+  =compass shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+- Known gap at the time of writing: on a freshly recreated database the
+  synthetic service states no fixings for any index, the derived five
+  included, so Step 4 may find an empty series even when Steps 2 and 3
+  pass. Record that outcome rather than working around it.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:1993E4E7-A59B-4473-8635-C9F6DF974EB5][Task: Derive a term index from its overnight curve]] |
+| Parent story  | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]]   |
+| Target screen | IR curve feeds (Calibration, interest rates); Fixing series (Market data) |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Log in as the tenant administrator
+
+- Open the web client at the address =compass services status= reports.
+- Log in as =tenant_admin@acme_corporation= with =Secure-Password-123=.
+- Confirm the landing page names Acme Corporation.
+
+*** Result
+
+** Read the rule on the curve feed
+
+- Go to *Calibration* → *Interest rates* → *Feeds*.
+- Open the USD/SOFR feed whose tenor is 1M — the derived one, whose
+  source name begins =synthetic.derived.=.
+- Read the *Rate from* field: it shows *The overnight rate compounded
+  over the tenor*.
+- Confirm *Spread over the overnight rate* is 0 and *Who states the
+  spread* is empty.
+
+*** Result
+
+** Read a spread index's stated source
+
+- Open the JPY/EYTIBOR 3M feed, then the KRW/GENERIC 3M and PLN/WIBOR
+  6M feeds in turn.
+- Confirm each shows *The overnight rate plus the spread below*.
+- Confirm each shows the spread it states — 10, 15 and 20 basis points —
+  and a non-empty *Who states the spread*.
+
+*** Result
+
+** Open a derived fixing series
+
+- Go to *Market data* → *Fixing series*.
+- Enter the address of the one-month term SOFR series:
+  =oresmd://ir/USD?type=fixing&index=ibor&name=SOFR&tenor=1M=.
+- Confirm the page opens the series and lists its fixings, each with a
+  date and a value.
+- Repeat for =oresmd://ir/COP?type=fixing&index=ibor&name=IBR&tenor=3M=,
+  =oresmd://ir/JPY?type=fixing&index=ibor&name=EYTIBOR&tenor=3M=,
+  =oresmd://ir/KRW?type=fixing&index=ibor&name=GENERIC&tenor=3M= and
+  =oresmd://ir/PLN?type=fixing&index=ibor&name=WIBOR&tenor=6M=.
+
+*** Result
+
+** Compare the term fixing with its curve
+
+- Note the latest one-month term SOFR fixing on that page.
+- Go to *Market data* → *Published curves* and open the USD SOFR
+  overnight curve, then read the one-month point of its forward.
+- Confirm the fixing sits on that forward: the two agree to within the
+  few basis points the curve's interpolation allows, and a spread
+  index's fixing sits above its overnight curve by the spread its feed
+  states.
+
+*** Result
+
+* Results
+
+| Step | Outcome | Notes |
+|------+---------+-------|
+|      |         |       |

@@ -136,7 +136,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:41603F5F-7F14-4BDA-913E-227A98F002AD][Check the derived term fixings]] | PENDING | Reads the rule on the feed screens, then opens the five series and compares a term fixing with its curve. |
 
 * PRs
 

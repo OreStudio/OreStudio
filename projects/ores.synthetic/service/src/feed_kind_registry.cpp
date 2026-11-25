@@ -436,13 +436,15 @@ feed_kind make_ir_curve_kind() {
                     return other.currency_code == cfg.currency_code &&
                            feed::ir_curve_discounts_its_currency(other);
                 });
+                // A tenor is a count and a unit: 1M, 3M, 6M or 1Y. The rule needs the
+                // term in months, so the digits are read up to the unit letter.
                 int months = 0;
                 const auto tenor = cfg.tenor;
-                if (!tenor.empty()) {
+                if (tenor.size() >= 2) {
                     int count = 0;
-                    const auto [end, ec] =
-                        std::from_chars(tenor.data(), tenor.data() + tenor.size(), count);
-                    if (ec == std::errc{} && end == tenor.data() + tenor.size())
+                    const auto digits_end = tenor.data() + tenor.size() - 1;
+                    const auto [end, ec] = std::from_chars(tenor.data(), digits_end, count);
+                    if (ec == std::errc{} && end == digits_end)
                         months = tenor.back() == 'Y' ? count * 12 : count;
                 }
                 if (funding != rows.end() && months > 0)

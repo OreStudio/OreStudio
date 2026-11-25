@@ -8,7 +8,7 @@
 #+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/check-every-ported-routes-answer-shape-against-the-bff
-#+pr:
+#+pr: 5127
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -136,7 +136,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5127][#5127]] | [ores.http] Check every ported route answer shape against the BFF |
 
 * Review
 

@@ -40,6 +40,7 @@
 #include "ores.http/routes/analytics/analytics_routes.hpp"
 #include "ores.http/routes/assets/assets_routes.hpp"
 #include "ores.http/routes/compute/compute_routes.hpp"
+#include "ores.http/routes/dq/dq_routes.hpp"
 #include "ores.http/routes/iam/agent_key_exchange.hpp"
 #include "ores.http/routes/iam/auth_session_routes.hpp"
 #include "ores.http/routes/iam/bootstrap_screen_routes.hpp"
@@ -193,6 +194,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     ores::http::routes::assets::assets_routes::register_routes(router, registry, service_nats);
 
+    ores::http::routes::dq::dq_routes::register_routes(router, registry, service_nats);
     ores::http::routes::refdata::refdata_routes::register_routes(router, registry, service_nats);
 
     ores::http::routes::history_routes::register_routes(router, registry, service_nats);

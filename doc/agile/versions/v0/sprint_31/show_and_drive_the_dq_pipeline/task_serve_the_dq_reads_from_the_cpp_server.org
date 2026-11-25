@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 43B17B69-D1CA-4333-98BF-462AA5ECD8EF
+:END:
+#+title: Task: Serve the DQ reads from the C++ server
+#+description: The DQ screens need DQ reads and the C++ server has no DQ HTTP part. The BFF is being decommissioned, so only ores.http is served.
+#+type: task
+#+level: s1
+#+filetags: :show_and_drive_the_dq_pipeline:sprint_31:v0:
+#+owner: marco
+#+branch: feature/build-the-dq-screens
+#+pr: 5138
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-22
+#+updated: 2026-11-22
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The DQ reads the screens need answer on ores.http, so a DQ screen runs on the surviving deployment. The BFF is not served: it is being decommissioned.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- ores.http gains a dq part that answers the reads the coverage screen needs: datasets, dataset bundles, bundle members by bundle code, and artefact types.
+- One web API module, api/dq.ts, sends every call to ores.http.
+- A route test on the generated part proves each read answers, and the module's unit test proves the screen reads what the route returns.
+
+* Plan
+
+1. Scaffold =projects/ores.http/dq= by copying a part of the same shape, and add
+   it to the http tree's CMake.
+2. Turn on =:ores.cpp.http-route.enabled: true= on the DQ models the screens read:
+   =ores.dq.dataset=, =ores.dq.dataset_bundle=,
+   =ores.dq.dataset_bundle_member_junction=, =ores.dq.artefact_type=.
+3. Generate, and check the part renders into =projects/ores.http/dq/= with a test.
+4. Register the part's aggregate in the server's application, and build.
+5. Add =api/dq.ts= to ores.web with the reads typed, and a unit test.
+
+The BFF is not in the plan: it is being decommissioned.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Routes the part registers | 39 over four units | =grep -h "\.summary(" projects/ores.http/dq/src/routes/dq/*.cpp \| wc -l= | cdc649d983 |
+| Route tests | 23 cases over four units | =grep -c TEST_CASE projects/ores.http/dq/tests/*.cpp= | cdc649d983 |
+| The part's own suite | passed | =ctest --preset linux-clang-release-ninja -R ores.http.dq= | cdc649d983 |
+| Every suite | 109 of 109 passed | gate =ctest= step, =build/output/local_checks/logs/ctest.log= | cdc649d983 |
+| The local gate | 19 of 20, then 20 of 20 once synced | =./compass.sh check=, =build/output/local_checks/report.md= | cdc649d983, then 5e82ac7003 |
+
+* Result
+
+Done. ores.http answers the four DQ collections and ores.web reads them from it.
+The BFF is not served and no route was added to it.
+
+- =projects/ores.http/dq= is a part with a hand-written aggregate over four
+  generated route units: datasets, dataset bundles, bundle members and artefact
+  types, 39 routes in all, registered by the server's application.
+- The http-route facet is on =ores.dq.dataset=, =ores.dq.dataset_bundle=,
+  =ores.dq.dataset_bundle_member_junction= and =ores.dq.artefact_type=, so the
+  units and their tests are generated and the route-area rules cover them.
+- =api/dq.ts= is one module for every DQ call: the four reads, =readCoverage= to
+  fetch them together, and =readinessOf= to decide which of four reasons keeps a
+  member from publishing. Its test asserts the envelopes, so a read of the wrong
+  key fails instead of drawing an empty table.
+- The gate builds the tree, rebuilds the database from the schema and runs every
+  suite: 109 of 109, including =ores.http.dq.tests=.
+
+The first gate run, on base 270d3d75fc, left =answer-shapes= red on two pairs in
+=marketdata/quotes/feeds= and =reporting/reports= where the gateway answered null
+and the BFF corpus held a value. This diff touches neither route, neither the
+corpus nor the exceptions file, and the two passed after the branch was synced to
+11030f1c05, which confirms they were inherited and have since been fixed on main.
+Nothing was excused in the exception list to get there.
+
+Evidence: =./compass.sh check= on the merged base 11030f1c05 — 20 of 20 checks:
+build 483s, db 231s, ctest 769s (109 of 109 suites), ticks-smoke 1303s,
+step-consumers 14s, answer-shapes 10s; report at
+=build/output/local_checks/report.md=. The earlier run on 270d3d75fc was 19 of 20
+for the inherited pair above.
+
+* Notes
+
+The C++ server has HTTP parts for analytics, assets, compute, core, iam,
+marketdata, refdata, reporting, synthetic, trading and workflow, and none for
+dq: the reads the screens need are served by nobody.
+
+The BFF is deliberately not served, because it is being decommissioned. Writing
+a route there would be work for a component on its way out; the screens are
+built against =ores.http=.
+
+Most of the route code is generated: a DQ entity model that opts into
+=:ores.cpp.http-route.enabled: true= renders its route header, implementation and
+tests into =projects/ores.http/dq/=, so this task is the part's scaffold, the
+facet on the right models, the aggregate registration and the build.

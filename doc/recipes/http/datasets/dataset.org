@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 17AD150A-5304-51D9-BB08-B8B15D7112A9
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the datasets endpoints over HTTP?
+#+description: Every endpoint the datasets resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:datasets:
+
+This file documents the datasets resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/dq/datasets=
+:PROPERTIES:
+:ID: 5BA3FC05-E1F7-501A-AB51-C840E982322E
+:END:
+
+List datasets. It needs a session.
+
+It forwards to =dq.v1.datasets.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/dq/datasets
+#+end_example
+
+#+name: datasets-list
+#+begin_src hurl :tangle datasets-list.hurl :exports none
+GET {{base_url}}/api/v1/dq/datasets
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/dq/datasets/__none__=
+:PROPERTIES:
+:ID: E5DB35C5-E9C2-54AF-B224-5BE78293147B
+:END:
+
+Get one dataset. It needs a session.
+
+It forwards to =dq.v1.datasets.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/dq/datasets/__none__
+#+end_example
+
+#+name: datasets-get
+#+begin_src hurl :tangle datasets-get.hurl :exports none
+GET {{base_url}}/api/v1/dq/datasets/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/dq/datasets/get-many=
+:PROPERTIES:
+:ID: DB20C562-3517-55FB-B927-79F9CE05F913
+:END:
+
+Get many datasets. It needs a session.
+
+It forwards to =dq.v1.datasets.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/dq/datasets/get-many
+#+end_example
+
+#+name: datasets-get-many
+#+begin_src hurl :tangle datasets-get-many.hurl :exports none
+POST {{base_url}}/api/v1/dq/datasets/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/dq/datasets=
+:PROPERTIES:
+:ID: 889A7916-8AE6-546F-8AB9-2B923D3F6D1B
+:END:
+
+Create one dataset. It needs a session.
+
+It forwards to =dq.v1.datasets.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/dq/datasets
+#+end_example
+
+#+name: datasets-add
+#+begin_src hurl :tangle datasets-add.hurl :exports none
+POST {{base_url}}/api/v1/dq/datasets
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/dq/datasets=
+:PROPERTIES:
+:ID: BCA3E968-00BD-5DEE-80E9-D893D7B8D398
+:END:
+
+Replace one dataset. It needs a session.
+
+It forwards to =dq.v1.datasets.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/dq/datasets
+#+end_example
+
+#+name: datasets-set
+#+begin_src hurl :tangle datasets-set.hurl :exports none
+PUT {{base_url}}/api/v1/dq/datasets
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/dq/datasets/put-many=
+:PROPERTIES:
+:ID: 6D088CD6-7475-512B-BE3E-F13BD6466B98
+:END:
+
+Write many datasets. It needs a session.
+
+It forwards to =dq.v1.datasets.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/dq/datasets/put-many
+#+end_example
+
+#+name: datasets-put-many
+#+begin_src hurl :tangle datasets-put-many.hurl :exports none
+POST {{base_url}}/api/v1/dq/datasets/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/dq/datasets/__none__=
+:PROPERTIES:
+:ID: 745DC0FA-C169-5C1F-98EE-4EA9747240D3
+:END:
+
+Delete one dataset. It needs a session.
+
+It forwards to =dq.v1.datasets.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/dq/datasets/__none__
+#+end_example
+
+#+name: datasets-delete
+#+begin_src hurl :tangle datasets-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/dq/datasets/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/dq/datasets/delete-many=
+:PROPERTIES:
+:ID: 7A5F4DB1-B889-569A-94FF-BFD90081061A
+:END:
+
+Delete many datasets. It needs a session.
+
+It forwards to =dq.v1.datasets.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/dq/datasets/delete-many
+#+end_example
+
+#+name: datasets-delete-many
+#+begin_src hurl :tangle datasets-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/dq/datasets/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/dq/datasets/__none__/versions=
+:PROPERTIES:
+:ID: CA8A74A5-2941-55B0-8FC0-538EE87C7E10
+:END:
+
+List the recorded versions of one dataset. It needs a session.
+
+It forwards to =dq.v1.datasets_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/dq/datasets/__none__/versions
+#+end_example
+
+#+name: datasets-versions
+#+begin_src hurl :tangle datasets-versions.hurl :exports none
+GET {{base_url}}/api/v1/dq/datasets/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/dq/datasets/__none__/versions/0=
+:PROPERTIES:
+:ID: 15158341-45D1-53C2-A615-07C942AC5D3C
+:END:
+
+Get one recorded version of one dataset. It needs a session.
+
+It forwards to =dq.v1.datasets_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/dq/datasets/__none__/versions/0
+#+end_example
+
+#+name: datasets-version
+#+begin_src hurl :tangle datasets-version.hurl :exports none
+GET {{base_url}}/api/v1/dq/datasets/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

@@ -1,0 +1,244 @@
+:PROPERTIES:
+:ID: 30419F02-F572-5155-ACF9-B2781E00F441
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the dataset_bundles endpoints over HTTP?
+#+description: Every endpoint the dataset_bundles resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:dataset_bundles:
+
+This file documents the dataset_bundles resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/dq/dataset_bundles=
+:PROPERTIES:
+:ID: BF0D5FD9-1367-5B02-8C37-D28AB22E1105
+:END:
+
+List dataset bundles. It needs a session.
+
+It forwards to =dq.v1.dataset_bundles.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/dq/dataset_bundles
+#+end_example
+
+#+name: dataset_bundles-list
+#+begin_src hurl :tangle dataset_bundles-list.hurl :exports none
+GET {{base_url}}/api/v1/dq/dataset_bundles
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/dq/dataset_bundles/__none__=
+:PROPERTIES:
+:ID: 6BC15097-2F30-5F6A-82A2-CE8CEC049B7C
+:END:
+
+Get one dataset bundle. It needs a session.
+
+It forwards to =dq.v1.dataset_bundles.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/dq/dataset_bundles/__none__
+#+end_example
+
+#+name: dataset_bundles-get
+#+begin_src hurl :tangle dataset_bundles-get.hurl :exports none
+GET {{base_url}}/api/v1/dq/dataset_bundles/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/dq/dataset_bundles/get-many=
+:PROPERTIES:
+:ID: 6E41F786-E920-532C-9FCC-853F3C8E2BE8
+:END:
+
+Get many dataset bundles. It needs a session.
+
+It forwards to =dq.v1.dataset_bundles.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/dq/dataset_bundles/get-many
+#+end_example
+
+#+name: dataset_bundles-get-many
+#+begin_src hurl :tangle dataset_bundles-get-many.hurl :exports none
+POST {{base_url}}/api/v1/dq/dataset_bundles/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/dq/dataset_bundles=
+:PROPERTIES:
+:ID: 7894BEC3-47F1-539F-8BE5-D3EC3589020A
+:END:
+
+Create one dataset bundle. It needs a session.
+
+It forwards to =dq.v1.dataset_bundles.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/dq/dataset_bundles
+#+end_example
+
+#+name: dataset_bundles-add
+#+begin_src hurl :tangle dataset_bundles-add.hurl :exports none
+POST {{base_url}}/api/v1/dq/dataset_bundles
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/dq/dataset_bundles=
+:PROPERTIES:
+:ID: CEE5711A-AF42-570D-BAF6-0A1814D0CE63
+:END:
+
+Replace one dataset bundle. It needs a session.
+
+It forwards to =dq.v1.dataset_bundles.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/dq/dataset_bundles
+#+end_example
+
+#+name: dataset_bundles-set
+#+begin_src hurl :tangle dataset_bundles-set.hurl :exports none
+PUT {{base_url}}/api/v1/dq/dataset_bundles
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/dq/dataset_bundles/put-many=
+:PROPERTIES:
+:ID: 1259D9AA-8314-5C2D-8EFD-C63DE9811703
+:END:
+
+Write many dataset bundles. It needs a session.
+
+It forwards to =dq.v1.dataset_bundles.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/dq/dataset_bundles/put-many
+#+end_example
+
+#+name: dataset_bundles-put-many
+#+begin_src hurl :tangle dataset_bundles-put-many.hurl :exports none
+POST {{base_url}}/api/v1/dq/dataset_bundles/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/dq/dataset_bundles/__none__=
+:PROPERTIES:
+:ID: A9A1F318-40A1-5FCE-8AFA-922104451638
+:END:
+
+Delete one dataset bundle. It needs a session.
+
+It forwards to =dq.v1.dataset_bundles.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/dq/dataset_bundles/__none__
+#+end_example
+
+#+name: dataset_bundles-delete
+#+begin_src hurl :tangle dataset_bundles-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/dq/dataset_bundles/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/dq/dataset_bundles/delete-many=
+:PROPERTIES:
+:ID: 7C1D16EA-D5C3-5F64-A3B0-3FC8E371D4C5
+:END:
+
+Delete many dataset bundles. It needs a session.
+
+It forwards to =dq.v1.dataset_bundles.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/dq/dataset_bundles/delete-many
+#+end_example
+
+#+name: dataset_bundles-delete-many
+#+begin_src hurl :tangle dataset_bundles-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/dq/dataset_bundles/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/dq/dataset_bundles/__none__/versions=
+:PROPERTIES:
+:ID: D8F0C0B1-6ABA-52C0-BA89-B03A07FCE73E
+:END:
+
+List the recorded versions of one dataset bundle. It needs a session.
+
+It forwards to =dq.v1.dataset_bundles_versions.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/dq/dataset_bundles/__none__/versions
+#+end_example
+
+#+name: dataset_bundles-versions
+#+begin_src hurl :tangle dataset_bundles-versions.hurl :exports none
+GET {{base_url}}/api/v1/dq/dataset_bundles/__none__/versions
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/dq/dataset_bundles/__none__/versions/0=
+:PROPERTIES:
+:ID: A9AF42B7-045E-5F5D-901D-8EA76EC4C58E
+:END:
+
+Get one recorded version of one dataset bundle. It needs a session.
+
+It forwards to =dq.v1.dataset_bundles_versions.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/dq/dataset_bundles/__none__/versions/0
+#+end_example
+
+#+name: dataset_bundles-version
+#+begin_src hurl :tangle dataset_bundles-version.hurl :exports none
+GET {{base_url}}/api/v1/dq/dataset_bundles/__none__/versions/0
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

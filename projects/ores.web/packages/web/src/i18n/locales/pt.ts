@@ -88,6 +88,7 @@ const pt: SourceCatalogue = {
             tenants: 'Inquilinos',
             operations: 'Operações',
             reporting: 'Relatórios',
+            dataquality: 'Qualidade dos dados',
             development: 'Desenvolvimento',
             api: 'API',
             parties: 'Partes',
@@ -8309,6 +8310,47 @@ const pt: SourceCatalogue = {
             aLaterCut: 'um corte posterior do mesmo tipo e âmbito',
             comparisonGap:
                 'Comparar uma execução deste corte com outra é o trabalho do percurso de auditoria, que lê os resultados das duas execuções. Este separador nomeia as execuções e abre aquela que uma pessoa escolhe.',
+        },
+    },
+    dq: {
+        area: {
+            title: 'Qualidade dos dados',
+            lead: 'Se este tenant detém os dados de referência que as suas valorizações leem, e onde cada conjunto de dados é publicado.',
+        },
+        coverage: {
+            title: 'Cobertura dos dados de referência',
+            lead: 'Os conjuntos que um tenant publica, os conjuntos de dados que cada um transporta, e a razão pela qual um conjunto de dados não pode ser publicado.',
+            bundlesTitle: 'Conjuntos por nível',
+            bundlesLead:
+                'O nível decide qual tenant detém as linhas. Os dados de plataforma e de mundo leem-se onde estão, no tenant de sistema.',
+            membersTitle: 'Conjuntos de dados do conjunto',
+            membersLead:
+                'Cada conjunto de dados, onde as suas linhas estão em preparação, e a razão pela qual não pode ser publicado.',
+            reasonsTitle: 'Porque um conjunto de dados não pode ser publicado',
+            reasonsLead:
+                'Cada razão tem um responsável, para que quem a pode corrigir saiba que é sua.',
+            noBundles:
+                'Esta base de dados ainda não contém nenhum conjunto. Uma recriação semeia-os; uma base nova parece-se com isto antes da primeira publicação.',
+            noMembers: 'Este conjunto não transporta nenhum conjunto de dados.',
+            noLevel: 'Nenhum nível indicado',
+            notServed: 'Ainda não servido',
+            dataset: 'Conjunto de dados',
+            artefactType: 'Tipo de artefacto',
+            staged: 'Em preparação',
+            published: 'Publicado',
+            readiness: 'Prontidão',
+            metadataComplete: 'Metadados completos',
+            gap: 'As contagens em preparação e publicadas ainda não são servidas: a operação de cobertura e a leitura de proveniência estão por construir. O ecrã desenha um traço no seu lugar, porque um zero diria que a execução não escreveu nada.',
+            reason: {
+                noDataset: 'Nenhuma linha de conjunto de dados',
+                noArtefactType: 'Nenhum tipo de artefacto',
+                noTargetSubject: 'Nenhum sujeito alvo',
+                noStagedRows: 'Nenhuma linha em preparação',
+            },
+            owner: {
+                dq: 'A qualidade dos dados corrige-o',
+                importer: 'O importador corrige-o',
+            },
         },
     },
     reporting: {

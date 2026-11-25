@@ -116,7 +116,12 @@ public:
             const auto folder_ids = registry_.folder_subtree(ctx, folder_id);
 
             const ores::synthetic::feed::feed_build_context bctx{
-                .nats = nats_, .auth_nats = auth_nats_, .market = market_};
+                .nats = nats_,
+                .auth_nats = auth_nats_,
+                .market = market_,
+                .node_halted = [this](const std::string& name) {
+                    return generators_.is_halted(name);
+                }};
 
             const auto outcome = start_feeds(
                 registry_,

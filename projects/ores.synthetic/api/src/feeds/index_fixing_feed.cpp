@@ -215,6 +215,20 @@ std::optional<double> index_fixing_feed::level_rate() const {
 }
 
 std::string index_fixing_feed::tick(const ores::analytics::quant::service::tick_context& context) {
+    if (input_.starved && input_.starved()) {
+        // A starved node states nothing: the curve it reads is not running, so the last
+        // value the curve left on the board is no rate of today. The day it was due is
+        // not made up when the node resumes, either: no fixing is backfilled.
+        if (!starved_logged_) {
+            ORES_LOG_SEV(index_fixing_feed_lg(), info)
+                << "The node of '" << input_.source_name
+                << "' is starved: it states no fixing until its input runs again.";
+            starved_logged_ = true;
+        }
+        return "0";
+    }
+    starved_logged_ = false;
+
     const auto level = level_rate();
     if (!level)
         return "0";

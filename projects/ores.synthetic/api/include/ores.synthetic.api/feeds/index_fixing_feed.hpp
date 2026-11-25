@@ -120,6 +120,12 @@ struct index_fixing_feed_input final {
     std::function<std::expected<std::set<std::chrono::year_month_day>, std::string>(
         const std::string& item, std::chrono::year_month_day to)>
         held;
+    /**
+     * Whether the node of this feed is starved: an operator stopped it or one of its
+     * inputs. A starved node states nothing, so a fixing it owes is not taken from a
+     * level its input no longer publishes, and no day is made up when it resumes.
+     */
+    std::function<bool()> starved;
 };
 
 /**
@@ -182,6 +188,8 @@ private:
     std::optional<std::chrono::system_clock::time_point> next_held_read_;
     /// Whether a failed read of the held days has been logged at info already.
     bool held_failure_logged_ = false;
+    /// Whether the starved state has been logged already, so a run logs it once.
+    bool starved_logged_ = false;
     std::atomic<std::uint64_t> published_{0};
     std::optional<std::size_t> handle_;
 };

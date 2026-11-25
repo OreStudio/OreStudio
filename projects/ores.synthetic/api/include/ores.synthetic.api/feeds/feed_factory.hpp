@@ -78,6 +78,12 @@ struct feed_build_context final {
     ores::analytics::quant::service::run_market& market;
     /// Where a feed says what happens to it and why; none by default.
     std::shared_ptr<node_journal> journal = {};
+    /**
+     * Whether the node of this name publishes nothing, because an operator stopped it or
+     * one of its inputs did. None means every node is assumed to run, which is what a test
+     * that drives one feed wants.
+     */
+    std::function<bool(const std::string& node_name)> node_halted = {};
 };
 
 /**
@@ -170,6 +176,8 @@ struct derived_fixing_feed_build_input final {
     adapter_target target;
     /// The rule that states its rate from the overnight curve.
     derived_fixing rule;
+    /// Whether the node is starved, so it states no fixing while its curve does not run.
+    std::function<bool()> starved;
 };
 
 /**

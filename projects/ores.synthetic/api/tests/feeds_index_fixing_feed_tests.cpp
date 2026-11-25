@@ -136,3 +136,75 @@ TEST_CASE("an_fx_fixing_is_the_pairs_spot_at_the_cut", index_fixing_feed_tags) {
     CHECK(first_history_day->vendor_time ==
           utc_at(year_month_day{sys_days{a_cut_friday} - days{1}}, 12h));
 }
+
+TEST_CASE("a_starved_node_states_no_fixing_and_makes_up_no_day", index_fixing_feed_tags) {
+    manual_run_clock clock(utc_at(a_cut_friday, 14h));
+    ores::analytics::quant::service::run_market market(clock, {}, 7);
+    ores::nats::service::client nats(ores::testing::make_nats_options());
+    nats.connect();
+    REQUIRE(nats.is_connected());
+
+    const std::string subject = "test.synthetic.fixings.starved";
+    auto ticks = nats.subscribe_buffered(subject, 64);
+    const auto spot = market.values().member_of(market_member_kind::spot, "synthetic.test.starved");
+
+    bool starved = false;
+    index_fixing_feed feed(
+        nats,
+        index_fixing_feed_input{
+            .source_name = "synthetic.test.fixing.starved",
+            .target = {.id = {.id_scheme = "oresmd",
+                              .external_id =
+                                  "oresmd://fx/EUR?type=fixing&index=fx&source=WMR1000NYC&ccy=USD",
+                              .field = "value"},
+                       .subject = subject,
+                       .provider_code = "simulated-fixings",
+                       .faults = {}},
+            .item = "oresmd://fx/EUR?type=fixing&index=fx&source=WMR1000NYC&ccy=USD",
+            .level_kind = market_member_kind::spot,
+            .level_codes = {"synthetic.test.starved"},
+            .when = {},
+            .history_days = 3,
+            .run_seed = 42,
+            .held =
+                [](const std::string&, year_month_day) {
+                    return std::expected<std::set<year_month_day>, std::string>{};
+                },
+            .starved = [&starved] { return starved; }},
+        market);
+
+    market.values().publish_spot(spot, 1.0842, utc_at(a_cut_friday, 14h));
+    CHECK(feed.tick({.elapsed_seconds = 1.0, .observed_at = utc_at(a_cut_friday, 14h)}) == "3");
+    const auto stated = feed.publish_count();
+    REQUIRE(stated == 3);
+
+    // The Monday passes while the node is starved, and states nothing of that day.
+    const year_month_day a_later_monday{sys_days{a_cut_friday} + days{3}};
+    const year_month_day a_later_tuesday{sys_days{a_cut_friday} + days{4}};
+    starved = true;
+    CHECK(feed.tick({.elapsed_seconds = 1.0, .observed_at = utc_at(a_later_monday, 9h)}) == "0");
+    CHECK(feed.publish_count() == stated);
+
+    // The node resumes on the Tuesday and fixes that day only: the Monday it was starved
+    // through is not made up.
+    starved = false;
+    CHECK(feed.tick({.elapsed_seconds = 1.0, .observed_at = utc_at(a_later_tuesday, 9h)}) == "1");
+    CHECK(feed.publish_count() == stated + 1);
+
+    for (int i = 0; i < 50 && ticks.size() < stated + 1; ++i)
+        std::this_thread::sleep_for(milliseconds(100));
+    const auto sent = ticks.snapshot();
+    REQUIRE(sent.size() == stated + 1);
+    const auto last =
+        ores::nats::default_wire_codec().decode<ores::marketdata::messaging::adapter_tick>(
+            sent.back().data);
+    REQUIRE(last);
+    CHECK(last->vendor_time == utc_at(a_later_tuesday, 12h));
+    for (const auto& message : sent) {
+        const auto tick =
+            ores::nats::default_wire_codec().decode<ores::marketdata::messaging::adapter_tick>(
+                message.data);
+        REQUIRE(tick);
+        CHECK(tick->vendor_time != utc_at(a_later_monday, 12h));
+    }
+}

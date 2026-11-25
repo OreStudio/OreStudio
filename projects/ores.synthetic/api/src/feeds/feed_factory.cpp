@@ -98,7 +98,8 @@ build_derived_fixing(const feed_build_context& ctx, const derived_fixing_feed_bu
                                 .level_codes = {},
                                 .derived = in.rule,
                                 .when = {},
-                                .run_seed = ctx.market.loop().run_seed()},
+                                .run_seed = ctx.market.loop().run_seed(),
+                                .starved = in.starved},
         ctx.market);
 }
 

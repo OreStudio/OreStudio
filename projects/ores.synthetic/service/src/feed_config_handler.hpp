@@ -233,7 +233,12 @@ public:
         start_feed_response resp;
         try {
             const ores::synthetic::feed::feed_build_context bctx{
-                .nats = nats_, .auth_nats = auth_nats_, .market = market_};
+                .nats = nats_,
+                .auth_nats = auth_nats_,
+                .market = market_,
+                .node_halted = [this](const std::string& name) {
+                    return generators_.is_halted(name);
+                }};
             auto attempt = registry_.make_feed(*target, bctx);
             if (!attempt.feed) {
                 resp.success = false;

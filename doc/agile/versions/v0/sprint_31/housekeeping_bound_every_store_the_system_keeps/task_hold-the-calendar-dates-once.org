@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/hold-the-calendar-dates-once
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -34,7 +34,7 @@ party]]).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -110,6 +110,27 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** Where the work stands
+
+Started, not finished. The dates table now admits the installation's rows beside
+the caller's (the shared-reference read policy), and nothing else has changed.
+
+The next step, and its blocker: the days move to the system tenant, and every
+reader then has to read them there. That means one read per reader, of the shape
+=`(tenant_id = caller or tenant_id = system)=`, and the generated finder reads
+only the caller's tenant. The obvious home is a custom repository method on
+=ores.refdata.calendar_date=, as the exceptions now have, but that model states
+=:client_read_only: true= and the generator emits no repository for it, so the
+custom method is silently dropped. Two ways forward, and the choice is the next
+decision: drop =:client_read_only:= and take the generated repository with a
+custom read on it, or write the read by hand beside the generated service and
+leave the model as it is.
+
+The work was carried as far as a build that compiles and a suite that passes, and
+then reverted to that state rather than left half-applied: the materialisation
+writing into the system tenant without the matching read leaves every reader
+seeing nothing, which the refdata suite showed as seventeen failures.
 
 * Test Scenarios
 

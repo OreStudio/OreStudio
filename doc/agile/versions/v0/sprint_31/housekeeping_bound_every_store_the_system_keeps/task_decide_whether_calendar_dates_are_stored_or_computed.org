@@ -86,6 +86,23 @@ The horizon decides the volume in all three: 13,515 rows a calendar is 37 years
 of days, and the default end year is 2050. A shorter horizon shrinks the copy
 but not the ratio between options.
 
+** A tenant's own holidays
+
+The shared copy is the days the platform's rules produce. It is not the only
+input a tenant has: an exception is a tenant's own row, and it overrides one day
+either way -- =is_business_day = false= adds a holiday no rule states, and
+=true= opens a day a rule closes. The materialisation already reads the caller's
+exceptions beside the system tenant's,
+=where (tenant_id = caller or tenant_id = system)=, which is what lets a firm add
+its own closure and have the dates it materialises follow.
+
+A single materialised copy leaves that untouched only if the overlay moves to the
+read: the shared copy holds the base days, and the caller's own exceptions are
+applied over them, with the same semantics the materialiser uses. That is the
+one thing the decision adds to the store's shape rather than removing from it,
+and it is why the decision is not "compute nothing": the exceptions stay, per
+tenant, and stay able to change a day.
+
 ** The decision
 
 One copy in the system tenant, kept as a derived cache and rebuilt on demand.
@@ -135,6 +152,11 @@ The decision: the dates are held once, in the system tenant, and the
 materialisation service is kept as the way that copy is rebuilt from the rules.
 Recomputation is not rejected — it is what makes the single copy disposable, and
 it bounds the store by the horizon rather than by the number of tenants.
+
+A tenant keeps its own holidays: exceptions remain rows of the tenant, and the
+read applies them over the shared days, so a firm that closes on a day no rule
+states still sees its own calendar. The exception path is per tenant and stays
+so; what the decision shares is the rule-derived baseline beneath it.
 
 The task that realises it is [[id:A898881E-B0A8-4E23-B717-DB7681AB2B18][Hold the
 calendar dates once, in the system tenant]].

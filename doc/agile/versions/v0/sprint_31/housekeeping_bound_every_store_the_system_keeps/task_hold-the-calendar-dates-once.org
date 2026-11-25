@@ -22,7 +22,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 The calendar dates exist once per installation, in the system tenant, and every
 tenant reads them there, so adding a tenant adds no copy of a calendar it shares
-with every other tenant.
+with every other tenant. A tenant keeps its own holidays: its exceptions stay its
+own rows and are applied over the shared days when it reads them.
 
 * Status
 
@@ -41,6 +42,10 @@ with every other tenant.
   copy
 - A tenant reads them through the shared-reference policy, as it reads the
   calendars and the exceptions
+- A tenant's own exceptions still change the days that tenant reads, in both
+  directions: an extra holiday closes a day the rules open, and a business-day
+  override opens a day they close
+- A tenant with no exception of its own reads the shared days unchanged
 - The recompute path stays, and rebuilding the system tenant's copy is a command
   rather than a migration
 - A test covers a tenant reading the installation's dates
@@ -61,11 +66,20 @@ the installation can do once. It moves the materialisation's target from the
 caller's tenant to the system tenant, and makes the copy readable across
 tenants.
 
-The read is the part that needs care: =ores_refdata_calendar_dates_tbl= carries
-the tenant in its key, and its reads filter on the caller's tenant. A
-shared-reference read policy admits the system tenant's rows, and the repository
-that reads the dates must ask for them the way its sibling repositories ask for a
-shared catalogue.
+The read is the part that needs care, and it has two halves. The first is the
+policy: =ores_refdata_calendar_dates_tbl= carries the tenant in its key and its
+reads filter on the caller's tenant, so a shared-reference read policy must admit
+the system tenant's rows, as the exceptions' own read already does with
+=where (tenant_id = caller or tenant_id = system)=.
+
+The second is the overlay, and it is what keeps a tenant's own holidays. The
+shared copy is the baseline the rules state; the caller's exceptions are applied
+over it at read time, with the semantics the materialiser already uses:
+=is_business_day = false= closes a day the rules open and =true= opens a day they
+close. The read is therefore a merge keyed by date rather than a plain select,
+and it is cheap: a tenant that adds no exception carries no rows to merge, and a
+tenant that does carries a handful. A test that publishes one local exception and
+reads the dates must show the day changed, in both directions.
 
 * Plan
 

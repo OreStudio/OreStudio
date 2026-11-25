@@ -61,7 +61,11 @@ days are the same bytes in every tenant, because the rules and exceptions they
 follow from are platform data published once in the world bundle, so a copy per
 tenant is one store written twice and a computation per pricing run is one
 calculation repeated. The dates are therefore held once, in the system tenant, and
-the materialisation service that derives them is what rebuilds that copy.
+the materialisation service that derives them is what rebuilds that copy. What is
+shared is the baseline the rules state. An exception is a tenant's own row and
+stays one, so a firm that closes on a day no rule states keeps that closure: the
+caller's exceptions are applied over the shared days when it reads them, with the
+same override semantics the materialisation uses.
 
 Engine distributions and per-owner copies are not aged but duplicated. The same
 package sits in the object store and again in each node's cache, often a third

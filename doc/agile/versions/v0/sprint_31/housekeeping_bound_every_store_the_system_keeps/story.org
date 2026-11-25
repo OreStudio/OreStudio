@@ -96,7 +96,10 @@ No store the system keeps grows without bound: each one has a declared policy, h
   every pricing run charges the run for work the installation can do once. One
   copy, read through the shared-reference policy, with the materialisation
   service kept as the way the copy is rebuilt, bounds the store by the horizon
-  rather than by the number of tenants.
+  rather than by the number of tenants. The copy is the baseline the platform's
+  rules state; a tenant's own holidays stay its own rows, applied over that
+  baseline when it reads, so a firm that closes on a day no rule states still
+  sees its own calendar.
 
 * Out of scope
 

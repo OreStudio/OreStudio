@@ -32,7 +32,7 @@ data beside the curve configs, and task 3's list reads it.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
-| Now          | Slice 1 landed: the config states the rule and the schema carries it. |
+| Now          | The rule is data, the feed states the rate from the curve, and the five indices are declared and seeded. The live run remains. |
 | Waiting on   | Nothing.                               |
 | Next         | Slice 1: the rule entity and its seeds. |
 | Last touched | 2026-11-24                               |
@@ -114,6 +114,10 @@ task and name that file in the Command column.
 | Schema columns the rule adds | 3: rate_source, derived_spread_basis_points, derived_spread_source | =synthetic_ir_curve_generation_configs_create.sql= after a generate | this branch |
 | Files the generate rewrote | 24 | =git status --short= after =compass generate= | this branch |
 | Hand-written web schema the change broke | 1: the BFF write schema in =synthetic.ts= | =compass build=, TS1360 on the write type | this branch |
+| Hand-written payload list the change broke | 1: =IR_WRITE_FIELDS= in =irFeeds.tsx= | reading the screen's save path | this branch |
+| Derived configs seeded | 5: COP IBR 3M, JPY EYTIBOR 3M, KRW GENERIC 3M, PLN WIBOR 6M, USD SOFR 1M | =select ... where rate_source <> 'process'= on a recreated database | this branch |
+| Families that admit the terms | 5, each by its own flags | the same query joined to the family catalogue | this branch |
+| Databases the publish function broke | every dataset publish, on the new not-null column | =compass db recreate -y -k=, "null value in column rate_source" | this branch |
 | Term indices with no fixings whose currency has an overnight curve | 5: USD SOFR 1M, COP IBR 3M, JPY EYTIBOR 3M, KRW GENERIC 3M, PLN WIBOR 6M | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
 
 * Notes

@@ -90,6 +90,37 @@ Five indices need it, over three existing overnight configs:
    seeded against the currency's overnight config, with the spread of the
    two spread indices stated and sourced.
 
+*The derived index is a node of the feed graph.* The signed-off design gives
+the graph four node kinds — source, upstream, latent, view — and makes a node
+the thing that runs, stops, starves and fails. A derived index has an upstream
+(the currency's overnight curve node), so it is a *view*: the same kind the
+vendor views of a latent surface take, one level down. It is not an `upstream`
+node, which is the kind the graph gives every feed without one.
+
+That decision settles four things the current build gets wrong:
+
+1. *It must start and stop like any node.* Its config is already a candidate of
+   the curve kind, so it already appears in the graph — as an `upstream` node
+   that cannot start, because its build refuses it. It builds a fixing generator
+   instead, and the graph states it as a view with a =curve= edge to its driver.
+2. *It publishes under its owner.* The value we compute from data we hold is
+   published by =derived=, the provider that holds 2,275 computed instruments
+   already and that every party is subscribed to. The simulator's fixing
+   publisher (=simulated-fixings=) keeps its documented role, stating the
+   indices a vendor would otherwise have published; nobody subscribes to it,
+   which is exactly why a derived index must not be stated there.
+3. *It needs a notation of its own.* =provider_notation= has no entry for
+   =derived=, so nothing can mint ids for it. A =derived_notation= states the
+   fixing address the way =simulated_fixing_notation= does, under the =derived=
+   provider.
+4. *Its instruments and mappings belong to =derived=*, not to
+   =simulated-fixings=, so that the party's existing =derived= subscription
+   entitles it.
+
+One constraint holds throughout: the upstream is the *run's own* curve node,
+never a party's published curve, because reading a party's set back would
+invert the dependency the approach page forbids.
+
 Deferred to a follow-up task if it costs more than a slice: publishing a
 *projection curve* for a derived index. The acceptance of this task asks
 for the fixing addresses to answer and for the compounded equality, and

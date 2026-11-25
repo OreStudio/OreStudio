@@ -176,13 +176,13 @@ publication_result apply_publication(const ores::database::context& ctx,
         ores::database::repository::unit_of_work uow(ctx);
         const auto& tx = uow.ctx();
         facts = kind_act.publish(tx, facts);
+        // The notice is a row written in the transaction that publishes the set,
+        // so a publish that rolled back never told its readers of a move that did
+        // not happen, and one commit carries both. Telling is still never the
+        // act: a notice the announcer cannot raise is logged there.
+        kind_act.announce_published(tx, facts);
         uow.commit();
     }
-
-    // One notice, at the apply, once: the record is written once, so the notice
-    // is raised once. Telling never unmoves the set, so a failure is logged in
-    // the announcer and the record stands.
-    kind_act.announce_published(ctx, facts);
 
     out.status = publication_status::published;
     out.facts = std::move(facts);

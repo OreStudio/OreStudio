@@ -59,7 +59,9 @@ namespace ores::marketdata::domain {
  *
  * published_at and published_by are the publication record, empty while the
  * request waits and written in one act when the approved set is published.
- * request_id is the natural key, so a request authorises one publish.
+ * request_id is the natural key, so a request authorises one publish. The apply
+ * ends every live set of the pair in the same act, so the pair has one set in use
+ * and the sets it replaced say which one took their place.
  */
 struct fx_forward_publish final {
     /**
@@ -147,6 +149,31 @@ struct fx_forward_publish final {
      * @brief When the set was published, or null while the request waits.
      */
     std::optional<std::chrono::system_clock::time_point> published_at;
+
+    /**
+     * @brief When a later set took this one's place, or null while this set is in use.
+     *
+     * A supersession is a publish whose subject is the successor, so the instant is the successor's
+     * published instant and no person signs it: the successor's own record names the publisher.
+     */
+    std::optional<std::chrono::system_clock::time_point> superseded_at;
+
+    /**
+     * @brief The publish request whose apply replaced this set, or null.
+     *
+     * A soft reference, as the curve's is: the successor is published under its own request and
+     * this row links to it so a reader follows one live set and one superseded set and never two
+     * live sets.
+     */
+    std::optional<boost::uuids::uuid> superseded_by_request_id;
+
+    /**
+     * @brief The as-of the successor was built at, or null.
+     *
+     * Carried beside the successor's request so the history names the set that replaced this one
+     * without a second read.
+     */
+    std::optional<std::chrono::system_clock::time_point> superseded_as_of;
 
     /**
      * @brief Username of the person who last modified this FX forward publish.

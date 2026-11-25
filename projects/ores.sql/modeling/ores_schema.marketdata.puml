@@ -424,6 +424,9 @@ package "marketdata" #E3F2FD {
         * method_code : text
         * published_by : text
           published_at : timestamptz
+          superseded_at : timestamptz
+          superseded_by_request_id : uuid <<FK>>
+          superseded_as_of : timestamptz
         * modified_by : text
         * performed_by : text
         * acting_agent : text
@@ -457,7 +460,9 @@ package "marketdata" #E3F2FD {
     set as withdrawn rather than stopping it.
     published_at and published_by are the publication record, empty while the
     request waits and written in one act when the approved set is published.
-    request_id is the natural key, so a request authorises one publish.
+    request_id is the natural key, so a request authorises one publish. The apply
+    ends every live set of the pair in the same act, so the pair has one set in use
+    and the sets it replaced say which one took their place.
     end note
 
     entity ores_marketdata_fx_vol_surface_calibrations_tbl <<temporal>> #C6F0D8 {

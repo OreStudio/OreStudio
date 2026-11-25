@@ -61,6 +61,9 @@ domain::fx_forward_publish fx_forward_publish_mapper::map(const fx_forward_publi
     r.method_code = v.method_code;
     r.published_by = v.published_by;
     r.published_at = v.published_at;
+    r.superseded_at = v.superseded_at;
+    r.superseded_by_request_id = v.superseded_by_request_id;
+    r.superseded_as_of = v.superseded_as_of;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -91,6 +94,9 @@ fx_forward_publish_entity fx_forward_publish_mapper::map(const domain::fx_forwar
     r.method_code = v.method_code;
     r.published_by = v.published_by;
     r.published_at = v.published_at;
+    r.superseded_at = v.superseded_at;
+    r.superseded_by_request_id = v.superseded_by_request_id;
+    r.superseded_as_of = v.superseded_as_of;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

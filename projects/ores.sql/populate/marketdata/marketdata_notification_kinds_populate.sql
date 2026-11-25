@@ -21,15 +21,14 @@
 /**
  * Market Data Notification Kinds Population Script
  *
- * The three notices the market data service raises about a published set: a
- * curve is published, a curve is withdrawn, and a surface is published. A
- * component that raises its own kinds seeds them in its own populate script, so
- * these live here and not with the inbox's own four.
+ * The four notices the market data service raises about a published set: a
+ * curve is published, a curve is withdrawn, a surface is published, and a
+ * forward set is published. A component that raises its own kinds seeds them in
+ * its own populate script, so these live here and not with the inbox's own four.
  *
- * The kinds follow the lifecycle they announce. The FX forward set supersedes
- * no set and tells nobody, and the surface can be published but not withdrawn,
- * so neither seeds a notice for an act it does not have. A kind gains its
- * notice when it gains the act.
+ * The kinds follow the lifecycle they announce. The surface can be published
+ * but not withdrawn, so it seeds no withdrawal notice: a kind gains its notice
+ * when it gains the act.
  *
  * A publish tells the people who read the set that a new version is live. A
  * withdrawal tells them it left use, and carries the reason in words, because a
@@ -65,6 +64,11 @@ insert into ores_inbox_notification_kinds_tbl (
     (ores_utility_system_tenant_id_fn(), 'marketdata.surface_published', 0,
      'Surface published', 'A new version of a volatility surface became the one the desk prices from',
      'notification.marketdata.surface_published', true, 52,
+     current_user, current_user, 'system.initial_load',
+     'Initial population of the market data notification kinds'),
+    (ores_utility_system_tenant_id_fn(), 'marketdata.fx_forward_published', 0,
+     'Forward set published', 'A new version of an FX forward set became the one the desk prices from',
+     'notification.marketdata.fx_forward_published', true, 53,
      current_user, current_user, 'system.initial_load',
      'Initial population of the market data notification kinds')
 on conflict (tenant_id, code)

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 8B1C5367-304E-4723-89B9-4FA6C16AAFDF
+:END:
+#+title: No operation answers the product types a book may carry
+#+description: The sets are stored and the rule is enforced, but nothing resolves a party's set or a book's set over the wire, so a screen cannot draw the effective set without reading both junctions and applying the flags itself.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:web:approvals:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

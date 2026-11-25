@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: 57F2778B-57BA-485D-90C5-5511C6346BF0
+:END:
+#+title: Task: Extract and judge the approval matrix journeys
+#+description: The person's journeys over the party's set and the book's set, each step judged against the record screen standard before any prototype exists.
+#+type: task
+#+level: s1
+#+filetags: :manage-the-product-approval-matrix:sprint_31:v0:
+#+owner: marco
+#+branch: feature/manage-the-product-approval-matrix
+#+pr: 5136
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F77263EF-6F2D-4129-BA60-CA6C2F2D6153][Manage the product approval matrix]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The journeys say how a risk or reference data administrator reads and changes
+the product approval matrix, at the party and at the book, and every step of
+them is judged against the record screen standard: what the standard already
+draws, what a kind's own action draws, what no rule draws yet, and which server
+operation is missing. The judgement is what the prototype may build on, so it
+comes first and it stops for the owner's sign off.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F77263EF-6F2D-4129-BA60-CA6C2F2D6153][Manage the product approval matrix]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- The journeys exist under the parties and books groups, or under a group of their own, and state the goal of each before the steps.
+- Every step carries a judgement: standard record screen, a kind's own action, a view no rule draws yet, a missing server operation, or a workflow.
+- Each gap in the journey links to its capture, and the =* Prototype= section names the placements the prototype must decide.
+- The owner signs the journeys off, and their decisions are recorded on the journeys, this task and the story.
+
+* Plan
+
+The journey starts from the person's goal and not from the entity, so it is one
+journey over two record pages rather than a screen per table: the party's set
+is the maximum, the book's narrows it, and a person approves both in one
+sitting. The steps were walked against the record screen standard, and each one
+is either a rule the standard already carries or a placement the prototype must
+settle. Two of the placements turned out to be server gaps rather than design
+ones, and each is a capture.
+
+The group is =parties= and not a new one, because the party owns the approval and
+the person reaches the book from it (J06). The book's side links back through
+the books group's journey.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The journey, judged step by step | 1 document, 9 steps, 8 judged rows, 2 wireframes | =compass add user_journey=, =plantuml= | the commit that adds it |
+| Gaps found and filed | 2 captures | =compass add capture= | the commit that adds it |
+
+* Notes
+
+- The journey is [[id:AEA0BD34-1114-41C2-874D-84501B2C40CE][Approve what a party and its books may trade]], under
+  =doc/knowledge/journeys/parties/=, and the group page lists it with the party
+  record journeys it belongs beside.
+- The judgement table sits under /* Screens and wireframes* on the journey, one
+  row per step, with the rule identifier or the fact that no rule draws it.
+- Two gaps are captures and not design decisions: no operation answers the set a
+  book may carry, and a refused write does not carry the party's set in its
+  words.
+- Two wireframes were drawn and rendered, and both were read back: the party's
+  tab and the book's panel.
+- The journey describes the sets as links and not parts, because a product type
+  exists on its own and a link's panel carries no history of its own
+  (RS-RELATED-03).
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5136][#5136]] | [agile] Scaffold the approval matrix story and sign off its journeys |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The journey exists, is judged step by step, and the owner signed it off on
+2026-11-25.
+
+What exists:
+
+- [[id:AEA0BD34-1114-41C2-874D-84501B2C40CE][Approve what a party and its books may trade]], listing the nine steps, the
+  judgement table with a rule identifier or the gap for each step, and the four
+  placements the prototype must settle.
+- Two wireframes, rendered and read back: the party's /Market approvals/ tab and
+  the book's /Product types/ panel.
+- Two captures for the gaps that are the server's: no operation answers the set
+  a book may carry, and a refused write does not carry the party's set.
+- The group page lists the journey beside the two party record journeys, and
+  states that this one belongs to the risk administrator.
+
+What the judgement established: the tab, the select, the links panel, the save
+and the refusal under a field are rules the record screen standard already
+draws; the two sets compared, the words for a party that states nothing, and
+the placement of a refusal are not, and they are the prototype's work.
+
+What it does not do: no prototype and no code. The story's remaining three tasks
+carry those.

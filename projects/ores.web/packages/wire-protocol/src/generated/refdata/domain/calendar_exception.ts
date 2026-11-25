@@ -38,6 +38,7 @@ export interface CalendarException {
     exception_date: string;
     is_business_day: boolean;
     description: string | null;
+    party_id: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

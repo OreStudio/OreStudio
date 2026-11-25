@@ -38,7 +38,15 @@ namespace ores::refdata::domain {
  * @brief A one-off holiday/business-day override for a single calendar day.
  *
  * One row per one-off override for a single
- * [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]] day. Mirrors
+ * [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]] day, held by the party it
+ * belongs to, or by the installation when it belongs to everyone.
+ *
+ * A holiday is a party's fact. A party in Hong Kong closes on days a party in the
+ * United Kingdom opens, and both sit in one installation, so the row states the
+ * party it belongs to: party_id names the party, and a row that names none is the
+ * installation's. Two levels and no third: an exception is the installation's or a
+ * party's, never a tenant's, because a tenant's closure would close the day for
+ * every party it holds. Mirrors
  * ores::analytics::quant::domain::calendar_exception plus the usual
  * refdata plumbing. Applies uniformly to *any* calendar -- transcribed
  * or user-authored, based or base-less: a based calendar's full override
@@ -101,6 +109,12 @@ struct calendar_exception final {
      * Purely informational; never interpreted by the instantiation engine.
      */
     std::optional<std::string> description;
+
+    /**
+     * @brief The party whose calendar this exception belongs to. NULL for the installation's own
+     * exceptions, which every party reads.
+     */
+    std::optional<boost::uuids::uuid> party_id;
 
     /**
      * @brief Username of the person who last modified this calendar exception.

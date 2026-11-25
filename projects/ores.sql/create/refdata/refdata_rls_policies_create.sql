@@ -684,3 +684,24 @@ on ores_refdata_party_categories_tbl
 for all
 using (tenant_id = ores_iam_current_tenant_id_fn())
 with check (tenant_id = ores_iam_current_tenant_id_fn());
+
+-- -----------------------------------------------------------------------------
+-- Calendar Exceptions: party isolation
+-- -----------------------------------------------------------------------------
+-- An exception is the installation's or a party's, and never a tenant's: a
+-- tenant holds several parties and each closes its own days. The installation's
+-- rows carry no party and every session reads them; a party's rows are read by a
+-- session that can see that party. The policy is restrictive, so it narrows the
+-- tenant policies of the generated table rather than widening them.
+drop policy if exists calendar_exceptions_party_isolation_policy
+    on ores_refdata_calendar_exceptions_tbl;
+
+-- compass:except(rls_widenings/system_tenant_widening) expires=2027-05-18 approver=marco reason=the installation's administrator supports every party's holidays, and the tenant policies above still bind the session to its own tenant
+create policy calendar_exceptions_party_isolation_policy
+on ores_refdata_calendar_exceptions_tbl
+as restrictive
+for select using (
+    party_id is null
+    or party_id = any(ores_iam_visible_party_ids_fn())
+    or ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
+);

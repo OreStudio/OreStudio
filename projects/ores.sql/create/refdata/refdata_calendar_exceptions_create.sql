@@ -25,7 +25,15 @@
  * Calendar Exception Table
  *
  * One row per one-off override for a single
- * [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]] day. Mirrors
+ * [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]] day, held by the party it
+ * belongs to, or by the installation when it belongs to everyone.
+ *
+ * A holiday is a party's fact. A party in Hong Kong closes on days a party in the
+ * United Kingdom opens, and both sit in one installation, so the row states the
+ * party it belongs to: party_id names the party, and a row that names none is the
+ * installation's. Two levels and no third: an exception is the installation's or a
+ * party's, never a tenant's, because a tenant's closure would close the day for
+ * every party it holds. Mirrors
  * ores::analytics::quant::domain::calendar_exception plus the usual
  * refdata plumbing. Applies uniformly to *any* calendar -- transcribed
  * or user-authored, based or base-less: a based calendar's full override
@@ -48,6 +56,7 @@ create table if not exists "ores_refdata_calendar_exceptions_tbl" (
     "exception_date" date not null,
     "is_business_day" boolean not null default false,
     "description" text null,
+    "party_id" uuid null,
     "modified_by" text not null,
     "performed_by" text not null,
     "acting_agent" text not null default '',

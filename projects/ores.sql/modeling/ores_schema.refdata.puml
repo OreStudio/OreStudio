@@ -878,6 +878,7 @@ package "refdata" #FFF3E0 {
         * exception_date : date
         * is_business_day : boolean
           description : text
+          party_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * acting_agent : text
@@ -893,7 +894,14 @@ package "refdata" #FFF3E0 {
     To modify, update the template and regenerate.
     Calendar Exception Table
     One row per one-off override for a single
-    [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]] day. Mirrors
+    [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]] day, held by the party it
+    belongs to, or by the installation when it belongs to everyone.
+    A holiday is a party's fact. A party in Hong Kong closes on days a party in the
+    United Kingdom opens, and both sit in one installation, so the row states the
+    party it belongs to: party_id names the party, and a row that names none is the
+    installation's. Two levels and no third: an exception is the installation's or a
+    party's, never a tenant's, because a tenant's closure would close the day for
+    every party it holds. Mirrors
     ores::analytics::quant::domain::calendar_exception plus the usual
     refdata plumbing. Applies uniformly to *any* calendar -- transcribed
     or user-authored, based or base-less: a based calendar's full override

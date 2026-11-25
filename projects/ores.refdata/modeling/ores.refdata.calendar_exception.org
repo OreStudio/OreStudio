@@ -20,7 +20,15 @@
 #+updated: 2026-07-24
 
 One row per one-off override for a single
-[[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]] day. Mirrors
+[[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]] day, held by the party it
+belongs to, or by the installation when it belongs to everyone.
+
+A holiday is a party's fact. A party in Hong Kong closes on days a party in the
+United Kingdom opens, and both sit in one installation, so the row states the
+party it belongs to: =party_id= names the party, and a row that names none is the
+installation's. Two levels and no third: an exception is the installation's or a
+party's, never a tenant's, because a tenant's closure would close the day for
+every party it holds. Mirrors
 =ores::analytics::quant::domain::calendar_exception= plus the usual
 refdata plumbing. Applies uniformly to *any* calendar -- transcribed
 or user-authored, based or base-less: a based calendar's full override
@@ -128,6 +136,20 @@ Purely informational; never interpreted by the instantiation engine.
 std::string("Test exception")
 #+end_src
 
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The party whose calendar this exception belongs to. NULL for the installation's
+own exceptions, which every party reads.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags
@@ -164,6 +186,59 @@ std::string("Test exception")
 :PROPERTIES:
 :subcomponent: api
 :END:
+
+** Custom repository methods
+
+The instantiation applies the installation's exceptions beside the party's, so it
+needs a read that names the party. The generated finder reads by the caller's
+tenant, which is the wrong axis for a holiday: a tenant holds many parties and
+each closes its own days.
+
+*** Repository declarations
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**
+     * @brief Reads the exceptions that apply to one party.
+     *
+     * A party's dates follow the installation's exceptions and that party's own,
+     * and no other party's. A caller that names no party reads the
+     * installation's rows, which is what the installation's own baseline needs.
+     */
+    std::vector<domain::calendar_exception> read_for_party(
+        const context& ctx,
+        const std::string& calendar_code,
+        std::optional<boost::uuids::uuid> party_id);
+#+end_src
+
+*** Repository implementations
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::calendar_exception> calendar_exception_repository::read_for_party(
+    const context& ctx,
+    const std::string& calendar_code,
+    std::optional<boost::uuids::uuid> party_id) {
+    ORES_LOG_SEV(lg(), debug) << "Reading calendar exceptions that apply to a party.";
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+
+    auto applies = query_builder::is_null("party_id");
+    if (party_id)
+        applies = applies || query_builder::equals("party_id", query_builder::filter_value(*party_id));
+
+    const auto query = query_builder::read<std::vector<calendar_exception_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "calendar_code"_c == calendar_code &&
+                                            "valid_to"_c == max && applies);
+
+    return query_builder::execute_read_query<calendar_exception_entity, domain::calendar_exception>(
+        ctx,
+        query,
+        [](const auto& entities) { return calendar_exception_mapper::map(entities); },
+        lg(),
+        "Reading calendar exceptions that apply to a party.");
+}
+#+end_src
 
 ** Repository
 :PROPERTIES:

@@ -38,12 +38,13 @@ domain::job_definition
 generate_synthetic_job_definition(utility::generation::generation_context& ctx) {
     [[maybe_unused]] static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
-    const auto tid_str = ctx.env().get_or(std::string(generation_keys::tenant_id), std::string(""));
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::job_definition r;
     r.version = 0;
-    if (!tid_str.empty())
-        r.tenant_id = utility::uuid::tenant_id::from_string(tid_str).value();
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.job_name = std::string(faker::word::noun()) + "-" + std::to_string(idx);

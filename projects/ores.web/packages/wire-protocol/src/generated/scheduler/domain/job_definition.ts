@@ -32,7 +32,7 @@
  */
 export interface JobDefinition {
     version: number;
-    tenant_id: string | null;
+    tenant_id: string;
     id: string;
     job_name: string;
     party_id: string | null;

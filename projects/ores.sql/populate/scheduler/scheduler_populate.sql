@@ -18,14 +18,14 @@
  *
  */
 
--- Seed the MQ stats scrape job (system scope, runs every minute)
+-- Seed the MQ stats scrape job (the system tenant's, runs every minute)
 insert into ores_scheduler_job_definitions_tbl (
     id, tenant_id, party_id, job_name, description, command,
     schedule_expression, action_type, action_payload, is_active,
     modified_by, performed_by, change_reason_code, change_commentary,
     valid_from, valid_to
 ) values (
-    gen_random_uuid(), NULL, NULL,
+    gen_random_uuid(), ores_utility_system_tenant_id_fn(), NULL,
     'ores.mq.metrics_scrape',
     'Scrape MQ queue stats every minute',
     'SELECT ores_mq_queue_stats_scrape_fn()',
@@ -48,7 +48,7 @@ insert into ores_scheduler_job_definitions_tbl (
     modified_by, performed_by, change_reason_code, change_commentary,
     valid_from, valid_to
 ) values (
-    gen_random_uuid(), NULL, NULL,
+    gen_random_uuid(), ores_utility_system_tenant_id_fn(), NULL,
     'ores.marketdata.curve_republish',
     'Bootstrap and publish every system IR curve every 15 minutes',
     '',
@@ -71,7 +71,7 @@ insert into ores_scheduler_job_definitions_tbl (
     modified_by, performed_by, change_reason_code, change_commentary,
     valid_from, valid_to
 ) values (
-    gen_random_uuid(), NULL, NULL,
+    gen_random_uuid(), ores_utility_system_tenant_id_fn(), NULL,
     'ores.scheduler.housekeeping_sweep',
     'Apply the enabled retention policies once a day',
     'DO $$ begin perform ores_scheduler_apply_retention_policies_fn(); end $$;',

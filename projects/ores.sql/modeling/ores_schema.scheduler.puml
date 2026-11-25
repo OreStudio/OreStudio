@@ -47,9 +47,9 @@ end note
 '
 package "scheduler" #F1F8E9 {
     entity ores_scheduler_job_definitions_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
-          tenant_id : uuid <<FK>>
         * version : integer
         * job_name : text
           party_id : uuid <<FK>>
@@ -82,12 +82,13 @@ package "scheduler" #F1F8E9 {
     carries version, the four audit columns and the valid_from/valid_to pair
     with the GIST exclusion and the delete rule, so the model takes the ordinary
     audited shape and needs no shape flag.
-    tenant_id is nullable. A job may belong to no tenant, because the scheduler
-    fires system jobs from a NULL-tenant row: the MQ statistics scrape and the
-    compute stale-result reaper are both such rows. The model binds
-    uuid-identified-lookup for its UUID surrogate key, its tenant scope and its
-    standard presentation tier, and states nullable_tenant_id itself, which that
-    profile leaves to the model.
+    tenant_id is the tenant the job belongs to, and the platform's own jobs belong
+    to the system tenant. A job is never tenantless: the MQ statistics scrape, the
+    compute stale-result reaper and the housekeeping sweep are the system tenant's
+    rows, which is what makes them visible to it through the same read a tenant uses
+    for its own, and invisible to a tenant that has no business seeing the
+    installation's schedule. The model binds uuid-identified-lookup for its UUID
+    surrogate key, its tenant scope and its standard presentation tier.
     job_name is the natural key and is unique within its tenant; id is the
     surrogate. Uniqueness is what the component's upsert path relies on: a job that
     arrives under an existing name updates that row in place instead of adding a

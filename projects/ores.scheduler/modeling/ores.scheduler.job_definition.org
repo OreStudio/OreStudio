@@ -25,12 +25,13 @@ carries =version=, the four audit columns and the =valid_from=/=valid_to= pair
 with the GIST exclusion and the delete rule, so the model takes the ordinary
 audited shape and needs no shape flag.
 
-=tenant_id= is nullable. A job may belong to no tenant, because the scheduler
-fires system jobs from a NULL-tenant row: the MQ statistics scrape and the
-compute stale-result reaper are both such rows. The model binds
-=uuid-identified-lookup= for its UUID surrogate key, its tenant scope and its
-standard presentation tier, and states =nullable_tenant_id= itself, which that
-profile leaves to the model.
+=tenant_id= is the tenant the job belongs to, and the platform's own jobs belong
+to the system tenant. A job is never tenantless: the MQ statistics scrape, the
+compute stale-result reaper and the housekeeping sweep are the system tenant's
+rows, which is what makes them visible to it through the same read a tenant uses
+for its own, and invisible to a tenant that has no business seeing the
+installation's schedule. The model binds =uuid-identified-lookup= for its UUID
+surrogate key, its tenant scope and its standard presentation tier.
 
 =job_name= is the natural key and is unique within its tenant; =id= is the
 surrogate. Uniqueness is what the component's upsert path relies on: a job that
@@ -62,8 +63,9 @@ in =ores.scheduler.scheduling_operations=.
 
 Unique name for the job within its tenant. The scheduler seed writes
 =ores.mq.metrics_scrape= and the compute seed writes
-=compute.v1.reap.stale_results=; both are system jobs, so both carry a NULL
-tenant and neither collides with a tenant's own job of the same name.
+=compute.v1.reap.stale_results=; both are the system tenant's jobs, so they sit
+beside that tenant's own rows and neither collides with a tenant's job of the
+same name.
 
 ** id
 :PROPERTIES:
@@ -82,8 +84,8 @@ UUID primary key for the job definition.
 :nullable: true
 :END:
 
-Optional party scope for this job. NULL for a tenant-scoped job and for a
-system job.
+Optional party scope for this job. NULL when the job answers for the whole
+tenant rather than for one party of it.
 
 ** description
 :PROPERTIES:
@@ -155,7 +157,6 @@ Whether the job fires. A paused job keeps its row and its history.
 ** Flags
 :PROPERTIES:
 :tablename:          ores_scheduler_job_definitions_tbl
-:nullable_tenant_id: true
 :END:
 
 * Physical space
@@ -252,43 +253,6 @@ job_definition_repository::read_all_active(const context& ctx) {
 }
 #+end_src
 
-*** Repository declarations
-:PROPERTIES:
-:END:
-
-#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-    /**
-     * @brief Reads every job definition, across all tenants, current only.
-     *
-     * The operational screens answer "what is the scheduler running", and the
-     * scheduler runs the platform's own jobs from NULL-tenant rows as well as
-     * tenants' jobs. The generated list is tenant scoped, so a system job is
-     * invisible through it by design; this read is what the screens use
-     * instead.
-     */
-    std::vector<domain::job_definition> read_every_latest(const context& ctx);
-#+end_src
-
-*** Repository implementations
-:PROPERTIES:
-:END:
-
-#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
-std::vector<domain::job_definition>
-job_definition_repository::read_every_latest(const context& ctx) {
-    ORES_LOG_SEV(lg(), debug) << "Reading every current job definition.";
-    static constexpr auto max = db_timestamp::max();
-    const auto query = query_builder::read<std::vector<job_definition_entity>> |
-                       query_builder::where("valid_to"_c == max);
-
-    return query_builder::execute_read_query<job_definition_entity, domain::job_definition>(
-        ctx,
-        query,
-        [](const auto& entities) { return job_definition_mapper::map(entities); },
-        lg(),
-        "Reading every current job definition.");
-}
-#+end_src
 
 * See also
 

@@ -49,12 +49,13 @@ namespace ores::scheduler::domain {
  * with the GIST exclusion and the delete rule, so the model takes the ordinary
  * audited shape and needs no shape flag.
  *
- * tenant_id is nullable. A job may belong to no tenant, because the scheduler
- * fires system jobs from a NULL-tenant row: the MQ statistics scrape and the
- * compute stale-result reaper are both such rows. The model binds
- * uuid-identified-lookup for its UUID surrogate key, its tenant scope and its
- * standard presentation tier, and states nullable_tenant_id itself, which that
- * profile leaves to the model.
+ * tenant_id is the tenant the job belongs to, and the platform's own jobs belong
+ * to the system tenant. A job is never tenantless: the MQ statistics scrape, the
+ * compute stale-result reaper and the housekeeping sweep are the system tenant's
+ * rows, which is what makes them visible to it through the same read a tenant uses
+ * for its own, and invisible to a tenant that has no business seeing the
+ * installation's schedule. The model binds uuid-identified-lookup for its UUID
+ * surrogate key, its tenant scope and its standard presentation tier.
  *
  * job_name is the natural key and is unique within its tenant; id is the
  * surrogate. Uniqueness is what the component's upsert path relies on: a job that
@@ -74,7 +75,7 @@ struct job_definition final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    std::optional<utility::uuid::tenant_id> tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief UUID primary key for the job definition.
@@ -84,13 +85,14 @@ struct job_definition final {
     /**
      * @brief Unique name for the job within its tenant. The scheduler seed writes
      * ores.mq.metrics_scrape and the compute seed writes compute.v1.reap.stale_results; both are
-     * system jobs, so both carry a NULL tenant and neither collides with a tenant's own job of the
-     * same name.
+     * the system tenant's jobs, so they sit beside that tenant's own rows and neither collides with
+     * a tenant's job of the same name.
      */
     std::string job_name;
 
     /**
-     * @brief Optional party scope for this job. NULL for a tenant-scoped job and for a system job.
+     * @brief Optional party scope for this job. NULL when the job answers for the whole tenant
+     * rather than for one party of it.
      */
     std::optional<boost::uuids::uuid> party_id;
 

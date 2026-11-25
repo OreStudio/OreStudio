@@ -35,12 +35,13 @@
  * with the GIST exclusion and the delete rule, so the model takes the ordinary
  * audited shape and needs no shape flag.
  *
- * tenant_id is nullable. A job may belong to no tenant, because the scheduler
- * fires system jobs from a NULL-tenant row: the MQ statistics scrape and the
- * compute stale-result reaper are both such rows. The model binds
- * uuid-identified-lookup for its UUID surrogate key, its tenant scope and its
- * standard presentation tier, and states nullable_tenant_id itself, which that
- * profile leaves to the model.
+ * tenant_id is the tenant the job belongs to, and the platform's own jobs belong
+ * to the system tenant. A job is never tenantless: the MQ statistics scrape, the
+ * compute stale-result reaper and the housekeeping sweep are the system tenant's
+ * rows, which is what makes them visible to it through the same read a tenant uses
+ * for its own, and invisible to a tenant that has no business seeing the
+ * installation's schedule. The model binds uuid-identified-lookup for its UUID
+ * surrogate key, its tenant scope and its standard presentation tier.
  *
  * job_name is the natural key and is unique within its tenant; id is the
  * surrogate. Uniqueness is what the component's upsert path relies on: a job that
@@ -54,7 +55,7 @@
 
 create table if not exists "ores_scheduler_job_definitions_tbl" (
     "id" uuid not null,
-    "tenant_id" uuid,
+    "tenant_id" uuid not null,
     "version" integer not null,
     "job_name" text not null,
     "party_id" uuid null,
@@ -71,8 +72,9 @@ create table if not exists "ores_scheduler_job_definitions_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (id, valid_from, valid_to),
+    primary key (tenant_id, id, valid_from, valid_to),
     exclude using gist (
+        tenant_id WITH =,
         id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
@@ -82,16 +84,16 @@ create table if not exists "ores_scheduler_job_definitions_tbl" (
 
 -- Unique job_name for active records
 create unique index if not exists job_definitions_job_name_uniq_idx
-on "ores_scheduler_job_definitions_tbl" (tenant_id, job_name) nulls not distinct
+on "ores_scheduler_job_definitions_tbl" (tenant_id, job_name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists job_definitions_version_uniq_idx
-on "ores_scheduler_job_definitions_tbl" (id, version)
+on "ores_scheduler_job_definitions_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists job_definitions_id_uniq_idx
-on "ores_scheduler_job_definitions_tbl" (id)
+on "ores_scheduler_job_definitions_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists job_definitions_tenant_idx
@@ -103,10 +105,8 @@ returns trigger as $$
 declare
     current_version integer;
 begin
-    -- Validate tenant_id only when set (system records have NULL tenant_id)
-    if NEW.tenant_id is not null then
-        NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
-    end if;
+    -- Validate tenant_id
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
@@ -119,7 +119,7 @@ begin
     -- Version management
     select version into current_version
     from "ores_scheduler_job_definitions_tbl"
-    where (tenant_id = NEW.tenant_id or (tenant_id is null and NEW.tenant_id is null))
+    where tenant_id = NEW.tenant_id
       and id = NEW.id
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
@@ -152,7 +152,7 @@ begin
         -- would collide with itself. clock_timestamp() always advances.
         update "ores_scheduler_job_definitions_tbl"
         set valid_to = clock_timestamp()
-        where (tenant_id = NEW.tenant_id or (tenant_id is null and NEW.tenant_id is null))
+        where tenant_id = NEW.tenant_id
           and id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
@@ -177,7 +177,7 @@ create or replace rule ores_scheduler_job_definitions_delete_rule as
 on delete to "ores_scheduler_job_definitions_tbl" do instead (
     update "ores_scheduler_job_definitions_tbl"
     set valid_to = clock_timestamp()
-    where (tenant_id = OLD.tenant_id or (tenant_id is null and OLD.tenant_id is null))
+    where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
 );

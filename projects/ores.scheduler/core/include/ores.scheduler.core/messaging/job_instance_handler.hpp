@@ -87,7 +87,7 @@ public:
         try {
             // Load all job definitions to build a name look-up map.
             repository::job_definition_repository def_repo;
-            const auto defs = def_repo.read_every_latest(ctx);
+            const auto defs = def_repo.read_latest(ctx);
             std::unordered_map<std::string, std::string> id_to_name;
             for (const auto& d : defs)
                 id_to_name[boost::uuids::to_string(d.id)] = d.job_name;

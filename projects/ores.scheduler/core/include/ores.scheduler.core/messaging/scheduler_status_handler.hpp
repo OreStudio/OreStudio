@@ -85,9 +85,7 @@ public:
         get_scheduler_status_response resp;
         try {
             repository::job_definition_repository def_repo;
-            // The platform's own jobs carry no tenant, so the tenant-scoped
-            // read would leave them out of the very screen that reports them.
-            const auto defs = def_repo.read_every_latest(ctx);
+            const auto defs = def_repo.read_latest(ctx);
 
             repository::job_instance_repository inst_repo;
 

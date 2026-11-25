@@ -459,19 +459,4 @@ std::vector<domain::job_definition> job_definition_repository::read_all_active(c
         "Reading all active job definitions.");
 }
 
-std::vector<domain::job_definition>
-job_definition_repository::read_every_latest(const context& ctx) {
-    ORES_LOG_SEV(lg(), debug) << "Reading every current job definition.";
-    static constexpr auto max = db_timestamp::max();
-    const auto query = query_builder::read<std::vector<job_definition_entity>> |
-                       query_builder::where("valid_to"_c == max);
-
-    return query_builder::execute_read_query<job_definition_entity, domain::job_definition>(
-        ctx,
-        query,
-        [](const auto& entities) { return job_definition_mapper::map(entities); },
-        lg(),
-        "Reading every current job definition.");
-}
-
 }

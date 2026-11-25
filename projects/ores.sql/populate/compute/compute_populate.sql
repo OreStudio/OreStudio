@@ -28,7 +28,7 @@ insert into ores_scheduler_job_definitions_tbl (
     valid_from, valid_to
 )
 select
-    gen_random_uuid(), NULL, NULL,
+    gen_random_uuid(), ores_utility_system_tenant_id_fn(), NULL,
     'compute.v1.reap.stale_results',
     'Reset stale in-progress compute results every minute',
     'compute.v1.ops.reap_work',
@@ -41,6 +41,6 @@ select
 where not exists (
     select 1 from ores_scheduler_job_definitions_tbl
     where job_name = 'compute.v1.reap.stale_results'
-      and tenant_id is null
+      and tenant_id = ores_utility_system_tenant_id_fn()
       and valid_to = ores_utility_infinity_timestamp_fn()
 );

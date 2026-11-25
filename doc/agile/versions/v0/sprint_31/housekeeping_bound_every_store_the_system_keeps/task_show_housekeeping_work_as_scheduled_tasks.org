@@ -45,14 +45,22 @@ Every housekeeping sweep is a scheduler job with its own definition, so a person
 The sweep is already a job definition, and the scheduler already records a job
 instance for each firing. What was missing was that a person could see either.
 The shell's screens read job definitions and instances through the tenant the
-session holds, and the platform's own jobs carry no tenant: the four jobs the
-scheduler runs for the installation were invisible in the screen that reports
-them, beside the three a tenant had scheduled itself.
+session holds, and the platform's own jobs were seeded with no tenant at all
+while the inbox's jobs were seeded under the system tenant. The four jobs the
+scheduler runs for the installation were therefore invisible in the screen that
+reports them, beside the three that had a tenant.
 
-The status view and the instance list therefore read every definition, through
-one repository read that drops the tenant filter. That is the read the loop
-already makes, for the reason its own note gives: the scheduler fires system
-jobs as well as tenants' jobs.
+The correction is in the seed and the model, not in the read: a system job is
+the system tenant's job. The four definitions now carry the system tenant, the
+column is not null, and the screens' ordinary tenant-scoped read shows them to
+the system tenant and to nobody else. A system job is not a job without an
+owner; it is one whose owner is the installation.
+
+The model said a job may belong to no tenant, and the seed obliged by writing
+NULL. A first attempt made the screens read every definition across tenants;
+that was working around the seed rather than correcting it, and it was removed.
+The seed writes the system tenant, the model states that a job is never
+tenantless, and no read had to change.
 
 The ledger the sweep writes had no reader outside SQL, so a person could see
 that a sweep ran but not what it removed. It is now a read model: a view over
@@ -63,10 +71,10 @@ commands read and write it.
 
 Tuning is on the policy rather than on the job. A policy row carries no tenant,
 so any operator holding the write permission can change one, and the sweep
-applies the change at its next firing. A job definition is seeded by the
-platform, and a system job's row is not reachable through the tenant-scoped
-list the shell resolves names from; making the job's own cadence editable is a
-separate question about who owns the platform's schedule.
+applies the change at its next firing. A job definition belongs to the tenant
+that owns the schedule, and the shell's commands address the caller's own; the
+sweep's cadence is the installation's, and changing it is a separate question
+about who owns the platform's schedule.
 
 * Measurements
 
@@ -80,7 +88,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| The jobs the scheduler runs | 7 definitions, of which 4 carry no tenant | =compass sql -- -c "select job_name, tenant_id is null from ores_scheduler_job_definitions_tbl where valid_to = ores_utility_infinity_timestamp_fn()"= | bb49cb7aec |
+| The jobs the scheduler runs | 7 definitions, all of them the system tenant's | =compass sql -- -c "select job_name, tenant_id = ores_utility_system_tenant_id_fn() from ores_scheduler_job_definitions_tbl where valid_to = ores_utility_infinity_timestamp_fn()"= | dac3a1f |
 | What the screens showed before the change | 3 jobs: the tenant's own, and none of the platform's | =scheduler status= in a scripted shell session | bb49cb7aec |
 | What the screens show after it | 7 jobs, including =ores.scheduler.housekeeping_sweep= with its next firing and last run | the same command | bb49cb7aec |
 | The sweep's firings are recorded | a job instance per firing, =succeeded=, 42 to 43 ms | =compass sql -- -c "select ... from ores_scheduler_job_instances_tbl"= with the job's cadence set to every minute | bb49cb7aec |
@@ -99,10 +107,10 @@ task and name that file in the Command column.
   update is the close of the row the insert that follows replaces. A definition
   edited that way stays stale until the service restarts; a probe that changed
   the cadence to every minute fired nothing until it did.
-- System jobs are invisible through the generated list operation, by design of
-  the nullable-tenant policy: the list is tenant scoped and a NULL tenant never
-  matches. This task works around it for the reads it owns rather than changing
-  every nullable-tenant entity's read shape.
+- The cause was the seed, not the read. The job table's tenant column was
+  nullable and the platform's jobs were written with NULL, which no tenant
+  scoped read can match. It is now not null, and the platform's jobs carry the
+  system tenant like the inbox's already did.
 - The four permissions the new commands check did not exist, and the retention
   policy entity's three were missing too, so the policy protocol added earlier
   was reachable only by a holder of =scheduler::*=. All seven are seeded now.

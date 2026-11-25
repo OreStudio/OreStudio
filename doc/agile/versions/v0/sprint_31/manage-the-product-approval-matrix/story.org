@@ -90,6 +90,20 @@ The owner signed the journey off on 2026-11-25. What that settles:
    matrix is no exception: the two junctions take the =http-route= facet the
    other junctions take, and the build task's acceptance names the parity.
 
+6. *Portfolios are not a level of the matrix.* A portfolio is the folder a
+   book sits in: it aggregates, it nests, and its rights decide who may see the
+   books under it, not what those books may trade. It is also mutable, since a
+   book can be moved to another portfolio, so a mandate hanging off it would
+   change what a book may trade on a reorganisation without anybody approving
+   anything. The sets therefore sit at the legal entity and at the book, which
+   is where authority sits in a trading firm, and the matrix ignores the
+   portfolio tree.
+   The idiomatic finer grant, if one is wanted later, is the *business unit*,
+   not the portfolio: a book already names an optional owner unit, constrained
+   to the units its portfolio names, and desks rather than folders are what a
+   firm grants a mandate to. That addition is one junction and one resolution
+   step when a desk needs its own set; it needs no change to what exists.
+
 * Out of scope
 
 - The model and the rule. They are

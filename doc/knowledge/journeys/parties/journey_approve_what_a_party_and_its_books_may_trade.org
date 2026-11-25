@@ -209,6 +209,10 @@ not done until both answer it.
   population a run may value follows what the books are approved to carry.
 - [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the rules the judgement table cites.
 - [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — the reason the two sets stay on the record pages.
+- [[id:A08424B7-E6D7-4993-955C-53AEC241ABA5][Books and portfolios]] — why the
+  portfolio tree is not a level of the matrix: it aggregates and it decides who
+  may see a book, and a book moves between portfolios without changing what it
+  may trade.
 
 * See also
 

@@ -8,7 +8,7 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch: feature/bound-the-report-run-outputs-by-age
-#+pr:
+#+pr: 5118
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -132,7 +132,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5118][#5118]] | [sql] Bound the report run outputs by age |
 
 * Review
 

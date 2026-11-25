@@ -8,7 +8,7 @@
 #+filetags: :ci:build:green_the_three_platforms:sprint_31:v0:
 #+owner: marco
 #+branch: hotfix/green-the-pooler-and-the-unzip
-#+pr:
+#+pr: 5121
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5121][#5121]] | [ci] Hand the pooler to an unprivileged account and unzip with tar |
 
 * Review
 

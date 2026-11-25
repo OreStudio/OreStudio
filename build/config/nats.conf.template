@@ -15,6 +15,19 @@ port: {{NATS_PORT}}
 # HTTP monitoring endpoint — used by telemetry service NATS poller
 http: {{NATS_MONITOR_PORT}}
 
+# The largest message the bus carries. The default, 1 MiB, is smaller than the
+# images the assets service accepts: its validator allows a 2 MiB image, the
+# upload carries the bytes base64-encoded, and base64 grows them by a third, so
+# the message is about 2.7 MiB before its envelope. At 1 MiB an upload of any
+# image over roughly three quarters of a megabyte died in the transport with
+# MAX_PAYLOAD_EXCEEDED, before the validator could answer. 4 MiB carries the
+# largest image the validator allows with room to spare.
+#
+# This is the transport's capacity and not an image limit: the limit is the
+# validator's (ores.assets.core/validation/image_upload_validator), and it must
+# stay below what this cap carries once base64 has inflated it.
+max_payload: 4194304
+
 jetstream {
   store_dir: "{{NATS_STORE_DIR}}"
 }

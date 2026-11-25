@@ -41,6 +41,7 @@ target_link_libraries(${lib_target_name}
         ores.assets.api.lib
         ores.refdata.api.lib
     PRIVATE
+        ores.assets.core.lib
         ores.http.nats.lib
         ores.utility.lib)
 

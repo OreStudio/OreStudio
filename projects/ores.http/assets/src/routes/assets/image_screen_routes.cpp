@@ -20,6 +20,7 @@
 #include "ores.http/routes/assets/image_screen_routes.hpp"
 #include "ores.assets.api/messaging/image_operations_protocol.hpp"
 #include "ores.assets.api/messaging/image_protocol.hpp"
+#include "ores.assets.core/validation/image_upload_validator.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 #include "ores.http.api/net/image_answer.hpp"
 #include "ores.http.api/net/record_routes.hpp"
@@ -30,12 +31,14 @@
 #include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
+#include "ores.utility/convert/base64_converter.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <charconv>
 #include <chrono>
+#include <cstdint>
 #include <exception>
 #include <functional>
 #include <limits>
@@ -106,6 +109,45 @@ image_screen_routes::read_upload(const std::string& body) {
     if (type < 1 || type > 100 || parsed->data.empty())
         return std::nullopt;
     return upload{parsed->mimeType, parsed->data};
+}
+
+namespace {
+
+/**
+ * @brief A refused upload, in the answer shape the screen reads a refusal from.
+ *
+ * The upload answers 200 with the outcome in its result, as the BFF did, so a
+ * refusal built in the gateway and one built in the service are the same JSON.
+ */
+messaging::upload_image_response
+refused_answer(const ores::assets::validation::image_upload_refusal& refusal) {
+    messaging::upload_image_response answer;
+    answer.result.outcome = ores::utility::domain::outcome::invalid;
+    answer.result.code = refusal.code;
+    answer.result.message = refusal.message;
+    answer.result.fields.push_back(ores::utility::domain::field_failure{
+        .field = refusal.field, .code = refusal.code, .message = refusal.message});
+    return answer;
+}
+
+}
+
+std::optional<messaging::upload_image_response>
+image_screen_routes::refusal_of(const upload& image) {
+    using ores::assets::validation::image_upload_refusal;
+    using ores::assets::validation::image_upload_validator;
+
+    std::vector<std::uint8_t> bytes;
+    try {
+        bytes = ores::utility::convert::base64_converter::convert(image.data);
+    } catch (const std::exception&) {
+        return refused_answer(image_upload_refusal{
+            "invalid_image", "data", "The image data is not readable base64."});
+    }
+    const auto refusal = image_upload_validator::validate(image.mime_type, bytes);
+    if (!refusal)
+        return std::nullopt;
+    return refused_answer(*refusal);
 }
 
 image_map image_screen_routes::image_map_of(
@@ -290,6 +332,17 @@ void image_screen_routes::register_routes(
                 return refused(http_status::bad_request,
                                "invalid-request",
                                "An upload needs a media type and the image bytes.");
+            /*
+             * The image is judged before it is sent. The bus carries a message up
+             * to a fixed size, and an upload the transport cannot carry dies as a
+             * transport error: a 503 that names no rule and hides the validator's
+             * own answer. The rules applied here are the validator's, so the words
+             * are the ones the service would have said, and a refused image never
+             * reaches the fabric at all.
+             */
+            if (const auto refusal = refusal_of(*image))
+                return http_response::json("{\"result\":" + json::write(refusal->result) +
+                                           ",\"imageId\":\"\"}");
             // The upload answers 200 with the outcome in its result, as the BFF did:
             // the screen reads a refused upload's reason from there.
             return guarded<messaging::upload_image_request>([&] {

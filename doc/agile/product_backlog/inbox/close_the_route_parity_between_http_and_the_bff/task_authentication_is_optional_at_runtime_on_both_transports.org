@@ -8,7 +8,7 @@
 #+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/refuse-a-request-no-verifier-can-check
-#+pr:
+#+pr: 5114
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -141,7 +141,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5114][#5114]] | [ores.service] Refuse a request that no verifier can check |
 
 * Review
 

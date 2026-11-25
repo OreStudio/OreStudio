@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 5C687895-E089-51BC-975E-0992CFF7A49A
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the identity_providers commands from the shell?
+#+description: Every command the identity_providers submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:identity_providers:
+
+This file documents the identity_providers resource at the shell, one section per command. Every command is a subcommand of =identity_providers=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 09F70A1E-B6CD-5909-972C-D1A29945B9D2
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+identity_providers list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.identity_providers.list=.
+
+#+name: identity_providers-list
+#+begin_src ores-shell :tangle identity_providers-list.ores :exports none
+identity_providers list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: ECAE41E6-1C77-58CA-AA2D-833D05B7A97E
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+identity_providers get <code>
+#+end_example
+
+It is addressed at =iam.v1.identity_providers.get=.
+
+#+name: identity_providers-get
+#+begin_src ores-shell :tangle identity_providers-get.ores :exports none
+identity_providers get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 38B43000-8D52-5D8C-803F-771E8B198417
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+identity_providers get-many <code>
+#+end_example
+
+It is addressed at =iam.v1.identity_providers.get_many=.
+
+#+name: identity_providers-get-many
+#+begin_src ores-shell :tangle identity_providers-get-many.ores :exports none
+identity_providers get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: B048DB98-D89C-5F5A-ABA5-79B9CBF2158D
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+identity_providers add <code> <display_name> <issuer> <client_id> <client_secret_ref> <scopes> <allowed_email_domains> <is_enabled> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.identity_providers.put=.
+
+#+name: identity_providers-add
+#+begin_src ores-shell :tangle identity_providers-add.ores :exports none
+identity_providers add __none__ __none__ __none__ __none__ __none__ __none__ __none__ false system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 16FE6F36-AF42-553E-8A75-DC12B2536C63
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+identity_providers set <id> <code> <display_name> <issuer> <client_id> <client_secret_ref> <scopes> <allowed_email_domains> <is_enabled> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.identity_providers.put=.
+
+#+name: identity_providers-set
+#+begin_src ores-shell :tangle identity_providers-set.ores :exports none
+identity_providers set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ false system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 12C1AA6E-20BB-5D98-BD53-D4EBC717C81D
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+identity_providers put-many --count <n> <id> <code> <display_name> <issuer> <client_id> <client_secret_ref> <scopes> <allowed_email_domains> <is_enabled> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.identity_providers.put_many=.
+
+#+name: identity_providers-put-many
+#+begin_src ores-shell :tangle identity_providers-put-many.ores :exports none
+identity_providers put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ __none__ __none__ false system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 1439363C-574E-5C83-9C98-56D2D4B4CF76
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+identity_providers delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.identity_providers.delete=.
+
+#+name: identity_providers-delete
+#+begin_src ores-shell :tangle identity_providers-delete.ores :exports none
+identity_providers delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: DA771EAB-5827-5B90-A563-AE8F60A267AC
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+identity_providers delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.identity_providers.delete_many=.
+
+#+name: identity_providers-delete-many
+#+begin_src ores-shell :tangle identity_providers-delete-many.ores :exports none
+identity_providers delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: C3973E3C-FD4D-5DB0-BC59-68F68DE029EC
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+identity_providers versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.identity_providers_versions.list=.
+
+#+name: identity_providers-versions
+#+begin_src ores-shell :tangle identity_providers-versions.ores :exports none
+identity_providers versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: A6608FA4-85EB-5CC7-8851-34F863DA99D2
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+identity_providers version <code> --version <n>
+#+end_example
+
+It is addressed at =iam.v1.identity_providers_versions.get=.
+
+#+name: identity_providers-version
+#+begin_src ores-shell :tangle identity_providers-version.ores :exports none
+identity_providers version __none__ --version 1
+#+end_src
+

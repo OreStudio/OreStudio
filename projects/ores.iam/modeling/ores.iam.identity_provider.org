@@ -1,0 +1,271 @@
+:PROPERTIES:
+:ID: 0F5AC0A8-6284-4068-B8FF-E37034E46337
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.iam.identity_provider
+#+description: Codegen entity model for the IAM identity_providers table: a provider a tenant enables, so a person can sign up and sign in with an account it holds.
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:identity:
+#+entity_singular: identity_provider
+#+entity_plural: identity_providers
+#+entity_title: Identity Provider
+#+brief: A provider a tenant enables for sign-in.
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+A provider one tenant enables, so that a person can sign up and sign in with an
+account it holds. It carries what ORE needs to send the browser there and to
+read back the answer: the issuer to read the provider's discovery and its keys
+from, the client ORE registered with it, the scopes to ask for, and the address
+domains the tenant will accept from it.
+
+The client's secret is not a column. The row names an environment variable or a
+configuration key, and the deployment sets the value, so no secret that can be
+read back enters the database or its backups. A provider that takes no secret,
+such as a test provider or a public client, leaves the name empty.
+
+Two invariants decide the shape. A tenant enables a provider once, by its
+=code=, which is the natural key: the code names the rows the door reads and the
+routes the browser is sent to, so =google= appears once per tenant. And a tenant
+with no row for a provider has no such door at all, so an installation that
+enables nothing behaves exactly as it does today, with a password alone.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: iam
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:skip_uuid_check: true
+:END:
+
+The provider's surrogate key. Nothing outside the table addresses a provider by
+it; the code is what the door and the routes carry.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:sortable:     true
+:searchable:   true
+:END:
+
+The provider's short name, such as =google=, unique within the tenant. It names
+the routes the browser follows and the row the door reads, so it is stable and
+lower case, and a person never types it.
+
+#+begin_src cpp :name generator
+std::string("google")
+#+end_src
+
+** display_name
+:PROPERTIES:
+:type:       text
+:cpp_type:   std::string
+:sortable:   true
+:searchable: true
+:END:
+
+The name the sign-in screen shows on the door, such as =Google=. The screen
+draws the provider's own name here rather than a translation of it, because a
+provider is a company's name and not a word.
+
+#+begin_src cpp :name generator
+std::string("Google")
+#+end_src
+
+** issuer
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The issuer identifier, such as =https://accounts.google.com=, which is also the
+address the provider's discovery document and its published keys are read from.
+The ID token's =iss= claim is checked against this value, so a token from another
+provider is refused even if it is otherwise valid.
+
+#+begin_src cpp :name generator
+std::string("https://accounts.google.com")
+#+end_src
+
+** client_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The identifier ORE registered with the provider. It travels in the
+authorization request and is checked against the ID token's =aud= claim.
+
+#+begin_src cpp :name generator
+std::string("ores-studio.apps.googleusercontent.com")
+#+end_src
+
+** client_secret_ref
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The name of the environment variable or configuration key that holds the
+client's secret, never the secret itself. The gateway resolves the name when it
+starts and keeps the value in memory. Empty for a provider that issues public
+clients, which presents no secret.
+
+#+begin_src cpp :name generator
+std::string("ORES_IDP_GOOGLE_CLIENT_SECRET")
+#+end_src
+
+** scopes
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default:       'openid email profile'
+:default_value: std::string("openid email profile")
+:END:
+
+The scopes ORE asks the provider for, space separated. ORE asks for identity
+alone and never for access to a person's mail, calendar or files, so the default
+is what every provider receives.
+
+#+begin_src cpp :name generator
+std::string("openid email profile")
+#+end_src
+
+** allowed_email_domains
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The address domains this tenant accepts from the provider, comma separated, such
+as =acme.com,acme.co.uk=. Empty accepts any address the provider verifies, and
+the registration policy still decides what the person receives. A domain here is
+a door rule, not a link rule: nothing links an existing account to a provider
+account by its address.
+
+#+begin_src cpp :name generator
+std::string("acme.com")
+#+end_src
+
+** is_enabled
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  true
+:END:
+
+Whether the door offers this provider. A disabled row keeps its registration and
+its history and hides the door, which is how a tenant withdraws a provider
+without forgetting how to restore it.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_iam_identity_providers_tbl
+:rls_tenant_isolation: true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: provider
+:entity_plural_short:   providers
+:entity_singular_words: identity provider
+:entity_plural_words:   identity providers
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ip
+:END:
+
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| code         | Code         |
+| display_name | Name         |
+| issuer       | Issuer       |
+| is_enabled   | Enabled      |
+| modified_by  | Modified By  |
+| version      | Version      |
+
+** Presentation
+:PROPERTIES:
+:collection_name: providers
+:key_field:       code
+:END:
+
+A provider is addressed by its =code=, the natural key, which is what the door
+reads and what the browser's route carries.
+
+*** Detail fields
+
+| field        | label  | widget      | type      | is_key | is_required | placeholder       |
+|--------------+--------+-------------+-----------+--------+-------------+-------------------|
+| code         | Code   | codeEdit    | line_edit | true   | true        | Enter a code      |
+| display_name | Name   | nameEdit    | line_edit |        | true        | Enter a name      |
+| issuer       | Issuer | issuerEdit  | line_edit |        | true        | Enter an issuer   |
+| client_id    | Client | clientEdit  | line_edit |        | true        | Enter a client id |
+
+*** Columns
+
+| enum_name    | field        | header  | type    | width |
+|--------------+--------------+---------+---------+-------|
+| Code         | code         | Code    | string  | 120   |
+| DisplayName  | display_name | Name    | string  | 200   |
+| Issuer       | issuer       | Issuer  | string  | 320   |
+| IsEnabled    | is_enabled   | Enabled | boolean | 80    |
+
+** Paste blocks
+
+* See also
+
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] — component group overview.
+- [[id:F6FA7F9C-4AD0-4EF7-9DD8-C863EE09CC09][ores.iam.external_identity]] — the link from an account to the provider account it signs in with.
+- [[id:C98E2E5B-22B5-469D-8520-51726E1DF8D0][Decide how an external identity signs a person up and in]] — why a secret is named rather than stored.

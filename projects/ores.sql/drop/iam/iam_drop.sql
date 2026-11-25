@@ -74,6 +74,13 @@
 \ir ./iam_login_info_notify_trigger_drop.sql
 \ir ./iam_login_info_drop.sql
 
+-- Identity links and the providers they sign in through (dropped before the
+-- accounts and the providers they reference)
+\ir ./iam_external_identities_notify_trigger_drop.sql
+\ir ./iam_external_identities_drop.sql
+\ir ./iam_identity_providers_notify_trigger_drop.sql
+\ir ./iam_identity_providers_drop.sql
+
 -- Accounts
 \ir ./iam_account_contact_informations_notify_trigger_drop.sql
 \ir ./iam_account_contact_informations_drop.sql

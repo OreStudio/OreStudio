@@ -26,6 +26,8 @@ set(files
     "agent_grant_eventing_integration_tests.cpp"
     "agent_key_and_permissions_tests.cpp"
     "agent_key_eventing_integration_tests.cpp"
+    "external_identity_eventing_integration_tests.cpp"
+    "identity_provider_eventing_integration_tests.cpp"
     "main.cpp"
     "messaging_account_party_handler_tests.cpp"
     "messaging_auth_bootstrap_party_tests.cpp"

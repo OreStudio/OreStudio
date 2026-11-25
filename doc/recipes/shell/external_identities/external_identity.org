@@ -1,0 +1,266 @@
+:PROPERTIES:
+:ID: 3448A460-E502-5FDD-A05C-772D9366A798
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the external_identities commands from the shell?
+#+description: Every command the external_identities submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:external_identities:
+
+This file documents the external_identities resource at the shell, one section per command. Every command is a subcommand of =external_identities=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 65D95228-395D-5062-ACC8-B0D6E7EB7319
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+external_identities list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.external_identities.list=.
+
+#+name: external_identities-list
+#+begin_src ores-shell :tangle external_identities-list.ores :exports none
+external_identities list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 0481AC1F-2239-5B9F-BC91-00C75C04B993
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+external_identities get <email>
+#+end_example
+
+It is addressed at =iam.v1.external_identities.get=.
+
+#+name: external_identities-get
+#+begin_src ores-shell :tangle external_identities-get.ores :exports none
+external_identities get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 0EFC5C1B-A38E-5B71-9B8A-67062DB054ED
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+external_identities get-many <email>
+#+end_example
+
+It is addressed at =iam.v1.external_identities.get_many=.
+
+#+name: external_identities-get-many
+#+begin_src ores-shell :tangle external_identities-get-many.ores :exports none
+external_identities get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 1F2F081D-56B8-5552-BDF4-153B98800F35
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+external_identities add <issuer> <subject> <account_id> <identity_provider_id> <email> <email_verified> <linked_at> <last_used_at> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.external_identities.put=.
+
+#+name: external_identities-add
+#+begin_src ores-shell :tangle external_identities-add.ores :exports none
+external_identities add __none__ __none__ 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ false 1970-01-01T00:00:00Z 1970-01-01T00:00:00Z system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: F21AD68F-F741-5BA4-A877-B77DD11CD29C
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+external_identities set <id> <issuer> <subject> <account_id> <identity_provider_id> <email> <email_verified> <linked_at> <last_used_at> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.external_identities.put=.
+
+#+name: external_identities-set
+#+begin_src ores-shell :tangle external_identities-set.ores :exports none
+external_identities set 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ false 1970-01-01T00:00:00Z 1970-01-01T00:00:00Z system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 327E6C0C-755C-531A-A9C8-41C998398E4A
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+external_identities put-many --count <n> <id> <issuer> <subject> <account_id> <identity_provider_id> <email> <email_verified> <linked_at> <last_used_at> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.external_identities.put_many=.
+
+#+name: external_identities-put-many
+#+begin_src ores-shell :tangle external_identities-put-many.ores :exports none
+external_identities put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ false 1970-01-01T00:00:00Z 1970-01-01T00:00:00Z system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 2E46108D-A2AA-5885-B29C-8CF14C7F6F60
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+external_identities delete <email> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =iam.v1.external_identities.delete=.
+
+#+name: external_identities-delete
+#+begin_src ores-shell :tangle external_identities-delete.ores :exports none
+external_identities delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 7471AB90-87D4-540C-BAF0-8CEAA23E8A4C
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+external_identities delete-many <email> <reason> <commentary>
+#+end_example
+
+It is addressed at =iam.v1.external_identities.delete_many=.
+
+#+name: external_identities-delete-many
+#+begin_src ores-shell :tangle external_identities-delete-many.ores :exports none
+external_identities delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =by-account-id=
+:PROPERTIES:
+:ID: F14509DB-183F-54E8-875E-23C4865DF2B8
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+external_identities by-account-id <account_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.external_identities.list_by_account_id=.
+
+#+name: external_identities-by-account-id
+#+begin_src ores-shell :tangle external_identities-by-account-id.ores :exports none
+external_identities by-account-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =by-identity-provider-id=
+:PROPERTIES:
+:ID: 8F62D196-2552-5C14-A89A-66E2A669A892
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+external_identities by-identity-provider-id <identity_provider_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.external_identities.list_by_identity_provider_id=.
+
+#+name: external_identities-by-identity-provider-id
+#+begin_src ores-shell :tangle external_identities-by-identity-provider-id.ores :exports none
+external_identities by-identity-provider-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: 9EF9E74A-F75C-5789-AAE7-FC7451C022C7
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+external_identities versions <email> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =iam.v1.external_identities_versions.list=.
+
+#+name: external_identities-versions
+#+begin_src ores-shell :tangle external_identities-versions.ores :exports none
+external_identities versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 2016A529-C0B4-5DC1-84E8-2F14D8F7F65D
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+external_identities version <email> --version <n>
+#+end_example
+
+It is addressed at =iam.v1.external_identities_versions.get=.
+
+#+name: external_identities-version
+#+begin_src ores-shell :tangle external_identities-version.ores :exports none
+external_identities version __none__ --version 1
+#+end_src
+

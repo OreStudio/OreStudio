@@ -98,7 +98,7 @@ Response refuse(std::string_view detail, exchange_refusal reason) {
                             std::string(detail));
 }
 
-bool is_active(const domain::run_grant& g) {
+bool run_grant_is_active(const domain::run_grant& g) {
     const std::chrono::system_clock::time_point never{};
     return g.revoked_at == never &&
            (g.not_after == never || g.not_after > std::chrono::system_clock::now());
@@ -205,7 +205,7 @@ run_grant_operations_service::create_run_grant(const messaging::create_run_grant
 
     run_grant_service svc(ctx_);
     auto existing = grant_for(svc, *grantor, *party, request.resource);
-    if (existing && is_active(*existing) && same_consent(*existing, role->id, request)) {
+    if (existing && run_grant_is_active(*existing) && same_consent(*existing, role->id, request)) {
         response r;
         r.success = true;
         r.grant_id = boost::uuids::to_string(existing->id);
@@ -217,8 +217,8 @@ run_grant_operations_service::create_run_grant(const messaging::create_run_grant
     if (existing) {
         grant = *existing;
         grant.change_reason_code = std::string(update);
-        grant.change_commentary =
-            is_active(*existing) ? "Replaced by a new consent." : "Re-activated by a new consent.";
+        grant.change_commentary = run_grant_is_active(*existing) ? "Replaced by a new consent." :
+                                                                   "Re-activated by a new consent.";
     } else {
         grant.id = boost::uuids::random_generator()();
         grant.change_reason_code = std::string(new_record);

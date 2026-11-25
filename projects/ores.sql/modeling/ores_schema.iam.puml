@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: iam
-Tables: 30
+Tables: 32
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -563,6 +563,93 @@ package "iam" #E8F4FD {
     tenant's. The hourly and daily continuous aggregates it once had are gone:
     nothing read them, and TimescaleDB does not build a continuous aggregate over a
     table with row-level security.
+    end note
+
+    entity ores_iam_external_identities_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * issuer : text
+        * subject : text
+        * account_id : uuid <<FK>>
+        * identity_provider_id : uuid <<FK>>
+          email : text
+        * email_verified : boolean
+        * linked_at : timestamptz
+          last_used_at : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * acting_agent : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_external_identities_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    External Identity Table
+    The link from an ORE account to one account at one identity provider, and the
+    record that the person proved it. The provider names the person by an issuer and
+    a subject; the subject is opaque, stable at the provider, and the only thing ORE
+    trusts to identify that provider account.
+    The address the provider stated at the moment of linking is kept beside the
+    subject, with whether the provider said it was verified. It is evidence of what
+    the person linked, not an identity: nothing in ORE looks a person up by it, and
+    no link is ever made because two addresses match. A person's address at a
+    provider can change after the link, so the column records a fact at a time and
+    is never treated as the current truth.
+    Two invariants decide the shape. The pair (issuer, subject) names one provider
+    account, and with the tenant it is the natural key, so the same provider account
+    links to one ORE account in a tenant. And a link belongs to an account: an
+    account may hold several links, one per provider, and keeps at least one way in
+    at all times, which its own operations enforce.
+    end note
+
+    entity ores_iam_identity_providers_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * code : text
+        * display_name : text
+        * issuer : text
+        * client_id : text <<FK>>
+          client_secret_ref : text
+        * scopes : text
+          allowed_email_domains : text
+        * is_enabled : boolean
+        * modified_by : text
+        * performed_by : text
+        * acting_agent : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_iam_identity_providers_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Identity Provider Table
+    A provider one tenant enables, so that a person can sign up and sign in with an
+    account it holds. It carries what ORE needs to send the browser there and to
+    read back the answer: the issuer to read the provider's discovery and its keys
+    from, the client ORE registered with it, the scopes to ask for, and the address
+    domains the tenant will accept from it.
+    The client's secret is not a column. The row names an environment variable or a
+    configuration key, and the deployment sets the value, so no secret that can be
+    read back enters the database or its backups. A provider that takes no secret,
+    such as a test provider or a public client, leaves the name empty.
+    Two invariants decide the shape. A tenant enables a provider once, by its
+    code, which is the natural key: the code names the rows the door reads and the
+    routes the browser is sent to, so google appears once per tenant. And a tenant
+    with no row for a provider has no such door at all, so an installation that
+    enables nothing behaves exactly as it does today, with a password alone.
     end note
 
     entity ores_iam_login_info_tbl  #F7E5FF {
@@ -1228,6 +1315,8 @@ ores_iam_roles_tbl ||--o{ ores_iam_account_roles_tbl : "granted to"
 ores_iam_roles_tbl ||--o{ ores_iam_agent_grants_tbl : "has"
 ores_iam_accounts_tbl ||--o{ ores_iam_agent_grants_tbl : "has"
 ores_iam_agent_grants_tbl ||--o{ ores_iam_agent_keys_tbl : "has"
+ores_iam_accounts_tbl ||--o{ ores_iam_external_identities_tbl : "has"
+ores_iam_identity_providers_tbl ||--o{ ores_iam_external_identities_tbl : "has"
 ores_iam_role_grant_requests_tbl ||--o{ ores_iam_role_grant_request_roles_tbl : "has"
 ores_iam_roles_tbl ||--o{ ores_iam_role_grant_request_roles_tbl : "has"
 ores_iam_accounts_tbl ||--o{ ores_iam_role_grant_requests_tbl : "has"

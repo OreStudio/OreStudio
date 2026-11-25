@@ -50,6 +50,13 @@
 \ir ./iam_account_contact_informations_create.sql
 \ir ./iam_account_contact_informations_notify_trigger_create.sql
 
+-- Identity providers, and the links that sign a person in through them. The
+-- link names an account and a provider, so it comes after the accounts.
+\ir ./iam_identity_providers_create.sql
+\ir ./iam_identity_providers_notify_trigger_create.sql
+\ir ./iam_external_identities_create.sql
+\ir ./iam_external_identities_notify_trigger_create.sql
+
 -- Seed profiles (system-owned registered data; the step and parameter
 -- children depend on the profile)
 \ir ./iam_seed_profiles_create.sql

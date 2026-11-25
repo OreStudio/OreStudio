@@ -59,10 +59,10 @@ struct published_set {
     boost::uuids::uuid request_id;
 };
 
-published_set publish_one(curve_fixture& f,
-                          const person& maker,
-                          const person& decider,
-                          std::chrono::system_clock::time_point at = as_of) {
+published_set publish_curve_set(curve_fixture& f,
+                                const person& maker,
+                                const person& decider,
+                                std::chrono::system_clock::time_point at = as_of) {
     const auto subject = f.subject(at);
     const auto raised =
         raise_publish_request(maker.ctx, subject, "The desk prices from this curve");
@@ -114,7 +114,7 @@ TEST_CASE("the_list_answers_every_set_with_its_curve_party_publisher_and_state",
     curve_fixture f;
     const auto maker = seed_person(f.h);
     const auto decider = seed_person(f.h);
-    const auto published = publish_one(f, maker, decider);
+    const auto published = publish_curve_set(f, maker, decider);
     const auto publish_id = published.publish_id;
 
     const auto listed = list_of(f, decider.ctx);
@@ -142,7 +142,7 @@ TEST_CASE("the_list_hides_a_candidate_and_the_sets_that_ended", published_curve_
     curve_fixture f;
     const auto maker = seed_person(f.h);
     const auto decider = seed_person(f.h);
-    publish_one(f, maker, decider);
+    publish_curve_set(f, maker, decider);
 
     // A second request that nobody has decided, so nobody has published it.
     const auto later = f.subject(as_of + std::chrono::hours{24});
@@ -176,7 +176,7 @@ TEST_CASE("an_ended_set_reads_as_its_last_known_values_and_states_that_it_ended"
     curve_fixture f;
     const auto maker = seed_person(f.h);
     const auto decider = seed_person(f.h);
-    const auto publish_id = publish_one(f, maker, decider).publish_id;
+    const auto publish_id = publish_curve_set(f, maker, decider).publish_id;
 
     ores::marketdata::messaging::withdraw_curve_request withdrawal;
     withdrawal.publish_id = boost::uuids::to_string(publish_id);
@@ -222,8 +222,8 @@ TEST_CASE("a_second_publish_supersedes_the_set_it_replaced", published_curve_tag
     curve_fixture f;
     const auto maker = seed_person(f.h);
     const auto decider = seed_person(f.h);
-    publish_one(f, maker, decider);
-    const auto successor = publish_one(f, maker, decider);
+    publish_curve_set(f, maker, decider);
+    const auto successor = publish_curve_set(f, maker, decider);
 
     auto asking = scoped(f);
     asking.include_ended = true;
@@ -251,8 +251,8 @@ TEST_CASE("the_sets_of_one_curve_come_back_oldest_first_with_their_points", publ
     curve_fixture f;
     const auto maker = seed_person(f.h);
     const auto decider = seed_person(f.h);
-    publish_one(f, maker, decider);
-    publish_one(f, maker, decider);
+    publish_curve_set(f, maker, decider);
+    publish_curve_set(f, maker, decider);
 
     ores::marketdata::messaging::get_published_curve_sets_request request;
     request.series_id = boost::uuids::to_string(f.output_series_id);
@@ -294,7 +294,7 @@ TEST_CASE("the_list_filters_by_party_and_by_the_requests_a_screen_holds", publis
     const auto maker = seed_person(f.h);
     const auto decider = seed_person(f.h);
 
-    const auto published = publish_one(f, maker, decider);
+    const auto published = publish_curve_set(f, maker, decider);
     const auto request_id = boost::uuids::to_string(published.request_id);
 
     auto by_party = scoped(f);
@@ -340,7 +340,7 @@ TEST_CASE("a_withdrawal_refuses_a_set_that_is_not_in_use_and_a_reason_cut_short"
 
     // A published set with no reason is refused: the reason is what the record
     // keeps against the act.
-    const auto publish_id = publish_one(f, maker, decider).publish_id;
+    const auto publish_id = publish_curve_set(f, maker, decider).publish_id;
     auto no_reason = withdrawal;
     no_reason.publish_id = boost::uuids::to_string(publish_id);
     no_reason.reason_code = "";
@@ -361,7 +361,7 @@ TEST_CASE("a_withdrawal_writes_a_new_version_and_keeps_the_published_facts", pub
     curve_fixture f;
     const auto maker = seed_person(f.h);
     const auto decider = seed_person(f.h);
-    const auto publish_id = publish_one(f, maker, decider).publish_id;
+    const auto publish_id = publish_curve_set(f, maker, decider).publish_id;
 
     const auto before = ores::marketdata::repository::curve_publish_repository{}
                             .read_latest(maker.ctx, boost::uuids::to_string(publish_id))
@@ -398,7 +398,7 @@ TEST_CASE("a_withdrawal_request_that_nobody_approved_authorises_nothing", publis
     curve_fixture f;
     const auto maker = seed_person(f.h);
     const auto decider = seed_person(f.h);
-    const auto publish_id = publish_one(f, maker, decider).publish_id;
+    const auto publish_id = publish_curve_set(f, maker, decider).publish_id;
 
     // The withdrawal kind is seeded, so a person can raise the ask. It is
     // waiting here, and a waiting request authorises no act.
@@ -436,7 +436,7 @@ TEST_CASE("a_withdrawal_request_that_nobody_approved_authorises_nothing", publis
 
     // One decision authorises one withdrawal: the request cannot end a second
     // set, and the gate's own single-use rule is untouched by this act.
-    const auto another = publish_one(f, maker, decider).publish_id;
+    const auto another = publish_curve_set(f, maker, decider).publish_id;
     auto second = withdrawal;
     second.publish_id = boost::uuids::to_string(another);
     const auto refused = withdraw_curve(maker.ctx, second);
@@ -448,7 +448,7 @@ TEST_CASE("a_publish_request_does_not_authorise_a_withdrawal", published_curve_t
     curve_fixture f;
     const auto maker = seed_person(f.h);
     const auto decider = seed_person(f.h);
-    const auto publish_id = publish_one(f, maker, decider).publish_id;
+    const auto publish_id = publish_curve_set(f, maker, decider).publish_id;
 
     const auto record = ores::marketdata::repository::curve_publish_repository{}
                             .read_latest(maker.ctx, boost::uuids::to_string(publish_id))

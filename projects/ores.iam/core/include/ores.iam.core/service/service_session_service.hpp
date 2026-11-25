@@ -20,6 +20,7 @@
 #ifndef ORES_IAM_SERVICE_SERVICE_SESSION_SERVICE_HPP
 #define ORES_IAM_SERVICE_SERVICE_SESSION_SERVICE_HPP
 
+#include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"

@@ -2308,3 +2308,11 @@ tangled into the runnable script library
 * Fx Vol Views
 
 - [[id:A60F892C-EDA9-5E74-A4B4-42FBDCDB0B66][How do I run the fx_vol_views commands from the shell?]]
+
+* External Identities
+
+- [[id:3448A460-E502-5FDD-A05C-772D9366A798][How do I run the external_identities commands from the shell?]]
+
+* Identity Providers
+
+- [[id:5C687895-E089-51BC-975E-0992CFF7A49A][How do I run the identity_providers commands from the shell?]]

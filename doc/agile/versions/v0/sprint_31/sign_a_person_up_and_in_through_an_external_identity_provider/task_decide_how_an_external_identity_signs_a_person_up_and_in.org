@@ -8,7 +8,7 @@
 #+filetags: :sign_a_person_up_and_in_through_an_external_identity_provider:sprint_31:v0:
 #+owner: marco
 #+branch: feature/decide-how-an-external-identity-signs-a-person-up-and-in
-#+pr:
+#+pr: 5132
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
@@ -289,7 +289,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5132][#5132]] | [agile] Plan signing up with an external identity and decide the flow |
 
 * Review
 

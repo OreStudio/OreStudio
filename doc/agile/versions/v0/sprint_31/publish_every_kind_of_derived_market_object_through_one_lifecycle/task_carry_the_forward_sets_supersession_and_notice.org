@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :publish_every_kind_of_derived_market_object_through_one_lifecycle:sprint_31:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/carry-the-forward-sets-supersession-and-notice
+#+pr: 5133
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -20,17 +20,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-An FX forward publish supersedes the set it replaces and writes its notice, so the forward set behaves as the curve and the surface do.
+An FX forward publish supersedes the set it replaces and writes its notice, so the forward set behaves as the curve and the surface do. The pair is the forward's series, so one set of a pair is in use and the notice names the pair.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-24                               |
 
 * Acceptance
@@ -41,9 +41,35 @@ An FX forward publish supersedes the set it replaces and writes its notice, so t
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Four edits, and one of them is the act's, not the kind's.
+
+The columns go in the model, which is where codegen reads them, and they are the
+three the curve and the surface already carry: =superseded_at=,
+=superseded_by_request_id= and =superseded_as_of=, with the three checks that
+keep them consistent with each other and with =published_at=. The regenerate
+writes the entity, the mapper, the SQL and the web protocol type, so no hand
+edit touches a generated file.
+
+The supersession is the kind's. A forward set has no output series, so its
+series is the pair: every live set of the pair and the party ends in the same
+transaction that writes the successor, which is what the curve does with its
+series. The kind reads the pair's published sets, which it already has, and ends
+the ones no supersession or withdrawal has ended.
+
+The notice is also the kind's, and the seed row is the only per-kind part of it:
+=marketdata.fx_forward_published=, beside the three the market data seed already
+names.
+
+The act changes once. The doc states that the notice is a row written in the
+transaction that publishes the set, so =apply_publication= now calls the
+announcer with that transaction for every kind, instead of after the commit. A
+publish that rolls back therefore never told anyone of a move that did not
+happen.
+
+The test sits in the notices suite, which already has the reader account a notice
+needs: it writes a live set and a candidate of one pair, runs the kind's publish
+and announce in one transaction, and reads back the four fields, the live set and
+the notice the reader was given.
 
 * Measurements
 
@@ -57,7 +83,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The forward publish row | carries =superseded_at=, =superseded_by_request_id= and =superseded_as_of= | =compass generate= | branch off =4abd485bfa= |
+| The notice kind | =marketdata.fx_forward_published=, display order 53 | =compass db recreate -y -k= then =select code from ores_inbox_notification_kinds_tbl where code like 'marketdata.%'= | branch off =4abd485bfa= |
+| The change reason the supersession stamps | =system.fx_forward_superseded= | the same recreate | branch off =4abd485bfa= |
+| The market data service suite | passes, including the new case | =compass test run -- -R ores.marketdata.service.tests= | branch off =4abd485bfa= |
 
 * Notes
 
@@ -76,7 +105,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5133][#5133]] | [marketdata] Carry the forward set's supersession and notice |
 
 * Review
 
@@ -85,3 +114,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The forward set now behaves as the curve and the surface do: a publish ends the
+set it replaces and tells the party's readers.
+
+The three columns are in the model, so codegen wrote the entity, the mapper, the
+SQL and the web protocol type, and the checks that tie them to =published_at= are
+the ones the other two kinds carry. The supersession is the kind's: a forward set
+has no output series, so its series is the pair, and every live set of the pair
+and party ends in the transaction that writes the successor. The notice is the
+kind's too, and its seed row is the only per-kind part of it.
+
+The act changed once, for every kind. =apply_publication= now raises the notice
+with the transaction that publishes the set, and commits both together, which is
+what [[id:B3F03DBB-EBD1-4649-94E5-6C5C1B67A084][Announcement of change in a published market data set]] states: a
+publish that rolls back never told its readers of a move that did not happen.
+Before this, every kind announced after its commit.
+
+The test writes a live set and a candidate of one pair, runs the kind's publish
+and announce in one transaction, and reads back the four fields, the pair's one
+live set, and the notice the reader was given. Two things it taught, both
+recorded in the case: the store validates every account a row names, so the
+publisher must be an account the store holds; and the notice names the account
+that acted, so the apply runs under a context with that actor.
+
+The gate: 100 of 108 suites pass in the parallel run. Four fail, and none is
+this branch's:
+
+- =ores.reporting.core.tests= is the break PR #5118 put on main, handed to the
+  =solid_dirac= environment.
+- =ores.inbox.core.tests=, =ores.refdata.core.tests= and
+  =ores.workflow.core.tests= fail under =ctest -j= and pass when run alone on a
+  freshly recreated database. The inbox suite's failure is a test tenant another
+  suite left inactive; the other two are the pooler. This is a cross-suite race
+  in the gate, not a defect of the change, and the blame recipe's first step is
+  what separates it from a break.

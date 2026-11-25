@@ -22,6 +22,7 @@
 
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/domain/curve_publish.hpp"
+#include "ores.marketdata.api/domain/fx_forward_publish.hpp"
 #include "ores.marketdata.api/domain/fx_vol_surface_publish.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include <chrono>
@@ -39,6 +40,7 @@ namespace ores::marketdata::service::app {
 inline constexpr std::string_view curve_published_kind_code = "marketdata.curve_published";
 inline constexpr std::string_view curve_withdrawn_kind_code = "marketdata.curve_withdrawn";
 inline constexpr std::string_view surface_published_kind_code = "marketdata.surface_published";
+inline constexpr std::string_view forward_published_kind_code = "marketdata.fx_forward_published";
 
 /**
  * @brief Tells the readers of a curve that a new version is live.
@@ -95,6 +97,24 @@ announce_withdrawal(const ores::database::context& ctx,
 ORES_MARKETDATA_SERVICE_EXPORT void
 announce_surface_publish(const ores::database::context& ctx,
                          const domain::fx_vol_surface_publish& published,
+                         std::optional<std::chrono::system_clock::time_point> previous_as_of);
+
+/**
+ * @brief Tells the readers of a forward set that a new version is live.
+ *
+ * The same notice as a curve's, at the same moment and to the same readers: a forward set is a
+ * published set, and its publish moves it once. The subject is the pair, because the pair and the
+ * party are what name a forward set.
+ *
+ * The forward set has no record page yet, so the notice carries no link: it names the set and the
+ * act, and a reader reaches the numbers through the reads the screens will be built on.
+ *
+ * @param previous_as_of The as-of of the set this one replaced, or nothing when it is the first
+ * the pair ever had.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT void
+announce_forward_publish(const ores::database::context& ctx,
+                         const domain::fx_forward_publish& published,
                          std::optional<std::chrono::system_clock::time_point> previous_as_of);
 
 }

@@ -47,6 +47,9 @@ export interface FxForwardPublish {
     method_code: string;
     published_by: string;
     published_at: string | null;
+    superseded_at: string | null;
+    superseded_by_request_id: string | null;
+    superseded_as_of: string | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

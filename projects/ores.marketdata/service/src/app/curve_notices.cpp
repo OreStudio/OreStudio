@@ -272,4 +272,20 @@ void announce_surface_publish(const ores::database::context& ctx,
                  "market-data/published-surfaces/" + escape_path(surface));
 }
 
+void announce_forward_publish(const ores::database::context& ctx,
+                              const domain::fx_forward_publish& published,
+                              std::optional<std::chrono::system_clock::time_point> previous_as_of) {
+    raise_notice(ctx,
+                 forward_published_kind_code,
+                 published.party_id,
+                 {{.name = "pair", .value = published.pair_code},
+                  {.name = "party", .value = party_name_of(ctx, published.party_id)},
+                  {.name = "as_of", .value = instant_of(published.as_of)},
+                  {.name = "published_at", .value = instant_of(published.published_at)},
+                  {.name = "publisher", .value = published.published_by},
+                  {.name = "request", .value = boost::uuids::to_string(published.request_id)},
+                  {.name = "previous_as_of", .value = instant_of(previous_as_of)}},
+                 {});
+}
+
 }

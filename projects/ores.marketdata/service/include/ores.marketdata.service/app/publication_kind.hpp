@@ -175,12 +175,15 @@ public:
                                       publication_facts set) const = 0;
 
     /**
-     * @brief Tells the readers that the set moved.
+     * @brief Tells the readers that the set moved, in the transaction that moved it.
      *
-     * Called after the apply's transaction commits, because telling is never
-     * the act: a notice that fails leaves the set published.
+     * The notice is written with the publish or not at all: a publish that
+     * rolled back never told anyone of a move that did not happen, and the
+     * delivery of what the transaction wrote is not this act's to make.
+     *
+     * @param tx The transaction the publication was written in.
      */
-    virtual void announce_published(const ores::database::context& ctx,
+    virtual void announce_published(const ores::database::context& tx,
                                     const publication_facts& set) const = 0;
 };
 

@@ -36,7 +36,9 @@ set as withdrawn rather than stopping it.
 
 =published_at= and =published_by= are the publication record, empty while the
 request waits and written in one act when the approved set is published.
-=request_id= is the natural key, so a request authorises one publish.
+=request_id= is the natural key, so a request authorises one publish. The apply
+ends every live set of the pair in the same act, so the pair has one set in use
+and the sets it replaced say which one took their place.
 
 * Flags
 :PROPERTIES:
@@ -231,6 +233,56 @@ When the set was published, or null while the request waits.
 std::nullopt
 #+end_src
 
+** superseded_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+When a later set took this one's place, or null while this set is in use.
+
+A supersession is a publish whose subject is the successor, so the instant is
+the successor's published instant and no person signs it: the successor's own
+record names the publisher.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** superseded_by_request_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The publish request whose apply replaced this set, or null.
+
+A soft reference, as the curve's is: the successor is published under its own
+request and this row links to it so a reader follows one live set and one
+superseded set and never two live sets.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** superseded_as_of
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
+:END:
+
+The as-of the successor was built at, or null.
+
+Carried beside the successor's request so the history names the set that
+replaced this one without a second read.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
 * SQL
 
 ** Flags
@@ -244,12 +296,15 @@ is a tenant function, so the subject names its party instead of hiding behind it
 
 ** Checks
 
-| expression                                       |
-|--------------------------------------------------|
-| ("published_at" is null) = ("published_by" = '') |
-| "as_of" > '1970-01-01 00:00:00+00'::timestamp with time zone |
-| "spot_rate" > 0                                  |
-| "pair_code" <> ''                                |
+| expression                                                       |
+|------------------------------------------------------------------|
+| ("published_at" is null) = ("published_by" = '')                 |
+| "as_of" > '1970-01-01 00:00:00+00'::timestamp with time zone     |
+| ("superseded_at" is null) = ("superseded_by_request_id" is null) |
+| ("superseded_at" is null) = ("superseded_as_of" is null)         |
+| "superseded_at" is null or "published_at" is not null            |
+| "spot_rate" > 0                                                  |
+| "pair_code" <> ''                                                |
 
 ** Indexes
 

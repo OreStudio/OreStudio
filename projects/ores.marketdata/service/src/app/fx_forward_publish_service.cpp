@@ -29,6 +29,7 @@
 #include "ores.marketdata.core/repository/fx_forward_publish_repository.hpp"
 #include "ores.marketdata.core/repository/fx_forward_publish_spot_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include "ores.marketdata.service/app/curve_notices.hpp"
 #include "ores.marketdata.service/app/fx_forward_ladder_service.hpp"
 #include "ores.marketdata.service/app/publication_kind.hpp"
 #include "ores.marketdata.service/app/publication_lifecycle.hpp"
@@ -478,6 +479,33 @@ public:
             throw std::runtime_error("The set the request authorises is gone, so nothing is "
                                      "published under it.");
         auto record = stored.front();
+
+        // A pair carries one set in use, so every live set of the pair ends in
+        // the same transaction that writes this one: an apply that ended the
+        // previous set but failed to write its successor would leave the pair
+        // with none, and one that wrote the successor first and then failed
+        // would leave two. Every live set is ended and not only the newest,
+        // because a pair that carries two is a set that never ended.
+        for (auto previous : repo.read_published_for_pair(tx, record.party_id, record.pair_code)) {
+            if (previous.id == record.id || previous.superseded_at)
+                continue;
+            if (!set.replaced_as_of || previous.as_of > *set.replaced_as_of)
+                set.replaced_as_of = previous.as_of;
+            previous.superseded_at = set.published_at;
+            previous.superseded_by_request_id = record.request_id;
+            previous.superseded_as_of = record.as_of;
+            previous.modified_by = set.published_by;
+            previous.performed_by = tx.service_account();
+            previous.change_reason_code = "system.fx_forward_superseded";
+            previous.change_commentary = "Superseded by the forward set published under request " +
+                                         boost::uuids::to_string(record.request_id) + " as of " +
+                                         datetime::to_iso8601_utc(record.as_of);
+            repo.write(tx,
+                       previous,
+                       {ores::utility::domain::precondition_kind::must_match_version,
+                        static_cast<std::uint32_t>(previous.version)});
+        }
+
         record.published_at = set.published_at;
         record.published_by = set.published_by;
         record.modified_by = set.published_by;
@@ -486,9 +514,6 @@ public:
         record.change_commentary = "Published under approval request " +
                                    boost::uuids::to_string(record.request_id) + " by " +
                                    set.published_by;
-        // A supersession is the record's to state and its columns do not exist
-        // yet, so the set ends nothing and no reader is told: the story's third
-        // task adds both.
         repo.write(tx,
                    record,
                    {ores::utility::domain::precondition_kind::must_match_version,
@@ -497,11 +522,17 @@ public:
         return set;
     }
 
-    void announce_published(const ores::database::context&,
-                            const publication_facts&) const override {
-        // The forward set tells nobody yet: the seed carries no notice kind for
-        // it, so announcing would raise a kind that does not exist. The story's
-        // third task seeds the kind and the notice.
+    void announce_published(const ores::database::context& tx,
+                            const publication_facts& set) const override {
+        domain::fx_forward_publish record;
+        record.id = set.publish_id;
+        record.request_id = set.request_id;
+        record.party_id = set.subject.party_id;
+        record.pair_code = set.subject.subject_key;
+        record.as_of = set.subject.as_of;
+        record.published_at = set.published_at;
+        record.published_by = set.published_by;
+        announce_forward_publish(tx, record, set.replaced_as_of);
     }
 };
 

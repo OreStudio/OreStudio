@@ -68,6 +68,9 @@ struct fx_forward_publish_entity {
     std::string method_code;
     std::string published_by = "";
     std::optional<db_timestamp> published_at;
+    std::optional<db_timestamp> superseded_at;
+    std::optional<boost::uuids::uuid> superseded_by_request_id;
+    std::optional<db_timestamp> superseded_as_of;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -97,6 +100,9 @@ struct fx_forward_publish_entity {
                query_builder::bind("method_code", &e::method_code) |
                query_builder::bind("published_by", &e::published_by) |
                query_builder::bind("published_at", &e::published_at) |
+               query_builder::bind("superseded_at", &e::superseded_at) |
+               query_builder::bind("superseded_by_request_id", &e::superseded_by_request_id) |
+               query_builder::bind("superseded_as_of", &e::superseded_as_of) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

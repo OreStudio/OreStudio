@@ -32,9 +32,9 @@ republish.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Step 2 done: a policy states its own cadence, and the sweep applies only the policies that are due. |
+| Now          | Delivered: the jobs and the policies arrive as datasets published into the system tenant, and no populate script seeds either. |
 | Waiting on   | Nothing.                               |
-| Next         | Opt both models into the artefact and generate the staging tables. |
+| Next         | Review the branch, then open the pull request. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance
@@ -115,6 +115,11 @@ task and name that file in the Command column.
 | Policies applied by the first sweep after a database was created | 3 | =compass sql -- -c "select policy_code, outcome from ores_scheduler_apply_retention_policies_fn()"= | 66181f05f1 |
 | Policies applied by the sweep that follows it | 0, so the due check holds | the same call | 66181f05f1 |
 | Policies applied once one ledger row is backdated beyond its cadence | 1, the backdated policy | =update ores_scheduler_retention_runs_tbl set ran_at = ran_at - interval '25 hours' where policy_code = 'report_cashflows_90d'= then the same call | 66181f05f1 |
+| Job definitions a new database holds from the dataset | 4, each in the system tenant at version 1 | =compass sql -- -c "select job_name, tenant_id = ores_utility_system_tenant_id_fn() as system_tenant, version from ores_scheduler_job_definitions_tbl where valid_to = ores_utility_infinity_timestamp_fn()"= | df12de7626 |
+| Retention policies it holds from the dataset | 3, each in the system tenant | the same query on =ores_scheduler_retention_policies_tbl= | df12de7626 |
+| Published jobs the scheduler fired within ten minutes of starting | 3 of the 3 that fall due in that window | =select j.job_name, count(*) from ores_scheduler_job_instances_tbl i join ores_scheduler_job_definitions_tbl j on j.id = i.job_definition_id where i.started_at > now() - interval '10 minutes' group by j.job_name= | df12de7626 |
+| Housekeeping publish suites | 15 assertions across the housekeeping dataset; the whole SQL suite is 109 files and 1022 tests, all passing | =./test/run_tests.sh test/scheduler_publish_housekeeping_test.sql=, then =./test/run_tests.sh= | df12de7626 |
+| Subject plan tests | 9 assertions in 4 cases | =publish/bin/ores.scheduler.core.tests "[publish]"= | df12de7626 |
 
 * Notes
 

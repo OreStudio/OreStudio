@@ -8,7 +8,7 @@
 #+filetags: :sign_a_person_up_and_in_through_an_external_identity_provider:sprint_31:v0:
 #+owner: marco
 #+branch: feature/model-the-provider-and-the-identity-link
-#+pr:
+#+pr: 5135
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
@@ -136,15 +136,13 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5135][#5135]] | [iam] Model the identity provider and the link that signs a person in |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
-
-* Result
 
 * Result
 

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/bound-the-report-run-outputs-by-age
+#+pr: 5118
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -26,12 +26,12 @@ A run's cashflows, metrics and text values are removed once the run is older tha
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                                |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented; the database has been rebuilt and the sweep exercises every path. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-24                               |
+| Next         | Review and merge.                      |
+| Last touched | 2026-11-25                             |
 
 * Acceptance
 
@@ -41,9 +41,29 @@ A run's cashflows, metrics and text values are removed once the run is older tha
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The three tables were chunked on =as_of=, the date the engine stated for the
+figure. A chunk drop on that column bounds a store by the date the rows carry:
+a run states its figures at every payment date its trades hold, so most of the
+rows are dated years ahead and a chunk there ages out only after the projection
+has passed. The chunk is therefore cut on =valid_from=, the instant the row was
+written, which every row of a run shares because the table is written once with
+the run and never edited.
+
+The period is ninety days, stated in the model and in the seeded policy, with
+the reason beside it. The model gives the period to the engine, which applies it
+where its edition carries a retention job. For the edition that carries none,
+three policies are seeded beside one daily job that fires the sweep, and the
+sweep drops the same chunks and records what it removed.
+
+Two properties of a TimescaleDB hypertable shape the work. A unique index must
+carry the partitioning column, so the natural key index is declared in the model
+with =valid_from= rather than generated from the keys. And the partitioning
+column is checked for null before any row-level trigger runs, so =valid_from=
+needs a default, which the model language cannot state: the reporting chain sets
+it in =reporting_run_output_partitions_create.sql=.
+
+The change needs a database rebuild, because a hypertable's partitioning column
+is fixed when it is created.
 
 * Measurements
 
@@ -57,9 +77,45 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The run outputs carry a future date | 10,147,976 of 10,148,854 cashflow rows are dated after the instant of measurement | =compass sql -- -c "select count(*) filter (where as_of > now()) as future, count(*) from ores_reporting_report_cashflows_tbl"= | 81e571f7a6 |
+| The shape before the change | chunked on =as_of=, 30 day chunks, no retention interval, 366 runs written on one day | =compass sql -- -c "select hypertable_name, column_name, time_interval from timescaledb_information.dimensions where hypertable_name like 'ores_reporting_report_%'"= | 81e571f7a6 |
+| The shape after the change | chunked on =valid_from=, 1 day chunks, on all three tables | the same command | dac923c2dd |
+| The policies seeded | three, =drop_chunks=, 90 days, enabled, cadence =0 3 * * *= | =compass sql -- -c "select code, target, retention_days, enabled from ores_scheduler_retention_policies_tbl where valid_to = ores_utility_infinity_timestamp_fn()"= | dac923c2dd |
+| A chunk past the period | =removed = 1=, =outcome = applied=, from two chunks of which one was 100 days old | =compass sql -- -c "select * from ores_scheduler_apply_retention_policies_fn()"= | dac923c2dd |
+| A row inside the period | still read after the sweep, in the surviving chunk | =compass sql -- -c "select subject_id, value, valid_from from ores_reporting_report_cashflows_tbl"= | dac923c2dd |
+| A policy naming its table without a schema | resolved and counted: =removed = 1= against a scratch hypertable | the sweep command against =zz_retention_probe_tbl= | dac923c2dd |
+| A policy naming no hypertable | =outcome = skipped=, detail =no hypertable matches zz_no_such_table_tbl= | the sweep command | dac923c2dd |
+| A policy turned off | absent from the sweep, and the 300 day old chunk it named survived | the sweep command | dac923c2dd |
+| The engine's own path on this cluster | not taken: the licence reads =apache=, so no retention job exists on any table | =compass sql -- -c "select current_setting('timescaledb.license', true)"= and =select proc_name, hypertable_name from timescaledb_information.jobs= | dac923c2dd |
+| The rebuilt database | the three tables chunked on =valid_from=, the three defaults, the three policies and the job, from the committed chain | =compass db recreate -y -k= then the commands above | dac923c2dd |
 
 * Notes
+
+- The earlier verification of the sweep recorded =removed = 0= against the ticks
+  table and read that as nothing being old enough. It could not have been
+  anything else: the target was unqualified, so the count compared two
+  different strings and found no chunks either side of the drop. The count is
+  fixed, and the policy the seed writes names its table schema qualified.
+- A policy is versioned and retiring one closes its row. The sweep read every
+  row whose =enabled= flag was set, so a policy a person had turned off kept
+  being applied through its closed version. It now reads only the current one.
+- A row cannot be moved between chunks by updating the partition column: the
+  chunk's own constraint refuses it. The probe rows were written with the
+  trigger disabled instead, which is a test technique and not a supported path.
+- The model language states no column default, so the default on =valid_from=
+  lives in a hand-written script beside the generated ones. A model that could
+  state it would delete that script.
+- On this cluster the licence reads =apache=, so no table carries an engine
+  retention job and the sweep is the only path that drops anything. The model's
+  interval still states the period, which is what the licensed edition would
+  apply, and both paths name the same ninety days.
+- Nothing else schedules the sweep: the seeded job is the only thing that fires
+  it, and its cadence is the job's, not the policies'. Each policy records a
+  cadence too, which no code reads yet.
+- The seed writes 'system' as the actor, as the neighbouring seeds do. On a
+  database that has been provisioned, the account validator refuses that name,
+  so re-running the populate against a live database fails on these rows as it
+  already does on the job definitions.
 
 * Test Scenarios
 
@@ -76,7 +132,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5118][#5118]] | [sql] Bound the report run outputs by age |
 
 * Review
 
@@ -85,3 +141,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The three run output tables are chunked by the instant their rows were written,
+one day at a time, and declare a ninety day retention interval with the reason
+recorded beside it. A run's figures are dropped whole once the run is older than
+the period, on either edition of the storage engine: the engine's own job where
+its licence provides one, and the seeded sweep where it does not. A run inside
+the period still reads its rows.
+
+The sweep now counts what it removed, reports a target it cannot resolve instead
+of counting nothing, and applies only the current version of each policy.

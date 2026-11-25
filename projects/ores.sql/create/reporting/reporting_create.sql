@@ -121,6 +121,10 @@
 \ir ./reporting_report_text_values_notify_trigger_create.sql
 \ir ./reporting_report_cashflows_create.sql
 \ir ./reporting_report_cashflows_notify_trigger_create.sql
+-- The three tables are chunked by the instant their rows were written, so each
+-- names that column as its partitioning column and needs a default for it: a
+-- hypertable checks the column for null before the insert trigger supplies it.
+\ir ./reporting_run_output_partitions_create.sql
 -- The screen's view of a run's figures. It reads the metric table, so it loads
 -- after it.
 \ir ./reporting_run_results_create.sql

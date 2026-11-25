@@ -54,17 +54,16 @@ create table if not exists "ores_reporting_report_text_values_tbl" (
     "figure" double precision null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (id, as_of),
+    primary key (id, valid_from),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn())
 );
 
--- Composite natural key: unique combination for active records
-create unique index if not exists report_text_values_party_id_report_instance_id_result_id_source_line_as_of_uniq_idx
-on "ores_reporting_report_text_values_tbl" (tenant_id, party_id, report_instance_id, result_id, source, line, as_of)
+
+
+create unique index if not exists report_text_values_run_natural_key_idx
+on "ores_reporting_report_text_values_tbl" (tenant_id, party_id, report_instance_id, result_id, source, line, as_of, valid_from)
 where valid_to = ores_utility_infinity_timestamp_fn();
-
-
 
 create or replace function ores_reporting_report_text_values_insert_fn()
 returns trigger as $$
@@ -122,14 +121,32 @@ begin
     ) into tsdb_installed;
 
     if tsdb_installed then
-        raise notice 'TimescaleDB detected - creating hypertable (30 days chunks)';
+        raise notice 'TimescaleDB detected - creating hypertable (1 day chunks)';
 
         perform public.create_hypertable(
             '"ores_reporting_report_text_values_tbl"',
-            'as_of',
-            chunk_time_interval => interval '30 days',
+            'valid_from',
+            chunk_time_interval => interval '1 day',
             if_not_exists => true
         );
+        -- A hypertable grows without bound unless a retention policy drops the
+        -- chunks that have aged out. The licence decides whether the policy can
+        -- be set: the community edition has no retention job, so the model's
+        -- interval is reported rather than silently ignored.
+        declare
+            current_license text;
+        begin
+            select current_setting('timescaledb.license', true) into current_license;
+            if current_license = 'timescale' then
+                perform public.add_retention_policy(
+                    '"ores_reporting_report_text_values_tbl"',
+                    drop_after => interval '90 days',
+                    if_not_exists => true
+                );
+            else
+                raise notice 'TimescaleDB community edition - no retention policy is set for ores_reporting_report_text_values_tbl';
+            end if;
+        end;
     else
         raise notice 'TimescaleDB not available - using regular table (manual cleanup required)';
     end if;

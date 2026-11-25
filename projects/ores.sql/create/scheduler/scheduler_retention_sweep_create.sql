@@ -52,10 +52,18 @@ declare
     chunks_before bigint;
     chunks_after bigint;
     dropped bigint;
+    target_name text;
     failure text;
 begin
     for policy in
-        select * from "ores_scheduler_retention_policies_tbl" where "enabled" order by "code"
+        -- Only the current version of a policy is applied. A policy is
+        -- versioned, so turning one off closes its row and writes a new version
+        -- that is disabled; the closed row still says enabled, and reading it
+        -- would keep applying a policy a person has just turned off.
+        select * from "ores_scheduler_retention_policies_tbl"
+        where "enabled"
+          and "valid_to" = ores_utility_infinity_timestamp_fn()
+        order by "code"
     loop
         cutoff := now() - make_interval(days => policy."retention_days");
         dropped := 0;
@@ -63,20 +71,37 @@ begin
 
         if policy."action" = 'drop_chunks' and policy."target_kind" = 'chunked_table' then
             begin
-                select count(*) into chunks_before
-                from timescaledb_information.chunks c
-                where format('%I.%I', c.hypertable_schema, c.hypertable_name) = policy."target"
-                  and c.range_end < cutoff;
+                -- Resolve the target to the name the catalogue states, so a
+                -- policy naming its table without a schema still counts what it
+                -- drops. A target that is no hypertable is reported rather than
+                -- dropped and counted as nothing: a policy that matches nothing
+                -- looks the same as a store with nothing to drop.
+                select format('%I.%I', h.hypertable_schema, h.hypertable_name)
+                into target_name
+                from timescaledb_information.hypertables h
+                where format('%I.%I', h.hypertable_schema, h.hypertable_name) = policy."target"
+                   or h.hypertable_name = policy."target"
+                limit 1;
 
-                perform public.drop_chunks(policy."target", older_than => cutoff);
+                if target_name is null then
+                    outcome := 'skipped';
+                    failure := 'no hypertable matches ' || policy."target";
+                else
+                    select count(*) into chunks_before
+                    from timescaledb_information.chunks c
+                    where format('%I.%I', c.hypertable_schema, c.hypertable_name) = target_name
+                      and c.range_end < cutoff;
 
-                select count(*) into chunks_after
-                from timescaledb_information.chunks c
-                where format('%I.%I', c.hypertable_schema, c.hypertable_name) = policy."target"
-                  and c.range_end < cutoff;
+                    perform public.drop_chunks(target_name, older_than => cutoff);
 
-                dropped := chunks_before - chunks_after;
-                outcome := 'applied';
+                    select count(*) into chunks_after
+                    from timescaledb_information.chunks c
+                    where format('%I.%I', c.hypertable_schema, c.hypertable_name) = target_name
+                      and c.range_end < cutoff;
+
+                    dropped := chunks_before - chunks_after;
+                    outcome := 'applied';
+                end if;
             exception when others then
                 failure := sqlerrm;
                 outcome := 'failed';

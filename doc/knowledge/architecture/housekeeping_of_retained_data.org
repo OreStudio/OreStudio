@@ -57,6 +57,23 @@ The action is a property of the class of data, not of the table. Which class
 takes which action is the subject of
 [[id:21D539CD-AF3B-4479-81D5-F195756C064F][Classification of retained data]].
 
+** The partition column
+
+A chunk drop removes whole chunks, so it bounds a store only by the time the
+chunk is cut on. A store chunked on a business date is bounded by that date and
+not by its own age. The run output tables carried the date the engine stated,
+which for a projected measure lies decades ahead: of ten million cashflow rows,
+all but a few hundred were dated after the sweep that dropped them.
+
+The chunk is therefore cut on the instant the rows were written, which is the
+one time every row of a run shares and the time past which the run itself is
+stale. Two schema consequences follow. A hypertable checks its partitioning
+column for null before any row-level trigger runs, so a bitemporal table
+partitioned on its write time needs a default for that column, because the
+insert trigger is what otherwise sets it. And a unique index on a hypertable
+must carry the partitioning column, so a natural key index over such a table is
+declared with the column rather than generated from the keys alone.
+
 ** One executor
 
 A single scheduled job reads the policies and performs their actions. It takes

@@ -8,7 +8,7 @@
 #+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/serve-the-ir-coverage-through-ores-http
-#+pr:
+#+pr: 5119
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
@@ -139,7 +139,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5119][#5119]] | [ores.http] Answer the interest-rate curve coverage on the calibration read |
 
 * Review
 

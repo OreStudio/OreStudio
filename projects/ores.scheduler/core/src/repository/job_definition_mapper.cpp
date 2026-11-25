@@ -43,8 +43,7 @@ domain::job_definition job_definition_mapper::map(const job_definition_entity& v
 
     domain::job_definition r;
     r.version = v.version;
-    if (v.tenant_id)
-        r.tenant_id = *v.tenant_id;
+    r.tenant_id = v.tenant_id;
     r.id = v.id;
     r.job_name = v.job_name;
     r.party_id = v.party_id;

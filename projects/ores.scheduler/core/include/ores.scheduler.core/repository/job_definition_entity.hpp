@@ -52,7 +52,7 @@ struct job_definition_entity {
     constexpr static const char* tablename = "ores_scheduler_job_definitions_tbl";
 
     boost::uuids::uuid id;
-    std::optional<utility::uuid::tenant_id> tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
 
     std::string job_name;

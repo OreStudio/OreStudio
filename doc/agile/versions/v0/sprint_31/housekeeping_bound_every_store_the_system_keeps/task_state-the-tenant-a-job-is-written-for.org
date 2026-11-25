@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: DCF056D9-BC7B-449A-A3A0-D6E3036C4DB4
+:END:
+#+title: Task: State the tenant a job is written for
+#+description: A job is a row of a tenant, but the write states no tenant: a service that registers a job for another tenant writes it into its own session's tenant. Let the write name the tenant it writes for.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A write states the tenant it writes for, so the reporting and approval services,
+which register a job on a tenant's behalf from a system session, create that job
+in the tenant that owns it rather than in their own.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- The write states the tenant a job belongs to
+- A service that registers a job for a tenant creates it in that tenant
+- A job the platform declares is still created in the system tenant
+- A tenant's screens list the jobs that run for it
+- A test covers a job created for a tenant by a session of another tenant
+
+* Analysis
+
+Found while holding every job in a tenant
+([[id:851EB73C-B0A5-4DEA-B5E7-AADC26727066][Hold every job definition in a
+tenant]]). The column is now not null and the store fills it from the session,
+which is right for the jobs the platform declares and for the jobs a service
+registers for itself. It is wrong for a job a service registers on a tenant's
+behalf.
+
+=report_scheduling_service= walks every tenant with
+=ctx_.with_tenant(tenant_id)= and builds the job's payload from that tenant's
+definition, but it sends the job through the bus, and the write record carries no
+tenant. The scheduler's service stamps the row with its own session's tenant, so
+the job lands in the installation's tenant. A tenant's screens read
+=tenant_id = current= and cannot see it, even though the job fires for it.
+
+Two shapes would carry the tenant, and the choice is the whole of this task:
+
+- *On the write record.* =job_definition_write= gains =tenant_id=, and the
+  service uses it when it is set and the session's otherwise. Every caller states
+  what it knows, and a caller that knows nothing keeps working. It costs a
+  protocol field on one entity and a codegen facet that decides which entities
+  carry one.
+- *On the request.* =put_job_definition_request= gains the tenant it acts for,
+  and the scheduler's service writes the whole request into that tenant. It
+  separates "which row" from "which tenant's row", which is what a service acting
+  for many tenants needs, but it makes every request state a tenant to write
+  anything.
+
+The first keeps the write record the single statement of what is written, which
+is how every other entity is written; the second is the shape a multi-tenant
+caller wants. Nothing else in the tree needs the second yet.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

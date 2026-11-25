@@ -26,11 +26,11 @@ Two matrices state the products a party may trade and the products one of its bo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance
@@ -79,7 +79,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The new pgTAP test | 14 of 14 assertions pass | =test/run_tests.sh test/refdata_party_product_types_test.sql= | =ce74f344b8= |
+| The whole pgTAP suite | 1,021 assertions in 109 files, all pass | =test/run_tests.sh= | =ce74f344b8= |
+| The refdata api suite | 25,898 assertions in 7,098 cases, all pass | =publish/bin/ores.refdata.api.tests= | =ce74f344b8= |
+| The refdata core suite | 6,247 assertions in 563 cases, all pass | =publish/bin/ores.refdata.core.tests= | =ce74f344b8= |
+| The refdata build | 370 edges, no error | =ninja ores.refdata.api.tests ores.refdata.core.tests -j 3= | =ce74f344b8= |
+| The suite before the services started | 5 failures, all connection refused on the pooler port | the same core suite, services stopped | =ce74f344b8= |
 
 * Notes
 
@@ -107,3 +112,46 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The party states the product types it permits, and a book can neither exceed
+that set nor escape it.
+
+What exists:
+
+- =ores_refdata_party_product_types_tbl=, generated from
+  [[id:84B5E325-ACE1-4B2A-B7CF-032DDD7D1366][ores.refdata.party_product_type]], with its notify trigger, its RLS
+  policy, its history and its events. The party row gains
+  =restricts_product_types=, on the same two-state rule as the book's.
+- The whole C++ stack for the junction, and the wire protocol, which the codegen
+  writes from the model: domain, codec, table, generator, repository, service,
+  handler, protocol, history provider, and the shell commands and recipes.
+- Two resolutions, in =refdata_product_approvals_create.sql=:
+  =ores_refdata_party_allowed_product_types_fn= and
+  =ores_refdata_book_allowed_product_types_fn=. A null answer means every type
+  the catalogue states; an empty array means none; a party or book the caller
+  cannot see resolves to none.
+- The subset rule in three triggers: a book may not name a type its party does
+  not permit, a party may not drop a type a book of the party carries, and a
+  party may not start restricting while a book carries a type it would not
+  permit.
+- The permission seeds, =refdata::party_product_types:{read,write,delete}=, and
+  the Trading role's read of the set its books narrow.
+- A pgTAP test, =refdata_party_product_types_test.sql=, over the two resolutions
+  and all three refusals.
+
+What the change does not do:
+
+- The booking path is unchanged, deliberately: it already reads the book's set,
+  and the book's set can no longer exceed the party's, so the refusal reaches it
+  without a line of code.
+- A book whose party is changed after the book states its set is not
+  re-checked; the rule holds on the writes it covers, and moving a book between
+  parties is not one of them. The check belongs with whatever writes that move.
+- No provision seeds a matrix. A party with the flag false permits everything,
+  so nothing existing changes, and a demo that wants a narrow party states one.
+- The web screen for either set is not built. The protocol and the shell
+  commands exist; the screen belongs to the screens work.
+- =refdata_party_functions_create.sql= carries column lists of its own and does
+  not name the new flag. Nothing writes a party through those functions, so the
+  omission cannot lose the flag, and the functions answer the questions they
+  were written for.

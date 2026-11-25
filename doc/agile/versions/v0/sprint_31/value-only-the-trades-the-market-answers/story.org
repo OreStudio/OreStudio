@@ -23,9 +23,9 @@ A report values the trades whose market data the system can answer, and states p
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
-| Now           | The model is fixed: [[id:DFC5F290-B8B6-4DEC-970C-D93C98FD39F8][Error Attribution in a Report Run]] states the three phases, the readiness record, the six causes and the exclusion rule. |
+| Now           | The model is fixed, and a party now states the product types it permits while a book narrows that set under a rule the database holds. |
 | Waiting on    | Nothing. The demand work of [[id:03554F8C-7FFF-4735-BC5B-2CA45E58C621][Make the market data connection follow the trades]] follows this story's readiness read rather than preceding it. |
-| Next          | [[id:9EC5A975-0FD7-44F4-9C70-7921E0F7AD3D][State what a party may trade and what a book may carry]]. |
+| Next          | [[id:68C4B58E-0801-4770-98B8-3A8294D7220F][Fill each book from its approval matrix]]. |
 | Last touched  | 2026-11-25                               |
 
 * Acceptance
@@ -44,7 +44,7 @@ A report values the trades whose market data the system can answer, and states p
 |------+-------+-------+-----+-------------|
 | [[id:825E12E1-F068-4630-B5A0-CF7E2F2F6871][Scaffold story: Value only the trades the market can answer]] | DONE | 2026-11-25 | 2026-11-25 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:7B4089F8-EE63-4056-9B67-A750CC0A99F4][Write the decision: what a run may value, and what it reports]] | DONE | 2026-11-25 | 2026-11-25 | State a run's three attribution phases, the three grains of its market readiness, the six causes of a gap, and the partition of the population that excluding an incomplete trade produces. |
-| [[id:9EC5A975-0FD7-44F4-9C70-7921E0F7AD3D][State what a party may trade and what a book may carry]] | BACKLOG | | | A party level approval matrix states the product types a party may trade, a book level matrix states the types that book may carry, and a book's matrix is refused unless it is a subset of its party's. |
+| [[id:9EC5A975-0FD7-44F4-9C70-7921E0F7AD3D][State what a party may trade and what a book may carry]] | DONE | 2026-11-25 | 2026-11-25 | A party level approval matrix states the product types a party may trade, a book level matrix states the types that book may carry, and a book's matrix is refused unless it is a subset of its party's. |
 | [[id:68C4B58E-0801-4770-98B8-3A8294D7220F][Fill each book from its approval matrix]] | BACKLOG | | | The generator fills a book with the product types its approval matrix names, books no type the matrix does not name, and states per book what it booked and what it left out. |
 | [[id:90951C94-E994-400F-A7D1-F2E1FDF68FC9][Resolve a trade set's requirements per trade]] | BACKLOG | | | The trading operation that answers what a trade set needs returns the addresses of each trade rather than one flat set, so a caller can say which trade needs what. |
 | [[id:8574E05C-8C76-4B37-9C64-61B3C1E0EEC5][Record a run's market readiness and leave incomplete trades out]] | BACKLOG | | | Before the engine runs, a run resolves each trade's requirements, records which addresses the market answers at the as-of, excludes every trade with an unanswered requirement, and fails in preprocessing when no trade is complete. |

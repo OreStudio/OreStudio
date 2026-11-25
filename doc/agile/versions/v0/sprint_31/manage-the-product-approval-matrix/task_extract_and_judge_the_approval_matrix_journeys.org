@@ -8,7 +8,7 @@
 #+filetags: :manage-the-product-approval-matrix:sprint_31:v0:
 #+owner: marco
 #+branch: feature/manage-the-product-approval-matrix
-#+pr:
+#+pr: 5136
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5136][#5136]] | [agile] Scaffold the approval matrix story and sign off its journeys |
 
 * Review
 

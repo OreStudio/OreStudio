@@ -18,18 +18,18 @@ Continued from: [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LL
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+An agent authenticates the way a person does, so its calls carry a user's authority.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | ABANDONED                              |
 | Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
-| Now           | Not yet started.                       |
+| Now           | Taken over on 2026-11-25 by [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Sign a person up and in through an external identity provider]], which is OAuth at the level of ORE Studio rather than for MCP alone. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-11-24                               |
+| Next          | Nothing. |
+| Last touched  | 2026-11-25                               |
 
 * Acceptance
 
@@ -39,7 +39,7 @@ Continued from: [[id:008127D7-B897-4CF7-854B-6DDFB89AC7F4][Serve ORE's API to LL
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:213D3539-9792-4C49-86A9-62B41A907992][Sign an MCP client in through OAuth]] | BACKLOG | | | ORE becomes an OAuth 2.1 authorization server for MCP clients, its consent page creating the same agent grant a key does, for Claude Desktop and claude.ai. |
+| [[id:213D3539-9792-4C49-86A9-62B41A907992][Sign a client in through ORE's authorization server]] | ABANDONED | | | Moved to [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Sign a person up and in through an external identity provider]] on 2026-11-25, widened from MCP to every client of ORE's API. |
 
 * Decisions
 

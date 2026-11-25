@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 55F16CAC-7529-4E35-89F9-475D392ADB51
+:END:
+#+title: Task: Approve a client on a consent screen
+#+description: A client that asks for access to ORE shows the person what it asks for, and approving or refusing returns the client to where it was going.
+#+type: task
+#+level: s1
+#+filetags: :show_the_identity_doors_the_links_and_the_consent:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9636A24B-639F-4088-8A6D-F84CA7A974B9][Show the identity doors, the links and the consent]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A client that asks for access to ORE shows the person a consent screen that states what it asks for — the client's name, the person, the party, the permissions and how long — and approves or refuses it. Approving creates the same agent grant the person creates by hand, and the screen returns the client to where it was going; refusing returns it to an answer that says so, and the screens show a sign-in that happened through a provider as it already shows a password one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9636A24B-639F-4088-8A6D-F84CA7A974B9][Show the identity doors, the links and the consent]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- The consent screen states the client, the person, the party, the permissions and the term, and nothing the client did not ask for.
+- Approving creates an agent grant the person sees in their grants and can revoke like any other.
+- Refusing returns the client a refusal, and creates no grant.
+- A client's consent page works in the browser a person already uses, with no separate application.
+- The screen is pinned by tests, and the strings are translated.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

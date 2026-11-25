@@ -1,43 +1,44 @@
 :PROPERTIES:
-:ID: 213D3539-9792-4C49-86A9-62B41A907992
+:ID: 7D34ECD1-E5F9-4C1F-9B6E-A4CE2BAC88E9
 :END:
-#+title: Task: Sign an MCP client in through OAuth
-#+description: ORE becomes an OAuth 2.1 authorization server for MCP clients, its consent page creating the same agent grant a key does, for Claude Desktop and claude.ai.
+#+title: Task: Model the provider and the identity link
+#+description: Two IAM tables, as codegen entities: a provider a tenant enables, and a person's link to a provider account.
 #+type: task
 #+level: s1
-#+filetags: :sign_an_mcp_client_in_through_oauth:inbox:product_backlog:
+#+filetags: :sign_a_person_up_and_in_through_an_external_identity_provider:sprint_31:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-11-22
-#+updated: 2026-11-22
-#+environment: bright_faraday
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AD45EAE5-2FC9-4BCA-BD6B-437054135BF7][Sign an MCP client in through OAuth]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Sign a person up and in through an external identity provider]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A client such as Claude Desktop or claude.ai connects to /mcp, is sent to ORE's own sign-in page, and the person signs in and approves the agent, which creates the same agent grant an API key does. ores.http publishes protected resource metadata, answers 401 with WWW-Authenticate, and serves authorization server metadata, an authorize endpoint with the consent page, and a token endpoint with PKCE S256, rotating refresh tokens and tokens bound to ORE by resource indicator, as MCP's authorization specification asks. Done when a client needs it, after the API keys.
+Model the two facts federated sign-in needs, in IAM, as codegen entities like every other table: a provider a tenant enables, carrying its issuer, its client, the address domains it may serve and whether the door offers it; and a person's link to a provider account, carrying the account, the issuer and the subject, the address the provider stated and when it was linked. Include the operations the door, the screens and the gate read: the providers a host offers before a session exists, a person's links after one, and the removal of one.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:AD45EAE5-2FC9-4BCA-BD6B-437054135BF7][Sign an MCP client in through OAuth]] |
+| Parent story | [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Sign a person up and in through an external identity provider]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-11-22                               |
+| Last touched | 2026-11-25                               |
 
 * Acceptance
 
-- Claude Desktop connects to /mcp through ORE's sign-in page without a header or a bridge.
-- The consent creates an agent grant the person sees and revokes like any other.
-- The server passes the MCP conformance runner's authorization checks for what it implements.
+- A tenant enables a provider as data, and no code names Google or any other provider.
+- A link is keyed by the issuer and the subject, so a provider account links to one ORE account only.
+- The reads the door needs answer without a session, because the door is where a person without one arrives.
+- The schema, the domain types, the protocol, the routes and the TypeScript twins are generated from the models, and the generated suites pass.
 
 * Plan
 

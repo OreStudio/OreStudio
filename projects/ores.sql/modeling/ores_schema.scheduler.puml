@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: scheduler
-Tables: 3
+Tables: 4
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -152,6 +152,18 @@ package "scheduler" #F1F8E9 {
     The scheduler fires one sweep which reads the enabled policies and applies them,
     including where the storage engine runs no retention job of its own.
     end note
+
+    entity ores_scheduler_retention_runs_tbl  #F7E5FF {
+        * id : uuid <<PK>>
+        --
+        * policy_code : text
+        * action : text
+        * target : text
+        * ran_at : timestamptz
+        * removed : bigint
+        * outcome : text
+        * detail : text
+    }
 
 }
 

@@ -84,6 +84,13 @@ BEGIN
     -- Provisioning copies every one of them to each party.
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'refdata.fx_vol_surface_blueprints', 22);
 
+    -- Housekeeping: the jobs the scheduler fires and the policies that bound
+    -- each store. The platform authors both, so one copy lives in the system
+    -- tenant and no tenant holds its own. A policy names a table and not a job,
+    -- so neither depends on the other.
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'scheduler.job_definitions', 23);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'system_core', 'scheduler.retention_policies', 24);
+
     -- =============================================================================
     -- World Bundle Members
     -- =============================================================================

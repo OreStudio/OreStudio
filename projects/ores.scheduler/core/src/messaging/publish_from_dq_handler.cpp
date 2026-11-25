@@ -1,0 +1,130 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.scheduler.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.database/query_builder/execute.hpp"
+#include "ores.database/service/tenant_context.hpp"
+#include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
+#include "ores.logging/logger.hpp"
+#include "ores.nats/domain/delivery.hpp"
+#include "ores.scheduler.core/service/publish_subject_plan.hpp"
+#include "ores.service/messaging/workflow_helpers.hpp"
+#include "ores.utility/codec/json_codec.hpp"
+#include <cstdint>
+#include <format>
+#include <optional>
+#include <string>
+
+namespace ores::scheduler::messaging {
+
+using namespace ores::logging;
+using namespace ores::database::repository;
+
+namespace {
+
+inline std::string_view logger_name = "ores.scheduler.messaging.publish_from_dq_handler";
+auto& lg() {
+    static auto instance = make_logger(logger_name);
+    return instance;
+}
+
+} // namespace
+
+publish_from_dq_handler::publish_from_dq_handler(ores::nats::service::client& nats,
+                                                 const ores::database::context& ctx)
+    : nats_(nats)
+    , ctx_(ctx) {}
+
+void publish_from_dq_handler::handle(ores::nats::delivery delivery) {
+    const auto& msg = delivery.msg();
+
+    auto wf = ores::service::messaging::workflow_step_context::from_message(nats_, msg);
+    if (!wf) {
+        // Not a step command at all, so there is no step to fail and nothing
+        // a second delivery would achieve.
+        std::move(delivery).reject();
+        return;
+    }
+
+    const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+    std::optional<ores::dq::messaging::publish_from_dq_command> parsed;
+    try {
+        parsed = ores::utility::codec::json::read<ores::dq::messaging::publish_from_dq_command>(sv);
+    } catch (const std::exception& e) {
+        wf->fail("Failed to decode publish_from_dq_command: " + std::string(e.what()));
+        std::move(delivery).commit();
+        return;
+    }
+    const auto& cmd = *parsed;
+
+    const auto fn_name = service::publish_from_dq_function(msg.subject);
+    if (fn_name.empty()) {
+        wf->fail("Cannot derive SQL function from subject: " + std::string(msg.subject));
+        std::move(delivery).commit();
+        return;
+    }
+
+    ORES_LOG_SEV(lg(), info) << "publish_from_dq: fn=" << fn_name << " dataset=" << cmd.dataset_id
+                             << " mode=" << cmd.mode << " step=" << wf->step_id;
+
+    try {
+        auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, wf->tenant_id);
+
+        const auto sql = std::format(
+            "SELECT action, record_count FROM {}($1::uuid, $2::uuid, $3::text, $4::jsonb)",
+            fn_name);
+        const std::string params_json = cmd.params_json.empty() ? "{}" : cmd.params_json;
+
+        auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+            tenant_ctx, sql, {cmd.dataset_id, cmd.tenant_id, cmd.mode, params_json}, lg(), fn_name);
+
+        ores::dq::messaging::publish_from_dq_result result;
+        result.success = true;
+        for (const auto& row : rows) {
+            if (row.size() >= 2 && row[0].has_value() && row[1].has_value()) {
+                const auto count = static_cast<std::uint64_t>(std::stoll(*row[1]));
+                if (*row[0] == "inserted")
+                    result.records_inserted += count;
+                else if (*row[0] == "updated")
+                    result.records_updated += count;
+                else if (*row[0] == "skipped")
+                    result.records_skipped += count;
+                else if (*row[0] == "deleted")
+                    result.records_deleted += count;
+            }
+        }
+
+        ORES_LOG_SEV(lg(), info) << "publish_from_dq complete: fn=" << fn_name
+                                 << " inserted=" << result.records_inserted
+                                 << " updated=" << result.records_updated;
+
+        wf->complete(ores::utility::codec::json::write(result));
+        std::move(delivery).commit();
+
+    } catch (const std::exception& e) {
+        ORES_LOG_SEV(lg(), error) << "publish_from_dq failed: fn=" << fn_name
+                                  << " error=" << e.what();
+        wf->fail(e.what());
+        // The failure reaches the engine, so the delivery is done with;
+        // redelivering would only report the same failure again.
+        std::move(delivery).commit();
+    }
+}
+
+}

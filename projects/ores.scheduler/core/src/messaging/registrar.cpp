@@ -24,8 +24,11 @@
 #include "ores.scheduler.core/messaging/job_definition_history_provider_registrar.hpp"
 #include "ores.scheduler.core/messaging/job_definition_registrar.hpp"
 #include "ores.scheduler.core/messaging/job_instance_handler.hpp"
+#include "ores.scheduler.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.scheduler.core/messaging/retention_policy_registrar.hpp"
 #include "ores.scheduler.core/messaging/scheduler_status_handler.hpp"
+#include "ores.scheduler.core/service/publish_subject_plan.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include <memory>
 #include <optional>
 #include <string_view>
@@ -78,6 +81,20 @@ registrar::register_handlers(ores::nats::service::client& nats,
             nats.queue_subscribe(get_scheduler_status_request::nats_subject,
                                  queue_group,
                                  [ssh](ores::nats::message msg) { ssh->status(std::move(msg)); }));
+    }
+
+    // The housekeeping data arrives as datasets, which the workflow engine
+    // dispatches as step commands. One handler serves both subjects, and the
+    // subject it receives names the function it calls.
+    {
+        auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
+        ores::service::messaging::step_routes routes;
+        for (const auto subject : service::publish_from_dq_subjects)
+            routes.on(subject, [pdq](ores::nats::delivery delivery) {
+                pdq->handle(std::move(delivery));
+            });
+        subs.push_back(ores::service::messaging::serve_step_commands(
+            nats, "ores.scheduler.service", routes));
     }
 
     // Job definition history comes from the generic history provider.

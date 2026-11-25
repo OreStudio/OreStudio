@@ -27,6 +27,7 @@ set(files
     "service_action_payloads_tests.cpp"
     "service_mq_action_handler_tests.cpp"
     "service_nats_publish_action_handler_tests.cpp"
+    "service_publish_subject_plan_tests.cpp"
     "service_schedule_decision_tests.cpp"
     "service_sql_action_handler_tests.cpp"
 )

@@ -37,6 +37,25 @@ applied, whether it is enabled, and the fallback to take where the engine will
 not act. The policy is stored as data: a period changes without a schema rebuild,
 and one screen shows every policy beside the size of what it governs.
 
+** What the platform states and what the installation decides
+
+The configuration arrives as two datasets published into the system tenant, beside
+the platform's other data: one stages the jobs the scheduler fires, the other the
+retention policies. A publish reconciles what the platform states. For a job that
+is its command, the payload it carries and what it is for; for a policy, the
+target, the action and the reason the store is kept. The rest is the
+installation's, and a publish leaves it alone: when a job fires, whether it is
+enabled, and a policy's period, cadence and enabled state are written when the
+row first arrives and carried from the most recent row the installation held,
+even where the publish closed that row first.
+
+The split follows the question that decides every dataset. The platform declares
+the job in order to function, so a release that changes what the sweep runs
+reaches an installation that is already running. The installation decides how
+much of its own data it keeps, so no republish overrules that decision. The
+dataset carries the defaults a new installation starts with, which is why the
+first publish writes every field and the second writes none.
+
 ** The actions
 
 Four actions treat a store by removing what it no longer needs:

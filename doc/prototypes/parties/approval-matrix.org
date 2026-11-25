@@ -39,6 +39,31 @@ carries no history of its own (RS-RELATED-03), which is why the tab and the pane
 have no /History/ row of their own and the record's own history is the history of
 the change.
 
+** The screens the prototype has to sit on
+
+The two records already have screens, and they are not alike.
+
+- The party is a full record page: =PartyPage= in
+  =projects/ores.web/packages/web/src/refdata/parties.tsx=, with a record
+  header, tabs held in the address, and a dialog for each card. A
+  /Market approvals/ tab joins =details=, =identifiers=, =contacts=,
+  =memberships=, =centres=, =counterparties= and =history=, and the tab is drawn
+  only for a reader who may read the sets, as the other tabs are.
+- The book is read only: =BookPage.tsx= draws a frame and a grid of facts -- its
+  name, its portfolio, its status, its purpose, its currency and its codes. It
+  has no tabs, no parts panel, no dialog and no write path, because a book is
+  published from the data quality dataset rather than edited in the web.
+
+So the party's tab is the placement the two screens already support, and the
+book's panel is not: the prototype drew tabs and a /Change/ on a page that has
+neither. Three placements are open, and the owner decides between them:
+
+| Placement | What it costs |
+|-----------+---------------|
+| The book shows its set read only, and the set is narrowed from the party's tab, one dialog per book | The smallest change: no new write path, and the comparison stays where the party's set is |
+| The book page gains tabs and a write path of its own | The largest: a read only screen grows an editing surface and a server operation its kind has never had |
+| A screen of its own edits both sets, and the two records show what it wrote | Removes the edit from both records, which contradicts the journey's argument for staying on the record |
+
 ** The placements the standard does not settle
 
 | Placement | What the prototype draws | What is asked |

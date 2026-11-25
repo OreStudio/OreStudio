@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: A898881E-B0A8-4E23-B717-DB7681AB2B18
+:END:
+#+title: Task: Hold the calendar dates once, in the system tenant
+#+description: The calendar dates are derived from rules and exceptions the platform authors, and every tenant needs the same days. Materialise them once in the system tenant, read them through the shared-reference policy, and keep the recompute path as the way the copy is rebuilt.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The calendar dates exist once per installation, in the system tenant, and every
+tenant reads them there, so adding a tenant adds no copy of a calendar it shares
+with every other tenant. A party keeps its own holidays: its exceptions stay its
+own rows and are applied over the shared days when it reads them.
+
+This task follows the party scope, not the other way round: the overlay is per
+party, so the exception must name its party first
+([[id:BB0570CB-7C89-4079-AE37-39EB300F2252][Scope the calendar exceptions to a
+party]]).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- The dates are materialised into the system tenant, once, and no tenant holds a
+  copy
+- A tenant reads them through the shared-reference policy, as it reads the
+  calendars and the exceptions
+- A party's own exceptions still change the days that party reads, in both
+  directions: an extra holiday closes a day the rules open, and a business-day
+  override opens a day they close
+- Two parties in one tenant read different days on the same date when their
+  exceptions differ
+- A party with no exception of its own reads the shared days unchanged
+- The recompute path stays, and rebuilding the system tenant's copy is a command
+  rather than a migration
+- A test covers a tenant reading the installation's dates
+
+* Analysis
+
+The decision is recorded on
+[[id:A54B0989-BFCB-45C6-80B7-279BF9843E78][Decide whether calendar dates are
+stored or computed]]. In short: a calendar's days follow from its rule and its
+exceptions, both of which the platform authors and publishes once, so the days
+are the same in every tenant. A per-tenant copy is therefore the same bytes
+written twice, and the treatment the classification names for derived reference
+data -- recompute, or share one copy -- applies.
+
+What this task does not do: it does not stop materialising. The dates sit on the
+pricing path, and moving the computation there would charge every run for work
+the installation can do once. It moves the materialisation's target from the
+caller's tenant to the system tenant, and makes the copy readable across
+tenants.
+
+The read is the part that needs care, and it has two halves. The first is the
+policy: =ores_refdata_calendar_dates_tbl= carries the tenant in its key and its
+reads filter on the caller's tenant, so a shared-reference read policy must admit
+the system tenant's rows, as the exceptions' own read already does with
+=where (tenant_id = caller or tenant_id = system)=.
+
+The second is the overlay, and it is what keeps a party's own holidays. The
+shared copy is the baseline the rules state; the party's exceptions are applied
+over it at read time, with the semantics the materialiser already uses:
+=is_business_day = false= closes a day the rules open and =true= opens a day they
+close. The read is therefore a merge keyed by date and party rather than a plain
+select, and it is cheap: a party that adds no exception carries no rows to merge,
+and a party that does carries a handful. A test that publishes one party's
+exception and reads the dates must show the day changed for that party and
+unchanged for another.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

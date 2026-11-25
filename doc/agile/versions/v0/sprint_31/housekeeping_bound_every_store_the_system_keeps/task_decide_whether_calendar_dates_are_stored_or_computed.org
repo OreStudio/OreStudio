@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/decide-whether-calendar-dates-are-stored-or-computed
+#+pr: 5137
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -26,11 +26,11 @@ A decision is recorded on whether calendar dates are stored per tenant, shared o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-24                               |
 
 * Acceptance
@@ -41,9 +41,14 @@ A decision is recorded on whether calendar dates are stored per tenant, shared o
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Measure the store: how many rows a calendar holds, what a row costs with its
+   indexes, and what the horizon does to both.
+2. Read what the classification already says about derived reference data, and
+   what the tree already does: the days are materialised by a rule engine, so
+   recomputation is not a proposal but an existing path.
+3. Cost the three options against the measurement: per-tenant materialisation,
+   one shared copy, and computation with no store.
+4. Choose, and raise the task that realises the choice.
 
 * Measurements
 
@@ -57,9 +62,66 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Rows the calendar dates hold | 486,540, for 36 calendars over 2024-01-01 to 2060-12-31 | =select count(*), count(distinct calendar_code), min(date), max(date) from ores_refdata_calendar_dates_tbl= | 3a923822a7 |
+| Space the dates take, with their indexes | 283 MB, 610.3 bytes a row | =select pg_total_relation_size('ores_refdata_calendar_dates_tbl')= | 3a923822a7 |
+| Rows and space a single calendar holds | 13,515 rows, about 8 MB | =select count(*) from ores_refdata_calendar_dates_tbl where calendar_code = 'Australia'= | 3a923822a7 |
+| Space the exceptions take | 19 MB, 733.5 bytes a row, 26,780 rows | =select pg_total_relation_size('ores_refdata_calendar_exceptions_tbl')= | 3a923822a7 |
+| Tenants holding a copy in this environment | 1, the system tenant | =select count(distinct tenant_id) from ores_refdata_calendar_dates_tbl= | 3a923822a7 |
+| The copy the story reports | about 612 MB, a per-tenant copy | the story's inventory, measured in the environment it names | 3a923822a7 |
+| Where the calendars and their exceptions are published | the =world= bundle, into the system tenant, once | =select code, bundle_code from ores_dq_datasets_tbl d join ores_dq_dataset_bundle_members_tbl m on m.dataset_code = d.code where d.code like '%calendar%'= | 3a923822a7 |
+| What materialises the dates | =calendar_materialisation_service=, from the rule engine, into the caller's tenant | =projects/ores.refdata/core/src/service/calendar_materialisation_service.cpp= | 3a923822a7 |
+| The horizon the materialisation defaults to | 2050, settable through =calendar.materialisation.end_horizon= | =projects/ores.refdata/core/src/service/calendar_materialisation_service.cpp= | 3a923822a7 |
 
 * Notes
+
+** The three options, costed
+
+| Option | Stored | What it costs | What it risks |
+|--------+--------+---------------+---------------|
+| Materialise per tenant, as today | 283 MB a tenant: 486,540 rows at 610 bytes a row | nothing new; the materialisation service already exists | one copy of the same bytes per tenant, and adding a tenant adds a copy |
+| One copy in the system tenant | 283 MB once, plus the 19 MB of exceptions every tenant already reads | a read policy, a repository that reads across tenants, and the materialisation pointed at the system tenant | a pricing read that assumes the caller's tenant must learn to ask for the shared one |
+| Compute on demand, store nothing | none | the rule engine runs per process and per horizon, on the pricing path | a run that needs a horizon nobody stated computes it again; the work moves from a nightly job to every reader |
+
+The horizon decides the volume in all three: 13,515 rows a calendar is 37 years
+of days, and the default end year is 2050. A shorter horizon shrinks the copy
+but not the ratio between options.
+
+** The two levels, and whose holiday it is
+
+A holiday is a party's fact. Two parties in one installation trade on different
+dates: a Hong Kong party closes on days a United Kingdom party does not, and both
+sit in the same tenant. The tree therefore holds exactly two levels for an
+exception, the installation's and a party's, and nothing in between.
+
+An exception overrides one day either way -- =is_business_day = false= adds a
+holiday no rule states, and =true= opens a day a rule closes. Today the row is
+tenant-scoped, so a tenant can close a day for every party it holds and cannot
+say which party it meant. The party scope is its own task,
+[[id:BB0570CB-7C89-4079-AE37-39EB300F2252][Scope the calendar exceptions to a
+party]]; this decision takes it as given.
+
+A single materialised copy of the days leaves the party's exceptions untouched
+only if the overlay moves to the read: the shared copy holds the base days the
+rules state, and the caller's own party exceptions are applied over them, with
+the semantics the materialiser uses. That is the one thing the decision adds to
+the store's shape rather than removing from it, and it is why the decision is not
+"compute nothing": the exceptions stay, per party, and stay able to change a
+day.
+
+** The decision
+
+One copy in the system tenant, kept as a derived cache and rebuilt on demand.
+The reasoning is the classification's: a calendar's days follow from its rule
+and its exceptions, both of which the platform authors and publishes once in the
+=world= bundle, so the days are the same bytes in every tenant. A per-tenant copy
+writes them once per tenant; computing them in every pricing run charges the run
+for work the installation can do once and hand to everyone. The copy is
+disposable, which is what makes keeping it safe: =calendar_materialisation_service=
+rebuilds it from the rules, so the store is bounded by the horizon rather than by
+how many tenants exist.
+
+The reporting environment's 612 MB is consistent with this one: 283 MB for the
+dates and 19 MB for the exceptions, held about twice over.
 
 * Test Scenarios
 
@@ -76,7 +138,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5137][#5137]] | [agile] Decide how the calendar dates are held |
 
 * Review
 
@@ -85,3 +147,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The three options are costed against the store as it is: 486,540 rows and 283 MB
+for 36 calendars over 2024 to 2060, 610 bytes a row with its indexes, 13,515 rows
+and about 8 MB a calendar, and 19 MB of exceptions that every tenant already
+reads from the system tenant.
+
+The decision: the dates are held once, in the system tenant, and the
+materialisation service is kept as the way that copy is rebuilt from the rules.
+Recomputation is not rejected — it is what makes the single copy disposable, and
+it bounds the store by the horizon rather than by the number of tenants.
+
+A party keeps its own holidays: exceptions remain rows of a party or of the
+installation, and the read applies the party's over the shared days, so a Hong
+Kong party that closes on a day the United Kingdom's calendar opens still sees
+its own dates. What the decision shares is the rule-derived baseline beneath
+both levels, not anyone's right to close a day.
+
+The task that realises it is [[id:A898881E-B0A8-4E23-B717-DB7681AB2B18][Hold the
+calendar dates once, in the system tenant]].

@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 7338D2E9-647A-4C81-ACE9-46AE6F492FF1
+:END:
+#+title: Task: Seed each book with the approval its name implies
+#+description: The ACME books are published with the product types their names and purposes imply and not with every code in the catalogue, the party's set covers its books, and every type the generator books into a book is one that book permits.
+#+type: task
+#+level: s1
+#+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
+#+owner: marco
+#+branch: feature/value-only-the-trades-the-market-answers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A provisioned ACME states an initial approval matrix that is comprehensive across the trade type population and related to what each book is called: the cable book carries the FX option types, the CDS book the credit types, and together they cover every type the generator books, with no book carrying a type its party does not permit.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
+| Now          | Not yet started. The gap it closes is measured: every published book takes every code, and the party states nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Decide the affinity and carry it through the book population. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- Each published ACME book states the product types its name and purpose imply, and no longer takes every code the catalogue holds.
+- The party's set is stated by the provision and covers every one of its books' sets.
+- The affinity is one list per book, read both by the book's set and by the generator's choice of types, so the two cannot drift apart.
+- Every type the generator books into a book is permitted by that book's matrix, and a check fails when one is not.
+- The union of the books' sets covers the trade type population the generator books, so no generated type is left without a book that may carry it.
+
+* Plan
+
+The gap is in the book population and not in the approval model.
+=ores_refdata_publish_books_from_dq_fn= writes =restricts_product_types = true= on
+every book and then takes *every* code the system catalogue holds, so the matrix
+a provisioned tenant receives says nothing about the book; and no provision
+states a party's set, so the party permits everything by its flag.
+
+1. *The affinity is data, keyed by the book.* A curated table states, per book
+   name or desk family, the product types a book of that name carries. The book
+   population reads it to write the junction, and the generator reads the same
+   rows to choose the types it books, so there is one list and not two.
+2. *The publish writes the book's own set.* The DQ books artefact carries the
+   affinity key, the publish resolves it to codes, and a book whose key states
+   nothing is refused rather than published open.
+3. *The party's set is the union of its books.* The provision states it after the
+   books are published, so the subset rule holds from the first write and no
+   book is ever outside a party that has not yet spoken.
+4. *The population is checked against the matrix.* A published population states,
+   per book, the trades booked and the types its matrix permits, and a check
+   fails when a booked type is not permitted; the same check proves the union of
+   the books covers the trade type population.
+5. *The seed test changes with it.* =refdata_book_product_types_seed_test.sql=
+   asserts today that a published book takes every code; it asserts the book's
+   own set instead, and that the union across the group covers the population.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

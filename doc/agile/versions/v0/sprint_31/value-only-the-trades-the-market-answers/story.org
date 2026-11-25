@@ -25,7 +25,7 @@ A report values the trades whose market data the system can answer, and states p
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
 | Now           | The model is fixed, and a party now states the product types it permits while a book narrows that set under a rule the database holds. |
 | Waiting on    | Nothing. The demand work of [[id:03554F8C-7FFF-4735-BC5B-2CA45E58C621][Make the market data connection follow the trades]] follows this story's readiness read rather than preceding it. |
-| Next          | [[id:68C4B58E-0801-4770-98B8-3A8294D7220F][Fill each book from its approval matrix]]. |
+| Next          | [[id:7338D2E9-647A-4C81-ACE9-46AE6F492FF1][Seed each book with the approval its name implies]], and then [[id:68C4B58E-0801-4770-98B8-3A8294D7220F][Fill each book from its approval matrix]]. |
 | Last touched  | 2026-11-25                               |
 
 * Acceptance

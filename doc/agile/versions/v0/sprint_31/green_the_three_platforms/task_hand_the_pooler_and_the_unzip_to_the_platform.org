@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 8E006111-C660-42DD-8321-42A0CCAB3E7E
+:END:
+#+title: Task: Hand the pooler and the unzip to the platform
+#+description: PgBouncer refuses to run as root and the Windows runner carries no unzip, so two jobs fail before they reach a test.
+#+type: task
+#+level: s1
+#+filetags: :ci:build:green_the_three_platforms:sprint_31:v0:
+#+owner: marco
+#+branch: hotfix/green-the-pooler-and-the-unzip
+#+pr: 5121
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5DD6A6E-A836-4FF8-A07B-01247D5157E8][Green the three platforms at once]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Clear the two platform defects that stop the pooler suite and the Windows nightlies, and regenerate the diagrams the check reports as stale.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                                |
+| Parent story | [[id:B5DD6A6E-A836-4FF8-A07B-01247D5157E8][Green the three platforms at once]] |
+| Now          | The pooler hands itself to an unprivileged account, Windows extracts with tar, and the two stale diagrams are regenerated. |
+| Waiting on   | The next scheduled runs of the Linux continuous job and the Windows nightly. |
+| Next         | Commit, then read what those runs report. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- start_ci_pooler hands pgbouncer to an unprivileged account when it runs as root.
+- The Windows nightly extracts the compass release without unzip.
+- compass check reports no er_diagram drift.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5121][#5121]] | [ci] Hand the pooler to an unprivileged account and unzip with tar |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- =start_ci_pooler.sh= hands PgBouncer to =postgres= when it starts as root,
+  because PgBouncer exits on =FATAL PgBouncer should not run as root=. The
+  runtime directory goes to that account first, since the pooler writes its log
+  and pid file there and reads its credential file from there. =runuser= is
+  preferred and =setpriv= is the fallback, so an image carrying either one
+  works. Proved twice: once against the real binary as an ordinary user, where
+  the pooler still listens and stops, and once as root with =id=, =chown=,
+  =runuser= and =pgbouncer= stubbed, where the recorded calls are
+  =chown -R postgres <runtime dir>= and
+  =runuser -u postgres -- <pgbouncer> -d <ini>=.
+- =nightly-windows.yml= extracts the release with =tar -xf=, whose libarchive
+  backend reads a zip. The runner carries no =unzip=, which is why the step
+  reached its checksum, printed =OK=, and then exited 127.
+- The two schema diagrams are regenerated. =compass generate= reported them as
+  already stale at the base commit, so they travel in their own commit.

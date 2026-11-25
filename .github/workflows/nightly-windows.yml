@@ -209,7 +209,11 @@ jobs:
           curl -fsSLO "${base}/${asset}"
           curl -fsSLO "${base}/${asset}.sha256"
           sha256sum -c "${asset}.sha256"
-          unzip -q "${asset}" -d compass-ng
+          # Windows carries no unzip, and every runner carries tar, whose
+          # libarchive backend reads a zip. -C names the directory so the
+          # archive's own top directory stays under it.
+          mkdir -p compass-ng
+          tar -xf "${asset}" -C compass-ng
           dir=$(dirname "$(find "$RUNNER_TEMP/compass-ng" -type f -name 'compass.exe' | head -1)")
           printf '@echo off\r\n"%%~dp0compass.exe" %%*\r\n' > "${dir}/compass-ng.cmd"
           cygpath -w "${dir}" >> $GITHUB_PATH

@@ -138,11 +138,52 @@ ${pid_line}
 EOF
 }
 
+# The account a root container hands the pooler to. Every image this runs in
+# carries one of these, and the run keeps the same account throughout, so the
+# runtime directory can be given to it before the pooler reads anything.
+pooler_account() {
+    local candidate
+    for candidate in postgres nobody; do
+        if id -u "${candidate}" >/dev/null 2>&1; then
+            echo "${candidate}"
+            return 0
+        fi
+    done
+    return 1
+}
+
 start() {
     local port="${1:-6432}"
     [ -n "${pgbouncer_bin}" ] || die "pgbouncer is not installed"
     write_config "${port}"
-    "${pgbouncer_bin}" -d "${out}/${label}.ini" || die "pgbouncer did not start"
+    # PgBouncer refuses to run as root, so a container that starts it as root
+    # hands it to an unprivileged account. The runtime directory goes with it:
+    # the pooler writes its log and pid file there and reads its credential
+    # file from there, so a directory it cannot write is a pooler that exits
+    # without a word.
+    local run_as="" launcher=""
+    if [ "$(id -u)" -eq 0 ]; then
+        run_as="$(pooler_account)" ||
+            die "PgBouncer refuses to run as root, and this image has no account to hand it to"
+        chown -R "${run_as}" "${out}" ||
+            die "could not give ${out} to ${run_as}"
+        if command -v runuser >/dev/null 2>&1; then
+            launcher="runuser"
+        elif command -v setpriv >/dev/null 2>&1; then
+            launcher="setpriv"
+        else
+            die "PgBouncer refuses to run as root, and neither runuser nor setpriv is installed"
+        fi
+    fi
+    if [ -z "${run_as}" ]; then
+        "${pgbouncer_bin}" -d "${out}/${label}.ini" || die "pgbouncer did not start"
+    elif [ "${launcher}" = "runuser" ]; then
+        runuser -u "${run_as}" -- "${pgbouncer_bin}" -d "${out}/${label}.ini" ||
+            die "pgbouncer did not start"
+    else
+        setpriv --reuid="${run_as}" --regid="${run_as}" --init-groups -- \
+            "${pgbouncer_bin}" -d "${out}/${label}.ini" || die "pgbouncer did not start"
+    fi
     echo "${port}" > "${out}/${label}.port"
     # A pooler that is not listening yet is not up, and a suite that connects at
     # once would fail for a reason that has nothing to do with the suite.

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/datum/series_stream.hpp"

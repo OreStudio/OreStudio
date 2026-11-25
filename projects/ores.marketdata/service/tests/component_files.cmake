@@ -30,6 +30,7 @@ set(files
     "app_curve_publish_gate_tests.cpp"
     "app_delivery_meter_tests.cpp"
     "app_demand_calculator_tests.cpp"
+    "app_derived_market_object_kind_tests.cpp"
     "app_feed_ingest_loop_tests.cpp"
     "app_feed_series_tests.cpp"
     "app_fixing_ingest_tests.cpp"

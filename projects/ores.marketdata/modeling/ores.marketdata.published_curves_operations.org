@@ -43,6 +43,7 @@ as-of, and they are read beside it.
 * Includes
 
 #+begin_src cpp :name includes
+#include "ores.utility/domain/protocol.hpp"
 #include <chrono>
 #include <cstdint>
 #include <optional>

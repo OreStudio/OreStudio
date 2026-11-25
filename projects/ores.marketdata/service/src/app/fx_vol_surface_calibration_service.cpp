@@ -18,6 +18,7 @@
  */
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
 #include "ores.analytics.quant/service/ssvi_calibration_engine.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"

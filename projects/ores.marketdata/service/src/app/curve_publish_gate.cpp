@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/curve_publish_gate.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"

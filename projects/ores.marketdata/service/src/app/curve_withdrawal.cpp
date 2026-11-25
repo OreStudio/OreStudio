@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/curve_withdrawal.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"

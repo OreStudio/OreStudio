@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.service/app/published_curve_reader.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"

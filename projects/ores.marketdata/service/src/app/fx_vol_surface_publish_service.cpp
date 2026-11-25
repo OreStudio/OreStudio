@@ -17,6 +17,7 @@
  *
  */
 #include "ores.marketdata.service/app/fx_vol_surface_publish_service.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.logging/logger.hpp"

@@ -117,6 +117,17 @@ That decision settles four things the current build gets wrong:
    =simulated-fixings=, so that the party's existing =derived= subscription
    entitles it.
 
+*What a starved node states: nothing.* A derived node whose curve feed stops
+publishes no new fixing. It does not repeat the last value, because a repeated
+value is a statement about a day nobody observed, and it does not backfill the
+days it missed when it resumes: the input stopped, so the output stopped, and
+the hole is the honest record. That is what a fixing is — a fact about a date,
+stated once. A person who needs a value for a day the platform did not state
+enters it by hand, with an explanation, where fixings are adopted for a party's
+trades: see [[id:FA5C96A3-1F8E-4F9B-8973-40D92055D7DD][System-level fixing observations and party-level fixings]],
+and the fixings manager that owns that act is a separate piece of work. The
+provider states what it observed; the party decides what its trades fix on.
+
 One constraint holds throughout: the upstream is the *run's own* curve node,
 never a party's published curve, because reading a party's set back would
 invert the dependency the approach page forbids.

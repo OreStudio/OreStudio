@@ -67,6 +67,45 @@ reason.
   proves it against Google itself.
 - The gates cover the new code.
 
+* Starting point
+
+Measured on this tree on 2026-11-25, because the plan must not assume a
+foundation that is not there. *ORE Studio has no OAuth and no OpenID Connect of
+any kind.*
+
+What exists, and is what this story builds on:
+
+- =POST /api/session= signs a person in with a password and sets a browser
+  session cookie. =GET= and =DELETE /api/session= read and end it, and
+  =POST /api/session/party= chooses the party the session works for.
+- =POST /api/v1/iam/ops/signup= registers a person under the deployment's
+  registration policy.
+- Agent grants and keys are created by a person in ores.web. The gateway turns a
+  key into a session through an in-memory cache of its own
+  (=agent_key_exchange=), and an MCP call carries that key.
+- Sessions, sign-ins and authentication events are stored, and the screens show
+  them.
+- NATS carries its own JWKS and JWT for service-to-service authentication
+  (=ores.nats/service/jwks=), which is unrelated to a person's sign-in and is
+  not a foundation this story can reuse.
+
+What does not exist anywhere in the tree:
+
+- No OAuth 2.0 or OpenID Connect endpoint: no =/authorize=, no =/token=, no
+  metadata document, and no =.well-known= path at all.
+- No provider registry and no identity link: no table, no column and no setting
+  that names a third party.
+- No client registry. A grant is created by a person inside ORE and its key is a
+  bearer credential the person copies; no client ever asks ORE for access, so
+  there is no request to consent to.
+- No published key set for a client to verify a token against, no refresh token
+  and no consent record a client holds.
+
+Every piece is therefore built here. The decision task chooses what the pieces
+are and, in particular, whether the authorization server rests on the grant ORE
+already holds, which is created, audited and revoked today, rather than on a
+second consent record beside it.
+
 * Tasks
 
 | Task | State | Start | End | Description |

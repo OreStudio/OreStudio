@@ -36,6 +36,7 @@ Decide how ORE Studio lets a person sign up and sign in with an external identit
 * Acceptance
 
 - The options are written with their costs, against Google's OpenID Connect documentation and ORE's existing session, registration and agent-grant machinery.
+- The decision states what exists today, because nothing about OAuth does: the password session, self-service registration through the registration policy and the gateway's agent key exchange, with no authorization or token endpoint, no provider registry, no identity link and no client registry. It names what is built rather than what is extended.
 - The recommendation states where the flow is served, what a provider's registration holds, the rule by which an account is linked, and what a session records about its method.
 - The recommendation says how ORE's authorization server reuses the same sign-in and consent.
 - The verification plan says how the flow is proven in the gate and the suites without Google's credentials, and how a real Google sign-in is recorded.

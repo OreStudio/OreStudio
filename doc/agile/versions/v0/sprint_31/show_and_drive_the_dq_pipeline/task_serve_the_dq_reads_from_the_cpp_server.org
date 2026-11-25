@@ -26,12 +26,12 @@ The DQ reads the screens need answer on ores.http, so a DQ screen runs on the su
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
-| Now          | The part exists and its four route units are generated: the facet is on the dataset, dataset bundle, bundle member and artefact type models, the aggregate is hand-written, and the server registers it. The build is running and has not been called green. |
-| Waiting on   | Nothing. The route-area rule and the part's diagram are next. |
-| Next         | The DQ reads the coverage screen needs, on ores.http. |
-| Last touched | 2026-11-22                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
 
 * Acceptance
 
@@ -64,7 +64,40 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Routes the part registers | 39 over four units | =grep -h "\.summary(" projects/ores.http/dq/src/routes/dq/*.cpp \| wc -l= | cdc649d983 |
+| Route tests | 23 cases over four units | =grep -c TEST_CASE projects/ores.http/dq/tests/*.cpp= | cdc649d983 |
+| The part's own suite | passed | =ctest --preset linux-clang-release-ninja -R ores.http.dq= | cdc649d983 |
+| Every suite | 109 of 109 passed | gate =ctest= step, =build/output/local_checks/logs/ctest.log= | cdc649d983 |
+| The local gate | 19 of 20 checks | =./compass.sh check=, =build/output/local_checks/report.md= | cdc649d983 |
+
+* Result
+
+Done. ores.http answers the four DQ collections and ores.web reads them from it.
+The BFF is not served and no route was added to it.
+
+- =projects/ores.http/dq= is a part with a hand-written aggregate over four
+  generated route units: datasets, dataset bundles, bundle members and artefact
+  types, 39 routes in all, registered by the server's application.
+- The http-route facet is on =ores.dq.dataset=, =ores.dq.dataset_bundle=,
+  =ores.dq.dataset_bundle_member_junction= and =ores.dq.artefact_type=, so the
+  units and their tests are generated and the route-area rules cover them.
+- =api/dq.ts= is one module for every DQ call: the four reads, =readCoverage= to
+  fetch them together, and =readinessOf= to decide which of four reasons keeps a
+  member from publishing. Its test asserts the envelopes, so a read of the wrong
+  key fails instead of drawing an empty table.
+- The gate builds the tree, rebuilds the database from the schema and runs every
+  suite: 109 of 109, including =ores.http.dq.tests=.
+
+One check is red and it is not this work. =answer-shapes= compares each ported
+route against the BFF corpus and finds two pairs in =marketdata/quotes/feeds= and
+=reporting/reports= where the gateway answers null and the corpus holds a value.
+This diff touches neither route, neither the corpus nor the exceptions file, so
+the mismatch is inherited from main and is recorded in the PR's limitations
+rather than excused by editing the exception list.
+
+Evidence: =./compass.sh check= on base 270d3d75fc — 19 of 20 checks, wall clock
+4348s; build 890s, db 216s, ctest 998s, ticks-smoke 1245s; report at
+=build/output/local_checks/report.md=.
 
 * Notes
 

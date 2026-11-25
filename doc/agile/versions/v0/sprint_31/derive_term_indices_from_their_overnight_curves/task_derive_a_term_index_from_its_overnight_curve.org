@@ -118,6 +118,8 @@ task and name that file in the Command column.
 | Derived configs seeded | 5: COP IBR 3M, JPY EYTIBOR 3M, KRW GENERIC 3M, PLN WIBOR 6M, USD SOFR 1M | =select ... where rate_source <> 'process'= on a recreated database | this branch |
 | Families that admit the terms | 5, each by its own flags | the same query joined to the family catalogue | this branch |
 | Databases the publish function broke | every dataset publish, on the new not-null column | =compass db recreate -y -k=, "null value in column rate_source" | this branch |
+| Derived fixing series on a live run | 5, 520 fixings each, latest 2026-11-25 | =select s.oresmd_uri, count(f.*) ...= over the series and its fixings | this branch |
+| Newest fixing of each | USD SOFR 1M 3.89%, COP IBR 3M 8.96%, JPY EYTIBOR 3M 1.32%, KRW GENERIC 3M 2.94%, PLN WIBOR 6M 5.60% | the same query's newest value | this branch |
 | Term indices with no fixings whose currency has an overnight curve | 5: USD SOFR 1M, COP IBR 3M, JPY EYTIBOR 3M, KRW GENERIC 3M, PLN WIBOR 6M | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
 
 * Notes

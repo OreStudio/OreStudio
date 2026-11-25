@@ -38,10 +38,13 @@ These are yours to ready, before the tester opens the client:
 - The system administrator exists: =super_admin= with
   =Secure-Password-123=. The bootstrap creates it, and every screen these
   steps open is a system control, so no tenant needs provisioning first.
-- Known gap at the time of writing: on a freshly recreated database the
-  synthetic service states no fixings for any index, the derived five
-  included, so Step 4 may find an empty series even when Steps 2 and 3
-  pass. Record that outcome rather than working around it.
+- The five series exist before the tester starts, because the synthetic
+  service states them at boot: =select count(*) from
+  ores_marketdata_market_fixings_tbl f join ores_marketdata_market_series_tbl s
+  on s.id = f.series_id where s.oresmd_uri like '%tenor=%' and
+  s.oresmd_uri like 'oresmd://ir/%';= answers five series of 520 fixings
+  each. If they are absent, the derived feeds did not start: read
+  =ores.synthetic.service.0.log= for "The derived index ... is offered".
 
 * Scenario Info
 

@@ -30,6 +30,7 @@
 #include "ores.refdata.core/repository/fx_option_convention_repository.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
 #include "ores.refdata.core/service/pair_expiry_date_rule.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
@@ -259,6 +260,15 @@ feed_kind make_fx_spot_kind() {
             return ores::analytics::quant::service::day_count_convention_code::A360;
         };
 
+        // A derived index says why it is not offered rather than vanishing from the
+        // run: the address its fixings take, the curve it reads and the term are all
+        // things a person can fix, and silence would say none of it.
+        const auto& registry_lg = []() -> auto& {
+            static auto instance =
+                ores::logging::make_logger("ores.synthetic.service.feed_kind_registry");
+            return instance;
+        };
+
         std::vector<feed_kind_candidate> out;
         out.reserve(rows.size());
         const auto shared = std::make_shared<fx_build_rows>();
@@ -415,6 +425,15 @@ feed_kind make_ir_curve_kind() {
             return ores::analytics::quant::service::day_count_convention_code::A360;
         };
 
+        // A derived index says why it is not offered rather than vanishing from the
+        // run: the address its fixings take, the curve it reads and the term are all
+        // things a person can fix, and silence would say none of it.
+        const auto& registry_lg = []() -> auto& {
+            static auto instance =
+                ores::logging::make_logger("ores.synthetic.service.feed_kind_registry");
+            return instance;
+        };
+
         std::vector<feed_kind_candidate> out;
         out.reserve(rows.size());
         for (const auto& cfg : rows) {
@@ -432,10 +451,19 @@ feed_kind make_ir_curve_kind() {
             if (cfg.rate_source != "process") {
                 // The currency's funding config publishes the overnight curve the
                 // rate is read from; its source name is the board member's code.
-                const auto funding = std::ranges::find_if(rows, [&cfg](const auto& other) {
+                // A currency may have more than one config that funds it, and only the
+                // one that starts publishes its curve: a curve nobody runs states no
+                // rate to derive from. Prefer a funding config that starts with the
+                // service, and fall back to any funding config only when none does.
+                const auto funds = [&cfg](const auto& other) {
                     return other.currency_code == cfg.currency_code &&
                            feed::ir_curve_discounts_its_currency(other);
+                };
+                auto funding = std::ranges::find_if(rows, [&](const auto& other) {
+                    return funds(other) && other.auto_start;
                 });
+                if (funding == rows.end())
+                    funding = std::ranges::find_if(rows, funds);
                 // A tenor is a count and a unit: 1M, 3M, 6M or 1Y. The rule needs the
                 // term in months, so the digits are read up to the unit letter.
                 int months = 0;
@@ -447,6 +475,19 @@ feed_kind make_ir_curve_kind() {
                     if (ec == std::errc{} && end == digits_end)
                         months = tenor.back() == 'Y' ? count * 12 : count;
                 }
+                if (funding == rows.end())
+                    ORES_LOG_SEV(registry_lg(), warn)
+                        << "The derived index " << cfg.source_name
+                        << " names no currency curve to read: no config of "
+                        << cfg.currency_code << " funds and takes no tenor.";
+                if (months <= 0)
+                    ORES_LOG_SEV(registry_lg(), warn)
+                        << "The derived index " << cfg.source_name << " has no term in its tenor '"
+                        << cfg.tenor << "'.";
+                if (!c.fixing_item)
+                    ORES_LOG_SEV(registry_lg(), warn)
+                        << "The derived index " << cfg.source_name
+                        << " has no fixing address, so no fixing can be stated for it.";
                 if (funding != rows.end() && months > 0)
                     c.derived = feed::derived_fixing{
                         .curve_code = feed::curve_member_code(funding->source_name),
@@ -458,6 +499,14 @@ feed_kind make_ir_curve_kind() {
                         .term_months = months,
                         .convention = convention_of(cfg.currency_code),
                         .spread_basis_points = cfg.derived_spread_basis_points};
+                if (c.derived)
+                    ORES_LOG_SEV(registry_lg(), info)
+                        << "The derived index " << cfg.source_name << " is offered: it fixes "
+                        << c.fixing_item.value_or("(no address)") << " as "
+                        << (cfg.rate_source == "compounded_overnight" ? "the compounded" :
+                                                                       "the spread")
+                        << " rate of " << c.derived->curve_code << " over "
+                        << c.derived->term_months << " month(s).";
             }
             for (const auto& e : all_entries)
                 if (e.ir_curve_config_id == cfg.id)
@@ -816,6 +865,15 @@ feed_kind make_fx_vol_surface_kind() {
                     }
                 }
             return ores::analytics::quant::service::day_count_convention_code::A360;
+        };
+
+        // A derived index says why it is not offered rather than vanishing from the
+        // run: the address its fixings take, the curve it reads and the term are all
+        // things a person can fix, and silence would say none of it.
+        const auto& registry_lg = []() -> auto& {
+            static auto instance =
+                ores::logging::make_logger("ores.synthetic.service.feed_kind_registry");
+            return instance;
         };
 
         std::vector<feed_kind_candidate> out;

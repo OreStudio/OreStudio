@@ -390,6 +390,11 @@ feed_kind make_ir_curve_kind() {
         repo::ir_curve_generation_config_repository config_repo;
         const auto rows =
             id.empty() ? config_repo.read_latest(ctx) : config_repo.read_latest(ctx, id);
+        // A derived index reads the overnight curve of its currency, which is a config
+        // of its own: a request that names one config still needs the others to find
+        // that curve, so the funding curves are read whole unless the request is whole.
+        const auto other_rows = id.empty() ? decltype(rows){} : config_repo.read_latest(ctx);
+        const auto& funding_rows = id.empty() ? rows : other_rows;
 
         // A curve quotes one id for each of its template entries, so the candidates carry the
         // entries in the notation's own words and an offer writes an id from them. The entry
@@ -460,10 +465,11 @@ feed_kind make_ir_curve_kind() {
                     return other.currency_code == cfg.currency_code &&
                            feed::ir_curve_discounts_its_currency(other);
                 };
-                auto funding = std::ranges::find_if(
-                    rows, [&](const auto& other) { return funds(other) && other.auto_start; });
-                if (funding == rows.end())
-                    funding = std::ranges::find_if(rows, funds);
+                auto funding = std::ranges::find_if(funding_rows, [&](const auto& other) {
+                    return funds(other) && other.auto_start;
+                });
+                if (funding == funding_rows.end())
+                    funding = std::ranges::find_if(funding_rows, funds);
                 // A tenor is a count and a unit: 1M, 3M, 6M or 1Y. The rule needs the
                 // term in months, so the digits are read up to the unit letter.
                 int months = 0;
@@ -475,7 +481,7 @@ feed_kind make_ir_curve_kind() {
                     if (ec == std::errc{} && end == digits_end)
                         months = tenor.back() == 'Y' ? count * 12 : count;
                 }
-                if (funding == rows.end())
+                if (funding == funding_rows.end())
                     ORES_LOG_SEV(registry_lg(), warn)
                         << "The derived index " << cfg.source_name
                         << " names no currency curve to read: no config of " << cfg.currency_code
@@ -488,7 +494,7 @@ feed_kind make_ir_curve_kind() {
                     ORES_LOG_SEV(registry_lg(), warn)
                         << "The derived index " << cfg.source_name
                         << " has no fixing address, so no fixing can be stated for it.";
-                if (funding != rows.end() && months > 0)
+                if (funding != funding_rows.end() && months > 0)
                     c.derived = feed::derived_fixing{
                         .curve_code = feed::curve_member_code(funding->source_name),
                         .rule = cfg.rate_source == "compounded_overnight" ?
@@ -535,9 +541,11 @@ feed_kind make_ir_curve_kind() {
                         return {.input = std::nullopt,
                                 .skip_reason = "Derived index " + cfg.source_name +
                                                " has no id under the derived provider"};
-                    return {
-                        .input = feed::derived_fixing_feed_build_input{
-                            .source_name = cfg.source_name, .target = *target, .rule = *derived}};
+                    return {.input = feed::derived_fixing_feed_build_input{.source_name =
+                                                                               cfg.source_name,
+                                                                           .item = *item,
+                                                                           .target = *target,
+                                                                           .rule = *derived}};
                 }
 
                 repo::ir_curve_template_entry_repository entry_repo;
@@ -820,9 +828,17 @@ feed_start_attempt feed_kind_registry::make_feed(const feed_start_target& target
         adapter = *found;
     }
 
-    const auto outcome = target.row.candidate.build_input(adapter);
+    auto outcome = target.row.candidate.build_input(adapter);
     if (!outcome.input)
         return {.feed = {}, .failure = outcome.skip_reason};
+
+    // A derived index reads a curve another node publishes, so it states nothing while the
+    // graph marks it starved: the caller that starts it is the one that reads the graph.
+    if (auto* derived = std::get_if<feed::derived_fixing_feed_build_input>(&*outcome.input);
+        derived != nullptr && bctx.node_halted)
+        derived->starved = [halted = bctx.node_halted, name = target.row.candidate.source_name] {
+            return halted(name);
+        };
 
     return {.feed = factory().make(target.row.kind->kind, bctx, *outcome.input), .failure = {}};
 }
@@ -858,40 +874,6 @@ feed_kind make_fx_vol_surface_kind() {
     k.candidates = [](const ores::database::context& ctx, const std::string& id) {
         repo::fx_vol_surface_feed_repository feed_repo;
         const auto rows = id.empty() ? feed_repo.read_latest(ctx) : feed_repo.read_latest(ctx, id);
-
-        // A derived index reads its currency's overnight curve, so the funding
-        // configs are read once for the whole request: the day-count convention
-        // that annualises each currency's compounded rate is refdata's, not the
-        // synthetic config's, and the row shape is what names it.
-        namespace rrepo = ores::refdata::repository;
-        namespace rmapping = ores::refdata::mapping;
-        rrepo::ir_curve_bootstrap_config_repository bootstrap_repo;
-        const auto bootstrap_configs = bootstrap_repo.read_latest(ctx);
-
-        const auto convention_of = [&bootstrap_configs](const std::string& currency) {
-            for (const auto& config : bootstrap_configs)
-                if (config.currency_code == currency && config.curve_family_role == "FUNDING") {
-                    try {
-                        return rmapping::parse_day_count_convention_code(
-                            config.day_count_convention);
-                    } catch (const std::exception&) {
-                        // A convention the calculator does not implement leaves the
-                        // compounded rate on the most common overnight basis rather
-                        // than refusing the whole request.
-                        return ores::analytics::quant::service::day_count_convention_code::A360;
-                    }
-                }
-            return ores::analytics::quant::service::day_count_convention_code::A360;
-        };
-
-        // A derived index says why it is not offered rather than vanishing from the
-        // run: the address its fixings take, the curve it reads and the term are all
-        // things a person can fix, and silence would say none of it.
-        const auto& registry_lg = []() -> auto& {
-            static auto instance =
-                ores::logging::make_logger("ores.synthetic.service.feed_kind_registry");
-            return instance;
-        };
 
         std::vector<feed_kind_candidate> out;
         out.reserve(rows.size());

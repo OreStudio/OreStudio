@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 7B4089F8-EE63-4056-9B67-A750CC0A99F4
+:END:
+#+title: Task: Write the decision: what a run may value, and what it reports
+#+description: The decision record and the knowledge page that fix the run's phases, the three grains of its market readiness, the phase axis on every error, and the two product approval matrices, so the rest of the story builds one model and not six.
+#+type: task
+#+level: s1
+#+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
+#+owner: marco
+#+branch: feature/value-only-the-trades-the-market-answers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One page states the model the story builds: the phases a run passes through, what
+each phase can refuse and how it says so, the three grains of a run's market
+readiness, the phase every error carries, and the two approval matrices that
+decide what a party and a book may trade.
+
+The page is the reference the later tasks read, so a builder of the readiness
+record and a builder of the error phase do not have to re-derive either.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- The four phases are named, with what each refuses and the vocabulary it refuses in.
+- Each grain of the readiness record states what it answers and who reads it.
+- The phase axis is stated beside the engine's scope, with the reason the scope stays the engine's.
+- The two matrices are stated with the subset rule, and the population rule that follows from them.
+- The page states what the story does not build, so a later reader does not take the simulator's expected set for the platform's rule.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

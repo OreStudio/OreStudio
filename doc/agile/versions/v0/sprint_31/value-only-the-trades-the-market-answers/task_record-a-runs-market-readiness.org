@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 8574E05C-8C76-4B37-9C64-61B3C1E0EEC5
+:END:
+#+title: Task: Record a run's market readiness and leave incomplete trades out
+#+description: Before the engine runs, a run resolves each trade's requirements, records which addresses the market answers at the as-of, excludes every trade with an unanswered requirement, and fails in preprocessing when no trade is complete.
+#+type: task
+#+level: s1
+#+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
+#+owner: marco
+#+branch: feature/value-only-the-trades-the-market-answers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A run knows, before the engine sees it, which trades its market can answer: the readiness of every address and of every trade is recorded against the run, the incomplete trades are left out, and a run with no complete trade never reaches the engine.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- The run records, per address, whether the party's market answers it at the as-of, the series that answers it, and the cause when it does not.
+- The run records, per trade, whether it is complete and the addresses and causes that make it incomplete.
+- An incomplete trade does not travel to the engine, and the counts of booked, complete and excluded trades are recorded on the run.
+- A run none of whose trades is complete fails in preprocessing, naming the causes, and never submits work to the grid.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

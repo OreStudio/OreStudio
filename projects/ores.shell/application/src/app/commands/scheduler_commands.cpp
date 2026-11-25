@@ -268,29 +268,27 @@ void scheduler_commands::register_commands(cli::Menu& root_menu, nats_client& se
         [&session](std::ostream& out) { process_status(std::ref(out), std::ref(session)); },
         "Show each job's schedule, last run and next firing");
 
-    scheduler_menu->Insert(
-        "enable",
-        [&session](std::ostream& out, std::string job_name) {
-            process_set_active(std::ref(out), std::ref(session), job_name, true);
-        },
-        "Start a paused job",
-        {"job_name"});
+    scheduler_menu->Insert("enable",
+                           [&session](std::ostream& out, std::string job_name) {
+                               process_set_active(std::ref(out), std::ref(session), job_name, true);
+                           },
+                           "Start a paused job",
+                           {"job_name"});
 
-    scheduler_menu->Insert(
-        "disable",
-        [&session](std::ostream& out, std::string job_name) {
-            process_set_active(std::ref(out), std::ref(session), job_name, false);
-        },
-        "Pause a job",
-        {"job_name"});
+    scheduler_menu->Insert("disable",
+                           [&session](std::ostream& out, std::string job_name) {
+                               process_set_active(
+                                   std::ref(out), std::ref(session), job_name, false);
+                           },
+                           "Pause a job",
+                           {"job_name"});
 
-    scheduler_menu->Insert(
-        "cadence",
-        [&session](std::ostream& out, std::string job_name, std::string cron) {
-            process_cadence(std::ref(out), std::ref(session), job_name, cron);
-        },
-        "Change when a job fires: cadence <job_name> <cron>",
-        {"job_name", "cron"});
+    scheduler_menu->Insert("cadence",
+                           [&session](std::ostream& out, std::string job_name, std::string cron) {
+                               process_cadence(std::ref(out), std::ref(session), job_name, cron);
+                           },
+                           "Change when a job fires: cadence <job_name> <cron>",
+                           {"job_name", "cron"});
 
     scheduler_menu->Insert(
         "watch",
@@ -320,29 +318,29 @@ void scheduler_commands::register_commands(cli::Menu& root_menu, nats_client& se
         },
         "List what each sweep removed, newest first: runs [--policy <code>] [--limit <n>]");
 
-    housekeeping_menu->Insert(
-        "enable",
-        [&session](std::ostream& out, std::string policy_code) {
-            process_housekeeping_set_enabled(std::ref(out), std::ref(session), policy_code, true);
-        },
-        "Start applying a policy",
-        {"policy_code"});
+    housekeeping_menu->Insert("enable",
+                              [&session](std::ostream& out, std::string policy_code) {
+                                  process_housekeeping_set_enabled(
+                                      std::ref(out), std::ref(session), policy_code, true);
+                              },
+                              "Start applying a policy",
+                              {"policy_code"});
 
-    housekeeping_menu->Insert(
-        "disable",
-        [&session](std::ostream& out, std::string policy_code) {
-            process_housekeeping_set_enabled(std::ref(out), std::ref(session), policy_code, false);
-        },
-        "Stop applying a policy, keeping its row and its history",
-        {"policy_code"});
+    housekeeping_menu->Insert("disable",
+                              [&session](std::ostream& out, std::string policy_code) {
+                                  process_housekeeping_set_enabled(
+                                      std::ref(out), std::ref(session), policy_code, false);
+                              },
+                              "Stop applying a policy, keeping its row and its history",
+                              {"policy_code"});
 
-    housekeeping_menu->Insert(
-        "period",
-        [&session](std::ostream& out, std::string policy_code, int days) {
-            process_housekeeping_period(std::ref(out), std::ref(session), policy_code, days);
-        },
-        "Set how many days a policy keeps: period <policy_code> <days>",
-        {"policy_code", "days"});
+    housekeeping_menu->Insert("period",
+                              [&session](std::ostream& out, std::string policy_code, int days) {
+                                  process_housekeeping_period(
+                                      std::ref(out), std::ref(session), policy_code, days);
+                              },
+                              "Set how many days a policy keeps: period <policy_code> <days>",
+                              {"policy_code", "days"});
 
     ores::shell::app::insert_menu(root_menu, std::move(housekeeping_menu));
 }
@@ -751,8 +749,9 @@ void scheduler_commands::process_housekeeping_policies(std::ostream& out,
         return;
     }
 
-    const std::vector<flag_spec> specs{
-        {.name = "limit", .requires_value = true, .default_value = std::to_string(default_page_limit)}};
+    const std::vector<flag_spec> specs{{.name = "limit",
+                                        .requires_value = true,
+                                        .default_value = std::to_string(default_page_limit)}};
     const auto parsed = parse_args(args, specs);
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
@@ -781,8 +780,8 @@ void scheduler_commands::process_housekeeping_policies(std::ostream& out,
         return;
     }
 
-    out << response->total << " retention policy(ies), showing " << response->policies.size()
-        << ":" << std::endl;
+    out << response->total << " retention policy(ies), showing " << response->policies.size() << ":"
+        << std::endl;
     for (const auto& p : response->policies)
         print_policy(out, p);
 }
@@ -799,7 +798,9 @@ void scheduler_commands::process_housekeeping_runs(std::ostream& out,
 
     const std::vector<flag_spec> specs{
         {.name = "policy", .requires_value = true, .default_value = ""},
-        {.name = "limit", .requires_value = true, .default_value = std::to_string(default_page_limit)}};
+        {.name = "limit",
+         .requires_value = true,
+         .default_value = std::to_string(default_page_limit)}};
     const auto parsed = parse_args(args, specs);
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
@@ -856,8 +857,11 @@ void scheduler_commands::process_housekeeping_set_enabled(std::ostream& out,
 
     auto changed = *found;
     changed.enabled = enabled;
-    if (!put_policy(out, session, *found, changed, enabled ? "Started from the shell"
-                                                          : "Paused from the shell"))
+    if (!put_policy(out,
+                    session,
+                    *found,
+                    changed,
+                    enabled ? "Started from the shell" : "Paused from the shell"))
         return;
 
     out << "'" << policy_code << "' is now " << (enabled ? "on" : "off") << "." << std::endl;
@@ -888,8 +892,8 @@ void scheduler_commands::process_housekeeping_period(std::ostream& out,
     if (!put_policy(out, session, *found, changed, "Period changed from the shell"))
         return;
 
-    out << "'" << policy_code << "' now keeps " << days << " days (was "
-        << found->retention_days << ")." << std::endl;
+    out << "'" << policy_code << "' now keeps " << days << " days (was " << found->retention_days
+        << ")." << std::endl;
     out << "The next sweep applies the period it finds." << std::endl;
 }
 

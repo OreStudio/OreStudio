@@ -55,7 +55,8 @@ void log_in(nats_client& session) {
  */
 } // anonymous namespace
 
-TEST_CASE("scheduler_commands registers its verbs and the housekeeping view", "[commands][scheduler]") {
+TEST_CASE("scheduler_commands registers its verbs and the housekeeping view",
+          "[commands][scheduler]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");

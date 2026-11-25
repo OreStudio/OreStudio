@@ -8,7 +8,7 @@
 #+filetags: :build:synthetic:green_the_three_platforms:sprint_31:v0:
 #+owner: marco
 #+branch: hotfix/osx-time-zone-database
-#+pr:
+#+pr: 5125
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5125][#5125]] | [synthetic] Read the zone offset from the system's database |
 
 * Review
 

@@ -152,6 +152,22 @@ struct party final {
     bool is_registration_default = false;
 
     /**
+     * @brief Whether this party states the product types it permits. False means the party permits
+     * every product type the catalogue states, which is what a party that has never been restricted
+     * does; true means the party's product types junction holds the permitted set, and an empty
+     * junction is then a party that permits none.
+     *
+     * The party's set is the maximum for its books. A book's set must be a subset of it whenever
+     * the party states one, and the rule is enforced when either side is written, so a book can
+     * neither exceed its party's set nor escape it.
+     *
+     * The two states are different facts and must not be collapsed: a party with no junction rows
+     * permits everything when this is false and permits nothing when it is true. A blank set is a
+     * decision, not a gap.
+     */
+    bool restricts_product_types = false;
+
+    /**
      * @brief Username of the person who last modified this party.
      */
     std::string modified_by;

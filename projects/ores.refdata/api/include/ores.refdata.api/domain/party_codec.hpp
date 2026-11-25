@@ -61,6 +61,7 @@ namespace ores::refdata::domain {
         utility::codec::field{"status", &party::status},
         utility::codec::field{"image_id", &party::image_id},
         utility::codec::field{"is_registration_default", &party::is_registration_default},
+        utility::codec::field{"restricts_product_types", &party::restricts_product_types},
         utility::codec::field{"modified_by", &party::modified_by},
         utility::codec::field{"performed_by", &party::performed_by},
         utility::codec::field{"change_reason_code", &party::change_reason_code},

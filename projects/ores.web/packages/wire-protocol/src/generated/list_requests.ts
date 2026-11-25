@@ -4075,6 +4075,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.party_product_types.list': {
+        asOf: false,
+        filter: ['party_id', 'product_type_code', 'party_id_one_of', 'product_type_code_one_of'],
+        rows: ['party_product_types'],
+    },
+    'refdata.v1.party_product_types.list_by_party_id': {
+        asOf: false,
+        filter: ['party_id', 'product_type_code', 'party_id_one_of', 'product_type_code_one_of'],
+        rows: ['party_product_types'],
+    },
+    'refdata.v1.party_product_types.list_by_product_type_code': {
+        asOf: false,
+        filter: ['party_id', 'product_type_code', 'party_id_one_of', 'product_type_code_one_of'],
+        rows: ['party_product_types'],
+    },
     'refdata.v1.party_relationships.list': {
         asOf: true,
         filter: [],

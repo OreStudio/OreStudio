@@ -150,6 +150,7 @@ domain::party party_to_domain(const messaging::party_write& write) {
     v.status = write.status;
     v.image_id = write.image_id;
     v.is_registration_default = write.is_registration_default;
+    v.restricts_product_types = write.restricts_product_types;
     return v;
 }
 

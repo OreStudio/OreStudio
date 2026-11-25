@@ -260,6 +260,7 @@ entity "refdata" as refdata {
   ores_refdata_party_id_schemes_tbl
   ores_refdata_party_identifiers_tbl
   ores_refdata_party_product_type_deal_classes_tbl
+  ores_refdata_party_product_types_tbl
   ores_refdata_party_relationships_tbl
   ores_refdata_party_roles_tbl
   ores_refdata_party_statuses_tbl
@@ -305,7 +306,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-222 tables — ores_schema.refdata.puml
+223 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {

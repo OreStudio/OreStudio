@@ -387,6 +387,12 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_product_types:write',                 'State the product types a book allows');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_product_types:delete',                'Restore a book to allowing every product type');
 
+    -- Party product types: the product types a party permits its books to
+    -- trade, which every book of the party narrows rather than extends.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_product_types:read',                 'View the product types a party permits');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_product_types:write',                'State the product types a party permits');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_product_types:delete',               'Restore a party to permitting every product type');
+
     -- Business day convention types permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_day_convention_types:read',       'View business day convention types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_day_convention_types:write',      'Create and modify business day convention types');

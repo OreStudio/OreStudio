@@ -63,6 +63,7 @@ struct party_write {
     std::string status;
     std::optional<boost::uuids::uuid> image_id;
     bool is_registration_default{};
+    bool restricts_product_types{};
 
     friend bool operator==(const party_write&, const party_write&) = default;
 };
@@ -455,6 +456,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.parties.deleted";
         utility::codec::field{"status", &party_write::status},
         utility::codec::field{"image_id", &party_write::image_id},
         utility::codec::field{"is_registration_default", &party_write::is_registration_default},
+        utility::codec::field{"restricts_product_types", &party_write::restricts_product_types},
     };
 }
 

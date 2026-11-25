@@ -388,9 +388,15 @@
 -- Product family codes: no dependants, so they drop with the lookup set.
 \ir ./refdata_product_family_codes_notify_trigger_drop.sql
 \ir ./refdata_product_family_codes_drop.sql
+-- The approval triggers read the junctions below, so they go first.
+\ir ./refdata_product_approvals_drop.sql
 -- A book states the product types it allows, so the junction goes before the book.
 \ir ./refdata_book_product_types_notify_trigger_drop.sql
 \ir ./refdata_book_product_types_drop.sql
+-- A party states the product types it permits, so its junction goes before the
+-- party, and before the books that narrow it.
+\ir ./refdata_party_product_types_notify_trigger_drop.sql
+\ir ./refdata_party_product_types_drop.sql
 
 
 -- Product catalogue: instrument_codes before the asset_class_codes and

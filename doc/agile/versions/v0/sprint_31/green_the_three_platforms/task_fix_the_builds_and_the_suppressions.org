@@ -8,12 +8,12 @@
 #+filetags: :ci:build:green_the_three_platforms:sprint_31:v0:
 #+owner: marco
 #+branch: hotfix/ci-green-all-platforms
-#+pr:
+#+pr: 5112
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
 #+updated: 2026-11-25
-#+environment: festive-dijkstra
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5DD6A6E-A836-4FF8-A07B-01247D5157E8][Green the three platforms at once]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5112][#5112]] | [ci] Green macOS, the site workflow and the memcheck run |
 
 * Review
 

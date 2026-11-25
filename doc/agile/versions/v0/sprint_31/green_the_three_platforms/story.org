@@ -8,7 +8,7 @@
 #+filetags: :ci:build:sprint_31:v0:
 #+created: 2026-11-25
 #+updated: 2026-11-25
-#+environment: festive-dijkstra
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.

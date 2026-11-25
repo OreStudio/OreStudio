@@ -26,7 +26,9 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
+#include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.refdata.core/repository/fx_option_convention_repository.hpp"
+#include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
 #include "ores.refdata.core/service/pair_expiry_date_rule.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
@@ -232,6 +234,31 @@ feed_kind make_fx_spot_kind() {
     k.candidates = [](const ores::database::context& ctx, const std::string& id) {
         repo::fx_spot_generation_config_repository fx_repo;
         const auto rows = id.empty() ? fx_repo.read_latest(ctx) : fx_repo.read_latest(ctx, id);
+        // A derived index reads its currency's overnight curve, so the funding
+        // configs are read once for the whole request: the day-count convention
+        // that annualises each currency's compounded rate is refdata's, not the
+        // synthetic config's, and the row shape is what names it.
+        namespace rrepo = ores::refdata::repository;
+        namespace rmapping = ores::refdata::mapping;
+        rrepo::ir_curve_bootstrap_config_repository bootstrap_repo;
+        const auto bootstrap_configs = bootstrap_repo.read_latest(ctx);
+
+        const auto convention_of = [&bootstrap_configs](const std::string& currency) {
+            for (const auto& config : bootstrap_configs)
+                if (config.currency_code == currency && config.curve_family_role == "FUNDING") {
+                    try {
+                        return rmapping::parse_day_count_convention_code(
+                            config.day_count_convention);
+                    } catch (const std::exception&) {
+                        // A convention the calculator does not implement leaves the
+                        // compounded rate on the most common overnight basis rather
+                        // than refusing the whole request.
+                        return ores::analytics::quant::service::day_count_convention_code::A360;
+                    }
+                }
+            return ores::analytics::quant::service::day_count_convention_code::A360;
+        };
+
         std::vector<feed_kind_candidate> out;
         out.reserve(rows.size());
         const auto shared = std::make_shared<fx_build_rows>();
@@ -363,6 +390,31 @@ feed_kind make_ir_curve_kind() {
             return a.sequence_index < b.sequence_index;
         });
 
+        // A derived index reads its currency's overnight curve, so the funding
+        // configs are read once for the whole request: the day-count convention
+        // that annualises each currency's compounded rate is refdata's, not the
+        // synthetic config's, and the row shape is what names it.
+        namespace rrepo = ores::refdata::repository;
+        namespace rmapping = ores::refdata::mapping;
+        rrepo::ir_curve_bootstrap_config_repository bootstrap_repo;
+        const auto bootstrap_configs = bootstrap_repo.read_latest(ctx);
+
+        const auto convention_of = [&bootstrap_configs](const std::string& currency) {
+            for (const auto& config : bootstrap_configs)
+                if (config.currency_code == currency && config.curve_family_role == "FUNDING") {
+                    try {
+                        return rmapping::parse_day_count_convention_code(
+                            config.day_count_convention);
+                    } catch (const std::exception&) {
+                        // A convention the calculator does not implement leaves the
+                        // compounded rate on the most common overnight basis rather
+                        // than refusing the whole request.
+                        return ores::analytics::quant::service::day_count_convention_code::A360;
+                    }
+                }
+            return ores::analytics::quant::service::day_count_convention_code::A360;
+        };
+
         std::vector<feed_kind_candidate> out;
         out.reserve(rows.size());
         for (const auto& cfg : rows) {
@@ -377,6 +429,34 @@ feed_kind make_ir_curve_kind() {
             const auto index_tenor = feed::ir_curve_index_tenor(cfg);
             if (auto item = feed::curve_fixing_uri(cfg))
                 c.fixing_item = std::move(*item);
+            if (cfg.rate_source != "process") {
+                // The currency's funding config publishes the overnight curve the
+                // rate is read from; its source name is the board member's code.
+                const auto funding = std::ranges::find_if(rows, [&cfg](const auto& other) {
+                    return other.currency_code == cfg.currency_code &&
+                           feed::ir_curve_discounts_its_currency(other);
+                });
+                int months = 0;
+                const auto tenor = cfg.tenor;
+                if (!tenor.empty()) {
+                    int count = 0;
+                    const auto [end, ec] =
+                        std::from_chars(tenor.data(), tenor.data() + tenor.size(), count);
+                    if (ec == std::errc{} && end == tenor.data() + tenor.size())
+                        months = tenor.back() == 'Y' ? count * 12 : count;
+                }
+                if (funding != rows.end() && months > 0)
+                    c.derived = feed::derived_fixing{
+                        .curve_code = feed::curve_member_code(funding->source_name),
+                        .rule = cfg.rate_source == "compounded_overnight" ?
+                                    ores::analytics::quant::service::term_rate_rule::
+                                        compounded_overnight :
+                                    ores::analytics::quant::service::term_rate_rule::
+                                        overnight_plus_spread,
+                        .term_months = months,
+                        .convention = convention_of(cfg.currency_code),
+                        .spread_basis_points = cfg.derived_spread_basis_points};
+            }
             for (const auto& e : all_entries)
                 if (e.ir_curve_config_id == cfg.id)
                     c.pillars.push_back(vendor::ir_curve_pillar{cfg.currency_code,
@@ -386,6 +466,12 @@ feed_kind make_ir_curve_kind() {
                                                                 e.end_tenor_code,
                                                                 index_tenor});
             c.build_input = [ctx, cfg](const feed::feed_adapter& adapter) -> feed_build_outcome {
+                if (cfg.rate_source != "process")
+                    return {.input = std::nullopt,
+                            .skip_reason =
+                                "Curve " + cfg.source_name +
+                                " states its rate from the overnight curve; it runs no process"};
+
                 repo::ir_curve_template_entry_repository entry_repo;
                 std::vector<ores::synthetic::domain::ir_curve_template_entry> entries;
                 for (auto& e : entry_repo.read_latest(ctx))
@@ -704,6 +790,31 @@ feed_kind make_fx_vol_surface_kind() {
     k.candidates = [](const ores::database::context& ctx, const std::string& id) {
         repo::fx_vol_surface_feed_repository feed_repo;
         const auto rows = id.empty() ? feed_repo.read_latest(ctx) : feed_repo.read_latest(ctx, id);
+
+        // A derived index reads its currency's overnight curve, so the funding
+        // configs are read once for the whole request: the day-count convention
+        // that annualises each currency's compounded rate is refdata's, not the
+        // synthetic config's, and the row shape is what names it.
+        namespace rrepo = ores::refdata::repository;
+        namespace rmapping = ores::refdata::mapping;
+        rrepo::ir_curve_bootstrap_config_repository bootstrap_repo;
+        const auto bootstrap_configs = bootstrap_repo.read_latest(ctx);
+
+        const auto convention_of = [&bootstrap_configs](const std::string& currency) {
+            for (const auto& config : bootstrap_configs)
+                if (config.currency_code == currency && config.curve_family_role == "FUNDING") {
+                    try {
+                        return rmapping::parse_day_count_convention_code(
+                            config.day_count_convention);
+                    } catch (const std::exception&) {
+                        // A convention the calculator does not implement leaves the
+                        // compounded rate on the most common overnight basis rather
+                        // than refusing the whole request.
+                        return ores::analytics::quant::service::day_count_convention_code::A360;
+                    }
+                }
+            return ores::analytics::quant::service::day_count_convention_code::A360;
+        };
 
         std::vector<feed_kind_candidate> out;
         out.reserve(rows.size());

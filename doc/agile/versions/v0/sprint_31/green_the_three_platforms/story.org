@@ -40,6 +40,7 @@ Make continuous integration report a true state on Linux, macOS and Windows, so 
 |------+-------+-------+-----+-------------|
 | [[id:47474E4A-82F1-4695-9B48-5B8A297C12EC][Fix the builds that fail and suppress what libraries leak]] | STARTED | 2026-11-25 | | Three defects: the synthetic feed uses chrono without including it, the site workflow installs no compass, and four memcheck records come from boost and Catch2. |
 | [[id:8E006111-C660-42DD-8321-42A0CCAB3E7E][Hand the pooler and the unzip to the platform]] | STARTED | 2026-11-25 | | PgBouncer refuses to run as root and the Windows runner carries no unzip, so two jobs fail before they reach a test. |
+| [[id:7AD517ED-5743-40A5-B6E8-D50D95ADB669][Read the zone offset from the system's database]] | STARTED | 2026-11-25 | | libc++ carries no std::chrono time zone database, so locate_zone does not compile on macOS and the fixing feed never builds there. |
 
 * Decisions
 

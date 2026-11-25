@@ -24,6 +24,7 @@
 #include "ores.scheduler.core/messaging/job_definition_history_provider_registrar.hpp"
 #include "ores.scheduler.core/messaging/job_definition_registrar.hpp"
 #include "ores.scheduler.core/messaging/job_instance_handler.hpp"
+#include "ores.scheduler.core/messaging/retention_policy_registrar.hpp"
 #include "ores.scheduler.core/messaging/scheduler_status_handler.hpp"
 #include <memory>
 #include <optional>
@@ -55,6 +56,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // The job-definition entity stack is generated: the CRUD, version and
     // history verbs come from the entity registrar.
     for (auto& sub : register_job_definition_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+
+    // The retention-policy entity stack is generated the same way. Without this
+    // call its subjects have no responder and the policy table is readable only
+    // by SQL, which is how a policy would appear createable and never arrive.
+    for (auto& sub : register_retention_policy_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
 
     // The two operational views are computed, so their handlers are

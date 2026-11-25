@@ -34,9 +34,9 @@ remaining 15 here.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
-| Now           | Scaffolded empty on 2026-11-24 and filled in the next day: 15 tasks moved in, of which three are done and three are blocked. |
-| Waiting on    | The knowledge base read for the two blocked tasks, and a new compass-ng release for the recipe body. |
-| Next          | The recipes, whose body needs the compass change the handover in =evidence/= describes, then HEAD, then the answer-shape sweep. |
+| Now           | The ported routes are done: composed views, HEAD, the error contract, the cache policy, the auth fallbacks and now the IR coverage. The recipes and the handler gate wait on compass releases; the answer-shape sweep and the payload cap are open. |
+| Waiting on    | A compass-ng release for the recipe bodies and for the unchecked-handler rule, and the product decision on the 102 unseeded permission codes. |
+| Next          | The answer-shape sweep, then the payload cap once the upload's transport is decided. |
 | Last touched  | 2026-11-25                               |
 
 * Acceptance
@@ -126,6 +126,20 @@ remaining 15 here.
   service's own context, whose absent role list authorises everything. The two
   other fallbacks — an empty permission list, and a protected HTTP route on a
   server with no verifier — were already closed, and the task records where.
+- *A composed view's fact set is read in batches, and the batch read belongs to
+  the service that owns the fact* (2026-11-25, task 3E187C09). The calibration
+  read's IR coverage joins four collections, and the newest published set of a
+  curve is one of them. Asked one curve at a time it is one round trip per
+  curve — 38 in today's data, one more for every curve the catalogue gains — so
+  it is a batch operation that answers the whole set in one statement, and the
+  gateway joins it in memory. Measured, the view is five forwards whatever the
+  number of currencies; the BFF made 41 on the same data.
+- *A member the BFF omitted is answered empty, not absent* (2026-11-25, task
+  3E187C09). The BFF states =ir_curves= only for interest rates and leaves it out
+  for every other class; the gateway's codec writes every member, so it answers
+  an empty list. The screen's schema already defaults the member to an empty
+  list, so the two read alike, and the shape sweep compares a defaulted member
+  against its absence rather than treating it as a difference.
 - *A permission check is the handler's, and the gate must read it* (2026-11-25,
   task CCB1D9D1). Nothing gates a hand-written handler: the codec checks only
   that the codes handlers use are seeded, so a handler that checks nothing

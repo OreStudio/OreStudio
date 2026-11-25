@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-13
-#+updated: 2026-11-13
+#+updated: 2026-11-25
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,22 +28,60 @@ The IR coverage the calibration screen reads is served by ores.http: one row per
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] |
-| Now          | Not yet started.                       |
+| Now          | Built: the calibration read answers `ir_curves`, joined from four batched reads. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-13                               |
+| Next         | The pull request.                       |
+| Last touched | 2026-11-25                               |
 
 * Acceptance
 
-- ores.http answers the interest rates coverage with one row per currency and the fields the BFF route serves.
-- The route requires the session and the permissions the BFF route requires.
-- A route test drives a covered currency and each gap kind, and the browser can read the route instead of the BFF.
+- [X] ores.http answers the interest rates coverage with one row per currency and the fields the BFF route serves.
+- [X] The route requires the session and the permissions the BFF route requires.
+- [X] A test drives a covered currency and each gap kind, and the browser can read the route instead of the BFF. The cases are the BFF's own, ported to the join; the route keeps the session the calibration read already required, and the member the screen reads is the one the schema already declares.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The member is not a route of its own: the BFF answers the coverage inside
+=GET /api/synthetic/calibration/:assetClass=, as =ir_curves=, and only for
+=interest_rates=. The gateway already answers that view, so the work is one
+member and the reads behind it.
+
+** Four batched reads, then a walk in memory
+
+The coverage is a join of four collections:
+
+1. the IR generation configs — which source each currency's feed reads;
+2. the IR bootstrap configs — which curves each currency builds;
+3. the feeds the service runs — where each run started, and whether from a
+   fixing;
+4. the newest published set of every output series.
+
+The BFF reads the first three whole and the fourth one curve at a time. Read
+that way, the fourth is 38 round trips in today's dev data and one per curve
+config in any data, which is the shape of a read that gets slower as the
+catalogue grows. So it is a new operation,
+=marketdata.v1.ops.get_latest_published_sets=, that takes a batch of series and
+answers each one's newest set in one statement — the same arrangement the public
+rates coverage uses for its fixings.
+
+The join itself is a pure function over the four collections
+(=ir_curve_coverage= in =ores.http/synthetic=). Nothing in it reads the clock but
+the staleness comparison, and nothing in it costs a round trip.
+
+** The gaps are the BFF's words
+
+A row states the first fact that keeps a currency from being covered, in the
+order a currency falls short: no feed, no source, no curve config, no publish,
+not live, stale. The reason sentences are the BFF's own, because a screen shows
+them, and the cases that assert each one are ported from the BFF's suite.
+
+** One member the BFF omitted
+
+The BFF states =ir_curves= only for interest rates and omits it for every other
+class. The gateway's codec writes every member, so it answers an empty list
+instead. The screen's schema already defaults the member to an empty list, so the
+two read the same; the difference is recorded on the story rather than worked
+around in the route.
 
 * Measurements
 
@@ -57,10 +95,24 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| IR generation configs / bootstrap configs / currencies in the dev database | 134 / 38 / 330 | =psql -Atc "select (select count(*) from ores_synthetic_ir_curve_generation_configs_tbl), (select count(*) from ores_refdata_ir_curve_bootstrap_configs_tbl), (select count(*) from ores_refdata_currencies_tbl)"= | 67619a7873 |
+| Forwards one interest-rates calibration read makes | 5 — the resolution, two list reads, the running feeds, and one published-set batch | the route's =ir_coverage_of= | 67619a7873 |
+| Forwards the BFF made for the same answer | 3 + one per bootstrap config, so 41 on the same data | =latestPublishedSets= in =projects/ores.web/packages/bff/src/calibration.ts= | 67619a7873 |
+| The join's cases | 17 cases, 101 assertions | =ores.http.synthetic.tests "[ir_coverage]"= | 67619a7873 |
+| The batch read's cases | 6 cases, against the database | =ores.marketdata.service.tests= (the =published_set_read= cases) | 67619a7873 |
 
 * Notes
 
+- A test binary the branch did not rebuild failed with a symbol the tree no
+  longer defines, and another segfaulted, both because =compass test run= only
+  runs ctest: the tree had moved under the binaries when the branch took main
+  in. Rebuilt, both pass. A run of a suite whose sources changed needs
+  =compass build <target>= first.
+- The BFF's staleness rule reads the newest set with =limit 1= and takes the
+  last of the answer, which is the newest because the reader returns the
+  window oldest first. The batch read states the ordering itself, on the
+  published instant with the superseded set sorting as the older of a tie, so
+  the two agree without either resting on the other's paging.
 - The BFF route to replace: =GET /api/synthetic/calibration/:assetClass= in
   =projects/ores.web/packages/bff/src/calibration.ts=. The =irCurveCoverage=
   function there states the join and the gap order; the TypeScript row type is
@@ -96,3 +148,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+ores.http answers the interest-rate curve coverage on the calibration read:
+one row per currency with its source, its provider, the curve config that names
+it, the newest published set and the first gap that stops it being covered,
+with every curve of the currency listed, its funding curve first.
+
+It is joined in the gateway from four batched reads and walked in memory, so the
+number of round trips does not grow with the number of currencies: five forwards
+for the whole view, where the BFF made one per curve config. The fourth read is
+new — =marketdata.v1.ops.get_latest_published_sets= — and answers the newest set
+of a batch of series in one statement, with the state derived from the record's
+own facts.
+
+What is proved: each gap kind, the ordering, the curve list and the staleness
+boundary, by 17 cases ported from the BFF's own suite; the batch read's statement
+by 6 cases against the database; and the whole of both components' suites. What
+is not: a live read of the route against the running fleet with a session, which
+this environment does not have, and a browser walk of the screen reading the
+gateway rather than the BFF.

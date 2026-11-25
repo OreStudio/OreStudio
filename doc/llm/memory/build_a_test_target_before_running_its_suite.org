@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: C3D2CEA7-D632-4F11-A93D-EB45D7FF78BC
+:END:
+#+title: A test suite whose sources changed needs its target built first
+#+description: compass test run only runs ctest, so a suite can fail on a binary older than the tree.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+compass test run only runs ctest. It does not build the test binaries, so a suite can fail after main moves even when the branch's own change is sound.
+
+*Why:* Two marketdata suites failed on a branch straight after it took main in: one died with a symbol lookup error naming a type the tree no longer generates, the other segfaulted inside a delivery-count test. Both binaries were older than the tree. Rebuilt, both passed unchanged.
+
+*How to apply:* Before reporting a suite's result, check that its target was built in this working tree after the last pull or rebase. Run compass build <target>.tests for each suite you are about to run, or build the component first. A failure with a symbol lookup error, or a segfault in a test unrelated to the change, is a stale binary until proven otherwise.

@@ -62,20 +62,19 @@ std::string bearer(std::string token) {
 using ores::service::error_code;
 using ores::service::service::make_request_context;
 
-TEST_CASE("a request without a verifier keeps the base context", "[request_context]") {
+// A service that cannot verify a token believes nobody. The base context is the
+// service's own authority, so handing it to an unverifiable request would run
+// that request as the service: a deployment that forgot its verifier served
+// everybody. It refuses instead.
+TEST_CASE("a request without a verifier is refused", "[request_context]") {
     ores::testing::database_helper h;
     ores::nats::message msg;
-    // A base context with known values, so an implementation that returned a
-    // fresh or empty context fails on the literals below rather than passing on
-    // a comparison of two production accessors.
     const auto base = h.context().with_tenant(h.tenant_id(), "alice").with_roles({"r1", "r2"});
 
     const auto result = make_request_context(base, msg, std::nullopt);
 
-    REQUIRE(result.has_value());
-    REQUIRE(result->tenant_id().to_string() == h.tenant_id().to_string());
-    REQUIRE(result->actor() == "alice");
-    REQUIRE(result->roles() == std::vector<std::string>{"r1", "r2"});
+    REQUIRE_FALSE(result.has_value());
+    REQUIRE(result.error() == error_code::unauthorized);
 }
 
 TEST_CASE("a request without an authorization header is unauthorized", "[request_context]") {

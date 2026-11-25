@@ -5291,6 +5291,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'scheduler.v1.retention_runs.list': {
+        asOf: false,
+        filter: ['policy_code', 'outcome', 'id_one_of', 'policy_code_one_of', 'outcome_one_of'],
+        rows: ['runs'],
+    },
     'storage.v1.objects.list': {
         asOf: false,
         filter: [],

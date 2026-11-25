@@ -252,6 +252,44 @@ job_definition_repository::read_all_active(const context& ctx) {
 }
 #+end_src
 
+*** Repository declarations
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**
+     * @brief Reads every job definition, across all tenants, current only.
+     *
+     * The operational screens answer "what is the scheduler running", and the
+     * scheduler runs the platform's own jobs from NULL-tenant rows as well as
+     * tenants' jobs. The generated list is tenant scoped, so a system job is
+     * invisible through it by design; this read is what the screens use
+     * instead.
+     */
+    std::vector<domain::job_definition> read_every_latest(const context& ctx);
+#+end_src
+
+*** Repository implementations
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::job_definition>
+job_definition_repository::read_every_latest(const context& ctx) {
+    ORES_LOG_SEV(lg(), debug) << "Reading every current job definition.";
+    static constexpr auto max = db_timestamp::max();
+    const auto query = query_builder::read<std::vector<job_definition_entity>> |
+                       query_builder::where("valid_to"_c == max);
+
+    return query_builder::execute_read_query<job_definition_entity, domain::job_definition>(
+        ctx,
+        query,
+        [](const auto& entities) { return job_definition_mapper::map(entities); },
+        lg(),
+        "Reading every current job definition.");
+}
+#+end_src
+
 * See also
 
 - [[id:B788F24E-2E3F-432A-BD4F-CA8D6EBB2C9D][ores.scheduler]] — component group overview.

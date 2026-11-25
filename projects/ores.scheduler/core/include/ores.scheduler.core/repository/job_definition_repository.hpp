@@ -199,6 +199,17 @@ public:
      * cannot read through the tenant-scoped CRUD set.
      */
     std::vector<domain::job_definition> read_all_active(const context& ctx);
+
+    /**
+     * @brief Reads every job definition, across all tenants, current only.
+     *
+     * The operational screens answer "what is the scheduler running", and the
+     * scheduler runs the platform's own jobs from NULL-tenant rows as well as
+     * tenants' jobs. The generated list is tenant scoped, so a system job is
+     * invisible through it by design; this read is what the screens use
+     * instead.
+     */
+    std::vector<domain::job_definition> read_every_latest(const context& ctx);
 };
 
 }

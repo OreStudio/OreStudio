@@ -29,3 +29,6 @@
 \ir ./scheduler_retention_policies_create.sql
 \ir ./scheduler_retention_policies_notify_trigger_create.sql
 \ir ./scheduler_retention_sweep_create.sql
+-- The view the housekeeping screens read. It joins the ledger to the policies, so
+-- it loads after both.
+\ir ./scheduler_retention_runs_create.sql

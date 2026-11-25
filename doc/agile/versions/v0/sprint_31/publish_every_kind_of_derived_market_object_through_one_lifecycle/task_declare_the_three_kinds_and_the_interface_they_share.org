@@ -8,7 +8,7 @@
 #+filetags: :publish_every_kind_of_derived_market_object_through_one_lifecycle:sprint_31:v0:
 #+owner: marco
 #+branch: feature/declare-the-three-kinds-and-the-interface-they-share
-#+pr:
+#+pr: 5113
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -101,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5113][#5113]] | [marketdata] Declare the three kinds of derived market object |
 
 * Review
 

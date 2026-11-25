@@ -26,11 +26,11 @@ Decide how ORE Studio lets a person sign up and sign in with an external identit
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Sign a person up and in through an external identity provider]] |
-| Now          | The recommendation is written and waits for the product owner. |
+| Now          | Nothing. |
 | Waiting on   | The product owner's approval of the recommendation. |
-| Next         | Approve, then model the provider and the link. |
+| Next         | Nothing. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance
@@ -263,6 +263,17 @@ task and name that file in the Command column.
 
 * Notes
 
+The standards the plan rests on, rather than restates:
+
+- OpenID Connect Core 1.0, for the ID token and the claims it must carry.
+- Google, =Using OAuth 2.0 for Web Server Applications=, which states that a
+  loopback address such as =http://localhost:8080= may be used for testing.
+- RFC 7636, Proof Key for Code Exchange.
+- RFC 6749 and RFC 6750, the code flow and the bearer token.
+- Held for later, when the client authorization server is built: RFC 8414
+  (authorization server metadata), RFC 9728 (protected resource metadata),
+  RFC 8707 (resource indicators) and the MCP authorization specification.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -287,3 +298,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Decided and approved by the product owner on 2026-11-25.
+
+The gateway serves the flow and IAM keeps the identity: the provider a tenant
+enables, the link, the registration through the policy, the session and the
+authentication event. The gateway holds the cookie and the hardening already,
+and no ores.http target has a database to read an account from.
+
+The protocol is OpenID Connect authorization code with PKCE, state and nonce, an
+exact redirect match, and the ID token validated by =kid= with jwt-cpp against
+the provider's published keys. Outbound calls go through the transport
+=ores.marketdata.official= already uses, so no HTTP client is written.
+
+A provider is a row a tenant enables, and its client secret is named, never
+stored. A provider account never links to an existing ORE account because the
+addresses match: linking is an act from a proven session, and a first sign-in
+registers through the policy that already decides a password sign-up. The
+session and the authentication event record the method, and the token carries the
+standard =amr= and =idp= claims.
+
+The client authorization server waits. The agent key is the path an MCP client
+uses today, and when a client needs OAuth, ORE serves the protocol, because
+consent belongs where the grant, the audit and the six eyes already are. No
+vcpkg port implements the protocol, so this was never a choice about adopting a
+library.
+
+What follows is tasks 3 to 8 in the order the plan sets: the provider and the
+link as entities, the flow, registration, the test provider, the link's rules,
+and the recorded sign-in to Google as soon as the flow and registration pass.

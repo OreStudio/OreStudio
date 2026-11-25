@@ -37,9 +37,9 @@ reason.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
-| Now           | In the sprint, with nothing started.   |
+| Now           | The decision is approved; the models are next. |
 | Waiting on    | Nothing.                               |
-| Next          | Decide how an external identity signs a person up and in. |
+| Next          | Model the provider and the identity link. |
 | Last touched  | 2026-11-25                               |
 
 * Acceptance
@@ -119,7 +119,7 @@ second consent record beside it.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:C98E2E5B-22B5-469D-8520-51726E1DF8D0][Decide how an external identity signs a person up and in]] | STARTED | 2026-11-25 | | Decide, before any code, how ORE Studio lets a person sign up and sign in with an external identity provider, and how the same identity layer answers a client of ORE's API. |
+| [[id:C98E2E5B-22B5-469D-8520-51726E1DF8D0][Decide how an external identity signs a person up and in]] | DONE | 2026-11-25 | 2026-11-25 | Decide, before any code, how ORE Studio lets a person sign up and sign in with an external identity provider, and how the same identity layer answers a client of ORE's API. |
 | [[id:4123A768-9AB8-403F-BE35-83BDC50C6BCF][Set out the architecture of federated identity]] | BACKLOG | | | Zettelkasten knowledge notes, with UML diagrams, on how ORE Studio relies on an external identity provider and acts as one for its own clients. |
 | [[id:7D34ECD1-E5F9-4C1F-9B6E-A4CE2BAC88E9][Model the provider and the identity link]] | BACKLOG | | | Two IAM tables, as codegen entities: a provider a tenant enables, and a person's link to a provider account. |
 | [[id:BBA652AC-F595-40F4-9820-D2F3DC6E7168][Serve the external sign-in and carry the session]] | BACKLOG | | | ores.http serves the OpenID Connect authorization code flow, and a browser that chooses a provider comes back with an ORE session. |
@@ -147,8 +147,33 @@ second consent record beside it.
   links and the consent]], which begins once the decisions here are made.
 - *The provider's identity is not the person's address* (2026-11-25). A person
   is identified to ORE by the provider's issuer and subject, and the address is
-  evidence of nothing on its own; the link decision rests on the task that makes
-  it safe.
+  evidence of nothing on its own.
+- *The gateway serves the flow and IAM keeps the identity* (2026-11-25, product
+  owner). The gateway answers the browser-facing routes because it holds the
+  session cookie, the HTTP hardening and the MCP endpoint, and no ores.http
+  target has a database. IAM holds the provider a tenant enables, the link, the
+  registration, the session and the authentication event. The protocol is
+  OpenID Connect authorization code with PKCE, state and nonce, and the ID token
+  is validated by =kid= with jwt-cpp against the provider's published keys. See
+  [[id:C98E2E5B-22B5-469D-8520-51726E1DF8D0][Decide how an external identity
+  signs a person up and in]].
+- *A client secret is named, never stored* (2026-11-25, product owner). The
+  provider row carries the name of an environment variable or a configuration
+  key, and the deployment sets the value. Nothing in ORE reads a secret back
+  today, and a secret in a table needs a key at rest that is itself
+  configuration.
+- *Nothing links by address* (2026-11-25, product owner). A provider account
+  never attaches to an existing ORE account because the two addresses match.
+  Linking is an act from a signed-in session, after the password is proven, on a
+  verified address. A first sign-in registers through the policy that already
+  decides a password sign-up. A workspace administrator can mint any address in
+  their domain, and a wrong link is a takeover that lasts.
+- *The client authorization server waits* (2026-11-25, product owner). The agent
+  key remains the path an MCP client uses. When a client needs OAuth, ORE serves
+  the protocol itself rather than running an identity provider beside it,
+  because consent belongs where the grant, the audit and the six eyes already
+  are. No vcpkg port implements OAuth or OpenID Connect, so the choice was
+  between writing the protocol and delegating it.
 
 * Out of scope
 

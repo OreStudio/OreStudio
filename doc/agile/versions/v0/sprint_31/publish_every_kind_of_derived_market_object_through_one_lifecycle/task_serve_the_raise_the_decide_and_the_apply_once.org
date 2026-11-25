@@ -26,11 +26,11 @@ One implementation serves the raise, the decide and the apply for every kind, an
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] |
-| Now          | The acts are in the tree; the gate is running. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Prove the gate green, then review.     |
+| Next         | Nothing. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance
@@ -146,7 +146,10 @@ refusals that name both subjects and the auto-approved raise.
 Three parts of the acceptance are not met, and each is a decision rather than a
 missed edit.
 
-1. The refusals the page states are answered by the surface only. The page's
+1. The refusals the page states are answered by the surface only. The gap is
+   filed as [[id:D4945061-7E98-4E52-8EFA-C00D59EB700A][The curve's raise answers none of the page's candidate checks]],
+   because closing it is a decision about where a curve is computed and not an
+   edit this task can make. The page's
    raise refuses a subject of another party, a candidate that is missing or
    failed a blocking check, a second request open for the same subject and
    as-of, and a candidate older than the live set. The surface answers all five.

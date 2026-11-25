@@ -47,6 +47,17 @@ const states = {
             text: 'Book Cable Options carries FX Option, which this party would not permit.',
         },
     },
+    'unit-inherits': { screen: 'unit', restricted: false, set: [] },
+    'unit-narrows': { screen: 'unit', restricted: true, set: ['FxForward', 'FxOption'] },
+    'unit-refused': {
+        screen: 'unit',
+        restricted: true,
+        set: ['FxForward'],
+        editing: true,
+        refusal: {
+            text: 'Business unit may not drop FX Option: book Cable Options carries it.',
+        },
+    },
     'book-inherits': { screen: 'book', restricted: false, set: [] },
     'book-narrows': { screen: 'book', restricted: true, set: ['FxOption'] },
     'book-refused-stale': {
@@ -65,6 +76,9 @@ const stateOrder = [
     'party-empty',
     'party-list',
     'party-refused',
+    'unit-inherits',
+    'unit-narrows',
+    'unit-refused',
     'book-inherits',
     'book-narrows',
     'book-refused-stale',
@@ -79,6 +93,12 @@ function current() {
 function partySetOf(state) {
     if (state.screen === 'party') return state.restricted ? state.set : null;
     return ['Swap', 'FxForward', 'FxOption'];
+}
+
+/* The desk narrows the party, and the book narrows the desk. */
+function unitSetOf(state) {
+    if (state.screen === 'unit') return state.restricted ? state.set : partySetOf(state);
+    return ['FxForward', 'FxOption'];
 }
 
 function rail(active) {
@@ -162,7 +182,7 @@ function partyScreen(state) {
 }
 
 function bookScreen(state) {
-    const permitted = partySetOf(state);
+    const permitted = unitSetOf(state);
     const carried = state.restricted ? state.set : permitted;
     const rows = permitted
         .map((code) => {
@@ -224,15 +244,71 @@ function bookScreen(state) {
     </div>`;
 }
 
+function unitScreen(state) {
+    const permitted = partySetOf(state);
+    const carried = state.restricted ? state.set : permitted;
+    const rows = permitted
+        .map((code) => {
+            const checked = carried.includes(code);
+            return `<tr>
+        <td class="code">${code}</td><td>${nameOf(code)}</td>
+        <td class="yes">yes</td>
+        <td class="${checked ? 'yes' : 'no'}">${checked ? 'yes' : '—'}</td>
+        <td style="text-align:right">${
+            state.editing
+                ? `<button class="ghost" data-toggle="${code}">${checked ? 'Remove' : 'Add'}</button>`
+                : ''
+        }</td></tr>`;
+        })
+        .join('');
+
+    const stateLine = state.restricted
+        ? `This desk <b>narrows</b> what its party permits`
+        : `This desk <b>follows its party</b> and may trade all of ${party.name}'s set`;
+
+    return `${crumbs('Parties · Business units · GBP Rates Desk')}
+    <h1>GBP Rates Desk</h1>
+    <p class="lead">${party.name} · version 2</p>
+    <div class="card">
+      <dl class="facts">
+        <div><dt>Name</dt><dd>GBP Rates Desk</dd></div>
+        <div><dt>Party</dt><dd>${party.name}</dd></div>
+        <div><dt>Status</dt><dd>Active</dd></div>
+        <div><dt>Books</dt><dd>GBP Rates, Cable Options</dd></div>
+      </dl>
+    </div>
+    <div class="card" style="margin-top:1rem">
+      <div class="card-head">
+        <h2>Product types</h2>
+        <button class="ghost" data-change>${state.editing ? 'Cancel' : 'Change'}</button>
+      </div>
+      <p class="state">${stateLine}</p>
+      <table>
+        <thead><tr><th>Product type</th><th>Name</th><th>Party permits</th><th>This desk permits</th><th></th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      ${
+          state.refusal
+              ? `<div class="refusal"><b>The set cannot be saved.</b> ${state.refusal.text}</div>`
+              : ''
+      }
+      <div class="hint">The table lists only what the party permits. The desk's books narrow this set in turn, so a type a book carries cannot be dropped here.</div>
+      <div class="foot">
+        ${state.editing ? `<button data-save class="primary">Save</button>` : ''}
+        <button class="ghost" data-cancel>${state.editing ? 'Discard' : 'Close'}</button>
+      </div>
+    </div>`;
+}
+
 function render() {
     const state = current();
-    const other = state.screen === 'party' ? 'book-inherits' : 'party-list';
+    const other = state.screen === 'party' ? 'unit-inherits' : state.screen === 'unit' ? 'book-inherits' : 'party-list';
     document.getElementById('app').innerHTML = `
     ${rail(state.key)}
     <p class="screen-switch">The other screen of this journey: <a href="?state=${other}">${
         state.screen === 'party' ? 'the book that narrows it' : "the party's set"
     }</a></p>
-    ${state.screen === 'party' ? partyScreen(state) : bookScreen(state)}`;
+    ${state.screen === 'party' ? partyScreen(state) : state.screen === 'unit' ? unitScreen(state) : bookScreen(state)}`;
     wire(state);
 }
 
@@ -247,6 +323,9 @@ function wire(state) {
         el.addEventListener('click', () => {
             if (state.key === 'party-list' || state.key === 'party-unrestricted') go('party-empty');
             else if (state.key === 'party-empty') go('party-list');
+            else if (state.key === 'unit-inherits') go('unit-narrows');
+            else if (state.key === 'unit-narrows') go('unit-inherits');
+            else if (state.key === 'unit-refused') go('unit-narrows');
             else if (state.key === 'book-inherits') go('book-narrows');
             else if (state.key === 'book-narrows') go('book-inherits');
         }),
@@ -255,6 +334,7 @@ function wire(state) {
         el.addEventListener('click', () => {
             if (state.editing) {
                 if (state.screen === 'party') go('party-list');
+                else if (state.screen === 'unit') go('unit-narrows');
                 else go('book-narrows');
             }
         }),

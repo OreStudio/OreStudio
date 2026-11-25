@@ -38,7 +38,7 @@ export interface RetentionPolicyWrite {
     target: string;
     action: string;
     retention_days: number;
-    cadence: string;
+    cadence_hours: number;
     enabled: boolean;
     description: string;
 }

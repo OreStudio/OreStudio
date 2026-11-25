@@ -61,6 +61,9 @@ using db_timestamp = ores::database::repository::db_timestamp;
  * whose type the layer has no codec for keeps its text, and the mapper converts
  * it.
  */
+{{#wide_type_exception}}
+{{{wide_type_exception}}}
+{{/wide_type_exception}}
 struct {{entity_singular}}_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "{{sql.tablename}}";
@@ -417,6 +420,14 @@ Both the ={{#domain_entity}}= and ={{#junction}}= sections use the
 =db_timestamp= type (=ores::database::repository::db_timestamp=, from
 =db_types.hpp=) for =valid_from= and =valid_to=, and both use the
 =component_core_upper=-based include guard.
+
+A model whose entity states more fields than the wide-type ceiling allows states
+the =compass:except= line itself as =:wide_type_exception:= in its C++ flags, with
+the reason it cannot be narrower, and the template emits it above the struct. The
+model states the whole line because the checker reads this template as a file of
+its own: a pragma written here would be an exception that covers no finding. The
+value carries no commas, because a property value is a list, and a model that
+states a line owns renewing its expiry.
 
 A model that states =:store_stamps_valid_from: true= binds =valid_from= with
 =query_builder::store_fills= instead of =query_builder::bind=. The column stays

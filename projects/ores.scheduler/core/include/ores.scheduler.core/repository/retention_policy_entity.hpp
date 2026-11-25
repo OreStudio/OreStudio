@@ -46,6 +46,7 @@ using db_timestamp = ores::database::repository::db_timestamp;
  * whose type the layer has no codec for keeps its text, and the mapper converts
  * it.
  */
+// compass:except(wide_types/over_ceiling) expires=2027-05-18 approver=marco reason=the row is the policy with its target and its period and cadence and its state beside the audit tail and the tenant that holds it
 struct retention_policy_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_scheduler_retention_policies_tbl";

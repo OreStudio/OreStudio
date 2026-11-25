@@ -35,9 +35,14 @@ namespace ores::scheduler::service {
  * which subscribes, and the test that checks each subject expands through the
  * function the SQL defines.
  */
+inline constexpr std::string_view publish_job_definitions_from_dq_subject =
+    "scheduler.v1.ops.publish_job_definitions_from_dq";
+
+inline constexpr std::string_view publish_retention_policies_from_dq_subject =
+    "scheduler.v1.ops.publish_retention_policies_from_dq";
+
 inline constexpr std::array<std::string_view, 2> publish_from_dq_subjects{
-    "scheduler.v1.ops.publish_job_definitions_from_dq",
-    "scheduler.v1.ops.publish_retention_policies_from_dq"};
+    publish_job_definitions_from_dq_subject, publish_retention_policies_from_dq_subject};
 
 /**
  * @brief The SQL function a publish-from-dq subject expands through.

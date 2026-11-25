@@ -36,6 +36,7 @@
 -- Job Definitions
 -- =============================================================================
 
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes a DQ dataset into the system tenant, like every other publish_from_dq function
 create or replace function ores_scheduler_publish_job_definitions_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -187,6 +188,7 @@ comment on function ores_scheduler_publish_job_definitions_from_dq_fn(uuid, uuid
 -- Retention Policies
 -- =============================================================================
 
+-- compass:except(entity_writes/sql_writer) expires=2027-05-18 approver=marco reason=publishes a DQ dataset into the system tenant, like every other publish_from_dq function
 create or replace function ores_scheduler_publish_retention_policies_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,

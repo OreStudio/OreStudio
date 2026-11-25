@@ -89,12 +89,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
         ores::service::messaging::step_routes routes;
-        for (const auto subject : service::publish_from_dq_subjects)
-            routes.on(subject, [pdq](ores::nats::delivery delivery) {
-                pdq->handle(std::move(delivery));
-            });
-        subs.push_back(ores::service::messaging::serve_step_commands(
-            nats, "ores.scheduler.service", routes));
+        routes.on(service::publish_job_definitions_from_dq_subject,
+                  [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
+        routes.on(service::publish_retention_policies_from_dq_subject,
+                  [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
+        subs.push_back(
+            ores::service::messaging::serve_step_commands(nats, "ores.scheduler.service", routes));
     }
 
     // Job definition history comes from the generic history provider.

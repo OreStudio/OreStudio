@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: BBA652AC-F595-40F4-9820-D2F3DC6E7168
+:END:
+#+title: Task: Serve the external sign-in and carry the session
+#+description: ores.http serves the OpenID Connect authorization code flow, and a browser that chooses a provider comes back with an ORE session.
+#+type: task
+#+level: s1
+#+filetags: :sign_a_person_up_and_in_through_an_external_identity_provider:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Sign a person up and in through an external identity provider]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Serve the OpenID Connect authorization code flow in ores.http, so a browser that chooses a provider comes back with an ORE session or a refusal it can read. The start reads the provider's registration and its discovery, sets a state, a nonce and a PKCE challenge, and redirects. The callback validates the ID token against the provider's published keys — the issuer, the audience, the expiry, the nonce and the signature — and issues the same session cookie a password sign-in issues. A wrong state, a replayed nonce, an expired token, a token from another issuer, or an address whose domain the tenant does not allow each answers a refusal the screen can show.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Sign a person up and in through an external identity provider]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- A browser that chooses a provider returns with a session in the tenant the host named, and the session cookie is the one a password sign-in sets.
+- The callback validates the ID token against the provider's published keys and refuses a bad issuer, audience, nonce, expiry or signature.
+- The provider's keys are fetched once and cached, with a refresh when the provider rotates them, and the fetch has a time budget.
+- Each refusal has a distinct shape, and the screen shows which rule stopped it.
+- The route declares its catalogue place and permission as every other ores.http route does, and the gate passes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -29,9 +29,9 @@ Value the portfolio against ORE's own numbers, and finish the screens that read 
 | End (expected) | 2026-12-01                           |
 | Now            | Sprint in flight.                      |
 | Waiting on     | Nothing.                               |
-| Next           | Pick the first story.                  |
+| Next           | Decide how an external identity signs a person up and in. |
 | Release Notes  | Added at end of sprint.                |
-| Last touched   | 2026-11-24                               |
+| Last touched   | 2026-11-25                               |
 
 * Stories
 
@@ -54,6 +54,8 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:D13B9134-652D-4CE5-A39C-EA0ACE8E90C7][Story: Adjust a published set by a spread overlay]] | BACKLOG | | | A parallel shift or a twist over a node or a segment, with a reason, applied as one act and preferred at read time. |
 | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] | BACKLOG | 2026-11-24 | | A term index takes its fixings from its overnight curve, so a currency with only an overnight index can still price a trade that floats on its term index, and the fixings screen shows both series. |
 | [[id:A1B95ECA-8526-4859-91EF-E9A46B0BCAA9][Clear the interest rate snags in the backlog]] | BACKLOG | 2026-11-24 | | One task per snag the interest rate work left in the inbox, from the TIIE indices and the SWESTR fixing to the seeded curve quotes and the curve configuration, so the data path carries no known defect. |
+| [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Story: Sign a person up and in through an external identity provider]] | BACKLOG | | | A person signs up and signs in with a Google account or another provider, through ORE's own pages, and the same identity layer makes ORE an OAuth 2.1 authorization server for its API. |
+| [[id:9636A24B-639F-4088-8A6D-F84CA7A974B9][Story: Show the identity doors, the links and the consent]] | BACKLOG | | | The sign-in screen offers the providers, Security shows and manages the links, every session says how it was signed in, and a client is approved on a consent screen. |
 
 ** Hotfixes
 

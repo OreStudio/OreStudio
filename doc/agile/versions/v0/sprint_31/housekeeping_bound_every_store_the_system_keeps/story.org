@@ -69,6 +69,14 @@ No store the system keeps grows without bound: each one has a declared policy, h
   The first step is configuration only: pass =--package-dir= to every wrapper
   unit so the sharing the code already implements actually happens.
 
+- A store's chunks are cut on the instant its rows were written, not on a
+  business date it carries. A chunk drop bounds a store only by the time the
+  chunk is cut on: the run output tables carried the date the engine stated,
+  which for a projected measure lies decades ahead, so almost every row sat
+  beyond the period and no chunk ever aged out. Cutting on the write instant
+  makes a chunk one run's worth of rows, which is the unit a retention period
+  can name and a sweep can remove.
+
 - A node releases a job's folder once its output has been uploaded. The folder
   is scratch: its output lives in =compute/output= and its log in
   =compute/logs= by then, so keeping the copy buys nothing and costs about

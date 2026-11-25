@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
-#+updated: 2026-11-24
+#+updated: 2026-11-25
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -32,10 +32,10 @@ data beside the curve configs, and task 3's list reads it.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
-| Now          | The rule is data, the feed states the rate from the curve, and the five indices are declared and seeded. The live run remains. |
-| Waiting on   | Nothing.                               |
-| Next         | Slice 1: the rule entity and its seeds. |
-| Last touched | 2026-11-24                               |
+| Now          | Built and proven on a recreated database: the five indices are published from their own dataset as nodes of the feed graph, each series states 520 fixings, and a node whose curve stops states nothing and makes up no day. |
+| Waiting on   | The tester's pass of the scenario.     |
+| Next         | The scenario run, then the task closes. |
+| Last touched | 2026-11-25                               |
 
 * Acceptance
 
@@ -141,6 +141,44 @@ Test: a unit test proves the compounded rate equals the forward implied by
 two discount factors of the overnight curve and that the spread form adds
 its points; a fresh provision shows the five fixing addresses answering.
 
+* Seeding and the run
+
+The five configs are staged as artefact rows of a dataset of their own,
+=synthetic.feeds.derived=, and the dataset publish writes them like every other
+generated feed: one collection under the provider =derived=, the folders
+=Synthetic > Derived > Rates > IR Curves=, and each config's source name by the
+naming scheme, =synthetic.derived.ir.yield_curve.<index>.<currency>.<tenor>=.
+Writing the rows by hand was tried first and abandoned: a dataset whose feeds
+are not its own artefact rows cannot be republished, and its publish fails
+because the collection names no provider.
+
+Two consequences had to be met in the catalogue:
+
+1. *A simulated source of the derived provider.* A feed start looks its
+   provider up by its one default simulated source, and =derived= had only the
+   stored-data source of FX volatility, =derived-fx-vol=, on the session
+   =derived-local=. The simulator's source is now =derived-a=, on
+   =synthetic-local=, and it is the provider's default; the stored-data source
+   stays, no longer the default.
+2. *Its fixings are not the vendor fixings.* The simulated fixings seed writes
+   the ids of the indices a vendor would have published. A derived index states
+   its own address under =derived=, so that seed leaves derived configs out and
+   the derived seed writes them.
+
+*Starvation is enforced where the value is stated.* A node is *starved* when
+the graph says one of its inputs does not run. The graph is rebuilt whenever a
+stop or a start lands, and the fleet now publishes the resulting halted set to
+every feed; a derived fixing feed asks it on each tick and states nothing while
+it is in the set. The feed itself therefore decides, not the runner: a run
+stopped and restarted would restate its history and fill the hole. The unit
+test =a_starved_node_states_no_fixing_and_makes_up_no_day= proves the two
+halves: nothing is stated while starved, and the day the node was starved
+through is absent after it resumes.
+
+The shell gained the graph's node verbs, =synthetic start node <name>= and
+=synthetic stop node <name>=, because a stop of a *node* is the one that
+starves its dependants and the shell could reach only runs and folders.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -163,6 +201,11 @@ task and name that file in the Command column.
 | Derived fixing series on a live run | 5, 520 fixings each, latest 2026-11-25 | =select s.oresmd_uri, count(f.*) ...= over the series and its fixings | this branch |
 | Newest fixing of each | USD SOFR 1M 3.89%, COP IBR 3M 8.96%, JPY EYTIBOR 3M 1.32%, KRW GENERIC 3M 2.94%, PLN WIBOR 6M 5.60% | the same query's newest value | this branch |
 | Term indices with no fixings whose currency has an overnight curve | 5: USD SOFR 1M, COP IBR 3M, JPY EYTIBOR 3M, KRW GENERIC 3M, PLN WIBOR 6M | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
+| Derived configs the dataset publish writes | 5, one collection, role =projection=, =auto_start= true | =select ... from ores_synthetic_ir_curve_generation_configs_tbl where rate_source <> 'process'= on a recreated database | this branch |
+| Derived fixing series on the recreated database | 5 series of 520 fixings, latest 2026-11-25 | =select s.oresmd_uri, count(f.id), max(f.fixing_date) ... group by s.oresmd_uri= | this branch |
+| Newest fixing of each, on the recreated database | USD SOFR 1M 3.94%, COP IBR 3M 8.96%, JPY EYTIBOR 3M 0.35%, KRW GENERIC 3M 2.94%, PLN WIBOR 6M 5.60% | the same query's newest value | this branch |
+| Fixings a starved node states | 0; the series stays at 520 with its newest value unchanged while the curve's node is stopped, and gains no day of its own when the node starts again | =synthetic stop node synthetic.bloomberg.ir.yield_curve.sofr.usd=, count the series, =synthetic start node ...=, count again | this branch |
+| Node verbs the shell gained | 2, =synthetic start node= and =synthetic stop node=, beside the folder and feed targets | =grep -n 'node <node-name>' synthetic_commands.cpp= | this branch |
 
 * Notes
 
@@ -195,3 +238,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The five term indices are published from a dataset of their own, run as view
+nodes reading the run's own overnight curves, and state 520 fixings each on a
+database recreated from the seeds. The rule, the arithmetic and the seeding all
+follow the design recorded above; the hand-written rows the earlier attempt
+used are gone.
+
+Starvation is proven twice: the unit test shows that a starved node states
+nothing and makes up no day, and a live run shows the same end to end, where
+stopping the SOFR overnight curve's node logs the derived node as starved and
+adds no fixing to the series.
+
+Remaining before the task closes: the tester's pass of
+[[id:41603F5F-7F14-4BDA-913E-227A98F002AD][Check the derived term fixings]]. The scenario was corrected a second time —
+the provider had no dataset of its own and the feed names were not the scheme's
+— and now also walks the starved node.

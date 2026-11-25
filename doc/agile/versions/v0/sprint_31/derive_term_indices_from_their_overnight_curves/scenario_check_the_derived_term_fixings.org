@@ -38,13 +38,26 @@ These are yours to ready, before the tester opens the client:
 - The system administrator exists: =super_admin= with
   =Secure-Password-123=. The bootstrap creates it, and every screen these
   steps open is a system control, so no tenant needs provisioning first.
-- The five series exist before the tester starts, because the synthetic
-  service states them at boot: =select count(*) from
-  ores_marketdata_market_fixings_tbl f join ores_marketdata_market_series_tbl s
-  on s.id = f.series_id where s.oresmd_uri like '%tenor=%' and
-  s.oresmd_uri like 'oresmd://ir/%';= answers five series of 520 fixings
-  each. If they are absent, the derived feeds did not start: read
-  =ores.synthetic.service.0.log= for "The derived index ... is offered".
+- The five derived feeds are running, and each states its own series: the
+  synthetic service builds a derived node when its config starts, so the
+  person readying the screen starts the collection once, as the system
+  administrator:
+
+  #+begin_src sh
+  ./compass.sh shell -f start_derived.ores
+  #+end_src
+
+  where the script holds =connect $ORES_NATS_URL=, the login, and one
+  =synthetic start feed= for each of the five source names below. The
+  derived node does not state anything while the curve it reads is stopped,
+  so the five overnight curves of USD, COP, JPY, KRW and PLN must be running
+  too: =synthetic list feeds= shows each as =[running]=.
+- =select count(*) from ores_marketdata_market_fixings_tbl f join
+  ores_marketdata_market_series_tbl s on s.id = f.series_id where
+  s.oresmd_uri like '%tenor=%' and s.oresmd_uri like 'oresmd://ir/%';=
+  answers five series of 520 fixings each. If they are absent, read
+  =ores.synthetic.service.0.log= for "The derived index ... is offered" and
+  for "is starved".
 
 * Scenario Info
 
@@ -76,7 +89,8 @@ These are yours to ready, before the tester opens the client:
 
 - Go to *Market data* → *Simulated market*, the collection whose provider
   is *Derived*.
-- Open the feed =synthetic.derived.USD.sofr.1M=.
+- Open the feed =synthetic.derived.ir.yield_curve.sofr.usd.1m=: every feed
+  is named by the scheme, =synthetic.<provider>.ir.yield_curve.<index>.<currency>.<tenor>=.
 - The *Feed calibration* screen is not the one to use here: its interest
   rates list is the coverage of the curves that get published, and a row
   there opens Curve analytics.
@@ -95,8 +109,10 @@ These are yours to ready, before the tester opens the client:
 
 ** Read a spread index's stated source
 
-- Open the JPY/EYTIBOR 3M feed, then the KRW/GENERIC 3M and PLN/WIBOR
-  6M feeds in turn.
+- Open the JPY/EYTIBOR 3M feed
+  (=synthetic.derived.ir.yield_curve.eytibor.jpy.3m=), then the
+  KRW/GENERIC 3M (=...generic.krw.3m=) and PLN/WIBOR 6M
+  (=...wibor.pln.6m=) feeds in turn.
 - Confirm each shows *The overnight rate plus the spread below*.
 - Confirm each shows the spread it states — 10, 15 and 20 basis points —
   and a non-empty *Who states the spread*.
@@ -145,6 +161,29 @@ These are yours to ready, before the tester opens the client:
 | Status | PENDING |
 
 
+** Stop the curve the derived index reads
+
+- Go to *Market data* → *Simulated market* → the feed graph, and stop the
+  node =synthetic.bloomberg.ir.yield_curve.sofr.usd=, the overnight curve
+  the one-month term SOFR reads. In the shell it is =synthetic stop node
+  synthetic.bloomberg.ir.yield_curve.sofr.usd --reason-code common.other=.
+- Confirm the derived node =synthetic.derived.ir.yield_curve.sofr.usd.1m=
+  reads *starved* on the graph: it is a view of that curve, and an input
+  that does not run starves it.
+- Confirm the fixing page for =...name=SOFR&tenor=1M= has gained no fixing,
+  and that no value repeats the one already stated for the day. The service
+  log says it once: "The node of 'synthetic.derived.ir.yield_curve.sofr.usd.1m'
+  is starved: it states no fixing until its input runs again."
+- Start the node again. Confirm the derived node reads *running*, and that
+  the days it was starved for stay empty: nothing is backfilled.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+
 * Results
 
 | Step | Outcome | Notes |
@@ -158,3 +197,11 @@ reached: the scenario named a tenant administrator for the calibration
 screen,
 which is a system control. The persona is now =super_admin= and the
 navigation goes through *Market data*. Re-run from the first step.
+
+Attempt 2, 2026-11-25, failed at the second step again: the Derived
+provider was registered without a dataset of its own, so no screen listed
+it, and the step named feeds by a source name the scheme does not write.
+Both are fixed: =synthetic.feeds.derived= is a dataset of the system
+bundle, and the feed names above are the scheme's. The five derived nodes
+also need starting first, because nothing starts a config node on its own.
+Re-run from the first step.

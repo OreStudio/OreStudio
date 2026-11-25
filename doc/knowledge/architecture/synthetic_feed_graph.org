@@ -84,6 +84,31 @@ inputs run again, with no action of their own.
   upstreams, an upstream to its source, and a source to nothing. So a change
   walked down the edges ends.
 
+** How a starved state reaches the value
+
+A state derived from the graph is a statement about the run, so a node whose
+offers are withheld publishes nothing, because the demand that started it is
+withdrawn with the offers. That covers every feed the market data service
+demands. It does not cover a node a person starts by hand, which no demand
+withdraws, and a node that reads another node's value rather than copying its
+offers: a derived term index states its fixing from the curve its input
+publishes, and the board keeps the last value an input wrote after that input
+stops. Such a node would publish a rate for a day nobody observed.
+
+The halted set is therefore published to the feeds as well as applied to the
+offers. Every graph rebuild -- a stop, a start, a restart -- writes the set of
+nodes that are not running into one place, and a feed that reads another
+node's value asks it on each tick and states nothing while its own name is in
+it. The decision sits inside the feed rather than in the runner, because a run
+that were stopped and started again would restate whatever history it states
+on its first tick, and fill the hole the starve left. A feed that keeps running
+and says nothing keeps the hole.
+
+A derived term index is the case that made this necessary: its curve's node
+stopping starves it, and the fixings it does not state for those days stay
+absent when the curve returns, because a fixing is a fact about a date and not
+a value to repeat.
+
 ** The choices, signed off
 
 *** How the edges are stored

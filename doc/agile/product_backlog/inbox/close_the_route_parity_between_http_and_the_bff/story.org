@@ -34,9 +34,9 @@ remaining 15 here.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
-| Now           | The ported routes are done: composed views, HEAD, the error contract, the cache policy, the auth fallbacks and now the IR coverage. The recipes and the handler gate wait on compass releases; the answer-shape sweep and the payload cap are open. |
+| Now           | The ported routes are done: composed views, HEAD, the error contract, the cache policy, the auth fallbacks, the IR coverage and the image upload's transport. The recipes and the handler gate wait on compass releases; the answer-shape sweep is open. |
 | Waiting on    | A compass-ng release for the recipe bodies and for the unchecked-handler rule, and the product decision on the 102 unseeded permission codes. |
-| Next          | The answer-shape sweep, then the payload cap once the upload's transport is decided. |
+| Next          | The answer-shape sweep. |
 | Last touched  | 2026-11-25                               |
 
 * Acceptance
@@ -126,6 +126,23 @@ remaining 15 here.
   service's own context, whose absent role list authorises everything. The two
   other fallbacks — an empty permission list, and a protected HTTP route on a
   server with no verifier — were already closed, and the task records where.
+- *The bus cap is transport capacity, and the limit is the validator's* (2026-11-25,
+  task 820AC660). The image upload died in the transport before the validator
+  could answer, because the bus took the NATS default of 1 MiB and a 2 MiB image
+  is 2.8 MB on the wire once base64 has grown it. The cap is now 4 MiB, which
+  carries the largest image the validator accepts; the image limit stays where it
+  was, in the validator, and the gateway applies that same validator before it
+  sends anything, so a refused image never travels. One number states the image
+  limit, and the picker reads it from the validator through the policy route.
+- *An image stays in the assets record for now* (2026-11-25, task 820AC660). The
+  product direction was that an upload larger than 1 MB travels over HTTP
+  storage. The tree cannot do that for images yet: the bytes live in the assets
+  table, the storage service and the gateway keep their objects in different
+  directories, and the read that returns an image still crosses the fabric, so
+  moving only the upload would break the journey at its other end. *Deferred with
+  a trigger*: move the bytes out and carry a reference if the image limit must
+  grow past what the bus can carry, if the bus cap must stay small, or if the
+  read path starts returning larger images.
 - *A composed view's fact set is read in batches, and the batch read belongs to
   the service that owns the fact* (2026-11-25, task 3E187C09). The calibration
   read's IR coverage joins four collections, and the newest published set of a

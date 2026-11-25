@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
-#+updated: 2026-11-22
+#+updated: 2026-11-25
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -35,22 +35,65 @@ one the picker and the validator both state at 2 MB, cannot be reached.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] |
-| Now          | Not yet started.                       |
+| Now          | Built: the bus carries an image up to the validator's limit, and an upload is judged before it is sent. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-22                               |
+| Next         | The pull request.                       |
+| Last touched | 2026-11-25                               |
 
 * Acceptance
 
-- An upload larger than the deployment allows is refused before it is sent, with a message that states the limit.
-- An image up to the limit reaches the validator and is stored.
-- The limit is stated in one place, and the screen and the server agree on it.
+- [X] An upload larger than the deployment allows is refused before it is sent, with a message that states the limit.
+- [X] An image up to the limit reaches the validator and is stored.
+- [X] The limit is stated in one place, and the screen and the server agree on it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Measured first, the failure is arithmetic. The validator accepts a 2 MiB
+image. The upload carries the bytes base64-encoded, which is 2.8 MB on the wire,
+and the bus refused anything over 1 MiB. So *every* image over about three
+quarters of a megabyte died in the transport, whether or not the validator would
+have refused it, and the caller got a 503 instead of the answer the picker
+branches on.
+
+The capture names the direction the product owner gave: an upload larger than
+1 MB travels over HTTP storage, not the message fabric. The tree cannot do that
+for images yet: the image bytes live in the assets table, the storage service
+keeps its objects in a directory of its own, and the gateway's storage routes
+write to another one. Serving an image over HTTP storage would therefore mean
+moving the bytes out of the assets record, which changes the entity, the schema,
+the read path that returns an image, and every existing row. That is a task of
+its own, and doing it for the upload alone would still return the image through
+the fabric on the read, so the journey would break at the other end.
+
+So the work is the two things the acceptance asks for, in the order they matter:
+
+** The bus carries what the validator allows
+
+The deployment's =max_payload= is set to 4 MiB in =nats.conf.template=, with the
+arithmetic in the comment: the largest image the validator accepts, base64
+inflated, plus its envelope. This is transport capacity and not an image limit;
+the limit stays the validator's.
+
+** A refused upload is refused before it is sent
+
+The upload route runs the validator's own judgement over the decoded bytes
+before it forwards anything. The rules and the words are the validator's — the
+gateway links =ores.assets.core= and calls =image_upload_validator::validate= —
+so a refused image never reaches the fabric at all, and its answer is the JSON
+the screen already reads. The service keeps its own validation, so a caller that
+skips the gateway is judged by the same rules.
+
+The limit stays in one place: =image_upload_validator::policy()= serves it to the
+picker through =/api/image-upload-policy=, and the same function is what the
+gateway now applies.
+
+** What this leaves open
+
+Writing the image bytes outside the assets record — the direction's own
+preference — is recorded on the story as a decision with its reason and its
+trigger: it is the answer if the image limit must grow past what the bus can
+carry, if the bus cap must stay small, or if the read path starts returning
+larger images.
 
 * Measurements
 
@@ -64,9 +107,29 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The bus cap the deployment ran with | 1 MiB, the NATS default | =curl -s http://127.0.0.1:20406/varz= and read =max_payload= | 085df85a43 |
+| The cap the new configuration states, as a server reports it | 4194304 | =nats-server --config build/config/nats-brave_hopper.conf -p 20415 -m 20416 -js=false=, then =curl -s http://127.0.0.1:20416/varz= | 085df85a43 |
+| The largest image the validator accepts | 2097152 bytes (2 MiB) | =image_upload_validator::policy().max_size_bytes= | 085df85a43 |
+| The same image on the wire, base64 | 2796204 bytes | =base64.b64encode(b"x" * 2097152)=; the test asserts it clears the body limit | 085df85a43 |
+| The most an upload body may hold | 4194304 bytes | =image_screen_routes::upload_body_bytes= | 085df85a43 |
+| The gateway's upload cases | 9 cases, 45 assertions, 4 of them new | =ores.http.assets.tests "[image_screen]"= | 085df85a43 |
 
 * Notes
+
+- The 503 came from the transport, not from a handler: no code in the tree could
+  have answered =image_too_large= for an image over about three quarters of a
+  megabyte, because the message never arrived. That is why the first test asserts
+  an answer from a route whose NATS session is not connected: an answer at all
+  proves the image was judged before it was sent.
+- The BFF has the same failure, because it puts the same base64 body on the same
+  bus. It is not fixed here: the story retires the BFF, and the gateway is the
+  route that survives.
+- The running NATS server still holds the old cap. The configuration is written
+  and a server started from it reports 4 MiB; the fleet picks it up when NATS is
+  next started.
+- A body over the route's own limit is refused by the server before the handler,
+  as the BFF did, so the two refusals a caller can see are the server's 413 and
+  the validator's answer.
 
 * Test Scenarios
 
@@ -92,6 +155,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The profile image journey no longer breaks in the transport. The deployment's
+bus carries 4 MiB, which is the validator's 2 MiB image after base64 has grown it
+by a third, and the gateway judges an upload before it sends it: an image the
+validator refuses is refused at the gateway, with the validator's own code and
+words, and never reaches the fabric.
+
+What is proved: the three refusals — too large, unreadable bytes, unsupported
+media type — each answered by a route whose session is disconnected, so an
+answer proves nothing was forwarded; the arithmetic that holds the body limit
+above the largest image the validator accepts, inflated by base64; the
+configuration's cap, read back from a server started with it; and the assets
+suites of all four components. What is not: an upload of a 2 MiB image through
+the running fleet, which would need the rebuilt server deployed and NATS
+restarted, and a browser walk of the picker.
+
+The direction's alternative — storing the image outside the assets record and
+carrying only a reference — is recorded on the story as deferred with its reason
+and its trigger, because it changes the entity, the schema and the read path,
+and the read would still cross the fabric today.
 
 * Promoted from capture
 

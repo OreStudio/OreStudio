@@ -56,17 +56,6 @@ TEST_CASE("ores::marketdata::messaging::delivery_count_event", "[codec][roundtri
     ores::testing::check_wire_roundtrip<ores::marketdata::messaging::delivery_count_event>();
 }
 
-TEST_CASE("ores::marketdata::messaging::delivery_count_version_key",
-          "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::delivery_count_version_key>();
-}
-
-TEST_CASE("ores::marketdata::messaging::delivery_count_versions_filter",
-          "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<
-        ores::marketdata::messaging::delivery_count_versions_filter>();
-}
-
 TEST_CASE("ores::marketdata::messaging::list_delivery_counts_request",
           "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<
@@ -145,28 +134,4 @@ TEST_CASE("ores::marketdata::messaging::delete_many_delivery_counts_response",
           "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<
         ores::marketdata::messaging::delete_many_delivery_counts_response>();
-}
-
-TEST_CASE("ores::marketdata::messaging::list_delivery_count_versions_request",
-          "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<
-        ores::marketdata::messaging::list_delivery_count_versions_request>();
-}
-
-TEST_CASE("ores::marketdata::messaging::list_delivery_count_versions_response",
-          "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<
-        ores::marketdata::messaging::list_delivery_count_versions_response>();
-}
-
-TEST_CASE("ores::marketdata::messaging::get_delivery_count_version_request",
-          "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<
-        ores::marketdata::messaging::get_delivery_count_version_request>();
-}
-
-TEST_CASE("ores::marketdata::messaging::get_delivery_count_version_response",
-          "[codec][roundtrip][protocol]") {
-    ores::testing::check_wire_roundtrip<
-        ores::marketdata::messaging::get_delivery_count_version_response>();
 }

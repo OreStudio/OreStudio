@@ -32,6 +32,7 @@
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -86,6 +87,12 @@ private:
     std::condition_variable wake_;
     std::atomic<bool> stop_{false};
     std::thread flusher_;
+
+    /// The deliveries counted so far this period, per subscription and item.
+    /// The table holds one row per key, so a flush writes the running total
+    /// rather than the delta it drained.
+    std::map<delivery_key, std::int64_t> running_totals_;
+    bool totals_seeded_{false};
 };
 
 }

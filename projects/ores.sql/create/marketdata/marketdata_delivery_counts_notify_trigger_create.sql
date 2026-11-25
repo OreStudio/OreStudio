@@ -32,32 +32,21 @@ declare
     changed_oresmd_uri text;
     changed_key jsonb;
     changed_tenant_id text;
-    changed_party_id text;
 begin
     if TG_OP = 'DELETE' then
         change_action := 'deleted';
         changed_oresmd_uri := OLD.oresmd_uri;
-        changed_version := OLD.version;
         changed_tenant_id := OLD.tenant_id::text;
-        changed_party_id := OLD.party_id::text;
     elsif TG_OP = 'UPDATE' then
-        -- A versioned table's update is the internal close of the current
-        -- row; the insert that follows it carries the change. Announcing
-        -- both would report one change twice, so the close announces
-        -- nothing.
-        return null;
+        change_action := 'updated';
+        changed_oresmd_uri := NEW.oresmd_uri;
+        changed_version := 0;
+        changed_tenant_id := NEW.tenant_id::text;
     else
-        -- The first version of a row is a create; every later one is an
-        -- update, because the row it replaces was already there.
-        if NEW.version <= 1 then
-            change_action := 'created';
-        else
-            change_action := 'updated';
-        end if;
-        changed_version := NEW.version;
+        change_action := 'created';
+        changed_version := 0;
         changed_oresmd_uri := NEW.oresmd_uri;
         changed_tenant_id := NEW.tenant_id::text;
-        changed_party_id := NEW.party_id::text;
     end if;
 
     changed_key := jsonb_build_object('oresmd_uri', changed_oresmd_uri);
@@ -70,8 +59,7 @@ begin
         'version', changed_version,
         'occurred_at', ores_utility_iso8601_timestamp_fn(clock_timestamp()),
         'correlation_id', nullif(current_setting('ores.request.correlation_id', true), ''),
-        'tenant_id', changed_tenant_id,
-        'party_id', changed_party_id
+        'tenant_id', changed_tenant_id
     );
 
     perform pg_notify('ores_marketdata_delivery_counts', notification_payload::text);

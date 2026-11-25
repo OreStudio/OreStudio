@@ -80,12 +80,10 @@ TEST_CASE("delivery_count_commands_registers_every_derived_verb", "[commands]") 
              std::string{"put-many"},
              std::string{"delete"},
              std::string{"delete-many"},
-             std::string{"versions"},
-             std::string{"version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    ORES_LOG_SEV(lg, debug) << "Registered 10 command(s).";
+    ORES_LOG_SEV(lg, debug) << "Registered 8 command(s).";
 }
 
 TEST_CASE("delivery_count_commands_process_list_requires_a_session", "[commands]") {
@@ -277,73 +275,5 @@ TEST_CASE("delivery_count_commands_process_delete_many_requires_a_session", "[co
 
     ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("delivery_count_commands_process_versions_requires_a_session", "[commands]") {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    std::ostringstream out;
-
-    command_feedback::reset();
-    delivery_count_commands::process_versions(out, session, delivery_count_tokens(1));
-
-    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
-    CHECK(out.str().find("You must be logged in") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("delivery_count_commands_process_versions_reports_the_expected_count", "[commands]") {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    delivery_count_log_in(session);
-    std::ostringstream out;
-
-    command_feedback::reset();
-    delivery_count_commands::process_versions(out, session, {});
-
-    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
-    // The arity guard names both the count it expects and the count it
-    // received. The expected count is shape-specific in the command (a write
-    // also reads its intent), so the case pins the wording and the received
-    // count rather than restating that arithmetic.
-    CHECK(out.str().find("Expected ") != std::string::npos);
-    CHECK(out.str().find("got 0.") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("delivery_count_commands_process_version_requires_a_session", "[commands]") {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    std::ostringstream out;
-
-    command_feedback::reset();
-    delivery_count_commands::process_version(out, session, delivery_count_tokens(1));
-
-    ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
-    CHECK(out.str().find("You must be logged in") != std::string::npos);
-    CHECK(command_feedback::failed());
-}
-
-TEST_CASE("delivery_count_commands_process_version_reports_the_expected_count", "[commands]") {
-    auto lg(make_logger(test_suite));
-
-    nats_client session;
-    delivery_count_log_in(session);
-    std::ostringstream out;
-
-    command_feedback::reset();
-    delivery_count_commands::process_version(out, session, {});
-
-    ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
-    // The arity guard names both the count it expects and the count it
-    // received. The expected count is shape-specific in the command (a write
-    // also reads its intent), so the case pins the wording and the received
-    // count rather than restating that arithmetic.
-    CHECK(out.str().find("Expected ") != std::string::npos);
-    CHECK(out.str().find("got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }

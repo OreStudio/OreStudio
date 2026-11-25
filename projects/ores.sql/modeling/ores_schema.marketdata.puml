@@ -216,25 +216,17 @@ package "marketdata" #E3F2FD {
     the apply stamps it. A client reads it to decide a request or to audit a curve.
     end note
 
-    entity ores_marketdata_delivery_counts_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
+    entity ores_marketdata_delivery_counts_tbl  #F7E5FF {
+        * party_id : uuid <<PK, FK>>
+        * provider_code : text <<PK>>
+        * feed_id : uuid <<PK, FK>>
+        * oresmd_uri : text <<PK>>
+        * period_start : timestamptz <<PK>>
         --
-        * version : integer
-        * party_id : uuid <<FK>>
-        * provider_code : text
-        * oresmd_uri : text
-        * period_start : timestamptz
+        * tenant_id : uuid <<FK>>
+        * id : uuid
         * flushed_at : timestamptz
-        * feed_id : uuid <<FK>>
         * deliveries : bigint
-        * modified_by : text
-        * performed_by : text
-        * acting_agent : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
     }
 
     note right of ores_marketdata_delivery_counts_tbl
@@ -245,7 +237,7 @@ package "marketdata" #E3F2FD {
     A delivery count is a fact about usage. The fan-out counts the ticks it delivers to each party for each item
     and writes the counts in batches. A count holds no price. The only cost at tick time is one increment in
     memory, and one row is written for each party, item and hour at each write.
-    A row counts the deliveries since the last write, so the rating step adds the rows of an hour.
+    A row holds the deliveries counted so far in an hour, so a flush adds to the total and the rating step reads one row for the hour.
     end note
 
     entity ores_marketdata_demand_intervals_tbl <<temporal>> #C6F0D8 {

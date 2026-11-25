@@ -47,21 +47,15 @@ namespace ores::marketdata::domain {
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<delivery_count>) {
     return ::ores::utility::codec::field_list{
-        utility::codec::field{"version", &delivery_count::version},
         utility::codec::field{"tenant_id", &delivery_count::tenant_id},
-        utility::codec::field{"id", &delivery_count::id},
         utility::codec::field{"party_id", &delivery_count::party_id},
         utility::codec::field{"provider_code", &delivery_count::provider_code},
+        utility::codec::field{"feed_id", &delivery_count::feed_id},
         utility::codec::field{"oresmd_uri", &delivery_count::oresmd_uri},
         utility::codec::field{"period_start", &delivery_count::period_start},
+        utility::codec::field{"id", &delivery_count::id},
         utility::codec::field{"flushed_at", &delivery_count::flushed_at},
-        utility::codec::field{"feed_id", &delivery_count::feed_id},
         utility::codec::field{"deliveries", &delivery_count::deliveries},
-        utility::codec::field{"modified_by", &delivery_count::modified_by},
-        utility::codec::field{"performed_by", &delivery_count::performed_by},
-        utility::codec::field{"change_reason_code", &delivery_count::change_reason_code},
-        utility::codec::field{"change_commentary", &delivery_count::change_commentary},
-        utility::codec::field{"recorded_at", &delivery_count::recorded_at},
     };
 }
 

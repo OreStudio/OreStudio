@@ -105,7 +105,7 @@ struct report_metric_entity {
                query_builder::bind("factor", &e::factor) |
                query_builder::bind("qualifiers", &e::qualifiers) |
                query_builder::bind("value", &e::value) |
-               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::store_fills("valid_from", &e::valid_from) |
                query_builder::bind("valid_to", &e::valid_to);
     }
 };

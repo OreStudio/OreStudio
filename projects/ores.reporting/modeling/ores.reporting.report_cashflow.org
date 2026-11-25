@@ -234,6 +234,7 @@ The family and the row the reader read, for provenance.
 :hypertable_partition_column:  valid_from
 :hypertable_chunk_interval:    1 day
 :hypertable_retention_interval: 90 days
+:store_stamps_valid_from:     true
 :append_insert:                true
 :bitemporal_trigger:           soft_update_delete
 :no_audit_columns:             true
@@ -248,6 +249,12 @@ ahead and a chunk that aged out on =as_of= would hold next to nothing.
 =valid_from= is the run's own time, because the table is written once with the
 run and never edited, so a day's chunk holds the runs of that day and dropping
 it drops whole runs.
+
+The store stamps =valid_from=, and the client never states it. A hypertable
+routes a row to a chunk by the partitioning column before any before-insert
+trigger runs, so a client's value decides the chunk and the trigger cannot move
+the row afterwards. The column default states the instant, the insert leaves the
+column out, and the trigger leaves it alone.
 
 The period is a quarter. A run's figures are read while the run is recent, and
 the comparison that needs two runs at once is the movement against the run

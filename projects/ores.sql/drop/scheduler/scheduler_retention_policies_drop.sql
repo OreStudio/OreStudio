@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 
+drop policy if exists retention_policies_tbl_tenant_isolation_policy on "ores_scheduler_retention_policies_tbl";
 drop rule if exists ores_scheduler_retention_policies_delete_rule on "ores_scheduler_retention_policies_tbl";
 drop trigger if exists ores_scheduler_retention_policies_insert_trg on "ores_scheduler_retention_policies_tbl";
 drop function if exists ores_scheduler_retention_policies_insert_fn;

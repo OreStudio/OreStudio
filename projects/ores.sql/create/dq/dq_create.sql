@@ -321,3 +321,5 @@
 \ir ./dq_todays_market_configurations_artefact_create.sql
 \ir ./dq_todays_market_configuration_bindings_artefact_create.sql
 \ir ./dq_report_configurations_artefact_create.sql
+\ir ./dq_job_definitions_artefact_create.sql
+\ir ./dq_retention_policies_artefact_create.sql

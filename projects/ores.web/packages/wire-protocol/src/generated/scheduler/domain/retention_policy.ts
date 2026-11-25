@@ -32,12 +32,13 @@
  */
 export interface RetentionPolicy {
     version: number;
+    tenant_id: string;
     code: string;
     target_kind: string;
     target: string;
     action: string;
     retention_days: number;
-    cadence: string;
+    cadence_hours: number;
     enabled: boolean;
     description: string;
     modified_by: string;

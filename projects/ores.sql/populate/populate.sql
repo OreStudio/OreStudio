@@ -355,14 +355,18 @@ select ores_utility_allow_version_replace_fn();
 
 \echo ''
 \echo '--- Compute Layer ---'
-\ir compute/compute_populate.sql
 \ir compute/compute_platforms_seed.sql
 \ir compute/compute_ore_app_seed.sql
 
--- The scheduler's own job definition. The compute seed above writes compute's
--- job; this one writes the message queue metrics scrape, and both are named in
--- the scheduler's job definition model.
-\ir scheduler/scheduler_populate.sql
+-- Housekeeping as platform data. The datasets register first, because the
+-- artefact rows name the dataset they belong to, and both publish into the
+-- system tenant as members of system_core.
+\echo ''
+\echo '--- Housekeeping Datasets ---'
+\ir scheduler/scheduler_job_definitions_dataset_populate.sql
+\ir scheduler/scheduler_retention_policies_dataset_populate.sql
+\ir scheduler/scheduler_job_definitions_artefact_populate.sql
+\ir scheduler/scheduler_retention_policies_artefact_populate.sql
 
 -- =============================================================================
 -- Analytics Layer

@@ -22,12 +22,12 @@
 set(files
     "job_definition_eventing_integration_tests.cpp"
     "main.cpp"
-    "messaging_retention_policy_system_owned_tests.cpp"
     "repository_job_instance_mapper_tests.cpp"
     "repository_job_instance_repository_tests.cpp"
     "service_action_payloads_tests.cpp"
     "service_mq_action_handler_tests.cpp"
     "service_nats_publish_action_handler_tests.cpp"
+    "service_publish_subject_plan_tests.cpp"
     "service_schedule_decision_tests.cpp"
     "service_sql_action_handler_tests.cpp"
 )

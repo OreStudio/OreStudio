@@ -39,12 +39,13 @@ domain::retention_policy retention_policy_mapper::map(const retention_policy_ent
 
     domain::retention_policy r;
     r.version = v.version;
+    r.tenant_id = v.tenant_id;
     r.code = v.code;
     r.target_kind = v.target_kind;
     r.target = v.target;
     r.action = v.action;
     r.retention_days = v.retention_days;
-    r.cadence = v.cadence;
+    r.cadence_hours = v.cadence_hours;
     r.enabled = v.enabled;
     r.description = v.description;
     r.modified_by = v.modified_by;
@@ -62,12 +63,13 @@ retention_policy_entity retention_policy_mapper::map(const domain::retention_pol
 
     retention_policy_entity r;
     r.code = v.code;
+    r.tenant_id = v.tenant_id;
     r.version = v.version;
     r.target_kind = v.target_kind;
     r.target = v.target;
     r.action = v.action;
     r.retention_days = v.retention_days;
-    r.cadence = v.cadence;
+    r.cadence_hours = v.cadence_hours;
     r.enabled = v.enabled;
     r.description = v.description;
     r.modified_by = v.modified_by;

@@ -15,11 +15,17 @@
 -- Street, Fifth Floor, Boston, MA 02110-1301, USA.
 --
 -- ores_scheduler_retention_runs_tbl records what a sweep did, one row per policy
--- it considered, and ores_scheduler_apply_retention_policies_fn applies the
--- enabled policies. The sweep exists because a retention policy installed as a
--- storage engine job only exists where the engine's licensed edition includes
--- jobs; a chunk drop executed here runs on either edition, and records which
--- path ran.
+-- it applied, and ores_scheduler_apply_retention_policies_fn applies the enabled
+-- policies that are due. The sweep exists because a retention policy installed
+-- as a storage engine job only exists where the engine's licensed edition
+-- includes jobs; a chunk drop executed here runs on either edition, and records
+-- which path ran.
+--
+-- A policy states a cadence, and the ledger states when it last ran. A policy is
+-- due once its cadence has passed since the last row the ledger holds for it, so
+-- an installation states a different cadence per store and one sweep honours
+-- them all. The sweep writes nothing for a policy that is not due: a row per
+-- policy per tick would grow the ledger faster than the stores it bounds shrink.
 
 create table if not exists "ores_scheduler_retention_runs_tbl" (
     "id" uuid not null,
@@ -60,10 +66,21 @@ begin
         -- versioned, so turning one off closes its row and writes a new version
         -- that is disabled; the closed row still says enabled, and reading it
         -- would keep applying a policy a person has just turned off.
-        select * from "ores_scheduler_retention_policies_tbl"
-        where "enabled"
-          and "valid_to" = ores_utility_infinity_timestamp_fn()
-        order by "code"
+        --
+        -- A policy that has no ledger row has never run, so it is due. The
+        -- ledger is read rather than the policy row updated, because an update
+        -- to a versioned row opens a new version: a sweep writing its own
+        -- bookkeeping there would read, to a person, as a change they made.
+        select * from "ores_scheduler_retention_policies_tbl" p
+        where p."enabled"
+          and p."tenant_id" = ores_utility_system_tenant_id_fn()
+          and p."valid_to" = ores_utility_infinity_timestamp_fn()
+          and not exists (
+              select 1 from "ores_scheduler_retention_runs_tbl" r
+              where r."policy_code" = p."code"
+                and r."ran_at" > now() - make_interval(hours => p."cadence_hours")
+          )
+        order by p."code"
     loop
         cutoff := now() - make_interval(days => policy."retention_days");
         dropped := 0;

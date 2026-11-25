@@ -33,9 +33,28 @@ installing anything where it does not.
 
 A retention policy names its target, the action to take on it, the retention
 period or threshold past which the action applies, the cadence at which it is
-considered, whether it is enabled, and the fallback to take where the engine will
+applied, whether it is enabled, and the fallback to take where the engine will
 not act. The policy is stored as data: a period changes without a schema rebuild,
 and one screen shows every policy beside the size of what it governs.
+
+** What the platform states and what the installation decides
+
+The configuration arrives as two datasets published into the system tenant, beside
+the platform's other data: one stages the jobs the scheduler fires, the other the
+retention policies. A publish reconciles what the platform states. For a job that
+is its command, the payload it carries and what it is for; for a policy, the
+target, the action and the reason the store is kept. The rest is the
+installation's, and a publish leaves it alone: when a job fires, whether it is
+enabled, and a policy's period, cadence and enabled state are written when the
+row first arrives and carried from the most recent row the installation held,
+even where the publish closed that row first.
+
+The split follows the question that decides every dataset. The platform declares
+the job in order to function, so a release that changes what the sweep runs
+reaches an installation that is already running. The installation decides how
+much of its own data it keeps, so no republish overrules that decision. The
+dataset carries the defaults a new installation starts with, which is why the
+first publish writes every field and the second writes none.
 
 ** The actions
 
@@ -67,25 +86,36 @@ all but a few hundred were dated after the sweep that dropped them.
 
 The chunk is therefore cut on the instant the rows were written, which is the
 one time every row of a run shares and the time past which the run itself is
-stale. Two schema consequences follow. A hypertable checks its partitioning
-column for null before any row-level trigger runs, so a bitemporal table
-partitioned on its write time needs a default for that column, because the
-insert trigger is what otherwise sets it. And a unique index on a hypertable
-must carry the partitioning column, so a natural key index over such a table is
-declared with the column rather than generated from the keys alone.
+stale. Three consequences follow. A hypertable checks its partitioning column
+for null before any row-level trigger runs, so a bitemporal table partitioned on
+its write time needs a default for that column, because the insert trigger is
+what otherwise sets it. A unique index on a hypertable must carry the
+partitioning column, so a natural key index over such a table is declared with
+the column rather than generated from the keys alone. And the column is the
+store's, not the writer's: a hypertable routes a row by the partitioning column
+before any trigger runs, so a trigger cannot move the row afterwards, and a
+write that stated a value the trigger then rewrote would either fail the range
+check of the chunk the row landed in or leave it in the wrong chunk. The
+generated entity therefore leaves that column out of its insert, the default
+stamps it, and the trigger no longer rewrites it.
 
 ** One executor
 
-A single scheduled job reads the policies and performs their actions. It takes
-its cadence from the configured setting that the platform's other sweeps use
-([[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]]). One executor serves
+A single scheduled job applies every policy that is due. The job's schedule sets
+the tick, and therefore the finest cadence the installation can express; each
+policy states the hours between two applications of itself, and the sweep applies
+a policy only once that period has passed since the last time it applied it
+([[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]]). The period is the
+policy's, because the stores differ in how quickly they accumulate what the policy
+removes, and one tick serves them all. One executor serves
 every class: the classes differ in what they hold and in when their contents stop
 being useful, not in how a sweep runs. The established example is
 [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]], whose
 sweep a service registers at runtime from a system setting.
 
-Each firing is recorded as a scheduler job instance, and the housekeeping jobs
-appear in the scheduler's screens beside every other job.
+Each firing is recorded as a scheduler job instance, and each application of a
+policy is recorded in the run ledger beside the policy it applied. The housekeeping
+jobs appear in the scheduler's screens beside every other job.
 
 ** The fallback path
 

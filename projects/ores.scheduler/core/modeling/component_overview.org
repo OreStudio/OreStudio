@@ -113,6 +113,9 @@ target_link_libraries(${lib_target_name}
         ores.eventing.api.lib
         # compass:except(core_link_edges/forbidden_edge) expires=2027-05-18 approver=marco reason=accepted until the edge is removed
         ores.history.core.lib
+        # The publish-from-dq handler decodes the command the workflow engine
+        # dispatches, which is DQ's message rather than the scheduler's.
+        ores.dq.api.lib
         ores.service.lib
         ores.utility.lib
         ores.security.lib

@@ -246,8 +246,9 @@ void retention_policy_repository::write(
 
 std::vector<domain::retention_policy> retention_policy_repository::read_latest(const context& ctx) {
     static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<retention_policy_entity>> |
-                       query_builder::where("valid_to"_c == max) |
+                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
                        query_builder::order_by("code"_c);
 
     return query_builder::execute_read_query<retention_policy_entity, domain::retention_policy>(
@@ -262,8 +263,10 @@ std::vector<domain::retention_policy>
 retention_policy_repository::read_latest(const context& ctx, const std::string& code) {
     ORES_LOG_SEV(lg(), debug) << "Reading latest retention policy. " << "code: " << code;
     static constexpr auto max = db_timestamp::max();
-    const auto query = query_builder::read<std::vector<retention_policy_entity>> |
-                       query_builder::where("code"_c == code && "valid_to"_c == max);
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<retention_policy_entity>> |
+        query_builder::where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max);
 
     return query_builder::execute_read_query<retention_policy_entity, domain::retention_policy>(
         ctx,
@@ -277,8 +280,9 @@ retention_policy_repository::read_latest(const context& ctx, const std::string& 
 std::vector<domain::retention_policy>
 retention_policy_repository::read_all(const context& ctx, const std::string& code) {
     ORES_LOG_SEV(lg(), debug) << "Reading all retention policy versions. " << "code: " << code;
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<retention_policy_entity>> |
-                       query_builder::where("code"_c == code) |
+                       query_builder::where("tenant_id"_c == tid && "code"_c == code) |
                        query_builder::order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return query_builder::execute_read_query<retention_policy_entity, domain::retention_policy>(
@@ -293,9 +297,11 @@ std::optional<domain::retention_policy> retention_policy_repository::read_at_ver
     const context& ctx, const std::string& code, std::uint32_t version) {
     ORES_LOG_SEV(lg(), debug) << "Reading retention policy at version. " << "code: " << code
                               << " version: " << version;
-    const auto query = query_builder::read<std::vector<retention_policy_entity>> |
-                       query_builder::where("code"_c == code && "version"_c == version) |
-                       query_builder::limit(1);
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<retention_policy_entity>> |
+        query_builder::where("tenant_id"_c == tid && "code"_c == code && "version"_c == version) |
+        query_builder::limit(1);
 
     const auto entities =
         query_builder::execute_read_query<retention_policy_entity, domain::retention_policy>(
@@ -325,9 +331,10 @@ retention_policy_repository::remove_status retention_policy_repository::remove(
     // cannot close a row that replaced the one the caller read between the
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
-    const auto query =
-        query_builder::delete_from<retention_policy_entity> |
-        query_builder::where("code"_c == code && "valid_to"_c == max && "version"_c == expected);
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::delete_from<retention_policy_entity> |
+                       query_builder::where("tenant_id"_c == tid && "code"_c == code &&
+                                            "valid_to"_c == max && "version"_c == expected);
 
     query_builder::execute_delete_query(
         ctx, query, lg(), "Removing retention policy from database.");
@@ -352,8 +359,10 @@ std::vector<domain::retention_policy> retention_policy_repository::read_latest(
     const std::optional<std::string>& as_of) {
     ORES_LOG_SEV(lg(), debug) << "Reading latest retention policies with offset: " << offset
                               << " and limit: " << limit;
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = query_builder::read<std::vector<retention_policy_entity>> |
-                       query_builder::offset(offset) | query_builder::limit(limit);
+                       query_builder::where("tenant_id"_c == tid) | query_builder::offset(offset) |
+                       query_builder::limit(limit);
 
     return query_builder::execute_ordered_read_query<retention_policy_entity,
                                                      domain::retention_policy>(
@@ -373,7 +382,9 @@ std::uint32_t retention_policy_repository::get_total_policy_count(
     const std::optional<std::string>& as_of) {
     ORES_LOG_SEV(lg(), debug) << "Retrieving total active retention policy count";
 
-    const auto query = query_builder::read<std::vector<retention_policy_entity>>;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = query_builder::read<std::vector<retention_policy_entity>> |
+                       query_builder::where("tenant_id"_c == tid);
 
     return query_builder::execute_count_query<retention_policy_entity>(
         ctx,
@@ -405,8 +416,10 @@ retention_policy_repository::read_latest(const context& ctx,
         return all;
     }
     static constexpr auto max = db_timestamp::max();
-    const auto query = query_builder::read<std::vector<retention_policy_entity>> |
-                       query_builder::where("code"_c.in(codes) && "valid_to"_c == max);
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::read<std::vector<retention_policy_entity>> |
+        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
     auto result =
         query_builder::execute_read_query<retention_policy_entity, domain::retention_policy>(
             ctx,
@@ -428,8 +441,10 @@ void retention_policy_repository::remove(const context& ctx,
     if (codes.empty())
         return;
     static constexpr auto max = db_timestamp::max();
-    const auto query = query_builder::delete_from<retention_policy_entity> |
-                       query_builder::where("code"_c.in(codes) && "valid_to"_c == max);
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        query_builder::delete_from<retention_policy_entity> |
+        query_builder::where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max);
     query_builder::execute_delete_query(ctx, query, lg(), "Batch removing retention policies.");
 }
 

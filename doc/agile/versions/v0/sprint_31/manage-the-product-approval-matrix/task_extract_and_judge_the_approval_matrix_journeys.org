@@ -31,11 +31,11 @@ comes first and it stops for the owner's sign off.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F77263EF-6F2D-4129-BA60-CA6C2F2D6153][Manage the product approval matrix]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Extract the journeys, judge each step, and stop for the owner. |
+| Now          | The journey is written and every step is judged. Two gaps are filed as captures. |
+| Waiting on   | The owner's sign off of the journeys, which the runbook requires before any prototype. |
+| Next         | The owner reads the journey and records their verdict; the prototype task then starts. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance
@@ -47,25 +47,40 @@ comes first and it stops for the owner's sign off.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The journey starts from the person's goal and not from the entity, so it is one
+journey over two record pages rather than a screen per table: the party's set
+is the maximum, the book's narrows it, and a person approves both in one
+sitting. The steps were walked against the record screen standard, and each one
+is either a rule the standard already carries or a placement the prototype must
+settle. Two of the placements turned out to be server gaps rather than design
+ones, and each is a capture.
+
+The group is =parties= and not a new one, because the party owns the approval and
+the person reaches the book from it (J06). The book's side links back through
+the books group's journey.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The journey, judged step by step | 1 document, 9 steps, 8 judged rows, 2 wireframes | =compass add user_journey=, =plantuml= | the commit that adds it |
+| Gaps found and filed | 2 captures | =compass add capture= | the commit that adds it |
 
 * Notes
+
+- The journey is [[id:AEA0BD34-1114-41C2-874D-84501B2C40CE][Approve what a party and its books may trade]], under
+  =doc/knowledge/journeys/parties/=, and the group page lists it with the party
+  record journeys it belongs beside.
+- The judgement table sits under /* Screens and wireframes* on the journey, one
+  row per step, with the rule identifier or the fact that no rule draws it.
+- Two gaps are captures and not design decisions: no operation answers the set a
+  book may carry, and a refused write does not carry the party's set in its
+  words.
+- Two wireframes were drawn and rendered, and both were read back: the party's
+  tab and the book's panel.
+- The journey describes the sets as links and not parts, because a product type
+  exists on its own and a link's panel carries no history of its own
+  (RS-RELATED-03).
 
 * Test Scenarios
 

@@ -17,9 +17,11 @@ memberships that connect it to countries, currencies and business units. A
 counterparty carries more: the netting agreements, the sets under them, and the
 credit support that governs them.
 
-The two journeys are separate because the goals are separate. A person brings a
-counterparty on board once, and a person keeps a party's own record current.
-Both are tenant-administrator work.
+The journeys are separate because the goals are separate. A person brings a
+counterparty on board once, a person keeps a party's own record current, and a
+person approves what the party and its books may trade. The first two are
+tenant-administrator work; the third belongs to the risk administrator, and it
+is what bounds the population a run may value.
 
 * Journeys
 
@@ -28,6 +30,7 @@ Both are tenant-administrator work.
 |---------+-------+------|
 | [[id:B8602F8B-AE64-4A45-8462-A3B17282D410][Onboard a counterparty]] | tenant administrator | Bring a new trading counterparty on board once: its legal identity, identifiers, contacts, netting agreements and collateral terms |
 | [[id:55A8F48F-0072-4DD6-98FC-0BAB62C7DA43][Keep a party's details current]] | tenant administrator | Correct one of the tenant's own legal entities: its names and type, its identifiers, its contacts, and what it connects to |
+| [[id:AEA0BD34-1114-41C2-874D-84501B2C40CE][Approve what a party and its books may trade]] | risk administrator | State the product types the party permits, and narrow each of its books to a subset of them |
 
 * Related
 

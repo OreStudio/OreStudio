@@ -1,0 +1,208 @@
+:PROPERTIES:
+:ID: AEA0BD34-1114-41C2-874D-84501B2C40CE
+:END:
+#+title: User Journey: Approve what a party and its books may trade
+#+description: A risk administrator states the product types a party permits and narrows each of its books to a subset, reading the two sets against each other and understanding every refusal.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:refdata:approvals:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A risk administrator states the product types a party permits and narrows each of its books to a subset, reading the two sets against each other and understanding every refusal.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I approve what this party may trade, and then what each of its books may carry,
+and I have to be able to see that no book has escaped what I approved. When the
+system refuses a book, it tells me which part of the party's approval is
+missing, because the correction is always up there and never on the book."
+
+The person is finished when the party's set reads as they intended, every book
+of the party carries a subset of it, and nothing is left refused without a
+stated reason.
+
+* Actor and trigger
+
+A risk administrator runs this journey, acting inside their own tenant. The
+reference data administrator runs the same journey when a desk opens, and the
+product owner reads it without changing it.
+
+Three things bring them there: a new desk whose books have to be approved before
+it books anything, a product line the firm withdraws, and a report that shows a
+book trading a product nobody remembers approving.
+
+It starts on the party record and ends on a book of that party, because the two
+sets are one decision read at two levels. Both are the same record screen, so
+the person never leaves the record they are working on.
+
+* Steps
+
+1. *Open the party and its approvals.* The person opens the party record and
+   chooses the /Market approvals/ tab. The page reads the party, and the tab
+   reads the party's set.
+2. *Read what the party permits today.* The tab states which of the two states
+   the party is in: it permits every product type the catalogue holds, or it
+   permits the list shown. A party that states an empty list is drawn as
+   permitting nothing, in the words the screen uses for any empty list.
+3. *Choose to state a set.* The person switches the party from permitting
+   everything to permitting a list. The system writes nothing until the set is
+   saved, and the tab draws an empty list with /Add/ under it.
+4. *Add the types the party may trade.* /Add/ opens the picker over the product
+   type catalogue, searched by code and name. The person adds each type the
+   mandate allows; the tab lists them in code order with the name beside the
+   code.
+5. *Save the party's set.* /Save/ in the tab's header writes the flag and the
+   set. The system refuses the save when a book of the party carries a type the
+   save would remove, and the refusal names the type and the book.
+6. *Move to a book of the party.* The tab links the books of the party. The
+   book's /Product types/ panel reads either that the book follows its party or
+   the subset it states.
+7. *Narrow the book.* The book's picker offers only the types the party
+   permits, so a book cannot be given a type outside the approval by picking
+   it. The panel draws the party's set beside the book's, marking each type as
+   carried or not carried by the book.
+8. *Save the book's set.* /Save/ writes the book's flag and its subset. The
+   system refuses a type outside the party's set, which reaches the person only
+   from a page that has gone stale or from a caller that did not use the
+   screen.
+9. *Confirm the two sets read as one.* The person returns to the party's tab
+   and reads, for each book, whether it follows the party or narrows it, so the
+   approval and the books that answer to it are one reading rather than two
+   pages.
+
+No step waits on the server after it returns, so the journey carries no state
+across a reply and needs no workflow instance.
+
+* Screens and wireframes
+
+Two screens, both on the record screen the standard already draws: the party's
+record page gains a tab, and the book's record page gains a panel. The
+judgement of each step follows, because a step the standard already draws is not
+a design decision, and a step no rule draws is what the prototype must settle.
+
+| Step | Shape on the screen | Judgement |
+|------+---------------------+-----------|
+| 1 | A tab of the record page, held in the address | Standard: RS-PAGE-09 |
+| 2 | A line that states the state, then the list or the empty list | Standard: RS-PAGE-07 for the empty case. The words for "permits every type" have no rule: the design note proposes them |
+| 3 | The switch between the two states | Standard: RS-WRITE-01 draws a classification as a select, and this is a select of two labels |
+| 4 | A links panel with /Add/ under it, and a picker dialog | Standard: RS-RELATED-01 to RS-RELATED-03, RS-RELATED-06 |
+| 5 | /Save/ at the right of the panel header, the refusal under the panel | Standard: RS-PAGE-03, RS-WRITE-05, RS-FEEDBACK-01 |
+| 6 | A panel on the book record, read only until edited | Standard: the parts and links panels draw both; reading the party's set inside the book's panel is new |
+| 7 | The party's set drawn beside the book's, with each type marked | No rule draws a two set comparison: the design note defines it for the standard to take |
+| 8 | The refusal naming the party's set | No rule draws it, and the server does not carry the words: see /What is missing/ |
+
+The two sets are links and not parts: a product type exists on its own and is
+carried by the party or the book, and a link's panel carries no history of its
+own (RS-RELATED-03).
+
+#+caption: The party's record page, with the market approvals tab that states the set it permits.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/parties/wireframe_approve_what_a_party_and_its_books_may_trade_party.png]]
+
+The figure is generated from =wireframe_approve_what_a_party_and_its_books_may_trade_party.puml=
+beside this file, with =plantuml -tpng <file>.puml=.
+
+#+caption: The book's record page, with the panel that narrows the party's set.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/parties/wireframe_approve_what_a_party_and_its_books_may_trade_book.png]]
+
+The figure is generated from =wireframe_approve_what_a_party_and_its_books_may_trade_book.puml=
+beside this file, with =plantuml -tpng <file>.puml=.
+
+* Prototype
+
+The prototype goes under =doc/prototypes/parties/approval_matrix/=, and it must
+settle four placements the standard does not:
+
+- *P1 Where the set lives.* A tab of the party with a panel on the book, or a
+  screen of its own that both record pages link to. The tab and the panel keep
+  the person on the record they are changing, which is the standard's habit; a
+  screen of its own is the alternative the prototype draws, to be refused or
+  accepted.
+- *P2 How the two sets are read together.* On the book, the party's set is the
+  background and the book's the marks, or the two are two columns of one table.
+  A type the party permits and the book does not carry must read as clearly as
+  its reverse, which cannot happen and is therefore not drawn.
+- *P3 What a party that states nothing looks like.* "Permits every type" is a
+  state no rule draws. The prototype proposes its words, and the standard takes
+  them if the owner accepts them.
+- *P4 Where a refusal stands.* Under the panel, in the words of the operation,
+  or in a dialog the person must dismiss.
+
+The states the prototype draws, each at its own address: a party that permits
+everything; a party that permits an empty list; a party that permits a list; a
+party save refused because a book carries the type; a book that follows its
+party; a book that narrows it; a book save refused from a stale page.
+
+* Entities composed
+
+| Entity | What the screen shows of it |
+|--------+-----------------------------|
+| =party= | The record's title and lead, and =restricts_product_types= as the state the tab opens on |
+| =party_product_type= | The set the party permits: the code, and the name the catalogue gives it |
+| =book= | The book's title and lead, and its =restricts_product_types= flag |
+| =book_product_type= | The set the book carries, drawn against the party's |
+| =product_type= (trading) | Read only, for the picker's search and the name beside each code |
+
+* Operations and messages
+
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| 1 | Read the party | =refdata.v1.parties.get= | exists |
+| 2, 9 | Read the party's set | =refdata.v1.party_product_types.list_by_party_id= | exists on the branch that adds it |
+| 3, 5 | Write the party's flag and set | =refdata.v1.parties.put=, =refdata.v1.party_product_types.put_many= | exists on the branch that adds it |
+| 4 | Search the catalogue | =trading.v1.product_types.list= | exists |
+| 6 | Read the book | =refdata.v1.books.get= | exists |
+| 6, 7 | Read the book's set | =refdata.v1.book_product_types.list_by_book_id= | exists |
+| 7 | Read what the book may carry | none | missing: see /What is missing/ |
+| 8 | Write the book's flag and set | =refdata.v1.books.put=, =refdata.v1.book_product_types.put_many= | exists |
+| 9 | Read the books of the party | =refdata.v1.books.list_by_parent_portfolio_id= | exists |
+
+Every subject above was read from the generated protocol headers of its
+component. The two that name the approval matrix are on the branch that adds
+it, and this journey is written before that branch merges.
+
+* What is missing
+
+- *No operation answers the set a book may carry.* The database resolves it,
+  from both sets and both flags, but nothing carries the answer over the wire,
+  so the book's panel would read two junctions and apply the rule itself. That
+  is the rule in a second place, which is the defect this journey exists to
+  avoid. Capture: [[id:8B1C5367-304E-4723-89B9-4FA6C16AAFDF][No operation answers the product types a book may carry]].
+- *A refusal does not carry the party's set.* The database refuses the write and
+  names the set in its exception, and the write path turns that into a generic
+  failure. The screen cannot tell the person which approval is missing. Capture:
+  [[id:DEC66AE2-4EB0-46B5-BA47-5D332B1D68B2][A refused approval reaches the person as a database error]].
+- *No rule draws two sets compared.* The book's panel needs the party's set as
+  its background, and the record screen standard draws one set at a time. The
+  design note the prototype carries proposes the shape, and the standard takes
+  it at the sign off, as the calendars topic added RS-HIST-01.
+- *No words for a set that is not stated.* "Permits every product type" is a
+  state and not an empty list, and no rule states how the screen says it.
+
+* Related journeys
+
+- [[id:FABEE7BA-8FDF-4C5F-AA9C-5510B4C8B44C][Shape the book structure]] — the book's place in the tree, which this
+  journey reads to find the books a party owns.
+- [[id:55A8F48F-0072-4DD6-98FC-0BAB62C7DA43][Keep a party's details current]] — the party record this journey opens, and
+  the page whose tab it adds.
+- [[id:F77263EF-6F2D-4129-BA60-CA6C2F2D6153][Manage the product approval matrix]] — the story that builds this journey.
+
+* Related knowledge
+
+- [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] — why the approval exists: the
+  population a run may value follows what the books are approved to carry.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the rules the judgement table cites.
+- [[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]] — the reason the two sets stay on the record pages.
+
+* See also
+
+- [[id:57F2778B-57BA-485D-90C5-5511C6346BF0][Extract and judge the approval matrix journeys]] — the task that wrote and
+  judged this page.

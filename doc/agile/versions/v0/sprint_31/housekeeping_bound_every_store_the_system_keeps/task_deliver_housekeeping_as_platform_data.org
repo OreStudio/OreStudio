@@ -30,11 +30,11 @@ republish.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Delivered: the jobs and the policies arrive as datasets published into the system tenant, and no populate script seeds either. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Review the branch, then open the pull request. |
+| Next         | Nothing. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance
@@ -147,3 +147,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The housekeeping configuration now reaches an installation the way every other
+platform datum does. The jobs the scheduler fires and the retention policies are
+datasets in =system_core=, staged from the models that own them and published
+into the system tenant, so they exist in every environment and can be published
+again. No populate script seeds a job definition or a retention policy.
+
+A policy states its own cadence in hours and the sweep applies only the policies
+that are due, so the job's schedule is the tick and no store is swept more often
+than its author intended. The sweep reads the run ledger for when it last
+applied a policy rather than writing bookkeeping into the policy row, because an
+update to a versioned row opens a version and would read as a change a person
+made.
+
+A publish reconciles the contract and leaves the installation's decisions alone.
+For a job the contract is the command, the payload and the description; for a
+policy it is the target, the action and the reason. The schedule, the state and a
+policy's period and cadence are carried from the most recent row the installation
+held, even where the publish closed that row first.
+
+Two defects were fixed on the way, because the dataset could not be written
+correctly over them: the policy table had no tenant, and the policy's cadence was
+read by nothing.
+
+Verified on a rebuilt database: four published jobs, three published policies, all
+in the system tenant; a first sweep applied the three policies and the sweep after
+it applied none; the housekeeping pgTAP suite passes its 15 assertions and the
+whole suite its 1022; the scheduler fired the published jobs within ten minutes
+of starting.
+
+Outstanding, and named for the next task: the sweep applies only a chunk drop, so
+the =delete_rows= and =expire_prefix= actions its policies may name still report
+=skipped=; the run ledger has no retention policy of its own, so it grows by one
+row per policy per sweep; and the job definition table still permits a null
+tenant, which is what the new task holds.

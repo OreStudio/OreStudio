@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :dq:server:coverage:sprint_31:v0:show_and_drive_the_dq_pipeline:
 #+owner: marco
-#+branch:
+#+branch: feature/serve-the-bundle-roster-with-its-level-and-staged-counts
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,28 +20,49 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The roster answers over the bus with the two facts the coverage screen cannot
+read today: the level each bundle publishes at, and how many rows each member
+has staged. Without them a person can see which bundles exist and cannot tell
+where they write or whether there is anything to publish.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Investigating. The three discovery functions and the publish verb are read; the shape of the operation is being settled. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Settle how the staged count is taken, then write the SQL and the operation model. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance
 
--
+- =ores_dq_bundles_list_fn= returns the level each bundle publishes at, so the
+  roster groups by level without a second read.
+- The roster states how many rows each member has staged, taken from the
+  member's own artefact table, without a call per dataset from the client.
+- One operation on the DQ bus answers the roster, with the level and the counts
+  in one reply, and its own roundtrip and handler tests.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Extend =ores_dq_bundles_list_fn= with =level=, read from
+   =ores_dq_dataset_bundles_tbl=, and =ores_dq_bundle_datasets_list_fn= with
+   =staged_count=, counted from the member's artefact table by dynamic SQL.
+2. Declare the operation as a codegen operation model beside
+   =ores.dq.publish_bundle=: a request naming the bundle and a response carrying
+   the bundle, its level and each member with its artefact type, target subject,
+   staged count and publishability.
+3. Serve it from a hand-written handler beside the publish handler, registered
+   on its own subject.
+4. Test the SQL directly, the protocol with a roundtrip, and the handler with
+   the level and counts it returns.
+
+The staged count is the part to settle first: counting each member's artefact
+table costs one scan per dataset, and the coverage screen would ask for it on
+every row of the roster. The design note already flagged this as the open
+question for the build.
 
 * Measurements
 

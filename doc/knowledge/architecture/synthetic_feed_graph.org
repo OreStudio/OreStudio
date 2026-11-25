@@ -107,7 +107,11 @@ and says nothing keeps the hole.
 A derived term index is the case that made this necessary: its curve's node
 stopping starves it, and the fixings it does not state for those days stay
 absent when the curve returns, because a fixing is a fact about a date and not
-a value to repeat.
+a value to repeat. Such a node is offered to its adapter like every other, so
+the demand that answers a party's subscription is what carries it, and the
+withdrawn offer is what stops it while the graph says it does not run; the
+guard inside the feed covers the run a person started by hand, which no demand
+withdraws.
 
 ** The choices, signed off
 

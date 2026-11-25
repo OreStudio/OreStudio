@@ -129,8 +129,11 @@ them; an accepted prototype merges into =main= and stays as the design record.
 
 ** Verdict
 
-Waiting on the owner. Until they sign the prototype off, no screen is built from
-it.
+Signed off by the owner on 2026-11-25, with the desk added: the chain is the
+party, the desk and the book, each equal to or narrower than the one above, and
+the three screens draw it in tandem. The two set comparison, the words for a
+level that states nothing and the refusal under the panel are accepted, and the
+screen pipeline's build step may start from this prototype.
 
 * See also
 

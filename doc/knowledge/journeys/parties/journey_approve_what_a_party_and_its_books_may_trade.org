@@ -141,8 +141,10 @@ placements the standard does not:
 
 The states the prototype draws, each at its own address: =?state=party-unrestricted=,
 =?state=party-empty=, =?state=party-list=, =?state=party-refused=,
+=?state=unit-inherits=, =?state=unit-narrows=, =?state=unit-refused=,
 =?state=book-inherits=, =?state=book-narrows= and =?state=book-refused-stale=. All
-seven were rendered with Playwright and read back.
+ten were rendered with Playwright and read back. The owner signed the prototype
+off on 2026-11-25, with the desk added as the middle level of the chain.
 
 * Entities composed
 

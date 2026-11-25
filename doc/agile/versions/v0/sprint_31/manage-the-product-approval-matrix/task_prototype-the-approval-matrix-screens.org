@@ -26,11 +26,11 @@ A reviewer opens every state of both screens from a URL and reads what the stand
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F77263EF-6F2D-4129-BA60-CA6C2F2D6153][Manage the product approval matrix]] |
-| Now          | The prototype is drawn at seven states, every one rendered and read back. |
-| Waiting on   | The owner's sign off of the prototype, which the runbook requires before any screen is built. |
-| Next         | The owner opens the states and records a verdict; the build task then starts. |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance
@@ -97,3 +97,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The prototype exists, is rendered, and the owner signed it off on 2026-11-25.
+
+What exists:
+
+- [[id:9A0591A2-416E-4EC0-8EC3-36EF5924AF87][The approval matrix prototype]], a static page under
+  =doc/prototypes/parties/approval-matrix/= with the query string as its state.
+- Three screens in tandem, because the chain has three levels: the party's
+  /Market approvals/ tab, the desk's /Product types/ panel and the book's, each
+  drawn against the set of the level above it.
+- Ten states: the party stating nothing, stating an empty set, stating a set and
+  refused; the desk inheriting, narrowing and refused; the book inheriting,
+  narrowing and refused from a stale page.
+- A design note that cites the rule each part follows, lists every state with
+  its address, states what is fake, and records the two placements the standard
+  does not settle.
+
+What the verdict settled: the two set comparison column by column, the words
+for a level that states nothing, the refusal under the panel, and the desk as
+the middle level.
+
+What it does not do: no screen is built, and no server answers the sets yet. The
+two captures the journey filed remain the build task's to resolve.

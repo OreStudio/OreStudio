@@ -23,9 +23,9 @@ A risk or reference data administrator reads and changes the product approval ma
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
-| Now           | The journeys are signed off. The prototype is the next step, and it answers to them. |
+| Now           | The journeys and the prototype are signed off. The build waits on the desk level of the model. |
 | Waiting on    | [[id:9EC5A975-0FD7-44F4-9C70-7921E0F7AD3D][State what a party may trade and what a book may carry]], which is DONE: the sets and the rule exist, and this story gives them a surface. |
-| Next          | [[id:D590E027-6A2C-4CA6-B32E-71F9901E4259][Prototype the approval matrix screens]]. |
+| Next          | [[id:178ECB01-6FAE-4832-B3A3-F95302AB504D][Build the approval matrix screens]], once the model holds all three levels. |
 | Last touched  | 2026-11-25                               |
 
 * Acceptance
@@ -42,7 +42,7 @@ A risk or reference data administrator reads and changes the product approval ma
 |------+-------+-------+-----+-------------|
 | [[id:D7E5631A-B742-4723-ADEF-EEB93D659C6E][Scaffold story: Manage the product approval matrix]] | DONE | 2026-11-25 | 2026-11-25 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:57F2778B-57BA-485D-90C5-5511C6346BF0][Extract and judge the approval matrix journeys]] | DONE | 2026-11-25 | 2026-11-25 | The person's journeys over the party's set and the book's set, each step judged against the record screen standard before any prototype exists. |
-| [[id:D590E027-6A2C-4CA6-B32E-71F9901E4259][Prototype the approval matrix screens]] | BACKLOG | | | A prototype under doc/prototypes/ draws every state of the party's set and the book's set, with the query string as its state, the rule identifiers it follows, and what is fake stated. |
+| [[id:D590E027-6A2C-4CA6-B32E-71F9901E4259][Prototype the approval matrix screens]] | DONE | 2026-11-25 | 2026-11-25 | A prototype under doc/prototypes/ draws every state of the party's set and the book's set, with the query string as its state, the rule identifiers it follows, and what is fake stated. |
 | [[id:178ECB01-6FAE-4832-B3A3-F95302AB504D][Build the approval matrix screens]] | BACKLOG | | | The live screens draw what the prototype draws, through the shared parts, in three languages, with a harness check for every rule the build relies on. |
 | [[id:2DD69165-9831-417A-A95F-849887B46DEB][Test the approval matrix screens and sign them off]] | BACKLOG | | | A scenario over a freshly recreated database drives both screens end to end, and the owner's own run of it carries the verdict that closes the topic. |
 

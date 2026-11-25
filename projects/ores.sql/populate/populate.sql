@@ -390,11 +390,12 @@ select ores_utility_allow_version_replace_fn();
 \echo '--- Publishing the platform and world levels ---'
 \ir dq/dq_bootstrap_publish_populate.sql
 
--- The derived collection hangs under its own dataset and its feeds read the
--- published curves, so it is stated once the world publish has written them.
+-- The Derived provider publishes the term indices the platform states, so its
+-- fixing addresses are installed once the dataset publish above has written
+-- the collection that names it.
 \echo ''
-\echo '--- Derived Feeds ---'
-\ir synthetic/synthetic_ir_curve_derived_feeds_populate.sql
+\echo '--- Derived Fixing Instruments ---'
+\ir synthetic/synthetic_ir_curve_derived_fixing_instruments_populate.sql
 
 
 -- The tenor convention resolutions name tenor schedules, and a schedule row

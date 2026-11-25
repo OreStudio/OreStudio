@@ -140,7 +140,9 @@ create temporary table t_fixing_id (
 -- END GENERATED fixing ids
 
 -- The fixings the seeds' configs state: the index of each curve, and each spot-fed pair at the
--- source that fixes its default cut.
+-- source that fixes its default cut. A derived index states its rate from the overnight curve of
+-- its currency, and the Derived provider owns its fixing, so its address is not one of the ids
+-- this seed writes: the derived seed writes it, under that provider.
 create temporary table t_fixing_feed (
     kind text, key_a text, key_b text, key_c text
 ) on commit drop;
@@ -149,6 +151,7 @@ insert into t_fixing_feed
 select distinct 'ir', c.currency_code, c.index_family, c.tenor
 from ores_dq_ir_curve_generation_configs_artefact_tbl c
 where c.provider_code is not null
+  and c.rate_source = 'process'
 union
 select distinct 'fx', s.base_currency_code, s.quote_currency_code, k.fixing_source_code
 from ores_dq_fx_spot_generation_configs_artefact_tbl s

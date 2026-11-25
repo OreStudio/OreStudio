@@ -35,9 +35,9 @@ These are yours to ready, before the tester opens the client:
 
   Expect five rows: COP ibr 3M, JPY eytibor 3M, KRW generic 3M, PLN
   wibor 6M and USD sofr 1M, each with =auto_start = true=.
-- Acme Corporation is provisioned, because the steps log in as its
-  tenant administrator:
-  =compass shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+- The system administrator exists: =super_admin= with
+  =Secure-Password-123=. The bootstrap creates it, and every screen these
+  steps open is a system control, so no tenant needs provisioning first.
 - Known gap at the time of writing: on a freshly recreated database the
   synthetic service states no fixings for any index, the derived five
   included, so Step 4 may find an empty series even when Steps 2 and 3
@@ -51,21 +51,22 @@ These are yours to ready, before the tester opens the client:
 | Parent story  | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]]   |
 | Target screen | IR curve feeds (Calibration, interest rates); Fixing series (Market data) |
 | Clients       |                                          |
-| State         | PENDING                               |
+| State         | PENDING |
 
 * Steps
 
-** Log in as the tenant administrator
+** Log in as the system administrator
 
 - Open the web client at the address =compass services status= reports.
-- Log in as =tenant_admin@acme_corporation= with =Secure-Password-123=.
-- Confirm the landing page names Acme Corporation.
+- Sign in as =super_admin= with =Secure-Password-123=.
+- Confirm the shell offers *Market data* → *Calibration*: it is a system
+  control, and a tenant administrator does not see it.
 
 *** Result
 
 ** Read the rule on the curve feed
 
-- Go to *Calibration* → *Interest rates* → *Feeds*.
+- Go to *Market data* → *Calibration*, then the *Interest rates* class.
 - Open the USD/SOFR feed whose tenor is 1M — the derived one, whose
   source name begins =synthetic.derived.=.
 - Read the *Rate from* field: it shows *The overnight rate compounded
@@ -87,7 +88,7 @@ These are yours to ready, before the tester opens the client:
 
 ** Open a derived fixing series
 
-- Go to *Market data* → *Fixing series*.
+- Go to *Market data* → *Fixings* (=/market-data/fixings=).
 - Enter the address of the one-month term SOFR series:
   =oresmd://ir/USD?type=fixing&index=ibor&name=SOFR&tenor=1M=.
 - Confirm the page opens the series and lists its fixings, each with a
@@ -116,3 +117,8 @@ These are yours to ready, before the tester opens the client:
 | Step | Outcome | Notes |
 |------+---------+-------|
 |      |         |       |
+
+Attempt 1, 2026-11-25, failed at the second step before the product was
+reached: the scenario named a tenant administrator for *Calibration*,
+which is a system control. The persona is now =super_admin= and the
+navigation goes through *Market data*. Re-run from the first step.

@@ -87,6 +87,9 @@ record page gains a tab, and the book's record page gains a panel. The
 judgement of each step follows, because a step the standard already draws is not
 a design decision, and a step no rule draws is what the prototype must settle.
 
+Judged on 2026-11-25 against the record pages the web draws today, and
+signed off by the owner the same day.
+
 | Step | Shape on the screen | Judgement |
 |------+---------------------+-----------|
 | 1 | A tab of the record page, held in the address | Standard: RS-PAGE-09 |

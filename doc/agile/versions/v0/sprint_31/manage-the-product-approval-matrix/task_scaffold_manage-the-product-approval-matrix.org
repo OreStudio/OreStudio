@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F77263EF-6F2D-4129-BA60-CA6C2F2D6153][Manage the product approval matrix]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance
@@ -83,3 +83,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Scaffolded. The story states its goal, its five acceptance bullets and its four
+decisions, and carries the four tasks of the screen pipeline in order: the
+journeys, the prototype, the build, and the test and sign off. The sprint row
+carries it as STARTED.
+
+Created with =compass story new= and =compass task new=, all on
+=feature/manage-the-product-approval-matrix=, and =compass lint= passes.

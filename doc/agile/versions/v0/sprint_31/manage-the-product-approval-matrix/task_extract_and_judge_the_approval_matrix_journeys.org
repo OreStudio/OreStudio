@@ -31,11 +31,11 @@ comes first and it stops for the owner's sign off.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F77263EF-6F2D-4129-BA60-CA6C2F2D6153][Manage the product approval matrix]] |
-| Now          | The journey is written and every step is judged. Two gaps are filed as captures. |
-| Waiting on   | The owner's sign off of the journeys, which the runbook requires before any prototype. |
-| Next         | The owner reads the journey and records their verdict; the prototype task then starts. |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance
@@ -106,3 +106,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The journey exists, is judged step by step, and the owner signed it off on
+2026-11-25.
+
+What exists:
+
+- [[id:AEA0BD34-1114-41C2-874D-84501B2C40CE][Approve what a party and its books may trade]], listing the nine steps, the
+  judgement table with a rule identifier or the gap for each step, and the four
+  placements the prototype must settle.
+- Two wireframes, rendered and read back: the party's /Market approvals/ tab and
+  the book's /Product types/ panel.
+- Two captures for the gaps that are the server's: no operation answers the set
+  a book may carry, and a refused write does not carry the party's set.
+- The group page lists the journey beside the two party record journeys, and
+  states that this one belongs to the risk administrator.
+
+What the judgement established: the tab, the select, the links panel, the save
+and the refusal under a field are rules the record screen standard already
+draws; the two sets compared, the words for a party that states nothing, and
+the placement of a refusal are not, and they are the prototype's work.
+
+What it does not do: no prototype and no code. The story's remaining three tasks
+carry those.

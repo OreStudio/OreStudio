@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 1EFE48A4-0B79-4D89-A8CC-7C3E7A9466E7
+:END:
+#+title: The party fixings manager enters a fixing the platform never…
+#+description: The party fixings manager enters a fixing the platform never stated, with an explanation, for the days a system-level node was starved. A derived term index publishes nothing while its currency's overnight curve feed is stopped: repeating the last value would be a claim about a day nobody observed, and backfilling would rewrite history the provider has no right to. The hole is therefore permanent in the system's own series. What closes it is the party's act: its operations enter or override a fixing for its own trades, with a reason, under the controls the fixing process already states (authorise, override, unauthorise, undo). This capture owns that screen and those controls for the fixing a party enters by hand, as distinct from adopting an observation the system did state.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

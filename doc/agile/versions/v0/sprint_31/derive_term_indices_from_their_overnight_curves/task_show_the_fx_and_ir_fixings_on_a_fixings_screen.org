@@ -20,7 +20,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The web UI has a Quotes screen, a Fixing series page that shows one item opened by its URI, and a Public rates screen that shows only the official publishers. Nothing lists the fixings. Add a system-level Fixings screen beside Quotes, for the super administrator, that lists the FX and IR fixing observations across every source: the index or pair, the source (TR20H, ECB, a curve's index), the publisher or generator, the latest value and its date, and how many days the series holds. A row opens the Fixing series page. The screen shows observations, which are system-level facts, and holds no authorisation; a party's fixings manager, which adopts observations for the party's trades, is a separate piece of work. See [[id:FA5C96A3-1F8E-4F9B-8973-40D92055D7DD][System-level fixing observations and party-level fixings]].
+The web UI has a Quotes screen, a Fixing series page that shows one item opened by its URI, and a Public rates screen that shows only the official publishers. Nothing lists the fixings. Add a system-level Fixings screen beside Quotes, for the super administrator, that lists the FX and IR fixing observations across every source: the index or pair, the source (TR20H, ECB, a curve's index), the publisher or generator, the latest value and its date, and how many days the series holds. A row opens the Fixing series page. It shows the fixings the platform
+states and no way to change them: a series that ends because its curve
+feed stopped is shown ending, not filled, because the system states what
+it observed. A party that needs the missing day enters it by hand, with
+an explanation, in the fixings manager that captures it: see
+[[file:doc/agile/product_backlog/inbox/the_party_fixings_manager_enters_a_fixing_the_plat.org][The party fixings manager enters a fixing the platform never stated]]. The screen shows observations, which are system-level facts, and holds no authorisation; a party's fixings manager, which adopts observations for the party's trades, is a separate piece of work. See [[id:FA5C96A3-1F8E-4F9B-8973-40D92055D7DD][System-level fixing observations and party-level fixings]].
 
 * Status
 

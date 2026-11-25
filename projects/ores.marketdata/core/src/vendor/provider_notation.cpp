@@ -20,6 +20,7 @@
 #include "ores.marketdata.core/vendor/provider_notation.hpp"
 #include "ores.marketdata.core/vendor/bloomberg_notation.hpp"
 #include "ores.marketdata.core/vendor/demo_notation.hpp"
+#include "ores.marketdata.core/vendor/derived_notation.hpp"
 #include "ores.marketdata.core/vendor/ice_notation.hpp"
 #include "ores.marketdata.core/vendor/lseg_notation.hpp"
 #include "ores.marketdata.core/vendor/simulated_fixing_notation.hpp"
@@ -34,13 +35,15 @@ const provider_notation* notation_of(std::string_view provider) {
     static const tradeweb_notation tradeweb;
     static const demo_notation demo;
     static const simulated_fixing_notation simulated_fixings;
+    static const derived_notation derived;
     for (const provider_notation* candidate :
          {static_cast<const provider_notation*>(&bloomberg),
           static_cast<const provider_notation*>(&lseg),
           static_cast<const provider_notation*>(&ice),
           static_cast<const provider_notation*>(&tradeweb),
           static_cast<const provider_notation*>(&demo),
-          static_cast<const provider_notation*>(&simulated_fixings)})
+          static_cast<const provider_notation*>(&simulated_fixings),
+          static_cast<const provider_notation*>(&derived)})
         if (candidate->provider() == provider)
             return candidate;
     return nullptr;

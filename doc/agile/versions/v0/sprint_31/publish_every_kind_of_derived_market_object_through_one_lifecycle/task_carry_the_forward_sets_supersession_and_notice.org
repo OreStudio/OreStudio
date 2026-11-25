@@ -8,7 +8,7 @@
 #+filetags: :publish_every_kind_of_derived_market_object_through_one_lifecycle:sprint_31:v0:
 #+owner: marco
 #+branch: feature/carry-the-forward-sets-supersession-and-notice
-#+pr:
+#+pr: 5133
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -105,7 +105,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5133][#5133]] | [marketdata] Carry the forward set's supersession and notice |
 
 * Review
 

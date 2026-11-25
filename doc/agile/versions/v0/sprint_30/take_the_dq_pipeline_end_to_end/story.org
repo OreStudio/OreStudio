@@ -7,30 +7,32 @@
 #+level: s2
 #+filetags: :dq:data:architecture:publishing:web:sprint_30:v0:
 #+created: 2026-11-14
-#+updated: 2026-11-21
+#+updated: 2026-11-25
 #+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Continued by: [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]].
 
 * Goal
 
 Carry reference data from a blank database to a usable one, deliberately. Today
 a recreate seeds DQ artefacts, nothing publishes them, some tables are seeded
 directly instead, and there is no screen anywhere that shows what is published.
-This story settles the model, implements it, and gives it a place to be seen and
-driven.
+This story settles the model and implements it. The place to see and drive it is
+the successor story.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | The design is delivered and signed off: five journeys and five prototypes. The screens are not built. |
-| Waiting on    | The DQ reads on the C++ server, which no server serves today. |
-| Next          | Serve the reads, then build coverage and the two publish journeys. |
-| Last touched  | 2026-11-22                               |
+| Now           | Nothing. The publishing model and its design ship here; the screens continue in Show and drive the DQ pipeline in ores.web. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-11-25                               |
 
 * Acceptance
 
@@ -44,8 +46,6 @@ driven.
 - No dataset is seeded and left unpublished, and no refdata table is populated
   by a second, silent path without that being deliberate.
 - A recreated database can value every trade type the system books.
-- ores.web shows each dataset, its artefacts, whether it is published, and
-  offers the publish action.
 
 
 * Approach
@@ -71,8 +71,9 @@ superseded by these six: its scope is now split across settling the levels,
 publishing at bring-up and collapsing the double writers. It is closed as
 abandoned rather than done, because none of its own work survives the split.
 
-The screens task stays last. "Is my reference data complete?" is a question about
-levels, so it can only be designed once 1 and 2 have an answer.
+The screens task was designed last, because "Is my reference data complete?" is a
+question about levels and could only be designed once 1 and 2 had an answer. The
+design is what this story owes; building it left the story at the sprint close.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
@@ -91,16 +92,12 @@ levels, so it can only be designed once 1 and 2 have an answer.
 | [[id:B8609EB8-C1C1-4280-A487-C76D78AC8877][Review the publishing pipeline end to end]] | DONE | 2026-11-14 | 2026-11-21 | The analysis: documented model, implemented model, inventories, defects. |
 | [[id:E9BBFCCD-8E21-4C92-AAD1-A07941AD1C8B][Publish every seeded dataset at the level it belongs]] | ABANDONED | | | Superseded: its scope is the six mop-up tasks below. |
 | [[id:34A4373F-1BD1-4710-885B-95B3C3A3B8F7][Design and build the DQ screens from the journeys]] | DONE | 2026-11-22 | 2026-11-22 | Journeys first, prototypes, then screens built from the shared parts. Not a port. |
-| [[id:43B17B69-D1CA-4333-98BF-462AA5ECD8EF][Serve the DQ reads from the C++ server]] | STARTED | 2026-11-22 | | No server serves a DQ read today; this gives ores.http the ones the screens need. |
-| [[id:E25ACD77-495D-4D8E-832B-69B44C213D18][Build the DQ screens from the signed-off prototypes]] | BACKLOG | | | The design half is done; this builds the screens, and the operations they read. |
 | [[id:7F37FF2D-EDF1-4F69-AAA5-EA57B91DAF53][Settle the three levels and the bundle map]] | DONE | 2026-11-14 | 2026-11-14 | One documented level model, one bundle per level, and no name that means two opposite things. |
 | [[id:56FB3A5C-FDC7-4F98-A5F3-CE46DB551882][Publish the world at database bring-up]] | DONE | 2026-11-14 | 2026-11-14 | A recreated database carries the canonical reference data, so no test has to provision or publish for itself. |
 | [[id:2A720F12-FA8F-4625-A178-76E9E93444D2][Declare the tenant bootstrap and retire the silent copy]] | DONE | 2026-11-14 | 2026-11-16 | The provisioner stops copying tables nobody documented and runs a declared bootstrap instead. |
 | [[id:A611C520-54AA-4562-9BA6-768278E5DDEE][Collapse the tables written both ways]] | DONE | 2026-11-16 | 2026-11-22 | Every reference table has one writer, chosen by which model owns the data. |
 | [[id:16127025-230A-4723-A04E-02906ED26CCC][Make the publish guarantees real]] | DONE | 2026-11-21 | 2026-11-21 | The audit row and the atomicity left, the level is enforced, and the catalogue checks read the caller's tenant. |
 | [[id:9D8A7038-FF2B-4F09-9BD3-E487B5ED0A48][Retire the legacy patterns and align the documentation]] | DONE | 2026-11-22 | 2026-11-22 | The catalogued legacy patterns are retired and the documents state the live model once. |
-| [[id:E25ACD77-495D-4D8E-832B-69B44C213D18][Build the DQ screens from the signed-off prototypes]] | BACKLOG | | | The five DQ journeys and their signed-off prototypes are on main; the screens themselves are not built, and three of the five need operations the server does not serve. |
-| [[id:43B17B69-D1CA-4333-98BF-462AA5ECD8EF][Serve the DQ reads from the C++ server]] | STARTED | 2026-11-22 | | The C++ server has no DQ HTTP part, so the reads the screens need are served by nobody. The BFF is not served: it is being decommissioned. |
 
 * Decisions
 
@@ -110,12 +107,14 @@ levels, so it can only be designed once 1 and 2 have an answer.
 - The DQ UI belongs in this story rather than beside it. A publishing model with
   no way to see publish state is the reason the gap went unnoticed: a recreate
   looked successful while the catalogues were empty.
-- *The design ships ahead of the screens; the story does not close with it.* The
+- *The screens leave this story at the sprint 30 close* (2026-11-25, marco). The
   five journeys and their signed-off prototypes are done and on main, and the
-  build needs operations the server does not serve, so building now would mean
-  drawing screens against data no call can read. That delays the screens; it does
-  not satisfy the last acceptance bullet. The story therefore stays open with the
-  build as its remaining task.
+  build needs operations the server does not serve, so the story closes with the
+  design delivered and the build carried to
+  [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]], a
+  successor story in sprint 31 that holds the two open tasks. Splitting keeps
+  this record to what it actually delivered; keeping it open would have left a
+  sprint 30 story with work no sprint 30 task covers.
 - The stage-by-stage pipeline page survives rather than being retired. The model
   lives on one page — the classification by publication level — and the pipeline
   page records what a generator owns at each stage of it. That inventory is the

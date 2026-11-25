@@ -5,7 +5,7 @@
 #+description: The DQ screens need DQ reads and the C++ server has no DQ HTTP part. The BFF is being decommissioned, so only ores.http is served.
 #+type: task
 #+level: s1
-#+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
+#+filetags: :show_and_drive_the_dq_pipeline:sprint_31:v0:
 #+owner: marco
 #+branch: feature/build-the-dq-screens
 #+pr:
@@ -16,7 +16,7 @@
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ The DQ reads the screens need answer on ores.http, so a DQ screen runs on the su
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | STARTED                              |
-| Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
+| Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
 | Now          | The part exists and its four route units are generated: the facet is on the dataset, dataset bundle, bundle member and artefact type models, the aggregate is hand-written, and the server registers it. The build is running and has not been called green. |
 | Waiting on   | Nothing. The route-area rule and the part's diagram are next. |
 | Waiting on   | Nothing.                               |

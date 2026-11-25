@@ -5,7 +5,7 @@
 #+description: The five DQ journeys and their signed-off prototypes are on main; the screens themselves are not built, and three of the five need operations the server does not serve.
 #+type: task
 #+level: s1
-#+filetags: :take_the_dq_pipeline_end_to_end:sprint_30:v0:
+#+filetags: :show_and_drive_the_dq_pipeline:sprint_31:v0:
 #+owner: marco
 #+branch: feature/build-the-dq-screens
 #+pr:
@@ -16,7 +16,7 @@
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ ores.web shows each dataset, its artefacts, whether it is published, and offers 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]] |
+| Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
 | Now          | Not yet started. The design it builds from is signed off and on main. |
 | Waiting on   | The DQ reads on the C++ server, and the operations the journeys name. |
 | Next         | The coverage screen, once its reads answer on both deployments. |

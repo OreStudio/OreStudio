@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: FFA463D7-11E0-4232-92B0-B1899CD1614F
+:END:
+#+title: Story: Show and drive the DQ pipeline in ores.web
+#+description: The publishing model and its design are settled; what is missing is the place to see and drive it. ores.web shows each dataset, its artefacts and whether it is published, and offers the publish action.
+#+type: story
+#+level: s2
+#+filetags: :dq:data:publishing:web:sprint_31:v0:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+#+predecessor: 7D2BBBBC-36A3-4BFB-9673-0F9005991D94
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Continued from: [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]].
+
+
+* Goal
+
+The publishing model is settled, documented and implemented, and the design of
+what a person sees is signed off. Nothing in ores.web shows any of it: no screen
+names a dataset, says whether it is published, or offers the publish action. This
+story builds that place, and the server operations it reads.
+
+The design is the record: the five journeys in [[id:50550498-38ED-4A07-AF28-209BAFF378F0][DQ journeys]] and their
+signed-off prototypes. The screens follow those journeys, and they are written
+from the shared parts rather than from the prototype markup.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
+| Now           | ores.http serves the DQ reads. The coverage screen is not built. |
+| Waiting on    | Nothing.                               |
+| Next          | Close the reads task, then build coverage and the two publish journeys. |
+| Last touched  | 2026-11-25                               |
+
+* Acceptance
+
+- ores.web shows each dataset, its artefacts, whether it is published, and
+  offers the publish action.
+- Each of the five journeys can be walked against a freshly recreated database,
+  on screens built from the shared parts.
+- Every read the screens make is served by ores.http. No route is added to the
+  BFF.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:43B17B69-D1CA-4333-98BF-462AA5ECD8EF][Serve the DQ reads from the C++ server]] | STARTED | 2026-11-22 | | The C++ server has no DQ HTTP part, so the reads the screens need are served by nobody. The BFF is not served: it is being decommissioned. |
+| [[id:E25ACD77-495D-4D8E-832B-69B44C213D18][Build the DQ screens from the signed-off prototypes]] | BACKLOG | | | The five DQ journeys and their signed-off prototypes are on main; the screens themselves are not built, and three of the five need operations the server does not serve. |
+
+* Decisions
+
+- *The reads are served by ores.http, not the BFF* (2026-11-22, marco). The BFF
+  is being decommissioned, so a screen wired to it would spend its life on a path
+  with no future.
+- *The screens are written from the shared parts* (2026-11-22, marco). Neither
+  the prototypes nor the Qt client is the source: the prototypes are the design
+  record and the Qt inventory is evidence of what the old client offered.
+- *Split from the story that settled the model* (2026-11-25, marco). The
+  publishers, the levels and the guarantees belong to
+  [[id:7D2BBBBC-36A3-4BFB-9673-0F9005991D94][Take the DQ pipeline end to end, from a seeded artefact table to a published system]],
+  which closed at sprint 30. Keeping the build inside it would have left a
+  closed sprint owning work no task of that sprint covered.
+
+* Out of scope
+
+- The publishing model itself. It is settled, documented and implemented.
+- Re-designing the journeys. They are signed off.

@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: BD750888-6B72-48C1-AE74-DDC535705022
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.scheduler.job_definition
 #+description: Codegen entity model for the scheduler job_definition table. Drives the C++ domain class, mapper, repository, service, protocol, eventing, generator, history provider and SQL schema generation from a single literate source.
@@ -149,6 +150,56 @@ object; the compute seed writes ={"subject":"compute.v1.ops.reap_work"}=.
 :END:
 
 Whether the job fires. A paused job keeps its row and its history.
+
+* Artefact columns
+:PROPERTIES:
+:key: job_name
+:END:
+
+The import names the job by the name it is known by, not by a surrogate the
+installation that published it made. A job's =id= is therefore the store's: the
+publisher makes one when the row first lands and keeps it when the job is
+published again. The party scope is left out for the same reason, because the
+jobs the platform declares serve no party.
+
+** job_name
+:PROPERTIES:
+:type: text
+:END:
+
+** description
+:PROPERTIES:
+:type: text
+:END:
+
+** command
+:PROPERTIES:
+:type: text
+:default: ''
+:END:
+
+** schedule_expression
+:PROPERTIES:
+:type: text
+:END:
+
+** action_type
+:PROPERTIES:
+:type: text
+:default: 'execute_sql'
+:END:
+
+** action_payload
+:PROPERTIES:
+:type: jsonb
+:default: '{}'::jsonb
+:END:
+
+** is_active
+:PROPERTIES:
+:type: boolean
+:default: true
+:END:
 
 * SQL
 

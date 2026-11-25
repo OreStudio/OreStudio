@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 2C7E4B19-8D6A-4F53-9B21-5E8A7C3D1F60
 :ores.cpp.wire-codec.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.scheduler.retention_policy
 #+description: Codegen entity model for the scheduler =retention_policies= table. One store the platform keeps, the action that bounds it, and the period past which the action applies.

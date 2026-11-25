@@ -308,3 +308,5 @@
 \ir ./dq_todays_market_configuration_bindings_artefact_drop.sql
 \ir ./dq_report_configurations_artefact_drop.sql
 \ir ./dq_legal_entities_artefact_drop.sql
+\ir ./dq_job_definitions_artefact_drop.sql
+\ir ./dq_retention_policies_artefact_drop.sql

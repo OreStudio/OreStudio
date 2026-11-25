@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 187
+Tables: 189
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -2523,6 +2523,23 @@ package "dq_staging" #F3E5F5 {
     One row of the raw instrument grid (the "Curve Template") an ir_curve_generation_config publishes: which tenor period, priced as which instrument type (deposit-equivalent, FRA-equivalent, swap-equivalent -- see ores.refdata.instrument_code), in what order. Every entry is modelled as a genuine [start, end) period rather than a single maturity label: start_tenor_code/end_tenor_code are both ordinary tenor references resolved through the same ores::refdata::domain::resolve_end_date machinery (see ores.refdata.api/domain/tenor_resolution.hpp). Point instruments (deposits, swaps) set start_tenor_code to 'SPOT' (a genuine zero-duration PERIOD/DAY tenor already in the catalog, resolving directly to the horizon's spot date -- not a null/sentinel hack); interval instruments (FRAs) set it to the period's own front tenor (e.g. '3M' for a 3x6 FRA whose end_tenor_code is '6M'). This symmetric shape is what lets the tenor-collision validator (validate_curve_template in ores.synthetic.api) detect genuine period overlaps via plain windows_overlap(), without a special case for point vs. interval instruments. Entries belong to a parent config via ir_curve_config_id, the same one-config-many-children shape fx_spot_generation_config's gmm_component rows use. Every entry's published rate is derived from the parent config's short-rate process's discount_factor() at the tenor's maturity -- never an independently-noised value -- so the published tick batch is, by construction, a slice of one internally consistent curve. Party- and tenant-scoped. - Artefact Table
     end note
 
+    entity ores_dq_job_definitions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * job_name : text
+        * description : text
+        * command : text
+        * schedule_expression : text
+        * action_type : text
+        * action_payload : jsonb
+        * is_active : boolean
+    }
+
+    note right of ores_dq_job_definitions_artefact_tbl
+    A job the scheduler fires on a cron expression. The row carries the schedule (schedule_expression), what to run when it fires, and whether it is active. action_type selects the behaviour: execute_sql runs the SQL in command, and nats_publish publishes the subject and body carried in action_payload. The table is bi-temporal and audited (see projects/ores.sql/create/scheduler/scheduler_job_definitions_create.sql): it carries version, the four audit columns and the valid_from/valid_to pair with the GIST exclusion and the delete rule, so the model takes the ordinary audited shape and needs no shape flag. tenant_id is nullable. A job may belong to no tenant, because the scheduler fires system jobs from a NULL-tenant row: the MQ statistics scrape and the compute stale-result reaper are both such rows. The model binds uuid-identified-lookup for its UUID surrogate key, its tenant scope and its standard presentation tier, and states nullable_tenant_id itself, which that profile leaves to the model. job_name is the natural key and is unique within its tenant; id is the surrogate. Uniqueness is what the component's upsert path relies on: a job that arrives under an existing name updates that row in place instead of adding a second one. The component's operational views — the global job-instance list and the live scheduler status — are operations rather than entity verbs, and are modelled in ores.scheduler.scheduling_operations. - Artefact Table
+    end note
+
     entity ores_dq_legal_entities_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
@@ -3051,6 +3068,25 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_reporting_regimes_artefact_tbl
     Contains a code representing a reporting regime under which a transaction may be reported. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
+    end note
+
+    entity ores_dq_retention_policies_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * target_kind : text
+        * target : text
+        * action : text
+        * retention_days : integer
+        * cadence_hours : integer
+        * enabled : boolean
+        * description : text
+    }
+
+    note right of ores_dq_retention_policies_artefact_tbl
+    A retention policy declares one bounded store: what it targets, what action is taken, and the period past which the action applies. The target is named by shape rather than by a particular table, so the policy survives a table being replaced. A policy is a row of the installation, held by the system tenant: the classification that governs published rows makes the platform the author of the stores it bounds, and one copy in the system tenant is what keeps two installations' policies from disagreeing. The column is not null for that reason: a policy with no tenant has no owner to be published to. A policy is data, not a schema constant, so a period changes without a rebuild. The scheduler fires one sweep, which applies the enabled policies that are due, including where the storage engine runs no retention job of its own. A policy is due once its cadence has passed since the sweep last applied it, so the sweep's own schedule sets the finest cadence the installation can express. - Artefact Table
     end note
 
     entity ores_dq_risk_report_configs_artefact_tbl  #F7E5FF {

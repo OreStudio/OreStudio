@@ -7064,11 +7064,26 @@ const pt: SourceCatalogue = {
             add: 'Nova curva de taxas',
             addTitle: 'Nova curva de taxas',
             priceSource: 'Taxa inicial vinda de',
+            rateSource: 'Taxa vinda de',
+            derivedSpread: 'Spread sobre a taxa overnight',
+            derivedSpreadSource: 'Quem fixa o spread',
             tenorNeeded: 'Um índice a prazo precisa de um prazo, como 3M ou 6M.',
             tenorNotAdmitted: 'Esta família é um índice overnight: uma curva dela não leva prazo.',
             tenorOnlyDated:
                 'Esta família é um índice overnight; o seu único prazo datado é {tenor}.',
             help: {
+                rate_source: {
+                    process:
+                        'O seu próprio motor de curva produz a taxa, como qualquer curva cotada.',
+                    compounded_overnight:
+                        'A taxa overnight capitalizada ao longo do prazo. SOFR 1M e IBR 3M são assim definidos.',
+                    overnight_plus_spread:
+                        'A taxa overnight mais o spread abaixo. EYTIBOR 3M e WIBOR 6M são assim definidos.',
+                },
+                derived_spread_basis_points:
+                    'Pontos base somados à taxa overnight. Só uma taxa com spread o usa.',
+                derived_spread_source:
+                    'Quem fixa o spread: o publicador, a convenção de mercado, ou a decisão que o fixou. Um spread sem fonte é um número que ninguém pode verificar.',
                 tenor: 'O prazo de um índice a prazo, como 3M ou 6M. Deixe vazio para um índice overnight. FOMC marca a variante com datas das reuniões do SOFR.',
                 role: {
                     self_discounting: 'Uma curva que serve os dois usos.',

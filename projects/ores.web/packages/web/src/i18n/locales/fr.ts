@@ -7117,12 +7117,27 @@ const fr: SourceCatalogue = {
             add: 'Nouvelle courbe de taux',
             addTitle: 'Nouvelle courbe de taux',
             priceSource: 'Taux de départ issu de',
+            rateSource: 'Taux issu de',
+            derivedSpread: 'Marge sur le taux au jour le jour',
+            derivedSpreadSource: 'Qui fixe la marge',
             tenorNeeded: 'Un indice à terme exige une durée, comme 3M ou 6M.',
             tenorNotAdmitted:
                 'Cette famille est un indice au jour le jour : une courbe de cette famille ne prend pas de durée.',
             tenorOnlyDated:
                 'Cette famille est un indice au jour le jour ; sa seule durée datée est {tenor}.',
             help: {
+                rate_source: {
+                    process:
+                        'Son propre moteur de courbe produit le taux, comme toute courbe cotée.',
+                    compounded_overnight:
+                        'Le taux au jour le jour capitalisé sur la période. SOFR 1M et IBR 3M sont ainsi établis.',
+                    overnight_plus_spread:
+                        'Le taux au jour le jour plus la marge ci-dessous. EYTIBOR 3M et WIBOR 6M sont ainsi établis.',
+                },
+                derived_spread_basis_points:
+                    "Points de base ajoutés au taux au jour le jour. Seul un taux à marge l'utilise.",
+                derived_spread_source:
+                    'Qui fixe la marge : le publieur, la convention de marché, ou la décision qui l’a fixée. Une marge sans source est un nombre invérifiable.',
                 tenor: "La durée d'un indice à terme, comme 3M ou 6M. Laissez vide pour un indice au jour le jour. FOMC désigne la variante datée des réunions pour SOFR.",
                 role: {
                     self_discounting: 'Une courbe qui sert aux deux usages.',

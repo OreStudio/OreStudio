@@ -7016,10 +7016,24 @@ export const en: SourceCatalogue = {
             add: 'New IR curve',
             addTitle: 'New IR curve',
             priceSource: 'Starting rate from',
+            rateSource: 'Rate from',
+            derivedSpread: 'Spread over the overnight rate',
+            derivedSpreadSource: 'Who states the spread',
             tenorNeeded: 'A term index needs a tenor, such as 3M or 6M.',
             tenorNotAdmitted: 'This family is an overnight index, so a curve of it takes no tenor.',
             tenorOnlyDated: 'This family is an overnight index; its one dated tenor is {tenor}.',
             help: {
+                rate_source: {
+                    process: 'Its own curve engine makes the rate, as every priced curve does.',
+                    compounded_overnight:
+                        'The overnight rate compounded over the tenor. SOFR 1M and IBR 3M are stated this way.',
+                    overnight_plus_spread:
+                        'The overnight rate plus the spread below. EYTIBOR 3M and WIBOR 6M are stated this way.',
+                },
+                derived_spread_basis_points:
+                    'Basis points added to the overnight rate. Only a spread rate uses it.',
+                derived_spread_source:
+                    'Who states the spread: the publisher, the market convention, or the decision that set it. A spread with no source is a number nobody can check.',
                 tenor: 'The tenor of a term index, such as 3M or 6M. Leave it empty for an overnight index. FOMC marks the meeting-dated variant of SOFR.',
                 role: {
                     self_discounting: 'One curve serving both uses.',

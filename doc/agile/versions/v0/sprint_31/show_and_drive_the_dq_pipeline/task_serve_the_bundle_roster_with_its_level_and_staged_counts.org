@@ -29,11 +29,11 @@ where they write or whether there is anything to publish.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
-| Now          | The SQL half is in and measured: the roster states its level and each member states its staged count. The operation on the bus is not written. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Declare the operation model, serve it from a handler, and test the three layers. |
+| Next         | Nothing. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance
@@ -79,6 +79,35 @@ task and name that file in the Command column.
 | Cost of a bundle's members with their counts | 42 ms for 40 members, 542331 staged rows | =psql -c "\timing on" -c "select sum(staged_count) from ores_dq_bundle_datasets_list_fn('world')"= | 727082af84 |
 | Largest single member | 512186 rows | =select max(staged_count) from ores_dq_bundle_datasets_list_fn('world')= | 727082af84 |
 | Roster with levels | 20 bundles over 3 levels | =select level, count(*) from ores_dq_bundles_list_fn() group by level= | 727082af84 |
+
+* Result
+
+Done. One operation answers the roster, and the coverage screen can draw the
+two facts it was dashing.
+
+- =ores_dq_bundles_list_fn= returns the level each bundle publishes at.
+- =ores_dq_bundle_datasets_list_fn= returns the artefact table and the staged
+  count for each member, counted from that table for that dataset.
+- =ores.dq.bundle_roster= declares the operation: a request naming a bundle or
+  none, and a reply carrying every bundle with its level and dataset count and,
+  for the bundle named, its members with their counts.
+- A request naming no bundle answers the roster alone, because the counts cost
+  one count per member. The model says so, and the handler holds to it.
+- The handler asks for =dq::datasets:read= and refuses a caller holding only the
+  write with an error reply rather than a roster that claims to have failed.
+
+Four handler cases and the generated roundtrip cover it: every bundle named
+with its level, the members in the bundle's own order with the counts the SQL
+returns, a bundle that does not exist answering no members, and the refusal.
+The DQ api and core suites pass, 134 core cases among them.
+
+Two things the data said and the model did not are in the Notes: the artefact
+table name carries no product prefix, and a type may name a family of tables
+that the count sums.
+
+What this does not do is draw the counts: =api/dq.ts= has no roster read and the
+coverage screen still dashes the staged column. That is tracked as its own task
+so the screen change lands with a read behind it.
 
 * Notes
 

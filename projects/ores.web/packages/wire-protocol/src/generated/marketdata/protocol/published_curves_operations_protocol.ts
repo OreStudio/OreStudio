@@ -22,6 +22,8 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
+import type { Result } from '../../../utility/protocol.js';
+
 /**
  * @brief One pillar of a published set.
  *
@@ -111,6 +113,54 @@ export interface ListPublishedCurvesResponse {
 }
 
 /**
+ * @brief Asks for the newest published set of each of a set of series, in one
+ * read: when each was built and the state it is in now.
+ *
+ * The set is the batch. A caller that holds a page of curves sends them in one
+ * call rather than asking for one curve at a time: the read is the database's,
+ * and a set costs one plan whatever its size. A reader that draws a table of
+ * curves needs no points, so none are returned.
+ */
+export interface GetLatestPublishedSetsRequest {
+    /**
+     * @brief The series to read, in one batch.
+     */
+    series_ids: string[];
+}
+
+/**
+ * @brief The newest set of each series that holds one, ordered by series id.
+ *
+ * A series that never published does not appear, and the caller reads that as
+ * the gap it is: the answer names the series it answers for, so a reader joins
+ * on the id rather than on a position.
+ */
+export interface GetLatestPublishedSetsResponse {
+    /**
+     * @brief How the call ended: a batch over the ceiling, or a series the caller
+     * may not see, is refused here.
+     */
+    result: Result;
+    /**
+     * @brief The series that hold a published set, ordered by id.
+     */
+    series_ids: string[];
+    /**
+     * @brief The instant each of those sets was built at, as the store states it, in
+     * the same order.
+     *
+     * The text is passed on rather than parsed and written again: a reader formats
+     * the instant for its own screen, and two reformattings would drift.
+     */
+    as_ofs: string[];
+    /**
+     * @brief The state each of those sets is in now, in the same order: published,
+     * superseded or withdrawn.
+     */
+    state_codes: string[];
+}
+
+/**
  * @brief The last sets published for one series, newest last, with their points.
  *
  * The sets come back oldest first, so a reader draws them in the order they
@@ -172,6 +222,7 @@ export interface WithdrawCurveResponse {
 
 export const subjects = {
     list_published_curves_request: 'marketdata.v1.ops.list_published_curves',
+    get_latest_published_sets_request: 'marketdata.v1.ops.get_latest_published_sets',
     get_published_curve_sets_request: 'marketdata.v1.ops.get_published_curve_sets',
     withdraw_curve_request: 'marketdata.v1.ops.withdraw_curve',
 } as const;
@@ -182,6 +233,7 @@ export const subjects = {
  */
 export const requiresSession = {
     list_published_curves_request: true,
+    get_latest_published_sets_request: true,
     get_published_curve_sets_request: true,
     withdraw_curve_request: true,
 } as const;

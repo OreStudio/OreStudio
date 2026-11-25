@@ -22,15 +22,20 @@
 #include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.api/net/view_answer.hpp"
 #include "ores.http.nats/forwarding.hpp"
+#include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
+#include "ores.refdata.api/messaging/ir_curve_bootstrap_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/calibration_policy_protocol.hpp"
 #include "ores.synthetic.api/messaging/calibration_provider_order_protocol.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_fixing_item_protocol.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <limits>
 #include <map>
@@ -54,6 +59,7 @@ using ores::utility::domain::precondition_kind;
 namespace forwarding = ores::http::forwarding;
 namespace json = ores::utility::codec::json;
 namespace rr = ores::http::net::record_routes;
+namespace marketdata_messaging = ores::marketdata::messaging;
 namespace synthetic_domain = ores::synthetic::domain;
 namespace synthetic_messaging = ores::synthetic::messaging;
 
@@ -184,6 +190,67 @@ int window_of(std::int64_t days, const std::string& sentence) {
     if (days < 2 || days > 180)
         rr::invalid(sentence);
     return static_cast<int>(days);
+}
+
+/// The class whose calibration carries the interest-rate curve coverage.
+constexpr std::string_view interest_rates_class = "interest_rates";
+
+/**
+ * @brief The IR coverage of the class, from four reads of whole collections.
+ *
+ * Every read is a batch: the generation configs, the bootstrap configs, the feeds
+ * the service runs, and the newest published set of every output series. The join
+ * then runs over those collections in memory, so nothing here costs a round trip
+ * per currency. The four reads share one time budget, because a screen reads this
+ * on every visit.
+ */
+std::vector<ir_curve_coverage_row> ir_coverage_of(const http_request& req, nats_client& session) {
+    const forwarding::budget time;
+    auto configs =
+        forwarding::forward_all(req,
+                                session,
+                                synthetic_messaging::list_ir_curve_generation_configs_request{},
+                                &synthetic_messaging::list_ir_curve_generation_configs_response::
+                                    ir_curve_generation_configs,
+                                time);
+    auto bootstraps = forwarding::forward_all(
+        req,
+        session,
+        ores::refdata::messaging::list_ir_curve_bootstrap_configs_request{},
+        &ores::refdata::messaging::list_ir_curve_bootstrap_configs_response::bootstrap_configs,
+        time);
+    const auto feeds =
+        forwarding::forward(req, session, synthetic_messaging::list_feeds_request{}, time.next());
+    if (!feeds.success)
+        rr::refuse(http_status::bad_gateway,
+                   "upstream-unavailable",
+                   "The synthetic service refused the read of the running feeds.");
+
+    marketdata_messaging::get_latest_published_sets_request wanted;
+    wanted.series_ids.reserve(bootstraps.size());
+    for (const auto& one : bootstraps)
+        wanted.series_ids.push_back(one.output_series_id);
+
+    ir_curve_coverage_input input;
+    input.generation_configs = std::move(configs);
+    input.bootstrap_configs = std::move(bootstraps);
+    input.runs = feeds.running_feeds;
+    /*
+     * A class with no bootstrap config has no series to ask about, and the read is
+     * skipped rather than sent empty: an empty batch answers nothing and costs a
+     * round trip to say so.
+     */
+    if (!wanted.series_ids.empty()) {
+        const auto published = forwarding::forward(req, session, wanted, time.next());
+        rr::require_ok(published.result);
+        const auto held = std::min(
+            {published.series_ids.size(), published.as_ofs.size(), published.state_codes.size()});
+        for (std::size_t i = 0; i < held; ++i)
+            input.published_by_series[boost::uuids::to_string(published.series_ids[i])] =
+                published_curve_fact{published.as_ofs[i], published.state_codes[i]};
+    }
+    input.now = std::chrono::system_clock::now();
+    return ir_curve_coverage(input);
 }
 
 /// The class's policy row, when it has one.
@@ -344,7 +411,8 @@ asset_class_calibration
 calibration_routes::calibration_of(std::string asset_class,
                                    synthetic_messaging::calibrate_response resolved,
                                    std::optional<int> policy_version,
-                                   bool policy_writable) {
+                                   bool policy_writable,
+                                   std::vector<ir_curve_coverage_row> ir_curves) {
     asset_class_calibration out;
     out.assetClass = std::move(asset_class);
     const auto& p = resolved.policy;
@@ -375,6 +443,7 @@ calibration_routes::calibration_of(std::string asset_class,
         if (feed.explicit_items || feed.window_days_override)
             ++c.overridden;
     }
+    out.ir_curves = std::move(ir_curves);
     return out;
 }
 
@@ -425,10 +494,16 @@ void calibration_routes::register_routes(
                     const auto& user = req.authenticated_user;
                     const bool writable =
                         user && user->tenant_id && *user->tenant_id == rr::system_tenant_id;
+                    std::vector<ir_curve_coverage_row> ir_curves;
+                    if (asset_class == interest_rates_class)
+                        ir_curves = ir_coverage_of(req, session);
                     return ores::http::net::view_answer(
                         req,
-                        json::write(
-                            calibration_of(asset_class, std::move(reply), version, writable)),
+                        json::write(calibration_of(asset_class,
+                                                   std::move(reply),
+                                                   version,
+                                                   writable,
+                                                   std::move(ir_curves))),
                         ores::http::net::view_cache_policy::not_stored());
                 });
             }));

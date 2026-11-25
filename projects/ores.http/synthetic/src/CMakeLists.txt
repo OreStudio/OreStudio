@@ -43,6 +43,7 @@ target_link_libraries(${lib_target_name}
         ores.http.nats.lib
         ores.http.refdata.lib
         ores.marketdata.api.lib
+        ores.refdata.api.lib
         ores.utility.lib)
 
 if(NOT WIN32)

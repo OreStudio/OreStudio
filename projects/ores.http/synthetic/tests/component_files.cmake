@@ -30,6 +30,7 @@ set(files
     "fx_vol_surface_feed_web_routes_tests.cpp"
     "fx_vol_view_web_routes_tests.cpp"
     "gmm_component_web_routes_tests.cpp"
+    "ir_curve_coverage_tests.cpp"
     "ir_curve_generation_config_process_parameter_value_web_routes_tests.cpp"
     "ir_curve_generation_config_web_routes_tests.cpp"
     "ir_curve_index_family_routes_tests.cpp"

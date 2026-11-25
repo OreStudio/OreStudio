@@ -8,7 +8,7 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch: feature/decide-whether-calendar-dates-are-stored-or-computed
-#+pr:
+#+pr: 5137
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -116,7 +116,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5137][#5137]] | [agile] Decide how the calendar dates are held |
 
 * Review
 

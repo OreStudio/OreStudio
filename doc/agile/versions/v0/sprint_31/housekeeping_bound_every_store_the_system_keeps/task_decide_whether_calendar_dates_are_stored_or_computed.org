@@ -86,22 +86,27 @@ The horizon decides the volume in all three: 13,515 rows a calendar is 37 years
 of days, and the default end year is 2050. A shorter horizon shrinks the copy
 but not the ratio between options.
 
-** A tenant's own holidays
+** The two levels, and whose holiday it is
 
-The shared copy is the days the platform's rules produce. It is not the only
-input a tenant has: an exception is a tenant's own row, and it overrides one day
-either way -- =is_business_day = false= adds a holiday no rule states, and
-=true= opens a day a rule closes. The materialisation already reads the caller's
-exceptions beside the system tenant's,
-=where (tenant_id = caller or tenant_id = system)=, which is what lets a firm add
-its own closure and have the dates it materialises follow.
+A holiday is a party's fact. Two parties in one installation trade on different
+dates: a Hong Kong party closes on days a United Kingdom party does not, and both
+sit in the same tenant. The tree therefore holds exactly two levels for an
+exception, the installation's and a party's, and nothing in between.
 
-A single materialised copy leaves that untouched only if the overlay moves to the
-read: the shared copy holds the base days, and the caller's own exceptions are
-applied over them, with the same semantics the materialiser uses. That is the
-one thing the decision adds to the store's shape rather than removing from it,
-and it is why the decision is not "compute nothing": the exceptions stay, per
-tenant, and stay able to change a day.
+An exception overrides one day either way -- =is_business_day = false= adds a
+holiday no rule states, and =true= opens a day a rule closes. Today the row is
+tenant-scoped, so a tenant can close a day for every party it holds and cannot
+say which party it meant. The party scope is its own task,
+[[id:BB0570CB-7C89-4079-AE37-39EB300F2252][Scope the calendar exceptions to a
+party]]; this decision takes it as given.
+
+A single materialised copy of the days leaves the party's exceptions untouched
+only if the overlay moves to the read: the shared copy holds the base days the
+rules state, and the caller's own party exceptions are applied over them, with
+the semantics the materialiser uses. That is the one thing the decision adds to
+the store's shape rather than removing from it, and it is why the decision is not
+"compute nothing": the exceptions stay, per party, and stay able to change a
+day.
 
 ** The decision
 
@@ -153,10 +158,11 @@ materialisation service is kept as the way that copy is rebuilt from the rules.
 Recomputation is not rejected — it is what makes the single copy disposable, and
 it bounds the store by the horizon rather than by the number of tenants.
 
-A tenant keeps its own holidays: exceptions remain rows of the tenant, and the
-read applies them over the shared days, so a firm that closes on a day no rule
-states still sees its own calendar. The exception path is per tenant and stays
-so; what the decision shares is the rule-derived baseline beneath it.
+A party keeps its own holidays: exceptions remain rows of a party or of the
+installation, and the read applies the party's over the shared days, so a Hong
+Kong party that closes on a day the United Kingdom's calendar opens still sees
+its own dates. What the decision shares is the rule-derived baseline beneath
+both levels, not anyone's right to close a day.
 
 The task that realises it is [[id:A898881E-B0A8-4E23-B717-DB7681AB2B18][Hold the
 calendar dates once, in the system tenant]].

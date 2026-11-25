@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: BB0570CB-7C89-4079-AE37-39EB300F2252
+:END:
+#+title: Task: Scope the calendar exceptions to a party
+#+description: A holiday is a party's fact, not a tenant's: an HK party closes on days a UK party does not, and both sit in one installation. Give an exception a party scope, so the installation publishes the calendars and their rules once and each party adds the days it closes.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An exception belongs to a party or to the installation. The installation
+publishes the calendars and their rules once, and each party adds the days it
+closes: an HK party closes on days a UK party does not, in one installation and
+one tenant.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- An exception carries the party it belongs to, and an installation-level
+  exception carries none
+- A party reads the installation's exceptions beside its own, and no other
+  party's
+- A party's exception changes the days that party materialises, in both
+  directions: it closes a day the rules open and opens one they close
+- The calendar screens name the party an exception belongs to
+- A test covers two parties whose calendars differ on the same date
+
+* Analysis
+
+Decided on
+[[id:A54B0989-BFCB-45C6-80B7-279BF9843E78][Decide whether calendar dates are
+stored or computed]] after the question of who owns a holiday was put plainly:
+a holiday is a party's fact. Two parties in one installation trade on different
+dates -- Hong Kong's calendar is not the United Kingdom's -- so an exception
+counts for a party and not for a tenant, and the tree holds two levels: the
+installation's, and a party's.
+
+What exists today. =ores_refdata_calendar_exceptions_tbl= is tenant-scoped, and
+the materialisation reads the caller's exceptions beside the system tenant's,
+=where (tenant_id = caller or tenant_id = system)=. A tenant can therefore close
+a day for every party it holds, which is the wrong granularity: the row cannot
+say which of two parties it belongs to.
+
+What the change is:
+- A nullable =party_id= on the exception, null meaning the installation. The
+  table's RLS keeps the tenant scope it has and adds the party scope, admitting
+  the installation's rows and the party's own, as the scheduler's job-definition
+  policy does for a nullable party.
+- The materialisation takes the party it materialises for, so the days it writes
+  apply the installation's exceptions and that party's, and no other party's.
+- The screens that list an exception name its party, and the party is part of
+  what the screen filters on.
+
+The dates store is settled apart from this
+([[id:A898881E-B0A8-4E23-B717-DB7681AB2B18][Hold the calendar dates once, in the
+system tenant]]): the installation keeps one baseline of rule-derived days, and a
+party's exceptions are applied over it at read. That task depends on this one
+stating the party, because the overlay is per party.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

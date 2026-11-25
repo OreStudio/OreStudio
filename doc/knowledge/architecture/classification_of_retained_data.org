@@ -51,7 +51,17 @@ value is written, which prevents the rows.
 
 Derived reference data is not aged but reproduceable. A calendar's business days
 follow from its rule and its year range, so the treatment is to compute the data
-or share one copy.
+or share one copy. The two are complements rather than alternatives: one copy,
+held by the installation, is safe to keep precisely because it can be recomputed,
+and recomputation bounds the copy by the horizon rather than by how many owners
+read it. The calendar dates measure the case. Thirty-six calendars over
+2024 to 2060 hold 486,540 rows and 283 MB with their indexes, at 610 bytes a row,
+and the exceptions they read hold another 19 MB in the system tenant already. The
+days are the same bytes in every tenant, because the rules and exceptions they
+follow from are platform data published once in the world bundle, so a copy per
+tenant is one store written twice and a computation per pricing run is one
+calculation repeated. The dates are therefore held once, in the system tenant, and
+the materialisation service that derives them is what rebuilds that copy.
 
 Engine distributions and per-owner copies are not aged but duplicated. The same
 package sits in the object store and again in each node's cache, often a third

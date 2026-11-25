@@ -33,12 +33,23 @@ inline constexpr std::string_view derived_provider = "derived";
 /**
  * @brief The notation of the provider that states what we compute.
  *
- * It computes rather than observes, so it has no vendor's own notation. It names
- * an item by its oresmd address, which carries the market name, such as
- * oresmd://ir/USD?type=fixing&index=ibor&name=SOFR&tenor=1M, with the field
- * "value". The scheme and the field are the fixing publisher's, because the
- * values are the same shape; only the provider differs, and the provider is what
- * decides whose namespace the id belongs to and whose subscription entitles it.
+ * It computes rather than observes, so it has no vendor's own notation, and it
+ * spells the two kinds of value it states two ways:
+ *
+ *   - A fixing by its oresmd address, which carries the market name, such as
+ *     oresmd://ir/USD?type=fixing&index=ibor&name=SOFR&tenor=1M, with the field
+ *     "value". The scheme and the field are the fixing publisher's, because the
+ *     values are the same shape; only the provider differs, and the provider is
+ *     what decides whose namespace the id belongs to and whose subscription
+ *     entitles it.
+ *   - A volatility point of an FX pair by the scheme "derived_fx_vol" and the
+ *     field "rate_lnvol", which name the pair, the expiry and the strike label,
+ *     such as USDCZK/2M/10BF. The scheme is the source's own, so a point it
+ *     inferred never reads as one a vendor quoted.
+ *
+ * A provider's notation is how that provider spells every id it serves, so one
+ * class reads both, and a third kind is another arm here rather than another
+ * notation the provider cannot have.
  */
 class ORES_MARKETDATA_CORE_EXPORT derived_notation final : public provider_notation {
 public:

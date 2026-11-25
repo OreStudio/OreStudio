@@ -40,13 +40,17 @@ them all name who they act for.
 
 - =tenant_id= is not null on the job definition table, and its primary key, its
   uniqueness indexes and its triggers state the tenant
-- The write states the tenant a job belongs to, and a service that creates a job
-  for a tenant names that tenant
 - No job definition is written with a null tenant
 - The scheduler fires a job with the tenant that holds it, and writes the
   instance with that tenant
-- A pgTAP test covers a job created for a tenant and one created for the
-  installation
+- The jobs the platform declares are rows of the system tenant, from the dataset
+  that publishes them
+- The pgTAP suite, which publishes the housekeeping jobs, still passes
+
+The write naming the tenant it writes for is not part of this task: a job a
+service creates for another tenant needs the tenant in the message, and that
+choice is its own task, [[id:DCF056D9-BC7B-449A-A3A0-D6E3036C4DB4][State the
+tenant a job is written for]].
 
 * Analysis
 
@@ -128,3 +132,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every job definition now belongs to a tenant. The column is not null, and the
+table's primary key, its uniqueness index and its triggers state it: the
+uniqueness index no longer carries =nulls not distinct=, the version lookup
+compares the pair, and the insert trigger validates the tenant on every row.
+
+The platform's four jobs are rows of the system tenant, published by the job
+definitions dataset. The jobs a service registers at runtime are written by that
+service's session, so they land in the session's tenant, which for a service
+account is the installation's.
+
+The domain, the entity and the protocol carry a =tenant_id= that is not
+optional, so a caller can no longer express a job without an owner. The scheduler
+fires each job with the tenant that holds it and writes the instance with that
+tenant.
+
+Verified on a rebuilt database at fingerprint =7aff998b8db0da18=: eight job
+definitions, none with a null tenant, the platform's four in the system tenant;
+=ores.scheduler.core= 137 assertions in 33 cases, =ores.inbox.core= 452 in 86,
+=ores.reporting.core= 1645 in 283, and the pgTAP suite 109 files and 1022 tests,
+all passing.

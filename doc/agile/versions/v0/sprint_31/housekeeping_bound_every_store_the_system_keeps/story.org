@@ -59,6 +59,7 @@ No store the system keeps grows without bound: each one has a declared policy, h
 | [[id:856BA64E-96AE-47A7-940F-E8BEEFFAAD31][Record the housekeeping visibility requirement]] | DONE | 2026-11-24 | 2026-11-24 | Task for: Housekeeping: bound every store the system keeps |
 | [[id:A71D89B6-2A44-4826-BF30-25E6E3AF631E][Deliver housekeeping as platform data]] | DONE | 2026-11-25 | 2026-11-25 | The sweep job and the retention policies are seeded by populate scripts, which run once when a database is created and cannot be re-run. Deliver them as platform-level DQ datasets in system_core, with the contract reconciling and the operator's decisions inserted once. |
 | [[id:851EB73C-B0A5-4DEA-B5E7-AADC26727066][Hold every job definition in a tenant]] | STARTED | 2026-11-25 | | The scheduler's job definition table permits a null tenant, and every job a service writes over the wire lands with a null one, because the write message states no tenant. Hold each job in a tenant: the platform's jobs in the system tenant, a tenant's jobs in that tenant. |
+| [[id:DCF056D9-BC7B-449A-A3A0-D6E3036C4DB4][State the tenant a job is written for]] | BACKLOG | | | A job is a row of a tenant, but the write states no tenant: a service that registers a job for another tenant writes it into its own session's tenant. Let the write name the tenant it writes for. |
 
 * Decisions
 

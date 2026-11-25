@@ -49,12 +49,13 @@ namespace ores::scheduler::domain {
  * with the GIST exclusion and the delete rule, so the model takes the ordinary
  * audited shape and needs no shape flag.
  *
- * tenant_id is nullable. A job may belong to no tenant, because the scheduler
- * fires system jobs from a NULL-tenant row: the MQ statistics scrape and the
- * compute stale-result reaper are both such rows. The model binds
- * uuid-identified-lookup for its UUID surrogate key, its tenant scope and its
- * standard presentation tier, and states nullable_tenant_id itself, which that
- * profile leaves to the model.
+ * tenant_id is not null. A job is a row of a tenant: the platform declares the
+ * jobs it needs in order to function as rows of the system tenant, which is what
+ * the classification that governs published rows says a platform row is. The
+ * message queue scrape, the curve republish, the compute stale-result reaper and
+ * the housekeeping sweep are such rows: one copy, held by the installation and
+ * fired by the one scheduler. The model binds uuid-identified-lookup for its
+ * UUID surrogate key, its tenant scope and its standard presentation tier.
  *
  * job_name is the natural key and is unique within its tenant; id is the
  * surrogate. Uniqueness is what the component's upsert path relies on: a job that
@@ -74,7 +75,7 @@ struct job_definition final {
     /**
      * @brief Tenant identifier for multi-tenancy isolation.
      */
-    std::optional<utility::uuid::tenant_id> tenant_id;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief UUID primary key for the job definition.
@@ -82,10 +83,10 @@ struct job_definition final {
     boost::uuids::uuid id;
 
     /**
-     * @brief Unique name for the job within its tenant. The scheduler seed writes
-     * ores.mq.metrics_scrape and the compute seed writes compute.v1.reap.stale_results; both are
-     * system jobs, so both carry a NULL tenant and neither collides with a tenant's own job of the
-     * same name.
+     * @brief Unique name for the job within its tenant. The job definitions dataset stages
+     * ores.mq.metrics_scrape, ores.marketdata.curve_republish, ores.scheduler.housekeeping_sweep
+     * and compute.v1.reap.stale_results; all four are system jobs, so all four are held by the
+     * system tenant and none collides with a tenant's own job of the same name.
      */
     std::string job_name;
 

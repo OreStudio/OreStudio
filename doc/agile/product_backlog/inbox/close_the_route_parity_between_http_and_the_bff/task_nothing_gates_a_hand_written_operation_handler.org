@@ -8,12 +8,12 @@
 #+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 5110
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
-#+updated: 2026-11-22
-#+environment:
+#+updated: 2026-11-25
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -51,12 +51,12 @@ then checks nothing. The only route file in the server that checks a code is
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | BLOCKED                              |
 | Parent story | [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-22                               |
+| Now          | Nothing. |
+| Waiting on   | A compass release for the rule that fails an unchecked handler, and a decision per code on which role is granted it. |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
 
 * Acceptance
 
@@ -66,9 +66,45 @@ then checks nothing. The only route file in the server that checks a code is
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The task asks for three things: the gate covers operation handlers, the handlers
+that check nothing are named, and a new one cannot slip through. Measuring the
+tree first changed the size of all three.
+
+** What is actually there
+
+456 messaging handlers, 408 checking a permission, **48 not**. The task names
+two — =ores.scheduler='s =job_instance_handler= and =scheduler_status_handler= —
+and both now check one, so that half of the capture is stale while the hole it
+describes is 24 times wider. The census is =evidence/handler_permission_census.md=:
+48 rows, grouped by kind, each proposed either a code or a reason it needs none.
+
+** The gate's registry is this repository's to widen
+
+The codec reads a =components= option, and options live in =.compass.org=, so
+widening it needs no compass release — only the seeds do. Naming every component
+that has handlers turned 0 findings into **102**: synthetic 66, iam 20, workflow
+12, variability 4. That is exactly why the registry named ten components, and it
+is why the widening, the seeds and the grants must land together. The option was
+reverted until they do, so no branch is red for a gap that predates it.
+
+** What needs compass, and what does not
+
+- *The rule that fails an unchecked handler* is the codec's, so it needs a
+  compass release. The handover beside the census states it: a second rule on
+  the same codec, with the existing exception mechanism carrying the reason for
+  the handlers that legitimately need none.
+- *The registry, the seeds, the grants and the HTTP side* are this repository's.
+  The HTTP half is the mirror of the gap: the router has =auth_required()= and
+  no permission hook, so a hand-written route authenticates and checks nothing —
+  iam_routes is the only file that checks a code.
+
+** Why seeding is not mechanical even though the codes are named
+
+The handlers already name their codes (=synthetic::calibration_fallbacks:write=,
+=iam::tenant_types:delete=), so seeding them is a data edit. **Granting** them is
+not: which role may write a synthetic calibration policy or delete a tenant type
+is a product decision per code, and a wrong grant either breaks a working screen
+or widens a role beyond what it should hold.
 
 * Measurements
 
@@ -82,9 +118,31 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Messaging handlers in the tree | 456 | a count of =projects/ores.*/**/messaging/*_handler.hpp= | 9cf96d7deb |
+| Handlers that check a permission | 408 | =grep -l has_permission= over them | 9cf96d7deb |
+| Handlers that check none | 48, across 17 components | the loop in the census, =* Reproduce= | 9cf96d7deb |
+| Components the gate scans | 10 of the 19 that have handlers | =.compass.org=, the codec's =components= option | 9cf96d7deb |
+| Codes the widened registry reports unseeded | 102: synthetic 66, iam 20, workflow 12, variability 4 | =compass-ng check --codec handler_permissions= with the option naming every component | the branch head |
+| The two handlers the capture names | both now check a permission | =grep -l has_permission projects/ores.scheduler/**/messaging/*_handler.hpp= | 9cf96d7deb |
 
 * Notes
+
+The census is the deliverable of the measuring half, and it is a proposal rather
+than a decision for the groups it marks *decide*: the journey steps, the compute
+workers, the service-to-service handlers and the document handlers each need a
+code chosen and a role granted, and inventing those would either break a screen
+or widen a role quietly.
+
+The split that follows, in the order the dependencies allow:
+
+1. The compass rule, so an unchecked handler fails the gate. Waiting on the
+   handover.
+2. The seeds and grants for the 102 codes, landed with the widened registry in
+   one change, because either alone is red.
+3. The HTTP side's permission hook, which needs no compass and closes the mirror
+   of the same gap.
+4. =has_permission= in the handlers the census calls holes, and a =compass:except=
+   reason in the ones it calls legitimate.
 
 * Test Scenarios
 
@@ -101,15 +159,13 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5110][#5110]] | [agile] Record the permission census and block the handler task |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
-
-* Result
 
 * Promoted from capture
 
@@ -187,3 +243,21 @@ found it while mapping the callers of marketdata handlers.
 
 - [[id:12666A97-69C2-4874-ABE0-E8C497C9EAE1][Authentication is optional at runtime on both transports]] — the other half: the checks that do exist can be turned off by configuration.
 - [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — where authorisation is supposed to be enforced at each layer.
+
+* Result
+
+Not done: blocked, and deliberately so, after the measuring half changed the
+size of the task. What is recorded:
+
+- The hole is **48 handlers across 17 components**, not the two the capture
+  names — and those two have since gained their check.
+- The gate's registry is **this repository's to widen today**: naming every
+  component turns 0 findings into **102 unseeded codes** (synthetic 66, iam 20,
+  workflow 12, variability 4), which is why the ten-component registry exists and
+  why the widening, the seeds and the grants must land as one change.
+- The rule that fails an unchecked handler is compass's, and its handover is
+  written beside the census.
+
+What is not proved, because nothing has landed: that a new unchecked handler
+fails the gate. That is the compass release's proof, and the seeds' is the
+widened registry going green.

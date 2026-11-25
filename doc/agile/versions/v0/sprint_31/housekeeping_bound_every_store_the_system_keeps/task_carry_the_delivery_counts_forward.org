@@ -26,11 +26,11 @@ One row per subscription carries the delivery count forward, so the table's size
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-24                               |
 
 * Acceptance
@@ -120,3 +120,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The delivery count is a counter now, not an appended series.
+
+The cause was the model, not the engine. The entity carried the default temporal
+axis, so every flush appended a version with a new id, and the natural-key index
+included =flushed_at=, so each flush was a distinct row. One environment held
+1,260,554 rows behind 23 counters, all written in a day. The table was never a
+hypertable, so TimescaleDB was not involved and would not have helped.
+
+The entity now states =:current_state:= and keys on party, provider, item, period
+and feed. The recorder carries the running total for each key, seeds it from the
+store on the first flush so a restart does not lose the count, and writes the
+total. The rating step reads one row per period instead of summing an hour's
+rows.
+
+Regeneration removed this entity's history surface: its history provider and
+field mapper, two shell verbs and one eventing integration test. The
+hand-written registrar and a stale generated source had to follow.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Build | succeeded | =./compass.sh build -k 1= | 636e403fba |
+| Marketdata suites | 7 of 7 passed | =./compass.sh test run -- -R marketdata= | 636e403fba |
+| Files changed | 41 changed, 2018 lines removed | =git show --stat= | 636e403fba |
+| Rows per counter | 54,807 before, 1 after | =count(*) / count(distinct key)= | 636e403fba |

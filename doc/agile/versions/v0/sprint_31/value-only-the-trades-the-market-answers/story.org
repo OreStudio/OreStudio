@@ -42,7 +42,7 @@ A report values the trades whose market data the system can answer, and states p
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:825E12E1-F068-4630-B5A0-CF7E2F2F6871][Scaffold story: Value only the trades the market can answer]] | STARTED | 2026-11-25 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:825E12E1-F068-4630-B5A0-CF7E2F2F6871][Scaffold story: Value only the trades the market can answer]] | DONE | 2026-11-25 | 2026-11-25 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:7B4089F8-EE63-4056-9B67-A750CC0A99F4][Write the decision: what a run may value, and what it reports]] | BACKLOG | | | State the four phases of a run, the three grains of its market readiness, the phase axis on every error, and the two approval matrices, so the rest of the story builds one model rather than six. |
 | [[id:9EC5A975-0FD7-44F4-9C70-7921E0F7AD3D][State what a party may trade and what a book may carry]] | BACKLOG | | | A party level approval matrix states the product types a party may trade, a book level matrix states the types that book may carry, and a book's matrix is refused unless it is a subset of its party's. |
 | [[id:68C4B58E-0801-4770-98B8-3A8294D7220F][Fill each book from its approval matrix]] | BACKLOG | | | The generator fills a book with the product types its approval matrix names, books no type the matrix does not name, and states per book what it booked and what it left out. |

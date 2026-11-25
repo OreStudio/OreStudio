@@ -27,6 +27,9 @@ The full template source. Edit here and re-tangle with
 :ID: {{id}}
 :END:
 ,#+title: {{title}}
+,#+description: {{description}}
+,#+type: skill
+,#+level: cross
 ,#+author: Marco Craveiro
 ,#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 ,#+startup: inlineimages

@@ -80,6 +80,9 @@ The Claude Code [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] you invoke p
 - [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][compass-code-add-tests]] — when the task adds or changes code that
   needs Catch2 coverage.
 - [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][compass-code-investigate-test-failure]] — when a test goes red mid-task.
+- [[id:4A37D224-EB5F-41FD-8483-826B4D01A297][compass-code-investigate-trunk-break]] — when a gate is red for a reason
+  outside your diff: attribute the break to the environment that made it, and
+  decide whether to fix it here or hand it back.
 - [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][compass-code-run-feature-test]] — once implementation is otherwise done,
   before raising a PR: full build, run all tests, validate schemas,
   recreate the database, provision the tenant, write and hand off a

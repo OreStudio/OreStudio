@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 477E9949-CFA4-44D8-A021-D7463BEC4C0D
+:END:
+#+title: How do I blame a break on main?
+#+description: Attribute a red gate or a broken behaviour to the commit, pull request and environment that caused it, with the evidence a reader needs.
+#+type: recipe
+#+level: cross
+#+filetags: :git:compass:investigation:blame:recipe:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+A gate that is red for a reason outside your diff is still your gate: the
+branch cannot merge until you know whether the break is yours, and a guess
+costs a review round. This recipe gathers the evidence. The disposition and the
+report shape are in
+[[id:4A37D224-EB5F-41FD-8483-826B4D01A297][compass-code-investigate-trunk-break]].
+
+* Question
+
+How do I find the commit, the pull request and the environment that broke a
+behaviour on =main=, and prove it?
+
+* Answer
+
+** Separate the break from the environment
+
+Re-run the failing check alone, then each failing suite alone.
+
+#+begin_src sh :results verbatim
+./compass.sh check --only <check>
+./compass.sh test run --preset <preset> -- -R "<suite>" -j 2
+#+end_src
+
+A failure that comes back alone is a break. A failure that goes green alone is
+a race: name it as one and stop here. This step is what keeps a race out of the
+report.
+
+** Find the commit that changed the behaviour
+
+Ask git what changed the value, the line or the file the failure names.
+=git log -S= finds the commit that added or removed a string.
+
+#+begin_src sh :results verbatim
+git log --oneline -S"<the string that changed>" -- <path>
+git log --oneline <base>..origin/main --name-only -- <paths>
+#+end_src
+
+Read the diff of each candidate, and prefer the commit that states the new rule
+over the commit that follows it.
+
+#+begin_src sh :results verbatim
+git show --stat <sha>
+git show <sha> -- <path>
+#+end_src
+
+For a wide window, =git bisect= between a known-good tag and =origin/main=
+narrows it. State the two bounds when you use it.
+
+** Read the owner
+
+The commit's trailers name the work and the environment. =Story-ID=,
+=Task-ID=, =Environment= and =Co-Authored-By= are the four fields the report
+needs ([[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][How do I commit to git using ORE Studio conventions?]]). The
+environment is the owner: it holds the branch, the task and the session that
+made the change.
+
+#+begin_src sh :results verbatim
+git show -s --format="%an <%ae>%n%ad%n%b" <sha>
+./compass.sh fleet
+./compass.sh show <Task-ID>
+#+end_src
+
+The fleet table maps an environment to its worktree, its identity and the task
+in flight. The task's =* Measurements= and =* Result= say what its own gate
+measured, and a missing test row is itself a finding.
+
+** A check finding: ask the checker
+
+A diagnostic that names a path, a line and a codec rule can be traced directly.
+
+#+begin_src sh :results verbatim
+compass-ng blame <path>:<line>:<codec>/<rule>
+#+end_src
+
+It names the commit, the pull request and the environment that likely caused the
+finding: the same three fields the report needs.
+
+** Prove the mechanism
+
+State the rule that was broken, then reproduce it outside the test, in a
+transaction you roll back, so no row is left behind.
+
+#+begin_src sh :results verbatim
+./compass.sh sql -- -c "begin; <the failing write>; rollback;"
+#+end_src
+
+Keep the command and its output verbatim. A reproduction a reader can run is
+what separates a report from an accusation.
+
+* Script
+
+None. The recipe is =git=, =compass= and =compass-ng=.
+
+* Tested by
+
+Manual, on the 2026-11-25 gate: it classified three suites that passed alone as
+a pooler race and traced a fourth to PR #5118, whose re-chunking of a table
+broke every insert that supplies the partitioning column.
+
+* See also
+
+- [[id:4A37D224-EB5F-41FD-8483-826B4D01A297][compass-code-investigate-trunk-break]] — the disposition and the report shape.
+- [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][How do I commit to git using ORE Studio conventions?]] — the trailers the owner is read from.
+- [[id:4B8BB864-AEA3-4720-9BB3-DCF4397000D2][How do I rebase my branch on main?]] — bring the branch up to date before you judge the gate.

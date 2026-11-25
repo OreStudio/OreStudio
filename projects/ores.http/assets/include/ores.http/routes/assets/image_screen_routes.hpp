@@ -21,6 +21,7 @@
 #define ORES_HTTP_ROUTES_ASSETS_IMAGE_SCREEN_ROUTES_HPP
 
 #include "ores.assets.api/domain/image.hpp"
+#include "ores.assets.api/messaging/image_operations_protocol.hpp"
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
@@ -93,6 +94,11 @@ public:
 
     /**
      * @brief The most an upload body may hold, as the BFF allowed.
+     *
+     * The body carries the image base64-encoded, which grows it by a third, so
+     * this clears the largest image the validator accepts with room for the
+     * envelope. The image limit is the validator's and not this: a test holds the
+     * two together, so a larger image limit cannot leave this behind.
      */
     static constexpr std::uint64_t upload_body_bytes = 4 * 1024 * 1024;
 
@@ -132,6 +138,17 @@ public:
      * type of 1 to 100 characters and some data.
      */
     [[nodiscard]] static std::optional<upload> read_upload(const std::string& body);
+
+    /**
+     * @brief The answer a refused upload gets, or nothing when the image passes.
+     *
+     * The judgement is the image validator's, made before the upload is sent: the
+     * bus carries a message up to a fixed size, and an image the transport cannot
+     * carry would die as a transport error rather than reach the validator. So a
+     * refused image never travels, and its refusal is the validator's own answer.
+     */
+    [[nodiscard]] static std::optional<ores::assets::messaging::upload_image_response>
+    refusal_of(const upload& image);
 };
 
 }

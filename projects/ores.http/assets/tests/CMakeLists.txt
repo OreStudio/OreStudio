@@ -30,6 +30,7 @@ set_target_properties(${tests_target_name}
 target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
+        ores.assets.core.lib
         ores.testing.lib
         Catch2::Catch2
         ores.openssl_cleanup

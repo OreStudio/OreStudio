@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
-#+branch:
+#+branch: feature/a-profile-image-over-the-payload-cap-cannot-reach-the-validator
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
 #+updated: 2026-11-22
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -33,7 +33,7 @@ one the picker and the validator both state at 2 MB, cannot be reached.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

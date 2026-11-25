@@ -380,7 +380,7 @@ is not drawn.
 - A column beside the plot shows the process that made the curves: the engine, the
   rate and each parameter with its saved value.
 
-** The Synthetic screen
+** The Simulated market screen
 
 Synthetic (=marketdata/synthetic/SyntheticScreen.tsx=) is one screen with two tabs,
 Dashboard and Provider. Everything on it is synthetic, so no label says so. The

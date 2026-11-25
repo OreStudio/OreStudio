@@ -49,7 +49,7 @@ These are yours to ready, before the tester opens the client:
 |---------------+------------------------------------------|
 | Verifies task | [[id:1993E4E7-A59B-4473-8635-C9F6DF974EB5][Task: Derive a term index from its overnight curve]] |
 | Parent story  | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]]   |
-| Target screen | IR curve feeds (Calibration, interest rates); Fixing series (Market data) |
+| Target screen | IR curve feeds (Feed calibration, interest rates); Fixing series (Market data) |
 | Clients       |                                          |
 | State         | PENDING |
 
@@ -59,14 +59,14 @@ These are yours to ready, before the tester opens the client:
 
 - Open the web client at the address =compass services status= reports.
 - Sign in as =super_admin= with =Secure-Password-123=.
-- Confirm the shell offers *Market data* → *Calibration*: it is a system
-  control, and a tenant administrator does not see it.
+- Confirm the shell offers *Market data* → *Feed calibration*: it is a
+  system control, and a tenant administrator does not see it.
 
 *** Result
 
 ** Read the rule on the curve feed
 
-- Go to *Market data* → *Calibration*, then the *Interest rates* class.
+- Go to *Market data* → *Feed calibration*, then the *Interest rates* class.
 - Open the USD/SOFR feed whose tenor is 1M — the derived one, whose
   source name begins =synthetic.derived.=.
 - Read the *Rate from* field: it shows *The overnight rate compounded
@@ -119,6 +119,7 @@ These are yours to ready, before the tester opens the client:
 |      |         |       |
 
 Attempt 1, 2026-11-25, failed at the second step before the product was
-reached: the scenario named a tenant administrator for *Calibration*,
+reached: the scenario named a tenant administrator for the calibration
+screen,
 which is a system control. The persona is now =super_admin= and the
 navigation goes through *Market data*. Re-run from the first step.

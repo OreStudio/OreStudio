@@ -5194,11 +5194,11 @@ const fr: SourceCatalogue = {
                 },
             },
             invertedFrom: 'l’inverse du fixing {value}',
-            title: 'Calibrage',
+            title: 'Calibrage des flux',
             lead: "Comment chaque flux d'une classe d'actifs prend son niveau de départ et sa volatilité des fixings publics.",
             systemOnly:
-                'La calibration est un contrôle système. Seul un administrateur système peut l’ouvrir.',
-            tabs: 'Vues de la calibration',
+                'Le calibrage des flux est un contrôle système. Seul un administrateur système peut l’ouvrir.',
+            tabs: 'Vues du calibrage des flux',
             tab: {
                 feeds: 'Flux',
                 run: 'Calibration en cours',
@@ -6561,7 +6561,7 @@ const fr: SourceCatalogue = {
                 subscriptions: 'Souscriptions',
                 subscriptionsBody:
                     'Les fournisseurs qu’une partie prend, avec les droits qu’elle détient, et le flux qui sert chacun.',
-                synthetic: 'Synthétique',
+                synthetic: 'Marché simulé',
                 syntheticBody:
                     'Les flux que la plateforme génère : ce qui tourne par fournisseur, et chaque flux à démarrer et à arrêter.',
                 evolutionBody:
@@ -7017,7 +7017,7 @@ const fr: SourceCatalogue = {
                 "Le flux s'arrête s'il tourne. Son mélange est supprimé d'abord, puis le flux. L'historique de chacun reste.",
         },
         synthetic: {
-            title: 'Synthétique',
+            title: 'Marché simulé',
             lead: "Les données de marché que la plateforme génère au lieu de les recevoir : ce qui tourne par fournisseur, et les flux d'un fournisseur.",
             tabs: {
                 dashboard: 'Tableau de bord',

@@ -30,6 +30,8 @@
 #include "ores.marketdata.core/repository/fx_forward_publish_spot_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.service/app/fx_forward_ladder_service.hpp"
+#include "ores.marketdata.service/app/publication_kind.hpp"
+#include "ores.marketdata.service/app/publication_lifecycle.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
@@ -64,165 +66,29 @@ time_point at_store_precision(time_point t) {
     return std::chrono::floor<std::chrono::microseconds>(t);
 }
 
-/// Writes the candidate set a request authorises: its subject, its tenors and its spots.
-void write_candidate(const context& ctx,
-                     const boost::uuids::uuid& request_id,
-                     const boost::uuids::uuid& party,
-                     time_point as_of,
-                     const computed_fx_forward_set& computed) {
-    const auto& ladder = computed.ladder;
-    boost::uuids::random_generator gen;
-    const auto commentary = "The FX forward set that publish request " +
-                            boost::uuids::to_string(request_id) + " authorises";
-
-    domain::fx_forward_publish record;
-    record.id = gen();
-    record.tenant_id = ctx.tenant_id();
-    record.request_id = request_id;
-    record.party_id = party;
-    record.pair_code = ladder.pair_code;
-    record.as_of = as_of;
-    record.spot_date = ladder.spot_date;
-    record.spot_rate = ladder.spot;
-    record.base_curve_publish_id =
-        boost::lexical_cast<boost::uuids::uuid>(ladder.base_curve.publish_id);
-    record.quote_curve_publish_id =
-        boost::lexical_cast<boost::uuids::uuid>(ladder.quote_curve.publish_id);
-    record.convention_version = computed.convention_version;
-    record.calendar_codes = computed.calendar_codes;
-    record.method_code = "covered_interest_parity";
-    record.published_by = "";
-    record.published_at = std::nullopt;
-    record.modified_by = ores::service::messaging::delegated_actor(ctx);
-    record.performed_by = ctx.service_account();
-    record.change_reason_code = "system.new_record";
-    record.change_commentary = commentary;
-
-    std::vector<domain::fx_forward_publish_point> points;
-    int index = 0;
-    for (const auto& row : ladder.rows) {
-        domain::fx_forward_publish_point p;
-        p.id = gen();
-        p.tenant_id = ctx.tenant_id();
-        p.publish_id = record.id;
-        p.sequence_index = index++;
-        p.tenor_code = row.tenor;
-        p.near_date = row.near_date;
-        p.value_date = row.value_date;
-        p.base_discount = row.base_discount;
-        p.quote_discount = row.quote_discount;
-        p.forward_rate = row.forward_rate;
-        p.forward_points = row.forward_points;
-        p.swap_points = row.swap_points;
-        p.modified_by = record.modified_by;
-        p.performed_by = record.performed_by;
-        p.change_reason_code = record.change_reason_code;
-        p.change_commentary = commentary;
-        points.push_back(std::move(p));
-    }
-
-    std::vector<domain::fx_forward_publish_spot> spots;
-    for (const auto& leg : computed.spots) {
-        domain::fx_forward_publish_spot spot;
-        spot.id = gen();
-        spot.tenant_id = ctx.tenant_id();
-        spot.publish_id = record.id;
-        spot.leg_code = leg.leg_code;
-        spot.pair_code = leg.pair_code;
-        spot.series_id = boost::lexical_cast<boost::uuids::uuid>(leg.series_id);
-        spot.observed_at = leg.observed_at;
-        spot.value = leg.value;
-        spot.modified_by = record.modified_by;
-        spot.performed_by = record.performed_by;
-        spot.change_reason_code = record.change_reason_code;
-        spot.change_commentary = commentary;
-        spots.push_back(std::move(spot));
-    }
-
-    // The subject and its numbers are one act: a request whose set was half written would
-    // authorise numbers nobody computed.
-    ores::database::repository::unit_of_work uow(ctx);
-    const auto& tx = uow.ctx();
-    repository::fx_forward_publish_repository{}.write(tx, record);
-    repository::fx_forward_publish_point_repository{}.write(tx, points);
-    repository::fx_forward_publish_spot_repository{}.write(tx, spots);
-    uow.commit();
-}
-
-/// Publishes the candidate an approved request authorises, or says why it may not.
-void apply_forward_publish(const context& ctx,
-                           const std::string& request_id,
-                           const boost::uuids::uuid& party,
-                           const std::string& pair_code,
-                           time_point as_of,
-                           msg::publish_fx_forward_response& resp) {
+/// Applies the approved request to the forward set it names, or says why the set did not move.
+void apply_forward(const context& ctx,
+                   const std::string& request_id,
+                   const publication_subject& attempted,
+                   msg::publish_fx_forward_response& resp) {
+    const auto applied = apply_publication(ctx, derived_kind::fx_forward, request_id, attempted);
     resp.approval_request_id = request_id;
-    std::optional<ores::inbox::domain::approval_request> request;
-    try {
-        request = ores::inbox::service::approval_lifecycle(ctx).request(request_id);
-    } catch (const std::exception& e) {
-        // An id that is not a uuid is not a request; anything else is logged so a store failure
-        // is not read as a missing request.
-        ORES_LOG_SEV(lg(), ores::logging::warn)
-            << "Reading approval request " << request_id << ": " << e.what();
-        request = std::nullopt;
+    resp.state_code = applied.state_code;
+    switch (applied.status) {
+        case publication_status::published:
+            resp.success = true;
+            resp.published_at = applied.facts.published_at;
+            resp.published_by = applied.facts.published_by;
+            break;
+        case publication_status::deferred:
+            // A forward set has no compute of its own to defer: its ladder is
+            // computed at the raise, and a missing input refuses the set there.
+            resp.message = applied.message;
+            break;
+        case publication_status::refused:
+            resp.message = applied.message;
+            break;
     }
-    if (!request) {
-        resp.message = "No approval request has the id " + request_id + ".";
-        return;
-    }
-    resp.state_code = request->state_code;
-    if (request->kind_code != fx_forward_publish_kind_code) {
-        resp.message = "The request is a " + request->kind_code +
-                       " request, and a forward set is published by a " +
-                       std::string(fx_forward_publish_kind_code) + " request.";
-        return;
-    }
-
-    repository::fx_forward_publish_repository repo;
-    auto record = repo.read_latest_by_request(ctx, request_id);
-    if (!record) {
-        resp.message = "The request names no forward set, so it authorises no publish.";
-        return;
-    }
-    if (record->party_id != party || record->pair_code != pair_code || record->as_of != as_of) {
-        resp.message = "The request authorises " + record->pair_code + " as of " +
-                       datetime::to_iso8601_utc(record->as_of) + " for party " +
-                       boost::uuids::to_string(record->party_id) + ", and this publish is " +
-                       pair_code + " as of " + datetime::to_iso8601_utc(as_of) + " for party " +
-                       boost::uuids::to_string(party) + ".";
-        return;
-    }
-    if (request->state_code != "approved") {
-        resp.message =
-            "The request is " + request->state_code + ", and a publish waits until it is approved.";
-        return;
-    }
-    if (record->published_at) {
-        resp.message = "The request already published " + record->pair_code + " at " +
-                       datetime::to_iso8601_utc(*record->published_at) + ", by " +
-                       record->published_by + ". Raise a request for the next publish.";
-        return;
-    }
-
-    const auto publisher = ores::service::messaging::delegated_actor(ctx);
-    // Whole seconds, the precision every nullable timestamp of this schema keeps, so the
-    // instant returned is the one a reader holds.
-    record->published_at =
-        std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
-    record->published_by = publisher;
-    record->modified_by = publisher;
-    record->performed_by = ctx.service_account();
-    record->change_reason_code = "system.fx_forward_published";
-    record->change_commentary =
-        "Published under approval request " + request_id + " by " + publisher;
-    repo.write(ctx,
-               *record,
-               {ores::utility::domain::precondition_kind::must_match_version,
-                static_cast<std::uint32_t>(record->version)});
-    resp.success = true;
-    resp.published_at = record->published_at;
-    resp.published_by = publisher;
 }
 
 /// The funding curve one side of a set was built from, and its state now.
@@ -305,47 +171,30 @@ fx_forward_publish_service::publish(const context& ctx,
     try {
         const auto party = ores::service::messaging::session_party(ctx, "A forward set");
         const auto as_of = at_store_precision(req.as_of);
-        if (as_of == time_point{})
-            throw std::invalid_argument(
-                "Name the as-of instant the set reads the market at, so the request authorises "
-                "one set.");
+        // The subject is the set's pair, and the party is the session's: the
+        // set is computed by the raise, so a missing input refuses it there and
+        // writes nothing.
+        const auto attempted =
+            resolve_publication_subject(ctx, derived_kind::fx_forward, req.pair_code, as_of);
 
         if (!req.approval_request_id.empty()) {
-            apply_forward_publish(ctx, req.approval_request_id, party, req.pair_code, as_of, resp);
+            apply_forward(ctx, req.approval_request_id, attempted, resp);
             return resp;
         }
 
-        if (req.reason.empty())
-            throw std::invalid_argument(
-                "Say why the set should be published, so the decider reads a reason.");
-        // The set is computed before anything is raised, so a missing input refuses the
-        // publish and writes nothing.
-        const auto computed = fx_forward_ladder_service::compute(
-            ctx,
-            fx_forward_inputs{.pair_code = req.pair_code,
-                              .as_of = as_of,
-                              .party_id = boost::uuids::to_string(party)});
-
-        ores::inbox::service::approval_lifecycle lifecycle(ctx);
-        const auto kind = lifecycle.kind(std::string(fx_forward_publish_kind_code));
-        if (!kind)
-            throw std::runtime_error(
-                "No such kind of request: " + std::string(fx_forward_publish_kind_code) + ".");
-        const auto me = lifecycle.actor_account_id();
-        if (!me)
-            throw std::runtime_error("The signed-in account was not found.");
-        const auto raised = lifecycle.raise(*kind, req.reason, *me);
-        const auto id = boost::uuids::to_string(raised.id);
-        write_candidate(ctx, raised.id, party, as_of, computed);
-
-        resp.approval_request_id = id;
+        const auto raised = raise_publication(ctx,
+                                              derived_kind::fx_forward,
+                                              {{.subject_key = req.pair_code, .as_of = as_of}},
+                                              req.reason,
+                                              party);
+        resp.approval_request_id = raised.request_id;
         resp.state_code = raised.state_code;
         if (raised.state_code != "approved") {
             resp.success = true;
             resp.message = "Raised. The publish waits on the decision.";
             return resp;
         }
-        apply_forward_publish(ctx, id, party, req.pair_code, as_of, resp);
+        apply_forward(ctx, resp.approval_request_id, raised.raised.front(), resp);
     } catch (const std::exception& e) {
         resp.success = false;
         resp.message = e.what();
@@ -411,6 +260,256 @@ fx_forward_publish_service::read(const context& ctx,
         out.message = e.what();
     }
     return out;
+}
+
+namespace {
+
+/**
+ * @brief The FX forward set, reached only through the interface the lifecycle calls.
+ *
+ * The subject is a currency pair, the candidate is the ladder the raise computes
+ * by covered interest parity from two published curves, and the checks are the
+ * inputs' state. The acts are the lifecycle's, in publication_lifecycle.cpp.
+ */
+class fx_forward_publication_kind_impl final : public publication_kind {
+public:
+    derived_kind kind() const override {
+        return derived_kind::fx_forward;
+    }
+
+    publication_subject
+    resolve_subject(const ores::database::context&,
+                    const boost::uuids::uuid& party_id,
+                    const std::string& subject_key,
+                    std::chrono::system_clock::time_point as_of) const override {
+        if (subject_key.empty())
+            throw std::invalid_argument(
+                "Name the currency pair the set is a set of, so the request authorises one set.");
+        const auto stored_as_of = at_store_precision(as_of);
+        if (stored_as_of == time_point{})
+            throw std::invalid_argument(
+                "Name the as-of instant the set reads the market at, so the request authorises "
+                "one set.");
+        return publication_subject{.kind = derived_kind::fx_forward,
+                                   .party_id = party_id,
+                                   .subject_id = {},
+                                   .subject_key = subject_key,
+                                   .subject_name = subject_key,
+                                   .output_series_id = {},
+                                   .as_of = stored_as_of};
+    }
+
+    /**
+     * @brief Nothing, because the raise computes the ladder and a missing input refuses it.
+     *
+     * The compute writes the candidate in the raise's own transaction, so a set
+     * whose input curve is not there is refused by the store's work and writes
+     * nothing: there is no stored candidate to check first.
+     */
+    std::optional<std::string> refusal_of_raise(const ores::database::context&,
+                                                const publication_subject&) const override {
+        return std::nullopt;
+    }
+
+    void write_publish(const ores::database::context& tx,
+                       const boost::uuids::uuid& request_id,
+                       const publication_subject& subject) const override {
+        // The set is computed before anything is raised, so a missing input refuses
+        // the publish and writes nothing.
+        const auto computed = fx_forward_ladder_service::compute(
+            tx,
+            fx_forward_inputs{.pair_code = subject.subject_key,
+                              .as_of = subject.as_of,
+                              .party_id = boost::uuids::to_string(subject.party_id)});
+        const auto& ladder = computed.ladder;
+        boost::uuids::random_generator gen;
+        const auto commentary = "The FX forward set that publish request " +
+                                boost::uuids::to_string(request_id) + " authorises";
+
+        domain::fx_forward_publish record;
+        record.id = gen();
+        record.tenant_id = tx.tenant_id();
+        record.request_id = request_id;
+        record.party_id = subject.party_id;
+        record.pair_code = ladder.pair_code;
+        record.as_of = subject.as_of;
+        record.spot_date = ladder.spot_date;
+        record.spot_rate = ladder.spot;
+        record.base_curve_publish_id =
+            boost::lexical_cast<boost::uuids::uuid>(ladder.base_curve.publish_id);
+        record.quote_curve_publish_id =
+            boost::lexical_cast<boost::uuids::uuid>(ladder.quote_curve.publish_id);
+        record.convention_version = computed.convention_version;
+        record.calendar_codes = computed.calendar_codes;
+        record.method_code = "covered_interest_parity";
+        record.published_by = "";
+        record.published_at = std::nullopt;
+        record.modified_by = ores::service::messaging::delegated_actor(tx);
+        record.performed_by = tx.service_account();
+        record.change_reason_code = "system.new_record";
+        record.change_commentary = commentary;
+
+        std::vector<domain::fx_forward_publish_point> points;
+        int index = 0;
+        for (const auto& row : ladder.rows) {
+            domain::fx_forward_publish_point p;
+            p.id = gen();
+            p.tenant_id = tx.tenant_id();
+            p.publish_id = record.id;
+            p.sequence_index = index++;
+            p.tenor_code = row.tenor;
+            p.near_date = row.near_date;
+            p.value_date = row.value_date;
+            p.base_discount = row.base_discount;
+            p.quote_discount = row.quote_discount;
+            p.forward_rate = row.forward_rate;
+            p.forward_points = row.forward_points;
+            p.swap_points = row.swap_points;
+            p.modified_by = record.modified_by;
+            p.performed_by = record.performed_by;
+            p.change_reason_code = record.change_reason_code;
+            p.change_commentary = commentary;
+            points.push_back(std::move(p));
+        }
+
+        std::vector<domain::fx_forward_publish_spot> spots;
+        for (const auto& leg : computed.spots) {
+            domain::fx_forward_publish_spot spot;
+            spot.id = gen();
+            spot.tenant_id = tx.tenant_id();
+            spot.publish_id = record.id;
+            spot.leg_code = leg.leg_code;
+            spot.pair_code = leg.pair_code;
+            spot.series_id = boost::lexical_cast<boost::uuids::uuid>(leg.series_id);
+            spot.observed_at = leg.observed_at;
+            spot.value = leg.value;
+            spot.modified_by = record.modified_by;
+            spot.performed_by = record.performed_by;
+            spot.change_reason_code = record.change_reason_code;
+            spot.change_commentary = commentary;
+            spots.push_back(std::move(spot));
+        }
+
+        // The subject and its numbers are one act: a request whose set was half written
+        // would authorise numbers nobody computed.
+        repository::fx_forward_publish_repository{}.write(tx, record);
+        repository::fx_forward_publish_point_repository{}.write(tx, points);
+        repository::fx_forward_publish_spot_repository{}.write(tx, spots);
+    }
+
+    publication_verdict verdict_on_publish(const ores::database::context& ctx,
+                                           const std::string& request_id,
+                                           const publication_subject& attempted) const override {
+        publication_verdict out;
+        std::optional<ores::inbox::domain::approval_request> request;
+        try {
+            request = ores::inbox::service::approval_lifecycle(ctx).request(request_id);
+        } catch (const std::exception& e) {
+            // An id that is not a uuid is not a request; anything else is logged so a
+            // store failure is not read as a missing request.
+            ORES_LOG_SEV(lg(), ores::logging::warn)
+                << "Reading approval request " << request_id << ": " << e.what();
+            request = std::nullopt;
+        }
+        if (!request) {
+            out.message = "No approval request has the id " + request_id + ".";
+            return out;
+        }
+        out.state_code = request->state_code;
+        if (request->kind_code != fx_forward_publish_kind_code) {
+            out.message = "The request is a " + request->kind_code +
+                          " request, and a forward set is published by a " +
+                          std::string(fx_forward_publish_kind_code) + " request.";
+            return out;
+        }
+
+        repository::fx_forward_publish_repository repo;
+        const auto record = repo.read_latest_by_request(ctx, request_id);
+        if (!record) {
+            out.message = "The request names no forward set, so it authorises no publish.";
+            return out;
+        }
+        if (record->party_id != attempted.party_id || record->pair_code != attempted.subject_key ||
+            record->as_of != attempted.as_of) {
+            out.message = "The request authorises " + record->pair_code + " as of " +
+                          datetime::to_iso8601_utc(record->as_of) + " for party " +
+                          boost::uuids::to_string(record->party_id) + ", and this publish is " +
+                          attempted.subject_key + " as of " +
+                          datetime::to_iso8601_utc(attempted.as_of) + " for party " +
+                          boost::uuids::to_string(attempted.party_id) + ".";
+            return out;
+        }
+        if (request->state_code != "approved") {
+            out.message = "The request is " + request->state_code +
+                          ", and a publish waits until it is approved.";
+            return out;
+        }
+        if (record->published_at) {
+            out.message = "The request already published " + record->pair_code + " at " +
+                          datetime::to_iso8601_utc(*record->published_at) + ", by " +
+                          record->published_by + ". Raise a request for the next publish.";
+            return out;
+        }
+
+        // The forward set has no output series yet, so its facts carry the pair
+        // and the as-of, which is what names it to a reader.
+        publication_facts facts;
+        facts.subject = attempted;
+        facts.publish_id = record->id;
+        facts.request_id = record->request_id;
+        facts.version = record->version;
+        out.approved = true;
+        out.facts = std::move(facts);
+        return out;
+    }
+
+    std::optional<std::string> prepare(const ores::database::context&,
+                                       const publication_subject&) const override {
+        // The ladder is computed at the raise, so the apply computes nothing and
+        // can never defer.
+        return std::nullopt;
+    }
+
+    publication_facts publish(const ores::database::context& tx,
+                              publication_facts set) const override {
+        repository::fx_forward_publish_repository repo;
+        const auto stored = repo.read_latest(tx, boost::uuids::to_string(set.publish_id));
+        if (stored.empty())
+            throw std::runtime_error("The set the request authorises is gone, so nothing is "
+                                     "published under it.");
+        auto record = stored.front();
+        record.published_at = set.published_at;
+        record.published_by = set.published_by;
+        record.modified_by = set.published_by;
+        record.performed_by = tx.service_account();
+        record.change_reason_code = "system.fx_forward_published";
+        record.change_commentary = "Published under approval request " +
+                                   boost::uuids::to_string(record.request_id) + " by " +
+                                   set.published_by;
+        // A supersession is the record's to state and its columns do not exist
+        // yet, so the set ends nothing and no reader is told: the story's third
+        // task adds both.
+        repo.write(tx,
+                   record,
+                   {ores::utility::domain::precondition_kind::must_match_version,
+                    static_cast<std::uint32_t>(record.version)});
+        set.version = record.version + 1;
+        return set;
+    }
+
+    void announce_published(const ores::database::context&,
+                            const publication_facts&) const override {
+        // The forward set tells nobody yet: the seed carries no notice kind for
+        // it, so announcing would raise a kind that does not exist. The story's
+        // third task seeds the kind and the notice.
+    }
+};
+
+}
+
+const publication_kind& fx_forward_publication_kind() {
+    static const fx_forward_publication_kind_impl instance;
+    return instance;
 }
 
 }

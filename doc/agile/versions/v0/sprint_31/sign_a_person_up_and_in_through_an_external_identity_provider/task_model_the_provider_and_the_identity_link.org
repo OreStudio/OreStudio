@@ -26,11 +26,11 @@ Model the two facts federated sign-in needs, in IAM, as codegen entities like ev
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Sign a person up and in through an external identity provider]] |
-| Now          | Both models generate, build and pass their suites. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Serve the external sign-in, which reads the provider by host. |
+| Next         | Nothing. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance

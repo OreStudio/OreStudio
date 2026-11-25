@@ -26,3 +26,6 @@
 \ir ./scheduler_job_definitions_create.sql
 \ir ./scheduler_job_definitions_notify_trigger_create.sql
 \ir ./scheduler_job_instances_create.sql
+\ir ./scheduler_retention_policies_create.sql
+\ir ./scheduler_retention_policies_notify_trigger_create.sql
+\ir ./scheduler_retention_sweep_create.sql

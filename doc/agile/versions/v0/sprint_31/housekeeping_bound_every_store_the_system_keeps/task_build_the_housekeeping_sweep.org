@@ -8,7 +8,7 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 5116
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -26,11 +26,11 @@ One scheduled executor applies every enabled policy, including where the storage
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-24                               |
 
 * Acceptance
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5116][#5116]] | [scheduler] Add the housekeeping sweep as an execute-sql job |
 
 * Review
 
@@ -85,3 +85,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The sweep is a SQL function the scheduler can fire as an =execute_sql= job, as it
+already does for the metrics scrape. It reads the enabled policies and, for a
+chunk drop, does the drop itself: the action runs on either edition, which is the
+gap a licence-guarded retention policy leaves open.
+
+Each policy it considers writes one row to =ores_scheduler_retention_runs_tbl=
+with the action, the target, what was removed and the outcome, with the reason in
+=detail= when it did not apply.
+
+Verified on the environment database, not in a fresh one: the policy table and
+the sweep were applied, a one-day policy over the ticks table was inserted, and
+the sweep reported =applied= with no chunks past that period, writing its run row.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Policy table and sweep applied | tables, index and function created | =compass sql -- -f ...= | this commit |
+| Sweep on one policy | applied, 0 chunks, run recorded | =select * from ores_scheduler_apply_retention_policies_fn()= | this commit |

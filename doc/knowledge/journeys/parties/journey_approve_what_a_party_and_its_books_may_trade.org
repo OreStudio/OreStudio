@@ -97,7 +97,7 @@ signed off by the owner the same day.
 | 3 | The switch between the two states | Standard: RS-WRITE-01 draws a classification as a select, and this is a select of two labels |
 | 4 | A links panel with /Add/ under it, and a picker dialog | Standard: RS-RELATED-01 to RS-RELATED-03, RS-RELATED-06 |
 | 5 | /Save/ at the right of the panel header, the refusal under the panel | Standard: RS-PAGE-03, RS-WRITE-05, RS-FEEDBACK-01 |
-| 6 | A panel on the book record, read only until edited | Standard: the parts and links panels draw both; reading the party's set inside the book's panel is new |
+| 6 | A panel under the book's facts: the book page has no tab bar, so the set is its first editable part | Standard: the links panel draws it (RS-RELATED-01 to -03); that the book's page gains a write path at all is new |
 | 7 | The party's set drawn beside the book's, with each type marked | No rule draws a two set comparison: the design note defines it for the standard to take |
 | 8 | The refusal naming the party's set | No rule draws it, and the server does not carry the words: see /What is missing/ |
 
@@ -125,11 +125,10 @@ beside this file, with =plantuml -tpng <file>.puml=.
 [[file:../../prototypes/parties/approval-matrix/index.html][=doc/prototypes/parties/approval-matrix/=]], and it settles the four
 placements the standard does not:
 
-- *P1 Where the set lives.* A tab of the party with a panel on the book, or a
-  screen of its own that both record pages link to. The tab and the panel keep
-  the person on the record they are changing, which is the standard's habit; a
-  screen of its own is the alternative the prototype draws, to be refused or
-  accepted.
+- *P1 Where the set lives.* A tab of the party and a panel under the book's
+  facts, or a screen of its own that both record pages link to. The two records
+  keep the person where they are changing the set; the book has no tab bar, so
+  the panel sits under its facts rather than behind a tab.
 - *P2 How the two sets are read together.* On the book, the party's set is the
   background and the book's the marks, or the two are two columns of one table.
   A type the party permits and the book does not carry must read as clearly as

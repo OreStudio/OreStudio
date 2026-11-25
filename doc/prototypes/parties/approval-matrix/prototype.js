@@ -183,11 +183,25 @@ function bookScreen(state) {
         ? `This book <b>narrows</b> what its party permits`
         : `This book <b>follows its party</b> and carries all of ${party.name}'s set`;
 
+    /* The book page is a frame and a grid of facts today, with no tab bar and
+     * no write path. The set is its first editable part, so the panel sits
+     * under the facts rather than behind a tab the page does not have. */
     return `${crumbs('Books · ' + book.name)}
     <h1>${book.name}</h1>
-    <p class="lead">${book.key} · version ${book.version}</p>
-    <div class="tabs"><span>Overview</span><span class="on">Product types</span><span>History</span></div>
+    <p class="lead">Portfolio · Treasury</p>
     <div class="card">
+      <dl class="facts">
+        <div><dt>Name</dt><dd>${book.name}</dd></div>
+        <div><dt>Portfolio</dt><dd>Treasury</dd></div>
+        <div><dt>Status</dt><dd>Active</dd></div>
+        <div><dt>Purpose</dt><dd>Trading</dd></div>
+        <div><dt>Regulatory type</dt><dd>Banking</dd></div>
+        <div><dt>Currency</dt><dd>GBP</dd></div>
+        <div><dt>Cost centre</dt><dd>CC-GBP-DESK</dd></div>
+        <div><dt>GL account</dt><dd>GL-RATES-001</dd></div>
+      </dl>
+    </div>
+    <div class="card" style="margin-top:1rem">
       <div class="card-head">
         <h2>Product types</h2>
         <button class="ghost" data-change>${state.editing ? 'Cancel' : 'Change'}</button>
@@ -202,7 +216,7 @@ function bookScreen(state) {
               ? `<div class="refusal"><b>The set cannot be saved.</b> ${state.refusal.text}</div>`
               : ''
       }
-      <div class="hint">A type the party does not permit is not offered here: the picker reads the party's set.</div>
+      <div class="hint">The table lists only what the party permits, so a type outside the approval cannot be added here; a wider set is refused by the database and named under this panel.</div>
       <div class="foot">
         ${state.editing ? `<button data-save class="primary">Save</button>` : ''}
         <button class="ghost" data-cancel>${state.editing ? 'Discard' : 'Close'}</button>

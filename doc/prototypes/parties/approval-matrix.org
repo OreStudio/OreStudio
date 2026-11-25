@@ -47,28 +47,28 @@ The two records already have screens, and they are not alike.
   =projects/ores.web/packages/web/src/refdata/parties.tsx=, with a record
   header, tabs held in the address, and a dialog for each card. A
   /Market approvals/ tab joins =details=, =identifiers=, =contacts=,
-  =memberships=, =centres=, =counterparties= and =history=, and the tab is drawn
-  only for a reader who may read the sets, as the other tabs are.
-- The book is read only: =BookPage.tsx= draws a frame and a grid of facts -- its
-  name, its portfolio, its status, its purpose, its currency and its codes. It
-  has no tabs, no parts panel, no dialog and no write path, because a book is
-  published from the data quality dataset rather than edited in the web.
+  =memberships=, =centres=, =counterparties= and =history=, and it is drawn only
+  for a reader who may read the sets, as the other tabs are.
+- The book is a frame and a grid of facts: =BookPage.tsx= draws its name, its
+  portfolio, its status, its purpose, its currency and its codes, and nothing
+  else. It has no tab bar and no write path, because a book is published from
+  the data quality dataset rather than edited in the web.
 
-So the party's tab is the placement the two screens already support, and the
-book's panel is not: the prototype drew tabs and a /Change/ on a page that has
-neither. Three placements are open, and the owner decides between them:
+Both sets are edited, so the two placements differ. The party's set is a tab of
+a page that already has tabs. The book's set is a panel under its facts, because
+the page has no tab bar to put a tab in and one panel does not justify one: the
+set is the first part of the book the web lets a person change.
 
-| Placement | What it costs |
-|-----------+---------------|
-| The book shows its set read only, and the set is narrowed from the party's tab, one dialog per book | The smallest change: no new write path, and the comparison stays where the party's set is |
-| The book page gains tabs and a write path of its own | The largest: a read only screen grows an editing surface and a server operation its kind has never had |
-| A screen of its own edits both sets, and the two records show what it wrote | Removes the edit from both records, which contradicts the journey's argument for staying on the record |
+The book's set is a subset of the party's, and the database holds that rule in
+three triggers. The panel therefore lists only what the party permits, so a type
+outside the approval cannot be picked, and a stale page that names one is
+refused under the panel in the database's words.
 
 ** The placements the standard does not settle
 
 | Placement | What the prototype draws | What is asked |
 |-----------+--------------------------+---------------|
-| P1 Where the set lives | The party's tab and the book's panel, with a link between them; the alternative is a screen of its own | Whether the two records keep the set, or a third screen does |
+| P1 Where the set lives | The party's tab, and a panel under the book's facts, with a link between them | Accepted: the two records keep the set. A screen of its own was the alternative and is refused |
 | P2 How the two sets read together | The book's table carries a /Party permits/ column and a /This book carries/ column, so a permitted type the book does not carry is a dash and never a mark | Whether this is the shape, or the party's set is the panel's background |
 | P3 What a party that states nothing looks like | /Permits every product type the catalogue states/, in words, above an empty table | The words the standard takes, if the owner accepts them |
 | P4 Where a refusal stands | Under the panel, in the operation's words, naming the type and the party's set | Whether the refusal is inline or a dialog |

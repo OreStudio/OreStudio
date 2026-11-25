@@ -59,3 +59,52 @@ insert into ores_scheduler_job_definitions_tbl (
     'system', 'system', 'system.new_record', '',
     current_timestamp, ores_utility_infinity_timestamp_fn()
 );
+
+-- Seed the housekeeping sweep (system scope, once a day). It reads the enabled
+-- retention policies and applies them, so the chunks a policy names are dropped
+-- on an edition of the storage engine that installs no retention job of its own.
+-- The cadence is this row's; each policy records its own cadence as the period
+-- its author had in mind, and one sweep fires them all.
+insert into ores_scheduler_job_definitions_tbl (
+    id, tenant_id, party_id, job_name, description, command,
+    schedule_expression, action_type, action_payload, is_active,
+    modified_by, performed_by, change_reason_code, change_commentary,
+    valid_from, valid_to
+) values (
+    gen_random_uuid(), NULL, NULL,
+    'ores.scheduler.housekeeping_sweep',
+    'Apply the enabled retention policies once a day',
+    'DO $$ begin perform ores_scheduler_apply_retention_policies_fn(); end $$;',
+    '0 3 * * *',
+    'execute_sql',
+    '{}',
+    true,
+    'system', 'system', 'system.new_record', '',
+    current_timestamp, ores_utility_infinity_timestamp_fn()
+);
+
+-- Seed the retention policies of the run output tables. Each states the period
+-- its model declares, so the sweep and the engine's own retention job drop the
+-- same chunks: ninety days, the span of the comparisons a run's figures serve.
+-- A run's document and the cut it priced from are what outlive them.
+insert into ores_scheduler_retention_policies_tbl (
+    code, version, target_kind, target, action, retention_days, cadence,
+    enabled, description,
+    modified_by, performed_by, change_reason_code, change_commentary,
+    valid_from, valid_to
+) values
+    ('report_cashflows_90d', 0, 'chunked_table',
+     'public.ores_reporting_report_cashflows_tbl', 'drop_chunks', 90, '0 3 * * *',
+     true, 'A run''s cashflows, kept for the quarter its figures are compared over',
+     'system', 'system', 'system.new_record', '',
+     current_timestamp, ores_utility_infinity_timestamp_fn()),
+    ('report_metrics_90d', 0, 'chunked_table',
+     'public.ores_reporting_report_metrics_tbl', 'drop_chunks', 90, '0 3 * * *',
+     true, 'A run''s metrics, kept for the quarter its figures are compared over',
+     'system', 'system', 'system.new_record', '',
+     current_timestamp, ores_utility_infinity_timestamp_fn()),
+    ('report_text_values_90d', 0, 'chunked_table',
+     'public.ores_reporting_report_text_values_tbl', 'drop_chunks', 90, '0 3 * * *',
+     true, 'A run''s text values, kept for the quarter its figures are compared over',
+     'system', 'system', 'system.new_record', '',
+     current_timestamp, ores_utility_infinity_timestamp_fn());

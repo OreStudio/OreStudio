@@ -844,7 +844,6 @@ package "reporting" #E0F7FA {
 
     entity ores_reporting_report_cashflows_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
-        * as_of : timestamptz <<PK>>
         --
         * tenant_id : uuid <<FK>>
         * party_id : uuid <<FK>>
@@ -855,6 +854,7 @@ package "reporting" #E0F7FA {
         * scenario : text
         * cashflow_no : text
         * leg_no : text
+        * as_of : timestamptz
         * measure : text
         * part : text
         * report_definition_id : uuid <<FK>>
@@ -1182,12 +1182,12 @@ package "reporting" #E0F7FA {
 
     entity ores_reporting_report_metrics_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
-        * as_of : timestamptz <<PK>>
         --
         * tenant_id : uuid <<FK>>
         * party_id : uuid <<FK>>
         * report_instance_id : uuid <<FK>>
         * result_id : uuid <<FK>>
+        * as_of : timestamptz
         * measure : text
         * source : text
         * line : integer
@@ -1220,7 +1220,6 @@ package "reporting" #E0F7FA {
 
     entity ores_reporting_report_text_values_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
-        * as_of : timestamptz <<PK>>
         --
         * tenant_id : uuid <<FK>>
         * party_id : uuid <<FK>>
@@ -1228,6 +1227,7 @@ package "reporting" #E0F7FA {
         * result_id : uuid <<FK>>
         * source : text
         * line : integer
+        * as_of : timestamptz
         * report_definition_id : uuid <<FK>>
         * family : text
         * subject_type : text

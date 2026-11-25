@@ -177,14 +177,28 @@ The value as a number, when the engine stated it as a double.
 :PROPERTIES:
 :tablename:                    ores_reporting_report_text_values_tbl
 :hypertable:                   true
-:hypertable_partition_column:  as_of
-:hypertable_chunk_interval:    30 days
+:hypertable_partition_column:  valid_from
+:hypertable_chunk_interval:    1 day
+:hypertable_retention_interval: 90 days
 :append_insert:                true
 :bitemporal_trigger:           soft_update_delete
 :no_audit_columns:             true
 :rls_tenant_isolation:         true
 :rls_party_isolation:          true
+:suppress_nk_index:            true
 :END:
+
+The chunk is a day of runs, not a span of dates the run stated. A run dates a
+value where the file dates it, which for a projection is years ahead, so a chunk
+that aged out on =as_of= would hold next to nothing. =valid_from= is the run's
+own time, because the table is written once with the run and never edited, so a
+day's chunk holds the runs of that day and dropping it drops whole runs.
+
+The period is a quarter. A run's values are read while the run is recent, and
+the comparison that needs two runs at once is the movement against the run
+before it. Beyond the quarter the record of a run is its document and the cut it
+priced from, and a rerun against that cut reproduces the rows, so this table is
+a working copy of the runs in use rather than the archive.
 
 ** Bitemporal natural keys
 
@@ -201,6 +215,18 @@ run's rows.
 | source             | false    |
 | line               | false    |
 | as_of              | false    |
+
+** Indexes
+
+| name            | columns                                                                              | unique | current_only | where_extra |
+|-----------------+--------------------------------------------------------------------------------------+--------+--------------+-------------|
+| run_natural_key | tenant_id, party_id, report_instance_id, result_id, source, line, as_of, valid_from  | true   | true         |             |
+
+The unique index is declared here rather than generated from the natural keys,
+because it carries =valid_from= and a unique index on a hypertable must include
+the partitioning column. The column admits no duplicate the key does not already
+refuse: the insert trigger closes a re-posted key before the new row lands, and
+every row of a run shares the run's write time.
 
 * C++
 

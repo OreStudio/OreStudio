@@ -96,6 +96,12 @@ task and name that file in the Command column.
 
 * Notes
 
+- The carry-forward change dropped the temporal and audit tail, which took the
+  repository entity from sixteen fields to nine. Its recorded width in the
+  wide-types check stood at sixteen, and a record for a type now under the
+  ceiling is itself a finding. The follow-up that greens the checks removes the
+  record.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

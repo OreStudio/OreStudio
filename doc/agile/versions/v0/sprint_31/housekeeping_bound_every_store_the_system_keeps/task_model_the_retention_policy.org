@@ -61,6 +61,13 @@ task and name that file in the Command column.
 
 * Notes
 
+- Two links in the generated stack were missing, and neither the build nor the
+  database create reported them. The entity registrar was never called from the
+  component's registrar, so the policy subjects had no responder, and the two
+  drop scripts were never included from the scheduler aggregator, so a teardown
+  left the table and a function that named it. The checks found both, and the
+  follow-up that greens them adds the call and the includes.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

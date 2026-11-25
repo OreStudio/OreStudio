@@ -56,7 +56,14 @@ declare
     failure text;
 begin
     for policy in
-        select * from "ores_scheduler_retention_policies_tbl" where "enabled" order by "code"
+        -- Only the current version of a policy is applied. A policy is
+        -- versioned, so turning one off closes its row and writes a new version
+        -- that is disabled; the closed row still says enabled, and reading it
+        -- would keep applying a policy a person has just turned off.
+        select * from "ores_scheduler_retention_policies_tbl"
+        where "enabled"
+          and "valid_to" = ores_utility_infinity_timestamp_fn()
+        order by "code"
     loop
         cutoff := now() - make_interval(days => policy."retention_days");
         dropped := 0;

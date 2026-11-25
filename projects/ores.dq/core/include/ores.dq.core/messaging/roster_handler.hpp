@@ -20,7 +20,7 @@
 #ifndef ORES_DQ_CORE_MESSAGING_ROSTER_HANDLER_HPP
 #define ORES_DQ_CORE_MESSAGING_ROSTER_HANDLER_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.dq.api/messaging/bundle_roster_protocol.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/service/publish_service.hpp"

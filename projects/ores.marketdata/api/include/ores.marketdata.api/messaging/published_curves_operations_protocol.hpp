@@ -148,6 +148,69 @@ struct list_published_curves_response {
 };
 
 /**
+ * @brief Asks for the newest published set of each of a set of series, in one
+ * read: when each was built and the state it is in now.
+ *
+ * The set is the batch. A caller that holds a page of curves sends them in one
+ * call rather than asking for one curve at a time: the read is the database's,
+ * and a set costs one plan whatever its size. A reader that draws a table of
+ * curves needs no points, so none are returned.
+ */
+struct get_latest_published_sets_request {
+    using response_type = struct get_latest_published_sets_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_latest_published_sets";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The series to read, in one batch.
+     */
+    std::vector<boost::uuids::uuid> series_ids;
+
+    friend bool operator==(const get_latest_published_sets_request&,
+                           const get_latest_published_sets_request&) = default;
+};
+
+/**
+ * @brief The newest set of each series that holds one, ordered by series id.
+ *
+ * A series that never published does not appear, and the caller reads that as
+ * the gap it is: the answer names the series it answers for, so a reader joins
+ * on the id rather than on a position.
+ */
+struct get_latest_published_sets_response {
+    /**
+     * @brief How the call ended: a batch over the ceiling, or a series the caller
+     * may not see, is refused here.
+     */
+    ores::utility::domain::result result;
+    /**
+     * @brief The series that hold a published set, ordered by id.
+     */
+    std::vector<boost::uuids::uuid> series_ids;
+    /**
+     * @brief The instant each of those sets was built at, as the store states it, in
+     * the same order.
+     *
+     * The text is passed on rather than parsed and written again: a reader formats
+     * the instant for its own screen, and two reformattings would drift.
+     */
+    std::vector<std::string> as_ofs;
+    /**
+     * @brief The state each of those sets is in now, in the same order: published,
+     * superseded or withdrawn.
+     */
+    std::vector<std::string> state_codes;
+
+    friend bool operator==(const get_latest_published_sets_response&,
+                           const get_latest_published_sets_response&) = default;
+};
+
+/**
  * @brief The last sets published for one series, newest last, with their points.
  *
  * The sets come back oldest first, so a reader draws them in the order they
@@ -334,6 +397,39 @@ struct withdraw_curve_response {
 }
 
 /**
+ * @brief The members of get_latest_published_sets_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_latest_published_sets_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"series_ids", &get_latest_published_sets_request::series_ids},
+    };
+}
+
+/**
+ * @brief The members of get_latest_published_sets_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_latest_published_sets_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"result", &get_latest_published_sets_response::result},
+        ::ores::utility::codec::field{"series_ids",
+                                      &get_latest_published_sets_response::series_ids},
+        ::ores::utility::codec::field{"as_ofs", &get_latest_published_sets_response::as_ofs},
+        ::ores::utility::codec::field{"state_codes",
+                                      &get_latest_published_sets_response::state_codes},
+    };
+}
+
+/**
  * @brief The members of get_published_curve_sets_request, named as the wire names them and in the
  * order the type declares them.
  *
@@ -452,6 +548,34 @@ struct ORES_MARKETDATA_API_EXPORT
     static std::string
     write_msgpack(const ores::marketdata::messaging::list_published_curves_response& v);
     static ores::marketdata::messaging::list_published_curves_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_latest_published_sets_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_latest_published_sets_request& v);
+    static ores::marketdata::messaging::get_latest_published_sets_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_latest_published_sets_request& v);
+    static ores::marketdata::messaging::get_latest_published_sets_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_latest_published_sets_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_latest_published_sets_response& v);
+    static ores::marketdata::messaging::get_latest_published_sets_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_latest_published_sets_response& v);
+    static ores::marketdata::messaging::get_latest_published_sets_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

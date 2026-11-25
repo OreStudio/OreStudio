@@ -74,6 +74,7 @@
 #include "ores.marketdata.core/messaging/provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/provider_terms_handler.hpp"
 #include "ores.marketdata.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.marketdata.core/messaging/published_set_read_handler.hpp"
 #include "ores.marketdata.core/messaging/rate_card_component_history_provider_registrar.hpp"
 #include "ores.marketdata.core/messaging/rate_card_component_registrar.hpp"
 #include "ores.marketdata.core/messaging/route_history_provider_registrar.hpp"
@@ -217,6 +218,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             fixing_read_handler h(nats, ctx, verifier);
                                             h.get_observation_window(std::move(msg));
                                         }));
+
+    // The newest published set of a batch of series, for a view that joins them.
+    subs.push_back(
+        nats.queue_subscribe(std::string(get_latest_published_sets_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier](ores::nats::message msg) mutable {
+                                 published_set_read_handler h(nats, ctx, verifier);
+                                 h.latest(std::move(msg));
+                             }));
 
     // Market series export: the one market-series verb with no generated
     // protocol model, because it is a report-feed read rather than CRUD. It

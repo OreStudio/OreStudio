@@ -22,6 +22,7 @@
 
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
+#include "ores.http/routes/synthetic/ir_curve_coverage.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.utility/codec/shaped_wire_traits.hpp"
@@ -100,6 +101,9 @@ struct calibration_coverage final {
  * @brief The calibration of an asset class: the policy it calibrates under,
  * every feed of it resolved as a start would, with its candidates and their
  * reasons, and the coverage counts. Nothing starts.
+ *
+ * An interest-rate class also carries its currencies' coverage, whose derivation
+ * is ir_curve_coverage.
  */
 struct asset_class_calibration final {
     std::string assetClass;
@@ -107,6 +111,13 @@ struct asset_class_calibration final {
     bool policyWritable = false;
     std::vector<ores::synthetic::messaging::calibrated_feed> feeds;
     calibration_coverage coverage;
+    /**
+     * @brief The class's interest-rate curves, empty for a class that has none.
+     *
+     * The BFF stated this member only for interest rates; the gateway answers an
+     * empty list instead, which the screen reads as the same thing.
+     */
+    std::vector<ir_curve_coverage_row> ir_curves;
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<asset_class_calibration>) {
@@ -116,7 +127,8 @@ struct asset_class_calibration final {
         field{"policy", &asset_class_calibration::policy},
         field{"policyWritable", &asset_class_calibration::policyWritable},
         field{"feeds", &asset_class_calibration::feeds},
-        field{"coverage", &asset_class_calibration::coverage}};
+        field{"coverage", &asset_class_calibration::coverage},
+        field{"ir_curves", &asset_class_calibration::ir_curves}};
 }
 
 /**
@@ -137,7 +149,8 @@ public:
     calibration_of(std::string asset_class,
                    ores::synthetic::messaging::calibrate_response resolved,
                    std::optional<int> policy_version,
-                   bool policy_writable);
+                   bool policy_writable,
+                   std::vector<ir_curve_coverage_row> ir_curves = {});
 
     static void register_routes(std::shared_ptr<ores::http::net::router> router,
                                 std::shared_ptr<ores::http::openapi::endpoint_registry> registry,

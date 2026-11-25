@@ -265,6 +265,37 @@ auto forward_all(const ores::http::domain::http_request& req,
 }
 
 /**
+ * @brief Every row of a list, read 1000 at a time until a page comes back short,
+ * each page read inside the time the caller's view declared.
+ *
+ * This is the paging a composed view uses: the view opens one budget and passes
+ * it here, so a list that keeps the route waiting is refused as not answering in
+ * time rather than taking the socket down.
+ */
+template <typename Request, typename Rows>
+auto forward_all(const ores::http::domain::http_request& req,
+                 ores::nats::service::nats_client& session,
+                 Request msg,
+                 Rows member,
+                 const budget& time) {
+    constexpr std::uint32_t page = 1000;
+    std::remove_cvref_t<decltype(std::declval<typename Request::response_type>().*member)> all;
+    std::uint32_t offset = 0;
+    for (std::uint32_t read = 0; read < page; ++read) {
+        msg.offset = offset;
+        msg.limit = page;
+        const auto reply = forward(req, session, msg, time.next());
+        ores::http::net::record_routes::require_ok(reply.result);
+        const auto& got = reply.*member;
+        all.insert(all.end(), got.begin(), got.end());
+        if (got.size() < page)
+            return all;
+        offset += static_cast<std::uint32_t>(got.size());
+    }
+    throw std::runtime_error("The service sent more pages than a whole read takes.");
+}
+
+/**
  * @brief Send one canonical request as the holder of a bearer token.
  *
  * Most services read the caller from the delegation the forwarding step adds.

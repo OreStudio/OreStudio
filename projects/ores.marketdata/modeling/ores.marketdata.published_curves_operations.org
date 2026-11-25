@@ -399,6 +399,97 @@ How many rows the filter matches, across every page.
 
 The reason a read was refused. Empty on success.
 
+** get_latest_published_sets_request
+:PROPERTIES:
+:subject:  marketdata.v1.ops.get_latest_published_sets
+:response: get_latest_published_sets_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the newest published set of each of a set of series, in one
+ * read: when each was built and the state it is in now.
+ *
+ * The set is the batch. A caller that holds a page of curves sends them in one
+ * call rather than asking for one curve at a time: the read is the database's,
+ * and a set costs one plan whatever its size. A reader that draws a table of
+ * curves needs no points, so none are returned.
+ */
+#+end_src
+
+*** series_ids
+:PROPERTIES:
+:cpp_type: std::vector<boost::uuids::uuid>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The series to read, in one batch.
+ */
+#+end_src
+
+** get_latest_published_sets_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The newest set of each series that holds one, ordered by series id.
+ *
+ * A series that never published does not appear, and the caller reads that as
+ * the gap it is: the answer names the series it answers for, so a reader joins
+ * on the id rather than on a position.
+ */
+#+end_src
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How the call ended: a batch over the ceiling, or a series the caller
+ * may not see, is refused here.
+ */
+#+end_src
+
+*** series_ids
+:PROPERTIES:
+:cpp_type: std::vector<boost::uuids::uuid>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The series that hold a published set, ordered by id.
+ */
+#+end_src
+
+*** as_ofs
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The instant each of those sets was built at, as the store states it, in
+ * the same order.
+ *
+ * The text is passed on rather than parsed and written again: a reader formats
+ * the instant for its own screen, and two reformattings would drift.
+ */
+#+end_src
+
+*** state_codes
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The state each of those sets is in now, in the same order: published,
+ * superseded or withdrawn.
+ */
+#+end_src
+
 ** get_published_curve_sets_request
 :PROPERTIES:
 :subject:  marketdata.v1.ops.get_published_curve_sets

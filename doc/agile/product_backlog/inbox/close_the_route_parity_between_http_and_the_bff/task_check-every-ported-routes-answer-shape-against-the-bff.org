@@ -26,11 +26,11 @@ Two routes answered a bare array where the BFF answered an object with a member:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] |
-| Now          | Built: every pair is compared or excused, and the sweep found an answer that was not JSON. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The pull request.                       |
+| Next         | Nothing. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance

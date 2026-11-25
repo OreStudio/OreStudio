@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 209F8B16-4033-4579-8B6A-ECF4CF08E259
+:END:
+#+title: Task: Decide the shape of the identity screens
+#+description: Prototype the provider doors, the sign-up result, the linked identities and the consent screen, then choose one with evidence from a person using it.
+#+type: task
+#+level: s1
+#+filetags: :show_the_identity_doors_the_links_and_the_consent:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9636A24B-639F-4088-8A6D-F84CA7A974B9][Show the identity doors, the links and the consent]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Prototype the identity screens before building them: the sign-in door with the providers beside the password, what a first sign-in says the deployment will give it, the section that shows and removes a link, the session list that names how each session was signed in, and the consent screen a client shows. Build two or three variants and put them beside the existing sign-in, security and agent-grant screens, then choose one with evidence from a person using it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9636A24B-639F-4088-8A6D-F84CA7A974B9][Show the identity doors, the links and the consent]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- Two or three variants are prototyped and shown side by side with the existing sign-in and security screens.
+- A person completes each journey on the chosen variant: sign up, sign in, link, unlink, and approve a client.
+- The choice is recorded on the story with what the evidence showed, including what the person could not tell apart.
+- The prototype is thrown away once the choice is made; the screens are built from the accepted design.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

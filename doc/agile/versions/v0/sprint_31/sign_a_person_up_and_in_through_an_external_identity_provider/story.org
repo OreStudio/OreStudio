@@ -98,6 +98,9 @@ What does not exist anywhere in the tree:
 
 - No OAuth 2.0 or OpenID Connect endpoint: no =/authorize=, no =/token=, no
   metadata document, and no =.well-known= path at all.
+- No OAuth or OpenID Connect implementation in vcpkg either. The ports hold the
+  parts, jwt-cpp, openssl, boost-json, libsodium and cppcodec, and no protocol;
+  =cpprestsdk=, the only port tagged =oauth2=, has been removed from vcpkg.
 - No provider registry and no identity link: no table, no column and no setting
   that names a third party.
 - No client registry. A grant is created by a person inside ORE and its key is a
@@ -122,7 +125,7 @@ second consent record beside it.
 | [[id:BBA652AC-F595-40F4-9820-D2F3DC6E7168][Serve the external sign-in and carry the session]] | BACKLOG | | | ores.http serves the OpenID Connect authorization code flow, and a browser that chooses a provider comes back with an ORE session. |
 | [[id:7ACCDE42-93DB-482D-9062-9CA6E7AFC886][Link a provider only to its owner]] | BACKLOG | | | A person links a provider account after proving their ORE account, a matching address links nothing silently, and a link can be removed without losing the last way in. |
 | [[id:9105FD2D-5DDD-482A-BD96-1E1885208ECA][Register the first sign-in through the policy]] | BACKLOG | | | A provider account ORE has never seen registers through the deployment's registration policy: accepted, waiting for approval, or refused, and the callback is idempotent. |
-| [[id:213D3539-9792-4C49-86A9-62B41A907992][Sign a client in through ORE's authorization server]] | BACKLOG | | | ORE serves OAuth 2.1 for its own API: metadata, an authorize endpoint that signs a person in by the same flow, and a token endpoint with PKCE S256 and rotating refresh tokens, MCP as its first client. |
+| [[id:213D3539-9792-4C49-86A9-62B41A907992][Sign a client in through ORE's authorization server]] | BACKLOG | | | ORE serves OAuth 2.1 for its own API, by itself or through a server it runs in its fleet, with PKCE S256, rotating refresh tokens and MCP as its first client. |
 | [[id:F0098AC4-46BA-4F10-97AA-DACD382D93CB][Prove the flow against Google and a test provider]] | BACKLOG | | | The gate and the suites sign in through a provider the fleet runs, and a recorded manual sign-in to Google shows the real thing, with the recipe a person follows to create the client. |
 
 * Decisions

@@ -112,7 +112,11 @@ That decision settles four things the current build gets wrong:
 3. *It needs a notation of its own.* =provider_notation= has no entry for
    =derived=, so nothing can mint ids for it. A =derived_notation= states the
    fixing address the way =simulated_fixing_notation= does, under the =derived=
-   provider.
+   provider. A provider has one notation and it spells every id that provider
+   serves, so the notation reads the source's volatility points too
+   (=derived_fx_vol=, =rate_lnvol=, such as =USDCZK/2M/10BF=), not only the
+   fixings: the catalogue test reads every installed row of the provider, and a
+   notation that knew one family refused the other.
 4. *Its instruments and mappings belong to =derived=*, not to
    =simulated-fixings=, so that the party's existing =derived= subscription
    entitles it.
@@ -206,6 +210,7 @@ task and name that file in the Command column.
 | Newest fixing of each, on the recreated database | USD SOFR 1M 3.94%, COP IBR 3M 8.96%, JPY EYTIBOR 3M 0.35%, KRW GENERIC 3M 2.94%, PLN WIBOR 6M 5.60% | the same query's newest value | this branch |
 | Fixings a starved node states | 0; the series stays at 520 with its newest value unchanged while the curve's node is stopped, and gains no day of its own when the node starts again | =synthetic stop node synthetic.bloomberg.ir.yield_curve.sofr.usd=, count the series, =synthetic start node ...=, count again | this branch |
 | Node verbs the shell gained | 2, =synthetic start node= and =synthetic stop node=, beside the folder and feed targets | =grep -n 'node <node-name>' synthetic_commands.cpp= | this branch |
+| Ids the derived provider serves, and its notation reads back | 2,280: 2,275 volatility points on the scheme =derived_fx_vol= and 5 fixings on =oresmd= | the catalogue round-trip test, =ores.marketdata.core.tests= | this branch |
 
 * Notes
 

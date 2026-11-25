@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: 5766CDB7-F44E-401F-92DA-9FD0D7DE3276
+:END:
+#+title: Task: Add a skill that reports a break and its owner
+#+description: A skill and its recipe: the commands that attribute a break, and the report shape that names the owner, the commits, the mechanism and the disposition.
+#+type: task
+#+level: s1
+#+filetags: :attribute_a_break_on_main_to_its_owner:sprint_31:v0:
+#+owner: marco
+#+branch: feature/serve-the-raise-the-decide-and-the-apply-once
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2DAFF099-4C46-470A-ACA7-D81FCBBFA757][Story: Attribute a break on main to its owner]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A session that meets a break on main names its owner from one procedure, and
+writes a report whose shape does not depend on who is writing it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:2DAFF099-4C46-470A-ACA7-D81FCBBFA757][Story: Attribute a break on main to its owner]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- One skill states when to reach for the procedure and the disposition rule,
+  and one recipe holds the commands that attribute the break and prove it.
+- The report names its four parts in a fixed order: the owner, the related
+  commits, the technical description, and the disposition.
+- The owner is an environment, read from the commit's trailers and the fleet.
+- The generator writes the contract fields into a scaffolded skill, so a new
+  skill is born with a description, a type and a level.
+
+* Plan
+
+Two artefacts: the skill for the judgement, the recipe for the commands.
+
+The skill is =compass-code-investigate-trunk-break=, named against the verb
+register: =investigate-= is diagnosing to root cause, and the object is the
+break on trunk. =blame= is not a verb of the register and is also the name of
+the checker's command, which the conventions forbid naming a skill after. The
+recipe is [[id:477E9949-CFA4-44D8-A021-D7463BEC4C0D][How do I blame a break on main?]], under =doc/recipes/git/=.
+
+The report shape is the task's real deliverable, so the skill holds it as a
+template with four headings: *Owner*, *Related commits*, *Technical description*
+and *Disposition*. The owner is an environment rather than a person, because
+the environment holds the branch, the task and the session that made the
+change, and =compass fleet= is where that is read.
+
+Building it surfaced a defect in the skill scaffold: the template emitted
+=#+title:=, =#+author:= and the org options, and none of =#+description:=,
+=#+type: skill= or =#+level:=, so every new skill was born outside the contract
+that [[id:44D7A328-F69C-4EE9-83A5-74BD3634AD69][compass-skill-review]] checks it against. The template is fixed in
+=ores.doc.knowledge.skill.org= and re-tangled, and the new skill carries the
+three lines.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Skills in the catalogue | one more, and every one with a level row | =compass-ng check --codec skill_levels= | branch off =4abd485bfa= |
+| The non-heavy gate | 13 of 13 | =compass check --exclude-heavy= | branch off =4abd485bfa= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The skill and its recipe are in the tree, the catalogue lists the skill, and
+the levels table gives it a row.
+
+=compass-code-investigate-trunk-break= states when to reach for the procedure,
+the five steps, the report shape and the disposition rule. The recipe holds the
+commands: classify the failures by re-running them alone, find the commit with
+=git log -S=, read the owner from the trailers and the fleet, trace a check
+finding with =compass-ng blame=, and prove the mechanism with a rolled-back
+insert.
+
+The disposition rule is three conditions for fixing inline -- inside your diff's
+blast radius, blocking your gate, and no live branch of another environment on
+the file -- and handing back when the change touches schema, behaviour or a
+contract, or when another environment owns the file. When both read true the
+report goes back to the owner.
+
+The skill scaffold was fixed on the way: =ores.doc.knowledge.skill.org= now
+emits =#+description:=, =#+type: skill= and =#+level: cross=, and the tangle
+regenerated =doc_skill.org.mustache=.
+
+The first gate run after the skill was written failed with one finding,
+=skill_levels/skill_without_level=, which is the check doing its job: a skill
+with no row in the levels table is an error rather than a default. The row was
+added, the level codec stamped the skill, and the non-heavy gate passes 13 of
+13.

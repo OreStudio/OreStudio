@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 825E12E1-F068-4630-B5A0-CF7E2F2F6871
+:END:
+#+title: Task: Scaffold story: Value only the trades the market can answer
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
+#+owner: marco
+#+branch: feature/value-only-the-trades-the-market-answers
+#+pr: 5129
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story exists before the work does: its goal, its acceptance, its decisions and
+its out of scope are written, its tasks sit in arc order, and its rows are wired
+into the sprint. A person reading it can say what the arc is and where to start,
+without the conversation that produced it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- The story states its goal, its acceptance, its decisions and its out of scope.
+- The tasks that compose the arc exist, in arc order, each with a goal and an acceptance.
+- The story is wired into the sprint and its tasks into the story, by compass and not by hand.
+- The documents pass =compass lint=.
+
+* Plan
+
+The story was formed from a design review of how a run splits its errors and what
+it does with a trade its market cannot answer. The tasks were created with
+=compass task new= against the story, all sharing its branch because the arc is one
+pipeline and reads as one change. The scaffold is a record: no code and no schema
+change.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5129][#5129]] | [agile] Scaffold the story that values only the trades the market answers |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Scaffolded, and the arc is stated.
+
+What exists:
+
+- [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]]: a goal, seven acceptance
+  bullets, nine decisions and four exclusions, wired into Sprint 31.
+- Seven work tasks in arc order: the decision, the two approval matrices, the
+  per book generation, the per trade resolution, the run's market readiness, the
+  phase of every error, and the report surface that names what a book did not
+  value. Each states a goal and an acceptance, and every one shares the story's
+  branch because the arc is one pipeline.
+- The decisions record the review that produced the story: three phases and the
+  phase axis kept apart from the engine's scope, an incomplete trade as a state
+  and not an error, exclusion per trade, incomplete trades never reaching the
+  engine, a run with nothing complete failing in preprocessing, the two
+  matrices with the subset rule, book affinity as data, three grains of
+  readiness, and the trade the requirement resolution already knows and throws
+  away.
+
+Created with =compass story new= and =compass task new=, and =compass lint=
+passes. No code, schema or seed changed, so the local gate builds no target.

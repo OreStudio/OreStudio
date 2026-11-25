@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 110CE18D-C64C-4C40-8E8E-D0664176707C
+:END:
+#+title: Task: Name the trades a book did not value
+#+description: A report states, for each of its books, the trades that were left out and the cause of each, and shows the run's errors by the phase that produced them.
+#+type: task
+#+level: s1
+#+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
+#+owner: marco
+#+branch: feature/value-only-the-trades-the-market-answers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person reading a report sees, per book, which trades were not valued and why, and can tell the run's preprocessing errors from the engine's and the postprocessing's.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- The report states, per book, the count of trades booked, valued and not valued, and names each trade not valued with its cause.
+- The run's errors are read by phase, and a person can open the errors of one phase.
+- A trade excluded in preprocessing is never also shown as an engine error.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

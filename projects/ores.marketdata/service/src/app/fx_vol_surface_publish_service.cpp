@@ -30,6 +30,8 @@
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_grid.hpp"
+#include "ores.marketdata.service/app/publication_kind.hpp"
+#include "ores.marketdata.service/app/publication_lifecycle.hpp"
 #include "ores.marketdata.service/app/staleness_policy.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -106,129 +108,31 @@ blocking_failure_of(const domain::fx_vol_surface_calibration& calibration) {
 
 namespace {
 
-/// Publishes the record and ends every live surface of its series, in one act, then tells. Refuses
-/// a surface older than the one live, which would put older data in its place.
-domain::fx_vol_surface_publish record_publication(const context& ctx,
-                                                  domain::fx_vol_surface_publish record) {
-    const auto publisher = ores::service::messaging::delegated_actor(ctx);
-    record.published_at =
-        std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
-    record.published_by = publisher;
-    record.modified_by = publisher;
-    record.performed_by = ctx.service_account();
-    record.change_reason_code = "system.surface_published";
-    record.change_commentary = "Published under approval request " +
-                               boost::uuids::to_string(record.request_id) + " by " + publisher;
-
-    // A series promises one live surface: the successor and the end of what it replaces are one
-    // transaction, so neither none nor two is ever live.
-    std::optional<time_point> replaced;
-    ores::database::repository::unit_of_work uow(ctx);
-    const auto& tx = uow.ctx();
-    repository::fx_vol_surface_publish_repository repo;
-    const auto live = repo.read_live_for_series(tx, record.output_series_id);
-    for (const auto& previous : live)
-        if (previous.id != record.id && previous.as_of > record.as_of)
-            throw std::invalid_argument(
-                "The surface as of " + datetime::to_iso8601_utc(previous.as_of) +
-                " is live, and this one is older, as of " + datetime::to_iso8601_utc(record.as_of) +
-                ". Publish a calibration at or after the live one.");
-    for (auto previous : live) {
-        if (previous.id == record.id)
-            continue;
-        if (!replaced || previous.as_of > *replaced)
-            replaced = previous.as_of;
-        previous.superseded_at = record.published_at;
-        previous.superseded_by_request_id = record.request_id;
-        previous.superseded_as_of = record.as_of;
-        previous.modified_by = publisher;
-        previous.performed_by = ctx.service_account();
-        previous.change_reason_code = "system.surface_superseded";
-        previous.change_commentary = "Superseded by the surface published under request " +
-                                     boost::uuids::to_string(record.request_id) + " as of " +
-                                     datetime::to_iso8601_utc(record.as_of);
-        repo.write(tx,
-                   previous,
-                   {ores::utility::domain::precondition_kind::must_match_version,
-                    static_cast<std::uint32_t>(previous.version)});
-    }
-    repo.write(tx,
-               record,
-               {ores::utility::domain::precondition_kind::must_match_version,
-                static_cast<std::uint32_t>(record.version)});
-    uow.commit();
-    record.version += 1;
-    ORES_LOG_SEV(publish_log(), ores::logging::info)
-        << "Published the surface of series " << record.output_series_id << " as of "
-        << datetime::to_iso8601_utc(record.as_of) << " under request " << record.request_id;
-
-    // Telling never unmoves the surface: a notice that fails is logged by the announcer.
-    announce_surface_publish(ctx, record, replaced);
-    return record;
-}
-
-/// Publishes the calibration an approved request authorises, or says why it may not.
-void apply_surface_publish(const context& ctx,
-                           const std::string& request_id,
-                           const boost::uuids::uuid& party,
-                           const boost::uuids::uuid& blueprint_id,
-                           time_point as_of,
-                           msg::publish_fx_vol_surface_response& resp) {
+/// Applies the approved request to the surface it names, or says why the surface did not move.
+void apply_surface(const context& ctx,
+                   const std::string& request_id,
+                   const publication_subject& attempted,
+                   msg::publish_fx_vol_surface_response& resp) {
+    const auto applied =
+        apply_publication(ctx, derived_kind::fx_vol_surface, request_id, attempted);
     resp.approval_request_id = request_id;
-    const auto request = ores::inbox::service::approval_lifecycle(ctx).request(request_id);
-    if (!request) {
-        resp.message = "No approval request has the id " + request_id + ".";
-        return;
+    resp.state_code = applied.state_code;
+    switch (applied.status) {
+        case publication_status::published:
+            resp.success = true;
+            resp.message = "Published.";
+            resp.published_at = applied.facts.published_at;
+            resp.published_by = applied.facts.published_by;
+            break;
+        case publication_status::deferred:
+            // A surface has no compute of its own to defer: the calibration is
+            // stored before the raise, so only a refusal or a publication answers.
+            resp.message = applied.message;
+            break;
+        case publication_status::refused:
+            resp.message = applied.message;
+            break;
     }
-    resp.state_code = request->state_code;
-    if (request->kind_code != fx_vol_surface_publish_kind_code) {
-        resp.message = "The request is a " + request->kind_code +
-                       " request, and a surface is published by a " +
-                       std::string(fx_vol_surface_publish_kind_code) + " request.";
-        return;
-    }
-    // The request names a set, and this is the member the publish asks about: a
-    // request that does not name this blueprint authorises nothing here, which
-    // is the same answer a request that names no surface at all gets.
-    const auto record =
-        repository::fx_vol_surface_publish_repository{}.read_latest_by_request_and_blueprint(
-            ctx, request_id, blueprint_id);
-    if (!record) {
-        resp.message =
-            "The request does not name the surface this publish is about, so it authorises no "
-            "publish of it.";
-        return;
-    }
-    if (record->party_id != party || record->as_of != as_of) {
-        resp.message =
-            "The request authorises blueprint " + boost::uuids::to_string(record->blueprint_id) +
-            " as of " + datetime::to_iso8601_utc(record->as_of) + " for party " +
-            boost::uuids::to_string(record->party_id) + ", and this publish names another.";
-        return;
-    }
-    if (request->state_code != "approved") {
-        resp.message =
-            "The request is " + request->state_code + ", and a publish waits until it is approved.";
-        return;
-    }
-    if (record->published_at) {
-        resp.message = "The request already published its surface at " +
-                       datetime::to_iso8601_utc(*record->published_at) + ", by " +
-                       record->published_by + ". Raise a request for the next publish.";
-        return;
-    }
-    const auto calibration = calibration_of(ctx, record->blueprint_id, record->as_of);
-    if (!calibration || calibration->version != record->calibration_version) {
-        resp.message =
-            "The calibration the request authorises was run again after the raise, so the "
-            "decision does not cover the surface it now holds. Raise a request for it.";
-        return;
-    }
-    const auto published = record_publication(ctx, *record);
-    resp.success = true;
-    resp.message = "Published.";
-    resp.published_at = published.published_at;
-    resp.published_by = published.published_by;
 }
 
 }
@@ -239,9 +143,8 @@ namespace {
 ///
 /// One raise at a time: a second request for the same calibration would publish
 /// it twice, so the second is not raised.
-void assert_no_open_raise(const context& ctx,
-                          const boost::uuids::uuid& blueprint_id,
-                          time_point as_of) {
+std::optional<std::string>
+open_raise_refusal(const context& ctx, const boost::uuids::uuid& blueprint_id, time_point as_of) {
     msg::fx_vol_surface_publishes_filter raised_here;
     raised_here.blueprint_id = blueprint_id;
     const auto raises = read_all_pages([&](std::uint32_t offset, std::uint32_t limit) {
@@ -254,10 +157,10 @@ void assert_no_open_raise(const context& ctx,
         const auto open = ores::inbox::service::approval_lifecycle(ctx).request(
             boost::uuids::to_string(pending.request_id));
         if (open && (open->state_code == "waiting" || open->state_code == "approved"))
-            throw std::invalid_argument("Request " + boost::uuids::to_string(pending.request_id) +
-                                        " already asks to publish this calibration and is " +
-                                        open->state_code + ".");
+            return "Request " + boost::uuids::to_string(pending.request_id) +
+                   " already asks to publish this calibration and is " + open->state_code + ".";
     }
+    return std::nullopt;
 }
 
 }
@@ -267,109 +170,37 @@ raise_surface_publish_set(const context& ctx,
                           const boost::uuids::uuid& party_id,
                           const std::vector<surface_publish_subject>& subjects,
                           const std::string& reason) {
-    if (subjects.empty())
-        throw std::invalid_argument("A set of surfaces names at least one surface to publish.");
-    if (reason.empty())
-        throw std::invalid_argument(
-            "Say why the surfaces should be published, so the decider reads a reason.");
-
-    // A set names a surface once. The store would refuse the repeat at its
-    // unique key, in words a caller cannot read, so the repeat is refused here,
-    // for the whole set, with the surface named.
-    std::set<boost::uuids::uuid> named;
+    std::vector<publication_request> requests;
+    requests.reserve(subjects.size());
     for (const auto& subject : subjects)
-        if (!named.insert(subject.blueprint_id).second)
-            throw std::invalid_argument("The set names the surface " +
-                                        boost::uuids::to_string(subject.blueprint_id) + " twice.");
+        requests.push_back(
+            {.subject_key = boost::uuids::to_string(subject.blueprint_id), .as_of = subject.as_of});
+    if (requests.empty())
+        throw std::invalid_argument("A set of publishes names at least one surface to publish.");
 
-    struct member final {
-        surface_publish_subject subject;
-        domain::fx_vol_surface_publish record;
-    };
-
-    // Each member is judged before anything is raised, so a decider is never
-    // asked to answer for a surface the service would refuse to publish.
-    std::vector<member> members;
-    surface_publish_raise out;
-    for (const auto& subject : subjects) {
-        try {
-            const auto blueprint = blueprint_of(ctx, boost::uuids::to_string(subject.blueprint_id));
-            if (blueprint.party_id != party_id)
-                throw std::invalid_argument("The surface " + blueprint.name +
-                                            " belongs to another party, and only a person acting "
-                                            "for that party publishes it.");
-            const auto calibration = calibration_of(ctx, subject.blueprint_id, subject.as_of);
-            if (!calibration)
-                throw std::invalid_argument(
-                    "The blueprint " + blueprint.name + " has no calibration as of " +
-                    datetime::to_iso8601_utc(subject.as_of) + ". Calibrate it first.");
-            // A rule closes a raise without a person, so a blocking failure is
-            // refused here, before anything is raised, and never left to a
-            // decider who may not exist.
-            if (const auto failure = blocking_failure_of(*calibration))
-                throw std::invalid_argument("The calibration of " + blueprint.name + " as of " +
-                                            datetime::to_iso8601_utc(subject.as_of) +
-                                            " is not publishable. " + *failure);
-            assert_no_open_raise(ctx, subject.blueprint_id, subject.as_of);
-
-            domain::fx_vol_surface_publish record;
-            record.tenant_id = ctx.tenant_id();
-            record.id = boost::uuids::random_generator{}();
-            record.party_id = party_id;
-            record.blueprint_id = subject.blueprint_id;
-            record.as_of = subject.as_of;
-            record.output_series_id = blueprint.output_series_id;
-            record.calibration_id = calibration->id;
-            record.calibration_version = calibration->version;
-            record.converged = calibration->converged;
-            record.max_abs_error = calibration->max_abs_error;
-            record.pillars_beyond_tolerance = calibration->pillars_beyond_tolerance;
-            record.violation_count = violation_count_of(*calibration);
-            record.modified_by = ores::service::messaging::delegated_actor(ctx);
-            record.performed_by = ctx.service_account();
-            record.change_reason_code = "system.new_record";
-            members.push_back({subject, std::move(record)});
-        } catch (const std::exception& e) {
-            out.refused.emplace_back(subject.blueprint_id, e.what());
-        }
-    }
-    if (members.empty()) {
-        // Nothing to ask for: the first refusal is the answer, in the words the
-        // single-surface raise used before a set existed.
-        throw std::invalid_argument(out.refused.front().second);
-    }
-
-    // The kind, the asker and the rule that may close the raise are read before
-    // the unit of work opens: a transaction's tenant and parties are fixed when
-    // it opens, and the rule is the tenant's.
-    ores::inbox::service::approval_lifecycle reader(ctx);
-    const auto kind = reader.kind(std::string(fx_vol_surface_publish_kind_code));
-    if (!kind)
-        throw std::runtime_error(
-            "No such kind of request: " + std::string(fx_vol_surface_publish_kind_code) + ".");
-    const auto me = reader.actor_account_id();
-    if (!me)
-        throw std::runtime_error("The signed-in account was not found.");
-    const auto policy = reader.policy_for(*kind, false);
-
-    // The request and every subject it names are one act, so no request ever
-    // names half a set.
-    ores::database::repository::unit_of_work uow(ctx);
-    const auto& tx = uow.ctx();
+    // One decision for the party's set: the lifecycle judges each member before
+    // anything is raised, so a decider never answers for a surface the service
+    // would refuse, and what it cannot carry it names.
     const auto raised =
-        ores::inbox::service::approval_lifecycle(tx).raise_under(policy, *kind, reason, *me);
-    repository::fx_vol_surface_publish_repository repo;
-    for (auto& m : members) {
-        m.record.request_id = raised.id;
-        m.record.change_commentary =
-            "Subject of approval request " + boost::uuids::to_string(raised.id);
-        repo.write(tx, m.record);
-        out.raised.push_back(m.subject.blueprint_id);
-    }
-    uow.commit();
+        raise_publication(ctx, derived_kind::fx_vol_surface, requests, reason, party_id);
 
-    out.request_id = boost::uuids::to_string(raised.id);
+    surface_publish_raise out;
+    out.request_id = raised.request_id;
     out.state_code = raised.state_code;
+    out.raised.reserve(raised.raised.size());
+    for (const auto& subject : raised.raised)
+        out.raised.push_back(subject.subject_id);
+    out.refused.reserve(raised.refused.size());
+    for (const auto& refused : raised.refused) {
+        boost::uuids::uuid named{};
+        try {
+            named = boost::uuids::string_generator{}(refused.first);
+        } catch (const std::exception&) {
+            // A subject key the store did not name as a uuid cannot be reported
+            // as one; the reason is still reported against a nil blueprint.
+        }
+        out.refused.emplace_back(named, refused.second);
+    }
     return out;
 }
 
@@ -380,22 +211,22 @@ fx_vol_surface_publish_service::publish(const context& ctx,
     try {
         const auto party = ores::service::messaging::session_party(ctx, "A surface");
         const auto as_of = std::chrono::floor<std::chrono::microseconds>(req.as_of);
-        if (as_of == time_point{})
-            throw std::invalid_argument("Name the as-of of the calibration to publish.");
-        const auto blueprint = blueprint_of(ctx, req.blueprint_id);
-        if (blueprint.party_id != party)
-            throw std::invalid_argument("The surface " + blueprint.name +
-                                        " belongs to another party, and only a person acting for "
-                                        "that party publishes it.");
+        // The party and the output series are the blueprint's to say, so a caller
+        // cannot publish one party's surface under another's name.
+        const auto attempted =
+            resolve_publication_subject(ctx, derived_kind::fx_vol_surface, req.blueprint_id, as_of);
 
         if (!req.approval_request_id.empty()) {
-            apply_surface_publish(ctx, req.approval_request_id, party, blueprint.id, as_of, resp);
+            apply_surface(ctx, req.approval_request_id, attempted, resp);
             return resp;
         }
         // One surface is a set of one, so a person's publish and a party's set
         // are raised by the same act and cannot drift apart.
-        const auto raised = raise_surface_publish_set(
-            ctx, party, {{.blueprint_id = blueprint.id, .as_of = as_of}}, req.reason);
+        const auto raised = raise_publication(ctx,
+                                              derived_kind::fx_vol_surface,
+                                              {{.subject_key = req.blueprint_id, .as_of = as_of}},
+                                              req.reason,
+                                              party);
         resp.approval_request_id = raised.request_id;
         resp.state_code = raised.state_code;
         if (raised.state_code != "approved") {
@@ -403,7 +234,7 @@ fx_vol_surface_publish_service::publish(const context& ctx,
             resp.message = "Raised. The publish waits on the decision.";
             return resp;
         }
-        apply_surface_publish(ctx, resp.approval_request_id, party, blueprint.id, as_of, resp);
+        apply_surface(ctx, resp.approval_request_id, raised.raised.front(), resp);
     } catch (const std::exception& e) {
         resp.success = false;
         resp.message = e.what();
@@ -552,6 +383,246 @@ msg::get_published_fx_vol_surface_response fx_vol_surface_publish_service::read_
         out.message = e.what();
     }
     return out;
+}
+
+namespace {
+
+/**
+ * @brief The volatility surface, reached only through the interface the lifecycle calls.
+ *
+ * The subject is a blueprint, the candidate is its calibration at the as-of, and
+ * the checks are the calibration's freedom from arbitrage. The acts are the
+ * lifecycle's, in publication_lifecycle.cpp.
+ */
+class fx_vol_surface_publication_kind_impl final : public publication_kind {
+public:
+    derived_kind kind() const override {
+        return derived_kind::fx_vol_surface;
+    }
+
+    publication_subject
+    resolve_subject(const ores::database::context& ctx,
+                    const boost::uuids::uuid& party_id,
+                    const std::string& subject_key,
+                    std::chrono::system_clock::time_point as_of) const override {
+        if (as_of == time_point{})
+            throw std::invalid_argument("Name the as-of of the calibration to publish.");
+        const auto blueprint = blueprint_of(ctx, subject_key);
+        if (!party_id.is_nil() && blueprint.party_id != party_id)
+            throw std::invalid_argument("The surface " + blueprint.name +
+                                        " belongs to another party, and only a person acting "
+                                        "for that party publishes it.");
+        return publication_subject{.kind = derived_kind::fx_vol_surface,
+                                   .party_id = blueprint.party_id,
+                                   .subject_id = blueprint.id,
+                                   .subject_key = subject_key,
+                                   .subject_name = blueprint.name,
+                                   .output_series_id = blueprint.output_series_id,
+                                   .as_of = as_of};
+    }
+
+    std::optional<std::string> refusal_of_raise(const ores::database::context& ctx,
+                                                const publication_subject& subject) const override {
+        const auto calibration = calibration_of(ctx, subject.subject_id, subject.as_of);
+        if (!calibration)
+            return "The blueprint " + subject.subject_name + " has no calibration as of " +
+                   datetime::to_iso8601_utc(subject.as_of) + ". Calibrate it first.";
+        // A rule closes a raise without a person, so a blocking failure is
+        // refused here, before anything is raised, and never left to a decider
+        // who may not exist.
+        if (const auto failure = blocking_failure_of(*calibration))
+            return "The calibration of " + subject.subject_name + " as of " +
+                   datetime::to_iso8601_utc(subject.as_of) + " is not publishable. " + *failure;
+        return open_raise_refusal(ctx, subject.subject_id, subject.as_of);
+    }
+
+    void write_publish(const ores::database::context& tx,
+                       const boost::uuids::uuid& request_id,
+                       const publication_subject& subject) const override {
+        const auto calibration = calibration_of(tx, subject.subject_id, subject.as_of);
+        if (!calibration)
+            throw std::invalid_argument(
+                "The blueprint " + subject.subject_name + " has no calibration as of " +
+                datetime::to_iso8601_utc(subject.as_of) + ", so the request names nothing.");
+
+        domain::fx_vol_surface_publish record;
+        record.tenant_id = tx.tenant_id();
+        record.id = boost::uuids::random_generator{}();
+        record.request_id = request_id;
+        record.party_id = subject.party_id;
+        record.blueprint_id = subject.subject_id;
+        record.as_of = subject.as_of;
+        record.output_series_id = subject.output_series_id;
+        record.calibration_id = calibration->id;
+        record.calibration_version = calibration->version;
+        record.converged = calibration->converged;
+        record.max_abs_error = calibration->max_abs_error;
+        record.pillars_beyond_tolerance = calibration->pillars_beyond_tolerance;
+        record.violation_count = violation_count_of(*calibration);
+        record.modified_by = ores::service::messaging::delegated_actor(tx);
+        record.performed_by = tx.service_account();
+        record.change_reason_code = "system.new_record";
+        record.change_commentary =
+            "Subject of approval request " + boost::uuids::to_string(request_id);
+        repository::fx_vol_surface_publish_repository{}.write(tx, record);
+    }
+
+    publication_verdict verdict_on_publish(const ores::database::context& ctx,
+                                           const std::string& request_id,
+                                           const publication_subject& attempted) const override {
+        publication_verdict out;
+        const auto request = ores::inbox::service::approval_lifecycle(ctx).request(request_id);
+        if (!request) {
+            out.message = "No approval request has the id " + request_id + ".";
+            return out;
+        }
+        out.state_code = request->state_code;
+        if (request->kind_code != fx_vol_surface_publish_kind_code) {
+            out.message = "The request is a " + request->kind_code +
+                          " request, and a surface is published by a " +
+                          std::string(fx_vol_surface_publish_kind_code) + " request.";
+            return out;
+        }
+        // The request names a set, and this is the member the publish asks
+        // about: a request that does not name this blueprint authorises nothing
+        // here, which is the same answer a request that names no surface at all
+        // gets.
+        const auto record =
+            repository::fx_vol_surface_publish_repository{}.read_latest_by_request_and_blueprint(
+                ctx, request_id, attempted.subject_id);
+        if (!record) {
+            out.message = "The request does not name the surface this publish is about, so it "
+                          "authorises no publish of it.";
+            return out;
+        }
+        if (record->party_id != attempted.party_id || record->as_of != attempted.as_of) {
+            out.message = "The request authorises blueprint " +
+                          boost::uuids::to_string(record->blueprint_id) + " as of " +
+                          datetime::to_iso8601_utc(record->as_of) + " for party " +
+                          boost::uuids::to_string(record->party_id) +
+                          ", and this publish names another.";
+            return out;
+        }
+        if (request->state_code != "approved") {
+            out.message = "The request is " + request->state_code +
+                          ", and a publish waits until it is approved.";
+            return out;
+        }
+        if (record->published_at) {
+            out.message = "The request already published its surface at " +
+                          datetime::to_iso8601_utc(*record->published_at) + ", by " +
+                          record->published_by + ". Raise a request for the next publish.";
+            return out;
+        }
+        // The decision covers the version it was raised for: a calibration run
+        // again after the raise leaves the request covering numbers nobody saw.
+        const auto calibration = calibration_of(ctx, record->blueprint_id, record->as_of);
+        if (!calibration || calibration->version != record->calibration_version) {
+            out.message = "The calibration the request authorises was run again after the raise, "
+                          "so the decision does not cover the surface it now holds. Raise a "
+                          "request for it.";
+            return out;
+        }
+
+        publication_facts facts;
+        facts.subject = attempted;
+        facts.publish_id = record->id;
+        facts.request_id = record->request_id;
+        facts.version = record->version;
+        out.approved = true;
+        out.facts = std::move(facts);
+        return out;
+    }
+
+    std::optional<std::string> prepare(const ores::database::context&,
+                                       const publication_subject&) const override {
+        // The calibration is stored before the raise, so the apply computes
+        // nothing and can never defer.
+        return std::nullopt;
+    }
+
+    publication_facts publish(const ores::database::context& tx,
+                              publication_facts set) const override {
+        repository::fx_vol_surface_publish_repository repo;
+        const auto stored = repo.read_latest(tx, boost::uuids::to_string(set.publish_id));
+        if (stored.empty())
+            throw std::runtime_error("The surface the request authorises is gone, so nothing is "
+                                     "published under it.");
+        auto record = stored.front();
+
+        // A series promises one live surface: the successor and the end of what
+        // it replaces are one transaction, so neither none nor two is ever live.
+        const auto live = repo.read_live_for_series(tx, record.output_series_id);
+        for (const auto& previous : live)
+            if (previous.id != record.id && previous.as_of > record.as_of)
+                throw std::invalid_argument("The surface as of " +
+                                            datetime::to_iso8601_utc(previous.as_of) +
+                                            " is live, and this one is older, as of " +
+                                            datetime::to_iso8601_utc(record.as_of) +
+                                            ". Publish a calibration at or after the live one.");
+
+        std::optional<time_point> replaced;
+        for (auto previous : live) {
+            if (previous.id == record.id)
+                continue;
+            if (!replaced || previous.as_of > *replaced)
+                replaced = previous.as_of;
+            previous.superseded_at = set.published_at;
+            previous.superseded_by_request_id = record.request_id;
+            previous.superseded_as_of = record.as_of;
+            previous.modified_by = set.published_by;
+            previous.performed_by = tx.service_account();
+            previous.change_reason_code = "system.surface_superseded";
+            previous.change_commentary = "Superseded by the surface published under request " +
+                                         boost::uuids::to_string(record.request_id) + " as of " +
+                                         datetime::to_iso8601_utc(record.as_of);
+            repo.write(tx,
+                       previous,
+                       {ores::utility::domain::precondition_kind::must_match_version,
+                        static_cast<std::uint32_t>(previous.version)});
+        }
+
+        record.published_at = set.published_at;
+        record.published_by = set.published_by;
+        record.modified_by = set.published_by;
+        record.performed_by = tx.service_account();
+        record.change_reason_code = "system.surface_published";
+        record.change_commentary = "Published under approval request " +
+                                   boost::uuids::to_string(record.request_id) + " by " +
+                                   set.published_by;
+        repo.write(tx,
+                   record,
+                   {ores::utility::domain::precondition_kind::must_match_version,
+                    static_cast<std::uint32_t>(record.version)});
+
+        set.replaced_as_of = replaced;
+        set.version = record.version + 1;
+        ORES_LOG_SEV(publish_log(), ores::logging::info)
+            << "Published the surface of series " << record.output_series_id << " as of "
+            << datetime::to_iso8601_utc(record.as_of) << " under request " << record.request_id;
+        return set;
+    }
+
+    void announce_published(const ores::database::context& ctx,
+                            const publication_facts& set) const override {
+        domain::fx_vol_surface_publish record;
+        record.id = set.publish_id;
+        record.request_id = set.request_id;
+        record.party_id = set.subject.party_id;
+        record.blueprint_id = set.subject.subject_id;
+        record.output_series_id = set.subject.output_series_id;
+        record.as_of = set.subject.as_of;
+        record.published_at = set.published_at;
+        record.published_by = set.published_by;
+        announce_surface_publish(ctx, record, set.replaced_as_of);
+    }
+};
+
+}
+
+const publication_kind& fx_vol_surface_publication_kind() {
+    static const fx_vol_surface_publication_kind_impl instance;
+    return instance;
 }
 
 }

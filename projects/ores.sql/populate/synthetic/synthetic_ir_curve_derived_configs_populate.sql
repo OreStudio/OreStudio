@@ -49,6 +49,45 @@
  * alone, so a rerun never resets a config a person has edited.
  */
 
+\echo '--- Derived dataset ---'
+
+-- A provider reaches a screen because it is a dataset, as every other generated
+-- collection is: the dashboard lists the synthetic datasets and their providers.
+do $$
+begin
+    perform ores_dq_datasets_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'synthetic.feeds.derived',
+        'Synthetic Market Data',
+        'Trading',
+        'Reference Data',
+        'NONE',
+        'Primary',
+        'Synthetic',
+        'Raw',
+        'OreStudio Code Generation Methodology',
+        'Synthetic Feeds: Derived',
+        'The term indices the platform states from its own overnight curves: no publisher quotes them in the run, and the trades that float on them would otherwise fix on nothing.',
+        'ORESTUDIO',
+        'Derived feeds for the Synthetic data collections bundle',
+        current_date,
+        'Internal Use Only',
+        'synthetic_feeds');
+end $$;
+
+do $$
+begin
+    if not exists (
+        select 1 from ores_dq_dataset_bundle_members_tbl m
+        where m.tenant_id = ores_utility_system_tenant_id_fn()
+          and m.bundle_code = 'system_core'
+          and m.dataset_code = 'synthetic.feeds.derived'
+          and m.valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        perform ores_dq_dataset_bundle_members_upsert_fn(
+            ores_utility_system_tenant_id_fn(), 'system_core', 'synthetic.feeds.derived', 18);
+    end if;
+end $$;
+
 \echo '--- Derived provider and collection ---'
 
 -- A derived index is a collection of its own, so it has a provider and a
@@ -77,14 +116,18 @@ insert into ores_synthetic_market_data_generation_configs_tbl (
     provider_code, modified_by, performed_by, change_reason_code,
     change_commentary, valid_from, valid_to
 )
-select gen_random_uuid(), d.tenant_id, 0, d.party_id, 'Derived',
+select gen_random_uuid(), d.tenant_id, 0,
+       (select c.party_id from ores_synthetic_market_data_generation_configs_tbl c
+        where c.tenant_id = d.tenant_id and c.provider_code = 'demo'
+          and c.valid_to = ores_utility_infinity_timestamp_fn() limit 1),
+       'Derived',
        'The term indices the run states from its overnight curves, for the trades that float on them.',
-       true, d.dataset_id, 'derived', current_user, current_user,
+       true, d.id, 'derived', current_user, current_user,
        'system.initial_load', 'Initial population of the derived collection',
        now(), ores_utility_infinity_timestamp_fn()
-from ores_synthetic_market_data_generation_configs_tbl d
+from ores_dq_datasets_tbl d
 where d.tenant_id = ores_utility_system_tenant_id_fn()
-  and d.provider_code = 'demo'
+  and d.code = 'synthetic.feeds.derived'
   and d.valid_to = ores_utility_infinity_timestamp_fn()
   and not exists (
       select 1 from ores_synthetic_market_data_generation_configs_tbl c
@@ -93,6 +136,19 @@ where d.tenant_id = ores_utility_system_tenant_id_fn()
         and c.valid_to = ores_utility_infinity_timestamp_fn()
   )
 limit 1;
+
+-- A collection staged under another dataset is moved onto this one, so a database
+-- that grew the collection before the dataset existed converges without a recreate.
+update ores_synthetic_market_data_generation_configs_tbl c
+set dataset_id = d.id
+from ores_dq_datasets_tbl d
+where c.tenant_id = ores_utility_system_tenant_id_fn()
+  and c.provider_code = 'derived'
+  and c.valid_to = ores_utility_infinity_timestamp_fn()
+  and d.tenant_id = ores_utility_system_tenant_id_fn()
+  and d.code = 'synthetic.feeds.derived'
+  and d.valid_to = ores_utility_infinity_timestamp_fn()
+  and c.dataset_id is distinct from d.id;
 
 \echo '--- Derived Term Index Configs ---'
 
@@ -110,9 +166,9 @@ select
     ores_utility_system_tenant_id_fn(),
     gen_random_uuid(),
     0,
-    overnight.party_id,
+    ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
     derived_container.id,
-    overnight.folder_id,
+    null,
     d.currency_code,
     d.index_family,
     d.tenor,
@@ -165,22 +221,11 @@ join lateral (
       and c.valid_to = ores_utility_infinity_timestamp_fn()
     limit 1
 ) as derived_container on true
-join lateral (
-    select c.party_id, c.config_id, c.folder_id
-    from ores_synthetic_ir_curve_generation_configs_tbl c
-    where c.tenant_id = ores_utility_system_tenant_id_fn()
-      and c.currency_code = d.currency_code
-      and c.tenor = ''
-      and c.role <> 'projection'
-      and c.valid_to = ores_utility_infinity_timestamp_fn()
-    order by c.valid_from
-    limit 1
-) as overnight on true
 where not exists (
     select 1
     from ores_synthetic_ir_curve_generation_configs_tbl existing
     where existing.tenant_id = ores_utility_system_tenant_id_fn()
-      and existing.party_id = overnight.party_id
+      and existing.party_id = ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn())
       and existing.config_id = derived_container.id
       and existing.currency_code = d.currency_code
       and existing.index_family = d.index_family

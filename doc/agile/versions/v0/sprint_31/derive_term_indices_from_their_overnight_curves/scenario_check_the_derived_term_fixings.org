@@ -90,7 +90,7 @@ These are yours to ready, before the tester opens the client:
 | Field  | Value |
 |--------+-------|
 | Status | FAIL |
-| Notes  | The fields are not on this screen: the step sent the tester to Feed calibration, which lists published curves. Corrected above. |
+| Notes  | we don't seem to have a derived provider.; ; [[file:scenario_check_the_derived_term_fixings_step2_20261125_131643.png]] |
 
 
 ** Read a spread index's stated source

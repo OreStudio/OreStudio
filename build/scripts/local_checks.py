@@ -669,6 +669,32 @@ CATALOGUE: tuple[Check, ...] = (
             " is written against them: hold off x (deliveries - 1) must exceed"
             " the lease.",
     ),
+
+
+    # Every ported route's answer, against the shape the BFF gave. The shapes are
+    # recorded once in build/scripts/answer_shapes.json, because the BFF need not
+    # be running for the comparison to mean something: the gateway replay is the
+    # request the BFF answered, and the corpus states what that answer held. A pair
+    # the corpus does not name fails, so a route ported later is captured or
+    # excused rather than forgotten. Like the consumer check it stands in the heavy
+    # phase and fails rather than skips when the gateway is not up.
+    Check(
+        id="answer-shapes",
+        title="Every ported route answers the shape the BFF answered",
+        argv=(
+            "bash",
+            "-c",
+            "./compass.sh services start; python3 build/scripts/check_answer_shapes.py .",
+        ),
+        classes=("cpp", "services"),
+        phase=HEAVY,
+        after=("ticks-smoke",),
+        timeout=900,
+        fix="Make the route answer the member the screen reads, or record the"
+            " difference in build/scripts/answer_shapes_exceptions.json with the"
+            " reason it stays. A pair the corpus does not name is captured with"
+            " --capture against a running BFF, and the corpus is committed.",
+    ),
 )
 
 CHECKS_BY_ID = {check.id: check for check in CATALOGUE}
@@ -775,7 +801,7 @@ def expand_compass(results: list[Result], covered: list[Check]) -> list[Result]:
 # These checks stand up the database and the fleet. A change that compiles into
 # test binaries alone leaves every library and service as it was, so they would
 # prove again what main already proved.
-FLEET_CHECKS = ("db", "ticks-smoke", "step-consumers")
+FLEET_CHECKS = ("db", "ticks-smoke", "step-consumers", "answer-shapes")
 FLEET_CLASSES = ("cpp", "services", "sql")
 COMPILED_SUFFIXES = (".cpp", ".hpp", ".h", ".ipp", ".c", ".cc", ".cxx")
 TEST_TARGET_SUFFIX = ".tests"

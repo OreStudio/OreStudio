@@ -993,7 +993,7 @@ void structure_routes::register_routes(
                     }
                     return http_response::json("{\"rows\":" + rr::array_of(page) +
                                                ",\"total\":" + std::to_string(ordered.size()) +
-                                               ",\"kinds\":" + rr::array_of(kinds) + "}");
+                                               ",\"kinds\":" + json::write(kinds) + "}");
                 });
             }));
 

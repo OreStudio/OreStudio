@@ -42,9 +42,31 @@ Every housekeeping sweep is a scheduler job with its own definition, so a person
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The sweep is already a job definition, and the scheduler already records a job
+instance for each firing. What was missing was that a person could see either.
+The shell's screens read job definitions and instances through the tenant the
+session holds, and the platform's own jobs carry no tenant: the four jobs the
+scheduler runs for the installation were invisible in the screen that reports
+them, beside the three a tenant had scheduled itself.
+
+The status view and the instance list therefore read every definition, through
+one repository read that drops the tenant filter. That is the read the loop
+already makes, for the reason its own note gives: the scheduler fires system
+jobs as well as tenants' jobs.
+
+The ledger the sweep writes had no reader outside SQL, so a person could see
+that a sweep ran but not what it removed. It is now a read model: a view over
+the ledger joined to the policy each row names, so a run carries the period and
+the state the policy has now, and a policy turned off after a run keeps its
+history. Codegen gives the view a repository and a protocol, and four shell
+commands read and write it.
+
+Tuning is on the policy rather than on the job. A policy row carries no tenant,
+so any operator holding the write permission can change one, and the sweep
+applies the change at its next firing. A job definition is seeded by the
+platform, and a system job's row is not reachable through the tenant-scoped
+list the shell resolves names from; making the job's own cadence editable is a
+separate question about who owns the platform's schedule.
 
 * Measurements
 
@@ -58,9 +80,32 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The jobs the scheduler runs | 7 definitions, of which 4 carry no tenant | =compass sql -- -c "select job_name, tenant_id is null from ores_scheduler_job_definitions_tbl where valid_to = ores_utility_infinity_timestamp_fn()"= | bb49cb7aec |
+| What the screens showed before the change | 3 jobs: the tenant's own, and none of the platform's | =scheduler status= in a scripted shell session | bb49cb7aec |
+| What the screens show after it | 7 jobs, including =ores.scheduler.housekeeping_sweep= with its next firing and last run | the same command | bb49cb7aec |
+| The sweep's firings are recorded | a job instance per firing, =succeeded=, 42 to 43 ms | =compass sql -- -c "select ... from ores_scheduler_job_instances_tbl"= with the job's cadence set to every minute | bb49cb7aec |
+| A sweep's removals are readable | 3 rows, one per policy, with the period and the policy's current state | =housekeeping runs= | bb49cb7aec |
+| Turning a policy off | the policy reads =[off]= and the change is recorded | =housekeeping disable report_metrics_90d= then =housekeeping policies= | bb49cb7aec |
+| Changing a period | 90 to 120 days and back, each write stating the version it read | =housekeeping period report_metrics_90d 120= | bb49cb7aec |
 
 * Notes
+
+- The environment had never been provisioned after its rebuild, so there was no
+  human account to sign in with and the scripted session could not start. The
+  shell's own bootstrap command created one; that is environment setup, not part
+  of this task, and it is why the first attempt reported a failed auto-login.
+- A job definition changed by raw SQL does not reach the running scheduler. The
+  notify trigger returns null for every update, because a versioned table's
+  update is the close of the row the insert that follows replaces. A definition
+  edited that way stays stale until the service restarts; a probe that changed
+  the cadence to every minute fired nothing until it did.
+- System jobs are invisible through the generated list operation, by design of
+  the nullable-tenant policy: the list is tenant scoped and a NULL tenant never
+  matches. This task works around it for the reads it owns rather than changing
+  every nullable-tenant entity's read shape.
+- The four permissions the new commands check did not exist, and the retention
+  policy entity's three were missing too, so the policy protocol added earlier
+  was reachable only by a holder of =scheduler::*=. All seven are seeded now.
 
 * Test Scenarios
 
@@ -86,3 +131,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The sweep appears in the scheduler's status view beside every other job, with
+its cadence, its next firing and its last run. Its firings are job instances the
+instance list shows. What each sweep removed is readable as a run per policy,
+carrying the policy's period and its current state.
+
+A person changes what housekeeping does by changing a policy: its period, or
+whether it applies at all. A disabled policy stays on the list as disabled, with
+the runs it made while it was on.

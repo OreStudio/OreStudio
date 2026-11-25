@@ -44,7 +44,7 @@ compass-ng's =prototypes= check enforces it.
 | [[file:currencies/][Currencies and FX]] | Currencies with their countries, calendars and desk groups, and currency pairs | 1 |
 | [[file:calendars/][Calendars]] | Holiday calendars: their rules, exceptions and events, and the business days they produce | 1 |
 | [[file:classifications/][Classifications]] | The short code lists that classify reference data | 1 |
-| [[file:parties/][Parties]] | The tenant's own legal entities and the counterparties it trades with | 3 |
+| [[file:parties/][Parties]] | The tenant's own legal entities and the counterparties it trades with | 4 |
 | [[file:books/][Books and portfolios]] | The book structure: portfolios that hold books, the classification a book carries, and the rights that decide who may see it | 1 |
 | [[file:conventions/][Conventions]] | The market terms an instrument is built on, the reference data lists each convention picks from, and how conventions are found, grouped into sets, retired and approved | 6 |
 | [[file:tenors/][Tenors]] | Tenor codes and the resolution the system computes from them | 1 |

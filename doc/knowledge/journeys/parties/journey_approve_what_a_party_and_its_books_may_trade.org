@@ -121,8 +121,9 @@ beside this file, with =plantuml -tpng <file>.puml=.
 
 * Prototype
 
-The prototype goes under =doc/prototypes/parties/approval_matrix/=, and it must
-settle four placements the standard does not:
+[[id:9A0591A2-416E-4EC0-8EC3-36EF5924AF87][The approval matrix prototype]] is
+[[file:../../prototypes/parties/approval-matrix/index.html][=doc/prototypes/parties/approval-matrix/=]], and it settles the four
+placements the standard does not:
 
 - *P1 Where the set lives.* A tab of the party with a panel on the book, or a
   screen of its own that both record pages link to. The tab and the panel keep
@@ -139,10 +140,10 @@ settle four placements the standard does not:
 - *P4 Where a refusal stands.* Under the panel, in the words of the operation,
   or in a dialog the person must dismiss.
 
-The states the prototype draws, each at its own address: a party that permits
-everything; a party that permits an empty list; a party that permits a list; a
-party save refused because a book carries the type; a book that follows its
-party; a book that narrows it; a book save refused from a stale page.
+The states the prototype draws, each at its own address: =?state=party-unrestricted=,
+=?state=party-empty=, =?state=party-list=, =?state=party-refused=,
+=?state=book-inherits=, =?state=book-narrows= and =?state=book-refused-stale=. All
+seven were rendered with Playwright and read back.
 
 * Entities composed
 

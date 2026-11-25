@@ -1,0 +1,111 @@
+/* Approval matrix prototype. Self-contained: plain CSS, no build step.
+ *
+ * The tokens are the application's own, copied from
+ * projects/ores.web/packages/web/src/styles.css so a reviewer sees the
+ * prototype in the colours the real screens use. The furniture follows the
+ * party and counterparty prototypes beside this one. */
+
+:root {
+    --bg: #121214;
+    --panel: #1a1a1e;
+    --panel-2: #26262b;
+    --line: #30363d;
+    --line-soft: #21262d;
+    --line-strong: #4a5568;
+    --ink: #e3e3e6;
+    --ink-dim: #a1a1aa;
+    --ink-faint: #71717a;
+    --accent: #58a6ff;
+    --accent-bright: #8ab4f8;
+    --accent-dim: #21262d;
+    --ok: #3fb950;
+    --warn: #d29922;
+    --bad: #f85149;
+    --radius: 0.5rem;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+#app { max-width: 1040px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+/* The state rail stands in for the address bar, so a reviewer can move
+ * between states without editing the query string. */
+.rail {
+    display: flex; flex-wrap: wrap; gap: .375rem;
+    margin: 0 0 1.5rem; padding: .75rem;
+    background: var(--panel-2); border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+}
+.rail a {
+    color: var(--ink-dim); text-decoration: none; font-size: 12px;
+    padding: .2rem .5rem; border-radius: 999px; border: 1px solid transparent;
+}
+.rail a:hover { color: var(--ink); border-color: var(--line); }
+.rail a.on { color: var(--accent-bright); border-color: var(--accent); background: var(--accent-dim); }
+
+.crumbs { color: var(--ink-faint); font-size: 12px; margin-bottom: .5rem; }
+h1 { font-size: 22px; margin: 0 0 .25rem; }
+.lead { color: var(--ink-dim); margin: 0 0 1.5rem; }
+
+.tabs { display: flex; gap: .25rem; border-bottom: 1px solid var(--line); margin-bottom: 1.25rem; }
+.tabs span { padding: .5rem .75rem; color: var(--ink-dim); border-bottom: 2px solid transparent; }
+.tabs span.on { color: var(--ink); border-bottom-color: var(--accent); }
+
+.card {
+    background: var(--panel); border: 1px solid var(--line-soft);
+    border-radius: var(--radius); padding: 1.25rem;
+}
+.card-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 1rem; margin-bottom: 1rem;
+}
+.card-head h2 { font-size: 15px; margin: 0; }
+.state { color: var(--ink-dim); margin: 0 0 1rem; }
+.state b { color: var(--ink); }
+
+.foot { display: flex; justify-content: flex-end; gap: .5rem; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--line-soft); }
+
+button {
+    font: inherit; font-size: 13px; cursor: pointer;
+    background: var(--panel-2); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 6px; padding: .35rem .7rem;
+}
+button:hover { border-color: var(--line-strong); }
+button.primary { background: var(--accent); border-color: var(--accent); color: #0b1220; font-weight: 600; }
+button.ghost { border-color: transparent; color: var(--ink-dim); }
+button.ghost:hover { color: var(--ink); }
+button:disabled { opacity: .5; cursor: default; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: .45rem .5rem; border-bottom: 1px solid var(--line-soft); }
+th { color: var(--ink-faint); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+td.code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+td.yes { color: var(--ok); }
+td.no { color: var(--ink-faint); }
+
+.empty { color: var(--ink-faint); padding: 1rem 0; }
+
+.refusal {
+    margin-top: 1rem; padding: .75rem .9rem;
+    border: 1px solid var(--bad); border-radius: var(--radius);
+    background: rgba(248, 81, 73, .08); color: #ffb4ae;
+}
+.refusal b { color: #ffd7d3; }
+
+.picker { display: flex; gap: .5rem; margin-top: 1rem; }
+select {
+    font: inherit; font-size: 13px; color: var(--ink);
+    background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 6px; padding: .35rem .5rem; min-width: 18rem;
+}
+
+.hint { color: var(--ink-faint); font-size: 12px; margin-top: .75rem; }
+.screen-switch { margin: 0 0 1rem; font-size: 12px; }
+.screen-switch a { color: var(--accent); text-decoration: none; }

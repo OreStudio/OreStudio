@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-25
 #+updated: 2026-11-25
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F77263EF-6F2D-4129-BA60-CA6C2F2D6153][Manage the product approval matrix]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A reviewer opens every state of both screens from a URL and reads what the stand
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F77263EF-6F2D-4129-BA60-CA6C2F2D6153][Manage the product approval matrix]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The prototype is drawn at seven states, every one rendered and read back. |
+| Waiting on   | The owner's sign off of the prototype, which the runbook requires before any screen is built. |
+| Next         | The owner opens the states and records a verdict; the build task then starts. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance
@@ -41,9 +41,21 @@ A reviewer opens every state of both screens from a URL and reads what the stand
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The prototype answers the four placements the journey's judgement left open, and
+nothing else. It is a static page under =doc/prototypes/parties/approval-matrix/=
+with the query string as its state, so every state has an address a reviewer
+opens: the party's tab with no set, with an empty set, with a set, and with a
+refused save; the book's panel that follows its party, that narrows it, and that
+is refused from a stale page.
+
+The tokens are the application's, copied from the web app's stylesheet. The
+controls move between states and write nothing, because the prototype answers
+what the screen looks like. The refusal is the page's own words: the server does
+not carry the party's set yet, and the journey filed that as a capture, as it did
+the operation that would answer the set a book may carry.
+
+The design note beside the prototype cites the rule each part follows, lists the
+states with their addresses, and states what is fake.
 
 * Measurements
 

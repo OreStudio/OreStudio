@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 9A0591A2-416E-4EC0-8EC3-36EF5924AF87
+:END:
+#+title: Approval matrix prototype
+#+description: The party's permissions and the book's subset drawn on the record pages, with the four placements the standard does not settle.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:parties:refdata:approvals:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+| Item          | Where                                                  |
+|---------------+--------------------------------------------------------|
+| Prototype     | [[file:approval-matrix/][the prototype]]                             |
+| Gemini review | none                                                   |
+| Group         | [[file:index.org][Parties prototypes]]                                   |
+
+* Summary
+
+The journey
+[[id:AEA0BD34-1114-41C2-874D-84501B2C40CE][Approve what a party and its books may trade]] draws two sets on two
+record pages that already exist. The judgement of the journey found four
+placements the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] does not settle, and this
+prototype draws every one of them so the owner can accept or refuse it before
+any code is written.
+
+* Detail
+
+** What it argues
+
+The approval belongs on the record it constrains. A person reads and changes the
+party's set on the party, and the book's set on the book, and never leaves the
+record to do either. The alternative the prototype also names is a screen of its
+own, reachable from both: it is the placement the first question asks about.
+
+The two sets are drawn as links and not parts: a product type exists on its own,
+the party carries a set of them, and a book carries a subset. A link's panel
+carries no history of its own (RS-RELATED-03), which is why the tab and the panel
+have no /History/ row of their own and the record's own history is the history of
+the change.
+
+** The placements the standard does not settle
+
+| Placement | What the prototype draws | What is asked |
+|-----------+--------------------------+---------------|
+| P1 Where the set lives | The party's tab and the book's panel, with a link between them; the alternative is a screen of its own | Whether the two records keep the set, or a third screen does |
+| P2 How the two sets read together | The book's table carries a /Party permits/ column and a /This book carries/ column, so a permitted type the book does not carry is a dash and never a mark | Whether this is the shape, or the party's set is the panel's background |
+| P3 What a party that states nothing looks like | /Permits every product type the catalogue states/, in words, above an empty table | The words the standard takes, if the owner accepts them |
+| P4 Where a refusal stands | Under the panel, in the operation's words, naming the type and the party's set | Whether the refusal is inline or a dialog |
+
+** The states
+
+Each state is an address, and the rail at the top of the page opens it:
+
+| State | What it shows |
+|-------+---------------|
+| =?state=party-unrestricted= | A party that states no set: the words, and nothing listed |
+| =?state=party-empty= | A party that permits a list and has none yet: an empty set that permits nothing |
+| =?state=party-list= | A party that permits three types, with /Change/ |
+| =?state=party-refused= | The save refused because a book carries a type the save would remove |
+| =?state=book-inherits= | A book that follows its party: the party's set, whole |
+| =?state=book-narrows= | A book that carries one of the party's three |
+| =?state=book-refused-stale= | A save refused from a stale page, naming the party's set |
+
+** The rules each part follows
+
+| Part | Rule |
+|------+------|
+| The tab, held in the address | RS-PAGE-09 |
+| The state line and the empty set | RS-PAGE-07 |
+| The two-label select that states whether a set exists | RS-WRITE-01 |
+| The set as a links panel, with /Add/ and /Remove/ | RS-RELATED-01 to RS-RELATED-03 |
+| /Save/ at the panel's head, the refusal under the panel | RS-PAGE-03, RS-WRITE-05 |
+
+The book's two-column comparison and the words for a party that states nothing
+are not in the standard. They are this prototype's proposal, and the owner's
+verdict decides whether they join it, as the calendars topic added RS-HIST-01.
+
+** What is fake
+
+- The product types are eight mock rows, not the trading catalogue, and the
+  search the picker would carry is not drawn.
+- The party and the books are mock records; the versions, the tabs and the
+  breadcrumb stand in for the real page.
+- No control writes. /Change/ moves between the states, and /Save/ adds a line
+  that says so, because the prototype answers what the screen looks like and not
+  what the server does.
+- The refusal is written by the page. The server's own words are a gap the
+  journey filed as [[id:DEC66AE2-4EB0-46B5-BA47-5D332B1D68B2][a capture]].
+- The comparison of the two sets reads the party's set from the page's own mock
+  data, because no operation answers the set a book may carry yet:
+  [[id:8B1C5367-304E-4723-89B9-4FA6C16AAFDF][the other capture]].
+
+** Where the code lives
+
+[[file:approval-matrix/index.html][=index.html=]], [[file:approval-matrix/prototype.css][=prototype.css=]] and
+[[file:approval-matrix/prototype.js][=prototype.js=]], with no build step and no session. The tokens are the
+application's own, copied from =projects/ores.web/packages/web/src/styles.css=,
+so a reviewer sees the screens in the colours the real ones use.
+
+The seven states were rendered with Playwright and read back before the owner
+saw them. The design note and the prototype live on the branch that proposes
+them; an accepted prototype merges into =main= and stays as the design record.
+
+** Verdict
+
+Waiting on the owner. Until they sign the prototype off, no screen is built from
+it.
+
+* See also
+
+- [[id:AEA0BD34-1114-41C2-874D-84501B2C40CE][Approve what a party and its books may trade]] — the journey this
+  prototype answers to.
+- [[id:F77263EF-6F2D-4129-BA60-CA6C2F2D6153][Manage the product approval matrix]] — the story that builds it.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the rules above.
+- [[id:61C6B0A5-03A5-4424-8EA3-EE7E587629FD][Take a topic through the screen pipeline]] — the step this page is.

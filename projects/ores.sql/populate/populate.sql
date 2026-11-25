@@ -390,6 +390,12 @@ select ores_utility_allow_version_replace_fn();
 \echo '--- Publishing the platform and world levels ---'
 \ir dq/dq_bootstrap_publish_populate.sql
 
+-- The derived collection hangs under its own dataset and its feeds read the
+-- published curves, so it is stated once the world publish has written them.
+\echo ''
+\echo '--- Derived Feeds ---'
+\ir synthetic/synthetic_ir_curve_derived_feeds_populate.sql
+
 
 -- The tenor convention resolutions name tenor schedules, and a schedule row
 -- exists only once the world publish above has written it.

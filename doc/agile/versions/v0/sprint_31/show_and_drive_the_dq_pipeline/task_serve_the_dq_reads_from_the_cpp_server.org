@@ -68,7 +68,7 @@ task and name that file in the Command column.
 | Route tests | 23 cases over four units | =grep -c TEST_CASE projects/ores.http/dq/tests/*.cpp= | cdc649d983 |
 | The part's own suite | passed | =ctest --preset linux-clang-release-ninja -R ores.http.dq= | cdc649d983 |
 | Every suite | 109 of 109 passed | gate =ctest= step, =build/output/local_checks/logs/ctest.log= | cdc649d983 |
-| The local gate | 19 of 20 checks | =./compass.sh check=, =build/output/local_checks/report.md= | cdc649d983 |
+| The local gate | 19 of 20, then 20 of 20 once synced | =./compass.sh check=, =build/output/local_checks/report.md= | cdc649d983, then 5e82ac7003 |
 
 * Result
 
@@ -88,16 +88,18 @@ The BFF is not served and no route was added to it.
 - The gate builds the tree, rebuilds the database from the schema and runs every
   suite: 109 of 109, including =ores.http.dq.tests=.
 
-One check is red and it is not this work. =answer-shapes= compares each ported
-route against the BFF corpus and finds two pairs in =marketdata/quotes/feeds= and
-=reporting/reports= where the gateway answers null and the corpus holds a value.
-This diff touches neither route, neither the corpus nor the exceptions file, so
-the mismatch is inherited from main and is recorded in the PR's limitations
-rather than excused by editing the exception list.
+The first gate run, on base 270d3d75fc, left =answer-shapes= red on two pairs in
+=marketdata/quotes/feeds= and =reporting/reports= where the gateway answered null
+and the BFF corpus held a value. This diff touches neither route, neither the
+corpus nor the exceptions file, and the two passed after the branch was synced to
+11030f1c05, which confirms they were inherited and have since been fixed on main.
+Nothing was excused in the exception list to get there.
 
-Evidence: =./compass.sh check= on base 270d3d75fc — 19 of 20 checks, wall clock
-4348s; build 890s, db 216s, ctest 998s, ticks-smoke 1245s; report at
-=build/output/local_checks/report.md=.
+Evidence: =./compass.sh check= on the merged base 11030f1c05 — 20 of 20 checks:
+build 483s, db 231s, ctest 769s (109 of 109 suites), ticks-smoke 1303s,
+step-consumers 14s, answer-shapes 10s; report at
+=build/output/local_checks/report.md=. The earlier run on 270d3d75fc was 19 of 20
+for the inherited pair above.
 
 * Notes
 

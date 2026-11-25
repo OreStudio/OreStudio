@@ -84,6 +84,12 @@ The owner signed the journey off on 2026-11-25. What that settles:
    its words. Both are captures in the product backlog, and the build task
    reads them rather than working around them.
 
+5. *Both surfaces answer the screens.* =ores.http= is replacing the BFF, and
+   until it does, every resource the screens read or write is answered by both,
+   as [[id:34CB899A-D114-4B54-9A0E-E3BEE5FF49F2][the route inventory]] measures. The approval
+   matrix is no exception: the two junctions take the =http-route= facet the
+   other junctions take, and the build task's acceptance names the parity.
+
 * Out of scope
 
 - The model and the rule. They are

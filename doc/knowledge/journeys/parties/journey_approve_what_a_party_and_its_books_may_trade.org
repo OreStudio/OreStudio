@@ -169,8 +169,13 @@ seven were rendered with Playwright and read back.
 | 9 | Read the books of the party | =refdata.v1.books.list_by_parent_portfolio_id= | exists |
 
 Every subject above was read from the generated protocol headers of its
-component. The two that name the approval matrix are on the branch that adds
-it, and this journey is written before that branch merges.
+component. The two that name the approval matrix are on the branch that adds it,
+and this journey is written before that branch merges.
+
+Each subject is answered by both surfaces while the BFF is being retired: the
+BFF serves the screen today and =ores.http= is growing the same route beside it.
+[[id:34CB899A-D114-4B54-9A0E-E3BEE5FF49F2][The route inventory]] counts the pair, so a resource the screens need is
+not done until both answer it.
 
 * What is missing
 

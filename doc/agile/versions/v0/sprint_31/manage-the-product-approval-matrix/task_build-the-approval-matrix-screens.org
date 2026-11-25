@@ -38,6 +38,7 @@ A person reads and changes both sets on the running web, in English, French and 
 - Both screens are built from the shared parts, and the strings exist in English, French and Portuguese before the screen ships.
 - The harness on each screen has no failure that is the screen's, and a check exists for every rule the build relies on.
 - An attempt to widen a book past its party is refused on the screen, in the person's words, naming the party's set.
+- Both surfaces answer the screens: the BFF route and the ores.http route for the party's set and the book's, with [[id:34CB899A-D114-4B54-9A0E-E3BEE5FF49F2][the route inventory]] showing no gap for the approvals resource.
 
 * Plan
 

@@ -390,6 +390,13 @@ select ores_utility_allow_version_replace_fn();
 \echo '--- Publishing the platform and world levels ---'
 \ir dq/dq_bootstrap_publish_populate.sql
 
+-- A derived term index hangs under the same generation config as the overnight
+-- curve it reads, so it can only be seeded once the world publish above has
+-- written those curves.
+\echo ''
+\echo '--- Derived Term Index Configs ---'
+\ir synthetic/synthetic_ir_curve_derived_configs_populate.sql
+
 -- The tenor convention resolutions name tenor schedules, and a schedule row
 -- exists only once the world publish above has written it.
 \echo ''

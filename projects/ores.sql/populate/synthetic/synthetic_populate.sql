@@ -39,6 +39,7 @@
 \ir ./synthetic_fx_spot_configs_uniform_demo_populate.sql
 \ir ./synthetic_ir_curve_configs_uniform_demo_populate.sql
 
+
 \echo '--- Synthetic Feeds: 2016 ORE Samples ---'
 
 \echo '--- Synthetic Feeds: Bloomberg ---'

@@ -85,6 +85,11 @@ What exists, and is what this story builds on:
   (=agent_key_exchange=), and an MCP call carries that key.
 - Sessions, sign-ins and authentication events are stored, and the screens show
   them.
+- =ores.security= carries a JWT layer over jwt-cpp and OpenSSL. It mints and
+  verifies tokens, its RS256 signer and verifier constructors are written and
+  tested, and the gateway holds a session as JWT claims behind a verifier. The
+  token mechanics a provider's ID token needs are therefore here; what is
+  missing is the key a third party publishes and the protocol that asks for it.
 - NATS carries its own JWKS and JWT for service-to-service authentication
   (=ores.nats/service/jwks=), which is unrelated to a person's sign-in and is
   not a foundation this story can reuse.
@@ -98,8 +103,9 @@ What does not exist anywhere in the tree:
 - No client registry. A grant is created by a person inside ORE and its key is a
   bearer credential the person copies; no client ever asks ORE for access, so
   there is no request to consent to.
-- No published key set for a client to verify a token against, no refresh token
-  and no consent record a client holds.
+- No published key set for another party to verify a token against, and no key
+  set fetched from anyone: the gateway verifies with the one key ORE configures.
+  There is no refresh token and no consent record a client holds.
 
 Every piece is therefore built here. The decision task chooses what the pieces
 are and, in particular, whether the authorization server rests on the grant ORE

@@ -105,8 +105,16 @@ make_request_context(const ores::database::context& base_ctx,
                      const ores::nats::message& msg,
                      const std::optional<ores::security::jwt::jwt_authenticator>& verifier) {
 
+    /*
+     * A service that cannot verify a token cannot believe anybody, and the base
+     * context is its own authority: returning it for an unverifiable request
+     * would run that request as the service. So the request is refused instead,
+     * and a deployment that forgets its verifier serves nobody rather than
+     * everybody. The handlers that must run before a verifier exists -- sign-in
+     * and the first-run setup -- build their own context and do not come here.
+     */
     if (!verifier)
-        return base_ctx;
+        return std::unexpected(ores::service::error_code::unauthorized);
 
     // Check X-Delegated-Authorization first: a downstream service forwarded
     // the original end-user JWT.  Validate it and build the user's full context

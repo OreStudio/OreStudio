@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :close_the_route_parity_between_http_and_the_bff:inbox:product_backlog:
 #+owner: marco
-#+branch:
+#+branch: feature/refuse-a-request-no-verifier-can-check
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
-#+updated: 2026-11-22
-#+environment:
+#+updated: 2026-11-25
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -47,12 +47,12 @@ authorised for everything.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FBF532B1-01B3-458D-ADC2-72F96027946E][Close the route parity between ores.http and the BFF]] |
-| Now          | Not yet started.                       |
+| Now          | Built: a message bus that cannot verify a token refuses the request, and the two other fallbacks were already closed. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-22                               |
+| Next         | The pull request.                       |
+| Last touched | 2026-11-25                               |
 
 * Acceptance
 
@@ -63,9 +63,37 @@ authorised for everything.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The capture names three fallbacks, and measuring them first changed the work:
+two of the three had already been closed since it was written, and one had not.
+
+** What was already closed
+
+- *Authorisation.* =has_permission= refuses a token whose permission list is
+  empty. =projects/ores.service/tests/handler_helpers_tests.cpp:122= proves it,
+  and the test's own comment records why: before the change it passed every
+  check. A context with *no list at all* still passes, and deliberately — that
+  is the service's own context, built from its base, and it runs on the service's
+  authority.
+- *HTTP.* A route that requires a session and a server whose verifier is absent
+  answers 401, not the route. =http_session.cpp= refuses before a handler is
+  reached, and the health route reports ="verifier":"absent"= so a deployment
+  says so about itself. There is a test of the refusal among the HEAD cases.
+
+** The hole that remained
+
+*The message bus.* =make_request_context= returned the base context when no
+verifier was configured, and the base context carries no roles — so
+=has_permission= answered true for the service's own authority, and an
+unverifiable request ran as the service. That is the fallback the capture
+describes, and it is now refused: =unauthorized=, before a handler sees the
+message.
+
+Two things make that safe rather than a lockout:
+
+- The handlers that must run before a verifier exists — sign-in and the first-run
+  setup — build their own context and never call this function, which is why
+  refusing here closes a hole instead of sealing a fresh deployment.
+- A deployment that has a verifier configured behaves exactly as it did.
 
 * Measurements
 
@@ -79,9 +107,24 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The three fallbacks the capture names | 3 | the Goal, read against the tree | 9cf96d7deb |
+| Closed before this change | 2 — the empty permission list, and the HTTP route that requires a session | =handler_helpers_tests.cpp:122= and the HEAD suite's 401 case | 9cf96d7deb |
+| Still open | 1 — a message bus with no verifier ran the request as the service | =make_request_context=, the =if (!verifier)= branch | 9cf96d7deb |
+| The request that must work without a verifier | sign-in and the first-run setup, which build their own context | =grep make_request_context= over the IAM handlers returns none | the branch head |
 
 * Notes
+
+The three fallbacks compounded, which is why the capture is written as one task:
+the HTTP one handed a request on, the bus one gave it the service's identity, and
+the authorisation one then answered true for that identity. With the first two
+closed the third is only reachable by the service's own context, which is the
+one case where "no list" is meant.
+
+The HTTP half is proved where it happens, by the 401 the HEAD cases assert for a
+route that needs a session on a server with no verifier, and by the health
+route's ="verifier":"absent"=. Nothing further was changed there: refusing to
+start would break the tests and the dev server, and the acceptance allows
+refusing every request that is not declared open, which is what it does.
 
 * Test Scenarios
 
@@ -168,3 +211,20 @@ answer, because it is load-bearing for old tokens.
 
 - [[id:CCB1D9D1-B5F8-43D5-B5E5-A6A3A5BDC9E7][Nothing gates a hand-written operation handler]] — the other half: even an authenticated caller may reach a handler that checks nothing.
 - [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — where each layer is supposed to enforce the identity this capture finds optional.
+
+* Result
+
+A message bus that cannot verify a token now refuses the request instead of
+running it as the service. =make_request_context= answers =unauthorized= when no
+verifier is configured, so the base context's own authority is no longer handed
+to a request nobody authenticated.
+
+The other two fallbacks the capture names are already closed, and the task
+records where: =has_permission= refuses an empty permission list (with the test
+that says why), and the HTTP server refuses a route that needs a session when
+its verifier is absent, reporting ="verifier":"absent"= on its health route.
+
+What is proved: the new refusal, by the request-context test, and the suites of
+the three components the change touches. What is not: a deployment deliberately
+started without a verifier, which the environment does not have and which the
+tests imitate rather than perform.

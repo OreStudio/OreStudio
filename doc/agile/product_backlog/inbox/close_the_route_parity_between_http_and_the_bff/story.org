@@ -121,6 +121,11 @@ remaining 15 here.
   PostgreSQL-side answer and is *deferred with a trigger*: add it if the read is
   measured above 200 ms at p95 or a second reader needs the triples, with a
   refresh on both write paths and a drift gate. The reasoning is on the task.
+- *A transport that cannot verify believes nobody* (2026-11-25, task 12666A97).
+  A message bus with no verifier refuses the request rather than handing it the
+  service's own context, whose absent role list authorises everything. The two
+  other fallbacks — an empty permission list, and a protected HTTP route on a
+  server with no verifier — were already closed, and the task records where.
 - *A permission check is the handler's, and the gate must read it* (2026-11-25,
   task CCB1D9D1). Nothing gates a hand-written handler: the codec checks only
   that the codes handlers use are seeded, so a handler that checks nothing

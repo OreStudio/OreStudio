@@ -40,6 +40,7 @@ create table if not exists "ores_refdata_business_units_tbl" (
     "business_centre_code" text null,
     "unit_type_id" uuid null,
     "status" text not null default 'Active',
+    "restricts_product_types" boolean not null default false,
     "modified_by" text not null,
     "performed_by" text not null,
     "acting_agent" text not null default '',

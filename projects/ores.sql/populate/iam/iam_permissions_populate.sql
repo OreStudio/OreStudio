@@ -393,6 +393,12 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_product_types:write',                'State the product types a party permits');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_product_types:delete',               'Restore a party to permitting every product type');
 
+    -- Business unit product types: the middle level of the approval chain,
+    -- which narrows its party's set and is narrowed by its books.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_unit_product_types:read',          'View the product types a desk permits');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_unit_product_types:write',         'State the product types a desk permits');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_unit_product_types:delete',        'Restore a desk to permitting every product type its party permits');
+
     -- Business day convention types permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_day_convention_types:read',       'View business day convention types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_day_convention_types:write',      'Create and modify business day convention types');

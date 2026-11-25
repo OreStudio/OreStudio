@@ -57,6 +57,7 @@ namespace ores::refdata::domain {
         utility::codec::field{"business_centre_code", &business_unit::business_centre_code},
         utility::codec::field{"unit_type_id", &business_unit::unit_type_id},
         utility::codec::field{"status", &business_unit::status},
+        utility::codec::field{"restricts_product_types", &business_unit::restricts_product_types},
         utility::codec::field{"modified_by", &business_unit::modified_by},
         utility::codec::field{"performed_by", &business_unit::performed_by},
         utility::codec::field{"change_reason_code", &business_unit::change_reason_code},

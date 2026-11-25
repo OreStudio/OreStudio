@@ -2273,6 +2273,36 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.business_unit_product_types.list': {
+        asOf: false,
+        filter: [
+            'business_unit_id',
+            'product_type_code',
+            'business_unit_id_one_of',
+            'product_type_code_one_of',
+        ],
+        rows: ['business_unit_product_types'],
+    },
+    'refdata.v1.business_unit_product_types.list_by_business_unit_id': {
+        asOf: false,
+        filter: [
+            'business_unit_id',
+            'product_type_code',
+            'business_unit_id_one_of',
+            'product_type_code_one_of',
+        ],
+        rows: ['business_unit_product_types'],
+    },
+    'refdata.v1.business_unit_product_types.list_by_product_type_code': {
+        asOf: false,
+        filter: [
+            'business_unit_id',
+            'product_type_code',
+            'business_unit_id_one_of',
+            'product_type_code_one_of',
+        ],
+        rows: ['business_unit_product_types'],
+    },
     'refdata.v1.business_unit_types.list': {
         asOf: true,
         filter: ['id_one_of'],

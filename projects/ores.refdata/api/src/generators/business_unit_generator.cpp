@@ -58,6 +58,7 @@ generate_synthetic_business_unit(utility::generation::generation_context& ctx) {
         std::string("WRLD");
     r.unit_type_id = std::nullopt;
     r.status = std::string("Active");
+    r.restricts_product_types = false;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

@@ -390,6 +390,9 @@
 \ir ./refdata_product_family_codes_drop.sql
 -- The approval triggers read the junctions below, so they go first.
 \ir ./refdata_product_approvals_drop.sql
+\ir ./refdata_business_unit_product_types_notify_trigger_drop.sql
+\ir ./refdata_business_unit_product_types_drop.sql
+
 -- A book states the product types it allows, so the junction goes before the book.
 \ir ./refdata_book_product_types_notify_trigger_drop.sql
 \ir ./refdata_book_product_types_drop.sql

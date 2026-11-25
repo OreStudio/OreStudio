@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: FD40055F-BF8B-5E56-A180-15603C417F0A
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the business_unit_product_types commands from the shell?
+#+description: Every command the business_unit_product_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:business_unit_product_types:
+
+This file documents the business_unit_product_types resource at the shell, one section per command. Every command is a subcommand of =business_unit_product_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: EBDB16E9-F247-5273-8866-0C3901A51FE9
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_unit_product_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.business_unit_product_types.list=.
+
+#+name: business_unit_product_types-list
+#+begin_src ores-shell :tangle business_unit_product_types-list.ores :exports none
+business_unit_product_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 943A2D85-0DFF-51FA-8954-A72CCA001D8B
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_unit_product_types get <business_unit_id> <product_type_code>
+#+end_example
+
+It is addressed at =refdata.v1.business_unit_product_types.get=.
+
+#+name: business_unit_product_types-get
+#+begin_src ores-shell :tangle business_unit_product_types-get.ores :exports none
+business_unit_product_types get 00000000-0000-0000-0000-000000000000 __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 15F881A3-6659-57C0-AFF2-DC79F16E92ED
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_unit_product_types get-many <business_unit_id> <product_type_code>
+#+end_example
+
+It is addressed at =refdata.v1.business_unit_product_types.get_many=.
+
+#+name: business_unit_product_types-get-many
+#+begin_src ores-shell :tangle business_unit_product_types-get-many.ores :exports none
+business_unit_product_types get-many 00000000-0000-0000-0000-000000000000 __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: B0B73C0C-C7A5-5E6E-8024-601E28B52387
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_unit_product_types add <business_unit_id> <product_type_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.business_unit_product_types.put=.
+
+#+name: business_unit_product_types-add
+#+begin_src ores-shell :tangle business_unit_product_types-add.ores :exports none
+business_unit_product_types add 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: AFE1F3D0-28AE-5605-97A4-02F8168947A9
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_unit_product_types set <business_unit_id> <product_type_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.business_unit_product_types.put=.
+
+#+name: business_unit_product_types-set
+#+begin_src ores-shell :tangle business_unit_product_types-set.ores :exports none
+business_unit_product_types set 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 0FC0AD68-CAC7-5168-A755-4E52FF2FF637
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_unit_product_types put-many --count <n> <business_unit_id> <product_type_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.business_unit_product_types.put_many=.
+
+#+name: business_unit_product_types-put-many
+#+begin_src ores-shell :tangle business_unit_product_types-put-many.ores :exports none
+business_unit_product_types put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: CAF4FD21-13C1-5F29-8F0A-9AA704BA7EB8
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_unit_product_types delete <business_unit_id> <product_type_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.business_unit_product_types.delete=.
+
+#+name: business_unit_product_types-delete
+#+begin_src ores-shell :tangle business_unit_product_types-delete.ores :exports none
+business_unit_product_types delete 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: B4E98B6F-5AED-518A-B575-6C48DAEF6E00
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_unit_product_types delete-many <business_unit_id> <product_type_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.business_unit_product_types.delete_many=.
+
+#+name: business_unit_product_types-delete-many
+#+begin_src ores-shell :tangle business_unit_product_types-delete-many.ores :exports none
+business_unit_product_types delete-many 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =by-business-unit-id=
+:PROPERTIES:
+:ID: 40CA8C93-7F95-5DF8-819D-DE4F10AFE0CF
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_unit_product_types by-business-unit-id <business_unit_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.business_unit_product_types.list_by_business_unit_id=.
+
+#+name: business_unit_product_types-by-business-unit-id
+#+begin_src ores-shell :tangle business_unit_product_types-by-business-unit-id.ores :exports none
+business_unit_product_types by-business-unit-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =by-product-type-code=
+:PROPERTIES:
+:ID: B79413A6-0382-5DA1-B672-FA8D6CD092A6
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+business_unit_product_types by-product-type-code <product_type_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.business_unit_product_types.list_by_product_type_code=.
+
+#+name: business_unit_product_types-by-product-type-code
+#+begin_src ores-shell :tangle business_unit_product_types-by-product-type-code.ores :exports none
+business_unit_product_types by-product-type-code __none__ --limit 1
+#+end_src
+

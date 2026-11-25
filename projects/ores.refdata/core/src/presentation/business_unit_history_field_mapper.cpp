@@ -51,6 +51,8 @@ render_business_unit_fields(const domain::business_unit& v) {
         {.name = "Unit Type ID",
          .value = v.unit_type_id ? boost::uuids::to_string(*v.unit_type_id) : std::string{}});
     fields.push_back({.name = "Status", .value = v.status});
+    fields.push_back(
+        {.name = "Restricts Product Types", .value = v.restricts_product_types ? "true" : "false"});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

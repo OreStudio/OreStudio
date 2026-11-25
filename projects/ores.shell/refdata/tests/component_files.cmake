@@ -38,6 +38,7 @@ set(files
     "business_day_convention_type_commands_tests.cpp"
     "business_process_commands_tests.cpp"
     "business_unit_commands_tests.cpp"
+    "business_unit_product_type_commands_tests.cpp"
     "business_unit_type_commands_tests.cpp"
     "calendar_commands_tests.cpp"
     "calendar_date_commands_tests.cpp"

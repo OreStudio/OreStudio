@@ -192,6 +192,9 @@
 \ir ./refdata_counterparties_notify_trigger_create.sql
 
 -- Party-product visibility junction: the product types a party permits
+-- The product types a desk permits, the middle level of the approval chain.
+\ir ./refdata_business_unit_product_type_create.sql
+\ir ./refdata_business_unit_product_types_notify_trigger_create.sql
 \ir ./refdata_party_product_type_create.sql
 \ir ./refdata_party_product_types_notify_trigger_create.sql
 

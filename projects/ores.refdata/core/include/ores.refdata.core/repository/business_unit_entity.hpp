@@ -64,6 +64,7 @@ struct business_unit_entity {
     std::optional<std::string> business_centre_code;
     std::optional<boost::uuids::uuid> unit_type_id;
     std::string status;
+    bool restricts_product_types = false;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -87,6 +88,7 @@ struct business_unit_entity {
                query_builder::bind("business_centre_code", &e::business_centre_code) |
                query_builder::bind("unit_type_id", &e::unit_type_id) |
                query_builder::bind("status", &e::status) |
+               query_builder::bind("restricts_product_types", &e::restricts_product_types) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

@@ -99,6 +99,7 @@ entity "refdata" as refdata {
   ores_refdata_business_centres_tbl
   ores_refdata_business_day_convention_types_tbl
   ores_refdata_business_processes_tbl
+  ores_refdata_business_unit_product_types_tbl
   ores_refdata_business_unit_types_tbl
   ores_refdata_business_units_tbl
   ores_refdata_calendar_dates_tbl
@@ -306,7 +307,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-223 tables — ores_schema.refdata.puml
+224 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {

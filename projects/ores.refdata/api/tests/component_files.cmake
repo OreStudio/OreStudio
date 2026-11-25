@@ -61,6 +61,8 @@ set(files
     "business_process_codec_roundtrip_tests.cpp"
     "business_process_protocol_codec_roundtrip_tests.cpp"
     "business_unit_codec_roundtrip_tests.cpp"
+    "business_unit_product_type_codec_roundtrip_tests.cpp"
+    "business_unit_product_type_protocol_codec_roundtrip_tests.cpp"
     "business_unit_protocol_codec_roundtrip_tests.cpp"
     "business_unit_type_codec_roundtrip_tests.cpp"
     "business_unit_type_protocol_codec_roundtrip_tests.cpp"

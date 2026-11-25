@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 178ECB01-6FAE-4832-B3A3-F95302AB504D
+:END:
+#+title: Task: Build the approval matrix screens
+#+description: The live screens draw what the prototype draws, through the shared parts, in three languages, with a harness check for every rule the build relies on.
+#+type: task
+#+level: s1
+#+filetags: :manage-the-product-approval-matrix:sprint_31:v0:
+#+owner: marco
+#+branch: feature/manage-the-product-approval-matrix
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F77263EF-6F2D-4129-BA60-CA6C2F2D6153][Manage the product approval matrix]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person reads and changes both sets on the running web, in English, French and Portuguese, through the record parts rather than a panel of the screen's own.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F77263EF-6F2D-4129-BA60-CA6C2F2D6153][Manage the product approval matrix]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- Both screens are built from the shared parts, and the strings exist in English, French and Portuguese before the screen ships.
+- The harness on each screen has no failure that is the screen's, and a check exists for every rule the build relies on.
+- An attempt to widen a book past its party is refused on the screen, in the person's words, naming the party's set.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

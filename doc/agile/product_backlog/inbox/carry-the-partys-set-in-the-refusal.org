@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: DEC66AE2-4EB0-46B5-BA47-5D332B1D68B2
+:END:
+#+title: A refused approval reaches the person as a database error
+#+description: The database refuses a book outside its party's set and names the party's set in the exception, but the write path turns it into a generic failure, so a screen cannot show the person which types their party permits.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:web:approvals:errors:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

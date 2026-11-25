@@ -29,6 +29,17 @@ the UI (calendar detail screens, the holiday-aware date picker) and
 ORE Studio's own tenor/schedule date-math -- so the answer is
 consistent and never requires a live rule evaluation.
 
+The days are derived from the installation's calendar templates and
+exceptions, so they are held once, in the system tenant, and every tenant reads
+that one copy. The table therefore states =:rls_own_or_system_tenant_rows:= and
+its repository states =:system_tenant_visible:=, so a read takes the
+installation's rows beside the caller's own. A party holds no day of its own:
+it holds the exceptions that move the day, and the materialisation reads those
+beside the installation's when it answers for the party. The copy is the
+read-where-the-row-lies shape of
+[[id:B0BC735F-7E05-4882-A216-C250B26B0091][Precedence among the levels of
+reference data]].
+
 * Flags
 :PROPERTIES:
 :history: true
@@ -128,6 +139,7 @@ std::string("quantlib_computed")
 
 * Repository
 :PROPERTIES:
+:system_tenant_visible: true
 :name_singular_short: calendar_date
 :name_short:          calendar_dates
 :name_singular_words: calendar date
@@ -142,42 +154,6 @@ std::string("quantlib_computed")
 :subcomponent:      api
 :client_read_only:  true
 :END:
-
-** Repository declarations
-
-#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-    /**
-     * @brief Reads the days of one calendar: the installation's, and the caller's own.
-     */
-    std::vector<domain::calendar_date> read_for_reading(const context& ctx,
-                                                        const std::string& calendar_code);
-#+end_src
-
-*** Repository implementations
-
-#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
-std::vector<domain::calendar_date> calendar_date_repository::read_for_reading(
-    const context& ctx,
-    const std::string& calendar_code) {
-    ORES_LOG_SEV(lg(), debug) << "Reading calendar days for a reader. calendar_code: "
-                              << calendar_code;
-    static constexpr auto max = db_timestamp::max();
-    const auto tid = ctx.tenant_id().to_string();
-    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
-    const auto query = query_builder::read<std::vector<calendar_date_entity>> |
-                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
-                                            "calendar_code"_c == calendar_code &&
-                                            "valid_to"_c == max) |
-                       query_builder::order_by("date"_c);
-
-    return query_builder::execute_read_query<calendar_date_entity, domain::calendar_date>(
-        ctx,
-        query,
-        [](const auto& entities) { return calendar_date_mapper::map(entities); },
-        lg(),
-        "Reading calendar days for a reader.");
-}
-#+end_src
 
 ** Domain includes
 

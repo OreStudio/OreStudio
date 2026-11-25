@@ -26,6 +26,7 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/domain/calendar_date.hpp"
 #include "ores.refdata.api/domain/calendar_date_json_io.hpp" // IWYU pragma: keep.
@@ -143,10 +144,11 @@ calendar_date_repository::read_current(const std::vector<domain::calendar_date>&
         const std::vector<std::string> lefts(left_set.begin(), left_set.end());
         const std::vector<std::string> rights(right_set.begin(), right_set.end());
         const auto tid = ctx_.tenant_id().to_string();
-        const auto query =
-            query_builder::read<std::vector<calendar_date_entity>> |
-            query_builder::where("tenant_id"_c == tid && "calendar_code"_c.in(lefts) &&
-                                 "date"_c.in(rights) && "valid_to"_c == max);
+        static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+        const auto query = query_builder::read<std::vector<calendar_date_entity>> |
+                           query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                                "calendar_code"_c.in(lefts) &&
+                                                "date"_c.in(rights) && "valid_to"_c == max);
         auto rows = query_builder::execute_read_query<calendar_date_entity, domain::calendar_date>(
             ctx_,
             query,
@@ -222,8 +224,10 @@ void calendar_date_repository::write(
 std::vector<domain::calendar_date> calendar_date_repository::read_latest() {
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<calendar_date_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("calendar_code"_c, "date"_c);
 
     return query_builder::execute_read_query<calendar_date_entity, domain::calendar_date>(
@@ -240,8 +244,10 @@ std::vector<domain::calendar_date> calendar_date_repository::read_latest(std::ui
                               << " and limit: " << limit;
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = query_builder::read<std::vector<calendar_date_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max) |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "valid_to"_c == max) |
                        query_builder::order_by("calendar_code"_c, "date"_c) |
                        query_builder::offset(offset) | query_builder::limit(limit);
 
@@ -262,10 +268,11 @@ calendar_date_repository::read_latest(const std::string& calendar_code,
     const auto calendar_code_str = calendar_code;
     const auto date_str = ores::platform::time::datetime::to_iso8601_date(date);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<calendar_date_entity>> |
-        query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "date"_c == date_str && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<calendar_date_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "calendar_code"_c == calendar_code &&
+                                            "date"_c == date_str && "valid_to"_c == max);
 
     return query_builder::execute_read_query<calendar_date_entity, domain::calendar_date>(
         ctx_,
@@ -280,8 +287,10 @@ std::uint32_t calendar_date_repository::get_total_calendar_date_count() {
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query = query_builder::read<std::vector<calendar_date_entity>> |
-                       query_builder::where("tenant_id"_c == tid && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        query_builder::read<std::vector<calendar_date_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<calendar_date_entity>(
         ctx_, query, std::nullopt, lg(), "Counting calendar dates");
@@ -295,10 +304,11 @@ calendar_date_repository::read_latest_by_calendar(const std::string& calendar_co
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<calendar_date_entity>> |
-        query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "valid_to"_c == max) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "calendar_code"_c == calendar_code && "valid_to"_c == max) |
         query_builder::order_by("date"_c);
 
     auto rows = query_builder::execute_read_query<calendar_date_entity, domain::calendar_date>(
@@ -318,10 +328,11 @@ calendar_date_repository::read_latest_by_date(const std::chrono::year_month_day&
     static constexpr auto max = db_timestamp::max();
     const auto date_str = ores::platform::time::datetime::to_iso8601_date(date);
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<calendar_date_entity>> |
-        query_builder::where("tenant_id"_c == tid && "date"_c == date_str && "valid_to"_c == max) |
-        query_builder::order_by("calendar_code"_c);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<calendar_date_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "date"_c == date_str && "valid_to"_c == max) |
+                       query_builder::order_by("calendar_code"_c);
 
     auto rows = query_builder::execute_read_query<calendar_date_entity, domain::calendar_date>(
         ctx_,
@@ -340,10 +351,11 @@ std::vector<domain::calendar_date> calendar_date_repository::read_latest_by_cale
 
     static constexpr auto max = db_timestamp::max();
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<calendar_date_entity>> |
-        query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "valid_to"_c == max) |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "calendar_code"_c == calendar_code && "valid_to"_c == max) |
         query_builder::order_by("date"_c) | query_builder::offset(offset) |
         query_builder::limit(limit);
 
@@ -364,10 +376,11 @@ std::uint32_t calendar_date_repository::get_total_calendar_date_count_by_calenda
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
         query_builder::read<std::vector<calendar_date_entity>> |
-        query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code &&
-                             "valid_to"_c == max);
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "calendar_code"_c == calendar_code && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<calendar_date_entity>(
         ctx_, query, std::nullopt, lg(), "Counting calendar dates");
@@ -382,9 +395,10 @@ std::uint32_t calendar_date_repository::get_total_calendar_date_count_by_date(
     static constexpr auto max = db_timestamp::max();
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<calendar_date_entity>> |
-        query_builder::where("tenant_id"_c == tid && "date"_c == date_str && "valid_to"_c == max);
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<calendar_date_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "date"_c == date_str && "valid_to"_c == max);
 
     const auto count = query_builder::execute_count_query<calendar_date_entity>(
         ctx_, query, std::nullopt, lg(), "Counting calendar dates");
@@ -398,10 +412,11 @@ calendar_date_repository::read_all_by_calendar(const std::string& calendar_code)
                               << calendar_code;
 
     const auto tid = ctx_.tenant_id().to_string();
-    const auto query =
-        query_builder::read<std::vector<calendar_date_entity>> |
-        query_builder::where("tenant_id"_c == tid && "calendar_code"_c == calendar_code) |
-        query_builder::order_by("date"_c, "valid_from"_c.desc());
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = query_builder::read<std::vector<calendar_date_entity>> |
+                       query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                                            "calendar_code"_c == calendar_code) |
+                       query_builder::order_by("date"_c, "valid_from"_c.desc());
 
     return query_builder::execute_read_query<calendar_date_entity, calendar_date_history_row>(
         ctx_,

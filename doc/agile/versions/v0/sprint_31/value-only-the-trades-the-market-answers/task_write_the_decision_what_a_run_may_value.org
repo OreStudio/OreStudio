@@ -32,11 +32,11 @@ record and a builder of the error phase do not have to re-derive either.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | Not yet started.                       |
+| Now          | Clocked on. The decision note and its knowledge page are not written yet. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Write the decision note, the page on the run's phases, and the =phase_code= change to the error event model page. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance

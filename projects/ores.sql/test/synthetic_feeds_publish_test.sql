@@ -161,12 +161,13 @@ insert into ores_synthetic_market_data_generation_configs_tbl (
 insert into ores_synthetic_ir_curve_generation_configs_tbl (
     id, tenant_id, version, party_id, config_id, currency_code, index_family, tenor, role,
     process_type, ticks_per_hour, enabled, auto_start, price_source, rate_source,
+    derived_spread_basis_points,
     description, fixed_leg_payment_frequency_code, source_name, asset_class_code,
     modified_by, performed_by, change_reason_code, change_commentary
 ) select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, (select id from t_party),
     (select id from ores_synthetic_market_data_generation_configs_tbl
      where name = 'Placement Test' and valid_to = ores_utility_infinity_timestamp_fn()),
-    'USD', 'sofr', '', 'self_discounting', 'VASICEK', 60, true, false, 'fixed', 'process',
+    'USD', 'sofr', '', 'self_discounting', 'VASICEK', 60, true, false, 'fixed', 'process', 0.0,
     'placement test', 'Annual', 'synthetic.placementtest.usdsofr', 'interest_rates',
     current_user, current_user, 'system.test', 'placement test';
 

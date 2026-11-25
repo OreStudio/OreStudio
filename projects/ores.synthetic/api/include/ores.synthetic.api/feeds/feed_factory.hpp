@@ -178,6 +178,11 @@ struct derived_fixing_feed_build_input final {
     derived_fixing rule;
     /// Whether the node is starved, so it states no fixing while its curve does not run.
     std::function<bool()> starved;
+    /// The days the market already holds of the item up to a date, so a history restated
+    /// after a restart leaves the days it stated before.
+    std::function<std::expected<std::set<std::chrono::year_month_day>, std::string>(
+        const std::string& item, std::chrono::year_month_day to)>
+        held;
 };
 
 /**

@@ -99,6 +99,7 @@ build_derived_fixing(const feed_build_context& ctx, const derived_fixing_feed_bu
                                 .derived = in.rule,
                                 .when = {},
                                 .run_seed = ctx.market.loop().run_seed(),
+                                .held = in.held,
                                 .starved = in.starved},
         ctx.market);
 }

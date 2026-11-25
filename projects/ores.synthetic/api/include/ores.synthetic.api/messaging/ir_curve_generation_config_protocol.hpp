@@ -61,6 +61,9 @@ struct ir_curve_generation_config_write {
     bool enabled{};
     bool auto_start{};
     std::string price_source;
+    std::string rate_source;
+    double derived_spread_basis_points{};
+    std::string derived_spread_source;
     std::string description;
     std::string fixed_leg_payment_frequency_code;
     std::string source_name;
@@ -422,6 +425,11 @@ inline constexpr std::string_view deleted =
         utility::codec::field{"enabled", &ir_curve_generation_config_write::enabled},
         utility::codec::field{"auto_start", &ir_curve_generation_config_write::auto_start},
         utility::codec::field{"price_source", &ir_curve_generation_config_write::price_source},
+        utility::codec::field{"rate_source", &ir_curve_generation_config_write::rate_source},
+        utility::codec::field{"derived_spread_basis_points",
+                              &ir_curve_generation_config_write::derived_spread_basis_points},
+        utility::codec::field{"derived_spread_source",
+                              &ir_curve_generation_config_write::derived_spread_source},
         utility::codec::field{"description", &ir_curve_generation_config_write::description},
         utility::codec::field{"fixed_leg_payment_frequency_code",
                               &ir_curve_generation_config_write::fixed_leg_payment_frequency_code},

@@ -57,6 +57,9 @@ ir_curve_generation_config_mapper::map(const ir_curve_generation_config_entity& 
     r.enabled = v.enabled;
     r.auto_start = v.auto_start;
     r.price_source = v.price_source;
+    r.rate_source = v.rate_source;
+    r.derived_spread_basis_points = v.derived_spread_basis_points;
+    r.derived_spread_source = v.derived_spread_source.value_or("");
     r.description = v.description.value_or("");
     r.fixed_leg_payment_frequency_code = v.fixed_leg_payment_frequency_code;
     r.source_name = v.source_name;
@@ -95,6 +98,10 @@ ir_curve_generation_config_mapper::map(const domain::ir_curve_generation_config&
     r.enabled = v.enabled;
     r.auto_start = v.auto_start;
     r.price_source = v.price_source;
+    r.rate_source = v.rate_source;
+    r.derived_spread_basis_points = v.derived_spread_basis_points;
+    r.derived_spread_source =
+        v.derived_spread_source.empty() ? std::nullopt : std::optional(v.derived_spread_source);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.fixed_leg_payment_frequency_code = v.fixed_leg_payment_frequency_code;
     r.source_name = v.source_name;

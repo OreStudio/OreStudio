@@ -19,7 +19,7 @@
 #+entity_title: IR Curve Generation Config
 #+brief: Configuration for generating a synthetic IR curve from a short-rate process.
 #+created: 2026-07-14
-#+updated: 2026-08-08
+#+updated: 2026-11-24
 
 A typed sub-configuration owned by a =market_data_generation_config=. Describes
 how to synthesise a single currency+index interest-rate curve: which
@@ -33,6 +33,12 @@ grid (which tenors to publish at which role) is held separately as ordered
 =ir_curve_template_entry= rows, the same one-config-many-children shape
 =fx_spot_generation_config= uses for its =gmm_component= rows. Scoped to a
 tenant and a party.
+
+A config may instead derive its rate from the currency's overnight curve,
+for a term index no publisher quotes: =rate_source= says which shape it
+takes, and a spread index states the spread and who states it. The feed
+publishes that derived rate where it publishes any other index rate, so a
+fixing follows with no further machinery.
 
 * Flags
 :PROPERTIES:
@@ -270,6 +276,61 @@ its =initial_rate=, and its start record says why.
 
 #+begin_src cpp :name generator
 std::string("fixed")
+#+end_src
+
+** rate_source
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "process"
+:END:
+
+Where this curve's index rate comes from, for the tenor the config names:
+=process= is the short-rate process's own pillar at that tenor, the shape
+every existing config has. =compounded_overnight= states the rate as the
+forward the currency's overnight curve implies over the term, which is how
+a term index such as SOFR 1M is fixed. =overnight_plus_spread= states the
+overnight rate plus =derived_spread_basis_points=, which is how a term
+index no publisher quotes, such as EYTIBOR 3M, is fixed.
+
+A derived config names no driver: its currency has one funding config, and
+that curve is the one the rate is read from. It carries no process
+parameters of its own either, since it runs none.
+
+#+begin_src cpp :name generator
+std::string("process")
+#+end_src
+
+** derived_spread_basis_points
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+The spread over the overnight rate, in basis points, that
+=overnight_plus_spread= adds. Zero on every other kind of config.
+
+#+begin_src cpp :name generator
+0.0
+#+end_src
+
+** derived_spread_source
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      true
+:END:
+
+Who states the spread: the publisher's published quotation, the market
+convention that fixes it, or the decision that set it. Empty unless
+=rate_source= is =overnight_plus_spread=, because a spread without its
+source is a number nobody can check.
+
+#+begin_src cpp :name generator
+std::string("")
 #+end_src
 
 ** description
@@ -531,6 +592,24 @@ One import row stands for a whole IR curve feed: the curve, its process paramete
 :default: 'fixed'
 :END:
 
+** rate_source
+:PROPERTIES:
+:type: text
+:default: 'process'
+:END:
+
+** derived_spread_basis_points
+:PROPERTIES:
+:type: double precision
+:default: 0.0
+:END:
+
+** derived_spread_source
+:PROPERTIES:
+:type: text
+:nullable: true
+:END:
+
 ** provider_code
 :PROPERTIES:
 :type: text
@@ -593,6 +672,10 @@ How strongly a market-wide regime moves this row, where one is the average.
 | "source_name" like 'synthetic.%'                          |
 | "ticks_per_hour" > 0                                       |
 | "price_source" in ('fixed', 'fixing')                    |
+| "rate_source" in ('process', 'compounded_overnight', 'overnight_plus_spread') |
+| "rate_source" = 'process' or "tenor" <> ''                |
+| "rate_source" <> 'overnight_plus_spread' or "derived_spread_source" is not null |
+| "rate_source" <> 'overnight_plus_spread' or "derived_spread_basis_points" <> 0 |
 
 * Foreign keys
 

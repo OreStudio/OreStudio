@@ -143,7 +143,8 @@ void ir_curve_generation_config_commands::register_commands(cli::Menu& root_menu
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <config_id> <currency_code> <index_family> <tenor> <role> <process_type> "
-        "<ticks_per_hour> <enabled> <auto_start> <price_source> <description> "
+        "<ticks_per_hour> <enabled> <auto_start> <price_source> <rate_source> "
+        "<derived_spread_basis_points> <derived_spread_source> <description> "
         "<fixed_leg_payment_frequency_code> <source_name> <folder_id> <asset_class_code> "
         "<arrival_mode> <branching_ratio> <decay> <sensitivity> <reason> <commentary>");
 
@@ -153,7 +154,8 @@ void ir_curve_generation_config_commands::register_commands(cli::Menu& root_menu
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <config_id> <currency_code> <index_family> <tenor> <role> <process_type> "
-        "<ticks_per_hour> <enabled> <auto_start> <price_source> <description> "
+        "<ticks_per_hour> <enabled> <auto_start> <price_source> <rate_source> "
+        "<derived_spread_basis_points> <derived_spread_source> <description> "
         "<fixed_leg_payment_frequency_code> <source_name> <folder_id> <asset_class_code> "
         "<arrival_mode> <branching_ratio> <decay> <sensitivity> <reason> <commentary> [--version "
         "<n>]");
@@ -164,7 +166,8 @@ void ir_curve_generation_config_commands::register_commands(cli::Menu& root_menu
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <config_id> <currency_code> <index_family> <tenor> <role> "
-        "<process_type> <ticks_per_hour> <enabled> <auto_start> <price_source> <description> "
+        "<process_type> <ticks_per_hour> <enabled> <auto_start> <price_source> <rate_source> "
+        "<derived_spread_basis_points> <derived_spread_source> <description> "
         "<fixed_leg_payment_frequency_code> <source_name> <folder_id> <asset_class_code> "
         "<arrival_mode> <branching_ratio> <decay> <sensitivity> <reason> <commentary>");
 
@@ -367,8 +370,8 @@ void ir_curve_generation_config_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 19 + 2) {
-            fail(out) << "Expected " << (19 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 22 + 2) {
+            fail(out) << "Expected " << (22 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -393,6 +396,14 @@ void ir_curve_generation_config_commands::process_add(std::ostream& out,
             req.change.write.auto_start, parsed->positionals[next++], "auto_start");
         ir_curve_generation_config_read_token(
             req.change.write.price_source, parsed->positionals[next++], "price_source");
+        ir_curve_generation_config_read_token(
+            req.change.write.rate_source, parsed->positionals[next++], "rate_source");
+        ir_curve_generation_config_read_token(req.change.write.derived_spread_basis_points,
+                                              parsed->positionals[next++],
+                                              "derived_spread_basis_points");
+        ir_curve_generation_config_read_token(req.change.write.derived_spread_source,
+                                              parsed->positionals[next++],
+                                              "derived_spread_source");
         ir_curve_generation_config_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         ir_curve_generation_config_read_token(req.change.write.fixed_leg_payment_frequency_code,
@@ -456,8 +467,8 @@ void ir_curve_generation_config_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 20 + 2) {
-            fail(out) << "Expected " << (20 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 23 + 2) {
+            fail(out) << "Expected " << (23 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -483,6 +494,14 @@ void ir_curve_generation_config_commands::process_set(std::ostream& out,
             req.change.write.auto_start, parsed->positionals[next++], "auto_start");
         ir_curve_generation_config_read_token(
             req.change.write.price_source, parsed->positionals[next++], "price_source");
+        ir_curve_generation_config_read_token(
+            req.change.write.rate_source, parsed->positionals[next++], "rate_source");
+        ir_curve_generation_config_read_token(req.change.write.derived_spread_basis_points,
+                                              parsed->positionals[next++],
+                                              "derived_spread_basis_points");
+        ir_curve_generation_config_read_token(req.change.write.derived_spread_source,
+                                              parsed->positionals[next++],
+                                              "derived_spread_source");
         ir_curve_generation_config_read_token(
             req.change.write.description, parsed->positionals[next++], "description");
         ir_curve_generation_config_read_token(req.change.write.fixed_leg_payment_frequency_code,
@@ -558,8 +577,8 @@ void ir_curve_generation_config_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 20 + 2) {
-            fail(out) << "Expected " << (change_count * 20 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 23 + 2) {
+            fail(out) << "Expected " << (change_count * 23 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -587,6 +606,14 @@ void ir_curve_generation_config_commands::process_put_many(std::ostream& out,
                 change.write.auto_start, parsed->positionals[next++], "auto_start");
             ir_curve_generation_config_read_token(
                 change.write.price_source, parsed->positionals[next++], "price_source");
+            ir_curve_generation_config_read_token(
+                change.write.rate_source, parsed->positionals[next++], "rate_source");
+            ir_curve_generation_config_read_token(change.write.derived_spread_basis_points,
+                                                  parsed->positionals[next++],
+                                                  "derived_spread_basis_points");
+            ir_curve_generation_config_read_token(change.write.derived_spread_source,
+                                                  parsed->positionals[next++],
+                                                  "derived_spread_source");
             ir_curve_generation_config_read_token(
                 change.write.description, parsed->positionals[next++], "description");
             ir_curve_generation_config_read_token(change.write.fixed_leg_payment_frequency_code,

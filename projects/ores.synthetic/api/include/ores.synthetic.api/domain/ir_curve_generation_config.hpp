@@ -48,6 +48,12 @@ namespace ores::synthetic::domain {
  * ir_curve_template_entry rows, the same one-config-many-children shape
  * fx_spot_generation_config uses for its gmm_component rows. Scoped to a
  * tenant and a party.
+ *
+ * A config may instead derive its rate from the currency's overnight curve,
+ * for a term index no publisher quotes: rate_source says which shape it
+ * takes, and a spread index states the spread and who states it. The feed
+ * publishes that derived rate where it publishes any other index rate, so a
+ * fixing follows with no further machinery.
  */
 struct ir_curve_generation_config final {
     /**
@@ -169,6 +175,33 @@ struct ir_curve_generation_config final {
      * currency no source publishes keeps its initial_rate, and its start record says why.
      */
     std::string price_source = "fixed";
+
+    /**
+     * @brief Where this curve's index rate comes from, for the tenor the config names: process is
+     * the short-rate process's own pillar at that tenor, the shape every existing config has.
+     * compounded_overnight states the rate as the forward the currency's overnight curve implies
+     * over the term, which is how a term index such as SOFR 1M is fixed. overnight_plus_spread
+     * states the overnight rate plus derived_spread_basis_points, which is how a term index no
+     * publisher quotes, such as EYTIBOR 3M, is fixed.
+     *
+     * A derived config names no driver: its currency has one funding config, and that curve is the
+     * one the rate is read from. It carries no process parameters of its own either, since it runs
+     * none.
+     */
+    std::string rate_source = "process";
+
+    /**
+     * @brief The spread over the overnight rate, in basis points, that overnight_plus_spread adds.
+     * Zero on every other kind of config.
+     */
+    double derived_spread_basis_points = 0.0;
+
+    /**
+     * @brief Who states the spread: the publisher's published quotation, the market convention that
+     * fixes it, or the decision that set it. Empty unless rate_source is overnight_plus_spread,
+     * because a spread without its source is a number nobody can check.
+     */
+    std::string derived_spread_source;
 
     /**
      * @brief Free-text description of what this configuration represents -- what regime/index it

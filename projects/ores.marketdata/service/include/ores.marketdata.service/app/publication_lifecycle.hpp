@@ -87,6 +87,19 @@ struct publication_result {
 enum class set_raise { whole_set, keep_acceptable };
 
 /**
+ * @brief The permission the kind names for raising a request of it, or empty.
+ *
+ * The maker's half of the approver pair is the kind's, so an operation asks the
+ * kind and never a code written beside it: a tenant that moves the maker moves
+ * the operation's gate with it. Empty means the kind names none, and then the
+ * operation keeps the rule it had rather than inventing one.
+ *
+ * @throws std::runtime_error when the kind is not seeded.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT std::string raise_permission_of(const ores::database::context& ctx,
+                                                               std::string_view kind_code);
+
+/**
  * @brief The subject a caller names, read through the kind the declaration names.
  *
  * @throws std::invalid_argument when the subject cannot be named.

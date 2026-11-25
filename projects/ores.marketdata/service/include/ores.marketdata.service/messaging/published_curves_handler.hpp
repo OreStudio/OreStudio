@@ -24,6 +24,8 @@
 #include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/published_curves_operations_protocol.hpp"
 #include "ores.marketdata.service/app/curve_withdrawal.hpp"
+#include "ores.marketdata.service/app/publication_kind_codes.hpp"
+#include "ores.marketdata.service/app/publication_lifecycle.hpp"
 #include "ores.marketdata.service/app/published_curve_reader.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"

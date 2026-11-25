@@ -46,11 +46,13 @@
 #include "ores.marketdata.core/repository/subscription_repository.hpp"
 #include "ores.marketdata.core/service/route_service.hpp"
 #include "ores.marketdata.core/service/subscription_service.hpp"
-#include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
-#include "ores.marketdata.service/app/fx_forward_publish_service.hpp"
+#include "ores.marketdata.service/app/derived_market_object_kind.hpp"
+#include "ores.marketdata.service/app/fx_forward_publication_kind.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
-#include "ores.marketdata.service/app/fx_vol_surface_publish_service.hpp"
+#include "ores.marketdata.service/app/fx_vol_surface_publication_kind.hpp"
+#include "ores.marketdata.service/app/publication_kind_codes.hpp"
+#include "ores.marketdata.service/app/publication_lifecycle.hpp"
 #include "ores.marketdata.service/app/published_curve_reader.hpp"
 #include "ores.marketdata.service/messaging/approval_gated_curve_publish_handler.hpp"
 #include "ores.nats/domain/delivery.hpp"
@@ -645,7 +647,7 @@ private:
 
     /// One curve the party's set can carry, as the raise needs it.
     struct curve_member {
-        ores::marketdata::service::app::publish_subject subject;
+        ores::marketdata::service::app::publication_subject subject;
         std::string config_id;
         std::string name;
     };
@@ -674,10 +676,11 @@ private:
             refusal = e.what();
             return std::nullopt;
         }
-        return curve_member{.subject = ores::marketdata::service::app::resolve_publish_subject(
-                                ctx, config_id, as_of),
-                            .config_id = config_id,
-                            .name = curve.name};
+        return curve_member{
+            .subject = ores::marketdata::service::app::resolve_publication_subject(
+                ctx, ores::marketdata::service::app::derived_kind::curve, config_id, as_of),
+            .config_id = config_id,
+            .name = curve.name};
     }
 
     /// The same, offered twice more when the store made it wait.
@@ -933,14 +936,21 @@ private:
 
             std::vector<curve_outcome> outcomes;
             if (!preview.members.empty()) {
-                std::vector<ores::marketdata::service::app::publish_subject> subjects;
-                subjects.reserve(preview.members.size());
+                std::vector<ores::marketdata::service::app::publication_request> requests;
+                requests.reserve(preview.members.size());
                 for (const auto& member : preview.members)
-                    subjects.push_back(member.subject);
-                const auto raised = ores::marketdata::service::app::raise_publish_request_set(
-                    party_ctx, subjects, std::string(publish_reason));
-                outcomes = publish_party_curve_set(
-                    party_ctx, preview, boost::uuids::to_string(raised.id), publish_reason);
+                    requests.push_back(
+                        {.subject_key = boost::uuids::to_string(member.subject.subject_id),
+                         .as_of = member.subject.as_of});
+                const auto raised = ores::marketdata::service::app::raise_publication(
+                    party_ctx,
+                    ores::marketdata::service::app::derived_kind::curve,
+                    requests,
+                    std::string(publish_reason),
+                    preview.members.front().subject.party_id,
+                    ores::marketdata::service::app::set_raise::whole_set);
+                outcomes =
+                    publish_party_curve_set(party_ctx, preview, raised.request_id, publish_reason);
             }
 
             std::size_t published_now = 0;
@@ -1013,29 +1023,42 @@ private:
         ores::marketdata::messaging::get_published_fx_forward_request published_before;
         published_before.pair_code = pair;
         published_before.as_of = as_of;
-        if (ores::marketdata::service::app::fx_forward_publish_service::read(ctx, published_before)
+        if (ores::marketdata::service::app::fx_forward_published_reader::read(ctx, published_before)
                 .success)
             return {.how = forward_outcome::state::already_published, .pair = pair, .detail = {}};
 
-        ores::marketdata::messaging::publish_fx_forward_request publish;
-        publish.pair_code = pair;
-        publish.as_of = as_of;
-        publish.reason = std::string(publish_reason);
-        const auto answer =
-            ores::marketdata::service::app::fx_forward_publish_service::publish(ctx, publish);
-        if (answer.success && answer.published_at)
-            return {.how = forward_outcome::state::published,
-                    .pair = pair,
-                    .detail = "as of " + ores::platform::time::datetime::to_iso8601_utc(as_of)};
-        if (answer.approval_request_id.empty())
-            return {.how = forward_outcome::state::skipped, .pair = pair, .detail = answer.message};
-        if (answer.success)
+        const auto party = ores::service::messaging::session_party(ctx, "A forward set");
+        try {
+            const auto raised = ores::marketdata::service::app::raise_publication(
+                ctx,
+                ores::marketdata::service::app::derived_kind::fx_forward,
+                {{.subject_key = pair, .as_of = as_of}},
+                std::string(publish_reason),
+                party);
+            if (raised.state_code != "approved")
+                return {.how = forward_outcome::state::not_published,
+                        .pair = pair,
+                        .detail = "the request " + raised.request_id + " is " + raised.state_code +
+                                  " and no person has answered it"};
+            const auto applied = ores::marketdata::service::app::apply_publication(
+                ctx,
+                ores::marketdata::service::app::derived_kind::fx_forward,
+                raised.request_id,
+                raised.raised.front());
+            if (applied.status == ores::marketdata::service::app::publication_status::published)
+                return {.how = forward_outcome::state::published,
+                        .pair = pair,
+                        .detail = "as of " + ores::platform::time::datetime::to_iso8601_utc(as_of)};
             return {.how = forward_outcome::state::not_published,
                     .pair = pair,
-                    .detail = "the request " + answer.approval_request_id + " is " +
-                              answer.state_code + " and no person has answered it"};
-        return {
-            .how = forward_outcome::state::not_published, .pair = pair, .detail = answer.message};
+                    .detail = applied.message};
+        } catch (const ores::database::pq::store_error&) {
+            throw;
+        } catch (const std::exception& e) {
+            // A set the raise refuses before a request exists reads as a skip,
+            // as the publish service's own answer did.
+            return {.how = forward_outcome::state::skipped, .pair = pair, .detail = e.what()};
+        }
     }
 
     /// The same, offered twice more when the store made it wait.
@@ -1524,7 +1547,7 @@ private:
         ores::marketdata::messaging::get_published_fx_vol_surface_request published_before;
         published_before.blueprint_id = id;
         published_before.as_of = as_of;
-        if (ores::marketdata::service::app::fx_vol_surface_publish_service::read_published(
+        if (ores::marketdata::service::app::fx_vol_surface_published_reader::read_published(
                 ctx, published_before)
                 .success) {
             decided = {.how = surface_outcome::state::already_published,
@@ -1644,19 +1667,37 @@ private:
      */
     std::vector<surface_outcome> publish_party_surface_set(const ores::database::context& ctx,
                                                            const party_surface_preview& preview,
-                                                           const std::string& request_id,
-                                                           std::string_view publish_reason) const {
+                                                           const std::string& request_id) const {
         std::vector<surface_outcome> outcomes;
         outcomes.reserve(preview.members.size());
         for (const auto& member : preview.members) {
-            ores::marketdata::messaging::publish_fx_vol_surface_request publish;
-            publish.blueprint_id = boost::uuids::to_string(member.blueprint_id);
-            publish.as_of = member.as_of;
-            publish.reason = std::string(publish_reason);
-            publish.approval_request_id = request_id;
-            const auto answer =
-                ores::marketdata::service::app::fx_vol_surface_publish_service::publish(ctx,
-                                                                                        publish);
+            ores::marketdata::messaging::publish_fx_vol_surface_response answer;
+            try {
+                const auto attempted = ores::marketdata::service::app::resolve_publication_subject(
+                    ctx,
+                    ores::marketdata::service::app::derived_kind::fx_vol_surface,
+                    boost::uuids::to_string(member.blueprint_id),
+                    member.as_of);
+                const auto applied = ores::marketdata::service::app::apply_publication(
+                    ctx,
+                    ores::marketdata::service::app::derived_kind::fx_vol_surface,
+                    request_id,
+                    attempted);
+                answer.approval_request_id = request_id;
+                answer.state_code = applied.state_code;
+                if (applied.status ==
+                    ores::marketdata::service::app::publication_status::published) {
+                    answer.success = true;
+                    answer.message = "Published.";
+                    answer.published_at = applied.facts.published_at;
+                    answer.published_by = applied.facts.published_by;
+                } else {
+                    answer.message = applied.message;
+                }
+            } catch (const std::exception& e) {
+                answer.success = false;
+                answer.message = e.what();
+            }
             if (answer.success && answer.published_at) {
                 outcomes.push_back(
                     {.how = surface_outcome::state::published,
@@ -1744,19 +1785,22 @@ private:
                 preview_party_surfaces(wf, party_ctx, recipes, quotes, as_of, party_name);
             std::vector<surface_outcome> outcomes;
             if (!preview.members.empty()) {
-                std::vector<ores::marketdata::service::app::surface_publish_subject> subjects;
-                subjects.reserve(preview.members.size());
+                std::vector<ores::marketdata::service::app::publication_request> requests;
+                requests.reserve(preview.members.size());
                 for (const auto& member : preview.members)
-                    subjects.push_back(
-                        {.blueprint_id = member.blueprint_id, .as_of = member.as_of});
-                const auto raised = ores::marketdata::service::app::raise_surface_publish_set(
-                    party_ctx, party->id, subjects, std::string(publish_reason));
+                    requests.push_back({.subject_key = boost::uuids::to_string(member.blueprint_id),
+                                        .as_of = member.as_of});
+                const auto raised = ores::marketdata::service::app::raise_publication(
+                    party_ctx,
+                    ores::marketdata::service::app::derived_kind::fx_vol_surface,
+                    requests,
+                    std::string(publish_reason),
+                    party->id,
+                    ores::marketdata::service::app::set_raise::keep_acceptable);
                 for (const auto& refused : raised.refused)
-                    result.surfaces_not_published.push_back(party_name + ": " +
-                                                            boost::uuids::to_string(refused.first) +
+                    result.surfaces_not_published.push_back(party_name + ": " + refused.first +
                                                             ": " + refused.second);
-                outcomes = publish_party_surface_set(
-                    party_ctx, preview, raised.request_id, publish_reason);
+                outcomes = publish_party_surface_set(party_ctx, preview, raised.request_id);
             }
             for (auto& decided : preview.decided)
                 outcomes.push_back(std::move(decided));

@@ -17,16 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.marketdata.core/repository/curve_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.service/app/curve_notices.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
+#include "ores.marketdata.service/app/derived_market_object_kind.hpp"
 #include "ores.marketdata.service/app/publication_kind.hpp"
-#include "ores.marketdata.service/app/publication_lifecycle.hpp"
+#include "ores.marketdata.service/app/publication_kind_codes.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
@@ -35,24 +34,17 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <set>
+#include <chrono>
+#include <optional>
 #include <stdexcept>
 #include <string>
 
 namespace ores::marketdata::service::app {
 
-namespace {
-
 using ores::platform::time::datetime;
 
-/**
- * @brief The subject as the person reads it: the curve, the as-of and the party.
- *
- * The curve is named by its output series' oresmd URI, because that is the only
- * name a bootstrap configuration has: it carries a currency, an index tenor and
- * a convention, and no code. A refusal and the record a decider reads therefore
- * name the subject the same way.
- */
+namespace {
+
 struct subject_names {
     std::string curve;
     std::string party;
@@ -116,7 +108,7 @@ void end_previous_sets(const ores::database::context& ctx, const domain::curve_p
     if (successor.output_series_id.is_nil() || !successor.published_at)
         return;
 
-    repository::curve_publish_repository repo;
+    ores::marketdata::repository::curve_publish_repository repo;
     for (auto previous : repo.read_live_for_series(ctx, successor.output_series_id)) {
         if (previous.id == successor.id)
             continue;
@@ -138,89 +130,27 @@ void end_previous_sets(const ores::database::context& ctx, const domain::curve_p
 
 }
 
-std::string raise_permission_of(const ores::database::context& ctx, std::string_view kind_code) {
-    ores::inbox::service::approval_lifecycle lifecycle(ctx);
-    const auto kind = lifecycle.kind(std::string(kind_code));
-    if (!kind)
-        throw std::runtime_error("No such kind of request: " + std::string(kind_code) + ".");
-    return kind->raise_permission_code.value_or(std::string{});
-}
+namespace {
 
-publish_subject resolve_publish_subject(const ores::database::context& ctx,
-                                        const std::string& bootstrap_config_id,
-                                        std::chrono::system_clock::time_point as_of) {
-    if (bootstrap_config_id.empty())
-        throw std::invalid_argument(
-            "Name the curve configuration the publish is about, so the request authorises a "
-            "subject and not whatever comes next.");
-    if (at_store_precision(as_of) == std::chrono::system_clock::time_point{})
-        throw std::invalid_argument(
-            "Name the as-of instant the curve is bootstrapped against, so the request authorises "
-            "one published set and not any of them.");
+/// What a publish call asks to publish, read from the configuration itself.
+struct publish_subject {
+    boost::uuids::uuid party_id{};
+    boost::uuids::uuid bootstrap_config_id{};
+    boost::uuids::uuid output_series_id{};
+    std::chrono::system_clock::time_point as_of{};
+};
 
-    ores::refdata::repository::ir_curve_bootstrap_config_repository config_repo;
-    const auto configs = config_repo.read_latest(ctx, bootstrap_config_id);
-    if (configs.empty())
-        throw std::invalid_argument("No curve configuration has the id " + bootstrap_config_id +
-                                    ", so there is no subject to publish.");
-    const auto& config = configs.front();
+/// What the approval record says about one publish.
+struct publish_verdict {
+    bool approved = false;
+    std::string state_code;
+    std::string message;
+    std::optional<ores::marketdata::domain::curve_publish> record;
+};
 
-    publish_subject subject;
-    subject.party_id = config.party_id;
-    subject.bootstrap_config_id = config.id;
-    subject.output_series_id = config.output_series_id;
-    subject.as_of = at_store_precision(as_of);
-    return subject;
-}
-
-ores::inbox::domain::approval_request
-raise_publish_request_set(const ores::database::context& ctx,
-                          const std::vector<publish_subject>& subjects,
-                          const std::string& reason) {
-    std::vector<publication_request> requests;
-    requests.reserve(subjects.size());
-    for (const auto& subject : subjects)
-        requests.push_back({.subject_key = boost::uuids::to_string(subject.bootstrap_config_id),
-                            .as_of = subject.as_of});
-    if (requests.empty())
-        throw std::invalid_argument("A set of publishes names at least one curve to publish.");
-
-    // The curve's contract is the stricter of the two the lifecycle offers: a set
-    // is raised whole or not at all, so a caller never reads a request that
-    // authorises a subset of what it asked for.
-    const auto raised =
-        raise_publication(ctx, derived_kind::curve, requests, reason, {}, set_raise::whole_set);
-
-    const auto request = ores::inbox::service::approval_lifecycle(ctx).request(raised.request_id);
-    if (!request)
-        throw std::runtime_error("The request that was just raised cannot be read back.");
-    return *request;
-}
-
-ores::inbox::domain::approval_request raise_publish_request(const ores::database::context& ctx,
-                                                            const publish_subject& subject,
-                                                            const std::string& reason) {
-    return raise_publish_request_set(ctx, {subject}, reason);
-}
-
-std::optional<std::chrono::system_clock::time_point>
-live_as_of(const ores::database::context& ctx, const boost::uuids::uuid& output_series_id) {
-    if (output_series_id.is_nil())
-        return std::nullopt;
-    repository::curve_publish_repository repo;
-    std::optional<std::chrono::system_clock::time_point> newest;
-    for (const auto& live : repo.read_live_for_series(ctx, output_series_id)) {
-        if (!live.published_at)
-            continue;
-        if (!newest || live.as_of > *newest)
-            newest = live.as_of;
-    }
-    return newest;
-}
-
-publish_verdict verdict_on_publish(const ores::database::context& ctx,
-                                   const std::string& request_id,
-                                   const publish_subject& attempted) {
+publish_verdict local_verdict(const ores::database::context& ctx,
+                              const std::string& request_id,
+                              const publish_subject& attempted) {
     if (request_id.empty())
         return {.approved = false,
                 .state_code = {},
@@ -255,7 +185,7 @@ publish_verdict verdict_on_publish(const ores::database::context& ctx,
     // request that does not name this configuration authorises nothing here,
     // which is the same answer a request that names no configuration at all
     // gets.
-    repository::curve_publish_repository repo;
+    ores::marketdata::repository::curve_publish_repository repo;
     auto record = repo.read_latest_by_request_and_config(
         ctx, request_id, boost::uuids::to_string(attempted.bootstrap_config_id));
     if (!record) {
@@ -317,40 +247,25 @@ publish_verdict verdict_on_publish(const ores::database::context& ctx,
     return {.approved = true, .state_code = request->state_code, .record = std::move(record)};
 }
 
-domain::curve_publish record_publication(const ores::database::context& ctx,
-                                         domain::curve_publish record,
-                                         const std::string& publisher) {
-    if (publisher.empty())
-        throw std::invalid_argument(
-            "A publication names the account that applied it, and the call names none.");
-
-    // The apply is the lifecycle's, so a caller that has already read the
-    // verdict still goes through the one act: the verdict, the deferred build,
-    // the publication, the supersession and the notice are the same five steps
-    // whichever way a publish arrives.
-    const publication_subject attempted{
-        .kind = derived_kind::curve,
-        .party_id = record.party_id,
-        .subject_id = record.bootstrap_config_id,
-        .subject_key = boost::uuids::to_string(record.bootstrap_config_id),
-        .subject_name = names_of(ctx, record.party_id, record.output_series_id, record.as_of).curve,
-        .output_series_id = record.output_series_id,
-        .as_of = record.as_of};
-    const auto applied = apply_publication(
-        ctx, derived_kind::curve, boost::uuids::to_string(record.request_id), attempted, publisher);
-    if (applied.status != publication_status::published)
-        throw std::invalid_argument(applied.message);
-
-    // The record as the store holds it, so the caller answers with the instant
-    // the store keeps rather than with its own clock.
-    repository::curve_publish_repository repo;
-    const auto stored = repo.read_latest(ctx, boost::uuids::to_string(record.id));
-    if (stored.empty())
-        throw std::runtime_error("The published set was written but cannot be read back.");
-    return stored.front();
+/**
+ * @brief The as-of of the set the series has in use, or nothing when it has none.
+ *
+ * Read before an apply, so the notice names the version the publish replaced.
+ */
+std::optional<std::chrono::system_clock::time_point>
+live_as_of(const ores::database::context& ctx, const boost::uuids::uuid& output_series_id) {
+    if (output_series_id.is_nil())
+        return std::nullopt;
+    ores::marketdata::repository::curve_publish_repository repo;
+    std::optional<std::chrono::system_clock::time_point> newest;
+    for (const auto& live : repo.read_live_for_series(ctx, output_series_id)) {
+        if (!live.published_at)
+            continue;
+        if (!newest || live.as_of > *newest)
+            newest = live.as_of;
+    }
+    return newest;
 }
-
-namespace {
 
 /// The facts of a curve publish, in the shape every kind shares.
 publication_facts facts_of(const ores::database::context& ctx,
@@ -390,7 +305,24 @@ public:
                     const boost::uuids::uuid& party_id,
                     const std::string& subject_key,
                     std::chrono::system_clock::time_point as_of) const override {
-        const auto subject = resolve_publish_subject(ctx, subject_key, as_of);
+        if (subject_key.empty())
+            throw std::invalid_argument(
+                "Name the curve configuration the publish is about, so the request authorises a "
+                "subject and not whatever comes next.");
+        if (at_store_precision(as_of) == std::chrono::system_clock::time_point{})
+            throw std::invalid_argument(
+                "Name the as-of instant the curve is bootstrapped against, so the request "
+                "authorises one published set and not any of them.");
+        ores::refdata::repository::ir_curve_bootstrap_config_repository config_repo;
+        const auto configs = config_repo.read_latest(ctx, subject_key);
+        if (configs.empty())
+            throw std::invalid_argument("No curve configuration has the id " + subject_key +
+                                        ", so there is no subject to publish.");
+        const auto& config = configs.front();
+        const publish_subject subject{.party_id = config.party_id,
+                                      .bootstrap_config_id = config.id,
+                                      .output_series_id = config.output_series_id,
+                                      .as_of = at_store_precision(as_of)};
         if (!party_id.is_nil() && subject.party_id != party_id)
             throw std::invalid_argument(
                 "The curve " +
@@ -440,19 +372,18 @@ public:
         record.change_reason_code = "system.new_record";
         record.change_commentary = "The subject that publish request " +
                                    boost::uuids::to_string(request_id) + " authorises";
-        repository::curve_publish_repository{}.write(tx, record);
+        ores::marketdata::repository::curve_publish_repository{}.write(tx, record);
     }
 
     publication_verdict verdict_on_publish(const ores::database::context& ctx,
                                            const std::string& request_id,
                                            const publication_subject& attempted) const override {
-        const auto verdict = ores::marketdata::service::app::verdict_on_publish(
-            ctx,
-            request_id,
-            {.party_id = attempted.party_id,
-             .bootstrap_config_id = attempted.subject_id,
-             .output_series_id = attempted.output_series_id,
-             .as_of = attempted.as_of});
+        const auto verdict = local_verdict(ctx,
+                                           request_id,
+                                           {.party_id = attempted.party_id,
+                                            .bootstrap_config_id = attempted.subject_id,
+                                            .output_series_id = attempted.output_series_id,
+                                            .as_of = attempted.as_of});
         publication_verdict out;
         out.approved = verdict.approved;
         out.state_code = verdict.state_code;
@@ -480,7 +411,7 @@ public:
 
     publication_facts publish(const ores::database::context& tx,
                               publication_facts set) const override {
-        repository::curve_publish_repository repo;
+        ores::marketdata::repository::curve_publish_repository repo;
         const auto stored = repo.read_latest(tx, boost::uuids::to_string(set.publish_id));
         if (stored.empty())
             throw std::runtime_error("The set the request authorises is gone, so nothing is "

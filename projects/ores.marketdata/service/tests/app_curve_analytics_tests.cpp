@@ -18,10 +18,10 @@
  *
  */
 #include "curve_publish_fixture.hpp"
+#include "curve_publish_steps.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.marketdata.service/app/curve_analytics_reader.hpp"
-#include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -37,9 +37,9 @@ using ores::marketdata::messaging::get_curve_analytics_request;
 using ores::inbox::service::approval_lifecycle;
 using ores::marketdata::service::app::curve_republish_service;
 using ores::marketdata::service::app::get_curve_analytics;
-using ores::marketdata::service::app::raise_publish_request;
-using ores::marketdata::service::app::record_publication;
-using ores::marketdata::service::app::verdict_on_publish;
+using ores::marketdata::service::tests::raise_publish_request;
+using ores::marketdata::service::tests::record_publication;
+using ores::marketdata::service::tests::verdict_on_publish;
 using ores::marketdata::service::tests::seed_person;
 using ores::marketdata::service::tests::curve_fixture;
 

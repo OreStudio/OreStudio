@@ -17,18 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MARKETDATA_SERVICE_APP_FX_FORWARD_PUBLISH_SERVICE_HPP
-#define ORES_MARKETDATA_SERVICE_APP_FX_FORWARD_PUBLISH_SERVICE_HPP
+#ifndef ORES_MARKETDATA_SERVICE_APP_FX_FORWARD_PUBLICATION_KIND_HPP
+#define ORES_MARKETDATA_SERVICE_APP_FX_FORWARD_PUBLICATION_KIND_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.marketdata.api/messaging/fx_forward_operation_protocol.hpp"
+#include "ores.marketdata.service/app/publication_kind_codes.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include <string_view>
 
 namespace ores::marketdata::service::app {
-
-/// The approval kind a forward set publish raises.
-inline constexpr std::string_view fx_forward_publish_kind_code = "marketdata.fx_forward_publish";
 
 /**
  * @brief The approval-gated publish of a party's FX forward set, and its read.
@@ -39,12 +37,8 @@ inline constexpr std::string_view fx_forward_publish_kind_code = "marketdata.fx_
  * numbers. A set never changes once written, so a read returns the published numbers after the
  * market has moved.
  */
-class ORES_MARKETDATA_SERVICE_EXPORT fx_forward_publish_service final {
+class ORES_MARKETDATA_SERVICE_EXPORT fx_forward_published_reader final {
 public:
-    [[nodiscard]] static ores::marketdata::messaging::publish_fx_forward_response
-    publish(const ores::database::context& ctx,
-            const ores::marketdata::messaging::publish_fx_forward_request& request);
-
     [[nodiscard]] static ores::marketdata::messaging::get_published_fx_forward_response
     read(const ores::database::context& ctx,
          const ores::marketdata::messaging::get_published_fx_forward_request& request);

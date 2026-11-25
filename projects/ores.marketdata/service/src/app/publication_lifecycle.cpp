@@ -43,6 +43,14 @@ const publication_kind& publication_kind_of(derived_kind kind) {
     throw std::logic_error("The lifecycle is asked for a kind it does not declare.");
 }
 
+std::string raise_permission_of(const ores::database::context& ctx, std::string_view kind_code) {
+    ores::inbox::service::approval_lifecycle lifecycle(ctx);
+    const auto kind = lifecycle.kind(std::string(kind_code));
+    if (!kind)
+        throw std::runtime_error("No such kind of request: " + std::string(kind_code) + ".");
+    return kind->raise_permission_code.value_or(std::string{});
+}
+
 publication_subject resolve_publication_subject(const ores::database::context& ctx,
                                                 derived_kind kind,
                                                 const std::string& subject_key,

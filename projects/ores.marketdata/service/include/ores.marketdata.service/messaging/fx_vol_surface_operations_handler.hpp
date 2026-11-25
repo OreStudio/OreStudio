@@ -22,9 +22,12 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/fx_vol_surface_operation_protocol.hpp"
-#include "ores.marketdata.service/app/curve_publish_gate.hpp"
+#include "ores.marketdata.service/app/derived_market_object_kind.hpp"
+#include "ores.marketdata.service/app/fx_forward_publication_kind.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
-#include "ores.marketdata.service/app/fx_vol_surface_publish_service.hpp"
+#include "ores.marketdata.service/app/fx_vol_surface_publication_kind.hpp"
+#include "ores.marketdata.service/app/publication_kind_codes.hpp"
+#include "ores.marketdata.service/app/publication_lifecycle.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -142,10 +145,14 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        reply(nats_,
-              msg,
-              ores::marketdata::service::app::fx_vol_surface_publish_service::publish(*req_ctx,
-                                                                                      *req));
+        publish_fx_vol_surface_response resp;
+        try {
+            answer(*req_ctx, *req, resp);
+        } catch (const std::exception& e) {
+            resp.success = false;
+            resp.message = e.what();
+        }
+        reply(nats_, msg, resp);
     }
 
     void read_published(ores::nats::message msg) {
@@ -169,7 +176,7 @@ public:
         }
         reply(nats_,
               msg,
-              ores::marketdata::service::app::fx_vol_surface_publish_service::read_published(
+              ores::marketdata::service::app::fx_vol_surface_published_reader::read_published(
                   *req_ctx, *req));
     }
 
@@ -192,12 +199,62 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        reply(nats_,
-              msg,
-              ores::marketdata::service::app::fx_vol_surface_publish_service::read(*req_ctx, *req));
+        reply(
+            nats_,
+            msg,
+            ores::marketdata::service::app::fx_vol_surface_published_reader::read(*req_ctx, *req));
     }
 
 private:
+    /// The raise, or the apply of an approved request, through the one lifecycle.
+    static void answer(const ores::database::context& ctx,
+                       const publish_fx_vol_surface_request& req,
+                       publish_fx_vol_surface_response& resp) {
+        using namespace ores::marketdata::service::app;
+        const auto party = ores::service::messaging::session_party(ctx, "A surface");
+        const auto as_of = std::chrono::floor<std::chrono::microseconds>(req.as_of);
+        const auto attempted =
+            resolve_publication_subject(ctx, derived_kind::fx_vol_surface, req.blueprint_id, as_of);
+        if (!req.approval_request_id.empty()) {
+            apply_answer(ctx, req.approval_request_id, attempted, resp);
+            return;
+        }
+        const auto raised = raise_publication(ctx,
+                                              derived_kind::fx_vol_surface,
+                                              {{.subject_key = req.blueprint_id, .as_of = as_of}},
+                                              req.reason,
+                                              party);
+        resp.approval_request_id = raised.request_id;
+        resp.state_code = raised.state_code;
+        if (raised.state_code != "approved") {
+            resp.success = true;
+            resp.message = "Raised. The publish waits on the decision.";
+            return;
+        }
+        apply_answer(ctx, raised.request_id, raised.raised.front(), resp);
+    }
+
+    static void apply_answer(const ores::database::context& ctx,
+                             const std::string& request_id,
+                             const ores::marketdata::service::app::publication_subject& attempted,
+                             publish_fx_vol_surface_response& resp) {
+        const auto applied = ores::marketdata::service::app::apply_publication(
+            ctx,
+            ores::marketdata::service::app::derived_kind::fx_vol_surface,
+            request_id,
+            attempted);
+        resp.approval_request_id = request_id;
+        resp.state_code = applied.state_code;
+        if (applied.status == ores::marketdata::service::app::publication_status::published) {
+            resp.success = true;
+            resp.message = "Published.";
+            resp.published_at = applied.facts.published_at;
+            resp.published_by = applied.facts.published_by;
+        } else {
+            resp.message = applied.message;
+        }
+    }
+
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;

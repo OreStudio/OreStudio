@@ -18,6 +18,7 @@
  *
  */
 #include "curve_publish_fixture.hpp"
+#include "curve_publish_steps.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
@@ -35,7 +36,6 @@
 #include "ores.marketdata.api/generators/fx_forward_publish_generator.hpp"
 #include "ores.marketdata.core/repository/fx_forward_publish_repository.hpp"
 #include "ores.marketdata.service/app/curve_notices.hpp"
-#include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
 #include "ores.marketdata.service/app/curve_withdrawal.hpp"
 #include "ores.marketdata.service/app/publication_kind.hpp"
@@ -67,8 +67,8 @@ using namespace ores::logging;
 using ores::inbox::service::approval_lifecycle;
 using ores::inbox::service::notification_center;
 using ores::marketdata::service::app::announce_withdrawal;
-using ores::marketdata::service::app::record_publication;
-using ores::marketdata::service::app::verdict_on_publish;
+using ores::marketdata::service::tests::record_publication;
+using ores::marketdata::service::tests::verdict_on_publish;
 using ores::marketdata::service::tests::curve_fixture;
 using ores::marketdata::service::tests::seed_person;
 
@@ -193,8 +193,7 @@ TEST_CASE("a_publish_sends_one_notice_that_names_the_subject_and_the_act", "[cur
     const auto decider = seed_person(f.h);
     const reader_account reader(f);
 
-    const auto raised = ores::marketdata::service::app::raise_publish_request(
-        maker.ctx, f.subject(), "Today's bootstrapped curve");
+    const auto raised = raise_publish_request(maker.ctx, f.subject(), "Today's bootstrapped curve");
     const auto id = boost::uuids::to_string(raised.id);
     REQUIRE(approval_lifecycle(*f.party)
                 .decide(id, raised.version, "approve", decider.account.id, "")
@@ -247,8 +246,7 @@ TEST_CASE("a_withdrawal_sends_its_own_notice_with_the_reason", "[curve_notices]"
     const auto decider = seed_person(f.h);
     const reader_account reader(f);
 
-    const auto raised = ores::marketdata::service::app::raise_publish_request(
-        maker.ctx, f.subject(), "Today's bootstrapped curve");
+    const auto raised = raise_publish_request(maker.ctx, f.subject(), "Today's bootstrapped curve");
     const auto id = boost::uuids::to_string(raised.id);
     REQUIRE(approval_lifecycle(*f.party)
                 .decide(id, raised.version, "approve", decider.account.id, "")
@@ -290,8 +288,7 @@ TEST_CASE("a_refused_publish_sends_nothing", "[curve_notices]") {
     const auto decider = seed_person(f.h);
     const reader_account reader(f);
 
-    const auto raised = ores::marketdata::service::app::raise_publish_request(
-        maker.ctx, f.subject(), "A curve nobody checked");
+    const auto raised = raise_publish_request(maker.ctx, f.subject(), "A curve nobody checked");
     const auto id = boost::uuids::to_string(raised.id);
     REQUIRE(approval_lifecycle(*f.party)
                 .decide(id, raised.version, "refuse", decider.account.id, "The fit is wrong")

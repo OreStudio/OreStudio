@@ -18,6 +18,7 @@
  *
  */
 #include "curve_publish_fixture.hpp"
+#include "curve_publish_steps.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.api/domain/approval_kind.hpp"
@@ -30,7 +31,6 @@
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/service/series_snapshot_reader.hpp"
-#include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
 #include "ores.marketdata.service/app/curve_withdrawal.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
@@ -58,11 +58,11 @@ namespace {
 
 using ores::inbox::service::approval_lifecycle;
 using ores::marketdata::service::app::curve_publish_kind_code;
-using ores::marketdata::service::app::publish_subject;
-using ores::marketdata::service::app::raise_publish_request;
-using ores::marketdata::service::app::record_publication;
-using ores::marketdata::service::app::resolve_publish_subject;
-using ores::marketdata::service::app::verdict_on_publish;
+using ores::marketdata::service::tests::publish_subject;
+using ores::marketdata::service::tests::raise_publish_request;
+using ores::marketdata::service::tests::record_publication;
+using ores::marketdata::service::tests::resolve_publish_subject;
+using ores::marketdata::service::tests::verdict_on_publish;
 using namespace ores::marketdata::service::tests;
 
 }
@@ -88,7 +88,9 @@ TEST_CASE("a_zero_rule_a_run_left_open_is_restored_before_the_next_test", tags) 
     ores::inbox::repository::approval_kind_repository repo;
     repo.write(ctx, leaked);
 
-    { zero_approval_kind zeroed(h); }
+    {
+        zero_approval_kind zeroed(h);
+    }
 
     const auto after = lifecycle.kind(std::string(curve_publish_kind_code));
     REQUIRE(after);

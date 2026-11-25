@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.marketdata.service/app/fx_forward_publish_service.hpp"
+#include "ores.marketdata.service/app/fx_forward_publication_kind.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/repository/approval_decision_repository.hpp"
@@ -65,31 +65,6 @@ using time_point = std::chrono::system_clock::time_point;
 /// The instant at the precision the store keeps, so a raise and its apply compare equal.
 time_point at_store_precision(time_point t) {
     return std::chrono::floor<std::chrono::microseconds>(t);
-}
-
-/// Applies the approved request to the forward set it names, or says why the set did not move.
-void apply_forward(const context& ctx,
-                   const std::string& request_id,
-                   const publication_subject& attempted,
-                   msg::publish_fx_forward_response& resp) {
-    const auto applied = apply_publication(ctx, derived_kind::fx_forward, request_id, attempted);
-    resp.approval_request_id = request_id;
-    resp.state_code = applied.state_code;
-    switch (applied.status) {
-        case publication_status::published:
-            resp.success = true;
-            resp.published_at = applied.facts.published_at;
-            resp.published_by = applied.facts.published_by;
-            break;
-        case publication_status::deferred:
-            // A forward set has no compute of its own to defer: its ladder is
-            // computed at the raise, and a missing input refuses the set there.
-            resp.message = applied.message;
-            break;
-        case publication_status::refused:
-            resp.message = applied.message;
-            break;
-    }
 }
 
 /// The funding curve one side of a set was built from, and its state now.
@@ -165,47 +140,9 @@ void approval_of(const context& ctx, msg::get_published_fx_forward_response& out
 
 }
 
-msg::publish_fx_forward_response
-fx_forward_publish_service::publish(const context& ctx,
-                                    const msg::publish_fx_forward_request& req) {
-    msg::publish_fx_forward_response resp;
-    try {
-        const auto party = ores::service::messaging::session_party(ctx, "A forward set");
-        const auto as_of = at_store_precision(req.as_of);
-        // The subject is the set's pair, and the party is the session's: the
-        // set is computed by the raise, so a missing input refuses it there and
-        // writes nothing.
-        const auto attempted =
-            resolve_publication_subject(ctx, derived_kind::fx_forward, req.pair_code, as_of);
-
-        if (!req.approval_request_id.empty()) {
-            apply_forward(ctx, req.approval_request_id, attempted, resp);
-            return resp;
-        }
-
-        const auto raised = raise_publication(ctx,
-                                              derived_kind::fx_forward,
-                                              {{.subject_key = req.pair_code, .as_of = as_of}},
-                                              req.reason,
-                                              party);
-        resp.approval_request_id = raised.request_id;
-        resp.state_code = raised.state_code;
-        if (raised.state_code != "approved") {
-            resp.success = true;
-            resp.message = "Raised. The publish waits on the decision.";
-            return resp;
-        }
-        apply_forward(ctx, resp.approval_request_id, raised.raised.front(), resp);
-    } catch (const std::exception& e) {
-        resp.success = false;
-        resp.message = e.what();
-    }
-    return resp;
-}
-
 msg::get_published_fx_forward_response
-fx_forward_publish_service::read(const context& ctx,
-                                 const msg::get_published_fx_forward_request& req) {
+fx_forward_published_reader::read(const context& ctx,
+                                  const msg::get_published_fx_forward_request& req) {
     msg::get_published_fx_forward_response out;
     out.pair_code = req.pair_code;
     try {

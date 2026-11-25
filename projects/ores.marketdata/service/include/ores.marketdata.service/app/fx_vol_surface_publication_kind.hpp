@@ -16,8 +16,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MARKETDATA_SERVICE_APP_FX_VOL_SURFACE_PUBLISH_SERVICE_HPP
-#define ORES_MARKETDATA_SERVICE_APP_FX_VOL_SURFACE_PUBLISH_SERVICE_HPP
+#ifndef ORES_MARKETDATA_SERVICE_APP_FX_VOL_SURFACE_PUBLICATION_KIND_HPP
+#define ORES_MARKETDATA_SERVICE_APP_FX_VOL_SURFACE_PUBLICATION_KIND_HPP
 
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.inbox.api/domain/approval_request.hpp"
@@ -33,10 +33,6 @@
 #include <vector>
 
 namespace ores::marketdata::service::app {
-
-/// The approval kind a surface publish raises.
-inline constexpr std::string_view fx_vol_surface_publish_kind_code =
-    "marketdata.fx_vol_surface_publish";
 
 /**
  * @brief Why a calibration may not be published under any rule, or nothing when it may.
@@ -100,12 +96,8 @@ raise_surface_publish_set(const ores::database::context& ctx,
  * calibration once, ends every live surface of the output series in the same act, and sends the
  * notice.
  */
-class ORES_MARKETDATA_SERVICE_EXPORT fx_vol_surface_publish_service final {
+class ORES_MARKETDATA_SERVICE_EXPORT fx_vol_surface_published_reader final {
 public:
-    [[nodiscard]] static ores::marketdata::messaging::publish_fx_vol_surface_response
-    publish(const ores::database::context& ctx,
-            const ores::marketdata::messaging::publish_fx_vol_surface_request& request);
-
     /// The published surface of a blueprint at an as-of, or a slice of it. Never a candidate.
     [[nodiscard]] static ores::marketdata::messaging::get_published_fx_vol_surface_response
     read_published(

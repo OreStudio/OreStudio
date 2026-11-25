@@ -2,7 +2,7 @@
 :ID: 7B4089F8-EE63-4056-9B67-A750CC0A99F4
 :END:
 #+title: Task: Write the decision: what a run may value, and what it reports
-#+description: The decision record and the knowledge page that fix the run's phases, the three grains of its market readiness, the phase axis on every error, and the two product approval matrices, so the rest of the story builds one model and not six.
+#+description: The page that fixes a run's three attribution phases, the three grains of its market readiness, the six causes of a gap, and the partition of the population that follows from excluding an incomplete trade.
 #+type: task
 #+level: s1
 #+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
@@ -20,38 +20,47 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-One page states the model the story builds: the phases a run passes through, what
-each phase can refuse and how it says so, the three grains of a run's market
-readiness, the phase every error carries, and the two approval matrices that
-decide what a party and a book may trade.
+One page states the model the story builds for a run's failures: the phases a run
+passes through, what each phase can refuse and how it says so, the three grains of
+a run's market readiness, the six causes a gap can state, and the partition of the
+population that follows from excluding an incomplete trade before the engine.
 
 The page is the reference the later tasks read, so a builder of the readiness
-record and a builder of the error phase do not have to re-derive either.
+record and a builder of the error phase do not have to re-derive either. The two
+product approval matrices are decided in the story's =* Decisions= and belong to
+the task that models them; this page takes the run, not the population.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | Clocked on. The decision note and its knowledge page are not written yet. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Write the decision note, the page on the run's phases, and the =phase_code= change to the error event model page. |
+| Next         | Nothing. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance
 
-- The four phases are named, with what each refuses and the vocabulary it refuses in.
+- The three attribution phases are named, with the pipeline phases each covers and what each refuses.
 - Each grain of the readiness record states what it answers and who reads it.
-- The phase axis is stated beside the engine's scope, with the reason the scope stays the engine's.
-- The two matrices are stated with the subset rule, and the population rule that follows from them.
-- The page states what the story does not build, so a later reader does not take the simulator's expected set for the platform's rule.
+- The six causes a run can state for a gap are named, each one a fact an existing read holds.
+- The phase is stated beside the engine's scope, with the reason the scope stays the engine's.
+- The partition of the population is stated, so an engine error means a trade whose market data was complete.
+- The page states what the attribution does not establish, so a later reader does not take it for more than a classification.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The page was written against the pages that already own its parts, so that it
+extends them rather than restating them: the pipeline's six phases, the
+requirement and its resolution, the error event and its engine scope, and the
+chain from a fixing to a report. It states the three attribution phases on top of
+those six, the six causes a gap can name, the three grains of the readiness
+record, and the partition the exclusion rule produces. The lifecycle it describes
+is drawn as a state diagram beside the page and rendered with PlantUML. The page
+is wired into the reading order of the Report Processing structure note, and it
+names the page it contradicts rather than editing a list it does not own.
 
 * Measurements
 
@@ -65,7 +74,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Page publishes as one file, no failures | 1 file, 0 failures, 1 image copied | =compass site page doc/knowledge/architecture/error_attribution_in_a_report_run.org= | the commit that adds it |
 
 * Notes
 
@@ -93,3 +102,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+[[id:DFC5F290-B8B6-4DEC-970C-D93C98FD39F8][Error Attribution in a Report Run]] states the model.
+
+What it establishes:
+
+- Three attribution phases — preprocessing, engine and postprocessing — each
+  mapped onto the pipeline's six phases, with what each refuses in its own
+  vocabulary.
+- A trade's completeness, the six causes a gap can name, and the three grains at
+  which a run records readiness: by address, by trade and by run.
+- The exclusion rule and the partition it produces, so that an engine error is an
+  error on a trade whose market data was complete.
+- The reason a run with nothing complete fails in preprocessing rather than
+  reporting an empty valuation.
+- The separation of the phase from the engine's scope, and what the attribution
+  does not establish.
+
+The lifecycle is drawn in =report_run_trade_states.puml= and rendered to PNG, and
+the page is listed in the reading order of [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]].
+[[id:08C54927-C7BD-48B7-BF7B-13DC3702FF68][Report pre-processing]] still states that no resolution exists and that
+the export writes every series the tenant holds; both are delivered, so the new
+page names the contradiction rather than editing a list it does not own, and the
+correction of that page is left to the task that owns it.
+
+=compass site page= publishes the page with no failure and copies its one image.

@@ -29,6 +29,7 @@ set(files
     "badge_mapping_protocol_codec_roundtrip_tests.cpp"
     "badge_severity_codec_roundtrip_tests.cpp"
     "badge_severity_protocol_codec_roundtrip_tests.cpp"
+    "bundle_roster_protocol_codec_roundtrip_tests.cpp"
     "catalog_codec_roundtrip_tests.cpp"
     "catalog_protocol_codec_roundtrip_tests.cpp"
     "change_reason_category_codec_roundtrip_tests.cpp"

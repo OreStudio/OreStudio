@@ -19,6 +19,7 @@
  */
 #include "ores.dq.core/messaging/registrar.hpp"
 #include "ores.dq.api/messaging/artefact_type_protocol.hpp"
+#include "ores.dq.api/messaging/bundle_roster_protocol.hpp"
 #include "ores.dq.api/messaging/catalog_protocol.hpp"
 #include "ores.dq.api/messaging/change_reason_category_protocol.hpp"
 #include "ores.dq.api/messaging/change_reason_protocol.hpp"
@@ -81,6 +82,7 @@
 #include "ores.dq.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.dq.core/messaging/publish_handler.hpp"
 #include "ores.dq.core/messaging/report_definition_template_handler.hpp"
+#include "ores.dq.core/messaging/roster_handler.hpp"
 #include "ores.dq.core/messaging/subject_area_registrar.hpp"
 #include "ores.dq.core/messaging/treatment_dimension_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/treatment_dimension_registrar.hpp"
@@ -280,6 +282,20 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         publish_bundle_request::nats_subject, queue_group, [pubh](ores::nats::message msg) {
             pubh->publish_bundle(std::move(msg));
+        }));
+
+    // =========================================================================
+    // The roster verb reads what a publish would act on: the bundles with the
+    // level each writes at, and for the bundle a caller names, its members with
+    // the rows each has staged. It changes nothing, so it asks for the read and
+    // not for the write the two publish verbs ask for.
+    // =========================================================================
+
+    auto rosh = std::make_shared<roster_handler>(nats, ctx, verifier);
+
+    subs.push_back(nats.queue_subscribe(
+        bundle_roster_request::nats_subject, queue_group, [rosh](ores::nats::message msg) {
+            rosh->bundle_roster(std::move(msg));
         }));
 
     // =========================================================================

@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-831 tables in 22 groups.
+833 tables in 22 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -44,6 +44,8 @@ entity "iam" as iam {
   ores_iam_agent_keys_tbl
   ores_iam_agent_token_issues_tbl
   ores_iam_auth_events_tbl
+  ores_iam_external_identities_tbl
+  ores_iam_identity_providers_tbl
   ores_iam_login_info_tbl
   ores_iam_permissions_tbl
   ores_iam_role_grant_request_roles_tbl
@@ -64,7 +66,7 @@ entity "iam" as iam {
 }
 note bottom of iam
 Identity & Access Management
-30 tables — ores_schema.iam.puml
+32 tables — ores_schema.iam.puml
 end note
 
 entity "assets" as assets {

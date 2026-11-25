@@ -45,7 +45,7 @@ const auto later_day = std::chrono::year{2026} / 3 / 2;
 
 /// The quote of a USD SOFR pillar: overnight index, 1D, spot-starting unless
 /// @p start says otherwise.
-pillar_quote sofr(const std::string& start, const std::string& end) {
+pillar_quote sofr_pillar(const std::string& start, const std::string& end) {
     return {"USD", "1D", start, end, first_day, later_day};
 }
 
@@ -68,7 +68,7 @@ std::string series_uri_of(const market_datum& d) {
 }
 
 TEST_CASE("a_pillars_quote_is_a_swap_rate_quoted_at_its_own_term", "[pillar_quote]") {
-    const auto d = datum_of(sofr("SPOT", "3M"));
+    const auto d = datum_of(sofr_pillar("SPOT", "3M"));
 
     CHECK(uri_of(d) ==
           "oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D"
@@ -104,7 +104,7 @@ TEST_CASE("a_spot_pillar_whose_template_names_no_end_counts_the_days_it_spans", 
 TEST_CASE("the_index_tenor_separates_one_ladders_quotes_from_anothers", "[pillar_quote]") {
     // The same currency, the same pillar and two index tenors are two series: a
     // EURIBOR 6M curve and a EURIBOR 3M curve read different quotes.
-    auto six = sofr("SPOT", "1Y");
+    auto six = sofr_pillar("SPOT", "1Y");
     six.currency_code = "EUR";
     six.index_tenor = "6M";
     auto three = six;
@@ -118,7 +118,7 @@ TEST_CASE("the_index_tenor_separates_one_ladders_quotes_from_anothers", "[pillar
 
 TEST_CASE("a_pillar_the_schema_refuses_is_refused_where_the_datum_is_built", "[pillar_quote]") {
     // An index tenor that is not a period names no index, and the schema says so.
-    auto bad = sofr("SPOT", "1Y");
+    auto bad = sofr_pillar("SPOT", "1Y");
     bad.index_tenor = "FOMC";
     CHECK_FALSE(pillar_quote_datum(bad).has_value());
 }

@@ -876,6 +876,54 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [],
         rows: ['events'],
     },
+    'iam.v1.external_identities.list': {
+        asOf: true,
+        filter: [
+            'account_id',
+            'identity_provider_id',
+            'id_one_of',
+            'account_id_one_of',
+            'identity_provider_id_one_of',
+        ],
+        rows: ['links'],
+    },
+    'iam.v1.external_identities.list_by_account_id': {
+        asOf: false,
+        filter: [
+            'account_id',
+            'identity_provider_id',
+            'id_one_of',
+            'account_id_one_of',
+            'identity_provider_id_one_of',
+        ],
+        rows: ['links'],
+    },
+    'iam.v1.external_identities.list_by_identity_provider_id': {
+        asOf: false,
+        filter: [
+            'account_id',
+            'identity_provider_id',
+            'id_one_of',
+            'account_id_one_of',
+            'identity_provider_id_one_of',
+        ],
+        rows: ['links'],
+    },
+    'iam.v1.external_identities_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'iam.v1.identity_providers.list': {
+        asOf: true,
+        filter: ['id_one_of', 'search'],
+        rows: ['providers'],
+    },
+    'iam.v1.identity_providers_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'iam.v1.login_info.list': {
         asOf: false,
         filter: ['account_id_one_of'],

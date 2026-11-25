@@ -8,7 +8,7 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch: feature/carry-the-delivery-counts-forward
-#+pr:
+#+pr: 5111
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -111,7 +111,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5111][#5111]] | [marketdata] Model the delivery count as a counter, not an appended series |
 
 * Review
 

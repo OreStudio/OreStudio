@@ -36,9 +36,9 @@ party]]).
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | The shared read is in place and green. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Fix the exceptions' natural key, then move the materialisation. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance
@@ -107,30 +107,51 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Refdata suites, after the shared read | 6 of 6 passed | =compass.sh test run -- -R refdata= | working tree |
+| Calendar date reads that admit the installation's rows | every generated read | =calendar_date_repository.cpp=, its read predicates | working tree |
 
 * Notes
 
 ** Where the work stands
 
-Started, not finished. The dates table now admits the installation's rows beside
-the caller's (the shared-reference read policy), and nothing else has changed.
+Started. The dates table now carries the shared-reference read, and the read is
+generated rather than hand-written. The model states
+=:rls_own_or_system_tenant_rows:= on the table and =:system_tenant_visible:= in
+its =* Repository= drawer, so every generated read of the dates carries
+=tenant_id = caller or tenant_id = system=, and the soft-delete rule keeps to the
+caller's tenant. The target builds, and the refdata suite passes on the change
+(six of six suites).
 
-The next step, and its blocker: the days move to the system tenant, and every
-reader then has to read them there. That means one read per reader, of the shape
-=`(tenant_id = caller or tenant_id = system)=`, and the generated finder reads
-only the caller's tenant. The obvious home is a custom repository method on
-=ores.refdata.calendar_date=, as the exceptions now have, but that model states
-=:client_read_only: true= and the generator emits no repository for it, so the
-custom method is silently dropped. Two ways forward, and the choice is the next
-decision: drop =:client_read_only:= and take the generated repository with a
-custom read on it, or write the read by hand beside the generated service and
-leave the model as it is.
+The earlier note in this task recorded a blocker that was not one. The custom
+read was dropped because a junction's generated repository has no paste point for
+custom methods, and =:client_read_only:= was not the cause: that flag removes the
+write verbs from the protocol, and the repository is generated either way. A
+custom read is not needed at all, because the model already has the knob that
+states a shared-reference read. The rule is now written down in
+[[id:B0BC735F-7E05-4882-A216-C250B26B0091][Precedence among the levels of
+reference data]].
 
-The work was carried as far as a build that compiles and a suite that passes, and
-then reverted to that state rather than left half-applied: the materialisation
-writing into the system tenant without the matching read leaves every reader
-seeing nothing, which the refdata suite showed as seventeen failures.
+One defect blocks the overlay. The exceptions table's natural key is
+=(tenant_id, calendar_code, exception_date)= and it does not carry =party_id=, so
+a party cannot state a departure from an installation exception on the same day:
+the unique index refuses the second row, and an upsert would close the
+installation's row for every party. The overlay needs both statements to exist,
+so the key must carry the level. Two ways forward: a partial unique index for
+the installation's rows (=where party_id is null=) beside one for a party's
+(=where party_id is not null=), or a non-null sentinel that names the
+installation in the party column. The first keeps the model's null semantics and
+needs a partial-index feature in the generator; the second is the shape
+=system_setting= already uses and needs no generator change.
+
+The materialisation's fold has the same shape of problem. It takes the last row
+the read returns (=overrides[date] = is_business_day=), which leaves the store's
+row order to decide between an installation exception and a party's. The order
+must be stated in the service: the installation's rows first, the party's after.
+
+The next steps, in order: fix the exceptions' natural key; move the
+materialisation into the system tenant; apply the party's exceptions over the
+shared days in a stated order; and add the test where two parties read different
+days on one date.
 
 * Test Scenarios
 

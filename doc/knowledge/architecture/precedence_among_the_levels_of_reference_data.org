@@ -1,0 +1,193 @@
+:PROPERTIES:
+:ID: B0BC735F-7E05-4882-A216-C250B26B0091
+:END:
+#+title: Precedence among the levels of reference data
+#+description: How a datum is stated at more than one level, which statement a read prefers, and why a copy is never the answer.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:reference_data:tenancy:precedence:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+* Summary
+
+A reference datum may be stated at the installation, at the system tenant, at a
+tenant or at a party, and where one datum is stated at two levels the system
+decides between the statements at read rather than by copying one into the
+other. The precedence is fixed. A read acts for a level, takes the statement of
+the deepest level that holds the key, and falls back to the next wider level;
+the wider statement stays where it lies, and no level edits it. Four shapes put
+that rule to work, and each answers a different question about who owns the
+difference between the levels. A copy is the one shape that ends the precedence,
+and it is chosen only when the narrower level owns the value outright.
+
+* Detail
+
+** Why a datum is stated once
+
+Two copies of one datum diverge as soon as a person changes the first, and no
+reader can then say which of the two is authoritative. The architecture
+therefore permits one copy of a shared row and holds it in one tenant; the rule
+and the levels are stated in
+[[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]],
+and this page takes them as given. What that page does not decide is the case
+this page does: a narrower level needs a different value for one key of a datum
+the wider level states.
+
+The answer to that need is not a second copy of the datum. A narrower level
+states the difference and only the difference. The read resolves the two
+statements, and the wider statement remains the statement of every key the
+narrower level does not name. A copy, by contrast, ends the connection: a tenant
+provisioned with the system tenant's tenors keeps those rows for good, and a
+later change to the system tenant's rows reaches a new tenant and no existing
+one ([[id:99481EA8-1D2B-426D-A4E6-5E834FF5FFCE][Publish conventions from data quality]], step 9).
+
+** The levels
+
+The level is the scope a statement is made for, and it is one of four. The
+first three are the ownership classes of
+[[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]];
+the fourth subdivides a tenant, and a row names it in =party_id=.
+
+| Level          | What it states                                          | Who may write it                          | An example |
+|----------------+---------------------------------------------------------+-------------------------------------------+------------|
+| The installation | Facts about the deployment itself                     | The installation's own processes          | The grid and node samples, the telemetry logs |
+| The system tenant | The platform and world catalogues, and the derived sets every tenant reads | The platform's publish functions | The provider catalogue, the countries, the calendars |
+| A tenant       | Its own business data                                   | The tenant's people and the services acting for it | Its parties, books and trades |
+| A party        | Its own departure from a tenant-wide statement          | The party's people                        | Its calendar exceptions |
+
+A statement at a level does not carry the value of the level above it. The
+system tenant's calendar holds the rules of a calendar; a party's exception
+holds one day that departs from those rules. The two are not the same statement
+written twice, and the read is what joins them.
+
+** The four shapes
+
+| Shape                  | What the narrower level writes              | What the read does                                    | Where it is used |
+|------------------------+---------------------------------------------+-------------------------------------------------------+-----------------|
+| Read where the row lies | Nothing                                    | Takes the wider row as it stands                      | The countries, the currencies, the calendars, the calendar dates |
+| The override           | A row under the same key                    | Prefers the narrower row and leaves the wider one     | A tenant's script of a world script's name |
+| The overlay            | Only the difference, at a coarser grain     | Reads both and applies the narrower over the wider    | A party's calendar exceptions |
+| The copy at publication| A row of its own, published from one artefact | Reads its own copy and consults no other level      | A party's instrument conventions |
+
+*** Read where the row lies
+
+The widest shape holds when no narrower level owns a different value. The model
+states the shape in two places: =:rls_own_or_system_tenant_rows:= on the SQL side emits
+a read policy of =tenant_id = current or tenant_id = system= with writes
+confined to the caller's tenant, and =:system_tenant_visible:= in the model's
+=* Repository= drawer makes every generated read carry the same comparison and
+adds the own-tenant clause to the delete rule. A table whose rows are all shared
+states =:tenant_read_scope: shared= and its read carries no tenant predicate at
+all. [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]]
+states the six building blocks this shape uses, and the checklist a new shared
+table follows.
+
+The calendar dates table is the case this shape is being applied to. Its days
+are derived from the installation's calendar templates and exceptions, so they
+belong once under the system tenant, and a tenant is to read that copy where it
+lies. The read is in place; moving the materialisation into the system tenant is
+the next step of the task that applies this page.
+
+*** The override
+
+The narrower level states a row under the key the wider level already states,
+and the read prefers it. The trading script library is the case. A script of the
+world library is held by the system tenant; a tenant that publishes a script of
+the same name holds its own row, and the trade that names the script resolves to
+the tenant's row. The resolution is a precedence and not a replacement: the world
+library keeps its row, a later release of ORE that adds the name leaves the
+tenant's script in force, and the tenant's row is read first
+([[id:CCA8090C-26E0-4571-84BA-9115C110376C][Versioning of the script library]]).
+The repository states the order in one place, and the read returns one row.
+
+The same rule at the grain of a value is the manual correction of a derived
+market data set. A hand value holds its coordinate against every later automatic
+write, and a read at an as-of prefers the hand value to a value an automatic
+writer produced later. The correction is not a lock, because the feed keeps
+publishing; the read decides which of the two it shows, and clearing the
+correction restores the automatic value
+([[id:C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4][Manual correction of a derived market data set]]).
+
+*** The overlay
+
+The narrower level states only the difference, at a coarser grain than the wider
+statement. The installation states one row for a calendar day and every party
+follows it; a party that closes the day, or opens a day the rules close, states
+one exception row for that date, and states no rule
+([[id:8B6E1C53-871E-4B6D-BD20-CB3F551B5C46][ores.refdata.calendar_exception]]).
+A read for the party takes the installation's exceptions beside the party's, and
+the materialisation applies the party's row over the installation's on the date
+the two name.
+
+The overlay requires that both statements exist, so the natural key of the table
+carries the level: one row for the installation and one for each party, for the
+same calendar and date. A key that leaves the level out permits one statement
+for all parties, which is the opposite of the shape.
+
+*** The copy at publication
+
+The narrower level is given a row of its own, and it owns that row outright. The
+instrument conventions are published this way: =system_core= publishes the system
+party's copy and =party_essentials= publishes each other party's, from one
+artefact dataset
+([[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]]).
+The copy is the right shape when the narrower level must be able to change the
+value and the wider level must not reach it afterwards. Its limit is the one this
+page opened with: a change at the wide level does not reach the copy, and the
+reader cannot tell from the row that a newer statement exists.
+
+** The order a read applies
+
+A read names the datum and the level it acts for. It takes the statement of that
+level when the level holds one, and otherwise the statement of the next wider
+level that does. In the overlay shape both statements apply, and the narrower is
+applied over the wider; the wider is still read, because it is the statement of
+every key the narrower level does not name.
+
+#+caption: The statement a read uses: the row of the deepest level that states the key, and the wider row left where it lies.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/precedence_of_the_levels.png]]
+
+Source: [[./precedence_of_the_levels.puml][=precedence_of_the_levels.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/precedence_of_the_levels.puml=.
+
+** What the shapes forbid
+
+- *A level edits another level's row.* A tenant writes its own rows and never the system tenant's, and the policy of a shared table confines every write to the caller's tenant.
+- *A copy stands in for a precedence.* A second copy of a shared row is the defect the publication levels exist to prevent.
+- *A read returns two statements for one key.* The caller would have to choose between them, and no two callers choose alike. The read states the precedence, or the table holds one statement per key and level.
+- *The order the store returns rows in decides the precedence.* The exceptions fold that applies a party's row over the installation's must state the order it applies them in, or be given them in that order by the read. Row order is not a decision the store makes.
+- *A level states a value that another level derives.* The derived set is materialised once, and the narrower level states only its departure from it.
+
+** Applying the rule: the calendar dates
+
+The calendar dates show the four shapes working together, and the case is the one
+the rule was written for. A holiday is not the same on every desk: a party in
+Hong Kong closes on days a party in the United Kingdom opens, and both parties
+sit in one installation.
+
+The dates are derived, so they belong to the installation and are held once in
+the system tenant, which is the first shape. The exceptions are the party's
+departure, which is the overlay. The rule that joins them is a read for a party:
+the installation's exceptions apply to every party, the party's own apply beside
+them, and the party's row decides the date the two name. Two parties therefore
+read different answers on one date, from one copy of the days and two rows of
+difference.
+
+The task that moves the dates into the system tenant records one lesson about the
+mechanism. The read the shape needs is not a custom read. The two model flags
+above generate it, and a table that declares them is readable across the levels
+without any hand-written query. The hand-written read is needed only where the
+read names an axis the generator does not have, as the party axis of the
+exceptions' read.
+
+* See also
+
+- [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]] — completes: the level each row belongs to, the bundle that publishes it and the one-copy rule this page resolves.
+- [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]] — states: the six building blocks of the read a shared row takes, and the checklist for a new shared table.
+- [[id:5A5D6490-AF64-4AAF-8B3D-48EF3EDAF3D2][Tenant ownership and the information flow]] — completes: the owners behind the first three levels, and the policy each deserves.
+- [[id:C1C37A35-7DE8-4FD2-8A2F-E7E2CF08EED4][Manual correction of a derived market data set]] — exemplifies: a precedence at read within one table, and why it is not a lock.
+- [[id:CCA8090C-26E0-4571-84BA-9115C110376C][Versioning of the script library]] — exemplifies: a tenant's statement preferred to the world library's under one name.
+- [[id:71146F3F-B884-4E61-BA8B-A8A0731703C6][Rules for the automatic approval of requests]] — contrasts: a value a tenant states for itself, held in the tenant's own scope beside the installation's rather than as a row under the same key.
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the structure note that orders this cluster.

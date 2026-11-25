@@ -111,7 +111,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Policies the sweep considers, with the cadence each states | 3, at 24 hours each | =compass sql -- -c "select code, cadence_hours from ores_scheduler_retention_policies_tbl where valid_to = ores_utility_infinity_timestamp_fn()"= | 66181f05f1 |
+| Policies applied by the first sweep after a database was created | 3 | =compass sql -- -c "select policy_code, outcome from ores_scheduler_apply_retention_policies_fn()"= | 66181f05f1 |
+| Policies applied by the sweep that follows it | 0, so the due check holds | the same call | 66181f05f1 |
+| Policies applied once one ledger row is backdated beyond its cadence | 1, the backdated policy | =update ores_scheduler_retention_runs_tbl set ran_at = ran_at - interval '25 hours' where policy_code = 'report_cashflows_90d'= then the same call | 66181f05f1 |
 
 * Notes
 

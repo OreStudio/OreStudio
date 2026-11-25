@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :sign_a_person_up_and_in_through_an_external_identity_provider:sprint_31:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/decide-how-an-external-identity-signs-a-person-up-and-in
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,11 +26,11 @@ Decide how ORE Studio lets a person sign up and sign in with an external identit
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Sign a person up and in through an external identity provider]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | The recommendation is written and waits for the product owner. |
+| Waiting on   | The product owner's approval of the recommendation. |
+| Next         | Approve, then model the provider and the link. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance
@@ -44,9 +44,204 @@ Decide how ORE Studio lets a person sign up and sign in with an external identit
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The recommendation, with what it costs and what it rejects. Written for the
+product owner to approve; the approval turns it into the story's =* Decisions=.
+
+** Where the flow is served
+
+*The browser-facing half in =ores.http=; the identity data and the act of
+registering, linking and signing in within =iam=.*
+
+The gateway is the only process a browser reaches. It holds the session
+cookie, the HTTP hardening and the MCP endpoint, and it already answers
+=POST /api/session=. IAM holds accounts, credentials, sessions, auth events, the
+registration policy and the permission model, and has no HTTP surface of its
+own. Serving the flow in IAM would expose that service to the internet and
+duplicate the cookie, the origin rules and the rate limiter. Serving it in the
+gateway alone would force a database into a process that has none: no
+=ores.http= target links =libpq= or the database layer today, and the gateway
+talks to the services over NATS.
+
+So the gateway gains these routes, and IAM gains the operation behind each:
+
+| Route | Session | Act |
+|-------+---------+-----|
+| =GET /api/auth/providers= | none | which doors this host offers |
+| =GET /api/auth/{code}/start= | none | set state, nonce and PKCE, redirect to the provider |
+| =GET /api/auth/{code}/callback= | none | validate, register or link, issue a session |
+| =GET /api/auth/{code}/link= | required | begin an explicit link to the signed-in account |
+| =GET /api/auth/links= | required | what is linked to me |
+| =DELETE /api/auth/links/{id}= | required | remove a link |
+
+| IAM operation | Act |
+|---------------+-----|
+| =identity_providers.list= | the providers an address offers, resolved by hostname |
+| =signup_external= | register a first sign-in under the policy, idempotent |
+| =link_external= | link a proven provider account to a proven ORE account |
+| =unlink_external= | remove a link, refusing the last way in |
+| =login_external= | issue the session and token for a proven account and method |
+
+The hostname names the tenant, as it already does for the registration policy:
+=read_active_tenant_by_hostname= exists in IAM and is reused rather than
+reinvented.
+
+** The protocol
+
+*OpenID Connect authorization code with PKCE (S256), state and nonce, an exact
+redirect match, and the ID token validated against the provider's published
+keys.*
+
+- =response_type=code=, =scope="openid email profile"=, =code_challenge_method=S256=.
+- The client authenticates at the token endpoint with =client_secret_basic=.
+  Google accepts it, and it keeps the secret out of the query string and the
+  logs.
+- The ID token is verified with =jwt-cpp= and =openssl= (already linked through
+  =ores.security=) against the key the provider's key set names by =kid=, and
+  the claims checked are =iss=, =aud=, =exp=, =iat=, =nonce= and =azp= when
+  present, and =email_verified=.
+- Discovery is read once per provider and cached; the key set is cached by
+  =kid= and refetched once when a token names a key we do not hold, one fetch at
+  a time per provider.
+- Outbound calls use =ores.http.client::beast_transport=, which already checks
+  the certificate and the host, bounds the whole request with one deadline and
+  caps the response, and runs in production in =ores.marketdata.official=. No new
+  HTTP client is written.
+
+PKCE on a confidential client is cheap and binds the authorization code to the
+browser that started the flow, so a code intercepted in transit is useless.
+
+** The provider as data
+
+*One row per provider a tenant enables.* =ores.iam.identity_provider=, a codegen
+entity like the rest: tenant, code (=google=), display name, issuer, client id,
+client secret reference, scopes, allowed email domains, enabled, default.
+
+The secret stays out of the database. The row names an environment variable or a
+configuration key, and the deployment sets the value. Nothing in ORE stores a
+secret that can be read back today: passwords and agent keys are hashed, not
+encrypted. A secret in a table needs a key at rest, that key is itself
+configuration, and the result is no safer than the reference and much harder to
+rotate.
+
+A tenant with no row has no doors, so an installation starts with password
+sign-in exactly as it has it.
+
+** The link, and the rule that guards it
+
+*One row per link.* =ores.iam.external_identity=: account, provider, issuer,
+subject, the address at link, whether it was verified, when it was linked, when
+it was last used. Unique on =(issuer, subject)=; one link per account per
+provider.
+
+The rule: *a provider account never attaches to an existing ORE account because
+the two addresses match.* Linking is an act taken from a signed-in session, after
+the password is proven, and only on a verified address. An unknown subject with
+no session registers; an unknown subject with a session links.
+
+Why this and not the convenience of matching addresses:
+
+- A Google Workspace administrator can create any address in their domain.
+- A provider that is misconfigured or hostile can assert any address it likes.
+- A wrong link is an account takeover, and it persists.
+
+An installation that one day trusts a domain enough to link without the password
+can say so per provider. It is a later decision with its own evidence, not a
+default.
+
+** Registration
+
+*The same policy that decides a password sign-up decides this one.*
+
+=signup_external= asks the registration policy the question it already answers:
+whether registrations are accepted, whether one waits for an approval, which
+tenant the new account lands in, and which party and role it receives. The
+account is written with the link in one transaction, and the unique key on
+=(issuer, subject)= makes a repeated callback one account rather than two. The
+account carries no credential row, which the model already allows, and its
+username is derived from the address and made unique.
+
+** The session and the record
+
+The session and the authentication event gain =auth_method= (=pwd=, =oidc=) and
+a nullable provider. The token carries the standard =amr= and =idp= claims, so
+anything that reads a JWT learns how the person signed in without ORE's
+dictionary. This is what the screens story reads to say how each session
+happened.
+
+** The authorization server for clients
+
+Three roads, and the recommendation is the third for this sprint:
+
+| Road | What it costs | What it gives |
+|------+---------------+---------------|
+| ORE serves the protocol | the endpoints, a client registry, consent, PKCE, refresh rotation; estimated at one to two weeks with tests | the consent sits beside the grant, the audit and the six eyes ORE already keeps |
+| A fleet identity provider (Keycloak, Dex, Hydra) | a service to run, upgrade, back up and secure, plus a mapping from its clients to ORE's grants | little protocol code, and consent, client registration and revocation live outside ORE |
+| Wait, and keep the agent key | nothing now | MCP works today through the key a person creates, which is the documented path |
+
+Recommendation: *wait for this sprint, then ORE serves it.* The agent key works
+and is the path an MCP client uses today. The sign-in half is what unlocks a
+person signing up with Google, which is the outcome this story exists for. When
+a client needs OAuth, ORE serves the protocol, because the moment a person
+consents is the moment an agent gains power, and that moment belongs where the
+grant, the audit trail and the six eyes already are. Moving it to a service
+beside ORE splits the story of what an agent may do across two systems.
+
+No vcpkg port implements OAuth or OpenID Connect, so this is a choice between
+writing the protocol and delegating it, not between writing and adopting.
+
+** Proving it without Google
+
+- *In the gate and the suites*, a provider the repository runs:
+  =build/scripts/test_oidc_provider.py= answers discovery, the key set, an
+  authorize page that approves at once and names its subject, address and
+  verification through query parameters, and a token endpoint, all against a
+  fixed RSA key. A registry row points at it and one heavy check follows the flow
+  end to end, so the suites need no Google credentials and no network.
+- *By hand, against Google*, once: a recipe for the steps only a person can take
+  (a Google Cloud project, a Web application client, a consent screen in Testing
+  mode with test users, and the loopback redirect address), and the recorded
+  sign-in on this task, with its evidence. Google's own guide allows a loopback
+  address such as =http://localhost:8080= for testing, so a development
+  deployment needs no public hostname.
+
+** Cost, and the order it goes in
+
+Estimates, not measurements, for a task apiece:
+
+| Work | Estimate |
+|------+----------|
+| the provider and the link, as entities | 2 days |
+| the flow, the validation and the session | 3 days |
+| registration through the policy | 1 day |
+| the test provider, the Google recipe and the recorded sign-in | 2 days |
+| the link's rules and refusals | 1 day |
+| the screens | 5 to 6 days, in the other story |
+
+Sprint 31 has six days left. The order is the models, the flow, registration,
+the test provider, then the link, with the Google recording as soon as the flow
+and registration pass. The authorization server is not in this sprint, and the
+screens follow once the gateway answers.
+
+** What this rejects
+
+- Linking an existing account by matching addresses, for the reasons above.
+- Serving the flow from IAM, or giving the gateway a database.
+- Storing a client secret so it can be read back.
+- A vcpkg library: none implements the protocol.
+- A fleet identity provider for the sign-in half: it would put a person's first
+  screen, and the consent that follows, outside ORE.
+- SAML, and any provider that does not speak OpenID Connect.
+
+** Questions for the product owner
+
+1. Approve the split: the flow in the gateway, the identity data and acts in IAM.
+2. Approve the rule that nothing links by address, so an existing account links
+   once by password before a provider can sign it in.
+3. Approve the secret by reference, never in the database.
+4. Approve waiting on the client authorization server, with the agent key as the
+   only client path for now.
+5. Approve Google as the first provider, and the test provider as what the gate
+   proves the flow against.
 
 * Measurements
 
@@ -60,7 +255,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| OAuth or OpenID Connect ports in vcpkg | 0 of the 8 names probed; =jwt-cpp=, =libsodium=, =cppcodec= and =openssl= answer 200 | =for p in oauth2 openid oidc liboauth2 libjwt keycloak hydra dex; do curl -s -o /dev/null -w "%{http_code} $p\n" https://raw.githubusercontent.com/microsoft/vcpkg/master/ports/$p/vcpkg.json; done= | 2b63e43f2c |
+| =cpprestsdk=, the only port tagged =oauth2= | removed from vcpkg (404 at =ports/cpprestsdk=) | =curl -s -o /dev/null -w "%{http_code}\n" https://raw.githubusercontent.com/microsoft/vcpkg/master/ports/cpprestsdk/vcpkg.json= | 2b63e43f2c |
+| =ores.http= targets that link a database client | 0: the gateway reaches every service over NATS | =grep -rn libpq projects/ores.http/*/CMakeLists.txt projects/ores.http/CMakeLists.txt= | 2b63e43f2c |
+| Production users of =ores.http.client::beast_transport= | 1, =ores.marketdata.official= | =grep -rn beast_transport projects/ --include=*.cpp= outside the client's own targets | 2b63e43f2c |
+| The JWT and crypto the flow needs | already in the manifest and linked: =jwt-cpp=, =openssl=, =boost-json= | =grep -n "jwt-cpp" vcpkg.json= and =grep -rn "jwt-cpp::jwt-cpp" projects/ores.security/src/CMakeLists.txt= | 2b63e43f2c |
 
 * Notes
 

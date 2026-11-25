@@ -35,7 +35,7 @@ reason.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
 | Now           | In the sprint, with nothing started.   |
 | Waiting on    | Nothing.                               |
@@ -119,7 +119,7 @@ second consent record beside it.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:C98E2E5B-22B5-469D-8520-51726E1DF8D0][Decide how an external identity signs a person up and in]] | BACKLOG | | | Decide, before any code, how ORE Studio lets a person sign up and sign in with an external identity provider, and how the same identity layer answers a client of ORE's API. |
+| [[id:C98E2E5B-22B5-469D-8520-51726E1DF8D0][Decide how an external identity signs a person up and in]] | STARTED | 2026-11-25 | | Decide, before any code, how ORE Studio lets a person sign up and sign in with an external identity provider, and how the same identity layer answers a client of ORE's API. |
 | [[id:4123A768-9AB8-403F-BE35-83BDC50C6BCF][Set out the architecture of federated identity]] | BACKLOG | | | Zettelkasten knowledge notes, with UML diagrams, on how ORE Studio relies on an external identity provider and acts as one for its own clients. |
 | [[id:7D34ECD1-E5F9-4C1F-9B6E-A4CE2BAC88E9][Model the provider and the identity link]] | BACKLOG | | | Two IAM tables, as codegen entities: a provider a tenant enables, and a person's link to a provider account. |
 | [[id:BBA652AC-F595-40F4-9820-D2F3DC6E7168][Serve the external sign-in and carry the session]] | BACKLOG | | | ores.http serves the OpenID Connect authorization code flow, and a browser that chooses a provider comes back with an ORE session. |

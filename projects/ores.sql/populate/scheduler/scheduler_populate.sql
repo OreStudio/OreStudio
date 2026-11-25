@@ -60,11 +60,11 @@ insert into ores_scheduler_job_definitions_tbl (
     current_timestamp, ores_utility_infinity_timestamp_fn()
 );
 
--- Seed the housekeeping sweep (system scope, once a day). It reads the enabled
--- retention policies and applies them, so the chunks a policy names are dropped
--- on an edition of the storage engine that installs no retention job of its own.
--- The cadence is this row's; each policy records its own cadence as the period
--- its author had in mind, and one sweep fires them all.
+-- Seed the housekeeping sweep (system scope, once a day). It applies the
+-- retention policies that are due, so the chunks a policy names are dropped on
+-- an edition of the storage engine that installs no retention job of its own.
+-- This row's schedule is the tick; each policy states its own cadence as the
+-- period its author had in mind, and one sweep honours them all.
 insert into ores_scheduler_job_definitions_tbl (
     id, tenant_id, party_id, job_name, description, command,
     schedule_expression, action_type, action_payload, is_active,
@@ -86,25 +86,27 @@ insert into ores_scheduler_job_definitions_tbl (
 -- Seed the retention policies of the run output tables. Each states the period
 -- its model declares, so the sweep and the engine's own retention job drop the
 -- same chunks: ninety days, the span of the comparisons a run's figures serve.
--- A run's document and the cut it priced from are what outlive them.
+-- A run's document and the cut it priced from are what outlive them. Each is
+-- considered once a day, which is the sweep's own tick: a longer cadence would
+-- only delay a drop that has nothing to do until the period runs out.
 insert into ores_scheduler_retention_policies_tbl (
-    code, tenant_id, version, target_kind, target, action, retention_days, cadence,
-    enabled, description,
+    code, tenant_id, version, target_kind, target, action, retention_days,
+    cadence_hours, enabled, description,
     modified_by, performed_by, change_reason_code, change_commentary,
     valid_from, valid_to
 ) values
     ('report_cashflows_90d', ores_utility_system_tenant_id_fn(), 0, 'chunked_table',
-     'public.ores_reporting_report_cashflows_tbl', 'drop_chunks', 90, '0 3 * * *',
+     'public.ores_reporting_report_cashflows_tbl', 'drop_chunks', 90, 24,
      true, 'A run''s cashflows, kept for the quarter its figures are compared over',
      'system', 'system', 'system.new_record', '',
      current_timestamp, ores_utility_infinity_timestamp_fn()),
     ('report_metrics_90d', ores_utility_system_tenant_id_fn(), 0, 'chunked_table',
-     'public.ores_reporting_report_metrics_tbl', 'drop_chunks', 90, '0 3 * * *',
+     'public.ores_reporting_report_metrics_tbl', 'drop_chunks', 90, 24,
      true, 'A run''s metrics, kept for the quarter its figures are compared over',
      'system', 'system', 'system.new_record', '',
      current_timestamp, ores_utility_infinity_timestamp_fn()),
     ('report_text_values_90d', ores_utility_system_tenant_id_fn(), 0, 'chunked_table',
-     'public.ores_reporting_report_text_values_tbl', 'drop_chunks', 90, '0 3 * * *',
+     'public.ores_reporting_report_text_values_tbl', 'drop_chunks', 90, 24,
      true, 'A run''s text values, kept for the quarter its figures are compared over',
      'system', 'system', 'system.new_record', '',
      current_timestamp, ores_utility_infinity_timestamp_fn());

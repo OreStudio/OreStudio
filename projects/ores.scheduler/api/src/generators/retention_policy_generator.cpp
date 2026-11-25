@@ -51,7 +51,7 @@ generate_synthetic_retention_policy(utility::generation::generation_context& ctx
     r.target = std::string("ores_reporting_report_cashflows_tbl");
     r.action = std::string("drop_chunks");
     r.retention_days = faker::number::integer(7, 365);
-    r.cadence = std::string("0 3 * * *");
+    r.cadence_hours = faker::number::integer(1, 168);
     r.enabled = true;
     r.description = std::string(faker::lorem::sentence());
     r.modified_by = modified_by;

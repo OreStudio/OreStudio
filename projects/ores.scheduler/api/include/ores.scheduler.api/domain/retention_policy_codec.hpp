@@ -54,7 +54,7 @@ namespace ores::scheduler::domain {
         utility::codec::field{"target", &retention_policy::target},
         utility::codec::field{"action", &retention_policy::action},
         utility::codec::field{"retention_days", &retention_policy::retention_days},
-        utility::codec::field{"cadence", &retention_policy::cadence},
+        utility::codec::field{"cadence_hours", &retention_policy::cadence_hours},
         utility::codec::field{"enabled", &retention_policy::enabled},
         utility::codec::field{"description", &retention_policy::description},
         utility::codec::field{"modified_by", &retention_policy::modified_by},

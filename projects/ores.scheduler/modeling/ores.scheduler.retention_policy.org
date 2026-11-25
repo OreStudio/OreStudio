@@ -26,8 +26,10 @@ installations' policies from disagreeing. The column is not null for that
 reason: a policy with no tenant has no owner to be published to.
 
 A policy is data, not a schema constant, so a period changes without a rebuild.
-The scheduler fires one sweep which reads the enabled policies and applies them,
-including where the storage engine runs no retention job of its own.
+The scheduler fires one sweep, which applies the enabled policies that are due,
+including where the storage engine runs no retention job of its own. A policy is
+due once its cadence has passed since the sweep last applied it, so the sweep's
+own schedule sets the finest cadence the installation can express.
 
 * Flags
 :PROPERTIES:
@@ -104,17 +106,20 @@ The period, in days, after which the action applies to the target.
 faker::number::integer(7, 365)
 #+end_src
 
-** cadence
+** cadence_hours
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:     integer
+:cpp_type: int
 :nullable: false
 :END:
 
-The cron expression for this policy's sweep.
+The hours between two applications of this policy. The sweep fires on the
+scheduler's job schedule and applies a policy only once this period has passed
+since it last applied it, so a store whose contents stop being useful over a
+month is not swept every day.
 
 #+begin_src cpp :name generator
-std::string("0 3 * * *")
+faker::number::integer(1, 168)
 #+end_src
 
 ** enabled
@@ -160,7 +165,7 @@ std::string(faker::lorem::sentence())
 | "target_kind" in ('chunked_table', 'table', 'object_prefix') |
 | "action" in ('drop_chunks', 'delete_rows', 'expire_prefix') |
 | "retention_days" > 0 |
-| "cadence" <> '' |
+| "cadence_hours" > 0 |
 | "target" <> '' |
 
 * C++
@@ -204,7 +209,7 @@ std::string(faker::lorem::sentence())
 | target         | Target         |
 | action         | Action         |
 | retention_days | Period (days)  |
-| cadence        | Cadence        |
+| cadence_hours  | Cadence (hours) |
 | enabled        | Enabled        |
 | version        | Version        |
 | modified_by    | Modified By    |
@@ -228,7 +233,7 @@ std::string(faker::lorem::sentence())
 | target         | Target        | line_edit |        | true        | Enter a table or prefix |
 | action         | Action        | combo_box |        | true        | Select an action       |
 | retention_days | Period (days) | spin_box  |        | true        | Enter the period       |
-| cadence        | Cadence       | line_edit |        | true        | Enter a cron expression |
+| cadence_hours  | Cadence (hours) | spin_box  |        | true        | Enter the hours between sweeps |
 | enabled        | Enabled       | check_box |        | false       |                        |
 | description    | Description   | text_edit |        |             | Enter the reason       |
 
@@ -241,7 +246,7 @@ std::string(faker::lorem::sentence())
 | Target       | target         | Target        | string    | 300   |
 | Action       | action         | Action        | string    | 140   |
 | RetentionDays| retention_days | Period (days) | int       | 110   |
-| Cadence      | cadence        | Cadence       | string    | 120   |
+| CadenceHours | cadence_hours  | Cadence (hours) | int     | 120   |
 | Enabled      | enabled        | Enabled       | boolean   | 80    |
 | Version      | version        | Version       | int       | 80    |
 | ModifiedBy   | modified_by    | Modified By   | string    | 120   |

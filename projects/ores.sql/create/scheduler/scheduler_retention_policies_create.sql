@@ -36,8 +36,10 @@
  * reason: a policy with no tenant has no owner to be published to.
  *
  * A policy is data, not a schema constant, so a period changes without a rebuild.
- * The scheduler fires one sweep which reads the enabled policies and applies them,
- * including where the storage engine runs no retention job of its own.
+ * The scheduler fires one sweep, which applies the enabled policies that are due,
+ * including where the storage engine runs no retention job of its own. A policy is
+ * due once its cadence has passed since the sweep last applied it, so the sweep's
+ * own schedule sets the finest cadence the installation can express.
  */
 
 create table if not exists "ores_scheduler_retention_policies_tbl" (
@@ -48,7 +50,7 @@ create table if not exists "ores_scheduler_retention_policies_tbl" (
     "target" text not null,
     "action" text not null,
     "retention_days" integer not null,
-    "cadence" text not null,
+    "cadence_hours" integer not null,
     "enabled" boolean not null,
     "description" text not null,
     "modified_by" text not null,
@@ -69,7 +71,7 @@ create table if not exists "ores_scheduler_retention_policies_tbl" (
     check ("target_kind" in ('chunked_table', 'table', 'object_prefix')),
     check ("action" in ('drop_chunks', 'delete_rows', 'expire_prefix')),
     check ("retention_days" > 0),
-    check ("cadence" <> ''),
+    check ("cadence_hours" > 0),
     check ("target" <> '')
 );
 

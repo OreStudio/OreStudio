@@ -32,9 +32,9 @@ republish.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Step 2 done: a policy states its own cadence, and the sweep applies only the policies that are due. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Opt both models into the artefact and generate the staging tables. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance

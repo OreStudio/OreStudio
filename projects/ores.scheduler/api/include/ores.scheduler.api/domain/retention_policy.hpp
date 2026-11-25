@@ -47,8 +47,10 @@ namespace ores::scheduler::domain {
  * reason: a policy with no tenant has no owner to be published to.
  *
  * A policy is data, not a schema constant, so a period changes without a rebuild.
- * The scheduler fires one sweep which reads the enabled policies and applies them,
- * including where the storage engine runs no retention job of its own.
+ * The scheduler fires one sweep, which applies the enabled policies that are due,
+ * including where the storage engine runs no retention job of its own. A policy is
+ * due once its cadence has passed since the sweep last applied it, so the sweep's
+ * own schedule sets the finest cadence the installation can express.
  */
 struct retention_policy final {
     /**
@@ -91,9 +93,11 @@ struct retention_policy final {
     int retention_days = 0;
 
     /**
-     * @brief The cron expression for this policy's sweep.
+     * @brief The hours between two applications of this policy. The sweep fires on the scheduler's
+     * job schedule and applies a policy only once this period has passed since it last applied it,
+     * so a store whose contents stop being useful over a month is not swept every day.
      */
-    std::string cadence;
+    int cadence_hours = 0;
 
     /**
      * @brief Whether the sweep applies this policy.

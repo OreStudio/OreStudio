@@ -45,7 +45,7 @@ domain::retention_policy retention_policy_mapper::map(const retention_policy_ent
     r.target = v.target;
     r.action = v.action;
     r.retention_days = v.retention_days;
-    r.cadence = v.cadence;
+    r.cadence_hours = v.cadence_hours;
     r.enabled = v.enabled;
     r.description = v.description;
     r.modified_by = v.modified_by;
@@ -69,7 +69,7 @@ retention_policy_entity retention_policy_mapper::map(const domain::retention_pol
     r.target = v.target;
     r.action = v.action;
     r.retention_days = v.retention_days;
-    r.cadence = v.cadence;
+    r.cadence_hours = v.cadence_hours;
     r.enabled = v.enabled;
     r.description = v.description;
     r.modified_by = v.modified_by;

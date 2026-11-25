@@ -57,7 +57,7 @@ struct retention_policy_entity {
     std::string target;
     std::string action;
     int retention_days = 0;
-    std::string cadence;
+    int cadence_hours = 0;
     bool enabled = true;
     std::string description;
     std::string modified_by;
@@ -80,7 +80,7 @@ struct retention_policy_entity {
                query_builder::bind("target", &e::target) |
                query_builder::bind("action", &e::action) |
                query_builder::bind("retention_days", &e::retention_days) |
-               query_builder::bind("cadence", &e::cadence) |
+               query_builder::bind("cadence_hours", &e::cadence_hours) |
                query_builder::bind("enabled", &e::enabled) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |

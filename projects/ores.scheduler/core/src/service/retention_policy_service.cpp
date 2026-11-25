@@ -144,7 +144,7 @@ retention_policy_to_domain(const messaging::retention_policy_write& write) {
     v.target = write.target;
     v.action = write.action;
     v.retention_days = write.retention_days;
-    v.cadence = write.cadence;
+    v.cadence_hours = write.cadence_hours;
     v.enabled = write.enabled;
     v.description = write.description;
     return v;

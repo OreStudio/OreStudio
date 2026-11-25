@@ -86,12 +86,18 @@ all but a few hundred were dated after the sweep that dropped them.
 
 The chunk is therefore cut on the instant the rows were written, which is the
 one time every row of a run shares and the time past which the run itself is
-stale. Two schema consequences follow. A hypertable checks its partitioning
-column for null before any row-level trigger runs, so a bitemporal table
-partitioned on its write time needs a default for that column, because the
-insert trigger is what otherwise sets it. And a unique index on a hypertable
-must carry the partitioning column, so a natural key index over such a table is
-declared with the column rather than generated from the keys alone.
+stale. Three consequences follow. A hypertable checks its partitioning column
+for null before any row-level trigger runs, so a bitemporal table partitioned on
+its write time needs a default for that column, because the insert trigger is
+what otherwise sets it. A unique index on a hypertable must carry the
+partitioning column, so a natural key index over such a table is declared with
+the column rather than generated from the keys alone. And the column is the
+store's, not the writer's: a hypertable routes a row by the partitioning column
+before any trigger runs, so a trigger cannot move the row afterwards, and a
+write that stated a value the trigger then rewrote would either fail the range
+check of the chunk the row landed in or leave it in the wrong chunk. The
+generated entity therefore leaves that column out of its insert, the default
+stamps it, and the trigger no longer rewrites it.
 
 ** One executor
 

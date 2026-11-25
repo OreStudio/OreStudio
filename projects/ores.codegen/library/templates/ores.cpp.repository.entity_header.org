@@ -227,7 +227,12 @@ struct {{entity_singular}}_entity {
             | query_builder::bind("change_commentary", &e::change_commentary)
 {{/has_audit_columns}}
 {{^current_state}}
+{{#sql.store_stamps_valid_from}}
+            | query_builder::store_fills("valid_from", &e::valid_from)
+{{/sql.store_stamps_valid_from}}
+{{^sql.store_stamps_valid_from}}
             | query_builder::bind("valid_from", &e::valid_from)
+{{/sql.store_stamps_valid_from}}
             | query_builder::bind("valid_to", &e::valid_to)
 {{/current_state}}
             ;
@@ -412,6 +417,14 @@ Both the ={{#domain_entity}}= and ={{#junction}}= sections use the
 =db_timestamp= type (=ores::database::repository::db_timestamp=, from
 =db_types.hpp=) for =valid_from= and =valid_to=, and both use the
 =component_core_upper=-based include guard.
+
+A model that states =:store_stamps_valid_from: true= binds =valid_from= with
+=query_builder::store_fills= instead of =query_builder::bind=. The column stays
+in the list, so a read still asks for it, and an insert leaves it out, so the
+table's default states it before the row reaches a chunk. That is the only way
+a hypertable can carry the column: a hypertable routes a row by its partitioning
+column before any before-insert trigger runs, so a value the trigger rewrites
+cannot be the value the row was routed with.
 
 * See also
 

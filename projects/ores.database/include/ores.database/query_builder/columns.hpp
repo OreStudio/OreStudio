@@ -37,19 +37,21 @@
  */
 namespace ores::database::query_builder {
 
-template <typename Entity, typename Member>
+template <typename Entity, typename Member, bool StoreFilled = false>
 struct column_binding {
     std::string_view name;
     Member Entity::*member;
     bool key = false;
+    static constexpr bool store_filled = StoreFilled;
     static constexpr bool as_text = false;
 };
 
-template <typename Entity, typename Member>
+template <typename Entity, typename Member, bool StoreFilled = false>
 struct text_column_binding {
     std::string_view name;
     Member Entity::*member;
     bool key = false;
+    static constexpr bool store_filled = StoreFilled;
     static constexpr bool as_text = true;
 };
 
@@ -70,6 +72,22 @@ constexpr text_column_binding<Entity, Member> bind_text(std::string_view name,
 template <typename Entity, typename Member>
 constexpr column_binding<Entity, Member> key(std::string_view name, Member Entity::*member) {
     return {name, member, true};
+}
+
+/**
+ * @brief A column the store stamps, which an insert leaves out.
+ *
+ * The column is still read back, so a select asks for it. An insert leaves it
+ * out for two reasons: the table may state its own default, and a hypertable
+ * routes a row by its partitioning column before any before-insert trigger
+ * runs, so a value a trigger rewrites cannot be the one the row was routed
+ * with. A store-filled column is therefore written by the store and never by
+ * the client.
+ */
+template <typename Entity, typename Member>
+constexpr column_binding<Entity, Member, true> store_fills(std::string_view name,
+                                                           Member Entity::*member) {
+    return {name, member, false};
 }
 
 /**

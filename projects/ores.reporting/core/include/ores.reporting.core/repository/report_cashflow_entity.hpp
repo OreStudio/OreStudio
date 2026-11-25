@@ -116,7 +116,7 @@ struct report_cashflow_entity {
                query_builder::bind("currency", &e::currency) |
                query_builder::bind("qualifiers", &e::qualifiers) |
                query_builder::bind("value", &e::value) | query_builder::bind("source", &e::source) |
-               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::store_fills("valid_from", &e::valid_from) |
                query_builder::bind("valid_to", &e::valid_to);
     }
 };

@@ -202,7 +202,12 @@ struct {{entity_singular}}_entity {
             | query_builder::bind("change_commentary", &e::change_commentary)
 {{/has_audit_columns}}
 {{^current_state}}
+{{#sql.store_stamps_valid_from}}
+            | query_builder::store_fills("valid_from", &e::valid_from)
+{{/sql.store_stamps_valid_from}}
+{{^sql.store_stamps_valid_from}}
             | query_builder::bind("valid_from", &e::valid_from)
+{{/sql.store_stamps_valid_from}}
             | query_builder::bind("valid_to", &e::valid_to)
 {{/current_state}}
             ;

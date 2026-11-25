@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: A71D89B6-2A44-4826-BF30-25E6E3AF631E
+:END:
+#+title: Task: Deliver housekeeping as platform data
+#+description: The sweep job and the retention policies are seeded by populate scripts, which run once when a database is created and cannot be re-run. Deliver them as platform-level DQ datasets in system_core, with the contract reconciling and the operator's decisions inserted once.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: feature/deliver-housekeeping-as-platform-data
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The housekeeping configuration reaches an installation the way every other
+platform datum does: as a dataset published into the system tenant, so it exists
+in every environment, can be re-published, and appears in the DQ screens beside
+the platform's other data. The installation's own decisions survive a
+republish.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- The sweep job and the retention policies are artefact types, staged from their own models, with a publish function each
+- Both datasets are members of =system_core=, so provisioning publishes them into the system tenant
+- A publish reconciles the contract and leaves an operator's period, cadence and state alone
+- A republish of unchanged data writes nothing
+- The retention policy table carries the system tenant rather than no tenant at all
+- No populate script seeds a job definition or a retention policy
+- The publish is covered by a pgTAP test
+
+* Analysis
+
+Three kinds of thing travel with this work, and the classification page sorts
+them by the question that decides every dataset: who is the author.
+
+| Thing | Author | Level | What follows |
+|-------+--------+-------+--------------|
+| The sweep job, and the policies' contract | the platform declares it in order to function | platform | published into the system tenant, one copy, never per tenant |
+| The installed period, cadence and state | the operator decides | platform row, operator value | must survive a republish |
+| The run ledger | produced by use | none | never published |
+
+The third row is why the ledger stays out. It also means the ledger needs a
+retention policy of its own: it grows by one row per policy per sweep, which is
+the class of growth this story exists to bound.
+
+Two defects surfaced while weighing this, and both are fixed here because the
+dataset cannot be written correctly over them:
+
+- *The policy table has no tenant.* Platform data is held in the system tenant
+  and read through the shared-reference policy, which is what the job table now
+  does. A policy modelled as a tenant-less lookup, like a change reason, is
+  readable by any caller and publishes nowhere in particular.
+- *Two cadences, neither owned.* The job's cron decides when the sweep fires and
+  the policy's =cadence= column is read by nothing. The sweep becomes the tick
+  and the policy's cadence becomes its own due check, so a store swept monthly
+  is not swept daily and the column means what it says.
+
+-
+
+* Plan
+
+The route is the one =from_an_entity_model_to_a_published_row= states, and
+nothing about it is invented here:
+
+1. Give =ores.scheduler.retention_policy= a system-tenant =tenant_id= and align
+   its reads. This precedes publishing, because a publisher writes platform
+   rows into the system tenant and a tenant-less table has no such place.
+2. Settle the cadence: the job's cron is the tick, and each policy states when
+   it is next due. The sweep applies only the policies that are due.
+3. Opt =ores.scheduler.job_definition= and =ores.scheduler.retention_policy=
+   into the artefact, regenerate the staging tables, and wire their create and
+   drop scripts by hand.
+4. Register the two artefact types, the two datasets and their =system_core=
+   membership. No dependency between them: a policy names a table, not a job.
+5. Write the publish functions. The contract fields upsert; the period, the
+   cadence and the state are written only when the row does not exist, which
+   the contract's =insert_only= mode already provides.
+6. Add the scheduler's =publish_from_dq_handler= and register its subjects.
+7. Delete the populate seeds, and test the publish with pgTAP: a first publish
+   writes the rows, a second writes nothing, and a republish after an operator
+   changes a period leaves it changed.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

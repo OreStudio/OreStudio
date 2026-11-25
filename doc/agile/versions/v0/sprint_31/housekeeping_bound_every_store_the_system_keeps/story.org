@@ -57,6 +57,7 @@ No store the system keeps grows without bound: each one has a declared policy, h
 | [[id:927730CB-C16E-489C-A62B-9B4F0F792BA1][Break the story into tasks]] | DONE | 2026-11-24 | 2026-11-24 | Task for: Housekeeping: bound every store the system keeps |
 | [[id:8F23F8FE-1951-441C-A866-27EE12733832][Show housekeeping work as scheduled tasks]] | BACKLOG | | | Housekeeping runs appear as scheduler jobs with their own definition, so the existing task screens list them, show their last run and outcome, and let a person enable or disable them. |
 | [[id:856BA64E-96AE-47A7-940F-E8BEEFFAAD31][Record the housekeeping visibility requirement]] | DONE | 2026-11-24 | 2026-11-24 | Task for: Housekeeping: bound every store the system keeps |
+| [[id:A71D89B6-2A44-4826-BF30-25E6E3AF631E][Deliver housekeeping as platform data]] | STARTED | 2026-11-25 | | The sweep job and the retention policies are seeded by populate scripts, which run once when a database is created and cannot be re-run. Deliver them as platform-level DQ datasets in system_core, with the contract reconciling and the operator's decisions inserted once. |
 
 * Decisions
 

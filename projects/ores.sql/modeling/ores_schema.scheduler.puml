@@ -120,6 +120,7 @@ package "scheduler" #F1F8E9 {
     end note
 
     entity ores_scheduler_retention_policies_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
         --
         * version : integer
@@ -148,6 +149,11 @@ package "scheduler" #F1F8E9 {
     taken, and the period past which the action applies. The target is named by
     shape rather than by a particular table, so the policy survives a table being
     replaced.
+    A policy is a row of the installation, held by the system tenant: the
+    classification that governs published rows makes the platform the author of the
+    stores it bounds, and one copy in the system tenant is what keeps two
+    installations' policies from disagreeing. The column is not null for that
+    reason: a policy with no tenant has no owner to be published to.
     A policy is data, not a schema constant, so a period changes without a rebuild.
     The scheduler fires one sweep which reads the enabled policies and applies them,
     including where the storage engine runs no retention job of its own.

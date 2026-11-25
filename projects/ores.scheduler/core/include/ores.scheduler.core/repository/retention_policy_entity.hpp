@@ -28,6 +28,7 @@
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include "ores.scheduler.core/export.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <optional>
 #include <ostream>
@@ -50,6 +51,7 @@ struct retention_policy_entity {
     constexpr static const char* tablename = "ores_scheduler_retention_policies_tbl";
 
     std::string code;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     std::string target_kind;
     std::string target;
@@ -72,6 +74,7 @@ struct retention_policy_entity {
         using e = retention_policy_entity;
         namespace query_builder = ores::database::query_builder;
         return query_builder::columns<e>() | query_builder::key("code", &e::code) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
                query_builder::bind("version", &e::version) |
                query_builder::bind("target_kind", &e::target_kind) |
                query_builder::bind("target", &e::target) |

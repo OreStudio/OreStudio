@@ -26,7 +26,6 @@
 #define ORES_SCHEDULER_CORE_MESSAGING_RETENTION_POLICY_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.database/domain/outcome_code.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -35,7 +34,6 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
 #include <optional>
 
 namespace ores::scheduler::messaging {
@@ -56,10 +54,6 @@ using namespace ores::logging;
 
 /**
  * @brief NATS message handler for retention policy operations.
- *
- * Retention Policies are system-owned global entities; list and history
- * operations use the system tenant context. Every tenant shares the rows, so
- * a write from a session of any other tenant is denied.
  */
 class retention_policy_handler {
 public:
@@ -100,9 +94,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        const auto sys_ctx =
-            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::retention_policy_service svc(sys_ctx);
+        service::retention_policy_service svc(req_ctx);
         try {
             auto response = svc.list_retention_policies(*req);
             ORES_LOG_SEV(retention_policy_handler_lg(), debug) << "Completed " << msg.subject;
@@ -151,9 +143,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        const auto sys_ctx =
-            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::retention_policy_service svc(sys_ctx);
+        service::retention_policy_service svc(req_ctx);
         try {
             auto response = svc.get_retention_policy(*req);
             ORES_LOG_SEV(retention_policy_handler_lg(), debug) << "Completed " << msg.subject;
@@ -202,9 +192,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        const auto sys_ctx =
-            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::retention_policy_service svc(sys_ctx);
+        service::retention_policy_service svc(req_ctx);
         try {
             auto response = svc.get_many_retention_policies(*req);
             ORES_LOG_SEV(retention_policy_handler_lg(), debug) << "Completed " << msg.subject;
@@ -246,14 +234,6 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        if (!req_ctx.tenant_id().is_system()) {
-            put_retention_policy_response refused;
-            refused.result = ores::database::domain::refuse(
-                ores::database::domain::outcome_code::system_tenant_required,
-                {.entity = "retention policy"});
-            reply(nats_, msg, refused);
-            return;
-        }
         auto req = decode<put_retention_policy_request>(msg);
         if (!req) {
             ORES_LOG_SEV(retention_policy_handler_lg(), warn)
@@ -261,9 +241,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        const auto sys_ctx =
-            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::retention_policy_service svc(sys_ctx);
+        service::retention_policy_service svc(req_ctx);
         try {
             auto response = svc.put_retention_policy(*req);
             ORES_LOG_SEV(retention_policy_handler_lg(), debug) << "Completed " << msg.subject;
@@ -305,14 +283,6 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        if (!req_ctx.tenant_id().is_system()) {
-            put_many_retention_policies_response refused;
-            refused.result = ores::database::domain::refuse(
-                ores::database::domain::outcome_code::system_tenant_required,
-                {.entity = "retention policy"});
-            reply(nats_, msg, refused);
-            return;
-        }
         auto req = decode<put_many_retention_policies_request>(msg);
         if (!req) {
             ORES_LOG_SEV(retention_policy_handler_lg(), warn)
@@ -320,9 +290,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        const auto sys_ctx =
-            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::retention_policy_service svc(sys_ctx);
+        service::retention_policy_service svc(req_ctx);
         try {
             auto response = svc.put_many_retention_policies(*req);
             ORES_LOG_SEV(retention_policy_handler_lg(), debug) << "Completed " << msg.subject;
@@ -364,14 +332,6 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        if (!req_ctx.tenant_id().is_system()) {
-            delete_retention_policy_response refused;
-            refused.result = ores::database::domain::refuse(
-                ores::database::domain::outcome_code::system_tenant_required,
-                {.entity = "retention policy"});
-            reply(nats_, msg, refused);
-            return;
-        }
         auto req = decode<delete_retention_policy_request>(msg);
         if (!req) {
             ORES_LOG_SEV(retention_policy_handler_lg(), warn)
@@ -379,9 +339,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        const auto sys_ctx =
-            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::retention_policy_service svc(sys_ctx);
+        service::retention_policy_service svc(req_ctx);
         try {
             auto response = svc.delete_retention_policy(*req);
             ORES_LOG_SEV(retention_policy_handler_lg(), debug) << "Completed " << msg.subject;
@@ -423,14 +381,6 @@ public:
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        if (!req_ctx.tenant_id().is_system()) {
-            delete_many_retention_policies_response refused;
-            refused.result = ores::database::domain::refuse(
-                ores::database::domain::outcome_code::system_tenant_required,
-                {.entity = "retention policy"});
-            reply(nats_, msg, refused);
-            return;
-        }
         auto req = decode<delete_many_retention_policies_request>(msg);
         if (!req) {
             ORES_LOG_SEV(retention_policy_handler_lg(), warn)
@@ -438,9 +388,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        const auto sys_ctx =
-            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::retention_policy_service svc(sys_ctx);
+        service::retention_policy_service svc(req_ctx);
         try {
             auto response = svc.delete_many_retention_policies(*req);
             ORES_LOG_SEV(retention_policy_handler_lg(), debug) << "Completed " << msg.subject;
@@ -489,9 +437,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        const auto sys_ctx =
-            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::retention_policy_service svc(sys_ctx);
+        service::retention_policy_service svc(req_ctx);
         try {
             auto response = svc.list_retention_policy_versions(*req);
             ORES_LOG_SEV(retention_policy_handler_lg(), debug) << "Completed " << msg.subject;
@@ -540,9 +486,7 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        const auto sys_ctx =
-            req_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), req_ctx.actor());
-        service::retention_policy_service svc(sys_ctx);
+        service::retention_policy_service svc(req_ctx);
         try {
             auto response = svc.get_retention_policy_version(*req);
             ORES_LOG_SEV(retention_policy_handler_lg(), debug) << "Completed " << msg.subject;

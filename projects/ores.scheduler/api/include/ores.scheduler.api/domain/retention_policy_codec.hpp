@@ -48,6 +48,7 @@ namespace ores::scheduler::domain {
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<retention_policy>) {
     return ::ores::utility::codec::field_list{
         utility::codec::field{"version", &retention_policy::version},
+        utility::codec::field{"tenant_id", &retention_policy::tenant_id},
         utility::codec::field{"code", &retention_policy::code},
         utility::codec::field{"target_kind", &retention_policy::target_kind},
         utility::codec::field{"target", &retention_policy::target},

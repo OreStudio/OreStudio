@@ -88,22 +88,22 @@ insert into ores_scheduler_job_definitions_tbl (
 -- same chunks: ninety days, the span of the comparisons a run's figures serve.
 -- A run's document and the cut it priced from are what outlive them.
 insert into ores_scheduler_retention_policies_tbl (
-    code, version, target_kind, target, action, retention_days, cadence,
+    code, tenant_id, version, target_kind, target, action, retention_days, cadence,
     enabled, description,
     modified_by, performed_by, change_reason_code, change_commentary,
     valid_from, valid_to
 ) values
-    ('report_cashflows_90d', 0, 'chunked_table',
+    ('report_cashflows_90d', ores_utility_system_tenant_id_fn(), 0, 'chunked_table',
      'public.ores_reporting_report_cashflows_tbl', 'drop_chunks', 90, '0 3 * * *',
      true, 'A run''s cashflows, kept for the quarter its figures are compared over',
      'system', 'system', 'system.new_record', '',
      current_timestamp, ores_utility_infinity_timestamp_fn()),
-    ('report_metrics_90d', 0, 'chunked_table',
+    ('report_metrics_90d', ores_utility_system_tenant_id_fn(), 0, 'chunked_table',
      'public.ores_reporting_report_metrics_tbl', 'drop_chunks', 90, '0 3 * * *',
      true, 'A run''s metrics, kept for the quarter its figures are compared over',
      'system', 'system', 'system.new_record', '',
      current_timestamp, ores_utility_infinity_timestamp_fn()),
-    ('report_text_values_90d', 0, 'chunked_table',
+    ('report_text_values_90d', ores_utility_system_tenant_id_fn(), 0, 'chunked_table',
      'public.ores_reporting_report_text_values_tbl', 'drop_chunks', 90, '0 3 * * *',
      true, 'A run''s text values, kept for the quarter its figures are compared over',
      'system', 'system', 'system.new_record', '',

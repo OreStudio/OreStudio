@@ -62,6 +62,7 @@ begin
         -- would keep applying a policy a person has just turned off.
         select * from "ores_scheduler_retention_policies_tbl"
         where "enabled"
+          and "tenant_id" = ores_utility_system_tenant_id_fn()
           and "valid_to" = ores_utility_infinity_timestamp_fn()
         order by "code"
     loop

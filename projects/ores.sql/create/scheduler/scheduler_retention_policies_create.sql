@@ -29,6 +29,12 @@
  * shape rather than by a particular table, so the policy survives a table being
  * replaced.
  *
+ * A policy is a row of the installation, held by the system tenant: the
+ * classification that governs published rows makes the platform the author of the
+ * stores it bounds, and one copy in the system tenant is what keeps two
+ * installations' policies from disagreeing. The column is not null for that
+ * reason: a policy with no tenant has no owner to be published to.
+ *
  * A policy is data, not a schema constant, so a period changes without a rebuild.
  * The scheduler fires one sweep which reads the enabled policies and applies them,
  * including where the storage engine runs no retention job of its own.
@@ -36,6 +42,7 @@
 
 create table if not exists "ores_scheduler_retention_policies_tbl" (
     "code" text not null,
+    "tenant_id" uuid not null,
     "version" integer not null,
     "target_kind" text not null,
     "target" text not null,
@@ -51,8 +58,9 @@ create table if not exists "ores_scheduler_retention_policies_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (code, valid_from, valid_to),
+    primary key (tenant_id, code, valid_from, valid_to),
     exclude using gist (
+        tenant_id WITH =,
         code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
@@ -67,18 +75,27 @@ create table if not exists "ores_scheduler_retention_policies_tbl" (
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists retention_policies_version_uniq_idx
-on "ores_scheduler_retention_policies_tbl" (code, version)
+on "ores_scheduler_retention_policies_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+create unique index if not exists retention_policies_code_uniq_idx
+on "ores_scheduler_retention_policies_tbl" (tenant_id, code)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists retention_policies_tenant_idx
+on "ores_scheduler_retention_policies_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_scheduler_retention_policies_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
-    -- Validate change_reason_code (an entity with no tenant holds data the whole
-    -- installation shares, so its change reasons are the system tenant's)
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(ores_utility_system_tenant_id_fn(), NEW.change_reason_code);
+    -- Validate tenant_id
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     -- The actor is validated before the version management and any parent
     -- touch below: the validator accepts a username only while a current
@@ -88,7 +105,8 @@ begin
     -- Version management
     select version into current_version
     from "ores_scheduler_retention_policies_tbl"
-    where code = NEW.code
+    where tenant_id = NEW.tenant_id
+      and code = NEW.code
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -120,7 +138,8 @@ begin
         -- would collide with itself. clock_timestamp() always advances.
         update "ores_scheduler_retention_policies_tbl"
         set valid_to = clock_timestamp()
-        where code = NEW.code
+        where tenant_id = NEW.tenant_id
+          and code = NEW.code
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
     else
@@ -144,6 +163,40 @@ create or replace rule ores_scheduler_retention_policies_delete_rule as
 on delete to "ores_scheduler_retention_policies_tbl" do instead (
     update "ores_scheduler_retention_policies_tbl"
     set valid_to = clock_timestamp()
-    where code = OLD.code
+    where tenant_id = OLD.tenant_id
+      and code = OLD.code
       and valid_to = ores_utility_infinity_timestamp_fn();
+);
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Retention Policy
+-- Every session reads its own rows and the system tenant's rows; writes
+-- stay the current tenant's.
+-- =============================================================================
+alter table ores_scheduler_retention_policies_tbl enable row level security;
+
+drop policy if exists retention_policies_tbl_tenant_isolation_policy
+    on ores_scheduler_retention_policies_tbl;
+
+create policy retention_policies_tbl_tenant_isolation_policy
+on ores_scheduler_retention_policies_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- The read admits the system tenant's rows beside the caller's; the policy
+-- above still binds every write to the caller's own rows. It must: a single
+-- for-all policy that admitted them would let a tenant change or remove a
+-- shared row. See doc/knowledge/security/data_read_across_tenants.org.
+drop policy if exists retention_policies_tbl_shared_reference_read_policy
+    on ores_scheduler_retention_policies_tbl;
+
+create policy retention_policies_tbl_shared_reference_read_policy
+on ores_scheduler_retention_policies_tbl
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );

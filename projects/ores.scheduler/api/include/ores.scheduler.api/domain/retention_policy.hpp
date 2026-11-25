@@ -25,6 +25,7 @@
 #ifndef ORES_SCHEDULER_API_DOMAIN_RETENTION_POLICY_HPP
 #define ORES_SCHEDULER_API_DOMAIN_RETENTION_POLICY_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
 #include <string_view>
@@ -39,6 +40,12 @@ namespace ores::scheduler::domain {
  * shape rather than by a particular table, so the policy survives a table being
  * replaced.
  *
+ * A policy is a row of the installation, held by the system tenant: the
+ * classification that governs published rows makes the platform the author of the
+ * stores it bounds, and one copy in the system tenant is what keeps two
+ * installations' policies from disagreeing. The column is not null for that
+ * reason: a policy with no tenant has no owner to be published to.
+ *
  * A policy is data, not a schema constant, so a period changes without a rebuild.
  * The scheduler fires one sweep which reads the enabled policies and applies them,
  * including where the storage engine runs no retention job of its own.
@@ -48,6 +55,11 @@ struct retention_policy final {
      * @brief Version number for optimistic locking and change tracking.
      */
     int version = 0;
+
+    /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief Unique code for the policy.

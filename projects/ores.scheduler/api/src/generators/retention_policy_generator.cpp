@@ -24,6 +24,7 @@
  */
 #include "ores.scheduler.api/generators/retention_policy_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
@@ -37,9 +38,13 @@ domain::retention_policy
 generate_synthetic_retention_policy(utility::generation::generation_context& ctx) {
     [[maybe_unused]] static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::retention_policy r;
     r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.target_kind = std::string("chunked_table");

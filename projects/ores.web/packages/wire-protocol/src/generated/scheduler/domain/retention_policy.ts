@@ -32,6 +32,7 @@
  */
 export interface RetentionPolicy {
     version: number;
+    tenant_id: string;
     code: string;
     target_kind: string;
     target: string;

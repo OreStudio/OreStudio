@@ -149,8 +149,6 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
-* Result
-
 * Promoted from capture
 
 Captured 2026-09-26 in the product backlog; promoted preserving the UUID.

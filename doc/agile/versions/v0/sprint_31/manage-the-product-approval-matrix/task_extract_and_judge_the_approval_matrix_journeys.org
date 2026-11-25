@@ -1,0 +1,93 @@
+:PROPERTIES:
+:ID: 57F2778B-57BA-485D-90C5-5511C6346BF0
+:END:
+#+title: Task: Extract and judge the approval matrix journeys
+#+description: The person's journeys over the party's set and the book's set, each step judged against the record screen standard before any prototype exists.
+#+type: task
+#+level: s1
+#+filetags: :manage-the-product-approval-matrix:sprint_31:v0:
+#+owner: marco
+#+branch: feature/manage-the-product-approval-matrix
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F77263EF-6F2D-4129-BA60-CA6C2F2D6153][Manage the product approval matrix]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The journeys say how a risk or reference data administrator reads and changes
+the product approval matrix, at the party and at the book, and every step of
+them is judged against the record screen standard: what the standard already
+draws, what a kind's own action draws, what no rule draws yet, and which server
+operation is missing. The judgement is what the prototype may build on, so it
+comes first and it stops for the owner's sign off.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F77263EF-6F2D-4129-BA60-CA6C2F2D6153][Manage the product approval matrix]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Extract the journeys, judge each step, and stop for the owner. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- The journeys exist under the parties and books groups, or under a group of their own, and state the goal of each before the steps.
+- Every step carries a judgement: standard record screen, a kind's own action, a view no rule draws yet, a missing server operation, or a workflow.
+- Each gap in the journey links to its capture, and the =* Prototype= section names the placements the prototype must decide.
+- The owner signs the journeys off, and their decisions are recorded on the journeys, this task and the story.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

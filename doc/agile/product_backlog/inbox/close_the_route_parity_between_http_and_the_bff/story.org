@@ -34,9 +34,9 @@ remaining 15 here.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
-| Now           | Every ported route is done and the answer-shape sweep now compares each answer with the BFF's. The recipes and the handler gate wait on compass releases; one captured defect is open. |
-| Waiting on    | A compass-ng release for the recipe bodies and for the unchecked-handler rule, and the product decision on the 102 unseeded permission codes. |
-| Next          | The captured coverage defect, and the two compass releases. |
+| Now           | Every route the BFF answered is answered by ores.http, and a gate now compares each answer's shape with the BFF's. What is left is four tasks that wait on something outside this repository or on a product decision. |
+| Waiting on    | A compass-ng release for the recipe bodies and for the unchecked-handler rule; a product decision on the 102 unseeded permission codes; the knowledge base the doc-backed routes read from; and the org page write behind the agile browser. |
+| Next          | The two compass releases, then the recipes and the handler gate. The captured coverage defect (2C4E2094) stands on its own. |
 | Last touched  | 2026-11-25                               |
 
 * Acceptance

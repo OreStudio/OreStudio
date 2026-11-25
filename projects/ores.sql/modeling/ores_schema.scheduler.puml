@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: scheduler
-Tables: 2
+Tables: 3
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -117,6 +117,40 @@ package "scheduler" #F1F8E9 {
     Execution history for scheduler jobs.
     Designed for TimescaleDB hypertable; degrades gracefully to a plain table.
     Partitioned by triggered_at.
+    end note
+
+    entity ores_scheduler_retention_policies_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        --
+        * version : integer
+        * target_kind : text
+        * target : text
+        * action : text
+        * retention_days : integer
+        * cadence : text
+        * enabled : boolean
+        * description : text
+        * modified_by : text
+        * performed_by : text
+        * acting_agent : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_scheduler_retention_policies_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Retention Policy Table
+    A retention policy declares one bounded store: what it targets, what action is
+    taken, and the period past which the action applies. The target is named by
+    shape rather than by a particular table, so the policy survives a table being
+    replaced.
+    A policy is data, not a schema constant, so a period changes without a rebuild.
+    The scheduler fires one sweep which reads the enabled policies and applies them,
+    including where the storage engine runs no retention job of its own.
     end note
 
 }

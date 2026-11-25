@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/model-the-retention-policy
+#+pr: 5115
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -26,11 +26,11 @@ A retention policy is a modelled entity with its operations, so a period or a ca
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-24                               |
 
 * Acceptance
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5115][#5115]] | [scheduler] Model the retention policy as data |
 
 * Review
 
@@ -85,3 +85,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A retention policy is data. The entity lives in the scheduler, which owns the
+firing it rides on and already has the service and the screen it needs, following
+the precedent that each component owns the policies it enforces.
+
+The policy names the shape of its target rather than a table, so it survives a
+table being replaced, and it carries the action, the period, the cadence and an
+enabled flag. The SQL checks refuse an unknown kind, an unknown action and a
+period of zero or less.
+
+Regeneration produced the table, the domain type, the repository, the wire codec
+and the presentation. One hand-written header needed an include it had always
+relied on a neighbour for: the new entity changed the unity grouping, and the
+missing =wire_traits= declaration surfaced.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Build | succeeded | =./compass.sh build -k 1= | 7c3872439c |
+| Scheduler suites | 3 of 3 passed | =./compass.sh test run -- -R scheduler= | 7c3872439c |

@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: 2C7E4B19-8D6A-4F53-9B21-5E8A7C3D1F60
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.scheduler.retention_policy
+#+description: Codegen entity model for the scheduler =retention_policies= table. One store the platform keeps, the action that bounds it, and the period past which the action applies.
+#+type: ores.codegen.entity
+#+component: scheduler
+#+filetags: :model:entity:scheduler:
+#+brief: One store the platform keeps, and the retention period and action that bound it.
+#+entity_singular: retention_policy
+#+entity_plural: retention_policies
+#+entity_title: Retention Policy
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+A retention policy declares one bounded store: what it targets, what action is
+taken, and the period past which the action applies. The target is named by
+shape rather than by a particular table, so the policy survives a table being
+replaced.
+
+A policy is data, not a schema constant, so a period changes without a rebuild.
+The scheduler fires one sweep which reads the enabled policies and applies them,
+including where the storage engine runs no retention job of its own.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     scheduler
+:system_tenant_validation: true
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Unique code for the policy.
+
+Examples: 'report_cashflows_365d', 'compute_node_caches_30d'.
+
+** target_kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The shape of what the policy bounds: a chunked table, an ordinary table or an
+object store key prefix.
+
+#+begin_src cpp :name generator
+std::string("chunked_table")
+#+end_src
+
+** target
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The table name or key prefix the policy bounds.
+
+#+begin_src cpp :name generator
+std::string("ores_reporting_report_cashflows_tbl")
+#+end_src
+
+** action
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the sweep does to the target past the period: drop its chunks, delete its
+rows, or expire its objects.
+
+#+begin_src cpp :name generator
+std::string("drop_chunks")
+#+end_src
+
+** retention_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The period, in days, after which the action applies to the target.
+
+#+begin_src cpp :name generator
+faker::number::integer(7, 365)
+#+end_src
+
+** cadence
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The cron expression for this policy's sweep.
+
+#+begin_src cpp :name generator
+std::string("0 3 * * *")
+#+end_src
+
+** enabled
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default_value: true
+:END:
+
+Whether the sweep applies this policy.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Why the store keeps what it keeps for that period.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_scheduler_retention_policies_tbl
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "target_kind" in ('chunked_table', 'table', 'object_prefix') |
+| "action" in ('drop_chunks', 'delete_rows', 'expire_prefix') |
+| "retention_days" > 0 |
+| "cadence" <> '' |
+| "target" <> '' |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: policy
+:entity_plural_short:   policies
+:entity_singular_words: retention policy
+:entity_plural_words:   retention policies
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rp
+:END:
+
+** Table display
+
+| column         | header         |
+|----------------+----------------|
+| code           | Code           |
+| target_kind    | Kind           |
+| target         | Target         |
+| action         | Action         |
+| retention_days | Period (days)  |
+| cadence        | Cadence        |
+| enabled        | Enabled        |
+| version        | Version        |
+| modified_by    | Modified By    |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.scheduler/domain/retention_policy.hpp
+:domain_class:           scheduler::domain::retention_policy
+:protocol_include:       ores.scheduler/messaging/retention_policy_protocol.hpp
+:collection_name:        policies
+:key_field:              code
+:has_pagination:         true
+:END:
+
+*** Detail fields
+
+| field          | label         | type      | is_key | is_required | placeholder            |
+|----------------+---------------+-----------+--------+-------------+------------------------|
+| code           | Code          | line_edit | true   | true        | Enter policy code      |
+| target_kind    | Kind          | combo_box |        | true        | Select a kind          |
+| target         | Target        | line_edit |        | true        | Enter a table or prefix |
+| action         | Action        | combo_box |        | true        | Select an action       |
+| retention_days | Period (days) | spin_box  |        | true        | Enter the period       |
+| cadence        | Cadence       | line_edit |        | true        | Enter a cron expression |
+| enabled        | Enabled       | check_box |        | false       |                        |
+| description    | Description   | text_edit |        |             | Enter the reason       |
+
+*** Columns
+
+| enum_name    | field          | header        | type      | width |
+|--------------+----------------+---------------+-----------+-------|
+| Code         | code           | Code          | string    | 200   |
+| TargetKind   | target_kind    | Kind          | string    | 140   |
+| Target       | target         | Target        | string    | 300   |
+| Action       | action         | Action        | string    | 140   |
+| RetentionDays| retention_days | Period (days) | int       | 110   |
+| Cadence      | cadence        | Cadence       | string    | 120   |
+| Enabled      | enabled        | Enabled       | boolean   | 80    |
+| Version      | version        | Version       | int       | 80    |
+| ModifiedBy   | modified_by    | Modified By   | string    | 120   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]] — the component that fires the sweep applying these policies.

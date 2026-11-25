@@ -564,7 +564,6 @@ when its type sheds fields; remove it when the type is at or under fifteen.
 | projects/ores.marketdata/api/include/ores.marketdata.api/domain/subscription_interval.hpp | subscription_interval | 16 |
 | projects/ores.marketdata/api/include/ores.marketdata.api/messaging/fx_vol_surface_operation_protocol.hpp | calibrate_fx_vol_surface_response | 16 |
 | projects/ores.marketdata/api/include/ores.marketdata.api/messaging/fx_vol_surface_operation_protocol.hpp | get_published_fx_vol_surface_response | 16 |
-| projects/ores.marketdata/core/include/ores.marketdata.core/repository/delivery_count_entity.hpp | delivery_count_entity | 16 |
 | projects/ores.marketdata/core/include/ores.marketdata.core/repository/feed_entity.hpp | feed_entity | 16 |
 | projects/ores.marketdata/core/include/ores.marketdata.core/repository/market_series_entity.hpp | market_series_entity | 16 |
 | projects/ores.marketdata/core/include/ores.marketdata.core/repository/rate_card_component_entity.hpp | rate_card_component_entity | 16 |

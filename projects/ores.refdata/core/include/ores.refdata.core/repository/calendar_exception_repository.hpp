@@ -233,6 +233,18 @@ public:
      * @brief Deletes calendar exceptions by closing their temporal validity.
      */
     void remove(const context& ctx, const std::vector<std::string>& ids);
+
+    /**
+     * @brief Reads the exceptions that apply to one party.
+     *
+     * A party's dates follow the installation's exceptions and that party's own,
+     * and no other party's. A caller that names no party reads the
+     * installation's rows, which is what the installation's own baseline needs.
+     */
+    std::vector<domain::calendar_exception>
+    read_for_party(const context& ctx,
+                   const std::string& calendar_code,
+                   std::optional<boost::uuids::uuid> party_id);
 };
 
 }

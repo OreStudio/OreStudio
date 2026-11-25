@@ -52,6 +52,7 @@ generate_synthetic_calendar_exception(utility::generation::generation_context& c
         std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())};
     r.is_business_day = false;
     r.description = std::string("Test exception");
+    r.party_id = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

@@ -199,7 +199,10 @@ calendar_materialisation_service::regenerate(const std::string& calendar_code,
         const auto range_end = year_end(std::chrono::year{horizon_year});
 
         repository::calendar_exception_repository exc_repo;
-        auto exceptions = exc_repo.read_latest_by_calendar_code(ctx_, c.code, 0, 100000);
+        // The installation's exceptions apply to every party, and the caller's party
+        // adds its own beside them. A session with no party materialises the
+        // installation's baseline alone.
+        auto exceptions = exc_repo.read_for_party(ctx_, c.code, ctx_.party_id());
 
         std::vector<domain::calendar_date> rows;
 

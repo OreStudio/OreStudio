@@ -61,6 +61,7 @@ struct calendar_exception_entity {
 
     bool is_business_day = false;
     std::optional<std::string> description;
+    std::optional<boost::uuids::uuid> party_id;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -81,6 +82,7 @@ struct calendar_exception_entity {
                query_builder::bind("exception_date", &e::exception_date) |
                query_builder::bind("is_business_day", &e::is_business_day) |
                query_builder::bind("description", &e::description) |
+               query_builder::bind("party_id", &e::party_id) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

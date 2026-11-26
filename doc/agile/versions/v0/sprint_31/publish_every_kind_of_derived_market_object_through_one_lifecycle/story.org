@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_31:v0:
 #+created: 2026-11-24
-#+updated: 2026-11-24
+#+updated: 2026-11-26
 #+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -34,7 +34,7 @@ ores.marketdata holds one implementation of the raise, the decide, the apply and
 - All three kinds publish through the one path, and the curve's published behaviour is unchanged, proved by a test against the behaviour the delivered tree has.
 - An FX forward publish supersedes the set it replaces and writes its notice, as every kind does.
 - The three publish implementations are deleted and the lifecycle exists once.
-- The get_series_slice subject is served: a request on it reaches a handler, and a test holds the registration that makes the handler reachable.
+- The get_series_slice subject is served: a request on it reaches a handler, and a test holds the registration that makes the handler reachable. No declared subject is left unreachable.
 
 * Tasks
 

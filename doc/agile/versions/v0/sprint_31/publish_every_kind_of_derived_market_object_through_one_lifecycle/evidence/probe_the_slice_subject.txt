@@ -1,0 +1,15 @@
+# Probe of the series slice subject on the running environment
+# 2026-11-26T12:54:26Z  checkout 0d4dee1acd  base 64020779f1
+
+$ build/scripts/nats.sh req ores.dev.bright_faraday.marketdata.v1.ops.get_series_slice {}
+12:54:26 Sending request on "ores.dev.bright_faraday.marketdata.v1.ops.get_series_slice"
+12:54:26 Received with rtt 651.219µs
+12:54:26 X-Error: unauthorized
+12:54:26 
+nil body
+
+
+
+$ build/scripts/nats.sh req ores.dev.bright_faraday.marketdata.v1.ops.no_such_operation {}
+12:54:26 Sending request on "ores.dev.bright_faraday.marketdata.v1.ops.no_such_operation"
+12:54:26 No responders are available

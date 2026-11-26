@@ -31,8 +31,10 @@
 // The handler suites prove that each read answers; they do not prove that the
 // service subscribes it. A subject with a working handler and no subscription
 // looks healthy from the handler's side and answers every caller with no
-// responder. These cases hold the wiring itself: what
-// registrar::register_handlers registers, which is what the service runs.
+// responder. This case holds the registration: what
+// registrar::register_handlers subscribes, which is the function the service
+// calls at start-up. That the service still calls it is not visible from a test
+// binary, so this holds the nearer half of the wire.
 
 namespace {
 

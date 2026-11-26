@@ -308,6 +308,12 @@ are built on it.
    and the codec, and the service subscribes to nothing, so no caller can reach
    it. The journey calls it "exists, unreachable". The change is either to serve
    it or to delete it.
+
+   *Correction (2026-11-26):* this finding is false. The market data service
+   subscribes =marketdata.v1.ops.get_series_slice= from its registrar and
+   answers it; the subject was served when this analysis was written too. The
+   journey page that said "unreachable" is corrected, and task 4ED5A5FE records
+   the probe.
 9. *There is no surface web tree at all.* No list page, no record page with the
    grid and the smiles, no comparison as of, no history tab, no bff module and
    no contract types. The curve pattern has all of them, and the journey names

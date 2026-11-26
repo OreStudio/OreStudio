@@ -152,3 +152,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=ores::security::crypto::sealed_box= seals a plaintext to a recipient's X25519
+public key and opens it under the private half, with the sender's public half
+carried in the value. Eight test cases prove the round trip, that two seals of
+one plaintext differ, and that a wrong recipient, a changed body, a changed
+header and a truncated value each fail to open rather than answering something.
+
+The vault can now seal an answer to a caller it has never spoken to, and a caller
+can seal a request to a service without holding its key. The model of the secret
+and of the consumer's key is the next task.

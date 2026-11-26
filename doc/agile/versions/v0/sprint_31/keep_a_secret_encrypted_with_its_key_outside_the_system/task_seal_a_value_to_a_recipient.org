@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :keep_a_secret_encrypted_with_its_key_outside_the_system:sprint_31:v0:
 #+owner: marco
-#+branch: feature/keep-a-secret-encrypted-with-its-key-outside-the-system
+#+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -20,7 +20,15 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Give the kernel the second primitive the vault needs: a value sealed to a
+recipient's public key, which only that recipient's private key opens. The two
+sides share no secret beforehand, so the vault can seal to a consumer it has
+never spoken to, and the consumer opens the answer without a channel to agree a
+key on. The class carries the key agreement, the derivation and the
+authenticated encryption, and it sits beside the symmetric sealer in the same
+facet. It links no database, no bus and no credential. Its tests prove the round
+trip and refuse a wrong key, a changed byte and a ciphertext sealed to somebody
+else.
 
 * Status
 

@@ -731,15 +731,47 @@ parse_report_schedule_arguments(const std::string& arguments_json) {
 }
 
 /**
- * @brief Reads a publish_party_curves step's arguments: the parties that bootstrap their own
- * curves.
+ * @brief Reads the optional list of names a step narrows its work to.
  *
- * The step states no curve. Each party copies every blueprint the system tenant holds, so a
- * curve the system gains reaches the parties without the profile changing.
+ * A member the arguments leave out narrows nothing, which is how a profile that states no names
+ * keeps its meaning.
  */
 [[nodiscard]] inline std::vector<std::string>
+read_optional_names(const ores::utility::codec::json_value& root, const char* name) {
+    const auto found = detail::member(root, name);
+    if (!found.exists())
+        return {};
+
+    auto names = detail::read_string_list(found, name);
+    for (const auto& entry : names)
+        if (entry.empty())
+            throw std::runtime_error("The step names an empty '" + std::string(name) + "' entry.");
+    return names;
+}
+
+/**
+ * @brief Reads a publish_party_curves step's arguments: the parties that bootstrap their own
+ * curves, and the curves a party copies.
+ *
+ * A step that states no curve copies every blueprint the system tenant holds, so a curve the
+ * system gains reaches the parties without the profile changing. A step that states curves
+ * copies those and no others, which is what a profile wants when its tenant quotes a small
+ * market and would pay for every curve it never quotes.
+ *
+ * The names are the blueprint's own, as the system tenant states them: =GBP-SONIA= is a curve.
+ */
+struct party_curves_step_arguments {
+    std::vector<std::string> parties;
+    std::vector<std::string> curves;
+};
+
+[[nodiscard]] inline party_curves_step_arguments
 parse_party_curves_arguments(const std::string& arguments_json) {
-    return parse_report_schedule_arguments(arguments_json).parties;
+    const auto arguments = detail::read_step_arguments(arguments_json);
+    party_curves_step_arguments result;
+    result.parties = parse_report_schedule_arguments(arguments_json).parties;
+    result.curves = read_optional_names(arguments.root(), "curves");
+    return result;
 }
 
 /**
@@ -747,11 +779,38 @@ parse_party_curves_arguments(const std::string& arguments_json) {
  * forward sets.
  *
  * The step states no pair. Each party is asked for every currency pair convention the tenant
- * holds, so a convention the tenant gains reaches the parties without the profile changing.
+ * holds, so a convention the tenant gains reaches the parties without the profile changing. A
+ * pair the party cannot build is skipped by name, so a narrow market costs the skip and not the
+ * run.
  */
 [[nodiscard]] inline std::vector<std::string>
 parse_party_forwards_arguments(const std::string& arguments_json) {
     return parse_report_schedule_arguments(arguments_json).parties;
+}
+
+/**
+ * @brief Reads a give_party_surface_blueprints step's arguments: the parties that receive a copy
+ * of the system's surface blueprints, and the currency pairs they take.
+ *
+ * A step that states no pair copies every blueprint, and publish_party_surfaces then publishes
+ * every blueprint the party holds. A step that states pairs copies those and no others, so a
+ * narrow market does not wait on quotes for the pairs it never trades.
+ *
+ * A pair is stated =GBPUSD=, the two ISO codes and no separator, which is how the blueprint
+ * names itself.
+ */
+struct surface_blueprints_step_arguments {
+    std::vector<std::string> parties;
+    std::vector<std::string> pairs;
+};
+
+[[nodiscard]] inline surface_blueprints_step_arguments
+parse_surface_blueprint_arguments(const std::string& arguments_json) {
+    const auto arguments = detail::read_step_arguments(arguments_json);
+    surface_blueprints_step_arguments result;
+    result.parties = parse_report_schedule_arguments(arguments_json).parties;
+    result.pairs = read_optional_names(arguments.root(), "pairs");
+    return result;
 }
 
 /**

@@ -822,3 +822,70 @@ TEST_CASE("a seeded total of a thousand cannot hold the bond codes", "[populatio
                                codes_of),
         Catch::Matchers::ContainsSubstring("A total of 1100 is the smallest"));
 }
+
+TEST_CASE("a config that states its trade types books one trade per stated type",
+          "[population_knobs]") {
+    /*
+     * A smokehouse config books one forward, one option and one swap in three
+     * books, and states the one type each book is approved for. The codes it
+     * books are the stated ones, so one trade per book holds them and the guard
+     * does not refuse the class's whole cycle.
+     */
+    std::vector<ores::iam::workflow::trade_generation_assignment> assignments;
+    for (const auto& [asset_class, code] : std::vector<std::pair<std::string, std::string>>{
+             {"fx", "FxForward"}, {"fx", "FxOption"}, {"interest_rates", "Swap"}}) {
+        ores::iam::workflow::trade_generation_assignment entry;
+        entry.name = code;
+        entry.party = "Smokehouse Trading Ltd";
+        entry.asset_class_code = asset_class;
+        entry.book = "Book";
+        entry.trades_per_book = 1;
+        entry.trade_type_codes = {code};
+        assignments.push_back(std::move(entry));
+    }
+
+    CHECK_NOTHROW(apply_population_knobs(assignments, read_population_knobs({}), codes_of));
+    for (const auto& entry : assignments)
+        CHECK(entry.trades_per_book == 1);
+}
+
+TEST_CASE("a config that states its trade types is refused when it books fewer slots",
+          "[population_knobs]") {
+    /* The guard still asks the question: two stated types and one slot books a
+     * prefix of the two. */
+    ores::iam::workflow::trade_generation_assignment entry;
+    entry.name = "Smokehouse FX forwards";
+    entry.party = "Smokehouse Trading Ltd";
+    entry.asset_class_code = "fx";
+    entry.book = "GBP FX Book";
+    entry.trades_per_book = 1;
+    entry.trade_type_codes = {"FxForward", "FxOption"};
+
+    std::vector<ores::iam::workflow::trade_generation_assignment> assignments{entry};
+    CHECK_THROWS_WITH(apply_population_knobs(assignments, read_population_knobs({}), codes_of),
+                      Catch::Matchers::ContainsSubstring("the codes it books are 2"));
+}
+
+TEST_CASE("a curve step names the curves it copies, and none when it states none",
+          "[provision_step]") {
+    const auto named = ores::iam::workflow::parse_party_curves_arguments(
+        R"({"parties": ["Smokehouse Trading Ltd"], "curves": ["GBP-SONIA", "USD-SOFR-FOMC"]})");
+    CHECK(named.parties == std::vector<std::string>{"Smokehouse Trading Ltd"});
+    CHECK(named.curves == std::vector<std::string>{"GBP-SONIA", "USD-SOFR-FOMC"});
+
+    const auto every = ores::iam::workflow::parse_party_curves_arguments(
+        R"({"parties": ["Smokehouse Trading Ltd"]})");
+    CHECK(every.curves.empty());
+}
+
+TEST_CASE("a surface blueprint step names the pairs it copies, and none when it states none",
+          "[provision_step]") {
+    const auto named = ores::iam::workflow::parse_surface_blueprint_arguments(
+        R"({"parties": ["Smokehouse Trading Ltd"], "pairs": ["GBPUSD"]})");
+    CHECK(named.parties == std::vector<std::string>{"Smokehouse Trading Ltd"});
+    CHECK(named.pairs == std::vector<std::string>{"GBPUSD"});
+
+    const auto every = ores::iam::workflow::parse_surface_blueprint_arguments(
+        R"({"parties": ["Smokehouse Trading Ltd"]})");
+    CHECK(every.pairs.empty());
+}

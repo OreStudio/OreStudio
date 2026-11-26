@@ -159,6 +159,53 @@ static_assert(::ores::utility::codec::names_every_member<provision_step_result>(
               "provision_step_result gained a member its wire_fields does not name.");
 
 /**
+ * @brief The curve blueprints a step names, in the catalogue's own order.
+ *
+ * A step that names no curve keeps the catalogue whole. A name the system tenant
+ * does not hold is left out rather than refused: a profile that states a curve
+ * the installation dropped keeps working, and the run's record says which curves
+ * were copied.
+ */
+[[nodiscard]] inline std::vector<ores::refdata::domain::ir_curve_bootstrap_config>
+curves_named(std::vector<ores::refdata::domain::ir_curve_bootstrap_config> configs,
+             const std::vector<std::string>& names) {
+    if (names.empty())
+        return configs;
+
+    std::vector<ores::refdata::domain::ir_curve_bootstrap_config> kept;
+    for (auto& config : configs)
+        if (std::ranges::find(names, config.name) != names.end())
+            kept.push_back(std::move(config));
+    return kept;
+}
+
+/// The blueprint's pair, as a profile states it: the two ISO codes and no separator.
+[[nodiscard]] inline std::string
+pair_of(const ores::refdata::domain::fx_vol_surface_blueprint& blueprint) {
+    return blueprint.base_currency_code + blueprint.quote_currency_code;
+}
+
+/**
+ * @brief The surface blueprints a step names, in the catalogue's own order.
+ *
+ * A step that names no pair keeps the catalogue whole. A pair the system tenant
+ * does not hold a blueprint for is left out rather than refused, for the same
+ * reason a curve name is.
+ */
+[[nodiscard]] inline std::vector<ores::refdata::domain::fx_vol_surface_blueprint>
+blueprints_of_pairs(std::vector<ores::refdata::domain::fx_vol_surface_blueprint> blueprints,
+                    const std::vector<std::string>& pairs) {
+    if (pairs.empty())
+        return blueprints;
+
+    std::vector<ores::refdata::domain::fx_vol_surface_blueprint> kept;
+    for (auto& blueprint : blueprints)
+        if (std::ranges::find(pairs, pair_of(blueprint)) != pairs.end())
+            kept.push_back(std::move(blueprint));
+    return kept;
+}
+
+/**
  * @brief Answers the provisioning steps whose work ores.marketdata owns.
  *
  * A provisioning run is one workflow whose steps act on different services'
@@ -838,8 +885,9 @@ private:
             "Provisioning bootstraps the party's own funding curve from the quotes its "
             "subscriptions deliver.";
 
-        const auto parties =
+        const auto arguments =
             ores::iam::workflow::parse_party_curves_arguments(command.arguments_json);
+        const auto& parties = arguments.parties;
 
         // The step acts in the tenant as its own service account, and then in
         // each party it names.
@@ -848,11 +896,13 @@ private:
         const auto service_ctx =
             tenant_ctx.with_tenant(tenant_ctx.tenant_id(), ctx_.service_account());
 
-        const auto catalogue = read_curve_catalogue();
+        auto catalogue = read_curve_catalogue();
         if (catalogue.configs.empty()) {
             wf.fail("The system tenant holds no curve blueprint to copy.");
             return;
         }
+        if (!arguments.curves.empty())
+            catalogue.configs = curves_named(catalogue.configs, arguments.curves);
 
         provision_step_result result;
         result.kind = command.kind;
@@ -909,68 +959,110 @@ private:
 
             const auto already_published = plan.ready.size() - curves.size();
 
-            // One request for the party's set: a decider answers once for the
-            // curves the party can bootstrap, and each member is published
-            // under it.
-            auto preview = preview_party_curves(wf, party_ctx, curves, party_name);
-            // A curve whose quotes have not arrived is previewed again, whole set
-            // and all, so the set raised is one reading of the market at one
-            // instant rather than a mixture of rounds.
-            const auto preview_started = std::chrono::steady_clock::now();
-            while (!preview.left_out.empty() && !preview.members.empty() &&
-                   std::chrono::steady_clock::now() < preview_started + curve_quote_patience) {
-                const auto waiting = std::to_string(preview.left_out.size()) +
-                                     " curve(s) have no quotes yet, "
-                                     "asking again in " +
-                                     std::to_string(retry_interval.count()) + "s";
-                ORES_LOG_SEV(lg(), ores::logging::info)
-                    << "publish_party_curves: " << party_name << ": " << waiting;
-                step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
-                                    .message = party_name + ": " + waiting,
-                                    .context = {}});
-                std::this_thread::sleep_for(retry_interval);
-                preview = preview_party_curves(wf, party_ctx, curves, party_name);
-            }
-            for (const auto& left_out : preview.left_out)
-                result.curves_not_published.push_back(left_out);
+            // A projection curve reads the funding curve it discounts off, and
+            // the curve's published points are what it reads. This step publishes
+            // both, so the party's set goes out in dependency order: the curves no
+            // other curve discounts off first, then the curves that do. One pass
+            // would hold the projection back as deferred, and the party would then
+            // hold a curve it cannot bootstrap and a market it cannot price. A
+            // projection discounts off a funding curve and never off another
+            // projection, so two passes hold the catalogue.
+            std::map<std::string, std::string> discount_of;
+            for (const auto& config : catalogue.configs)
+                if (config.discount_curve_config_id)
+                    discount_of.emplace(
+                        boost::uuids::to_string(ores::marketdata::messaging::party_copy_id(
+                            party->id, "ir_curve_bootstrap_config", config.id)),
+                        boost::uuids::to_string(ores::marketdata::messaging::party_copy_id(
+                            party->id,
+                            "ir_curve_bootstrap_config",
+                            *config.discount_curve_config_id)));
 
+            auto held = published;
+            std::vector<ores::marketdata::messaging::party_curve> pending = curves;
             std::vector<curve_outcome> outcomes;
-            if (!preview.members.empty()) {
-                std::vector<ores::marketdata::service::app::publication_request> requests;
-                requests.reserve(preview.members.size());
-                for (const auto& member : preview.members)
-                    requests.push_back(
-                        {.subject_key = boost::uuids::to_string(member.subject.subject_id),
-                         .as_of = member.subject.as_of});
-                const auto raised = ores::marketdata::service::app::raise_publication(
-                    party_ctx,
-                    ores::marketdata::service::app::derived_kind::curve,
-                    requests,
-                    std::string(publish_reason),
-                    preview.members.front().subject.party_id,
-                    ores::marketdata::service::app::set_raise::whole_set);
-                outcomes =
-                    publish_party_curve_set(party_ctx, preview, raised.request_id, publish_reason);
-            }
-
             std::size_t published_now = 0;
-            for (const auto& outcome : outcomes) {
-                const auto line = party_name + ": " + outcome.name;
-                switch (outcome.how) {
-                    case curve_outcome::state::published:
-                        ++published_now;
-                        result.curves.push_back(line + ": " + outcome.detail);
-                        break;
-                    case curve_outcome::state::waiting_approval:
-                    case curve_outcome::state::not_published:
-                        result.curves_not_published.push_back(line + ": " + outcome.detail);
-                        break;
+            for (int pass = 0; pass < 2 && !pending.empty(); ++pass) {
+                std::vector<ores::marketdata::messaging::party_curve> batch;
+                std::vector<ores::marketdata::messaging::party_curve> rest;
+                for (const auto& curve : pending) {
+                    const auto discount =
+                        discount_of.find(boost::uuids::to_string(curve.config_id));
+                    const bool reads_an_unpublished_curve =
+                        discount != discount_of.end() && !held.contains(discount->second);
+                    (reads_an_unpublished_curve ? rest : batch).push_back(curve);
                 }
+                // Nothing in the pass can move, which only happens when a curve
+                // the party holds is not on the catalogue this run read.
+                if (batch.empty())
+                    break;
+                pending = std::move(rest);
+
+                // One request for the pass's set: a decider answers once for the
+                // curves the party can bootstrap, and each member is published
+                // under it.
+                auto preview = preview_party_curves(wf, party_ctx, batch, party_name);
+                // A curve whose quotes have not arrived is previewed again, whole
+                // set and all, so the set raised is one reading of the market at
+                // one instant rather than a mixture of rounds.
+                const auto preview_started = std::chrono::steady_clock::now();
+                while (!preview.left_out.empty() && !preview.members.empty() &&
+                       std::chrono::steady_clock::now() < preview_started + curve_quote_patience) {
+                    const auto waiting = std::to_string(preview.left_out.size()) +
+                                         " curve(s) have no quotes yet, "
+                                         "asking again in " +
+                                         std::to_string(retry_interval.count()) + "s";
+                    ORES_LOG_SEV(lg(), ores::logging::info)
+                        << "publish_party_curves: " << party_name << ": " << waiting;
+                    step_log.push_back({.level = ores::workflow::messaging::step_log_level::info,
+                                        .message = party_name + ": " + waiting,
+                                        .context = {}});
+                    std::this_thread::sleep_for(retry_interval);
+                    preview = preview_party_curves(wf, party_ctx, batch, party_name);
+                }
+                for (const auto& left_out : preview.left_out)
+                    result.curves_not_published.push_back(left_out);
+
+                if (!preview.members.empty()) {
+                    std::vector<ores::marketdata::service::app::publication_request> requests;
+                    requests.reserve(preview.members.size());
+                    for (const auto& member : preview.members)
+                        requests.push_back(
+                            {.subject_key = boost::uuids::to_string(member.subject.subject_id),
+                             .as_of = member.subject.as_of});
+                    const auto raised = ores::marketdata::service::app::raise_publication(
+                        party_ctx,
+                        ores::marketdata::service::app::derived_kind::curve,
+                        requests,
+                        std::string(publish_reason),
+                        preview.members.front().subject.party_id,
+                        ores::marketdata::service::app::set_raise::whole_set);
+                    auto published_outcomes = publish_party_curve_set(
+                        party_ctx, preview, raised.request_id, publish_reason);
+                    for (auto& outcome : published_outcomes) {
+                        const auto line = party_name + ": " + outcome.name;
+                        switch (outcome.how) {
+                            case curve_outcome::state::published:
+                                ++published_now;
+                                result.curves.push_back(line + ": " + outcome.detail);
+                                break;
+                            case curve_outcome::state::waiting_approval:
+                            case curve_outcome::state::not_published:
+                                result.curves_not_published.push_back(line + ": " + outcome.detail);
+                                break;
+                        }
+                        outcomes.push_back(std::move(outcome));
+                    }
+                }
+                // What the store now holds decides the next pass, so a curve this
+                // pass published is what the projection behind it waits for.
+                held = published_configs_of(party_ctx, party->id);
             }
+            const auto not_published_now = outcomes.size() - published_now;
             ORES_LOG_SEV(lg(), ores::logging::info)
                 << "publish_party_curves: " << party_name << ": published " << published_now
                 << ", already published " << already_published << ", not published "
-                << outcomes.size() - published_now + plan.waiting.size();
+                << not_published_now + plan.waiting.size();
             result.parties.push_back(party_text);
         }
 
@@ -1372,8 +1464,9 @@ private:
         constexpr auto quote_patience = std::chrono::minutes{3};
         constexpr auto retry_interval = std::chrono::seconds{10};
 
-        const auto parties =
-            ores::iam::workflow::parse_party_curves_arguments(command.arguments_json);
+        const auto arguments =
+            ores::iam::workflow::parse_surface_blueprint_arguments(command.arguments_json);
+        const auto& parties = arguments.parties;
 
         // The step acts in the tenant as its own service account, and then in
         // each party it names.
@@ -1382,11 +1475,14 @@ private:
         const auto service_ctx =
             tenant_ctx.with_tenant(tenant_ctx.tenant_id(), ctx_.service_account());
 
-        const auto catalogue = read_surface_catalogue();
+        auto catalogue = read_surface_catalogue();
         if (catalogue.blueprints.empty()) {
             wf.fail("The system tenant holds no surface blueprint to copy.");
             return;
         }
+        if (!arguments.pairs.empty())
+            catalogue.blueprints =
+                blueprints_of_pairs(std::move(catalogue.blueprints), arguments.pairs);
 
         provision_step_result result;
         result.kind = command.kind;

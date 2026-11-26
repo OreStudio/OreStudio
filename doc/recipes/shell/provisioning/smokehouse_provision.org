@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: 1658AE5E-EF2D-413B-A521-19E5EE030C6A
+:END:
+#+title: How do I provision the Smokehouse tenant?
+#+description: Provision Smokehouse, the smallest tenant that publishes every kind of derived market object, from the shell.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:provisioning:smokehouse:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+Smokehouse is the smallest tenant that exercises the publishing lifecycle. It is
+one legal entity with one desk, one portfolio and three books, one feed, one
+curve per funding currency the feed quotes, the forward sets those curves build,
+one surface per pair with volatility quotes, and one trade per book. A check can
+watch every kind of derived market object publish, be superseded and announce,
+and watch the three trades price against them, without paying for a
+demonstration tenant.
+
+It is not a cut-down ACME. ACME pays for four legal entities, forty-five staff,
+seventy-two subscriptions, eleven hundred trades and a photograph per person.
+Smokehouse orders none of that.
+
+The =ores-shell= block below is tangled into the runnable script library as
+=smokehouse_provision.ores=.
+
+* Question
+
+How do I make a tenant that publishes curves, forward sets and surfaces in
+minutes, so a check can exercise the lifecycle on every run?
+
+* Answer
+
+Log in as =super_admin= and provision =smokehouse= from the =smokehouse=
+starting point. Then log in as its administrator and set the party the account
+works in.
+
+The starting point runs fifteen steps on the server:
+
+1. =system_provision= publishes the installation's own data.
+2. =publish_system_curves= publishes the system's curve blueprints.
+3. =start_auto_approval= lets the run publish without a person approving each
+   object, because the run has no person watching it.
+4. =publish_bundle= publishes the base reference data and the GLEIF
+   counterparties.
+5. =build_calendars= builds the calendars the curves and the trades date with.
+6. =import_lei_hierarchy= creates the tenant's party from its synthetic LEI.
+7. =provision_party= publishes the party's conventions and CRM topology.
+8. =load_staff= publishes the party's own datasets: its desk, portfolio, books,
+   their approval matrix and its counterparties. No staff accounts are involved.
+9. =subscribe_market_data= gives the party the vendors whose quotes its curves
+   and its surface read.
+10. =give_party_surface_blueprints= copies the surface blueprint of the one pair
+    the tenant trades.
+11. =publish_party_curves= bootstraps the three curves the profile names, in
+    dependency order: the funding curves first, then the projection curve that
+    discounts off one of them.
+12. =publish_party_forwards= builds the forward sets the party's spots and
+    funding curves support.
+13. =publish_party_surfaces= calibrates the surface from the forward set and the
+    volatility quotes.
+14. =generate_trades= books one trade per book: a forward, an option and a swap.
+15. =end_auto_approval= turns automatic approval off, so the tenant is left in
+    the state a person works in.
+
+Expectations:
+
+- The services are up (=compass services start=).
+- The database is fresh. Run =compass services stop=, then =compass db recreate
+  -y -k=, then start the services again.
+
+** What the profile states, and what the feed decides
+
+The profile states the curves and the pair, so the tenant pays for the market it
+trades and not for every curve the installation holds. Copying the whole
+catalogue costs every curve of every currency, and a surface per pair, each one
+waiting out its patience for quotes that never arrive.
+
+The feed decides whether the quotes for those curves arrive. A curve whose
+quotes the vendor has not published is reported by name and left out, and so is a
+pair whose spots or volatility quotes are missing.
+
+The trade population then follows from the curves: a desk books only a pair whose
+two currencies the party can price, so two funding curves and one projection
+curve in two currencies leave one pair and no choice about it.
+
+** The company
+
+Smokehouse Trading Ltd is fictional. Its LEI is synthetic: =9695SMOKEHOUSE000081=,
+on the =9695= test prefix ACME uses, with ISO 17442 mod-97 check digits. Its
+business unit, portfolio and books are stated by the smokehouse dataset, in
+=projects/ores.seeder/datasets/smokehouse/=, not by this recipe.
+
+Each book permits one product type: the FX book a forward, the FX options book an
+option, the rates book a swap. The approval is the book's, so the three trades
+need three books.
+
+** Running it again
+
+The tenant stage refuses a tenant code it already holds. Reset the database with
+the stop, recreate and start sequence above, then run this script again.
+
+#+name: smokehouse-provision
+#+begin_src ores-shell :exports none
+connect $ORES_NATS_URL
+
+login super_admin Secure-Password-123
+provision tenant --tenant-code smokehouse --tenant-name "Smokehouse" --tenant-hostname smokehouse --tenant-admin-email admin@smokehouse --tenant-admin-password Secure-Password-123 --profile smokehouse
+logout
+
+login tenant_admin@smokehouse Secure-Password-123
+accounts set-default-party "Smokehouse Trading Ltd"
+logout
+
+exit
+#+end_src
+
+Run it from a connected shell, or load the generated script:
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} ${connect_args} << 'EOF'
+<<smokehouse-provision>>
+EOF
+#+end_src
+
+* Script
+
+=projects/ores.shell/scripts/library/provisioning/smokehouse_provision.ores= is
+generated from this recipe's =ores-shell= block by =compass build --direct
+tangle_shell_scripts=. Do not edit the =.ores= by hand.
+
+* Tested by
+
+Manual: =compass shell -f smokehouse_provision.ores= against a freshly recreated
+database.
+
+Proven on 2026-11-26 against =bright_faraday=, through =bootstrap setup= rather
+than the tenant stage, because the database was fresh. All fifteen steps
+completed and the run ended with no warnings. The tenant carried:
+
+- 1 party, 1 business unit, 1 portfolio and 3 books, each book approved for the
+  one product its trade carries.
+- 3 curves: =EUR-ESTR=, =GBP-SONIA= and =GBP-LIBOR-3M=, the last discounted off
+  the second.
+- 1 forward set, for =EUR/GBP=, the only pair whose two currencies the party can
+  price.
+- 1 volatility surface, for =EURGBP=.
+- 3 trades: a forward, an option and a swap, one per book.
+
+Provisioning took 326 seconds on a quiet host, of which the waits for quotes were
+the largest part. The floor the same profile cost before it published any market
+data was 122 seconds.
+
+* See also
+
+- [[id:5C1D6A20-4B7E-4F31-9C2D-8A6E5B4F1D07][How do I provision a second
+  tenant with Northwind Traders?]] is the larger demonstration tenant.
+- =projects/ores.seeder/datasets/smokehouse/= is the generator that writes the
+  company's populate SQL.

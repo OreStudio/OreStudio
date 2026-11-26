@@ -24,3 +24,47 @@ Next: logout, then: login tenant_admin@smokehouse <password>  — the tenant is 
 ✓ Logged out successfully.
 Script complete: 3 commands executed.
 ores-shell> Bye!
+
+# ---------------------------------------------------------------------------
+# The full profile, the same phases, timed 2026-11-26T21:47Z
+# checkout 9c19d5e6f7 + the working tree (see below)
+
+database recreate (compass db recreate -y -k): 239.883 s
+services start   (compass services start):     173.971 s
+provisioning     (bootstrap setup ... --profile smokehouse): 326.623 s
+
+The profile at this measurement is the whole one: fifteen steps, three curves
+(EUR-ESTR, GBP-SONIA, GBP-LIBOR-3M), the surface blueprint of one pair, one feed
+of three vendors, and one trade per book. The run ended with no warnings.
+
+$ what the tenant carried
+  3 curves, 3 curve publishes
+  1 forward set  EUR/GBP
+  1 surface      EURGBP
+  3 trades       FxForward, FxOption, Swap
+
+$ where the provisioning time goes, from the step log
+  the waits for a curve's quotes: the step asks again every ten seconds until
+  the vendor's ticks arrive. The curve set publishes in dependency order, so the
+  projection curve waits for the funding curve rather than entering the same
+  pass, and that is one more round of quotes to wait for.
+  the wait for the surface's quotes: four rounds of ten seconds before they
+  arrive.
+
+# The intermediate measurements, in the order the profile grew. Each was run
+# against a database recreated at that point; the small tenants were provisioned
+# into the same database as the profile grew, so the last is the one to read.
+
+  floor, no party and no feed:                     122.260 s  (6 steps)
+  party, books, one vendor (bloomberg + derived):  270.467 s  (14 steps, 4 warned)
+      no curve published: the blueprints read the quotes of a provider the
+      party had not subscribed to, so 38 curves waited out their patience.
+  curves narrowed to two, pair narrowed to one:    122.572 s  (14 steps, clean)
+      but the interest rate swap was not written: no swap convention named an
+      index a curve served.
+  the same with GBP-LIBOR-3M:                      242.811 s  (warnings: its
+      discount curve was published after it)
+  dependency-ordered curve publish:                326.623 s  (clean)
+
+# The run is one command, and the shell is where the timings above came from:
+#   ./compass.sh shell -l build/scratch/smokehouse_bootstrap.ores --no-login

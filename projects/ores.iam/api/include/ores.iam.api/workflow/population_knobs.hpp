@@ -124,37 +124,46 @@ read_population_knobs(const std::vector<provision_tenant_parameter>& parameters)
 namespace detail {
 
 /**
+ * @brief The codes one config books: the types it states, or its class's whole cycle.
+ *
+ * A config that states trade_type_codes books those and no others, so the codes
+ * it must hold a slot for are the ones it states. A config that states none books
+ * its class's whole cycle.
+ */
+[[nodiscard]] inline std::uint32_t
+codes_the_config_books(const trade_generation_assignment& assignment,
+                       const std::function<std::size_t(const std::string&)>& code_count) {
+    if (!assignment.trade_type_codes.empty())
+        return static_cast<std::uint32_t>(assignment.trade_type_codes.size());
+    return static_cast<std::uint32_t>(code_count(assignment.asset_class_code));
+}
+
+/**
  * @brief Refuses a population whose stated counts cannot hold every code.
  *
- * A config books its codes by the slot's position, so a config shorter than its
- * class's code list states a prefix and drops the rest without saying so. The
- * check runs on the paths that keep the counts a recipe states, where no share
- * would otherwise ask the question.
+ * A config books its codes by the slot's position, so a config shorter than the
+ * codes it books states a prefix and drops the rest without saying so. The check
+ * runs on the paths that keep the counts a recipe states, where no share would
+ * otherwise ask the question.
  *
  * @throws std::runtime_error naming the class, its configs and its codes.
  */
 inline void require_every_config_holds_its_codes(
     const std::vector<trade_generation_assignment>& assignments,
     const std::function<std::size_t(const std::string&)>& code_count) {
-    std::map<std::string, std::uint32_t> shortest;
     for (const auto& assignment : assignments) {
         if (!assignment.trades_per_book)
             continue;
         const auto stated = *assignment.trades_per_book;
-        auto [it, added] = shortest.emplace(assignment.asset_class_code, stated);
-        if (stated < it->second)
-            it->second = stated;
-    }
-    for (const auto& [asset_class, stated] : shortest) {
-        const auto codes = static_cast<std::uint32_t>(code_count(asset_class));
+        const auto codes = detail::codes_the_config_books(assignment, code_count);
         if (stated >= codes)
             continue;
         throw std::runtime_error(
-            std::format("A config of '{}' states {} trade(s) per book, and its planner cycles {} "
-                        "code(s), so a config shorter than its codes books a prefix and drops the "
+            std::format("A config of '{}' states {} trade(s) per book, and the codes it books are "
+                        "{}, so a config shorter than its codes books a prefix and drops the "
                         "rest. State at least {} per book, or state a share and a total that hold "
                         "them.",
-                        asset_class,
+                        assignment.asset_class_code,
                         stated,
                         codes,
                         codes));

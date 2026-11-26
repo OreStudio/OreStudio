@@ -133,8 +133,9 @@ is why the check only holds subjects whose message declares a =:response:=.
 The other three are real: =begin_bundle_import=, =stage_bundle_family= and
 =commit_bundle_import= are declared with responses, generated into the protocol,
 and called by the ore service's run configuration import, and no refdata
-registrar subscribes them. They are recorded in the exceptions file with capture
-7B4D52F1, because serving them is refdata's work and not this task's.
+registrar subscribes them. They are recorded in the exceptions file against capture FE34DD26,
+which already held the defect and now holds the blame report, because serving
+them is refdata's work and not this task's.
 
 What the check cannot see: a subject that answers is served by *something*, not
 necessarily by the handler its model names. It also says nothing about the 86

@@ -3,18 +3,18 @@
   "exceptions": [
     {
       "subject": "refdata.v1.ops.begin_bundle_import",
-      "reason": "declared with a response and called by the ore service's run configuration import, and no refdata registrar subscribes it",
-      "task": "7B4D52F1-4D37-4F8D-AAEF-DF0E155BE955"
+      "reason": "declared with a response, called by the ore service's run configuration import, and unregistered since the bundle import was written; capture FE34DD26 holds the blame",
+      "task": "FE34DD26-2F96-4A3E-8EA8-A743E5A86CD6"
     },
     {
       "subject": "refdata.v1.ops.stage_bundle_family",
-      "reason": "declared with a response and called by the ore service's run configuration import, and no refdata registrar subscribes it",
-      "task": "7B4D52F1-4D37-4F8D-AAEF-DF0E155BE955"
+      "reason": "declared with a response, called by the ore service's run configuration import, and unregistered since the bundle import was written; capture FE34DD26 holds the blame",
+      "task": "FE34DD26-2F96-4A3E-8EA8-A743E5A86CD6"
     },
     {
       "subject": "refdata.v1.ops.commit_bundle_import",
-      "reason": "declared with a response and called by the ore service's run configuration import, and no refdata registrar subscribes it",
-      "task": "7B4D52F1-4D37-4F8D-AAEF-DF0E155BE955"
+      "reason": "declared with a response, called by the ore service's run configuration import, and unregistered since the bundle import was written; capture FE34DD26 holds the blame",
+      "task": "FE34DD26-2F96-4A3E-8EA8-A743E5A86CD6"
     }
   ]
 }

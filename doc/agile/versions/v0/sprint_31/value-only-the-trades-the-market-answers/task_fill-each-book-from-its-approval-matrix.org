@@ -26,12 +26,12 @@ A book is generated from its own approval matrix: every type the matrix names is
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | Not yet started.                       |
+| Now          | Done. The run states each book's trades and the types it was denied, with the reason. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-25                               |
+| Next         | Nothing on this task. |
+| Last touched | 2026-11-26                             |
 
 * Acceptance
 
@@ -41,9 +41,33 @@ A book is generated from its own approval matrix: every type the matrix names is
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two of this task's three acceptance items arrived with
+[[https://github.com/OreStudio/OreStudio/pull/5157][#5157]]: a book is filled from
+its own matrix, and a type the matrix permits but the generator cannot draw is
+refused with its reason. What is missing is the *report*: the run states its
+outcomes per configuration and per trade type, so nothing says what one book
+received and what it was denied.
+
+1. *The plan states its outcomes per book.* =plan_for_scope= already computes
+   each book's types and the reason each one plans nothing; the merge into the
+   configuration's list throws that attribution away. =trade_population_plan=
+   gains =book_outcomes=: one entry per book of the scope, each holding the
+   book's own type outcomes. A book the config's types do not reach keeps its
+   entry, with every stated type left out and the matrix as the reason, so the
+   report names a book that books nothing rather than omitting it.
+2. *The run joins the two.* =trade_population_run= gains =books=: one entry per
+   book, with the trades planned, written and already present, and the book's
+   type outcomes from the plan. The counts are the run's own (a slot names its
+   book), so a report cannot claim a book received trades the run did not write.
+3. *One line per book in the report.* The provisioning step records, for each
+   book, the trades written and present, the types it booked with their counts,
+   and the types it did not, each with its reason. The existing per-type line
+   stays: it answers what the configuration did, and the per-book line answers
+   where it went.
+4. *One type, not two.* A type's =planned= count says whether the book booked it
+   and its =reason= says why it did not, so the report reuses
+   =trade_type_outcome= rather than inventing a booked type and a left-out type
+   that say the same thing twice.
 
 * Measurements
 
@@ -57,7 +81,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The full tree | builds, all targets | =./compass.sh build= | cd352d7386 |
+| The generator's suite | 184 cases, 182 pass, 2 skipped (no ORE engine), 5314 assertions | =ores.synthetic.core.tests= | cd352d7386 |
+| The synthetic service suite | 114 cases, 836 assertions, pass | =ores.synthetic.service.tests= | cd352d7386 |
+| The ported gates | no finding new since =origin/main= | =compass-ng check --ratchet origin/main= | cd352d7386 |
+| The changed C++ | clang-formatted | =./compass.sh check --only format= | cd352d7386 |
 
 * Notes
 
@@ -85,3 +113,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A run now states the population twice: once per type, which answers what the
+configuration did, and once per book, which answers where it went. The per-book
+line names the trades written, the trades already present and the trades planned,
+then the types the book booked with their counts and the types it did not with the
+reason each was denied — its approval matrix, the party's missing market data, or
+the builder's own refusal.
+
+The attribution is the plan's, not the run's guess. Each book's answer is built by
+walking the configuration's types in the class's own order, so a type the matrix
+denies and a type the market cannot answer are told apart rather than collapsed
+into one short count, and a book that books nothing keeps its entry so the report
+names it.
+
+The two properties this task's acceptance asks for beyond the fill itself are
+therefore true of the report and not only of the store: a book whose matrix names
+a type the generator cannot draw states that type and its reason, and the report
+states per book what was booked and what was left out.

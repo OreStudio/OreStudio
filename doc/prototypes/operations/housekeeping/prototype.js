@@ -1706,8 +1706,9 @@
         ev.preventDefault();
 
         if (act === 'save') {
-            saveDraft();
+            // Closed before the draft is written, because the save renders.
             S.editing = null;
+            saveDraft();
             writeParams();
             return;
         }

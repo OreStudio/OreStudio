@@ -146,7 +146,8 @@ The second review asked for the thing the screen is actually for: each store's
 growth over time, so that it can be plotted. "Growing · +18 MB over 30 days" is
 a sentence; a person cannot see a step, a cliff or a sawtooth in it, and those
 are the shapes that say what happened. The prototype draws a sparkline in every
-row and a twelve-week chart in the detail panel, and both are mock.
+row and, on a store's page, a plot with size up the side and time along the
+foot, ticked and gridded, and both are mock.
 
 What a real plot needs is a sample per store per cadence, kept as a series:
 
@@ -174,15 +175,21 @@ made; one that sawtooths is a policy that drops and the store that regrows into
 it. This is the analysis the review asked for, and it is the one thing on the
 screen that a person will come back to look at rather than read once.
 
-** Clicking a row opens the store**
+** Clicking a row opens the store's own page
 
-The screen is a list and a drill-down, not a list of lists: selecting a row
-opens that store's own panel — its name and description, its facts, its growth
-chart, its policy and its recent runs — in the same page, and the row states
-that it is open (=aria-expanded=). Variant C is the same selection with the
-editor beside it instead of the panel below. Nothing on the screen navigates
-away to read one store, because the comparison the person is making against the
-other rows is the reason they are on the screen at all.
+The screen follows the shape the rest of the application uses: a list page, and
+a page per record. Clicking a row opens the store's page — its name and
+description, its record, its plot, its policy and its log — with a breadcrumb and
+a back action at its head. The list keeps the comparison the person came for;
+the page gives the store the room its record, plot and log need, and a place of
+its own to link to.
+
+The editor opens on the store's page rather than in a variant of its own, with
+the store and its size still in view while the period is changed. A store with
+no policy says so on its page and offers the way to give it one: the create form
+states an action, a period, a cadence, whether it is enabled, and the reason,
+and adding it turns the store to *waiting for its first sweep* on the page and in
+the list.
 
 ** The states a store can be in
 

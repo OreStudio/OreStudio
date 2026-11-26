@@ -2,7 +2,7 @@
 :ID: 12B71000-B339-4807-815B-5FD290383EA3
 :END:
 #+title: Task: Fail the gate on a declared subject with no handler
-#+description: A declared NATS operation subject with no registered handler is invisible until a caller tries it and times out. Add a repo-owned gate check that fails when a declared subject has no handler, with a test that proves it fails on one.
+#+description: A declared NATS operation subject with no registered handler is invisible until a caller tries it and times out. Add a repo-owned gate check that fails when a declared subject has no handler, with a test that proves it fails on one. The registrar cannot be called to find that out: it opens a JetStream stream and claims it per process.
 #+type: task
 #+level: s1
 #+filetags: :publish_every_kind_of_derived_market_object_through_one_lifecycle:sprint_31:v0:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
-#+updated: 2026-11-25
+#+updated: 2026-11-26
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -39,6 +39,7 @@ dead subject cannot be declared and advertised while nobody answers it.
 - A repo-owned check fails when a protocol model declares a subject that no handler registers, and names the subject and the file.
 - The check runs in the local gate for a change to a protocol model, a handler or the service that subscribes.
 - A test proves the check fails on a declared subject with no handler and passes when the handler is registered.
+- The check reads the subjects a service declares and the subjects its registrar subscribes without running the registrar, which creates a JetStream stream, claims it in a process-static set, binds a durable consumer and prunes the stream's other consumers. Task 4ED5A5FE wrote a unit test that called the registrar and withdrew it for that reason.
 
 * Plan
 

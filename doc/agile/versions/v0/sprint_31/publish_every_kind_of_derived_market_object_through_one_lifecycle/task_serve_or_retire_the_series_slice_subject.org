@@ -2,17 +2,17 @@
 :ID: 4ED5A5FE-7BBF-4378-AEFD-C22004F14D39
 :END:
 #+title: Task: Serve or retire the series slice subject
-#+description: get_series_slice is declared, coded and called by the BFF and the gateway, and the market data service subscribes to nothing, so every caller fails at runtime. Serve it, or retire it from the protocol, the BFF, the gateway and the web client.
+#+description: get_series_slice is declared, coded, served and called by the BFF and the gateway. The task was premised on the service subscribing nothing; it subscribes the subject and answers it. Prove the wiring with a test, and correct the records that called the subject unserved.
 #+type: task
 #+level: s1
 #+filetags: :publish_every_kind_of_derived_market_object_through_one_lifecycle:sprint_31:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/serve-or-retire-the-series-slice-subject
+#+pr: 5147
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
-#+updated: 2026-11-25
+#+updated: 2026-11-26
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,12 +28,12 @@ surfaces.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-25                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-26                               |
 
 * Acceptance
 
@@ -43,9 +43,42 @@ surfaces.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The task was premised on =get_series_slice= being declared and unserved. The
+premise does not survive a check of the tree. =registrar::register_handlers=,
+which the market data service runs at start-up in =application.cpp=, subscribes
+=marketdata.v1.ops.get_series_slice= to =series_slice_handler=, and
+=client::make_subject= prefixes the subject for the environment. The claim came
+from one page: the journey =journey_inspect-a-surfaces-slices.org= said the
+subject was "declared, unserved", the task and the story repeated it, and no
+one probed it.
+
+So the disposition is **serve**. The work is the proof and the record, not the
+handler, which has answered since sprint 27:
+
+- *A probe on the running environment.* A request on the prefixed subject
+  reaches a responder. A subject nobody serves answers =No responders are
+  available= instead.
+- *The handler's answer*, which =messaging_tick_read_party_tests.cpp= already
+  drives over real NATS on a test-scoped subject.
+- *Correct the records that call the subject unserved*: the journey page, the
+  story's acceptance and task rows, this task's description, the closed
+  deletion task's Result and Plan, and the architecture analysis that repeated
+  the claim.
+
+A registration test was written and withdrawn. Calling
+=registrar::register_handlers= from a test breaks its own precondition, "only
+ever called once per service process", because it reaches
+=serve_step_commands=: that creates a JetStream stream, claims the stream in a
+process-static set that throws on a second claim, binds the service's durable
+consumer and prunes the other consumers. A test that provisions infrastructure
+in the shared NATS store to prove one string is in a list is the wrong lever,
+and the right one is a check over the registrar, which task 12B71000 owns.
+
+Retiring was the other branch and was not taken. The read works, the gateway
+and the BFF both route it, and deleting it would remove a typed read, its
+reader and its tests to repair a sentence. What is missing is a caller: no web
+screen posts to =/api/curves/slice=. That is recorded on the journey page and
+is not this task's work.
 
 * Measurements
 
@@ -54,14 +87,29 @@ and the commit it was measured at. A number without both is not a measurement,
 because a clean-up record describes a tree and trunk moves under a branch: a
 consumer count, a gate's component count and a suite's size all change with no
 code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
+from. Where the raw output matters, it is in an =evidence/= file beside this
+task and named in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The slice subject on the running environment | a responder answers; =X-Error: unauthorized=, the prelude refusing a request that carries no token | =build/scripts/nats.sh req ores.dev.bright_faraday.marketdata.v1.ops.get_series_slice '{}'=, transcript in =evidence/probe_the_slice_subject.txt= | =be2c24b4c6= |
+| A subject nobody serves, for contrast | =No responders are available= | the same command against =ores.dev.bright_faraday.marketdata.v1.ops.no_such_operation=, in the same transcript | =be2c24b4c6= |
+| Local checks, non-heavy | 9 of 9 | =compass check --exclude-heavy= | =aacee4cc5f= |
+| The full gate | 13 of 15: =ctest= and =answer-shapes= failed | =compass check= | =aacee4cc5f= |
+| =answer-shapes= on its own | pass, 309 pairs, 108 compared | =python3 build/scripts/check_answer_shapes.py .= | =aacee4cc5f= |
+| The three suites =ctest= failed, alone | each passes with the pooler up; the inbox suite failed once on a re-run with an inactive tenant and passed twice in a row afterwards | =ctest -R "ores\\.(refdata\\|inbox\\|workflow)\\.core\\.tests" -j 1= | =aacee4cc5f= |
 
 * Notes
+
+The probe needs the environment's prefix and its mTLS certificates;
+=build/scripts/nats.sh= fills both from =.env=. A probe on the unprefixed name
+answers nothing at all, because every subject carries the prefix; that is a
+wrong probe, not a dead subject.
+
+A responder is not the same as an answered caller. The handler also requires
+=marketdata::curve_snapshots:read= and a session that names a party, so a
+request without them is refused with a sentence rather than a reply. The probe
+shows the subscription; the handler suites show the rest.
 
 * Test Scenarios
 
@@ -78,7 +126,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5147][#5147]] | [marketdata] Prove the series slice is served and correct the record |
 
 * Review
 
@@ -87,3 +135,45 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The subject is served and always was. The market data service subscribes it
+through its registrar, and a request on the environment reaches a handler and
+is refused only for want of credentials. The claim that the service subscribed
+nothing was inherited from one journey page and went three records deep before
+anyone sent a request.
+
+The proof is the probe, and it is a probe because the durable form of this
+check belongs somewhere else. The handler's answer is already held by
+=messaging_tick_read_party_tests.cpp=, which drives =series_slice_handler= over
+real NATS on a test-scoped subject; what no test held was the registration. The
+test written for it here called =register_handlers=, and that function creates
+a JetStream stream, claims it in a process-static set, binds the service's
+durable consumer and prunes the stream's other consumers, so a single run of a
+test binary provisions infrastructure in the shared NATS store. The case is
+withdrawn rather than kept with that side effect. The check that holds the
+registration without calling it, a comparison of the declared subjects against
+what the registrar subscribes, is task 12B71000, and its description now says
+the registrar cannot be called to find that out.
+
+The record is corrected in five places: the journey page (the subject is
+served, and no screen calls it yet), the story's acceptance and its task rows,
+this task's description, the closed deletion task's Result and Plan, and the
+architecture analysis that repeated the claim.
+
+The gate reported two failures and neither is this branch's:
+
+- =answer-shapes= reads live tick traffic, and =feeds[].last_at= is null until
+  a feed has ticked. It passed on its own a minute later.
+- =ctest= failed =ores.refdata.core.tests=, =ores.inbox.core.tests= and
+  =ores.workflow.core.tests=, all three on the pooler at port 20607 refusing
+  connections; the log says =Connection refused= at each failure, and the
+  suite's own connection pool is what reports it. No test case failed on an
+  assertion.
+
+Run alone with the pooler up, the three behave as follows. Refdata and
+workflow pass. The inbox suite passed once, then failed on a re-run with
+=Invalid or inactive tenant_id= for a tenant the database had already
+terminated, and then passed twice in a row. The second failure is unexplained
+rather than diagnosed: the suite provisions its own tenant, so a terminated
+one should not reach it. Both failures belong to the gate and the harness, not
+to a market data file this branch touches.

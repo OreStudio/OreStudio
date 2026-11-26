@@ -80,4 +80,10 @@ describe('the fixing observations screen', () => {
         expect(html).not.toContain('Authorise');
         expect(html).not.toContain('Override');
     });
+
+    it('carries the name of the row into the page a row opens', () => {
+        const html = render([SOFR]);
+
+        expect(html).toContain('label=USD%20SOFR%201M');
+    });
 });

@@ -5706,13 +5706,15 @@ const pt: SourceCatalogue = {
         },
         fixingSeries: {
             title: 'Série de fixings',
-            lead: 'Os fixings guardados de um instrumento, a série a que pertencem e os feeds que os trouxeram.',
+            lead: 'Todos os fixings que o armazém detém para este instrumento, dia a dia, e os feeds que os trouxeram.',
+            chart: 'Os fixings de {item}',
             noUri: 'Abra esta página a partir de uma ligação oresmd para saber que instrumento mostrar.',
             notStored: 'O armazém não detém nada para {uri}.',
             noValues: 'Ainda não há fixing guardado para este instrumento.',
             provenance: 'Feeds que trazem este instrumento',
             noFeeds: 'Nenhum feed nomeia este instrumento.',
             back: 'Voltar aos dados de mercado',
+            backToObservations: 'Voltar às observações de fixings',
             columns: {
                 provider: 'Publisher',
                 first: 'Primeiro fixing',

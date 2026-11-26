@@ -44,7 +44,7 @@ function SeriesRow({ series }: { readonly series: FixingObservation }): ReactNod
             <td className="px-3 py-2">
                 <Link
                     className="font-medium text-ink hover:underline"
-                    to={fixingSeriesPath(series.oresmd_uri)}
+                    to={fixingSeriesPath(series.oresmd_uri, series.index_label)}
                 >
                     {series.index_label}
                 </Link>
@@ -69,7 +69,7 @@ function SeriesRow({ series }: { readonly series: FixingObservation }): ReactNod
             <td className="px-3 py-2 text-right">
                 <Link
                     className="text-sm text-ink-muted hover:underline"
-                    to={fixingSeriesPath(series.oresmd_uri)}
+                    to={fixingSeriesPath(series.oresmd_uri, series.index_label)}
                 >
                     {t('marketdata.fixingObservations.columns.open')}
                 </Link>

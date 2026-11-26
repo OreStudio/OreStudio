@@ -315,3 +315,74 @@ TEST_CASE("a_run_that_comes_back_states_no_fixing_for_the_day_the_market_holds",
     CHECK(feed.publish_count() == 0);
     CHECK(ticks.size() == 0);
 }
+
+TEST_CASE("a_derived_index_fixes_the_compounded_forward_of_its_curve", index_fixing_feed_tags) {
+    manual_run_clock clock(utc_at(a_cut_friday, 14h));
+    ores::analytics::quant::service::run_market market(clock, {}, 7);
+    ores::nats::service::client nats(ores::testing::make_nats_options());
+    nats.connect();
+    REQUIRE(nats.is_connected());
+
+    const std::string subject = "test.synthetic.fixings.derived_sofr";
+    auto ticks = nats.subscribe_buffered(subject, 64);
+
+    // The overnight curve the index reads: a spot date, the next day, and one month
+    // later, so the month's discount factor is a point of the curve and not an
+    // interpolation of it.
+    const auto curve =
+        market.values().member_of(market_member_kind::curve, "synthetic.test.derived.sofr");
+    constexpr year_month_day a_month_later{year{2026}, December, day{20}};
+    const std::vector<curve_point> points{
+        {.date = a_cut_friday, .discount_factor = 1.0},
+        {.date = year_month_day{sys_days{a_cut_friday} + days{1}}, .discount_factor = 0.9998889},
+        {.date = a_month_later, .discount_factor = 0.996}};
+    market.values().publish_curve(curve, a_cut_friday, points, utc_at(a_cut_friday, 14h));
+
+    index_fixing_feed feed(
+        nats,
+        index_fixing_feed_input{
+            .source_name = "synthetic.test.fixing.derived_sofr",
+            .target = {.id = {.id_scheme = "oresmd",
+                              .external_id =
+                                  "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR&tenor=1M",
+                              .field = "value"},
+                       .subject = subject,
+                       .provider_code = "derived",
+                       .faults = {}},
+            .item = "oresmd://ir/USD?type=fixing&index=ibor&name=SOFR&tenor=1M",
+            .level_codes = {},
+            .derived =
+                derived_fixing{
+                    .curve_code = "synthetic.test.derived.sofr",
+                    .rule = ores::analytics::quant::service::term_rate_rule::compounded_overnight,
+                    .term_months = 1,
+                    .convention = ores::analytics::quant::service::day_count_convention_code::A360},
+            .when = new_york_ten_cut,
+            .history_days = 3,
+            .run_seed = 42,
+            .held =
+                [](const std::string&, year_month_day) {
+                    return std::expected<std::set<year_month_day>, std::string>{};
+                }},
+        market);
+
+    // The history ends at the day before the term index is due, and the day itself is
+    // fixed at the cut from the curve's own discounts.
+    CHECK(feed.tick({.elapsed_seconds = 1.0, .observed_at = utc_at(a_cut_friday, 14h)}) == "3");
+    CHECK(feed.tick({.elapsed_seconds = 1.0, .observed_at = utc_at(a_cut_friday, 15h)}) == "1");
+
+    for (int i = 0; i < 50 && ticks.size() < 4; ++i)
+        std::this_thread::sleep_for(milliseconds(100));
+    const auto sent = ticks.snapshot();
+    REQUIRE(sent.size() == 4);
+    const auto fixed =
+        ores::nats::default_wire_codec().decode<ores::marketdata::messaging::adapter_tick>(
+            sent.back().data);
+    REQUIRE(fixed);
+
+    // One month of 4% money compounds to (1 / 0.996 - 1) over 30/360 of a year. The
+    // overnight rate of the same curve is 4%, so a fixing that read the level instead
+    // of the term's own forward would say 0.040000 and not this.
+    CHECK(fixed->value == "0.048193");
+    CHECK(fixed->vendor_time == utc_at(a_cut_friday, 12h));
+}

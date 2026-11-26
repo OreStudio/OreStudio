@@ -28,15 +28,15 @@ A provisioned ACME states an initial approval matrix that is comprehensive acros
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | Not yet started. The gap it closes is measured: every published book takes every code, and the party states nothing. |
+| Now          | Starting. The gap is measured: every published book takes every code, the party states nothing, and the desks the chain now has are not published at all. |
 | Waiting on   | Nothing.                               |
-| Next         | Decide the affinity and carry it through the book population. |
-| Last touched | 2026-11-25                               |
+| Next         | Add the desk level to the provision, since a book's set must sit inside its desk's. |
+| Last touched | 2026-11-26                             |
 
 * Acceptance
 
 - Each published ACME book states the product types its name and purpose imply, and no longer takes every code the catalogue holds.
-- The party's set is stated by the provision and covers every one of its books' sets.
+- The party's set is stated by the provision and covers every one of its books' sets, through the desks the chain gained: each desk states a set that holds every one of its books' sets.
 - The affinity is one list per book, read both by the book's set and by the generator's choice of types, so the two cannot drift apart.
 - Every type the generator books into a book is permitted by that book's matrix, and a check fails when one is not.
 - The union of the books' sets covers the trade type population the generator books, so no generated type is left without a book that may carry it.

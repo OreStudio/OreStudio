@@ -712,6 +712,7 @@ const party = {
     status: 'Active',
     image_id: null,
     is_registration_default: false,
+    restricts_product_types: false,
 };
 
 describe('a party write', () => {

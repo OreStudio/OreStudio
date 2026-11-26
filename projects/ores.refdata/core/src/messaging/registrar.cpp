@@ -182,6 +182,7 @@
 #include "ores.refdata.core/messaging/business_day_convention_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/business_process_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/business_unit_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/business_unit_product_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/business_unit_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_date_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/calendar_event_history_provider_registrar.hpp"
@@ -394,6 +395,7 @@
 #include "ores.refdata.core/messaging/party_id_scheme_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_identifier_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_product_type_deal_class_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/party_product_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_relationship_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_role_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/party_status_history_provider_registrar.hpp"
@@ -970,6 +972,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_swaption_volatility_smile_history_provider(hist_registry);
         register_inflation_seasonality_history_provider(hist_registry);
         register_book_product_type_history_provider(hist_registry);
+        register_business_unit_product_type_history_provider(hist_registry);
+        register_party_product_type_history_provider(hist_registry);
         register_party_product_type_deal_class_history_provider(hist_registry);
 
         subs.push_back(ores::history::messaging::register_history_handlers(

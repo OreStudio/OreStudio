@@ -85,6 +85,13 @@ does, what comes back, and what a run must guarantee about submitting twice.
 engine's output and loading it into a result store shaped for the queries that
 will read it.
 
+[[id:DFC5F290-B8B6-4DEC-970C-D93C98FD39F8][Error Attribution in a Report Run]] —
+read after the phase pages, because it classifies their failures. It argues that
+every failure is attributed to the phase that produced it, that the attribution
+sits beside the engine's own error scope and not inside it, and that a trade
+whose market data is incomplete is recorded as excluded and never reaches the
+engine.
+
 ** Running part of it
 
 [[id:7786B8F5-0B30-4265-842F-7E63710433B8][Report execution substitution]] — read

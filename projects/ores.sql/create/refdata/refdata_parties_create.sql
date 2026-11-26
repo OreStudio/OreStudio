@@ -45,6 +45,7 @@ create table if not exists "ores_refdata_parties_tbl" (
     "status" text not null,
     "image_id" uuid null,
     "is_registration_default" boolean not null default false,
+    "restricts_product_types" boolean not null default false,
     "modified_by" text not null,
     "performed_by" text not null,
     "acting_agent" text not null default '',

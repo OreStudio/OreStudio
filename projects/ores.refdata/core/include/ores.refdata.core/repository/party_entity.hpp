@@ -67,6 +67,7 @@ struct party_entity {
     std::string status;
     std::optional<boost::uuids::uuid> image_id;
     bool is_registration_default = false;
+    bool restricts_product_types = false;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
@@ -94,6 +95,7 @@ struct party_entity {
                query_builder::bind("status", &e::status) |
                query_builder::bind("image_id", &e::image_id) |
                query_builder::bind("is_registration_default", &e::is_registration_default) |
+               query_builder::bind("restricts_product_types", &e::restricts_product_types) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |
                query_builder::bind("change_reason_code", &e::change_reason_code) |

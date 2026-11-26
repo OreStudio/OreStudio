@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: F680F489-C42B-5094-B35B-0F9A77D7B6B3
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the party_product_types commands from the shell?
+#+description: Every command the party_product_types submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:party_product_types:
+
+This file documents the party_product_types resource at the shell, one section per command. Every command is a subcommand of =party_product_types=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 9FC0C4F7-3DCD-5291-843B-C2924945A695
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_types list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_product_types.list=.
+
+#+name: party_product_types-list
+#+begin_src ores-shell :tangle party_product_types-list.ores :exports none
+party_product_types list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 21A1C65D-E300-5646-9D18-66FA989DADF7
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_types get <party_id> <product_type_code>
+#+end_example
+
+It is addressed at =refdata.v1.party_product_types.get=.
+
+#+name: party_product_types-get
+#+begin_src ores-shell :tangle party_product_types-get.ores :exports none
+party_product_types get 00000000-0000-0000-0000-000000000000 __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 7059C7EF-8EB2-5B8B-BC18-6709C823C098
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_types get-many <party_id> <product_type_code>
+#+end_example
+
+It is addressed at =refdata.v1.party_product_types.get_many=.
+
+#+name: party_product_types-get-many
+#+begin_src ores-shell :tangle party_product_types-get-many.ores :exports none
+party_product_types get-many 00000000-0000-0000-0000-000000000000 __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 9B121AA5-6B2D-5BB3-BA7D-72623BF1299B
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_types add <party_id> <product_type_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_product_types.put=.
+
+#+name: party_product_types-add
+#+begin_src ores-shell :tangle party_product_types-add.ores :exports none
+party_product_types add 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: E9266342-8224-5245-897C-50AF3297FA4A
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_types set <party_id> <product_type_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.party_product_types.put=.
+
+#+name: party_product_types-set
+#+begin_src ores-shell :tangle party_product_types-set.ores :exports none
+party_product_types set 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: A4B005C8-F903-58EC-9920-F978EDF44F87
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_types put-many --count <n> <party_id> <product_type_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_product_types.put_many=.
+
+#+name: party_product_types-put-many
+#+begin_src ores-shell :tangle party_product_types-put-many.ores :exports none
+party_product_types put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: C758004A-AD59-5367-AA30-7A24FC71649D
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_types delete <party_id> <product_type_code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.party_product_types.delete=.
+
+#+name: party_product_types-delete
+#+begin_src ores-shell :tangle party_product_types-delete.ores :exports none
+party_product_types delete 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: F7CC6C3B-4F30-5FE9-A6FC-AD712E6AB8F3
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_types delete-many <party_id> <product_type_code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.party_product_types.delete_many=.
+
+#+name: party_product_types-delete-many
+#+begin_src ores-shell :tangle party_product_types-delete-many.ores :exports none
+party_product_types delete-many 00000000-0000-0000-0000-000000000000 __none__ system.new_record generated_script
+#+end_src
+
+** =by-party-id=
+:PROPERTIES:
+:ID: FB07050C-3D48-5DA1-91E4-206CE5CD5A97
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_types by-party-id <party_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_product_types.list_by_party_id=.
+
+#+name: party_product_types-by-party-id
+#+begin_src ores-shell :tangle party_product_types-by-party-id.ores :exports none
+party_product_types by-party-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =by-product-type-code=
+:PROPERTIES:
+:ID: 79B50F3C-9DA2-50C6-9146-C6A13490A4C6
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+party_product_types by-product-type-code <product_type_code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.party_product_types.list_by_product_type_code=.
+
+#+name: party_product_types-by-product-type-code
+#+begin_src ores-shell :tangle party_product_types-by-product-type-code.ores :exports none
+party_product_types by-product-type-code __none__ --limit 1
+#+end_src
+

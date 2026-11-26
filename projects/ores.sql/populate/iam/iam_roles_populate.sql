@@ -1422,6 +1422,11 @@ BEGIN
     -- allows, so a trader needs to read both: a type the book forbids must be
     -- refused by the book's rule and not by a missing permission.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::book_product_types:read');
+    -- The party's set is the maximum the book's narrows, so a desk reads it to
+    -- know what the book could be permitted to carry.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::party_product_types:read');
+    -- The desk's set is the one a book's narrows, so the desk is read beside it.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::business_unit_product_types:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::portfolios:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::counterparties:read');
     -- The blotter states each row's instrument by the code a desk quotes, which

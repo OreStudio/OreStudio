@@ -47,6 +47,7 @@ export interface PartyWrite {
     status: string;
     image_id: string | null;
     is_registration_default: boolean;
+    restricts_product_types: boolean;
 }
 
 export interface PartyChange {

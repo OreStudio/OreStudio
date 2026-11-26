@@ -1270,6 +1270,12 @@ export function toPutPartyChange(input: {
              * the tenant's own party.
              */
             is_registration_default: false,
+            /*
+             * A party a person adds permits every type the catalogue states,
+             * and narrows the set later, at the desk or the book, once the
+             * firm has approved one.
+             */
+            restricts_product_types: false,
         },
         precondition: { kind: 'must_not_exist', version: null },
     };

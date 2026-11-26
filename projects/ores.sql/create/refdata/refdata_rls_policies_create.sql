@@ -95,6 +95,24 @@ for select using (
 );
 
 -- -----------------------------------------------------------------------------
+-- Party Product Types (the approval matrix of a party)
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_party_product_types_tbl enable row level security;
+
+-- Party isolation: strict enforcement — no party context means no rows visible.
+-- FOR SELECT only: party_id is part of the primary key; WITH CHECK would block
+-- bulk inserts from the publisher.
+drop policy if exists party_product_types_party_isolation_policy
+    on ores_refdata_party_product_types_tbl;
+
+create policy party_product_types_party_isolation_policy
+on ores_refdata_party_product_types_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
+-- -----------------------------------------------------------------------------
 -- Party Contact Informations
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_party_contact_informations_tbl enable row level security;

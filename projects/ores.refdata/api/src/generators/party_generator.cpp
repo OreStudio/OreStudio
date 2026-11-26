@@ -57,6 +57,7 @@ domain::party generate_synthetic_party(utility::generation::generation_context& 
     r.status = std::string("Active");
     r.image_id = std::nullopt;
     r.is_registration_default = false;
+    r.restricts_product_types = false;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

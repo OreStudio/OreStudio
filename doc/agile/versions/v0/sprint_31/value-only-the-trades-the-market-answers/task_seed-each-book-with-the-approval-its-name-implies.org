@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: 7338D2E9-647A-4C81-ACE9-46AE6F492FF1
+:END:
+#+title: Task: Seed each book with the approval its name implies
+#+description: The ACME books are published with the product types their names and purposes imply and not with every code in the catalogue, the party's set covers its books, and every type the generator books into a book is one that book permits.
+#+type: task
+#+level: s1
+#+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
+#+owner: marco
+#+branch: feature/value-only-the-trades-the-market-answers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A provisioned ACME states an initial approval matrix that is comprehensive across the trade type population and related to what each book is called: the cable book carries the FX option types, the CDS book the credit types, and together they cover every type the generator books, with no book carrying a type its party does not permit.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
+| Now          | Not yet started. The gap it closes is measured: every published book takes every code, and the party states nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Decide the affinity and carry it through the book population. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- Each published ACME book states the product types its name and purpose imply, and no longer takes every code the catalogue holds.
+- The party's set is stated by the provision and covers every one of its books' sets.
+- The affinity is one list per book, read both by the book's set and by the generator's choice of types, so the two cannot drift apart.
+- Every type the generator books into a book is permitted by that book's matrix, and a check fails when one is not.
+- The union of the books' sets covers the trade type population the generator books, so no generated type is left without a book that may carry it.
+
+* Plan
+
+The approval is data quality data and belongs beside the books it constrains.
+The books are staged in =ores_dq_books_artefact_tbl=, written by the ACME
+seeder's generated scripts, and published into refdata by
+=ores_refdata_publish_books_from_dq_fn=. The book's approved set follows the same
+path, and the gap is that it does not exist yet: the publish states
+=restricts_product_types = true= on every book and then takes *every* code the
+catalogue holds, so the matrix says nothing about the book, and no provision
+states a party's set.
+
+1. *The approval is a junction artefact beside the books.*
+   =ores.refdata.book_product_type= gains the junction artefact facet
+   (=:ores.sql.schema.junction_artefact_create.enabled: true=), which generates
+   =ores_dq_book_product_types_artefact_tbl(dataset_id, tenant_id, book_id,
+   product_type_code, version)= — the template's default columns, because unlike
+   =party_currencies= this dataset holds many books and each row must name the
+   book it approves. The row is keyed by the book's artefact id, which the books
+   dataset already mints.
+2. *The seeder states the affinity.* The ACME seeder generates the books and their
+   approved types in one pass from the curated book data, so the cable book
+   carries the FX option types, the CDS book the credit types, and the books
+   together cover the population. The affinity is data in the dataset and not a
+   rule in code; a book whose name states no affinity is a defect the seeder
+   refuses rather than publishes open.
+3. *The publish keeps the artefact id.* The publish mints a fresh uuid per book
+   today and drops =a.id=, so nothing can join the artefact rows to the published
+   books. It keeps the pair (artefact id, published id), writes the junction from
+   the artefact rows, and removes the insert that takes every code.
+4. *The party's set is the union of its books.* Parties are not DQ artefacts, so
+   nothing stages their set. The provision states it after the books are
+   published, as the union of the sets of that party's books, which is the
+   smallest set the subset rule accepts and is not a second curation.
+5. *One list, two readers.* The generator reads the published book's set to choose
+   the types it books, so the affinity is stated once and cannot drift between
+   the matrix and the population.
+6. *The seed test changes with the behaviour.*
+   =refdata_book_product_types_seed_test.sql= asserts today that a published book
+   takes every code. It asserts the book's own set instead, that the party's set
+   covers every book, and that the union across the group covers the population.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

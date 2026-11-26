@@ -56,6 +56,7 @@ domain::party party_mapper::map(const party_entity& v) {
     r.status = v.status;
     r.image_id = v.image_id;
     r.is_registration_default = v.is_registration_default;
+    r.restricts_product_types = v.restricts_product_types;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -84,6 +85,7 @@ party_entity party_mapper::map(const domain::party& v) {
     r.status = v.status;
     r.image_id = v.image_id;
     r.is_registration_default = v.is_registration_default;
+    r.restricts_product_types = v.restricts_product_types;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

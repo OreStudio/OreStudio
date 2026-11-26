@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 0F6B1B0B-3F2B-4D3D-8F1B-5A6C7D8E9F01
+:END:
+#+title: ores.refdata.business_unit_product_type
+#+description: Codegen junction model for business_unit_product_types: the product types a desk permits, when the desk states them at all.
+#+type: ores.codegen.junction
+#+component: refdata
+#+filetags: :model:junction:refdata:trading:
+#+name: business_unit_product_types
+#+name_singular: business_unit_product_type
+#+name_title: Business Unit Product Type
+#+name_singular_words: permitted product type
+#+brief: A product type a desk permits, when the desk states its set.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+The product types a desk permits its books to carry.
+
+The desk is the middle level of the approval chain. A level states a set or
+states none, and the absence of rows means opposite things on either side of the
+flag:
+
+- The party's flag is false, which is every party a tenant creates without
+  saying otherwise: the party permits every product type the catalogue states,
+  and its desks inherit that set.
+- The party's flag is true and the desk's is false: the desk permits everything
+  its party permits, which is the common case.
+- The desk's flag is true: this junction holds the set the desk permits, and a
+  desk with no rows here permits nothing. The set is a subset of the party's, and
+  each of the desk's books narrows it in turn.
+
+The product type is named by the code the catalogue states, the same soft
+reference the party's and the book's junctions use, because the catalogue belongs
+to the trading component and this junction to refdata.
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:history: true
+:events: true
+:history_read_permission: refdata::business_units:read
+:END:
+
+* Left
+:PROPERTIES:
+:column:        business_unit_id
+:column_short:  business_unit
+:column_title:  Business Unit
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:index_comment: Index for looking up the product types a desk permits
+:list_by:       true
+:END:
+
+ID of the desk, or 00000000-0000-0000-0000-000000000000 for a desk that does not
+exist.
+
+References ores_refdata_business_units_tbl.id (soft FK).
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        product_type_code
+:column_short:  product_type
+:column_title:  Product Type
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for finding the desks that permit a product type
+:list_by:       true
+:END:
+
+Code of the product type the desk permits.
+
+References ores_trading_product_types_tbl.code (soft FK, because the catalogue
+belongs to the trading component).
+
+#+begin_src cpp :name generator
+std::string("Swap")
+#+end_src
+
+* Columns
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_business_unit_product_types_tbl
+:rls_tenant_isolation: true
+:END:
+
+* Foreign keys
+
+** business_unit_id
+:PROPERTIES:
+:table:         ores_refdata_business_units_tbl
+:error_message: Invalid business_unit_id: %. No active business unit found with this id.
+:END:
+
+ID of the desk; must exist in ores_refdata_business_units_tbl.
+
+* Repository
+:PROPERTIES:
+:name_singular_short: business_unit_product_type
+:name_short:          business_unit_product_types
+:name_singular_words: permitted product type
+:name_words:          permitted product types
+:order_column:        product_type_code
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: bpt
+:END:
+
+** Table display
+
+| column            | header       |
+|-------------------+--------------|
+| product_type_code | Product Type |
+
+* See also
+
+- [[id:84B5E325-ACE1-4B2A-B7CF-032DDD7D1366][ores.refdata.party_product_type]] — completes: the level above, whose set this
+  one narrows.
+- [[id:04919c94-bcca-47a5-914e-73aef24d28c7][ores.refdata.book_product_type]] — completes: the level below, which narrows
+  this one.

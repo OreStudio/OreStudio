@@ -41,6 +41,7 @@ export interface BusinessUnit {
     business_centre_code: string;
     unit_type_id: string | null;
     status: string;
+    restricts_product_types: boolean;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

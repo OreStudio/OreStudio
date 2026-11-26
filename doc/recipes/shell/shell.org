@@ -2316,3 +2316,11 @@ tangled into the runnable script library
 * Identity Providers
 
 - [[id:5C687895-E089-51BC-975E-0992CFF7A49A][How do I run the identity_providers commands from the shell?]]
+
+* Party Product Types
+
+- [[id:F680F489-C42B-5094-B35B-0F9A77D7B6B3][How do I run the party_product_types commands from the shell?]]
+
+* Business Unit Product Types
+
+- [[id:FD40055F-BF8B-5E56-A180-15603C417F0A][How do I run the business_unit_product_types commands from the shell?]]

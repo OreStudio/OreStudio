@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: AE865313-3A79-4212-9F1F-0E826E29F7E4
+:END:
+#+title: An append-only table cannot put the tenant first in its primary key
+#+description: A tenant-scoped current-state entity gets 'primary key (id)', so the schema validator warns TENANT_002; only a read-only model draws a tenant-first key.
+#+type: capture
+#+level: cross
+#+filetags: :vault:codegen:sql:product_backlog:inbox:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Give a tenant-scoped, append-only entity a way to put =tenant_id= in its primary
+key. =ores.vault.secret_use= is the case that surfaced it: a writable
+=current_state= entity with =has_tenant_id=, whose table is drawn as
+=primary key (id)=, so =validate_schemas.sh= warns =TENANT_002= on it.
+
+* Why
+
+The SQL template draws a tenant-first key from =immutable_tenant_key=, and
+nothing sets that flag: the only tables that carry =primary key (tenant_id,
+id)= are =read_only= models, so the flag is derived from read-only rather than
+from the question "is this row one tenant's". The other two tables the validator
+warns about, =ores_marketdata_delivery_counts= and
+=ores_scheduler_retention_runs=, are the same shape, and the validation job on
+main has been red for as long as the warnings exist.
+
+* References
+
+- =projects/ores.codegen/library/templates/sql_schema_domain_entity_create.mustache= — the =immutable_tenant_key= branch.
+- =projects/ores.vault/modeling/ores.vault.secret_use.org= — the model that surfaced it.
+- =projects/ores.reporting/modeling/ores.reporting.report_trigger_event.org= — a =read_only= model that does draw a tenant-first key.
+
+* See also
+
+- [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] — the sprint that owns the failing validation job.

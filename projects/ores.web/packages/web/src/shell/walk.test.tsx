@@ -187,11 +187,7 @@ describe('walking every screen', () => {
 
     it('gives a dataset page the trail through the coverage list', () => {
         expect(trailAt('/data-quality/datasets/iso.countries')).toBe(
-            trail(
-                en('shell.menu.dataquality'),
-                en('dq.coverage.title'),
-                'iso.countries',
-            ),
+            trail(en('shell.menu.dataquality'), en('dq.coverage.title'), 'iso.countries'),
         );
     });
 

@@ -29,9 +29,9 @@ Then the store is modelled, served, wired into the provider registry and proven 
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
-| Now           | The vault's two models are generated, the database holds them, all four of its suites pass, and its service is registered. |
+| Now           | The vault's two models are generated, the database holds them, all five of its suites pass, and its service is registered, disabled until its application exists. |
 | Waiting on    | Nothing.                               |
-| Next          | Serve the secrets, sealed: the service's application is the last act before the gate turns green. |
+| Next          | Serve the secrets, sealed: the application, the custody five operations, and the gateway's two routes. |
 | Last touched  | 2026-11-26                               |
 
 * Acceptance

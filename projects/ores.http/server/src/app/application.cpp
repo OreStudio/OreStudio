@@ -46,6 +46,7 @@
 #include "ores.http/routes/iam/bootstrap_screen_routes.hpp"
 #include "ores.http/routes/iam/browser_session_routes.hpp"
 #include "ores.http/routes/iam/iam_routes.hpp"
+#include "ores.http/routes/vault/vault_routes.hpp"
 #include "ores.http/routes/iam/session_renewal.hpp"
 #include "ores.http/routes/marketdata/marketdata_routes.hpp"
 #include "ores.http/routes/refdata/refdata_routes.hpp"
@@ -188,6 +189,17 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     router->add_route(api_info_builder.build());
 
     ores::http::routes::iam::iam_routes::register_routes(router, registry, service_nats);
+
+    // The vault's two routes are hand-written because neither forwards a body
+    // unchanged: a write seals in this process, and a reveal opens what the
+    // vault sealed to this process. The keys are the unit's credentials, and a
+    // gateway without them fails here rather than serving a route that cannot
+    // answer.
+    ores::http::routes::vault::vault_routes::register_routes(
+        router,
+        registry,
+        service_nats,
+        ores::http::routes::vault::vault_routes::load_keys());
 
     routes::variability_routes variability(ctx, system_flags, sessions);
     variability.register_routes(router, registry);

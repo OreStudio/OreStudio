@@ -25,6 +25,7 @@
 #include "ores.utility/convert/base64_converter.hpp"
 #include "ores.vault.api/domain/secret.hpp"
 #include "ores.vault.api/domain/secret_use.hpp"
+#include "ores.vault.api/messaging/custody_context.hpp"
 #include "ores.vault.core/repository/consumer_repository.hpp"
 #include "ores.vault.core/repository/secret_repository.hpp"
 #include "ores.vault.core/repository/secret_use_repository.hpp"
@@ -71,21 +72,11 @@ std::string custody_service::public_key() const {
     return base64_converter::convert(keys_.transport_public_key);
 }
 
-std::string custody_service::write_context(const std::string& name, const std::string& owner) {
-    return "vault.write|" + name + "|" + owner;
-}
-
 std::string custody_service::row_context(const std::string& name,
                                          const std::string& owner,
                                          int key_version) const {
     return ctx_.tenant_id().to_string() + "|" + name + "|" + owner + "|" +
            std::to_string(key_version);
-}
-
-std::string custody_service::delivery_context(const std::string& subject,
-                                              const std::string& name,
-                                              int key_version) {
-    return subject + "|" + name + "|" + std::to_string(key_version);
 }
 
 custody_result custody_service::write(const std::string& actor,
@@ -103,7 +94,7 @@ custody_result custody_service::write(const std::string& actor,
         // The value the caller sent is sealed to this process, and only this
         // process can open it: a broker, a log or a trace holds the ciphertext.
         const std::string value = sealed_box::open(
-            keys_.transport_private_key, sealed_to_vault, write_context(name, owner));
+            keys_.transport_private_key, sealed_to_vault, messaging::custody_context::write(name, owner));
 
         const auto version = keys_.current_version;
         const secret_sealer sealer(keys_.current_key());
@@ -193,8 +184,9 @@ custody_result custody_service::resolve(const std::string& subject, const std::s
         answer.sealed_value =
             sealed_box::seal(std::vector<unsigned char>(delivered.begin(), delivered.end()),
                              value,
-                             delivery_context(subject, name, row.key_version));
+                             messaging::custody_context::delivery(subject, name, row.key_version));
         answer.key_version = row.key_version;
+        answer.subject = subject;
         answer.success = true;
 
         record_use(subject, name, std::string(resolved), row.key_version);

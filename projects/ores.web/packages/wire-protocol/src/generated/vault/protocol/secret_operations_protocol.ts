@@ -78,6 +78,7 @@ export interface ResolveSecretResponse {
     name: string;
     key_version: number;
     sealed_value: string;
+    subject: string;
 }
 
 /**

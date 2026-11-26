@@ -51,6 +51,9 @@ struct ORES_VAULT_CORE_EXPORT custody_result {
     /// What a describe answers beside the name.
     std::string owner;
 
+    /// What a resolve answers: the consumer the value was sealed to.
+    std::string subject;
+
     /// What a rotate answers: how many rows were re-wrapped.
     std::int32_t rotated = 0;
 
@@ -116,14 +119,6 @@ public:
      */
     custody_result rotate(const std::string& actor);
 
-    /**
-     * @brief The context a caller seals a write to the vault under.
-     *
-     * The caller and the vault must agree on it, and this is the one place it
-     * is stated.
-     */
-    [[nodiscard]] static std::string write_context(const std::string& name,
-                                                   const std::string& owner);
 
 private:
     /// Appends one row to the record of uses.

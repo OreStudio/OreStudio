@@ -437,6 +437,40 @@ h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
     }
 }
 
+.sizecell .v {
+    display: block;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.limitbar {
+    display: block;
+    width: 8rem;
+    height: 4px;
+    margin: 0.3rem 0 0.2rem;
+    background: var(--line-soft, #262c36);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.limitbar .fill {
+    display: block;
+    height: 100%;
+}
+
+.limitbar .fill.ok { background: #3fb950; }
+.limitbar .fill.warn { background: #d29922; }
+.limitbar .fill.bad { background: #f85149; }
+
+.trend {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.trend.up { color: #d29922; }
+.trend.flat { color: var(--ink-dim, #8b949e); }
+.trend.down { color: #3fb950; }
+
 .growthcell .v { display: block; font-weight: 600; font-variant-numeric: tabular-nums; }
 
 .growthcell .spark {

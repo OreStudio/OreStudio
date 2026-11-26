@@ -103,6 +103,8 @@
             id: 'report_cashflows',
             name: 'ores_reporting_report_cashflows_tbl',
             label: 'Report run cashflows',
+            limitMB: 512,
+            limitBytes: 536870912,
             code: 'reporting.report_cashflows',
             owner: 'Reporting (reporting)',
             timeColumn: 'written_at',
@@ -229,6 +231,8 @@
             id: 'wrappers',
             name: 'publish/run/wrappers',
             label: 'Compute node scratch',
+            limitMB: 2048,
+            limitBytes: 2147483648,
             code: 'compute.node_scratch',
             owner: 'Compute (compute)',
             timeColumn: 'folder mtime',
@@ -877,6 +881,42 @@
         return (v % 1 === 0 ? v : v.toFixed(1)) + ' MB';
     }
 
+    /* The list says what a store holds and which way it is going. The plot is
+       on the store's page: twelve points in a row would be read as a shape at a
+       glance, which is exactly what a list of nine stores cannot afford. */
+
+    function ratePerWeek(store) {
+        if (!store.series) return null;
+        const weeks = store.series.length - 1;
+        if (!weeks) return null;
+        return (store.series[store.series.length - 1] - store.series[0]) / weeks;
+    }
+
+    function sizeCell(store) {
+        let out = '<span class="v">' + esc(store.size) + '</span>';
+        if (store.limitBytes) {
+            const pct = Math.min(100, (store.sizeMB / store.limitMB) * 100);
+            const tone = pct >= 90 ? 'bad' : pct >= 75 ? 'warn' : 'ok';
+            out += '<span class="limitbar" role="img" aria-label="' +
+                esc(Math.round(pct) + ' percent of the ' + fmtMB(store.limitMB) + ' budget') + '">' +
+                '<span class="fill ' + tone + '" style="width:' + pct.toFixed(1) + '%"></span></span>' +
+                '<span class="subline">of ' + esc(fmtMB(store.limitMB)) + ' · ' + Math.round(pct) + '%</span>';
+        } else {
+            out += '<span class="subline">no size budget</span>';
+        }
+        return out;
+    }
+
+    function growthCell(store) {
+        const rate = ratePerWeek(store);
+        if (rate === null) return '<span class="subline">not measured</span>';
+        const flat = Math.abs(rate) < 0.05;
+        const arrow = flat ? '→' : rate > 0 ? '↑' : '↓';
+        const tone = flat ? 'flat' : rate > 0 ? 'up' : 'down';
+        return '<span class="trend ' + tone + '">' + arrow + ' ' +
+            (flat ? 'flat' : (rate > 0 ? '+' : '') + esc(fmtMB(rate)) + '/wk') + '</span>';
+    }
+
     function storeRow(store) {
         const policy = policyFor(store);
         const selected = S.selected === store.id;
@@ -887,9 +927,8 @@
             '<span class="skind">' + esc(store.kind) + ' · ' + esc(store.where) + '</span></td>' +
             '<td>' + boundedBy(store) + '</td>' +
             '<td>' + statusTag(store) + '</td>' +
-            '<td class="growthcell"><span class="v">' + esc(store.size) + '</span>' +
-            sparkline(store, 96, 22) + '<span class="subline">' +
-            esc(store.growth) + ' · freed ' + esc(policy ? policy.freed : '—') + '</span></td>' +
+            '<td class="sizecell">' + sizeCell(store) + '</td>' +
+            '<td class="growthcell">' + growthCell(store) + '</td>' +
             '</tr>';
     }
 
@@ -903,7 +942,7 @@
             '<span class="meta">' + policies().length + ' policies · ' + unboundedCount() + ' unbounded</span></header>' +
             '<div class="table-wrap"><table class="data">' +
             '<caption class="visually-hidden">Every store, its bound, state, size, growth, last sweep and freed bytes</caption>' +
-            '<thead><tr><th>Store / Target</th><th>Bounded by</th><th>State</th><th>Size and growth, twelve weeks</th></tr></thead>' +
+            '<thead><tr><th>Store / Target</th><th>Bounded by</th><th>State</th><th>Size</th><th>Growth</th></tr></thead>' +
             '<tbody>' + STORES.map(storeRow).join('') + '</tbody></table></div>' +
             '<p class="note">Sizes come from the database catalogues, the object-store listing and a directory walk. ' +
             'A Freed figure of 0 B means the last sweep found nothing older than the period; it does not mean the policy failed. ' +

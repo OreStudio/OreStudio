@@ -30,6 +30,14 @@ export interface BundleRosterRequest {
      * @brief The bundle whose members to read, or empty for the roster alone.
      */
     bundle_code: string;
+    /**
+     * @brief The dataset whose bundle to answer, or empty.
+     *
+     * A dataset's own page knows the dataset and not the bundle that carries it, so
+     * the roster resolves the bundle from the dataset when the caller names one. A
+     * bundle named as well takes precedence over it.
+     */
+    dataset_code: string;
 }
 
 /**

@@ -39,8 +39,9 @@ void bundle_roster_routes::register_routes(
         router->get("/api/v1/dq/bundle_roster")
             .summary("Read the bundle roster")
             .description("Forwards to the dq.v1.ops.bundle_roster operation. Names a bundle "
-                         "to read its members with what each has staged; names none and the "
-                         "answer is the roster alone.")
+                         "to read its members with what each has staged, or names a dataset and "
+                         "the bundle that carries it; names neither and the answer is the roster "
+                         "alone.")
             .tags({"dq"})
             .operation_catalogue("dq", "bundle_roster", "read")
             .auth_required()
@@ -49,6 +50,12 @@ void bundle_roster_routes::register_routes(
                          "",
                          false,
                          "The bundle whose members to read, or empty for the roster alone")
+            .query_param("dataset_code",
+                         "string",
+                         "",
+                         false,
+                         "The dataset whose bundle to answer, or empty. A bundle named as "
+                         "well takes precedence")
             .handler([&session](const http_request& req) { return handle_roster(req, session); });
     const auto built = roster_route.build();
     router->add_route(built);
@@ -60,6 +67,7 @@ boost::asio::awaitable<http_response> bundle_roster_routes::handle_roster(const 
     try {
         messaging::bundle_roster_request msg;
         msg.bundle_code = req.get_query_param("bundle_code");
+        msg.dataset_code = req.get_query_param("dataset_code");
         co_return ores::http::forwarding::respond(req, session, msg);
     } catch (const std::exception& e) {
         co_return http_response::api_error(

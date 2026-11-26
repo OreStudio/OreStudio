@@ -532,6 +532,23 @@ publish_service::list_bundle_members(const std::string& bundle_code) {
     return members;
 }
 
+std::optional<std::string> publish_service::bundle_of_dataset(const std::string& dataset_code) {
+    // No tenant predicate on purpose: a world or platform bundle's membership
+    // rows sit in the system tenant, and the read policy admits them.
+    const auto sql = "SELECT bundle_code FROM ores_dq_dataset_bundle_members_tbl "
+                     "WHERE dataset_code = $1 AND valid_to = ores_utility_infinity_timestamp_fn() "
+                     "ORDER BY bundle_code LIMIT 1";
+    auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx_,
+        sql,
+        {dataset_code},
+        lg(),
+        std::format("Reading the bundle that carries dataset {}", dataset_code));
+    if (rows.empty() || rows.front().empty() || !rows.front().front().has_value())
+        return std::nullopt;
+    return *rows.front().front();
+}
+
 std::optional<std::string> publish_service::bundle_level(const std::string& bundle_code) {
     const auto sql = "SELECT level FROM ores_dq_dataset_bundles_tbl "
                      "WHERE code = $1 AND valid_to = ores_utility_infinity_timestamp_fn()";

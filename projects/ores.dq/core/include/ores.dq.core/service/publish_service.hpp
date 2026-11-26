@@ -187,6 +187,19 @@ public:
     list_bundle_members(const std::string& bundle_code);
 
     /**
+     * @brief Reads the bundle that carries a dataset.
+     *
+     * A dataset's own page knows the dataset and not the bundle, so the roster
+     * resolves it here. Membership rows of a shared bundle live in the system
+     * tenant, so the read states no tenant predicate and the policy decides, as
+     * the roster's own functions do.
+     *
+     * @param dataset_code The dataset to look up (e.g., 'iso.countries').
+     * @return The bundle's code, or nothing when no bundle carries the dataset.
+     */
+    std::optional<std::string> bundle_of_dataset(const std::string& dataset_code);
+
+    /**
      * @brief Resolves a list of dataset IDs into ordered, publishable entries.
      *
      * Combines dependency resolution with artefact-type lookup to produce

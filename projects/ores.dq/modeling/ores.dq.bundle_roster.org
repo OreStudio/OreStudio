@@ -62,6 +62,21 @@ bundle a caller names and never for every bundle on the roster.
  */
 #+end_src
 
+*** dataset_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The dataset whose bundle to answer, or empty.
+ *
+ * A dataset's own page knows the dataset and not the bundle that carries it, so
+ * the roster resolves the bundle from the dataset when the caller names one. A
+ * bundle named as well takes precedence over it.
+ */
+#+end_src
+
 ** bundle_roster_member
 :PROPERTIES:
 :END:

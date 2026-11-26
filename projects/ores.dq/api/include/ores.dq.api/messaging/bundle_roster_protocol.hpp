@@ -56,6 +56,14 @@ struct bundle_roster_request {
      * @brief The bundle whose members to read, or empty for the roster alone.
      */
     std::string bundle_code;
+    /**
+     * @brief The dataset whose bundle to answer, or empty.
+     *
+     * A dataset's own page knows the dataset and not the bundle that carries it, so
+     * the roster resolves the bundle from the dataset when the caller names one. A
+     * bundle named as well takes precedence over it.
+     */
+    std::string dataset_code;
 
     friend bool operator==(const bundle_roster_request&, const bundle_roster_request&) = default;
 };
@@ -175,6 +183,7 @@ struct bundle_roster_response {
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_roster_request>) {
     return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"bundle_code", &bundle_roster_request::bundle_code},
+        ::ores::utility::codec::field{"dataset_code", &bundle_roster_request::dataset_code},
     };
 }
 

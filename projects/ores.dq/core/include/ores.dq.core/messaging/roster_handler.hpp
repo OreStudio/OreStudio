@@ -87,10 +87,16 @@ public:
             service::publish_service svc(ctx);
             resp.bundles = svc.list_bundle_roster();
 
-            if (!req->bundle_code.empty()) {
-                auto members = svc.list_bundle_members(req->bundle_code);
+            // A bundle named by the caller wins; a dataset names the bundle that
+            // carries it, which is what the dataset's own page asks for.
+            auto asked = req->bundle_code;
+            if (asked.empty() && !req->dataset_code.empty())
+                asked = svc.bundle_of_dataset(req->dataset_code).value_or("");
+
+            if (!asked.empty()) {
+                auto members = svc.list_bundle_members(asked);
                 for (auto& bundle : resp.bundles) {
-                    if (bundle.code == req->bundle_code) {
+                    if (bundle.code == asked) {
                         bundle.members = std::move(members);
                         break;
                     }

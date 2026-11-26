@@ -117,11 +117,10 @@ and the publish it hands to is drawn by
 [[id:495EFAFA-A5B3-4DE4-93DB-FDFA577E3790][Publish a bundle prototype]]. A
 prototype stays on main once accepted, as
 [[id:708C2462-C1F8-455B-B091-9D9690FEEAAB][Keep journey prototypes on main]]
-requires. This one was signed off on 2026-11-22, and the arrangement was
-reopened on 2026-11-26: the first build drew three cards where the design drew
-three tables, and the Qt Data Librarian's tree, table and accession card are the
-shape the area is meant to keep. The prototype now carries both arrangements and
-waits for one choice.
+requires. This one was signed off on 2026-11-22, reopened on 2026-11-26 when the
+first build drew three cards where the design drew three tables, and signed off
+again the same day on the arrangement Marco chose: the Qt Data Librarian's tree
+and table, and the dataset on a page of its own.
 
 * Entities composed
 

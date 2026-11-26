@@ -9,7 +9,10 @@
 #+created: 2026-11-21
 #+updated: 2026-11-26
 
-This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog. It was pulled into sprint 31 on 2026-11-26 as
+[[id:7DCAF97F-EF6C-447F-BC1B-561DE85B3F49][Record each publication with its
+outcome and what it said]], and it stays here as the investigation behind that
+task.
 
 * What
 

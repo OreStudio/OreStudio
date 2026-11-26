@@ -64,6 +64,9 @@ from the shared parts rather than from the prototype markup.
 | [[id:B6239647-6FC1-43CB-9F04-538FDA1F6314][Trace a published value to the dataset that wrote it]] | BACKLOG | | | The trace prototype as a screen: a published value to the dataset and artefact that wrote it, with the used-by question stated as the trading change it needs. |
 | [[id:B5770B99-21AB-467D-824D-64D383CA573B][Draw the counts the roster serves on the coverage screen]] | STARTED | 2026-11-26 | | api/dq.ts reads the bundle roster, and the coverage screen draws the staged count in place of the dash it states today, naming the gap only where the figure is still absent. |
 | [[id:276F573C-8822-46FB-AC41-531847E07AA5][Read a bundle's member rows across tenants]] | BACKLOG | | | The generated read of the dataset_bundle_members junction states an app-level tenant_id predicate, so a tenant session answers no members for a world or platform bundle, whose rows live in the system tenant. The codegen junction meta-model does not read :tenant_read_scope:, so the read cannot be widened from the model. |
+| [[id:F8B44A0B-844E-424D-8C12-162C4C500B4C][Open a dataset on a page of its own]] | BACKLOG | | | A row of the coverage list opens the dataset's record page: its details, when it was last published, and every publish with its outcome and what the run said. |
+| [[id:7DCAF97F-EF6C-447F-BC1B-561DE85B3F49][Record each publication with its outcome and what it said]] | BACKLOG | | | The publish path writes one row per dataset it dispatches, and the row carries an outcome and the messages the run produced, so a dataset's page can say when it was published, whether it worked, and why not. |
+| [[id:51142B17-6F3F-4610-A810-BEBFF0142A3E][Serve concurrent reads through the gateway]] | BACKLOG | | | Four DQ reads sent together are dropped by the gateway as end of stream, so the screen serialises them to work at all; the gateway's HTTP session layer must serve them concurrently. |
 
 * Decisions
 

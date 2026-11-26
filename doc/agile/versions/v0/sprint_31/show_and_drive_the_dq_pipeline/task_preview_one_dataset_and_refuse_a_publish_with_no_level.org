@@ -35,7 +35,16 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- A read over the bus answers the preview of a named bundle: per dataset, the
+  staged count and the action a publish at that mode would take — insert, update
+  or skip — from =ores_dq_bundle_preview_fn=, so the preview and the publish read
+  the same function.
+- A per-dataset preview answers one dataset the same way.
+- The dataset publish verb carries a level, so a tenant cannot publish a world
+  dataset into itself.
+- A bundle or dataset that names no level, or names nothing that exists, is
+  refused with a reason.
+- A test reads the preview of a seeded bundle and asserts the per-dataset actions.
 
 * Plan
 
@@ -58,6 +67,18 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+Both previews are one task, because they are one question at two scopes and the
+design draws them on one screen: the coverage list's step 4 reads what a whole
+bundle would write, and a dataset's page reads what that dataset would write. The
+store already computes both through =ores_dq_bundle_preview_fn= and the publish
+path calls it for its own purposes; no subject serves either.
+
+The sibling gaps the coverage design waits on are the published count
+([[id:16FD5B35-83E7-4F85-9578-8AD20D33667E][Count the rows a dataset published]])
+and the run log
+([[id:7DCAF97F-EF6C-447F-BC1B-561DE85B3F49][Record each publication with its
+outcome and what it said]]).
 
 * Test Scenarios
 

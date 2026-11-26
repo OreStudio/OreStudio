@@ -2,7 +2,7 @@
 :ID: B5770B99-21AB-467D-824D-64D383CA573B
 :END:
 #+title: Task: Draw the counts the roster serves on the coverage screen
-#+description: api/dq.ts reads the bundle roster, and the coverage screen draws the staged count in place of the dash it states today, naming the gap only where the figure is still absent.
+#+description: api/dq.ts reads the bundle roster, and the coverage screen is rebuilt to the arrangement signed off on 2026-11-26: the bundles by level in a tree beside a dense table of datasets, with the staged count drawn in place of the dash and the gap named only where the figure is still absent.
 #+type: task
 #+level: s1
 #+filetags: :dq:web:coverage:sprint_31:v0:show_and_drive_the_dq_pipeline:
@@ -35,6 +35,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
+- The screen takes the arrangement signed off on 2026-11-26, which the prototype
+  draws: the bundles grouped by level in a tree on the left, the chosen bundle's
+  datasets in a dense table on the right, a text filter and a state filter over
+  that table, and no card beside it. A row opens the dataset's own page, which is
+  [[id:F8B44A0B-844E-424D-8C12-162C4C500B4C][its own task]].
 - The coverage screen reads the bundle roster and no other DQ collection, so a
   person sees the bundles by level and the members of the bundle in view from
   one operation.
@@ -84,6 +89,11 @@ task and name that file in the Command column.
 
 * Notes
 
+- *The arrangement changed after the first build.* The first screen was drawn as
+  three stacked cards. The design that was signed off drew tables, and the area
+  replaces the Qt Data Librarian, so the arrangement was reopened and signed off
+  again on 2026-11-26 as a tree and a table with the dataset on its own page. This
+  task carries that rework; the prototype records both arrangements.
 - *The roster crashed the DQ service, and the screen said nothing.* The service
   held the registration context by reference, and registration hands it a
   temporary, so the reference dangled the moment registration returned. Every

@@ -149,9 +149,20 @@ journey and not to this screen.
 
 *Signed off* on 2026-11-22 by Marco, on the table layout as it stood. That sign-off
 was for a design the build did not follow, and the Data Librarian comparison
-reopened the arrangement. Marco chose the librarian arrangement on 2026-11-26, with
-one change: the dataset is a page of its own and not a card beside the table, and
-that page states when the dataset was published and what each publication said.
+reopened the arrangement.
+
+*Signed off* again on 2026-11-26 by Marco, on the librarian arrangement and the
+dataset's own page, with these decisions:
+
+- The list is the Data Librarian's master-detail: the bundles by level on the left,
+  the chosen bundle's datasets in a dense table on the right, with a text and a
+  state filter.
+- A dataset is a record, so a row opens its own page and not a card beside the
+  table. The page follows the
+  [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]].
+- The page states when the dataset was last published, and every publish with its
+  outcome and what the run said, in its own Publications tab.
+
 The table layout stays on the page only as the record of what was first drawn.
 
 * See also

@@ -82,11 +82,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| The full tree | builds, every target | =./compass.sh build= | 1376e6d2ec |
-| The generator's suite | 184 cases, 182 pass, 2 skipped (no ORE engine), 5453 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.synthetic.core.tests= | 1376e6d2ec |
-| The synthetic service suite | 114 cases, 836 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.synthetic.service.tests= | 1376e6d2ec |
-| The ported gates | no finding new since =origin/main= | =compass-ng check --ratchet origin/main= | 1376e6d2ec |
-| The changed C++ | clang-formatted | =./compass.sh check --only format= | 1376e6d2ec |
+| The full tree | builds, every target | =./compass.sh build= | 62faa88cff |
+| The generator's suite | 184 cases, 182 pass, 2 skipped (no ORE engine), 5453 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.synthetic.core.tests= | 62faa88cff |
+| The synthetic service suite | 114 cases, 836 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.synthetic.service.tests= | 62faa88cff |
+| The ported gates | no finding new since =origin/main= | =compass-ng check --ratchet origin/main= | 62faa88cff |
+| The changed C++ | clang-formatted | =./compass.sh check --only format= | 62faa88cff |
 
 * Notes
 

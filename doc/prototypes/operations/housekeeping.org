@@ -191,6 +191,33 @@ states an action, a period, a cadence, whether it is enabled, and the reason,
 and adding it turns the store to *waiting for its first sweep* on the page and in
 the list.
 
+** What the list shows, and why the plot left it
+
+The list is for triage, not for reading: nine rows and one question, "which of
+these should I look at". A twelve-point plot in every row is a shape a person
+tries to read nine times, and none of the nine gets read. The plot stays on the
+store's page, where there is one store and room to look at it.
+
+A row now states three things, in the order the eye asks them:
+
+- *the size*, in bytes with its unit, because that is the number the question
+  starts from;
+- *how close it is to a stated limit*, as a bar and a percentage — but only
+  where a limit exists. A store with no budget says "no size budget" rather than
+  drawing an empty bar, which would read as room to spare;
+- *which way it is going*, as an arrow and the rate per week: ↑ +2.5 MB/wk,
+  → flat, or "not measured". The rate is the honest summary of the plot without
+  the plot: a store that stepped once and now sits flat reads →, and one that
+  climbs reads ↑ with how fast.
+
+The size budget is a decision this prototype takes and the product does not have:
+nothing states a cap on a store today, and a cap with no consequence is the same
+decoration the ticks' retention policy was. If the budget is added, something has
+to happen at it — an alert to the administrator, a sweep that acts early, or a
+refusal to keep accepting rows — and that mechanism belongs with the field, not
+after it. The prototype draws the indicator so the shape can be judged; the field
+and its consequence are for the task that adds them.
+
 ** The states a store can be in
 
 | State | What the screen says | Why it matters |

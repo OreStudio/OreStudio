@@ -53,13 +53,13 @@ using ores::testing::scoped_database_helper;
 namespace {
 
 void calendar_day_write_zz_country_sentinel(scoped_database_helper& h,
-                               ores::utility::generation::generation_context& gctx) {
+                                            ores::utility::generation::generation_context& gctx) {
     country_repository cty_repo;
     cty_repo.write(h.context(), {generate_country_sentinel(gctx)});
 }
 
 bool calendar_day_open_on(const std::vector<ores::refdata::domain::calendar_date>& days,
-                std::chrono::year_month_day date) {
+                          std::chrono::year_month_day date) {
     for (const auto& day : days)
         if (day.date == date)
             return day.is_business_day;
@@ -69,15 +69,14 @@ bool calendar_day_open_on(const std::vector<ores::refdata::domain::calendar_date
 std::chrono::year_month_day calendar_day_next_year_first_monday(unsigned occurrence) {
     using namespace std::chrono;
     const auto today = year_month_day{floor<days>(system_clock::now())};
-    const year_month_weekday ymw{today.year() + years{1}, June,
-                                 weekday_indexed{Monday, occurrence}};
+    const year_month_weekday ymw{
+        today.year() + years{1}, June, weekday_indexed{Monday, occurrence}};
     return year_month_day{sys_days{ymw}};
 }
 
 /// The days of a calendar every party shares, with the installation closing the
 /// second Monday of June and no party opening it.
-calendar_rule calendar_day_make_rule(scoped_database_helper& h,
-                                             const std::string& calendar_code) {
+calendar_rule calendar_day_make_rule(scoped_database_helper& h, const std::string& calendar_code) {
     static boost::uuids::random_generator gen;
     calendar_rule r;
     r.id = gen();
@@ -96,10 +95,10 @@ calendar_rule calendar_day_make_rule(scoped_database_helper& h,
 }
 
 calendar_exception calendar_day_make_exception(scoped_database_helper& h,
-                                  const std::string& calendar_code,
-                                  std::chrono::year_month_day date,
-                                  bool is_business_day,
-                                  std::optional<boost::uuids::uuid> party_id) {
+                                               const std::string& calendar_code,
+                                               std::chrono::year_month_day date,
+                                               bool is_business_day,
+                                               std::optional<boost::uuids::uuid> party_id) {
     static boost::uuids::random_generator gen;
     calendar_exception e;
     e.id = gen();
@@ -126,9 +125,10 @@ std::optional<boost::uuids::uuid> calendar_day_existing_party(scoped_database_he
     return std::nullopt;
 }
 
-ores::refdata::domain::party calendar_day_make_party(scoped_database_helper& h,
-                                                     ores::utility::generation::generation_context& gctx,
-                                                     std::optional<boost::uuids::uuid> parent) {
+ores::refdata::domain::party
+calendar_day_make_party(scoped_database_helper& h,
+                        ores::utility::generation::generation_context& gctx,
+                        std::optional<boost::uuids::uuid> parent) {
     party_repository party_repo;
     auto party = generate_synthetic_party(gctx);
     party.tenant_id = h.tenant_id();
@@ -176,8 +176,9 @@ TEST_CASE("a_party_reads_its_own_exception_over_the_days_the_installation_states
         parent = calendar_day_make_party(h, gctx, std::nullopt).id;
     const auto first = calendar_day_make_party(h, gctx, parent);
     const auto second = calendar_day_make_party(h, gctx, parent);
-    exc_repo.write(h.context(),
-                   {calendar_day_make_exception(h, cal.code, installation_holiday, true, first.id)});
+    exc_repo.write(
+        h.context(),
+        {calendar_day_make_exception(h, cal.code, installation_holiday, true, first.id)});
 
     calendar_materialisation_service materialiser(h.context());
     const auto written = materialiser.regenerate(cal.code, rule_holiday.year());

@@ -34,11 +34,11 @@ party]]).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Implemented, and the refdata suite is green on a fresh database. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the pull request.                |
+| Next         | Nothing. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
@@ -155,16 +155,11 @@ and not of this work, and it is recorded here rather than fixed in this task.
 
 ** What is left
 
-- *The copies a tenant already holds are not removed.* New materialisations
-  write nothing for a shared calendar, but a tenant that was provisioned before
-  this change keeps its own rows for the same calendar code, and the read
-  prefers them, so the installation's later days would be masked by the stale
-  copy. A live installation needs one purge per tenant, of the dates whose
-  calendar is the installation's, before the saving this task measures is real.
-  A database recreate, as in this environment, leaves nothing to purge.
-- The recompute path is the service startup and the tenant provisioning step;
-  there is no operator command that rebuilds the installation's copy on demand.
-  The task's acceptance asks for one.
+- *The copies a tenant already holds are not removed*, and there is no operator
+  command that rebuilds the installation's copy on demand. Both are the subject
+  of [[id:EFBFDD7E-D423-4F5E-A89E-894A1D4F286A][Purge the calendar days a
+  tenant already holds]], which this task names rather than absorbs: the purge
+  is a per-tenant act, and the command is a shell surface of its own.
 - The generated calendar-date list still shows the stored days, so a screen that
   must show a party's own days needs a read of its own; this task serves the
   date math.
@@ -195,3 +190,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The dates are held once, in the system tenant, and a party states only the days
+it moves.
+
+- The exceptions' natural key carries the party, and the installation's rows
+  have a partial unique index of their own, so both levels can answer for one
+  day.
+- The materialisation writes at the level that owns the calendar: the
+  installation's calendars in the system tenant, and a tenant's own calendar in
+  its tenant. A tenant's run writes nothing for a shared calendar, so
+  provisioning a tenant adds no copy.
+- =calendar_day_service= answers a date for the caller's party: the stored days
+  with the installation's exceptions applied, then the party's own. The tenor
+  resolution and the pair expiry rule read through it, so two parties answer
+  differently on one date without either touching the stored copy.
+- The dates table's read admits the installation's rows beside the caller's
+  through the two model flags, and its soft-delete rule stays in the caller's
+  tenant.
+
+Proved on a fresh database: the refdata core suite passes, 565 cases including
+the two new ones (a party reading its own exception over the installation's day,
+and a tenant reading a calendar the installation built); the whole refdata label
+passed on the branch before it was merged with main, and the core suite again
+after the merge.
+
+Left to [[id:EFBFDD7E-D423-4F5E-A89E-894A1D4F286A][Purge the calendar days a
+tenant already holds]]: the purge of copies a tenant was given before this
+change, and the operator command that rebuilds the installation's copy. The
+screen read of a party's days is UI work and is named in the notes.

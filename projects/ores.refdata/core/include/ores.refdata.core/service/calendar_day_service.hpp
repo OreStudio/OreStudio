@@ -47,8 +47,7 @@ namespace ores::refdata::service {
  */
 class ORES_REFDATA_CORE_EXPORT calendar_day_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.refdata.service.calendar_day_service";
+    inline static std::string_view logger_name = "ores.refdata.service.calendar_day_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

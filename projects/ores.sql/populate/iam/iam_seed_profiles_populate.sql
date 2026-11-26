@@ -242,6 +242,7 @@ cross join (values
     ('smokehouse', 'subscribe_market_data', 50, '{"provider": "bloomberg", "source": "bloomberg-a", "parties": [
         {"party": "Smokehouse Trading Ltd", "provider": "bloomberg", "source": "bloomberg-a"},
         {"party": "Smokehouse Trading Ltd", "provider": "ice", "source": "ice-a"},
+        {"party": "Smokehouse Trading Ltd", "provider": "lseg", "source": "lseg-a"},
         {"party": "Smokehouse Trading Ltd", "provider": "derived", "source": "derived-fx-vol"}
     ]}'::jsonb),
     -- The two curves and the one pair this tenant quotes, stated rather than

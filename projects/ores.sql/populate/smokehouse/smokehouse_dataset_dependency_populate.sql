@@ -40,4 +40,26 @@ BEGIN
         'smokehouse.books', 'smokehouse.portfolios', 'parent_portfolio_source');
     PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
         'smokehouse.party_counterparties', 'gleif.lei_counterparties.tiny', 'counterparty_reference');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'smokehouse.risk_report_configs', 'smokehouse.portfolios', 'scope_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'smokehouse.pricing_engines', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'smokehouse.todays_market', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'smokehouse.curve_configuration', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'smokehouse.risk_report_configs', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'smokehouse.engine_settings', 'refdata.conventions', 'convention_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'smokehouse.report_definitions', 'smokehouse.pricing_engines', 'configuration_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'smokehouse.report_definitions', 'smokehouse.todays_market', 'configuration_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'smokehouse.report_definitions', 'smokehouse.curve_configuration', 'configuration_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'smokehouse.report_definitions', 'smokehouse.risk_report_configs', 'configuration_source');
+    PERFORM ores_dq_dataset_dependencies_upsert_fn(ores_utility_system_tenant_id_fn(),
+        'smokehouse.report_definitions', 'smokehouse.engine_settings', 'configuration_source');
 END $$;

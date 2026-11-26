@@ -21,12 +21,27 @@ entities, forty-five staff, eleven hundred trades and a photograph per person.
 | Books | 3 | One per product: a forward, an option and a swap |
 | Book product types | 3 | The approval matrix, stated on the book that permits it |
 | Counterparties | 4 | A trade picks one, and they are the GLEIF LEIs every deployment publishes |
+| Configuration documents | 6 | The pricing engines, today's market, curve configuration, run settings, engine settings and report definition a valuation reads |
 
 The books are =GBP FX Book=, =GBP FX Options Book= and =GBP Rates Book=. A book
 permits one product type and refuses the others, so one book cannot carry both
 the forward and the option: the approval is the book's, and the planner refuses
 a product the book's matrix does not permit. That is why the count is three and
 not one.
+
+* The report documents
+
+The six documents a valuation reads are the template's, cut to the market this
+tenant prices: the discount curve of each currency it prices on, the volatility
+surface of the pair it trades, and one run settings document scoped to its one
+portfolio. The pair is cut by hand where the template lacks its spot, because the
+template's bank crosses it through the dollar.
+
+The cut matters more than the copying. A document that names every currency the
+installation knows makes the run read a market the tenant never publishes, and
+the engine fails on the first missing quote rather than valuing what it holds.
+The recipe names the three ways it still fails, and each is a gap in the
+reporting layer rather than in this directory.
 
 * The legal entity
 

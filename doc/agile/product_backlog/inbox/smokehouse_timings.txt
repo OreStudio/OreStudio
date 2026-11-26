@@ -68,3 +68,24 @@ $ where the provisioning time goes, from the step log
 
 # The run is one command, and the shell is where the timings above came from:
 #   ./compass.sh shell -l build/scratch/smokehouse_bootstrap.ores --no-login
+
+# ---------------------------------------------------------------------------
+# The report run, same checkout, 2026-11-26T22:39Z
+
+bundle republish into an existing tenant (bundles publish smokehouse): 7.134 s
+engine package upload (compute publish-package ORE 1.8.17.0):          3.295 s
+report trigger   (report_operations trigger-report-instance):         1.174 s
+report run       (trigger to engine refusal):                        ~80 s
+
+The run assembled everything: gather_trades, gather_market_data,
+assemble_bundle, prepare_ore_package and submit_compute all completed, and the
+grid accepted the workunit. The engine then refused the market with three
+errors, which the capture the-report-market-exports-no-fx-spot records. The
+first attempt failed earlier, at collect_compute_results, because the engine
+package had never been uploaded to storage: HTTP 404 on
+ORE-1.8.17.0-x64-linux.tar.gz.
+
+# The republish path is what makes the report iteration cheap: a document change
+# is staged, the bundle is republished into the running tenant in seven seconds,
+# and the report is triggered again. Re-provisioning the tenant for every
+# document change would have cost three and a half minutes a round.

@@ -151,6 +151,38 @@ Provisioning took 326 seconds on a quiet host, of which the waits for quotes wer
 the largest part. The floor the same profile cost before it published any market
 data was 122 seconds.
 
+** The valuation report
+
+The profile publishes the six documents a valuation reads, and the run reaches
+the engine. Triggering the tenant's =NPV= definition with
+=report_operations trigger-report-instance <definition_id> <tenant_id>= walks the
+run's nine steps: gather the trades, gather the market data, assemble the
+bundle, prepare the ORE package, submit it to the grid, collect the results and
+finalise. The grid needs the engine package in storage first:
+
+#+begin_src sh
+compute publish-package ORE 1.8.17.0 x64-linux --wrapper-version 1.0.0 \
+    --file external/ore/packages/ore-1.8.17.0-x64-linux.tar.gz \
+    --http-base-url http://localhost:$ORES_HTTP_PORT
+#+end_src
+
+On 2026-11-26 the run assembled everything and the engine refused the market
+with three errors, each naming a gap in the reporting layer and not in this
+tenant:
+
+1. =FXTriangulation: no conversion from 'EUR' to 'GBP' possible … quotes ()=
+   — the assembled market data carries no FX spot, though the party holds 650
+   dollar spot observations and the today's market names both dollar legs.
+2. =fx vol curve building failed: Convention 'EUR-GBP-FX' not found= — the FX
+   conventions the tenant holds are named =EUR-GBP-FXOPTION=.
+3. =did not find object 'GBP-LIBOR-12M' of type ibor index= — the curve
+   configuration models overnight curves and volatility surfaces and names no
+   IBOR index, so no LIBOR-based swap can price.
+
+The capture =the-report-market-exports-no-fx-spot= holds the evidence for all
+three. Until they are closed the tenant's trades price nothing, and the check
+that watches them has nothing to read.
+
 * See also
 
 - [[id:5C1D6A20-4B7E-4F31-9C2D-8A6E5B4F1D07][How do I provision a second

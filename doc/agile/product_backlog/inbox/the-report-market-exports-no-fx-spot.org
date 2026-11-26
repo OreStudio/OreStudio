@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 0FA2E46A-42AD-4D53-82FF-EE911E99F51B
+:END:
+#+title: The report market exports no FX spot
+#+description: An NPV run on a tenant that holds FX spot observations fails FX triangulation with an empty quote set
+#+type: capture
+#+level: cross
+#+filetags: :reporting:ore:market-data:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A tenant that holds FX spot observations, names the pair in its today's
+market, and trades it, produces a report run whose ORE input carries no FX spot
+at all. The engine's first complaint is
+
+#+begin_example
+FXTriangulation: no conversion from 'EUR' to 'GBP' possible, since 'EUR' is not
+available as one of the currencies in any of the quotes ()
+#+end_example
+
+The empty parentheses are the tell: not one currency reached the triangulation
+domain, so the market data the run assembled holds no FX quote.
+
+* Why
+
+The smokehouse measurement, 2026-11-26, tenant =Smokehouse Twelve=, run
+=7da689c3-336e-437b-a05b-73b669703c1b=:
+
+- The party holds 650 =fx_spot= observations, all dollars:
+  =oresmd://fx/EUR?…ccy=USD=, =oresmd://fx/GBP?…ccy=USD=, and so on. It holds no
+  =EUR/GBP= spot, which is correct: the simulator quotes dollars.
+- The today's market names =FX/EUR/USD=, =FX/GBP/USD= and the vol surface
+  =FXVolatility/EUR/GBP/EURGBP=.
+- The engine reports no quotes for any of them. ORE would triangulate EUR to GBP
+  through the dollar had either leg arrived, so the assembly is what drops them,
+  before the engine reads them.
+
+Two consequences worth separating when this is picked up: the pair a tenant
+trades may only ever be a dollar cross, and the assembly of the FX spot quotes
+into the ORE market data may be missing its binding to the today's market
+collection. The second is the likely defect; the first is a dataset choice.
+
+The same run also fails its volatility curve with =Convention 'EUR-GBP-FX' not
+found=, and the FX conventions the tenant holds are named =EUR-GBP-FXOPTION=.
+That is either the same root cause — no pair reached the market, so the pair's FX
+convention was not written — or a second one. Recording it here so the first fix
+is tested against both.
+
+The run's third complaint is =did not find object 'GBP-LIBOR-12M' of type ibor
+index=, which is a separate gap: the curve configuration document models
+overnight curves and volatility surfaces, and names no IBOR index, so no
+LIBOR-based swap can price however complete the market is.
+
+* References
+
+- =doc/recipes/seed-currency-quotes-for-a-local-report-run.org= is the hand seed
+  that works around missing *interest rate* quotes; no equivalent exists for FX
+  spots, because the assembly is expected to take them from the observations.
+- The run's errors are in =ores_reporting_report_error_events_tbl=, one row per
+  the engine's own message.
+
+* See also
+
+- The smokehouse tenant that surfaced this,
+  =projects/ores.seeder/datasets/smokehouse/=.

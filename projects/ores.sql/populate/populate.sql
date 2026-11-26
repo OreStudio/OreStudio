@@ -231,6 +231,12 @@ select ores_utility_allow_version_replace_fn();
 \ir smokehouse/smokehouse_portfolios_artefact_populate.sql
 \ir smokehouse/smokehouse_books_artefact_populate.sql
 \ir smokehouse/smokehouse_party_counterparties_artefact_populate.sql
+\ir smokehouse/smokehouse_pricing_engines_artefact_populate.sql
+\ir smokehouse/smokehouse_todays_market_artefact_populate.sql
+\ir smokehouse/smokehouse_curve_configuration_artefact_populate.sql
+\ir smokehouse/smokehouse_risk_report_configs_artefact_populate.sql
+\ir smokehouse/smokehouse_engine_settings_artefact_populate.sql
+\ir smokehouse/smokehouse_report_definitions_artefact_populate.sql
 
 -- =============================================================================
 -- Badge Severities Dataset (self-published DQ artefact; must follow the

@@ -49,11 +49,17 @@ BEGIN
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'smokehouse', 'smokehouse.portfolios', 20);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'smokehouse', 'smokehouse.books', 30);
     PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'smokehouse', 'smokehouse.party_counterparties', 40);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'smokehouse', 'smokehouse.pricing_engines', 50);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'smokehouse', 'smokehouse.todays_market', 60);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'smokehouse', 'smokehouse.curve_configuration', 70);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'smokehouse', 'smokehouse.engine_settings', 80);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'smokehouse', 'smokehouse.risk_report_configs', 90);
+    PERFORM ores_dq_dataset_bundle_members_upsert_fn(ores_utility_system_tenant_id_fn(), 'smokehouse', 'smokehouse.report_definitions', 100);
 
     PERFORM ores_dq_dataset_bundles_upsert_fn(ores_utility_system_tenant_id_fn(),
         'smokehouse',
         'Smokehouse',
         'tenant',
-        'Smokehouse Trading Ltd''s business unit, portfolio, books and tradeable counterparties. Publish with a {"party_id": "..."} param scoping every member to the party.'
+        'Smokehouse Trading Ltd''s business unit, portfolio, books, tradeable counterparties and the report documents its valuation reads. Publish with a {"party_id": "..."} param scoping every member to the party.'
     );
 END $$;

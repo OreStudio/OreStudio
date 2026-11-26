@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 7E4C2F58-3B91-42D0-8C6A-9F15E2B7D348
 :END:
-#+title: Fixings, prototype
-#+description: The fixing series the platform states as one list a system administrator reads: what each series fixes, the source its values came from, the latest value and its day, and how many days it holds, including the series that hold none.
+#+title: Fixing observations, prototype
+#+description: The fixing observations the platform states as one list a super administrator reads: what each series fixes, the source its values came from, the latest value and its day, and how many days it holds, including the series that hold none.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:market_data:fixings:
@@ -17,7 +17,7 @@
 | Journey       | [[file:../../knowledge/journeys/market_data/journey_see-the-fixings-the-platform-states.org][See the fixings the platform states]] |
 | Screens       | [[file:../../knowledge/domain/the_fixing_screens_and_what_each_is_for.org][The fixing screens and what each one is for]] |
 | Review        | none                                                     |
-| Sign-off      | pending                                                  |
+| Sign-off      | 2026-11-26, with the chart on the series page             |
 
 * Summary
 
@@ -41,7 +41,7 @@ many days it holds.
 
 * What this is not
 
-This is the *system view*: what the sources published, stated as the platform
+This is the *system view*, the screen called *Fixing observations*: what the sources published, stated as the platform
 holds it, with no act. It is not the *fixings manager*, where a party requires,
 adopts, overrides and authorises the fixings its own trades use, and where a day
 the platform never stated is entered with an explanation. The prototype offers no

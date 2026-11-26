@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 2B8F5C71-4A6D-4E39-9B12-6C7D0E3A5F84
 :END:
-#+title: User Journey: See the fixings the platform states
+#+title: User Journey: See the fixing observations the platform states
 #+description: A system administrator reads every FX and IR fixing series the platform holds, one row each, to see what it states, where the values came from, and how far each series reaches; a row opens the series page, and a series that holds no day is shown rather than hidden.
 #+type: user_journey
 #+level: cross
@@ -27,7 +27,7 @@ The journey only reads. The platform states what it observed, and the screen
 holds no authorisation: a day the platform never stated is a party's to enter,
 with an explanation, in its own fixings manager.
 
-*This is the system view, not the fixings manager.* The two read the same values
+*This is the system view, the screen called Fixing observations, not the fixings manager.* The two read the same values
 and share nothing else: the system view states what the sources published,
 missing days included, and offers no act, while the fixings manager is where a
 party requires, adopts, overrides and authorises the fixings its trades use. The
@@ -85,17 +85,22 @@ what an empty one is.
 
 | Step | Shape on the screen | Judgement |
 |------+---------------------+-----------|
-| Open the fixings | Breadcrumb, title, one sentence, Refresh, and a line that says this is the system view and holds no authorisation | The standard draws it, RS-LIST-01 to RS-LIST-03 |
+| Open the fixing observations | Breadcrumb, title, one sentence, Refresh, and a line that says this is the system view and holds no authorisation | The standard draws it, RS-LIST-01 to RS-LIST-03 |
 | Read a row | Table, one row per series | A view no rule draws yet: the rows are series and not records, so no record acts apply |
 | Meet a series that holds nothing | A row marked =no day=, dimmed, its count at zero | A view no rule draws yet: RS-LIST-10 says show the empty state, and here the empty state is a row |
 | Narrow to a class, a currency, a source | Three pickers | The standard draws it, RS-LIST-04 |
 | Search | One field over label, address, source and provider | The standard draws it, RS-LIST-05 |
-| Open the series | The row's act opens the existing page | The standard draws it, the record page the platform has |
+| Open the series | The row's act opens the existing page, whose header names the series and whose plot draws its values | The standard draws it, the record page the platform has, plus a chart |
 | Leave | Address holds the filters | The standard draws it, RS-LIST-20 |
 
 The steps keep no state across a reply, so no workflow is needed.
 
-The owner has not yet signed off this journey and its prototype.
+The owner signed off this journey and its prototype on 2026-11-26, subject
+to two changes made the same day: the screen is called *Fixing observations*,
+and the series page draws the values of the series it opens. The sign-off
+followed the reading of
+[[id:5D2A8C41-6E3B-47F0-9A28-1C4B7E9D3F62][The fixing screens and what each one is for]], which put this screen apart from
+the fixings manager.
 
 * Prototype
 

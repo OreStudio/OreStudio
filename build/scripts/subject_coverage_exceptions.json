@@ -1,0 +1,20 @@
+{
+  "_comment": "Subjects the models declare as requests and nothing subscribes today. Each entry states why it stays and the artefact that owns the fix. check_subject_coverage.py fails on an entry whose subject answers, so this file cannot outlive the defect it records.",
+  "exceptions": [
+    {
+      "subject": "refdata.v1.ops.begin_bundle_import",
+      "reason": "declared with a response and called by the ore service's run configuration import, and no refdata registrar subscribes it",
+      "task": "7B4D52F1-4D37-4F8D-AAEF-DF0E155BE955"
+    },
+    {
+      "subject": "refdata.v1.ops.stage_bundle_family",
+      "reason": "declared with a response and called by the ore service's run configuration import, and no refdata registrar subscribes it",
+      "task": "7B4D52F1-4D37-4F8D-AAEF-DF0E155BE955"
+    },
+    {
+      "subject": "refdata.v1.ops.commit_bundle_import",
+      "reason": "declared with a response and called by the ore service's run configuration import, and no refdata registrar subscribes it",
+      "task": "7B4D52F1-4D37-4F8D-AAEF-DF0E155BE955"
+    }
+  ]
+}

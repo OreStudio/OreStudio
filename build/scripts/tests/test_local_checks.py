@@ -59,13 +59,15 @@ def test_a_prose_only_change_builds_the_pages_and_nothing_else_heavy():
 
 def test_a_header_change_builds_and_tests():
     assert heavy(["projects/ores.iam/core/include/ores.iam.core/x.hpp"]) == {
-        "answer-shapes", "build", "db", "ctest", "step-consumers", "ticks-smoke",
+        "answer-shapes", "build", "db", "ctest", "step-consumers",
+        "subject-coverage", "ticks-smoke",
     }
 
 
 def test_a_source_change_builds_and_tests():
     assert heavy(["projects/ores.marketdata/core/src/a.cpp"]) == {
-        "answer-shapes", "build", "db", "ctest", "step-consumers", "ticks-smoke",
+        "answer-shapes", "build", "db", "ctest", "step-consumers",
+        "subject-coverage", "ticks-smoke",
     }
 
 
@@ -185,7 +187,8 @@ def test_the_heavy_checks_are_the_ones_that_need_a_built_tree():
     }
     # step-consumers reads a live server, which no ordinary run has, so it is
     # heavy: the phase where the infrastructure it needs is expected to be up.
-    # answer-shapes reads the running gateway for the same reason.
+    # answer-shapes reads the running gateway for the same reason, and
+    # subject-coverage asks the bus, which only answers while the fleet is up.
     assert heavy_ids == {
         "answer-shapes",
         "build",
@@ -194,6 +197,7 @@ def test_the_heavy_checks_are_the_ones_that_need_a_built_tree():
         "pgtap",
         "ore-xml-roundtrip",
         "step-consumers",
+        "subject-coverage",
         "ticks-smoke",
     }
 

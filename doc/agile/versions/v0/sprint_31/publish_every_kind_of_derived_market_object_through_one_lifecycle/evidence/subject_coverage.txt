@@ -1,0 +1,12 @@
+# check_subject_coverage.py against the running fleet
+# 2026-11-26T15:26:35Z  checkout eb1009994e
+
+$ python3 build/scripts/check_subject_coverage.py
+KNOWN refdata.v1.ops.begin_bundle_import: declared by begin_bundle_import_request in projects/ores.refdata/modeling/ores.refdata.bundle_import_operations.org; declared with a response and called by the ore service's run configuration import, and no refdata registrar subscribes it (task 7B4D52F1-4D37-4F8D-AAEF-DF0E155BE955)
+KNOWN refdata.v1.ops.commit_bundle_import: declared by commit_bundle_import_request in projects/ores.refdata/modeling/ores.refdata.bundle_import_operations.org; declared with a response and called by the ore service's run configuration import, and no refdata registrar subscribes it (task 7B4D52F1-4D37-4F8D-AAEF-DF0E155BE955)
+KNOWN refdata.v1.ops.stage_bundle_family: declared by stage_bundle_family_request in projects/ores.refdata/modeling/ores.refdata.bundle_import_operations.org; declared with a response and called by the ore service's run configuration import, and no refdata registrar subscribes it (task 7B4D52F1-4D37-4F8D-AAEF-DF0E155BE955)
+SKIP {component}.v1.history.get (projects/ores.history/modeling/ores.history.history_messages.org names get_entity_history_request): the generator names this subject per family.
+
+216 of 219 declared request(s) answered; 3 did not; 86 published subject(s) and 1 templated subject(s) skipped.
+
+exit=0

@@ -45,7 +45,7 @@ ores.marketdata holds one implementation of the raise, the decide, the apply and
 | [[id:AFAA7027-4896-4E22-B76F-A743DABF0CDC][Carry the forward set's supersession and notice]] | DONE | 2026-11-25 | 2026-11-25 | Give the FX forward set the supersession columns and the publish notice every other kind has. |
 | [[id:88CDEB14-2F43-407C-847F-0D85C96C74C4][Delete the three publish implementations]] | DONE | 2026-11-25 | 2026-11-25 | Remove the three copies of the lifecycle so it exists once. |
 | [[id:4ED5A5FE-7BBF-4378-AEFD-C22004F14D39][Serve or retire the series slice subject]] | DONE | 2026-11-26 | 2026-11-26 | The task was premised on the subject being unserved. It is served: the service subscribes it, and the gateway and the BFF route it. Correct the records that called it unserved, and leave the registration check to the gate task. |
-| [[id:12B71000-B339-4807-815B-5FD290383EA3][Fail the gate on a declared subject with no handler]] | BACKLOG | | | A declared NATS operation subject with no registered handler is invisible until a caller tries it and times out. Add a repo-owned gate check that fails when a declared subject has no handler, with a test that proves it fails on one. |
+| [[id:12B71000-B339-4807-815B-5FD290383EA3][Fail the gate on a declared subject with no handler]] | STARTED | 2026-11-26 | | A declared NATS operation subject with no registered handler is invisible until a caller tries it and times out. Add a repo-owned gate check that fails when a declared subject has no handler, with a test that proves it fails on one. |
 
 * Decisions
 

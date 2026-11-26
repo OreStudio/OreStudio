@@ -209,12 +209,19 @@ jobs:
           curl -fsSLO "${base}/${asset}"
           curl -fsSLO "${base}/${asset}.sha256"
           sha256sum -c "${asset}.sha256"
-          # Windows carries no unzip, and every runner carries tar, whose
-          # libarchive backend reads a zip. -C names the directory so the
-          # archive's own top directory stays under it.
+          # Windows carries no unzip, and Git Bash puts GNU tar ahead of the tar
+          # Windows ships, which is the one whose libarchive backend reads a
+          # zip. PowerShell expands a zip on every Windows runner, so the step
+          # uses it and not an archive tool.
           mkdir -p compass-ng
-          tar -xf "${asset}" -C compass-ng
-          dir=$(dirname "$(find "$RUNNER_TEMP/compass-ng" -type f -name 'compass.exe' | head -1)")
+          powershell -NoProfile -NonInteractive -Command \
+              "Expand-Archive -LiteralPath '$(cygpath -w "${asset}")' -DestinationPath '$(cygpath -w compass-ng)' -Force"
+          exe=$(find "$RUNNER_TEMP/compass-ng" -type f -name 'compass.exe' | head -1)
+          if [ -z "$exe" ]; then
+              echo "${asset} holds no compass.exe" >&2
+              exit 1
+          fi
+          dir=$(dirname "$exe")
           printf '@echo off\r\n"%%~dp0compass.exe" %%*\r\n' > "${dir}/compass-ng.cmd"
           cygpath -w "${dir}" >> $GITHUB_PATH
           "${dir}/compass.exe" --version

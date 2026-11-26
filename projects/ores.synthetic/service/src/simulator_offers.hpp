@@ -133,6 +133,10 @@ inline std::vector<generator_offer> fixing_offers(const std::vector<feed_start_t
         const auto& candidate = target.row.candidate;
         if (!target.startable() || !target.container_is_system)
             continue;
+        // A derived index is its own node: the config builds the generator, so this
+        // pass leaves it alone or it would be started twice.
+        if (candidate.derived)
+            continue;
         if (candidate.fixing_item)
             offer(*candidate.fixing_item,
                   ores::analytics::quant::domain::market_member_kind::index_rate,
@@ -220,6 +224,34 @@ system_generator_offers(const feed_kind_registry& registry,
         const auto* notation = vendor::notation_of(provider_code);
         if (!notation)
             continue;
+
+        // A derived index states the fixing of an index no publisher quotes, from the curve its
+        // rule names. Its adapter is offered that one address, so the market data service that
+        // demands it is answered; the graph withholds the offer while a stop holds the node or
+        // starves it, which is what stops the fixings when their curve stops.
+        if (candidate.derived) {
+            if (!candidate.fixing_item || fixings == nullptr)
+                continue;
+            const auto written = target_of(vendor::index_fixing{.item = *candidate.fixing_item});
+            if (!written)
+                continue;
+            feed::derived_fixing_feed_build_input in{.source_name = candidate.source_name,
+                                                     .item = *candidate.fixing_item,
+                                                     .target = *written,
+                                                     .rule = *candidate.derived,
+                                                     .held = fixings->held};
+            if (node_halted)
+                in.starved = [halted = node_halted, name = candidate.source_name] {
+                    return halted(name);
+                };
+            out.push_back(generator_offer{
+                .id = written->id,
+                .group = candidate.feed_config_id,
+                .make = [&registry, &build, kind = target.row.kind->kind, in] {
+                    return registry.factory().make(kind, build, feed::feed_build_input{in});
+                }});
+            continue;
+        }
 
         // A surface is offered to the adapter of each contributor's provider, for that
         // contributor's points, whichever collection holds it: the contributors observe one

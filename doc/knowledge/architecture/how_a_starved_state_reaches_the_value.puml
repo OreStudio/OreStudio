@@ -1,0 +1,57 @@
+@startuml how_a_starved_state_reaches_the_value
+title How a starved state reaches the value a node states
+
+skinparam shadowing false
+skinparam defaultFontName Sans
+skinparam componentStyle rectangle
+
+actor "Operator" as operator
+participant "Feed graph" as graph
+participant "Simulator fleet" as fleet
+participant "Halted set" as halted
+participant "Offers" as offers
+participant "Feed" as feed
+participant "Market data service" as marketdata
+
+operator -> graph : stop a node
+graph -> graph : rebuild the graph
+graph -> halted : write the names that are not running
+note right of halted
+  A stopped node and every node
+  below it, named once and held
+  until the next rebuild.
+end note
+
+graph -> offers : withhold the offers of the halted names
+offers -> marketdata : withdraw the demand
+marketdata --> feed : the demand that started it is gone
+note right of feed
+  The offer path needs no other
+  guard: a node nobody demands
+  publishes nothing.
+end note
+
+halted -> feed : the set, on every tick
+feed -> feed : read its own name in the set
+alt the name is in the set
+  feed --> marketdata : no tick
+  note right of marketdata
+    The value the input last wrote
+    stays on the board, and the
+    node states nothing for the day.
+  end note
+else the name is not in the set
+  feed --> marketdata : the day's value
+end
+
+operator -> graph : start the node again
+graph -> halted : rebuild, and the name leaves the set
+graph -> offers : offer the node again
+feed -> marketdata : the day it lands on, and no earlier one
+note right of marketdata
+  The days it was starved for stay
+  absent: a fixing is a fact about
+  a date, not a value to make up.
+end note
+
+@enduml

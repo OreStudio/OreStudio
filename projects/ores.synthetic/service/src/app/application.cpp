@@ -364,8 +364,11 @@ private:
                 halted.insert(n.name);
         {
             const std::lock_guard lock(nodes_mu_);
-            halted_ = std::move(halted);
+            halted_ = halted;
         }
+        // A feed reads the set on every tick, so a node a stop starves states nothing from
+        // that moment rather than publishing the last value its input left on the board.
+        generators_.set_halted(std::move(halted));
         const std::lock_guard lock(mu_);
         for (auto& one : adapters_)
             if (!one.stopped)

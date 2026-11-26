@@ -27,7 +27,7 @@ fixings that made it.
 ** One run calibrates the class
 
 The calibration run, =synthetic.v1.ops.calibrate_feeds=, is the one action that
-calibrates an asset class, from the Calibration screen or the API. It reads the
+calibrates an asset class, from the Feed calibration screen or the API. It reads the
 class's calibration policy, then walks every feed of the class, or the one feed
 it is asked for. A preview reports what it finds and stores nothing; an applied
 run, which only the system tenant may make, writes what it finds.
@@ -158,7 +158,7 @@ long-run level must equal the stored first-day ratio; a series that does not is
 reported, not drawn as if it matched. The second is the pair's calibrations over
 time, one small chart for each of alpha (α), gamma (γ), beta (β) and persistence,
 beside a table of every calibration with its state, method and reason. On the
-Calibration screen the class list shows each feed's variance calibration and its
+Feed calibration screen the class list shows each feed's variance calibration and its
 state, and a feed's /Variance/ tab shows the whole calibration, its input and the
 review.
 

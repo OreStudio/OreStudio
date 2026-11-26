@@ -342,7 +342,7 @@ public:
 
     /**
      * @brief Start feeds: synthetic start folder <folder-token>
-     * | feed <feed-token>.
+     * | feed <feed-token> | node <node-name>.
      *
      * Folder-scoped starts resolve the whole subtree server-side
      * (start_feeds_under_folder_request); feed-scoped starts send the
@@ -358,12 +358,13 @@ public:
 
     /**
      * @brief Stop feeds: synthetic stop folder <folder-token>
-     * | feed <feed-token>.
+     * | feed <feed-token> | node <node-name>.
      *
      * Folder-scoped stops resolve the whole subtree server-side
      * (stop_feeds_under_folder_request); feed-scoped stops send the
      * config_id and the server resolves it to the config's
-     * source_name.
+     * source_name; a node stop records the stop and starves the nodes
+     * below it (stop_feed_node_request).
      */
     static void process_stop(std::ostream& out,
                              ores::nats::service::nats_client& session,
@@ -427,6 +428,37 @@ public:
     static bool stop_feed(std::ostream& out,
                           ores::nats::service::nats_client& session,
                           const std::string& token);
+
+    /**
+     * @brief Start one node of the feed graph by its name.
+     *
+     * A node is the graph's unit: a source, a feed or a view. A node an operator
+     * stopped stays stopped across a restart, so it is started here rather than
+     * by starting the feed.
+     *
+     * @return true on success.
+     */
+    static bool start_node(std::ostream& out,
+                           ores::nats::service::nats_client& session,
+                           const std::string& token);
+
+    /**
+     * @brief Stop one node of the feed graph by its name, and every node it
+     * starves.
+     *
+     * A feed that reads another feed's output states nothing once its input is
+     * stopped, rather than publishing the last value the input left behind.
+     *
+     * @param reason_code Why it is stopped, as a change reason code.
+     * @param commentary What the person said about why.
+     *
+     * @return true on success.
+     */
+    static bool stop_node(std::ostream& out,
+                          ores::nats::service::nats_client& session,
+                          const std::string& token,
+                          const std::string& reason_code,
+                          const std::string& commentary);
 };
 
 }

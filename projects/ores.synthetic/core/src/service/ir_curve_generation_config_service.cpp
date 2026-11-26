@@ -155,6 +155,9 @@ ir_curve_generation_config_to_domain(const messaging::ir_curve_generation_config
     v.enabled = write.enabled;
     v.auto_start = write.auto_start;
     v.price_source = write.price_source;
+    v.rate_source = write.rate_source;
+    v.derived_spread_basis_points = write.derived_spread_basis_points;
+    v.derived_spread_source = write.derived_spread_source;
     v.description = write.description;
     v.fixed_leg_payment_frequency_code = write.fixed_leg_payment_frequency_code;
     v.source_name = write.source_name;

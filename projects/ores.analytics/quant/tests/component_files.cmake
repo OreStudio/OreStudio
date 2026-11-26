@@ -78,6 +78,7 @@ set(files
     "service_fx_expiry_dates_tests.cpp"
     "service_tenor_resolution_engine_tests.cpp"
     "ssvi_calibration_engine_tests.cpp"
+    "term_rate_calculator_tests.cpp"
     "tick_scheduler_tests.cpp"
     "topology_builder_tests.cpp"
     "topology_from_sources_tests.cpp"

@@ -88,7 +88,8 @@ public:
 
     /**
      * @brief add <config_id> <currency_code> <index_family> <tenor> <role> <process_type>
-     * <ticks_per_hour> <enabled> <auto_start> <price_source> <description>
+     * <ticks_per_hour> <enabled> <auto_start> <price_source> <rate_source>
+     * <derived_spread_basis_points> <derived_spread_source> <description>
      * <fixed_leg_payment_frequency_code> <source_name> <folder_id> <asset_class_code>
      * <arrival_mode> <branching_ratio> <decay> <sensitivity> <reason> <commentary>
      */
@@ -98,7 +99,8 @@ public:
 
     /**
      * @brief set <id> <config_id> <currency_code> <index_family> <tenor> <role> <process_type>
-     * <ticks_per_hour> <enabled> <auto_start> <price_source> <description>
+     * <ticks_per_hour> <enabled> <auto_start> <price_source> <rate_source>
+     * <derived_spread_basis_points> <derived_spread_source> <description>
      * <fixed_leg_payment_frequency_code> <source_name> <folder_id> <asset_class_code>
      * <arrival_mode> <branching_ratio> <decay> <sensitivity> <reason> <commentary> [--version <n>]
      */
@@ -108,7 +110,8 @@ public:
 
     /**
      * @brief put-many --count <n> <id> <config_id> <currency_code> <index_family> <tenor> <role>
-     * <process_type> <ticks_per_hour> <enabled> <auto_start> <price_source> <description>
+     * <process_type> <ticks_per_hour> <enabled> <auto_start> <price_source> <rate_source>
+     * <derived_spread_basis_points> <derived_spread_source> <description>
      * <fixed_leg_payment_frequency_code> <source_name> <folder_id> <asset_class_code>
      * <arrival_mode> <branching_ratio> <decay> <sensitivity> <reason> <commentary>
      */

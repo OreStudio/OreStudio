@@ -22,9 +22,24 @@
 
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "simulator_offers.hpp"
 
 namespace ores::synthetic::service {
+
+/**
+ * @brief The days the market already holds of an item up to a date, read as the system party.
+ *
+ * A fixing feed states a history only when the market holds none of the item, so every
+ * caller that builds one asks this first: the offers the run makes, and a node a person
+ * starts by hand.
+ *
+ * @param db_ctx The service's own context, which is the system tenant's.
+ * @param svc_nats The service's authenticated client, which reads the fixings.
+ */
+[[nodiscard]] ores::synthetic::feed::fixing_held_reader
+make_held_days_reader(const ores::database::context& db_ctx,
+                      ores::nats::service::nats_client& svc_nats);
 
 /**
  * @brief What the simulated fixing publisher's offers read beyond the configs.

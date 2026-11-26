@@ -18,7 +18,12 @@
  *
  */
 #include "ores.synthetic.api/feeds/index_fixing_feed.hpp"
+#include "ores.analytics.quant/domain/date_convention.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
+#include "ores.analytics.quant/service/calendar_arithmetic.hpp"
+#include "ores.analytics.quant/service/curve_bootstrap_engine.hpp"
+#include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
+#include "ores.analytics.quant/service/day_count_calculator.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -27,6 +32,7 @@
 #include <chrono>
 #include <format>
 #include <stdexcept>
+#include <vector>
 
 namespace ores::synthetic::feed {
 
@@ -104,6 +110,11 @@ index_fixing_feed::index_fixing_feed(ores::nats::service::client& nats,
     , input_(std::move(input))
     , market_(market)
     , series_uris_{input_.item} {
+    if (input_.derived) {
+        curve_member_ = market_.values().member_of(
+            ores::analytics::quant::domain::market_member_kind::curve, input_.derived->curve_code);
+        return;
+    }
     if (input_.level_codes.empty())
         throw std::invalid_argument("index_fixing_feed: '" + input_.item +
                                     "' names no board member to read its level from.");
@@ -140,18 +151,87 @@ void index_fixing_feed::publish(std::chrono::year_month_day date, const std::str
     nats_.publish(input_.target.subject, ores::nats::default_wire_codec().encode(tick));
 }
 
-std::string index_fixing_feed::tick(const ores::analytics::quant::service::tick_context& context) {
-    std::optional<ores::analytics::quant::domain::market_member_view> published;
-    for (const auto member : level_members_) {
-        const auto view = market_.values().view(member);
-        if (view.published) {
-            published = view;
-            break;
+namespace {
+
+/// The discount factor @p points states at @p date, log-linearly in between.
+double
+discount_factor_of(const std::vector<ores::analytics::quant::service::bootstrapped_point>& points,
+                   std::chrono::year_month_day date) {
+    return ores::analytics::quant::service::curve_bootstrap_engine::interpolate_discount_factor(
+        points,
+        date,
+        ores::analytics::quant::service::interpolation_method_code::LOG_LINEAR_DISCOUNT);
+}
+
+}
+
+std::optional<double> index_fixing_feed::level_rate() const {
+    if (!input_.derived) {
+        for (const auto member : level_members_) {
+            const auto view = market_.values().view(member);
+            if (view.published)
+                return view.spot;
         }
+        return std::nullopt;
     }
-    if (!published)
+
+    const auto& derived = *input_.derived;
+    if (!curve_member_ || derived.term_months <= 0)
+        return std::nullopt;
+    const auto view = market_.values().view(*curve_member_);
+    if (!view.published || view.points.empty())
+        return std::nullopt;
+
+    std::vector<ores::analytics::quant::service::bootstrapped_point> points;
+    points.reserve(view.points.size());
+    for (const auto& point : view.points)
+        points.push_back({"", point.date, point.discount_factor});
+
+    const auto start = view.spot_date;
+    const auto end = ores::analytics::quant::service::calendar_arithmetic::add_period(
+        start, {ores::analytics::quant::domain::period_unit::month, derived.term_months});
+    if (std::chrono::sys_days{end} <= std::chrono::sys_days{start})
+        return std::nullopt;
+
+    const auto overnight_day =
+        std::chrono::year_month_day{std::chrono::sys_days{start} + std::chrono::days{1}};
+    const auto overnight_fraction =
+        ores::analytics::quant::service::day_count_calculator::year_fraction(
+            start, overnight_day, derived.convention);
+    const auto overnight = ores::analytics::quant::service::curve_instrument_pricer::fra_rate(
+        discount_factor_of(points, start),
+        discount_factor_of(points, overnight_day),
+        overnight_fraction);
+
+    return ores::analytics::quant::service::term_rate_calculator::rate(
+        overnight,
+        discount_factor_of(points, start),
+        discount_factor_of(points, end),
+        start,
+        end,
+        derived.convention,
+        derived.rule,
+        derived.spread_basis_points);
+}
+
+std::string index_fixing_feed::tick(const ores::analytics::quant::service::tick_context& context) {
+    if (input_.starved && input_.starved()) {
+        // A starved node states nothing: the curve it reads is not running, so the last
+        // value the curve left on the board is no rate of today. The day it was due is
+        // not made up when the node resumes, either: no fixing is backfilled.
+        if (!starved_logged_) {
+            ORES_LOG_SEV(index_fixing_feed_lg(), info)
+                << "The node of '" << input_.source_name
+                << "' is starved: it states no fixing until its input runs again.";
+            starved_logged_ = true;
+        }
         return "0";
-    const auto& level = *published;
+    }
+    starved_logged_ = false;
+
+    const auto level = level_rate();
+    if (!level)
+        return "0";
 
     std::optional<std::chrono::year_month_day> due;
     try {
@@ -186,8 +266,24 @@ std::string index_fixing_feed::tick(const ores::analytics::quant::service::tick_
             }
             held = *read;
         }
+        // A history is stated once, when the market holds none of the item. A run that
+        // comes back after its input stopped finds the days it stated before, and states
+        // none at all: the days it did not state while starved stay absent, because a
+        // fixing is a fact about a date and not a value to make up. It then fixes the day
+        // its first tick falls on, and no earlier one, unless the market holds that day
+        // already.
+        if (!held.empty()) {
+            history_stated_ = true;
+            // The newest day the market holds is the last day it stated, so the day this
+            // run lands on is not stated a second time where the market already holds it.
+            last_fixed_ = *held.rbegin();
+            ORES_LOG_SEV(index_fixing_feed_lg(), debug)
+                << "The market holds " << held.size() << " day(s) of '" << input_.item
+                << "', so it states no history.";
+            return "0";
+        }
         const auto history = derive_fixing_history(
-            level.spot, to, input_.history_days, input_.run_seed, input_.item, held);
+            *level, to, input_.history_days, input_.run_seed, input_.item, held);
         if (!history) {
             ORES_LOG_SEV(index_fixing_feed_lg(), warn)
                 << "The history of '" << input_.item << "' is not stated: " << history.error();
@@ -205,7 +301,7 @@ std::string index_fixing_feed::tick(const ores::analytics::quant::service::tick_
 
     if (!due)
         return "0";
-    publish(*due, std::format("{:.6f}", level.spot));
+    publish(*due, std::format("{:.6f}", *level));
     last_fixed_ = due;
     return "1";
 }

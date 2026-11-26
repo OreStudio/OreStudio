@@ -5156,11 +5156,11 @@ const pt: SourceCatalogue = {
                 },
             },
             invertedFrom: 'o inverso do fixing {value}',
-            title: 'Calibração',
+            title: 'Calibração de fluxos',
             lead: 'Como cada fluxo de uma classe de ativos toma o seu nível inicial e a sua volatilidade dos fixings públicos.',
             systemOnly:
-                'A calibração é um controlo do sistema. Apenas um administrador do sistema a pode abrir.',
-            tabs: 'Vistas da calibração',
+                'A calibração de fluxos é um controlo do sistema. Apenas um administrador do sistema a pode abrir.',
+            tabs: 'Vistas da calibração de fluxos',
             tab: {
                 feeds: 'Fluxos',
                 run: 'Calibração em curso',
@@ -6517,7 +6517,7 @@ const pt: SourceCatalogue = {
                 subscriptions: 'Subscrições',
                 subscriptionsBody:
                     'Os fornecedores que uma parte recebe, com os direitos que detém, e o fluxo que serve cada um.',
-                synthetic: 'Sintético',
+                synthetic: 'Mercado simulado',
                 syntheticBody:
                     'Os feeds que a plataforma gera: o que corre por fornecedor, e cada feed para iniciar e parar.',
                 evolutionBody:
@@ -6967,7 +6967,7 @@ const pt: SourceCatalogue = {
                 'O fluxo para se estiver a correr. A mistura é apagada primeiro, depois o fluxo. O histórico de cada um fica.',
         },
         synthetic: {
-            title: 'Sintético',
+            title: 'Mercado simulado',
             lead: 'Os dados de mercado que a plataforma gera em vez de receber: o que corre por fornecedor, e os feeds de um fornecedor.',
             tabs: { dashboard: 'Painel', provider: 'Fornecedor', regime: 'Mercado' },
             state: { serving: 'A servir', running: 'A correr', stopped: 'Parado' },
@@ -7064,11 +7064,26 @@ const pt: SourceCatalogue = {
             add: 'Nova curva de taxas',
             addTitle: 'Nova curva de taxas',
             priceSource: 'Taxa inicial vinda de',
+            rateSource: 'Taxa vinda de',
+            derivedSpread: 'Spread sobre a taxa overnight',
+            derivedSpreadSource: 'Quem fixa o spread',
             tenorNeeded: 'Um índice a prazo precisa de um prazo, como 3M ou 6M.',
             tenorNotAdmitted: 'Esta família é um índice overnight: uma curva dela não leva prazo.',
             tenorOnlyDated:
                 'Esta família é um índice overnight; o seu único prazo datado é {tenor}.',
             help: {
+                rate_source: {
+                    process:
+                        'O seu próprio motor de curva produz a taxa, como qualquer curva cotada.',
+                    compounded_overnight:
+                        'A taxa overnight capitalizada ao longo do prazo. SOFR 1M e IBR 3M são assim definidos.',
+                    overnight_plus_spread:
+                        'A taxa overnight mais o spread abaixo. EYTIBOR 3M e WIBOR 6M são assim definidos.',
+                },
+                derived_spread_basis_points:
+                    'Pontos base somados à taxa overnight. Só uma taxa com spread o usa.',
+                derived_spread_source:
+                    'Quem fixa o spread: o publicador, a convenção de mercado, ou a decisão que o fixou. Um spread sem fonte é um número que ninguém pode verificar.',
                 tenor: 'O prazo de um índice a prazo, como 3M ou 6M. Deixe vazio para um índice overnight. FOMC marca a variante com datas das reuniões do SOFR.',
                 role: {
                     self_discounting: 'Uma curva que serve os dois usos.',

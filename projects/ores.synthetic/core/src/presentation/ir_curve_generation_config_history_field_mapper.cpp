@@ -50,6 +50,10 @@ render_ir_curve_generation_config_fields(const domain::ir_curve_generation_confi
     fields.push_back({.name = "Enabled", .value = v.enabled ? "true" : "false"});
     fields.push_back({.name = "Auto Start", .value = v.auto_start ? "true" : "false"});
     fields.push_back({.name = "Price Source", .value = v.price_source});
+    fields.push_back({.name = "Rate Source", .value = v.rate_source});
+    fields.push_back({.name = "Derived Spread Basis Points",
+                      .value = std::to_string(v.derived_spread_basis_points)});
+    fields.push_back({.name = "Derived Spread Source", .value = v.derived_spread_source});
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back(
         {.name = "Fixed Leg Payment Frequency Code", .value = v.fixed_leg_payment_frequency_code});

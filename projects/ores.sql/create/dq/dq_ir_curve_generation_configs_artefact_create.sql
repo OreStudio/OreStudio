@@ -24,7 +24,7 @@
  */
 
 -- =============================================================================
--- A typed sub-configuration owned by a market_data_generation_config. Describes how to synthesise a single currency+index interest-rate curve: which short-rate process drives it (vasicek/cox_ingersoll_ross/hull_white/ two_factor_gaussian, per ores.analytics.quant's i_yield_curve_process engines) and that process's parameters, stored row-based as ir_curve_generation_config_process_parameter_value children joined onto the yield_curve_process_parameter_definition catalogue -- so a new process type or parameter is seed data, not a schema change. The actual instrument grid (which tenors to publish at which role) is held separately as ordered ir_curve_template_entry rows, the same one-config-many-children shape fx_spot_generation_config uses for its gmm_component rows. Scoped to a tenant and a party. - Artefact Table
+-- A typed sub-configuration owned by a market_data_generation_config. Describes how to synthesise a single currency+index interest-rate curve: which short-rate process drives it (vasicek/cox_ingersoll_ross/hull_white/ two_factor_gaussian, per ores.analytics.quant's i_yield_curve_process engines) and that process's parameters, stored row-based as ir_curve_generation_config_process_parameter_value children joined onto the yield_curve_process_parameter_definition catalogue -- so a new process type or parameter is seed data, not a schema change. The actual instrument grid (which tenors to publish at which role) is held separately as ordered ir_curve_template_entry rows, the same one-config-many-children shape fx_spot_generation_config uses for its gmm_component rows. Scoped to a tenant and a party. A config may instead derive its rate from the currency's overnight curve, for a term index no publisher quotes: rate_source says which shape it takes, and a spread index states the spread and who states it. The fixing generator reads the rule on the config and computes the rate from the curve itself: the compounded overnight forward over the term, or the overnight rate plus the stated spread. A derived config states no index rate on the run's board, because it runs no curve of its own. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores_dq_ir_curve_generation_configs_artefact_tbl" (
@@ -47,6 +47,9 @@ create table if not exists "ores_dq_ir_curve_generation_configs_artefact_tbl" (
     "ticks_per_hour" integer not null,
     "fixed_leg_payment_frequency_code" text not null,
     "price_source" text not null default 'fixed',
+    "rate_source" text not null default 'process',
+    "derived_spread_basis_points" double precision not null default 0.0,
+    "derived_spread_source" text null,
     "provider_code" text null,
     "arrival_mode" text not null default 'periodic',
     "branching_ratio" double precision not null default 0.0,

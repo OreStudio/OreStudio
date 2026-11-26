@@ -131,6 +131,8 @@ std::string ir_curve_generation_config_web_with_defaults(const std::string& body
             rr::write_default{"enabled", R"json(false)json"},
             rr::write_default{"auto_start", R"json(false)json"},
             rr::write_default{"price_source", R"json("fixed")json"},
+            rr::write_default{"rate_source", R"json("process")json"},
+            rr::write_default{"derived_spread_basis_points", R"json(0.0)json"},
             rr::write_default{"fixed_leg_payment_frequency_code", R"json("Annual")json"},
             rr::write_default{"asset_class_code", R"json("interest_rates")json"},
             rr::write_default{"arrival_mode", R"json("periodic")json"},

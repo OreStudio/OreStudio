@@ -112,13 +112,21 @@ Two names, two addresses, no collision: the list takes a new one, and the series
 page keeps the address it already has, which is the one a row opens with the
 series appended as its query.
 
+The drill-down keeps the way the reader came. The series page titles itself with
+the item a row named rather than with the shape of the page, and its trail
+carries the list it was opened from; the row hands the name over in the address,
+because the page holds an identifier and cannot state a name. A row of *Fixing
+observations* therefore reads =Home › Market data › Fixing observations › USD
+SOFR 1M=. An item opened from anywhere else trails through the same list, since
+that list is where the system states it.
+
 * What exists today
 
 #+ATTR_HTML: :class hug-leading
 | Surface | Code | Documentation |
 |---------+------+---------------|
-| Fixing observations (system view) | The operation, the aggregate read and the C++ route exist on the fixings-screen branch; no page and no BFF route | Journey and prototype signed off 2026-11-26; task STARTED |
-| Fixing series page | =FixingSeriesPage.tsx=, built and routed | Its sprint task records that nothing links to it |
+| Fixing observations (system view) | The operation, the aggregate read, the C++ route, the BFF route and =FixingObservationsPage.tsx= | Journey and prototype signed off 2026-11-26; task STARTED |
+| Fixing series page | =FixingSeriesPage.tsx=, built and routed, opened by a row of the list | Its sprint task records that nothing linked to it until the list was built |
 | Public rates | =PublicRatesPage.tsx= and its record pages | Prototype and journey, both signed off |
 | Fixings manager | Nothing | The controls page, the process page and the capture of the hand-entered fixing |
 | Control reports | Nothing | Named in the controls page, not designed |

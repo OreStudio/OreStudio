@@ -41,11 +41,11 @@ The actor is the super administrator, the person who answers for the
 installation rather than for a party. The trigger is a party reporting a fixing
 it cannot get, a check that a feed is stating what it should, or the morning
 question of whether the overnight curves ran. The journey starts at *Market
-data / Fixings* and ends when the person leaves the page.
+data / Fixing observations* and ends when the person leaves the page.
 
 * Steps
 
-1. *Open the fixings.* The person opens *Market data / Fixings*. The system
+1. *Open the fixings.* The person opens *Market data / Fixing observations*. The system
    states every FX and IR fixing series the store holds, one row each: what the
    series fixes, its class, the underlying or pair, the source its values came
    from, the provider that owns it, the value of its latest day, that day, and
@@ -68,8 +68,10 @@ data / Fixings* and ends when the person leaves the page.
 7. *Search.* The person types part of a pair, an index, a source or a provider,
    and the list narrows to the rows that name it.
 8. *Open the series.* The person opens a row, and the fixing series page shows
-   that series by its address: its days, its values, and the feeds that carry
-   it. The list is the way in; it builds no second reading.
+   that series by the name the row gave it, under the same trail: *Home › Market
+   data › Fixing observations › USD SOFR 1M*. It shows the days, the values and
+   the feeds that carry it, and its way back is the list. The list is the way
+   in; it builds no second reading.
 9. *Leave.* The address holds the filters, so the person can send the exact view
    to someone else.
 
@@ -79,7 +81,7 @@ One read-only list. The filters come first, then the rows, then a legend that
 says what the two states mean, so a person never reads a row without knowing
 what an empty one is.
 
-#+caption: Fixings: the filters, the series the platform states, and what an empty series reads as.
+#+caption: Fixing observations: the filters, the series the platform states, and what an empty series reads as.
 #+attr_html: :width 100%
 [[proj:doc/prototypes/market_data/fixings/fixings-list.png]]
 

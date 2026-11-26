@@ -7660,6 +7660,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'vault.v1.secret_uses.list': {
+        asOf: false,
+        filter: ['id_one_of'],
+        rows: ['secret_uses'],
+    },
     'vault.v1.secrets.list': {
         asOf: true,
         filter: ['id_one_of', 'search'],

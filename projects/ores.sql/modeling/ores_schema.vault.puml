@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: vault
-Tables: 2
+Tables: 3
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -76,6 +76,38 @@ package "vault" #F3E8FD {
     would give one service two keys, and the vault would have to choose. And a row
     with no public key cannot be sealed to, so a consumer that has not been
     provisioned is a consumer that receives nothing.
+    end note
+
+    entity ores_vault_secret_uses_tbl  #F7E5FF {
+        * id : uuid <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * name : text
+        * subject : text
+        * outcome : text
+        * key_version : integer
+        * used_at : timestamptz
+    }
+
+    note right of ores_vault_secret_uses_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Secret Use Table
+    One row per act on a secret, appended and never changed. The row says who asked
+    and what happened; it never says what the value was, and there is no column for a
+    value, a plaintext or a ciphertext.
+    The rows are append-only, so the model states :current_state:: an act is a fact
+    about an instant, and the bi-temporal pair has no meaning on it. The audit columns
+    go too, because the row has no author and no version of its own: the subject
+    column is the actor.
+    Three acts append a row: a resolve, a rotation and a delete. A refusal appends one
+    as well, with outcome naming what was refused, because a caller that asks for a
+    secret it does not own is the row an operator most wants to read.
+    The name is the secret's name at the time of the act and not a reference to the
+    secret row: the record has to outlive the row it describes, and a delete leaves a
+    use behind. The key_version is the version the row was opened under, and it is
+    zero for an act that opened nothing, such as a refusal or a delete.
     end note
 
     entity ores_vault_secrets_tbl <<temporal>> #C6F0D8 {

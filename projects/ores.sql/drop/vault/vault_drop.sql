@@ -22,6 +22,9 @@
 -- Vault Tables
 -- =============================================================================
 
+\ir ./vault_secret_uses_notify_trigger_drop.sql
+\ir ./vault_secret_uses_drop.sql
+
 \ir ./vault_secrets_notify_trigger_drop.sql
 \ir ./vault_secrets_drop.sql
 

@@ -72,7 +72,8 @@ actions of the fixing process; see
 [[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management and its controls]] and
 [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]].
 A party with no trades that fix has nothing to manage, and its fixings manager
-is empty rather than a view of the system's observations.
+is empty rather than a view of the system's observations. The surfaces themselves, and which of them may act, are set out in
+[[id:5D2A8C41-6E3B-47F0-9A28-1C4B7E9D3F62][The fixing screens and what each one is for]].
 
 ** Storage
 

@@ -33,9 +33,9 @@ an explanation, in the fixings manager that captures it: see
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
-| Now          | Planned; the summary operation is the first step. |
+| Now          | The operation, the aggregate read and the C++ route are built; the journey and prototype await sign-off. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 1: the summary operation in ores.marketdata. |
+| Next         | Step 4: the screen, after the prototype's sign-off. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
@@ -46,6 +46,20 @@ an explanation, in the fixings manager that captures it: see
 - A fixing series with no values shows as empty, not hidden.
 
 * Plan
+
+*The screen is the system view, not the fixings manager.* It states what the
+sources published and offers no act; the party's fixings manager is another
+screen, where a party requires, adopts, overrides and authorises the fixings its
+trades use. The four fixing surfaces and the question each answers are set out in
+[[id:5D2A8C41-6E3B-47F0-9A28-1C4B7E9D3F62][The fixing screens and what each one is for]].
+
+Two consequences for this task:
+
+- The list takes =/market-data/fixings=, and the fixing series page a row opens
+  moves to =/market-data/fixings/:uri=. The page holds that address today, so the
+  list cannot be routed until it moves.
+- Nothing on the screen offers to fill a missing day, to authorise a value, or
+  to override one. A series that ended is shown ending.
 
 The screen lists every FX and IR fixing series the store holds, one row each:
 the index or pair, the source, the publisher, the latest value and its date,

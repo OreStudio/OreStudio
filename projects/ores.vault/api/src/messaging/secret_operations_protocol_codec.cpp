@@ -280,4 +280,46 @@ wire_traits<ores::vault::messaging::vault_public_key_response>::read_msgpack(
     return object::read_msgpack<ores::vault::messaging::vault_public_key_response>(data);
 }
 
+std::string wire_traits<ores::vault::messaging::register_consumer_request>::write_json(
+    const ores::vault::messaging::register_consumer_request& v) {
+    return object::write_json(v);
+}
+
+ores::vault::messaging::register_consumer_request
+wire_traits<ores::vault::messaging::register_consumer_request>::read_json(std::string_view text) {
+    return object::read_json<ores::vault::messaging::register_consumer_request>(text);
+}
+
+std::string wire_traits<ores::vault::messaging::register_consumer_request>::write_msgpack(
+    const ores::vault::messaging::register_consumer_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::vault::messaging::register_consumer_request
+wire_traits<ores::vault::messaging::register_consumer_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::vault::messaging::register_consumer_request>(data);
+}
+
+std::string wire_traits<ores::vault::messaging::register_consumer_response>::write_json(
+    const ores::vault::messaging::register_consumer_response& v) {
+    return object::write_json(v);
+}
+
+ores::vault::messaging::register_consumer_response
+wire_traits<ores::vault::messaging::register_consumer_response>::read_json(std::string_view text) {
+    return object::read_json<ores::vault::messaging::register_consumer_response>(text);
+}
+
+std::string wire_traits<ores::vault::messaging::register_consumer_response>::write_msgpack(
+    const ores::vault::messaging::register_consumer_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::vault::messaging::register_consumer_response
+wire_traits<ores::vault::messaging::register_consumer_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::vault::messaging::register_consumer_response>(data);
+}
+
 }

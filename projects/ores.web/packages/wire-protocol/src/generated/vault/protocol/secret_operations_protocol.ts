@@ -127,6 +127,23 @@ export interface VaultPublicKeyResponse {
     public_key: string;
 }
 
+/**
+ * @brief Registers the caller's own public key, so that a resolve can seal to it.
+ *
+ * The row is about the caller and nobody else: the name is the subject the
+ * verified token carries, never a field of this message, so a caller cannot
+ * register a key for somebody else. It needs no permission beyond a session for
+ * the same reason: the only consumer it can touch is itself.
+ */
+export interface RegisterConsumerRequest {
+    public_key: string;
+}
+
+export interface RegisterConsumerResponse {
+    success: boolean;
+    message: string;
+}
+
 export const subjects = {
     write_secret_request: 'vault.v1.ops.write',
     describe_secret_request: 'vault.v1.ops.describe',
@@ -134,6 +151,7 @@ export const subjects = {
     remove_secret_request: 'vault.v1.ops.delete',
     rotate_secrets_request: 'vault.v1.ops.rotate',
     vault_public_key_request: 'vault.v1.ops.public_key',
+    register_consumer_request: 'vault.v1.ops.register_consumer',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -147,4 +165,5 @@ export const requiresSession = {
     remove_secret_request: true,
     rotate_secrets_request: true,
     vault_public_key_request: true,
+    register_consumer_request: true,
 } as const;

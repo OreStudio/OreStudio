@@ -230,6 +230,38 @@ struct vault_public_key_response {
 };
 
 /**
+ * @brief Registers the caller's own public key, so that a resolve can seal to it.
+ *
+ * The row is about the caller and nobody else: the name is the subject the
+ * verified token carries, never a field of this message, so a caller cannot
+ * register a key for somebody else. It needs no permission beyond a session for
+ * the same reason: the only consumer it can touch is itself.
+ */
+struct register_consumer_request {
+    using response_type = struct register_consumer_response;
+    static constexpr std::string_view nats_subject = "vault.v1.ops.register_consumer";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string public_key;
+
+    friend bool operator==(const register_consumer_request&,
+                           const register_consumer_request&) = default;
+};
+
+struct register_consumer_response {
+    bool success = false;
+    std::string message;
+
+    friend bool operator==(const register_consumer_response&,
+                           const register_consumer_response&) = default;
+};
+
+/**
  * @brief The members of write_secret_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -414,6 +446,35 @@ struct vault_public_key_response {
     };
 }
 
+/**
+ * @brief The members of register_consumer_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<register_consumer_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"public_key", &register_consumer_request::public_key},
+    };
+}
+
+/**
+ * @brief The members of register_consumer_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<register_consumer_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &register_consumer_response::success},
+        ::ores::utility::codec::field{"message", &register_consumer_response::message},
+    };
+}
+
 }
 namespace ores::utility::codec {
 
@@ -535,6 +596,26 @@ struct ORES_VAULT_API_EXPORT wire_traits<ores::vault::messaging::vault_public_ke
     static ores::vault::messaging::vault_public_key_response read_json(std::string_view text);
     static std::string write_msgpack(const ores::vault::messaging::vault_public_key_response& v);
     static ores::vault::messaging::vault_public_key_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VAULT_API_EXPORT wire_traits<ores::vault::messaging::register_consumer_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::vault::messaging::register_consumer_request& v);
+    static ores::vault::messaging::register_consumer_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::vault::messaging::register_consumer_request& v);
+    static ores::vault::messaging::register_consumer_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VAULT_API_EXPORT wire_traits<ores::vault::messaging::register_consumer_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::vault::messaging::register_consumer_response& v);
+    static ores::vault::messaging::register_consumer_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::vault::messaging::register_consumer_response& v);
+    static ores::vault::messaging::register_consumer_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

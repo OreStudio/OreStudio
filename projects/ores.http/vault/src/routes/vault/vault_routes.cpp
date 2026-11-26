@@ -157,6 +157,20 @@ vault_routes::handle_reveal(const ores::http::domain::http_request& req,
             co_return ores::http::domain::http_response::bad_request("The path names no secret");
         }
 
+        // The vault seals only to a consumer it knows, so the gateway states
+        // its own public key first. The row is about this process: the vault
+        // takes the name from the token, so this can only ever register the
+        // caller. Repeating it is harmless, and a failed registration is left
+        // for the resolve to report.
+        ores::vault::messaging::register_consumer_request registration;
+        registration.public_key = base64_converter::convert(keys.public_key);
+        const auto registered = ores::nats::service::authenticated_request_and_decode<
+            ores::vault::messaging::register_consumer_response>(
+            session, ores::vault::messaging::register_consumer_request::nats_subject, registration);
+        if (!registered.has_value() || !registered->success) {
+            ORES_LOG_SEV(lg(), warn) << "The gateway could not register its key with the vault";
+        }
+
         // The gateway resolves as itself: the vault seals to the consumer its
         // own token names, which is the only consumer holding a key here. The
         // person's permission is the vault's to check on the write and the

@@ -74,3 +74,11 @@ TEST_CASE("ores::vault::messaging::vault_public_key_request", "[codec][roundtrip
 TEST_CASE("ores::vault::messaging::vault_public_key_response", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::vault::messaging::vault_public_key_response>();
 }
+
+TEST_CASE("ores::vault::messaging::register_consumer_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::vault::messaging::register_consumer_request>();
+}
+
+TEST_CASE("ores::vault::messaging::register_consumer_response", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::vault::messaging::register_consumer_response>();
+}

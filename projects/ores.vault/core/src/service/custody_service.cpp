@@ -132,6 +132,51 @@ custody_result custody_service::write(const std::string& actor,
     }
 }
 
+custody_result custody_service::register_consumer(const std::string& subject,
+                                                  const std::string& public_key) {
+    custody_result answer;
+
+    if (subject.empty() || public_key.empty()) {
+        answer.message = "A consumer needs a subject and a public key";
+        return answer;
+    }
+
+    try {
+        const auto raw = base64_converter::convert(public_key);
+        if (raw.size() != sealed_box::KEY_LEN) {
+            answer.message = "A consumer's public key is 32 bytes";
+            return answer;
+        }
+
+        repository::consumer_repository consumers;
+        const auto existing = consumers.read_latest_by_name(ctx_, subject);
+
+        domain::consumer row;
+        if (!existing.empty()) {
+            row = existing.front();
+        } else {
+            boost::uuids::random_generator generate;
+            row.id = generate();
+            row.name = subject;
+        }
+        row.tenant_id = ctx_.tenant_id();
+        row.public_key = public_key;
+        row.is_enabled = true;
+        row.modified_by = subject;
+        row.performed_by = subject;
+        consumers.write(ctx_, row);
+
+        answer.success = true;
+        answer.subject = subject;
+        ORES_LOG_SEV(lg(), info) << "Registered consumer " << subject;
+        return answer;
+    } catch (const std::exception& e) {
+        ORES_LOG_SEV(lg(), error) << "Registration of " << subject << " failed: " << e.what();
+        answer.message = e.what();
+        return answer;
+    }
+}
+
 custody_result custody_service::describe(const std::string& name) const {
     custody_result answer{.name = name};
 

@@ -97,6 +97,17 @@ public:
                          const std::string& sealed_to_vault);
 
     /**
+     * @brief Registers a consumer's public key under its own subject.
+     *
+     * The row is about the caller: the name is the subject the verified token
+     * carries, so this can only ever register the caller's own key.
+     *
+     * @param subject The verified subject of the caller's token.
+     * @param public_key The caller's public key, Base64-encoded.
+     */
+    custody_result register_consumer(const std::string& subject, const std::string& public_key);
+
+    /**
      * @brief Answers the metadata of one secret, and never its value.
      */
     custody_result describe(const std::string& name) const;

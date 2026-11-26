@@ -78,8 +78,8 @@ is not this task's work.
 |------+-------+---------+--------|
 | The slice subject on the running environment | a responder answers; =X-Error: unauthorized=, because the probe carries no token | =build/scripts/nats.sh req ores.dev.bright_faraday.marketdata.v1.ops.get_series_slice '{}'= | =0a84b06264= |
 | A subject the service does not serve, for contrast | =No responders are available= | the same command against =ores.dev.bright_faraday.marketdata.v1.ops.get_series_slice= without the environment prefix | =0a84b06264= |
-| The registration test | 1 case, 2 assertions, pass | =ores.marketdata.core.tests "[registration]"= | =8f90127166= |
-| Local checks, non-heavy | 9 of 9 | =compass check --exclude-heavy= | =8f90127166= |
+| The registration test | 1 case, 2 assertions, pass | =ores.marketdata.core.tests "[registration]"= | =aacee4cc5f= |
+| Local checks, non-heavy | 9 of 9 | =compass check --exclude-heavy= | =aacee4cc5f= |
 
 * Notes
 

@@ -21,7 +21,7 @@
  * pgTAP tests for the product approval matrices.
  *
  * - A party's set resolves the types it permits, and a party that states none
- *   resolves nothing at all rather than every type.
+ *   resolves no set at all, which the caller reads as every type.
  * - A book that states no set carries its party's, and a book that states one
  *   carries only that set.
  * - A book may not name a type its party does not permit, a party may not drop
@@ -37,7 +37,7 @@
 
 begin;
 
-select plan(14);
+select plan(16);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -234,6 +234,30 @@ select is(
     ores_refdata_book_allowed_product_types_fn(gen_random_uuid()),
     '{}'::text[],
     'a book the caller cannot see carries nothing');
+
+select set_config('app.visible_party_ids', '{}', true);
+
+select is(
+    (select count(*)::int
+     from ores_refdata_party_product_types_tbl
+     where party_id = (select party_id from t_ctx)
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    0,
+    'a session whose visible parties name no one reads no approval row');
+
+select set_config('app.visible_party_ids',
+    (select '{' || string_agg(id::text, ',') || '}'
+     from ores_refdata_parties_tbl
+     where short_code like 'APPROVAL%'
+       and valid_to = ores_utility_infinity_timestamp_fn()), true);
+
+select is(
+    (select count(*)::int
+     from ores_refdata_party_product_types_tbl
+     where party_id = (select party_id from t_ctx)
+       and valid_to = ores_utility_infinity_timestamp_fn()),
+    1,
+    'a session whose visible parties name the party reads its approval row');
 
 select * from finish();
 

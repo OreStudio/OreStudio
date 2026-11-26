@@ -106,6 +106,24 @@ $$ language plpgsql stable;
 comment on function ores_refdata_business_unit_allowed_product_types_fn(uuid) is
     'The product types a desk permits, resolved through its party, or null when both permit every type the catalogue states.';
 
+-- A book's parent is its desk where it names one and its party where it does not,
+-- and the two callers that need that answer ask for it once rather than twice.
+create or replace function ores_refdata_book_parent_allowed_product_types_fn(
+    p_party_id uuid,
+    p_business_unit_id uuid
+) returns text[] as $$
+begin
+    if p_business_unit_id is null then
+        return ores_refdata_party_allowed_product_types_fn(p_party_id);
+    end if;
+
+    return ores_refdata_business_unit_allowed_product_types_fn(p_business_unit_id);
+end;
+$$ language plpgsql stable;
+
+comment on function ores_refdata_book_parent_allowed_product_types_fn(uuid, uuid) is
+    'The set a book inherits from the level above it: its desk where it names one, else its party.';
+
 create or replace function ores_refdata_book_allowed_product_types_fn(
     p_book_id uuid
 ) returns text[] as $$
@@ -127,11 +145,8 @@ begin
     -- A book that states no set carries its parent's, and the parent is its desk
     -- where it names one and its party where it does not.
     if not v_restricts then
-        return case
-                   when v_business_unit_id is null
-                       then ores_refdata_party_allowed_product_types_fn(v_party_id)
-                   else ores_refdata_business_unit_allowed_product_types_fn(v_business_unit_id)
-               end;
+        return ores_refdata_book_parent_allowed_product_types_fn(
+            v_party_id, v_business_unit_id);
     end if;
 
     return coalesce(
@@ -168,11 +183,8 @@ begin
         return new;
     end if;
 
-    v_allowed := case
-                     when v_business_unit_id is null
-                         then ores_refdata_party_allowed_product_types_fn(v_party_id)
-                     else ores_refdata_business_unit_allowed_product_types_fn(v_business_unit_id)
-                 end;
+    v_allowed := ores_refdata_book_parent_allowed_product_types_fn(
+        v_party_id, v_business_unit_id);
     if v_allowed is null then
         return new;
     end if;
@@ -247,8 +259,26 @@ create or replace function ores_refdata_parties_approval_restriction_fn()
 returns trigger as $$
 declare
     v_outside text;
+    v_was_restricting boolean;
 begin
-    if not new.restricts_product_types or old.restricts_product_types then
+    if not new.restricts_product_types then
+        return new;
+    end if;
+
+    -- The party is version-inserted, so a flip arrives as an INSERT that closes
+    -- the live row and writes the next version; a direct UPDATE is the other way
+    -- in. Either is a flip only where the live row did not restrict.
+    if tg_op = 'UPDATE' then
+        v_was_restricting := old.restricts_product_types;
+    else
+        select p.restricts_product_types into v_was_restricting
+        from ores_refdata_parties_tbl p
+        where p.tenant_id = new.tenant_id
+          and p.id = new.id
+          and p.valid_to = ores_utility_infinity_timestamp_fn();
+    end if;
+
+    if coalesce(v_was_restricting, false) then
         return new;
     end if;
 
@@ -303,7 +333,7 @@ end;
 $$ language plpgsql;
 
 comment on function ores_refdata_parties_approval_restriction_fn() is
-    'Refuses a party that starts restricting while a book carries a type the party would not permit.';
+    'Refuses a party that starts restricting while a desk or a book carries a type the party would not permit.';
 
 -- A desk may name a type only when its party permits it.
 create or replace function ores_refdata_business_unit_product_types_approval_fn()
@@ -382,8 +412,25 @@ create or replace function ores_refdata_business_units_approval_restriction_fn()
 returns trigger as $$
 declare
     v_outside text;
+    v_was_restricting boolean;
 begin
-    if not new.restricts_product_types or old.restricts_product_types then
+    if not new.restricts_product_types then
+        return new;
+    end if;
+
+    -- The desk is version-inserted, so a flip arrives as an INSERT; see the
+    -- party's guard for why both statements are read.
+    if tg_op = 'UPDATE' then
+        v_was_restricting := old.restricts_product_types;
+    else
+        select u.restricts_product_types into v_was_restricting
+        from ores_refdata_business_units_tbl u
+        where u.tenant_id = new.tenant_id
+          and u.id = new.id
+          and u.valid_to = ores_utility_infinity_timestamp_fn();
+    end if;
+
+    if coalesce(v_was_restricting, false) then
         return new;
     end if;
 
@@ -420,37 +467,74 @@ comment on function ores_refdata_business_units_approval_restriction_fn() is
 -- A desk answers for the approval of its own party, so a book may not sit under
 -- a desk of another party: the chain would then resolve a set the book's party
 -- never approved.
-create or replace function ores_refdata_books_owner_unit_party_fn()
+create or replace function ores_refdata_books_owner_unit_fn()
 returns trigger as $$
 declare
     v_unit_party_id uuid;
+    v_previous_unit_id uuid;
+    v_allowed text[];
+    v_outside text;
 begin
-    if new.owner_unit_id is null then
+    if new.owner_unit_id is not null then
+        select u.party_id into v_unit_party_id
+        from ores_refdata_business_units_tbl u
+        where u.id = new.owner_unit_id
+          and u.valid_to = ores_utility_infinity_timestamp_fn();
+
+        if v_unit_party_id is not null and v_unit_party_id <> new.party_id then
+            raise exception
+                'Book % may not belong to business unit %: the unit belongs to another party.',
+                new.id, new.owner_unit_id
+                using errcode = '23514';
+        end if;
+    end if;
+
+    -- A book that moves to another desk must keep every type it states inside
+    -- the set the new desk permits; the desk it left has no say over it.
+    if tg_op = 'UPDATE' then
+        v_previous_unit_id := old.owner_unit_id;
+    else
+        select b.owner_unit_id into v_previous_unit_id
+        from ores_refdata_books_tbl b
+        where b.tenant_id = new.tenant_id
+          and b.id = new.id
+          and b.valid_to = ores_utility_infinity_timestamp_fn();
+    end if;
+
+    if v_previous_unit_id is not distinct from new.owner_unit_id then
         return new;
     end if;
 
-    select u.party_id into v_unit_party_id
-    from ores_refdata_business_units_tbl u
-    where u.id = new.owner_unit_id
-      and u.valid_to = ores_utility_infinity_timestamp_fn();
-
-    if v_unit_party_id is null or v_unit_party_id = new.party_id then
+    v_allowed := ores_refdata_book_parent_allowed_product_types_fn(
+        new.party_id, new.owner_unit_id);
+    if v_allowed is null then
         return new;
     end if;
 
-    raise exception
-        'Book % may not belong to business unit %: the unit belongs to another party.',
-        new.id, new.owner_unit_id
-        using errcode = '23514';
+    select j.product_type_code into v_outside
+    from ores_refdata_book_product_types_tbl j
+    where j.book_id = new.id
+      and j.valid_to = ores_utility_infinity_timestamp_fn()
+      and not (j.product_type_code = any(v_allowed))
+    limit 1;
+
+    if v_outside is not null then
+        raise exception
+            'Book % may not move to business unit %: it carries product type %, which the desk does not permit.',
+            new.id, new.owner_unit_id, v_outside
+            using errcode = '23514';
+    end if;
+
+    return new;
 end;
 $$ language plpgsql;
 
-comment on function ores_refdata_books_owner_unit_party_fn() is
-    'Refuses a book whose desk belongs to another party.';
+comment on function ores_refdata_books_owner_unit_fn() is
+    'Refuses a book whose desk belongs to another party, and a book that moves to a desk whose set does not hold every type the book states.';
 
-create or replace trigger ores_refdata_books_owner_unit_party_trg
+create or replace trigger ores_refdata_books_owner_unit_trg
 before insert or update of owner_unit_id, party_id on "ores_refdata_books_tbl"
-for each row execute function ores_refdata_books_owner_unit_party_fn();
+for each row execute function ores_refdata_books_owner_unit_fn();
 
 create or replace trigger ores_refdata_book_product_types_approval_trg
 before insert or update on "ores_refdata_book_product_types_tbl"
@@ -461,7 +545,7 @@ before update on "ores_refdata_party_product_types_tbl"
 for each row execute function ores_refdata_party_product_types_close_fn();
 
 create or replace trigger ores_refdata_parties_approval_restriction_trg
-before update on "ores_refdata_parties_tbl"
+before insert or update on "ores_refdata_parties_tbl"
 for each row execute function ores_refdata_parties_approval_restriction_fn();
 
 create or replace trigger ores_refdata_business_unit_product_types_approval_trg
@@ -473,5 +557,5 @@ before update on "ores_refdata_business_unit_product_types_tbl"
 for each row execute function ores_refdata_business_unit_product_types_close_fn();
 
 create or replace trigger ores_refdata_business_units_approval_restriction_trg
-before update on "ores_refdata_business_units_tbl"
+before insert or update on "ores_refdata_business_units_tbl"
 for each row execute function ores_refdata_business_units_approval_restriction_fn();

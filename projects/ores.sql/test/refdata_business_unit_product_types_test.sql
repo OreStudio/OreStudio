@@ -41,7 +41,7 @@
 
 begin;
 
-select plan(25);
+select plan(30);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -325,12 +325,12 @@ values ('00000000-0000-0000-0000-0000000bb004', ores_utility_system_tenant_id_fn
     'FxForward', 0, 'system.test', 'system.test', 'system.test', 'pgTAP fixture',
     now(), ores_utility_infinity_timestamp_fn());
 
-select throws_ok(
+select throws_like(
     $$update ores_refdata_business_units_tbl
       set restricts_product_types = true
       where id = '00000000-0000-0000-0000-0000000bd005'
         and valid_to = ores_utility_infinity_timestamp_fn()$$,
-    '23514', null,
+    '%may not start restricting: a book carries%',
     'a desk may not start restricting while a book carries a type it would not permit');
 
 select throws_ok(
@@ -359,13 +359,88 @@ select c.party_open_id, ores_utility_system_tenant_id_fn(), 'Swap', 0,
     now(), ores_utility_infinity_timestamp_fn()
 from t_ctx c;
 
-select throws_ok(
+select throws_like(
     $$update ores_refdata_parties_tbl
       set restricts_product_types = true
       where id = (select party_open_id from t_ctx)
         and valid_to = ores_utility_infinity_timestamp_fn()$$,
-    '23514', null,
+    '%may not start restricting: a desk permits%',
     'a party may not start restricting while a desk permits a type it would not permit');
+
+-- The entities are version-inserted, so a flip reaches the table as an INSERT
+-- that closes the live row. The refusals are pinned by their message because the
+-- code alone cannot tell these guards apart from the ancestry and status ones.
+select throws_like(
+    $$insert into ores_refdata_parties_tbl (
+          id, tenant_id, version, short_code, full_name, codename,
+          party_category, party_type, parent_party_id, business_center_code,
+          status, restricts_product_types,
+          modified_by, performed_by, change_reason_code, change_commentary)
+      select p.id, ores_utility_system_tenant_id_fn(), p.version, p.short_code,
+          p.full_name, p.codename, p.party_category, p.party_type, p.parent_party_id,
+          p.business_center_code, p.status, true,
+          p.modified_by, p.performed_by, p.change_reason_code, p.change_commentary
+      from ores_refdata_parties_tbl p
+      where p.id = (select party_open_id from t_ctx)
+        and p.valid_to = ores_utility_infinity_timestamp_fn()$$,
+    '%may not start restricting: a desk permits%',
+    'a party that starts restricting in a new version is refused, not only one that is updated');
+
+select throws_like(
+    $$insert into ores_refdata_business_units_tbl (
+          id, tenant_id, version, party_id, unit_name, status,
+          restricts_product_types,
+          modified_by, performed_by, change_reason_code, change_commentary)
+      select u.id, ores_utility_system_tenant_id_fn(), u.version, u.party_id,
+          u.unit_name, u.status, true,
+          u.modified_by, u.performed_by, u.change_reason_code, u.change_commentary
+      from ores_refdata_business_units_tbl u
+      where u.id = '00000000-0000-0000-0000-0000000bd005'
+        and u.valid_to = ores_utility_infinity_timestamp_fn()$$,
+    '%may not start restricting: a book carries%',
+    'a desk that starts restricting in a new version is refused, not only one that is updated');
+
+select throws_like(
+    $$insert into ores_refdata_books_tbl (
+          id, tenant_id, version, party_id, name, parent_portfolio_id,
+          functional_currency, book_status, regulatory_book_type, book_purpose_type,
+          ledger_feed_type, is_sweepable, restricts_product_types, rates_centre_code,
+          owner_unit_id,
+          modified_by, performed_by, change_reason_code, change_commentary)
+      select b.id, ores_utility_system_tenant_id_fn(), b.version, b.party_id, b.name,
+          '00000000-0000-0000-0000-0000000bc002', b.functional_currency, b.book_status,
+          b.regulatory_book_type, b.book_purpose_type, b.ledger_feed_type, b.is_sweepable,
+          b.restricts_product_types, b.rates_centre_code,
+          '00000000-0000-0000-0000-0000000bd002',
+          b.modified_by, b.performed_by, b.change_reason_code, b.change_commentary
+      from ores_refdata_books_tbl b
+      where b.id = '00000000-0000-0000-0000-0000000bb004'
+        and b.valid_to = ores_utility_infinity_timestamp_fn()$$,
+    '%may not move to business unit%',
+    'a book may not move to a desk that does not permit a type the book carries');
+
+select lives_ok(
+    $$insert into ores_refdata_books_tbl (
+          id, tenant_id, version, party_id, name, parent_portfolio_id,
+          functional_currency, book_status, regulatory_book_type, book_purpose_type,
+          ledger_feed_type, is_sweepable, restricts_product_types, rates_centre_code,
+          owner_unit_id,
+          modified_by, performed_by, change_reason_code, change_commentary)
+      select b.id, ores_utility_system_tenant_id_fn(), b.version, b.party_id, b.name,
+          '00000000-0000-0000-0000-0000000bc001', b.functional_currency, b.book_status,
+          b.regulatory_book_type, b.book_purpose_type, b.ledger_feed_type, b.is_sweepable,
+          b.restricts_product_types, b.rates_centre_code,
+          '00000000-0000-0000-0000-0000000bd001',
+          b.modified_by, b.performed_by, b.change_reason_code, b.change_commentary
+      from ores_refdata_books_tbl b
+      where b.id = '00000000-0000-0000-0000-0000000bb003'
+        and b.valid_to = ores_utility_infinity_timestamp_fn()$$,
+    'a book moves to a desk whose set holds every type it carries');
+
+select is(
+    ores_refdata_book_allowed_product_types_fn('00000000-0000-0000-0000-0000000bb003'),
+    array['Swap']::text[],
+    'the moved book still carries the set it states');
 
 select is(
     ores_refdata_business_unit_allowed_product_types_fn(gen_random_uuid()),

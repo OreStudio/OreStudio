@@ -81,10 +81,18 @@
         {
             id: 'calendar_dates',
             name: 'ores_refdata_calendar_dates_tbl',
+            label: 'Calendar dates',
+            code: 'refdata.calendar_dates',
+            owner: 'Reference data (refdata)',
+            timeColumn: 'valid_from',
+            measureKind: 'relation rows',
+            targetKind: 'chunked_table',
+            description: 'The business days of every calendar, one row per calendar per day, derived from each calendar\'s rules and its exceptions. The installation publishes them once and every tenant reads the same copy.',
             group: 'timescale',
             kind: 'Timescale chunked table',
             where: 'System tenant · 1 copy',
             sizeMB: 283,
+            series: [276, 278, 279, 280, 280, 281, 282, 282, 283, 283, 283, 283],
             size: '283 MB',
             measure: '486,540 rows',
             growth: 'Growing · +18 MB over 30 days',
@@ -94,10 +102,18 @@
         {
             id: 'report_cashflows',
             name: 'ores_reporting_report_cashflows_tbl',
+            label: 'Report run cashflows',
+            code: 'reporting.report_cashflows',
+            owner: 'Reporting (reporting)',
+            timeColumn: 'written_at',
+            measureKind: 'relation rows',
+            targetKind: 'chunked_table',
+            description: 'The cashflow rows each report run writes: the projected flows of every trade the run priced, one row per flow per measure. Kept so a run can be read again without pricing it again.',
             group: 'timescale',
             kind: 'Timescale chunked table',
             where: 'System tenant · 1 copy',
             sizeMB: 186,
+            series: [0, 0, 12, 40, 88, 130, 160, 175, 182, 185, 186, 186],
             size: '186 MB',
             measure: '186 MB after 39 runs',
             growth: 'Flat · 186 MB after 39 runs',
@@ -107,10 +123,18 @@
         {
             id: 'report_metrics',
             name: 'ores_reporting_report_metrics_tbl',
+            label: 'Report run metrics',
+            code: 'reporting.report_metrics',
+            owner: 'Reporting (reporting)',
+            timeColumn: 'written_at',
+            measureKind: 'relation rows',
+            targetKind: 'chunked_table',
+            description: 'The summary figures each report run writes beside its cashflows, one row per metric per run. Kept under the same policy as the cashflows, because the two are read together.',
             group: 'timescale',
             kind: 'Timescale chunked table',
             where: 'System tenant · 1 copy',
             sizeMB: 4,
+            series: [0, 0, 0.4, 1.2, 2.1, 2.8, 3.3, 3.6, 3.8, 3.9, 4, 4],
             size: '4 MB',
             measure: '4 MB after 39 runs',
             growth: 'Flat · 4 MB after 39 runs',
@@ -120,10 +144,18 @@
         {
             id: 'delivery_counts',
             name: 'ores_marketdata_delivery_counts_tbl',
+            label: 'Market data delivery counts',
+            code: 'marketdata.delivery_counts',
+            owner: 'Market data (marketdata)',
+            timeColumn: 'period_start',
+            measureKind: 'relation rows',
+            targetKind: 'ordinary_table',
+            description: 'How many items each feed delivered for each series in each period: one row per series per period, carried forward on every flush rather than appended.',
             group: 'db',
             kind: 'Ordinary table',
             where: 'System tenant · grows by insert',
             sizeMB: 29,
+            series: [1, 2, 4, 6, 8, 10, 12, 15, 18, 21, 25, 29],
             size: '29 MB',
             measure: '~27,000 rows/hour',
             growth: 'Growing · ~27,000 rows/hour',
@@ -133,10 +165,18 @@
         {
             id: 'ticks',
             name: 'ores_marketdata_ticks_tbl',
+            label: 'Market data ticks',
+            code: 'marketdata.ticks',
+            owner: 'Market data (marketdata)',
+            timeColumn: 'ts',
+            measureKind: 'relation rows',
+            targetKind: 'chunked_table',
+            description: 'The quotes every feed delivered, as they arrived, compressed by the store. The raw record a curve is built from, kept longer than anything derived from it.',
             group: 'timescale',
             kind: 'Timescale chunked table',
             where: 'System tenant · compressed',
             sizeMB: 0.016,
+            series: [0.014, 0.014, 0.015, 0.015, 0.015, 0.016, 0.016, 0.016, 0.016, 0.016, 0.016, 0.016],
             size: '16 kB compressed',
             measure: '60,223 rows',
             growth: 'Growing · 60,223 rows so far',
@@ -146,10 +186,18 @@
         {
             id: 'compute_input',
             name: 'compute/input/',
+            label: 'Compute job inputs',
+            code: 'compute.job_inputs',
+            owner: 'Compute (compute)',
+            timeColumn: 'created_at',
+            measureKind: 'objects and bytes',
+            targetKind: 'object_prefix',
+            description: 'The input archives a report run hands to the grid, one per work unit: the trade set, the configuration and the market data the engine reads.',
             group: 'object',
             kind: 'Object store prefix',
             where: 'Object store · size not listed',
             sizeMB: null,
+            series: null,
             size: 'Not measured',
             measure: 'Object count not listed',
             growth: 'Not measured · no byte total',
@@ -159,10 +207,18 @@
         {
             id: 'compute_output',
             name: 'compute/output/',
+            label: 'Compute job outputs',
+            code: 'compute.job_outputs',
+            owner: 'Compute (compute)',
+            timeColumn: 'created_at',
+            measureKind: 'objects and bytes',
+            targetKind: 'object_prefix',
+            description: 'The result archives the grid writes back, one per work unit: the engine\'s own output files and its log, packed together.',
             group: 'object',
             kind: 'Object store prefix',
             where: 'Object store · size not listed',
             sizeMB: null,
+            series: null,
             size: 'Not measured',
             measure: 'Object count not listed',
             growth: 'Not measured · no byte total',
@@ -172,10 +228,18 @@
         {
             id: 'wrappers',
             name: 'publish/run/wrappers',
+            label: 'Compute node scratch',
+            code: 'compute.node_scratch',
+            owner: 'Compute (compute)',
+            timeColumn: 'folder mtime',
+            measureKind: 'files and bytes',
+            targetKind: 'directory',
+            description: 'The working folder each grid node keeps while it runs a job: the unpacked input, the engine\'s log and the output, until the job\'s result is uploaded.',
             group: 'scratch',
             kind: 'Host scratch directory',
             where: 'Compute host · 565 job folders',
             sizeMB: 1900,
+            series: [300, 520, 760, 980, 1180, 1360, 1520, 1650, 1750, 1820, 1870, 1903],
             size: '1.9 GB',
             measure: '565 job folders · 3.4 MB per completed job',
             growth: 'Growing · +3.4 MB per completed job',
@@ -185,10 +249,18 @@
         {
             id: 'packages',
             name: 'publish/run/packages',
+            label: 'Engine package cache',
+            code: 'compute.package_cache',
+            owner: 'Compute (compute)',
+            timeColumn: 'n/a — bounded by digest',
+            measureKind: 'files and bytes',
+            targetKind: 'directory',
+            description: 'The unpacked engine packages a host shares between its nodes, named by the package\'s digest so two versions holding the same bytes are one copy. Bounded by that keying rather than by a policy.',
             group: 'scratch',
             kind: 'Package cache',
             where: 'Compute host · one copy per host',
             sizeMB: 209,
+            series: [0, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209, 209],
             size: '209 MB',
             measure: 'One copy per host',
             growth: 'Flat · one copy per host',
@@ -626,17 +698,122 @@
         return esc(when) + '<span class="subline">' + esc(outcome) + '</span>';
     }
 
+
+    /* The activity around one store: what the sampler measured, what the sweep
+       did, and what a person changed. It is one log because the question "what
+       has happened to this store" has one answer. */
+
+    const ACTIVITY = {
+        calendar_dates: [
+            { at: '24 Nov 18:00', kind: 'Sampled', outcome: 'info', label: 'Measured', what: '283 MB · 486,540 rows', detail: 'hourly sample, 12 points kept' },
+            { at: '24 Nov 17:15', kind: 'Swept', outcome: 'skipped', label: 'Skipped', what: 'no policy names this store', detail: 'nothing bounds it, so nothing was applied' }
+        ],
+        report_cashflows: [
+            { at: '24 Nov 18:00', kind: 'Sampled', outcome: 'info', label: 'Measured', what: '186 MB · +0.0 MB since 17:00', detail: 'hourly sample, 12 points kept' },
+            { at: '24 Nov 17:15', kind: 'Swept', outcome: 'applied', label: 'Applied', what: 'removed 0 chunks', detail: 'nothing older than 90 days' },
+            { at: '24 Nov 16:58', kind: 'Changed', outcome: 'info', label: 'Recorded', what: 'period 120 -> 90 days', detail: 'super_admin: a quarter is the longest the audit allows' }
+        ],
+        report_metrics: [
+            { at: '24 Nov 18:00', kind: 'Sampled', outcome: 'info', label: 'Measured', what: '4 MB · +0.0 MB since 17:00', detail: 'hourly sample' },
+            { at: '24 Nov 17:15', kind: 'Swept', outcome: 'applied', label: 'Applied', what: 'removed 0 chunks', detail: 'nothing older than 90 days' }
+        ],
+        delivery_counts: [
+            { at: '24 Nov 18:00', kind: 'Sampled', outcome: 'info', label: 'Measured', what: '29 MB · +0.6 MB since 17:00', detail: 'hourly sample; about 27,000 rows an hour' },
+            { at: '24 Nov 18:00', kind: 'Refused', outcome: 'failed', label: 'Refused', what: 'policy delivery_counts_30d could not be written', detail: 'the sweep performs a chunk drop; this store is an ordinary table' },
+            { at: '24 Nov 17:15', kind: 'Swept', outcome: 'skipped', label: 'Skipped', what: 'no policy applies', detail: 'nothing bounds it, so nothing was applied' }
+        ],
+        ticks: [
+            { at: '24 Nov 18:00', kind: 'Sampled', outcome: 'info', label: 'Measured', what: '16 kB · +0.0 kB since 17:00', detail: 'hourly sample; compressed by the store' }
+        ],
+        compute_input: [
+            { at: '24 Nov 18:00', kind: 'Sampled', outcome: 'skipped', label: 'Not measured', what: 'size not measured', detail: 'the storage service reports bytes per prefix only when asked, and no probe reads it yet' }
+        ],
+        compute_output: [
+            { at: '24 Nov 18:00', kind: 'Sampled', outcome: 'skipped', label: 'Not measured', what: 'size not measured', detail: 'the storage service reports bytes per prefix only when asked, and no probe reads it yet' }
+        ],
+        wrappers: [
+            { at: '24 Nov 18:00', kind: 'Sampled', outcome: 'info', label: 'Measured', what: '1.9 GB · 675 folders', detail: 'hourly sample; 3.4 MB per completed job' },
+            { at: '24 Nov 17:40', kind: 'Released', outcome: 'info', label: 'Released', what: 'job 95f40ef1 · 3,842,446 bytes', detail: 'the node released a completed job\'s folder' }
+        ],
+        packages: [
+            { at: '24 Nov 18:00', kind: 'Sampled', outcome: 'info', label: 'Measured', what: '209 MB · 1 copy', detail: 'keyed by package digest, shared by five nodes' }
+        ]
+    };
+
+    /* Growth: the size the installation measured, one point a week. The
+       prototype draws twelve of them; in the product they come from the store
+       samples, not from a fixture. */
+
+    function pointsFor(series, width, height) {
+        const max = Math.max.apply(null, series);
+        const min = Math.min.apply(null, series);
+        const span = max - min || 1;
+        return series.map(function (v, i) {
+            const x = (i / (series.length - 1)) * (width - 2) + 1;
+            const y = height - 2 - ((v - min) / span) * (height - 4);
+            return x.toFixed(1) + ',' + y.toFixed(1);
+        }).join(' ');
+    }
+
+    function sparkline(store, width, height) {
+        if (!store.series) {
+            return '<span class="spark unknown" aria-hidden="true"></span>' +
+                '<span class="meta">not measured</span>';
+        }
+        const id = 'spark-' + store.id;
+        return '<svg class="spark" width="' + width + '" height="' + height + '" viewBox="0 0 ' +
+            width + ' ' + height + '" role="img" aria-labelledby="' + id + '">' +
+            '<title id="' + id + '">' + esc(store.label) + ' size, weekly for twelve weeks: from ' +
+            esc(fmtMB(Math.min.apply(null, store.series))) + ' to ' + esc(store.size) + '</title>' +
+            '<polyline fill="none" stroke="currentColor" stroke-width="1.25" points="' +
+            pointsFor(store.series, width, height) + '"/></svg>';
+    }
+
+    function growthChart(store) {
+        if (!store.series) {
+            return '<p class="note">The size of this store is not measured, so it has no history to plot. ' +
+                'The object store reports bytes per prefix only when asked, and no sampler reads it yet.</p>';
+        }
+        const w = 420;
+        const h = 140;
+        const series = store.series;
+        const first = series[0];
+        const last = series[series.length - 1];
+        const delta = last - first;
+        const weeks = series.length - 1;
+        const perWeek = weeks ? delta / weeks : 0;
+        return '<div class="chart">' +
+            '<svg class="growthchart" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h +
+            '" role="img" aria-labelledby="chart-' + store.id + '">' +
+            '<title id="chart-' + store.id + '">' + esc(store.label) + ' size over twelve weeks, from ' +
+            esc(fmtMB(first)) + ' to ' + esc(store.size) + '</title>' +
+            '<line x1="0" y1="' + (h - 18) + '" x2="' + w + '" y2="' + (h - 18) + '" class="axis"/>' +
+            '<polyline fill="none" stroke="currentColor" stroke-width="1.75" points="' +
+            pointsFor(series, w, h - 18) + '"/></svg>' +
+            '<p class="chartmeta">' + esc(fmtMB(first)) + ' twelve weeks ago, ' + esc(store.size) +
+            ' today: ' + (delta >= 0 ? '+' : '') + esc(fmtMB(delta)) + ' over ' + weeks + ' weeks, about ' +
+            (perWeek >= 0 ? '+' : '') + esc(fmtMB(perWeek)) + ' a week.</p></div>';
+    }
+
+    function fmtMB(v) {
+        if (v === 0) return '0 B';
+        if (Math.abs(v) < 1) return Math.round(v * 1024) + ' kB';
+        if (Math.abs(v) >= 1024) return (v / 1024).toFixed(1) + ' GB';
+        return (v % 1 === 0 ? v : v.toFixed(1)) + ' MB';
+    }
+
     function storeRow(store) {
         const policy = policyFor(store);
         const selected = S.selected === store.id;
         return '<tr class="selectable' + (selected ? ' selected' : '') + '" data-act="select" data-store="' + store.id + '">' +
             '<td class="storecell"><button type="button" class="linkish sname" data-act="select" data-store="' + store.id + '"' +
-            ' aria-expanded="' + selected + '" aria-controls="store-detail">' + esc(store.name) + '</button>' +
+            ' aria-expanded="' + selected + '" aria-controls="store-detail">' + esc(store.label) + '</button>' +
+            '<span class="storetarget">' + esc(store.name) + '</span>' +
             '<span class="skind">' + esc(store.kind) + ' · ' + esc(store.where) + '</span></td>' +
             '<td>' + boundedBy(store) + '</td>' +
             '<td>' + statusTag(store) + '</td>' +
             '<td class="num">' + esc(store.size) + '</td>' +
-            '<td>' + esc(store.growth) + '</td>' +
+            '<td class="growthcell">' + sparkline(store, 96, 22) + '<span class="subline">' + esc(store.growth) + '</span></td>' +
             '<td>' + sweepCell(store) + '</td>' +
             '<td class="num">' + esc(policy ? policy.freed : '—') + '</td>' +
             '</tr>';
@@ -716,7 +893,7 @@
                 '</p>';
         } else {
             body = '<div class="table-wrap"><table class="data">' +
-                '<caption class="visually-hidden">Recent runs for ' + esc(store.name) + '</caption>' +
+                '<caption class="visually-hidden">Recent runs for ' + esc(store.label) + '</caption>' +
                 '<thead><tr><th>Time</th><th>Policy</th><th>Outcome</th><th>Freed</th><th>Detail</th></tr></thead><tbody>' +
                 list.map(function (row) {
                     return '<tr>' +
@@ -735,22 +912,81 @@
             store.id + '">Open the runs log</button></div></div>';
     }
 
+    function activityTag(row) {
+        const tone = row.outcome === 'failed' ? 'bad' : row.outcome === 'skipped' ? 'warn' : 'ok';
+        return '<span class="tag ' + tone + '">' + esc(row.label || row.kind) + '</span>';
+    }
+
+    function activityLog(store) {
+        const list = ACTIVITY[store.id] || [];
+        let body;
+
+        if (list.length === 0) {
+            body = '<p class="empty">Nothing has happened to this store yet.</p>';
+        } else {
+            body = '<div class="table-wrap"><table class="data">' +
+                '<caption class="visually-hidden">Latest activity around ' + esc(store.label) + '</caption>' +
+                '<thead><tr><th>When</th><th>What</th><th>Outcome</th><th>Activity</th><th>Detail</th></tr></thead><tbody>' +
+                list.map(function (row) {
+                    return '<tr>' +
+                        '<td class="mono">' + esc(row.at) + '</td>' +
+                        '<td>' + esc(row.kind) + '</td>' +
+                        '<td>' + activityTag(row) + '</td>' +
+                        '<td>' + esc(row.what) + '</td>' +
+                        '<td class="meta">' + esc(row.detail) + '</td>' +
+                        '</tr>';
+                }).join('') +
+                '</tbody></table></div>';
+        }
+
+        return '<div class="section"><h3>Latest activity around the store</h3>' + body +
+            '<div class="section-actions">' +
+            '<button type="button" class="btn secondary small" data-act="runs-store" data-store="' +
+            store.id + '">Open the full log</button>' +
+            '</div></div>';
+    }
+
+    function storeRecord(store, policy) {
+        return '<div class="record">' +
+            detail('Code', '<span class="mono">' + esc(store.code) + '</span>') +
+            detail('Name', esc(store.label)) +
+            detail('Owner', esc(store.owner)) +
+            detail('Target kind', '<span class="mono">' + esc(store.targetKind) + '</span>') +
+            detail('Target', '<span class="mono">' + esc(store.name) + '</span>') +
+            detail('Time column', store.timeColumn === 'n/a — bounded by digest'
+                ? esc(store.timeColumn)
+                : '<span class="mono">' + esc(store.timeColumn) + '</span>') +
+            detail('Measured by', esc(store.measureKind)) +
+            detail('Bounded by', policy
+                ? esc(actionLabel(policy.action) + ' · ' + policy.periodDays + ' days')
+                : store.keyed ? 'Content digest keying' : 'Nothing — no retention policy') +
+            '</div>' +
+            '<p class="description recorddesc">' + esc(store.description) + '</p>';
+    }
+
     function detailPanel() {
         const store = storeById(S.selected) || STORES[0];
         const policy = policyFor(store);
 
         return '<section class="card detailpanel" id="store-detail" aria-labelledby="detail-heading">' +
-            '<header><div><h2 id="detail-heading">Selected store</h2>' +
-            '<p class="meta">' + esc(store.name) + '</p></div>' + statusTag(store) + '</header>' +
+            '<header><div><h2 id="detail-heading">' + esc(store.label) + '</h2>' +
+            '<p class="meta">A store of the installation · <span class="mono">' + esc(store.code) + '</span></p>' +
+            '</div>' + statusTag(store) + '</header>' +
+            '<section class="recordsection"><h3>The store</h3>' +
+            storeRecord(store, policy) + '</section>' +
             '<div class="details c3">' +
-            detail('Where it lives', esc(store.kind + ' · ' + store.where)) +
-            detail('Size', esc(store.size)) +
+            detail('Size now', esc(store.size)) +
             detail('Measured', esc(store.measure)) +
-            detail('Growth', esc(store.growth)) +
-            detail('Bounded by', policy ? esc(actionLabel(policy.action) + ' · ' + policy.periodDays + ' days') : store.keyed ? 'Content digest keying' : 'None — no retention policy') +
-            detail('Freed by the last sweep', esc(policy ? policy.freed : '—')) +
+            detail('Where it lives', esc(store.kind + ' · ' + store.where)) +
             '</div>' +
+            '<section class="growthsection"><h3>Growth over twelve weeks</h3>' +
+            growthChart(store) +
+            '<p class="note">A point is one row of the store sampling table: the size measured at an ' +
+            'instant, keyed to this store. The latest point is the size now; the points before it are the ' +
+            'plot. Without the series the screen can only say what the store holds now, which is the one ' +
+            'question nobody asks twice.</p></section>' +
             policyBlock(store, policy) +
+            activityLog(store) +
             recentRuns(store) +
             '</section>';
     }
@@ -787,7 +1023,8 @@
         }
 
         return '<article class="storecard">' +
-            '<header><h3>' + esc(store.name) + '</h3>' + statusTag(store) + '</header>' +
+            '<header><h3>' + esc(store.label) + '</h3>' + statusTag(store) + '</header>' +
+            '<p class="storetarget">' + esc(store.name) + '</p>' +
             '<p class="where">' + esc(store.kind) + ' · ' + esc(store.where) + '</p>' +
             '<div class="sizeline"><span class="bigsize">' + esc(store.size) + '</span><span class="meta">' + esc(sizeMeta) + '</span></div>' +
             bar +
@@ -1097,7 +1334,8 @@
 
     function editor(store) {
         const policy = policyFor(store);
-        const head = '<header class="editorhead"><div><h2 id="editor-heading">' + esc(store.name) + '</h2>' +
+        const head = '<header class="editorhead"><div><h2 id="editor-heading">' + esc(store.label) + '</h2>' +
+            '<p class="storetarget">' + esc(store.name) + '</p>' +
             '<p class="sub">' + esc(store.kind) + ' · ' + esc(store.where) + ' · ' + esc(store.size) + '</p></div>' +
             statusTag(store) + '</header>';
 
@@ -1238,7 +1476,7 @@
             '<p class="gist">State <b>' + esc(state.id) + '</b>. ' + esc(state.gist) + '</p>' +
             '<div class="grid">' +
             '<span>view: <span class="v">' + esc(S.view) + '</span></span>' +
-            '<span>selected: <span class="v">' + esc(selected ? selected.name : '—') + '</span></span>' +
+            '<span>selected: <span class="v">' + esc(selected ? selected.label : '—') + '</span></span>' +
             '<span>policies: <span class="v">' + policies().length + '</span></span>' +
             '<span>unbounded: <span class="v">' + unboundedCount() + ' of ' + STORES.length + '</span></span>' +
             '<span>runs: <span class="v">' + runRows().length + '</span></span>' +

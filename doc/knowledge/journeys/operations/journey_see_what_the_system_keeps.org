@@ -55,20 +55,28 @@ how long]].
    under management. A store counts as unbounded when no policy names it, or
    when its policy names an action the sweep cannot apply — the second case is
    the dangerous one, because it looks bounded on paper.
-3. *Scan the table.* Each row carries the store, the shape it has (a chunked
-   table, an ordinary table, an object-store prefix, a directory on a compute
-   host), the policy that bounds it, the period, the state, the size, the
-   growth and when it was last swept. The administrator reads the sizes first
+3. *Scan the table.* Each row carries the store by the name a person knows it
+   by — "Calendar dates", not =ores_refdata_calendar_dates_tbl= — with its
+   description a click away, the shape it has (a chunked table, an ordinary
+   table, an object-store prefix, a directory on a compute host), the policy
+   that bounds it, the period, the state, the size, the growth and when it was
+   last swept. The physical target sits beneath the name, because it is what
+   the database and the sweep name the store by, and it is not what a person
+   reads first. The administrator reads the sizes first
    and the states second, because a large bounded store is doing what it was
    told and a small unbounded one is a decision nobody made.
 4. *Order by what matters.* The system orders by size, by growth, by last
    sweep or by state. Growth is the number that answers the trigger: a store
    that added 400 MB this week is a different problem from one holding 4 GB
    that has not moved.
-5. *Open one store.* A row opens its detail: the policy's fields as the
-   server holds them, the size today, the history of its size, and the last
-   few runs of the sweep against it. The history is what separates a store
-   that grew once from a store that grows every hour.
+5. *Open one store.* A row opens that store's own record without leaving the
+   screen: its code and name, its description, the component that writes it,
+   the shape of its target and the target itself, the column a row delete
+   would compare, and what measures it. Beneath the record are the size now,
+   the plot of its growth, the policy that bounds it, and the latest activity
+   that names it — measurements, sweep runs, and the changes a person made.
+   The plot is what separates a store that grew once from a store that grows
+   every hour; the activity is what says why.
 6. *Follow the store to its runs.* The detail links to the housekeeping log
    filtered to that store, so the administrator can read what the sweep did
    and why it says what it says, in
@@ -120,12 +128,14 @@ the policy editor — and the states a store can be in when the news is bad.
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
 | Retention policy | The policy that bounds a store: its target, action, period, cadence and state | [[id:2C7E4B19-8D6A-4F53-9B21-5E8A7C3D1F60][ores.scheduler.retention_policy]] |
+| Retained store | The store itself: code, display name, description, owner component, target kind, target, time column, and how it is measured | (no model yet) |
+| Store sample | One measurement of one store at one instant: the store, when, the bytes and the units | (no model yet; a hypertable chunked on the measurement instant) |
 | Retention run | One sweep's record against one policy: when it ran, what it removed, the outcome and the detail | (no model yet: the table is =ores_scheduler_retention_runs_tbl=, and its wire type arrives with PR #5126) |
 | Job definition | The scheduled sweep itself, so the screen can say when it next runs | [[id:BD750888-6B72-48C1-AE74-DDC535705022][ores.scheduler.job_definition]] |
 | Job instance | The sweep's own runs, when the question is about the job rather than the policy | (generated from the job definition model) |
 
-The size of a store is not an entity: it is a measurement the server makes
-when asked, and the screen shows it as such.
+The size of a store is not a field of the store: it is a measurement, held as
+a series of samples that point at the store, and the screen shows it as such.
 
 * Operations and messages
 
@@ -134,13 +144,24 @@ when asked, and the screen shows it as such.
 |------+-----------+---------+--------|
 | 1, 3 | List the retention policies | =scheduler.v1.retention_policies.list= | exists |
 | 3, 4 | The sweep's schedule and its last run | =scheduler.v1.ops.get_scheduler_status= | exists |
-| 3 | Sizes of the database stores | (no subject) | missing |
-| 4 | Growth of a store over time | (no subject) | missing |
+| 3, 5 | The store catalogue, with its names, descriptions and targets | (no subject) | missing |
+| 3, 5 | The size of every store now | (no subject) | missing |
+| 5 | The growth series of one store | (no subject) | missing |
+| 5 | The latest activity that names one store | (no subject) | missing |
 | 5, 6 | The runs of one policy | (no subject until PR #5126) | missing |
 | 7 | Which actions the sweep can apply | (no subject) | missing |
 
 * What is missing
 
+- *A name and a description for a store.* The store's identity is its target
+  string, and nothing carries a human name or a sentence saying what the store
+  is: the policy's =description= describes the policy, and its =code= names the
+  policy. The store needs its own entry — a catalogue of the stores the
+  installation keeps, with a code, a display name, a description, the shape of
+  its target and how to measure it — and a policy should name one of those
+  entries. Without it this screen either derives "Refdata Calendar Dates" from
+  a table name, which says nothing about prefixes or directories, or writes
+  twelve names into the client.
 - *A size of a target.* Nothing in the tree reports how large a table, a chunk
   set, an object-store prefix or a host directory is; the only size query is a
   psql macro. The screen cannot answer its own first question without it. The

@@ -28,7 +28,7 @@ A compute node deletes a job's working folder as soon as its output and log are 
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Measured on a provisioned Acme tenant: 565 job folders hold 1903 MB, so the store the task targets is the largest the wrapper keeps. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-11-24                               |
@@ -58,7 +58,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Job folders under the five wrappers | 565 folders, 1903 MB in all, 3.4 MB per completed job | =for d in wrappers/node_*; do ls $d/jobs | wc -l; du -sm $d/jobs; done= | b661b2ee3b |
+| Folders that outlived their results | 526 of the 565, orphaned when the database was recreated under them; only the 39 of the last hour name a result the store still holds | =ls -r vs =select count(*) from ores_compute_results_tbl= | b661b2ee3b |
+| Wrappers root, all of it | 2109 MB, of which 1903 MB is job scratch | =du -sm publish/run= | b661b2ee3b |
 
 * Notes
 
@@ -86,3 +88,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+- Measured after provisioning Acme and letting its reports run for an hour: the
+  five nodes hold 565 job folders and 1903 MB, 3.4 MB per completed job. Only 39
+  of those folders name a result the store still holds, because the database was
+  recreated under the older 526, so a folder also outlives the result it belongs
+  to. Releasing the folder on the success path bounds the first number; the age
+  policy has to bound the second.

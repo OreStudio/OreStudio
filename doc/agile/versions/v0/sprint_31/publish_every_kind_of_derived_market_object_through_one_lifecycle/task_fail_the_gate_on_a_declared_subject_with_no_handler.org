@@ -8,7 +8,7 @@
 #+filetags: :publish_every_kind_of_derived_market_object_through_one_lifecycle:sprint_31:v0:
 #+owner: marco
 #+branch: feature/fail-the-gate-on-a-declared-subject-with-no-handler
-#+pr:
+#+pr: 5159
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
@@ -112,7 +112,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5159][#5159]] | [tooling,refdata] Fail the gate on a subject nobody answers, and serve the three it found |
 
 * Review
 

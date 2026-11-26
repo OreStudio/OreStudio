@@ -32,11 +32,11 @@ rather than carrying their own list of tables.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
@@ -85,7 +85,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Stores the catalogue publishes | 10 rows, one per store | =select code from ores_scheduler_retained_stores_tbl where valid_to = ores_utility_infinity_timestamp_fn()= | cc6e93dd76 |
+| Stores bounded by a policy | 7 of 10 | the same read, grouped by =bound_kind= | cc6e93dd76 |
+| pgTAP, catalogue publish | 8 of 8 passed | =./test/run_tests.sh test/scheduler_publish_retained_stores_test.sql= | cc6e93dd76 |
+| pgTAP, housekeeping publish | 15 of 15 passed | =./test/run_tests.sh test/scheduler_publish_housekeeping_test.sql= | cc6e93dd76 |
+| Scheduler suites | 3 of 3 passed | =./compass.sh test run --preset linux-clang-release-ninja -- -R scheduler= | cc6e93dd76 |
 
 * Notes
 
@@ -113,3 +117,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The installation can name every store it keeps. =retained_store= is an entity in
+the scheduler with generated operations, a DQ dataset that publishes it into the
+system tenant, and ten seeded rows: the calendar dates, the three report run
+tables, ticks, the delivery counts, the two compute prefixes, node scratch and the
+package cache.
+
+The bound is a kind, because the investigation found three. Seven stores ship a
+policy — a quarter for the run output and the quotes, a month for the counters, a
+week for the job inputs, a day for scratch. The package cache ships =keying= and
+needs no policy. The calendar dates ship =none=, which is the row stating that an
+age cannot bound them.
+
+Three things went wrong on the way and are worth remembering. The generator reads
+=:default_value:= as a C++ expression, so a bare =platform= became a character
+constant and the build refused it. A nullable scalar needs
+=std::optional<=, or the entity's JSON form silently loses its shape and the
+compiler goes looking for a =text_form= that does not exist. And a SQL check that
+compares a nullable column passes when the comparison is null, so the rule that
+refuses a policy with no period needed a =case= rather than an =or=.
+
+What reads it: nothing yet. The sweep still names its own target, and the defaults
+are not yet turned into policies. That is the next task, and it is why this one
+publishes the catalogue without touching either.

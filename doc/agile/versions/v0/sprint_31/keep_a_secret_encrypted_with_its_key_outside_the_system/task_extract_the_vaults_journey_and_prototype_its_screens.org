@@ -47,17 +47,19 @@ its own address.
   the step is a workflow. Every gap links to its capture.
 - The journey names what it borrows from HashiCorp Vault and what it refuses,
   and gives the vault rule behind each refusal: no lease and no dynamic
-  credential, no unseal by key shares, and no plaintext reveal on a screen.
+  credential, no unseal by key shares, and no reveal by a person who does not
+  hold the read.
 - A prototype sits at =doc/prototypes/<group>/<name>/=, holds plain HTML, CSS
   and JavaScript with no framework and no build step, and draws the secrets
-  list, the secret record with its versions, the consumer record and the record
-  of uses, each in its empty, full and refused state at its own address.
+  list, the secret record with its versions and with its value masked and
+  revealed, the consumer record and the record of uses, each in its empty, full
+  and refused state at its own address.
 - A design note beside the prototype cites the record screen standard's rule
   identifier for every part the screens use, and names every value that is
   fake.
 - Each screen names the operation it calls, and a missing operation is a
-  capture and not an assumption. The write route is =ores.http='s own and no
-  BFF sits between the person and the vault.
+  capture and not an assumption. The write route and the reveal route are
+  =ores.http='s own, and no BFF sits between the person and the vault.
 - The owner signs the journey and the prototype off, and their decisions land
   on the story.
 - The new pages are listed from the journey group, the journeys index, the
@@ -70,21 +72,23 @@ its own address.
 
 Four screens, and each one answers one question:
 
-| Screen    | The question it answers                                                  |
-|-----------+---------------------------------------------------------------------------|
-| Secrets   | What does the installation hold, for which consumer, at which key version? |
-| Secret    | What is this secret's history, and how does a person replace its value?    |
-| Consumers | Which services may receive a secret, and is each one enabled?             |
-| Uses      | Who asked for what, when, and at which key version?                       |
+| Screen    | The question it answers                                                    |
+|-----------+-----------------------------------------------------------------------------|
+| Secrets   | What does the installation hold, for which consumer, at which key version?   |
+| Secret    | What is this secret's history, what is its value, and how is it replaced?    |
+| Consumers | Which services may receive a secret, and is each one enabled?               |
+| Uses      | Who asked for what, when, and at which key version?                         |
 
 ** The steps
 
 The journey runs in one sitting. An administrator opens the secrets list and
 reads what the installation holds. They write a value for a consumer. They
-replace that value, and the earlier version stays in the history. They rotate
-the key that protects every secret, as one audited act, and no one re-enters a
-value. They register a consumer with its public key, or disable one. They open
-the uses screen and read who asked for what.
+replace that value, and the earlier version stays in the history. They reveal
+the current value, because a person who maintains a service must be able to
+check what the installation holds. They rotate the key that protects every
+secret, as one audited act, and no one re-enters a value. They register a
+consumer with its public key, or disable one. They open the uses screen and read
+who asked for what.
 
 Two refusals sit in the journey, because a screen is judged by what it refuses:
 a person who holds no write permission, and a consumer that asks for a secret
@@ -92,12 +96,13 @@ it does not own.
 
 ** What comes from HashiCorp Vault
 
-| Vault screen         | What this journey takes from it                                            |
-|----------------------+----------------------------------------------------------------------------|
-| Secrets engine (KV)  | A secret has versions and metadata, and the list marks the current version |
-| Policies and tokens  | A client's own record says what it may do, which here is the consumer row  |
-| Audit devices        | Every request is recorded, which here is the uses screen                   |
-| Seal and key rotation| The protecting key is an object with a version and a last rotated time     |
+| Vault screen          | What this journey takes from it                                             |
+|-----------------------+-----------------------------------------------------------------------------|
+| Secrets engine (KV)   | A secret has versions and metadata, and the list marks the current version   |
+| Secret detail         | The value is masked, one control reveals it, and the reveal is a request kept |
+| Policies and tokens   | A client's own record says what it may do, which here is the consumer row    |
+| Audit devices         | Every request is recorded, which here is the uses screen                     |
+| Seal and key rotation | The protecting key is an object with a version and a last rotated time       |
 
 ** What the journey refuses, and why
 
@@ -105,10 +110,13 @@ it does not own.
   configuration and outlive any run.
 - An unseal ceremony splits a key among holders. This vault's key never enters
   the process as a share.
-- A plaintext reveal puts the value on a screen. The vault delivers only to a
-  consumer's key, so the screen shows that a value exists and cannot show what
-  it is. Read [[id:4F28F755-7DA1-4EDD-9983-256622B6088A][Sealed Delivery of a
-  Secret to Its Consumer]].
+- A reveal that nobody records, or a value on a screen without the read. The
+  value is masked until the person asks, the ask demands
+  =vault::secrets:read=, and the act is recorded twice: the vault records the
+  gateway's resolve and the gateway records the person. The bus still carries
+  ciphertext, so the record is the price of the reveal. Read
+  [[id:4F28F755-7DA1-4EDD-9983-256622B6088A][Sealed Delivery of a Secret to Its
+  Consumer]].
 
 ** The order
 
@@ -116,7 +124,8 @@ The journey comes first and stops for the owner's sign-off, because a prototype
 drawn over an unjudged journey hides its gaps. The prototype follows, and it
 settles the placements the journey leaves open: how a version list marks the
 current version, the words for a secret that no consumer has read, where a
-refusal sits, and how a screen states that it holds a value it cannot show.
+refusal sits, and how a masked value invites a reveal and what the screen says
+about the record it leaves.
 
 ** The area
 
@@ -142,21 +151,22 @@ task and name that file in the Command column.
 
 - Read [[id:F9F1A2BA-94C2-4DAA-8689-F0871AA56801][Secret Custody in the
   Vault]] for what the store is and where its key lives, and [[id:4F28F755-7DA1-4EDD-9983-256622B6088A][Sealed
-  Delivery of a Secret to Its Consumer]] for why no screen can read a value
-  back.
+  Delivery of a Secret to Its Consumer]] for how a reveal reaches the screen and
+  why the bus still carries ciphertext.
 - The test data of both the journey and the prototype is mock data, and every
   named value traces to a row of [[id:DBF20EC5-63BB-4DE5-957C-5322DE0E487F][Secrets
   Register]].
-- The five operations the screens call belong to [[id:26B4556D-3BC8-4ED2-A58B-B889CF17E7DB][Serve
-  the secrets, sealed]]. This task does not write them; a missing one is a
-  capture.
+- The five operations the screens call, and the two =ores.http= routes over
+  them, belong to [[id:26B4556D-3BC8-4ED2-A58B-B889CF17E7DB][Serve the secrets,
+  sealed]]. This task does not write them; a missing one is a capture.
 - This task delivers the design record. The screens themselves are not built
-  in this story, and the =ores.http= write route stays the one door a person
-  uses.
+  in this story, and the write route and the reveal route stay the only doors a
+  person uses.
 - The journey belongs beside the [[id:8C1DC5DE-F480-49F4-AA63-77A397D0BC03][Credentials
   journeys]] and the [[id:CEE25F6D-FE57-43AE-9770-DAD0C1576520][Access
   journeys]], and it states its related journeys, because the screen carries a
   link for each one.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

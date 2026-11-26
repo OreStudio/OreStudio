@@ -8,7 +8,7 @@
 #+filetags: :housekeeping:schema:validator:ci:sprint_31:housekeeping_bound_every_store_the_system_keeps:v0:
 #+owner: marco
 #+branch: feature/clear-the-schema-warnings-the-story-left-on-main
-#+pr:
+#+pr: 5177
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-26
@@ -104,7 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5177][#5177]] | [scheduler] Clear this story's two schema warnings |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
 #+owner: marco
 #+branch: feature/value-only-the-trades-the-market-answers
-#+pr:
+#+pr: 5145
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
@@ -104,7 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5145][#5145]] | [refdata] Approve what a party, a desk and a book may trade |
 
 * Review
 

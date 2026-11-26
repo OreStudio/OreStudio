@@ -185,8 +185,7 @@ public:
         const auto outcome = custody.remove(guarded->subject, request->name);
         reply(nats_,
               msg,
-              remove_secret_response{
-                  .success = outcome.success, .message = outcome.message});
+              remove_secret_response{.success = outcome.success, .message = outcome.message});
     }
 
     /// Serves vault.v1.ops.rotate.

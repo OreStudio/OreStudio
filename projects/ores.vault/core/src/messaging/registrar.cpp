@@ -54,31 +54,32 @@ registrar::register_handlers(ores::nats::service::client& nats,
     for (auto& sub : register_secret_use_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
 
-    auto handler = std::make_shared<secret_operations_handler>(nats, ctx, std::move(verifier), keys);
+    auto handler =
+        std::make_shared<secret_operations_handler>(nats, ctx, std::move(verifier), keys);
     subs.push_back(nats.queue_subscribe(
-        vault_public_key_request::nats_subject, custody_queue_group, [handler](ores::nats::message msg) {
-            handler->public_key(std::move(msg));
-        }));
+        vault_public_key_request::nats_subject,
+        custody_queue_group,
+        [handler](ores::nats::message msg) { handler->public_key(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        write_secret_request::nats_subject, custody_queue_group, [handler](ores::nats::message msg) {
-            handler->write(std::move(msg));
-        }));
+        write_secret_request::nats_subject,
+        custody_queue_group,
+        [handler](ores::nats::message msg) { handler->write(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        describe_secret_request::nats_subject, custody_queue_group, [handler](ores::nats::message msg) {
-            handler->describe(std::move(msg));
-        }));
+        describe_secret_request::nats_subject,
+        custody_queue_group,
+        [handler](ores::nats::message msg) { handler->describe(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        resolve_secret_request::nats_subject, custody_queue_group, [handler](ores::nats::message msg) {
-            handler->resolve(std::move(msg));
-        }));
+        resolve_secret_request::nats_subject,
+        custody_queue_group,
+        [handler](ores::nats::message msg) { handler->resolve(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        remove_secret_request::nats_subject, custody_queue_group, [handler](ores::nats::message msg) {
-            handler->remove(std::move(msg));
-        }));
+        remove_secret_request::nats_subject,
+        custody_queue_group,
+        [handler](ores::nats::message msg) { handler->remove(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
-        rotate_secrets_request::nats_subject, custody_queue_group, [handler](ores::nats::message msg) {
-            handler->rotate(std::move(msg));
-        }));
+        rotate_secrets_request::nats_subject,
+        custody_queue_group,
+        [handler](ores::nats::message msg) { handler->rotate(std::move(msg)); }));
 
     return subs;
 }

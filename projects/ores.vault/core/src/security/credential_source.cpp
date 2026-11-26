@@ -19,10 +19,10 @@
  */
 #include "ores.vault.core/security/credential_source.hpp"
 #include "ores.logging/logger.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.security/crypto/sealed_box.hpp"
 #include "ores.security/crypto/secret_sealer.hpp"
 #include <cctype>
-#include <cstdlib>
 #include <fstream>
 #include <iterator>
 #include <optional>
@@ -94,17 +94,17 @@ const std::vector<unsigned char>& key_material::current_key() const {
 }
 
 key_material credential_source::load_from_credentials_directory() {
-    const char* stated = std::getenv(std::string(directory_variable).c_str());
-    const std::string directory = stated != nullptr ? stated : std::string();
+    const auto stated =
+        ores::platform::environment::environment::get_value(std::string(directory_variable));
 
-    if (directory.empty()) {
+    if (!stated.has_value() || stated->empty()) {
         ORES_LOG_SEV(lg(), error) << "The unit was started without " << directory_variable
                                   << ", so the vault has no keys";
         throw std::runtime_error("The vault has no key material: the unit was started without " +
                                  std::string(directory_variable));
     }
 
-    return load_from(directory);
+    return load_from(*stated);
 }
 
 key_material credential_source::load_from(const std::filesystem::path& directory) {

@@ -27,6 +27,7 @@ set(files
     "main.cpp"
     "messaging/consumer_event_registrar.cpp"
     "messaging/secret_event_registrar.cpp"
+    "messaging/secret_use_event_registrar.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -40,5 +41,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.service/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.service/messaging/consumer_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.service/messaging/secret_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.service/messaging/secret_use_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.service/ores.vault.service.hpp"
 )

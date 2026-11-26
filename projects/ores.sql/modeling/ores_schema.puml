@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-838 tables in 23 groups.
+839 tables in 23 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -1022,11 +1022,12 @@ end note
 
 entity "vault" as vault {
   ores_vault_consumers_tbl
+  ores_vault_secret_uses_tbl
   ores_vault_secrets_tbl
 }
 note bottom of vault
 Vault — Secret Custody
-2 tables — ores_schema.vault.puml
+3 tables — ores_schema.vault.puml
 end note
 
 

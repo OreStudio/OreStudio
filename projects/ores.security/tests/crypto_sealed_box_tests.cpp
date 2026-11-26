@@ -22,6 +22,7 @@
 #include "ores.utility/convert/base64_converter.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <cstddef>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -30,6 +31,9 @@ namespace {
 
 using ores::security::crypto::sealed_box;
 using ores::utility::convert::base64_converter;
+
+/// The delivery a value belongs to, as the vault states it when it seals one.
+const std::string delivery = "ores.http|ores.iam.provider.client_secret|1";
 
 /// Changes one byte of the decoded sealed value, so that the tests tamper with
 /// what the box produced rather than with a value they built. The position is
@@ -58,12 +62,12 @@ TEST_CASE("a_sealed_value_opens_with_the_recipients_private_key", "[crypto]") {
     const std::string secret = "the-vault-private-key";
     ORES_LOG_SEV(lg, info) << "Recipient public key length: " << recipient.public_key.size();
 
-    const std::string sealed = sealed_box::seal(recipient.public_key, secret);
+    const std::string sealed = sealed_box::seal(recipient.public_key, secret, delivery);
     ORES_LOG_SEV(lg, info) << "Sealed: " << sealed;
 
     REQUIRE_FALSE(sealed.empty());
     CHECK(sealed != secret);
-    CHECK(sealed_box::open(recipient.private_key, sealed) == secret);
+    CHECK(sealed_box::open(recipient.private_key, sealed, delivery) == secret);
 }
 
 TEST_CASE("a_sealed_value_is_never_the_same_twice", "[crypto]") {
@@ -72,12 +76,12 @@ TEST_CASE("a_sealed_value_is_never_the_same_twice", "[crypto]") {
     const auto recipient = sealed_box::generate();
     const std::string secret = "the-vault-private-key";
 
-    const std::string first = sealed_box::seal(recipient.public_key, secret);
-    const std::string second = sealed_box::seal(recipient.public_key, secret);
+    const std::string first = sealed_box::seal(recipient.public_key, secret, delivery);
+    const std::string second = sealed_box::seal(recipient.public_key, secret, delivery);
 
     CHECK(first != second);
-    CHECK(sealed_box::open(recipient.private_key, first) == secret);
-    CHECK(sealed_box::open(recipient.private_key, second) == secret);
+    CHECK(sealed_box::open(recipient.private_key, first, delivery) == secret);
+    CHECK(sealed_box::open(recipient.private_key, second, delivery) == secret);
 }
 
 TEST_CASE("another_recipients_private_key_does_not_open", "[crypto]") {
@@ -85,16 +89,39 @@ TEST_CASE("another_recipients_private_key_does_not_open", "[crypto]") {
 
     const auto recipient = sealed_box::generate();
     const auto other = sealed_box::generate();
-    const std::string sealed = sealed_box::seal(recipient.public_key, "the-vault-private-key");
+    const std::string sealed =
+        sealed_box::seal(recipient.public_key, "the-vault-private-key", delivery);
 
-    CHECK_THROWS_AS(sealed_box::open(other.private_key, sealed), std::runtime_error);
+    CHECK_THROWS_AS(sealed_box::open(other.private_key, sealed, delivery), std::runtime_error);
+}
+
+TEST_CASE("a_reply_replayed_to_another_delivery_does_not_open", "[crypto]") {
+    auto lg(ores::logging::make_logger(test_suite));
+
+    const auto recipient = sealed_box::generate();
+    const std::string sealed =
+        sealed_box::seal(recipient.public_key, "the-vault-private-key", delivery);
+
+    // The key is right and the value is genuine; only the consumer, the name or
+    // the version it is claimed to belong to has changed.
+    CHECK_THROWS_AS(sealed_box::open(recipient.private_key,
+                                     sealed,
+                                     "ores.iam|ores.iam.provider.client_secret|1"),
+                    std::runtime_error);
+    CHECK_THROWS_AS(sealed_box::open(recipient.private_key, sealed, "ores.http|other_name|1"),
+                    std::runtime_error);
+    CHECK_THROWS_AS(sealed_box::open(recipient.private_key,
+                                     sealed,
+                                     "ores.http|ores.iam.provider.client_secret|2"),
+                    std::runtime_error);
 }
 
 TEST_CASE("a_changed_sealed_value_does_not_open", "[crypto]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto recipient = sealed_box::generate();
-    const std::string sealed = sealed_box::seal(recipient.public_key, "the-vault-private-key");
+    const std::string sealed =
+        sealed_box::seal(recipient.public_key, "the-vault-private-key", delivery);
 
     // The last byte belongs to the ciphertext; the first belongs to the
     // sender's public key, which the derivation and the authentication bind.
@@ -103,27 +130,31 @@ TEST_CASE("a_changed_sealed_value_does_not_open", "[crypto]") {
 
     CHECK(in_the_body != sealed);
     CHECK(in_the_header != sealed);
-    CHECK_THROWS_AS(sealed_box::open(recipient.private_key, in_the_body), std::runtime_error);
-    CHECK_THROWS_AS(sealed_box::open(recipient.private_key, in_the_header), std::runtime_error);
+    CHECK_THROWS_AS(sealed_box::open(recipient.private_key, in_the_body, delivery),
+                    std::runtime_error);
+    CHECK_THROWS_AS(sealed_box::open(recipient.private_key, in_the_header, delivery),
+                    std::runtime_error);
 }
 
 TEST_CASE("a_truncated_sealed_value_does_not_open", "[crypto]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto recipient = sealed_box::generate();
-    const std::string sealed = sealed_box::seal(recipient.public_key, "the-vault-private-key");
+    const std::string sealed =
+        sealed_box::seal(recipient.public_key, "the-vault-private-key", delivery);
 
-    CHECK_THROWS(sealed_box::open(recipient.private_key, sealed.substr(0, sealed.size() / 2)));
+    CHECK_THROWS(
+        sealed_box::open(recipient.private_key, sealed.substr(0, sealed.size() / 2), delivery));
 }
 
 TEST_CASE("an_empty_plaintext_seals_and_opens", "[crypto]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const auto recipient = sealed_box::generate();
-    const std::string sealed = sealed_box::seal(recipient.public_key, "");
+    const std::string sealed = sealed_box::seal(recipient.public_key, "", delivery);
 
     REQUIRE_FALSE(sealed.empty());
-    CHECK(sealed_box::open(recipient.private_key, sealed) == "");
+    CHECK(sealed_box::open(recipient.private_key, sealed, delivery) == "");
 }
 
 TEST_CASE("the_public_key_is_derivable_from_the_private_key", "[crypto]") {
@@ -141,9 +172,10 @@ TEST_CASE("a_sealed_box_key_of_the_wrong_length_is_refused", "[crypto]") {
 
     const auto pair = sealed_box::generate();
     const std::vector<unsigned char> short_key(sealed_box::KEY_LEN - 1, 0x42);
-    const std::string sealed = sealed_box::seal(pair.public_key, "the-vault-private-key");
+    const std::string sealed = sealed_box::seal(pair.public_key, "the-vault-private-key", delivery);
 
-    CHECK_THROWS_AS(sealed_box::seal(short_key, "the-vault-private-key"), std::invalid_argument);
-    CHECK_THROWS_AS(sealed_box::open(short_key, sealed), std::invalid_argument);
+    CHECK_THROWS_AS(sealed_box::seal(short_key, "the-vault-private-key", delivery),
+                    std::invalid_argument);
+    CHECK_THROWS_AS(sealed_box::open(short_key, sealed, delivery), std::invalid_argument);
     CHECK_THROWS_AS(sealed_box::public_key_of(short_key), std::invalid_argument);
 }

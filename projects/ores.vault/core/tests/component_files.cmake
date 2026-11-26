@@ -21,6 +21,8 @@
 # To modify, update the template and regenerate.
 set(files
     "consumer_eventing_integration_tests.cpp"
+    "custody_service_integration_tests.cpp"
     "main.cpp"
     "secret_eventing_integration_tests.cpp"
+    "security_credential_source_tests.cpp"
 )

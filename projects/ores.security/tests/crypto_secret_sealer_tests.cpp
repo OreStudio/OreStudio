@@ -32,6 +32,9 @@ namespace {
 using ores::security::crypto::secret_sealer;
 using ores::utility::convert::base64_converter;
 
+/// The row a value belongs to, as the vault states it when it seals one.
+const std::string row = "tenant|name|ores.http|1";
+
 /**
  * A key of the length the sealer takes. The bytes are a counter, so a key and
  * the key one bit away from it are a single edit apart in the test.
@@ -63,12 +66,12 @@ TEST_CASE("a_sealed_secret_opens_again", "[crypto]") {
     const std::string secret = "the-provider-client-secret";
     ORES_LOG_SEV(lg, info) << "Secret length: " << secret.size();
 
-    const std::string sealed = sealer.seal(secret);
+    const std::string sealed = sealer.seal(secret, row);
     ORES_LOG_SEV(lg, info) << "Sealed: " << sealed;
 
     REQUIRE_FALSE(sealed.empty());
     CHECK(sealed != secret);
-    CHECK(sealer.open(sealed) == secret);
+    CHECK(sealer.open(sealed, row) == secret);
 }
 
 TEST_CASE("a_sealed_secret_is_never_the_same_twice", "[crypto]") {
@@ -77,24 +80,24 @@ TEST_CASE("a_sealed_secret_is_never_the_same_twice", "[crypto]") {
     const secret_sealer sealer(make_key());
     const std::string secret = "the-provider-client-secret";
 
-    const std::string first = sealer.seal(secret);
-    const std::string second = sealer.seal(secret);
+    const std::string first = sealer.seal(secret, row);
+    const std::string second = sealer.seal(secret, row);
 
     CHECK(first != second);
-    CHECK(sealer.open(first) == secret);
-    CHECK(sealer.open(second) == secret);
+    CHECK(sealer.open(first, row) == secret);
+    CHECK(sealer.open(second, row) == secret);
 }
 
 TEST_CASE("a_changed_ciphertext_does_not_open", "[crypto]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const secret_sealer sealer(make_key());
-    const std::string sealed = sealer.seal("the-provider-client-secret");
+    const std::string sealed = sealer.seal("the-provider-client-secret", row);
 
     const std::string tampered = flip_byte(sealed, 0);
 
     CHECK(tampered != sealed);
-    CHECK_THROWS_AS(sealer.open(tampered), std::runtime_error);
+    CHECK_THROWS_AS(sealer.open(tampered, row), std::runtime_error);
 }
 
 TEST_CASE("a_changed_key_does_not_open", "[crypto]") {
@@ -102,20 +105,34 @@ TEST_CASE("a_changed_key_does_not_open", "[crypto]") {
 
     const secret_sealer sealer(make_key());
     const secret_sealer other(make_key(1));
-    const std::string sealed = sealer.seal("the-provider-client-secret");
+    const std::string sealed = sealer.seal("the-provider-client-secret", row);
 
-    CHECK_THROWS_AS(other.open(sealed), std::runtime_error);
+    CHECK_THROWS_AS(other.open(sealed, row), std::runtime_error);
+}
+
+TEST_CASE("a_secret_opened_under_another_row_does_not_open", "[crypto]") {
+    auto lg(ores::logging::make_logger(test_suite));
+
+    const secret_sealer sealer(make_key());
+    const std::string sealed = sealer.seal("the-provider-client-secret", row);
+
+    // The value is genuine and the key is right; only the row it is claimed to
+    // belong to has changed, which is what a copy moved into another table row
+    // looks like.
+    CHECK_THROWS_AS(sealer.open(sealed, "tenant|other_name|ores.http|1"), std::runtime_error);
+    CHECK_THROWS_AS(sealer.open(sealed, "other_tenant|name|ores.http|1"), std::runtime_error);
+    CHECK_THROWS_AS(sealer.open(sealed, "tenant|name|ores.http|2"), std::runtime_error);
 }
 
 TEST_CASE("a_truncated_sealed_secret_does_not_open", "[crypto]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     const secret_sealer sealer(make_key());
-    const std::string sealed = sealer.seal("the-provider-client-secret");
+    const std::string sealed = sealer.seal("the-provider-client-secret", row);
 
     const auto half = sealed.substr(0, sealed.size() / 2);
 
-    CHECK_THROWS(sealer.open(half));
+    CHECK_THROWS(sealer.open(half, row));
 }
 
 TEST_CASE("a_key_of_the_wrong_length_is_refused", "[crypto]") {

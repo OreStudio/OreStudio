@@ -69,7 +69,7 @@ secret_sealer::secret_sealer(std::vector<unsigned char> key)
     }
 }
 
-std::string secret_sealer::seal(const std::string& plaintext) const {
+std::string secret_sealer::seal(const std::string& plaintext, const std::string& context) const {
     std::vector<unsigned char> sealed(header_len + plaintext.size() + output_slack);
 
     // The nonce sits at the head of the value it belongs to, so that opening
@@ -102,6 +102,17 @@ std::string secret_sealer::seal(const std::string& plaintext) const {
         throw std::runtime_error("Failed to set the sealing key");
     }
 
+    // The context is authenticated and not encrypted: it is what binds the
+    // ciphertext to its row, so a copy moved elsewhere fails to open.
+    int context_written = 0;
+    if (EVP_EncryptUpdate(ctx.handle,
+                          nullptr,
+                          &context_written,
+                          reinterpret_cast<const unsigned char*>(context.data()),
+                          static_cast<int>(context.size())) != 1) {
+        throw std::runtime_error("Failed to set the sealing context");
+    }
+
     int written = 0;
     if (EVP_EncryptUpdate(ctx.handle,
                           body,
@@ -130,7 +141,7 @@ std::string secret_sealer::seal(const std::string& plaintext) const {
     return base64_converter::convert(sealed);
 }
 
-std::string secret_sealer::open(const std::string& sealed) const {
+std::string secret_sealer::open(const std::string& sealed, const std::string& context) const {
     const auto raw = base64_converter::convert(sealed);
 
     if (raw.size() < header_len) {
@@ -162,6 +173,17 @@ std::string secret_sealer::open(const std::string& sealed) const {
 
     if (EVP_DecryptInit_ex(ctx.handle, nullptr, nullptr, key_.data(), nonce) != 1) {
         throw std::runtime_error("Failed to set the sealing key");
+    }
+
+    // The context is authenticated, as it was on the way in, and it is set
+    // before the ciphertext the cipher must hold it against.
+    int context_written = 0;
+    if (EVP_DecryptUpdate(ctx.handle,
+                          nullptr,
+                          &context_written,
+                          reinterpret_cast<const unsigned char*>(context.data()),
+                          static_cast<int>(context.size())) != 1) {
+        throw std::runtime_error("Failed to set the sealing context");
     }
 
     int written = 0;

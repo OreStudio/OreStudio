@@ -56,6 +56,9 @@ target_link_libraries(${lib_target_name}
 target_link_libraries(${lib_target_name}
     PRIVATE
         ores.database.lib
+        # The credential loader reads the environment through the platform's
+        # provider, so that the test can hand it one.
+        ores.platform.lib
         # compass:except(core_link_edges/forbidden_edge) expires=2027-11-26 approver=marco reason=the history provider every entity registers needs the shared dispatch registry, and the codegen baseline does not carry the link
         ores.history.core.lib)
 

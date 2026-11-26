@@ -63,7 +63,7 @@ an API publishes no area, so it is counted under =(none)=.
 
 | Area | Owner components | Routes | Kinds |
 |------+------------------+--------+-------|
-|  | api, iam, refdata, series-identity-shapes, synthetic | 20 | unclassified 20 |
+|  | api, iam, refdata, series-identity-shapes, synthetic, vault | 22 | unclassified 22 |
 | access | iam, server | 109 | composed view 2, resource 107 |
 | agile | agile-routes | 6 | composed view 2, resource 4 |
 | analytics | analytics, sensitivity-templates | 12 | resource 12 |
@@ -515,7 +515,7 @@ against the answer the BFF gives.
 
 * The inventory
 
-1531 routes: 344 answered by the BFF and 1187 by ores.http.
+1533 routes: 344 answered by the BFF and 1189 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -1707,7 +1707,7 @@ against the answer the BFF gives.
 | resource | access | post | =/api/v1/iam/ops/update_account= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:206 | An RPC-shaped write to one account: its fields, or the lock that refuses the next sign-in and leaves the open sessions alone. |
 | resource | auth | post | =/api/v1/iam/ops/update_my_email= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:285 | An RPC-shaped write to one credential or account: the caller's password or email, an administrator's reset, or the account a stranger registers. |
 | resource | access | post | =/api/v1/iam/roles_permissions/put= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:208 | Replaces the permissions one role grants with exactly the set sent. |
-| transport capability | (none) | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:177 | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
+| transport capability | (none) | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:178 | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
 | resource | market-data | get | =/api/v1/market-data/series_identity_shape_entries= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_routes.cpp:378 | A generated market data collection, answering under the published market data area: the list, one row by key, its versions, and the bulk get. |
 | resource | market-data | post | =/api/v1/market-data/series_identity_shape_entries= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_routes.cpp:436 | A generated write of a market data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | market-data | put | =/api/v1/market-data/series_identity_shape_entries= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_routes.cpp:451 | A generated write of a market data collection: create, replace, remove, or one of the bulk put and delete calls. |
@@ -2037,6 +2037,8 @@ against the answer the BFF gives.
 | resource | tenancy | get | =/api/v1/tenancy/tenants/{code}= | ores.http | projects/ores.http/iam/src/routes/iam/tenant_routes.cpp:399 | A generated tenancy collection: the list, one row by key, its versions and the bulk get, published under the area a tenant's own rows answer on. |
 | resource | tenancy | get | =/api/v1/tenancy/tenants/{code}/versions= | ores.http | projects/ores.http/iam/src/routes/iam/tenant_routes.cpp:501 | A generated tenancy collection: the list, one row by key, its versions and the bulk get, published under the area a tenant's own rows answer on. |
 | resource | tenancy | get | =/api/v1/tenancy/tenants/{code}/versions/{version}= | ores.http | projects/ores.http/iam/src/routes/iam/tenant_routes.cpp:518 | A generated tenancy collection: the list, one row by key, its versions and the bulk get, published under the area a tenant's own rows answer on. |
+|  |  | post | =/api/v1/vault/secrets= | ores.http | projects/ores.http/vault/src/routes/vault/vault_routes.cpp:79 |  |
+|  |  | get | =/api/v1/vault/secrets/{name}/value= | ores.http | projects/ores.http/vault/src/routes/vault/vault_routes.cpp:94 |  |
 | composed view | workflow | get | =/api/workflow/:instanceId= | bff | projects/ores.web/packages/bff/src/server.ts:2672 | A run's progress as a rail renders it: the run's status, the step executing and one summary per step, three reads, so a page follows the run rather than the engine's events. |
 | resource | workflow | post | =/api/workflow/:instanceId/retry= | bff | projects/ores.web/packages/bff/src/server.ts:2686 | A command on one run: retrying a run that stopped asks the engine to start it again, and answers the run rather than a collection the client reads. |
 | composed view | workflow | get | =/api/workflow/{instanceId}= | ores.http | projects/ores.http/workflow/src/routes/workflow/progress_routes.cpp:67 | A run's progress answered by ores.http at the address and in the shape the BFF answered: the run's status, the step it is executing and one summary per step, from the one read the engine already answers in that shape, kept for the interval a page asks again. |

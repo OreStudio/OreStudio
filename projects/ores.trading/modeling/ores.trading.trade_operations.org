@@ -996,6 +996,33 @@ generates no service handler.
  */
 #+end_src
 
+** trade_requirement
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The addresses one trade needs.
+ */
+#+end_src
+
+*** trade_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** oresmd_uris
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The distinct addresses this trade needs, in ascending byte order; empty
+ * when its instrument rows hold none, or when the caller cannot read them.
+ */
+#+end_src
+
 ** resolve_market_data_requirements_request
 :PROPERTIES:
 :subject:  trading.v1.ops.resolve_market_data_requirements
@@ -1061,7 +1088,26 @@ generates no service handler.
 
 #+begin_src cpp :name comment
 /**
- * @brief The distinct addresses the trades need, in address order.
+ * @brief The distinct addresses the trades need, in ascending byte order.
+ *
+ * The union of the per-trade answer, for the caller that gathers market data and
+ * has no use for which trade asked for what.
+ */
+#+end_src
+
+*** trade_requirements
+:PROPERTIES:
+:cpp_type: std::vector<trade_requirement>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What each trade the request named needs, one entry per trade, in the
+ * order the request named them.
+ *
+ * A trade the request names twice answers once. A trade that names nothing keeps
+ * its entry with no addresses; one the caller cannot read answers the same way,
+ * because the store tells a caller who may not see a row nothing about why.
  */
 #+end_src
 

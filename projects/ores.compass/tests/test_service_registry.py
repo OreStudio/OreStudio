@@ -47,10 +47,13 @@ def test_dependent_services_depend_on_iam(services):
 
 
 def test_extra_args_round_trip_multiple_flags(services):
+    # The wrapper gained --package-dir when the engine packages moved to one
+    # digest-named tree per host, and the expectation was not updated with it.
     assert services["ores.compute.wrapper"]["extra_args"] == [
         "--host-id {host_id}",
         "--tenant-id {tenant_id}",
         "--work-dir {work_dir}",
+        "--package-dir ../run/packages",
         "--http-base-url http://localhost:{http_port}",
     ]
 

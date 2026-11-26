@@ -77,28 +77,35 @@ public:
     explicit secret_sealer(std::vector<unsigned char> key);
 
     /**
-     * @brief Seals a plaintext under the key.
+     * @brief Seals a plaintext under the key, bound to a context.
      *
      * @param plaintext The secret. It may be empty, which still seals.
+     * @param context What this value belongs to: the tenant, the name, the
+     * owning consumer and the key version of the row that holds it. It is
+     * authenticated and not encrypted, so a ciphertext copied into another row
+     * does not open under that row's context.
      * @return The nonce, the tag and the ciphertext, Base64-encoded.
      *
      * @throws std::runtime_error If the platform cannot produce a nonce or the
      * cipher fails.
      */
-    [[nodiscard]] std::string seal(const std::string& plaintext) const;
+    [[nodiscard]] std::string seal(const std::string& plaintext, const std::string& context) const;
 
     /**
-     * @brief Opens a sealed secret under the key.
+     * @brief Opens a sealed secret under the key, with the context it was
+     * sealed under.
      *
      * @param sealed A value this sealer, or another sealer with the same key,
      * produced.
+     * @param context The same context the value was sealed with. A copy of a
+     * value under any other context does not authenticate.
      * @return The plaintext.
      *
      * @throws std::runtime_error If the value is too short to hold a nonce and
-     * a tag, or if the tag does not authenticate under this key. An altered
-     * value never opens, and never answers a different plaintext.
+     * a tag, or if the tag does not authenticate under this key and context. An
+     * altered value never opens, and never answers a different plaintext.
      */
-    [[nodiscard]] std::string open(const std::string& sealed) const;
+    [[nodiscard]] std::string open(const std::string& sealed, const std::string& context) const;
 };
 
 }

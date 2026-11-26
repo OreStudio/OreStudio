@@ -21,13 +21,16 @@
 -- =============================================================================
 -- Vault Tables
 -- =============================================================================
--- The secrets ORE must present to another party, and the consumers it seals
--- them to. Both are tenant scoped and carry the audit tail every entity has.
--- The consumers come first, because a secret names the consumer that may
--- resolve it.
+-- The secrets ORE must present to another party, the consumers it seals them
+-- to, and the record of each act on one. All three are tenant scoped; the
+-- consumers come first, because a secret names the consumer that may resolve
+-- it, and the uses come last, because a use describes an act on a secret.
 
 \ir ./vault_consumers_create.sql
 \ir ./vault_consumers_notify_trigger_create.sql
 
 \ir ./vault_secrets_create.sql
 \ir ./vault_secrets_notify_trigger_create.sql
+
+\ir ./vault_secret_uses_create.sql
+\ir ./vault_secret_uses_notify_trigger_create.sql

@@ -17,11 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/**
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_service_main.cpp.mustache
- * To modify, update the template and regenerate.
- */
+#include "ores.database/domain/exceptions.hpp"
+#include "ores.service/service/exit_codes.hpp"
 #include "ores.vault.service/app/host.hpp"
 #include "ores.vault.service/config/parser_exception.hpp"
 #include <boost/asio/awaitable.hpp>
@@ -42,6 +39,11 @@ boost::asio::awaitable<int> async_main(int argc, char** argv, boost::asio::io_co
         co_return co_await host::execute(args, std::cout, std::cerr, io_ctx);
     } catch (const parser_exception& /*e*/) {
         co_return EXIT_FAILURE;
+    } catch (const ores::database::schema_mismatch_exception& e) {
+        std::cerr << e.what() << std::endl;
+        co_return static_cast<int>(ores::service::service::exit_code::schema_mismatch);
+    } catch (const ores::database::db_connection_exception&) {
+        co_return static_cast<int>(ores::service::service::exit_code::db_connection_failed);
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         std::cerr << "Failed to execute command." << std::endl;

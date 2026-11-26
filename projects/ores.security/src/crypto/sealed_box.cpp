@@ -233,13 +233,16 @@ void derive_key(const secret_buffer& shared,
     }
 }
 
-/// The salt and the additional data: the sender's public key and the
-/// recipient's, in that order. Both sides can rebuild it, and a value whose
-/// header was altered cannot.
-[[nodiscard]] std::vector<unsigned char>
-both_public_keys(const unsigned char* sender, const std::vector<unsigned char>& recipient) {
+/// The salt and the additional data: the sender's public key, the recipient's
+/// and the context the caller states, in that order. Both sides can rebuild it,
+/// a value whose header was altered cannot, and a reply replayed under another
+/// subject, name or version cannot.
+[[nodiscard]] std::vector<unsigned char> bound_to_keys(const unsigned char* sender,
+                                                       const std::vector<unsigned char>& recipient,
+                                                       const std::string& context) {
     std::vector<unsigned char> bound(sender, sender + ephemeral_len);
     bound.insert(bound.end(), recipient.begin(), recipient.end());
+    bound.insert(bound.end(), context.begin(), context.end());
     return bound;
 }
 
@@ -283,11 +286,12 @@ sealed_box::public_key_of(const std::vector<unsigned char>& private_key) {
 }
 
 std::string sealed_box::seal(const std::vector<unsigned char>& recipient_public_key,
-                             const std::string& plaintext) {
+                             const std::string& plaintext,
+                             const std::string& context) {
     check_key_length(recipient_public_key, "public key");
 
     const auto ephemeral = generate();
-    const auto bound = both_public_keys(ephemeral.public_key.data(), recipient_public_key);
+    const auto bound = bound_to_keys(ephemeral.public_key.data(), recipient_public_key, context);
 
     secret_buffer shared(KEY_LEN);
     agree(ephemeral.private_key, recipient_public_key, shared);
@@ -352,7 +356,8 @@ std::string sealed_box::seal(const std::vector<unsigned char>& recipient_public_
 }
 
 std::string sealed_box::open(const std::vector<unsigned char>& private_key,
-                             const std::string& sealed) {
+                             const std::string& sealed,
+                             const std::string& context) {
     check_key_length(private_key, "private key");
 
     const auto raw = base64_converter::convert(sealed);
@@ -370,7 +375,7 @@ std::string sealed_box::open(const std::vector<unsigned char>& private_key,
 
     const std::vector<unsigned char> sender_public_key(sender, sender + ephemeral_len);
     const auto recipient_public_key = raw_public_key_of(private_key);
-    const auto bound = both_public_keys(sender, recipient_public_key);
+    const auto bound = bound_to_keys(sender, recipient_public_key, context);
 
     secret_buffer shared(KEY_LEN);
     agree(private_key, sender_public_key, shared);

@@ -1,0 +1,36 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+package "ores.http.server" {
+  [ores.http.vault] as vault_routes
+  [ores.http.api] as http_api
+  [ores.http.nats] as http_nats
+}
+
+package "ores.vault.service" {
+  [vault.v1.ops.write] as write_op
+  [vault.v1.ops.resolve] as resolve_op
+}
+
+http_api --> vault_routes : routes
+vault_routes --> http_nats : forward a request
+vault_routes --> write_op : sealed value, caller's token
+vault_routes --> resolve_op : as the gateway, own token
+
+@enduml

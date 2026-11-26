@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 5D19FE6D-6B62-4FD7-92D0-2960E747B5C3
+:END:
+#+title: Ignore a key directory, not the extensions of its keys
+#+description: A generated key directory is ignored as a whole, because the extension list misses the next key.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+Ignore a generated key directory as a whole, never by the extensions its keys happen to have.
+
+*Why:* The vault's key encryption key reached a commit because .gitignore listed build/keys/*.pem and build/keys/*.key, and the new key was called build/keys/vault.kek: neither pattern matched it, and the gate's no-committed-credentials check reads text, so a 32-byte binary key passed it. The rule is now build/keys/* with a .gitkeep exception, and the transport public halves are covered by the same line.
+
+*How to apply:* When a deploy step generates key material into a directory, ignore dir/* and un-ignore only a placeholder. Do not extend a list of extensions: the next key will not use one of them.

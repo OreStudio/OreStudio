@@ -23,6 +23,7 @@
 #include "ores.compute.api/messaging/telemetry_protocol.hpp"
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.compute.wrapper/app/claim_loop.hpp"
+#include "ores.compute.wrapper/app/job_scratch.hpp"
 #include "ores.compute.wrapper/app/log_publisher.hpp"
 #include "ores.compute.wrapper/app/package_cache.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -1007,6 +1008,20 @@ void process_assignment(ores::nats::service::client& nats,
                   error_message,
                   duration_ms,
                   lg);
+
+    // The folder is scratch. A succeeded run's output is in the result's own
+    // location and its log is in the log store by now, so the copy on this node
+    // buys nothing and would stay for ever. A run that failed keeps its folder,
+    // because on this node that folder is the only account of why it stopped.
+    if (outcome == 1) {
+        const fs::path job_folder = fs::path(cfg.work_dir) / "jobs" / evt.result_id;
+        if (const auto released = release_job_folder(job_folder))
+            ORES_LOG_SEV(lg, info) << "Released the folder of job " << evt.result_id << ", "
+                                   << *released << " byte(s), once its output was uploaded.";
+        else
+            ORES_LOG_SEV(lg, warn) << "Could not release the folder of job " << evt.result_id
+                                   << ": it stays on this node.";
+    }
 }
 
 } // namespace

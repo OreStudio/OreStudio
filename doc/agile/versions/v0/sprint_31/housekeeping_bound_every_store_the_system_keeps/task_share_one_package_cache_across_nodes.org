@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/share-one-package-cache-across-nodes
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,12 +26,12 @@ Every node on a host reads one package cache keyed by the package's digest, so a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-24                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-26                               |
 
 * Acceptance
 
@@ -41,9 +41,34 @@ Every node on a host reads one package cache keyed by the package's digest, so a
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** The cache is named by the package, and the archive is not kept
+
+Each of the five wrappers on this host unpacks its own copy of an engine
+package under =work_dir/packages/<app_version_id>= and keeps the download beside
+it. Measured on this host: =node_1/packages/<version>= is 209 MB and its
+archive is another 57 MB, and nodes 2 to 5 hold the same, so one engine version
+costs the host 1.33 GB for what is one package.
+
+Two changes, one per half of the goal:
+
+1. The units pass one package directory for the host. The wrapper already takes
+   =--package-dir= and already shares the cache when two wrappers are given the
+   same one, so this half is configuration: the wrapper's extra args in
+   =projects/modeling/service_registry.org= gain
+   =--package-dir ../run/packages=, and the units are re-rendered from it.
+2. The directory is named by the package's digest and not by its app version, so
+   two versions holding the same bytes are one copy on the host. The archive is
+   the transport and the tree is the cache, so the archive is removed once the
+   tree is in place, and also when the digest check refuses it. The lock file
+   follows the name, so the five wrappers still queue for one package.
+
+** Verification
+
+- the rendered units carry the flag;
+- a job that runs on two nodes leaves one unpacked copy under the shared
+  directory and one archive-free cache, measured with =du= before and after;
+- the wrapper's own suite still passes.
+
 
 * Measurements
 
@@ -57,7 +82,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Package caches under the five nodes, before | 265 MB each on node_1, -2, -3 and -5; 530 MB on node_4 (two versions); 3363 MB for the whole wrappers root | =du -sm node_*/packages= | dcf3facefc |
+| The same root, once the per-node caches were removed | 1773 MB, which is job scratch and logs only | =du -sm .= | dcf3facefc |
+| Wrapper units that pass the shared directory | 5 of 5 | =grep -c "package-dir ../run/packages" systemd/units/ores.compute.wrapper-*.service= | dcf3facefc |
+| Wrapper suite | 4 cases, 13 assertions, pass | =ores.compute.wrapper.tests= | dcf3facefc |
 
 * Notes
 
@@ -85,3 +113,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+One host keeps one copy of an engine package, named by the package's digest,
+and does not keep the archive it arrived in.
+
+- The wrapper units pass =--package-dir ../run/packages=, so the five nodes on a
+  host read one cache. The wrapper already took the option and already shared
+  the cache when two nodes were given the same one; the units did not ask for it.
+- The cache directory is named by =evt.package_sha256= instead of the app
+  version, so two versions holding the same bytes are one copy. A message that
+  states no digest falls back to the app version.
+- The archive is the transport: it is removed once the tree is renamed into
+  place, and also when the digest check refuses it. The lock file follows the
+  package's name, so the five nodes still queue for one download.
+- =app/package_cache.hpp= holds the name, the directory and the unpack, so the
+  suite states them: two app versions with one digest resolve to one directory,
+  and unpacking leaves the tree, replaces an older one, and keeps no archive.
+
+What is not measured: the grid holds no work in this environment, so no job ran
+to show two nodes fetching one package. The before measurement is the five
+per-node caches (1.6 GB for at most two packages) and the units' own text is the
+after; the fetch itself waits for the next run of the grid and is the one
+acceptance item this environment could not show.
+
+Removing the per-node caches was part of the measurement: they were the shape
+the change replaces, and leaving them would have hidden whether a later run
+still writes them.

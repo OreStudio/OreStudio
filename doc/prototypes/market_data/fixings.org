@@ -15,6 +15,7 @@
 | Design note   | this page                                                |
 | Group         | [[file:index.org][Market data prototypes]]               |
 | Journey       | [[file:../../knowledge/journeys/market_data/journey_see-the-fixings-the-platform-states.org][See the fixings the platform states]] |
+| Screens       | [[file:../../knowledge/domain/the_fixing_screens_and_what_each_is_for.org][The fixing screens and what each one is for]] |
 | Review        | none                                                     |
 | Sign-off      | pending                                                  |
 
@@ -37,6 +38,17 @@ many days it holds.
 |---------+----------+-------|
 | Fixings (list) | What does the platform state, and how far does each series reach? | one row per fixing series: label, class, underlying, source, provider, latest value, latest day, day count |
 | The row's act | What did this series state, day by day? | the fixing series page the platform already has, opened by the series' address |
+
+* What this is not
+
+This is the *system view*: what the sources published, stated as the platform
+holds it, with no act. It is not the *fixings manager*, where a party requires,
+adopts, overrides and authorises the fixings its own trades use, and where a day
+the platform never stated is entered with an explanation. The prototype offers no
+authorisation and no way to fill a missing day on purpose: a screen that offered
+one would be the manager wearing this screen's title. The four surfaces, and the
+question each answers, are set out in
+[[file:../../knowledge/domain/the_fixing_screens_and_what_each_is_for.org][The fixing screens and what each one is for]].
 
 The prototype decides five things, and no more.
 

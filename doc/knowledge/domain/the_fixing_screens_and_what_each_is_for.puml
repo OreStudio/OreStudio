@@ -1,0 +1,54 @@
+@startuml the_fixing_screens_and_what_each_is_for
+title The fixing screens, the question each answers and who asks it
+
+skinparam shadowing false
+skinparam defaultFontName Sans
+skinparam componentStyle rectangle
+
+actor "Super administrator" as sysadmin
+actor "System administrator" as admin
+actor "Party operations" as ops
+actor "Party front office" as fo
+
+package "Market data" {
+  component "Fixings\n(the system view)" as browser
+  component "Public rates" as public
+  component "Fixing series\none item by its address" as series
+}
+
+package "The party" {
+  component "Fixings manager" as manager
+  component "Control reports" as controls
+}
+
+database "Fixing series\nobservations, under the system party" as store
+database "Party fixings\nadoption, status, override" as party
+
+sysadmin --> browser : what did the sources state
+admin --> public : is each publisher arriving
+fo --> manager : key a value before its date
+ops --> manager : authorise, override, undo
+ops --> controls : did the process miss anything
+
+browser --> store : reads, never writes
+public --> store : reads, and asks a supplier for more
+series --> store : reads one item
+manager --> store : reads the observation
+manager --> party : writes the adoption
+controls --> party : reads the status
+
+browser ..> series : a row opens
+manager ..> series : the observation opens
+public ..> series : a publisher's item opens
+
+note bottom of browser
+  No authorisation and no act.
+  A day nobody stated is shown missing.
+end note
+
+note bottom of manager
+  The only place a party's
+  fixing is decided.
+end note
+
+@enduml

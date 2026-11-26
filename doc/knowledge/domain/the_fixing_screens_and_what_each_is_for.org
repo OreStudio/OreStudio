@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: 5D2A8C41-6E3B-47F0-9A28-1C4B7E9D3F62
+:END:
+#+title: The fixing screens and what each one is for
+#+description: Four surfaces touch fixings and each answers a different question for a different actor: the system view of the observations, the public publishers' arrival, the party's fixings manager, and the fixing series page they all open. Naming them apart is what keeps a party's control out of the system's facts.
+#+type: knowledge
+#+audience: user
+#+level: cross
+#+filetags: :domain:fixing:ui:vocabulary:decision:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+* Summary
+
+The word *fixings* names four surfaces in ORE Studio, and only one of them is
+the fixings manager. Each answers one question for one actor, and the whole
+confusion this note answers comes from reading any two of them as the same
+screen with more or fewer buttons.
+
+#+caption: Four actors, four questions, and the two stores they read: the system view and the public publishers' screen read observations and never write; the party's fixings manager is the only place a party's fixing is decided.
+[[proj:doc/knowledge/domain/the_fixing_screens_and_what_each_is_for.png]]
+
+Source: [[./the_fixing_screens_and_what_each_is_for.puml][=the_fixing_screens_and_what_each_is_for.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/domain/the_fixing_screens_and_what_each_is_for.puml=.
+
+* The four questions
+
+#+ATTR_HTML: :class hug-leading
+| Screen | The question it answers | Actor | Writes | State |
+|--------+-------------------------+-------+--------+-------|
+| *Fixings* (the system view) | What did the sources state, and how far does each series reach? | Super administrator | Nothing | Prototype, task STARTED |
+| *Public rates* | Is each public publisher arriving, on what terms, and may we fetch more of it? | System administrator | Terms, a pause, a backfill request | Built |
+| *Fixings manager* (the party's) | Which fixings do my trades require, what does the party use, and is it official yet? | Party operations; front office keys | The party fixing: authorise, override, undo, enter a day | Not built; documented and captured |
+| *Fixing series* (a drill-down) | What are the values of this one item, day by day? | Anyone the first two let in | Nothing | Built, unreachable |
+
+The names to use, from here on:
+
+#+ATTR_HTML: :class hug-leading
+| Term | What it names | Not to be confused with |
+|------+---------------+-------------------------|
+| *Fixing observation* | The value a source publishes for one index on one date, stored once for the installation | The party fixing |
+| *Party fixing* | One party's adoption of an observation for its own trades, with its status and any override | The observation |
+| *Fixings* (the system view) | The list of every fixing series the platform holds, one row each, read only. *Fixings browser* is a good informal name for it | The fixings manager |
+| *Fixings manager* | The party-level screen where a party's fixings are required, adopted, overridden, authorised and undone | Any system-level view |
+| *Fixing series page* | One item by its address, the drill-down from both | A time series, which is another page |
+
+* Why the system view is not the manager
+
+The two read the same values and share nothing else.
+
+The system view states what the platform observed, and it states the days it
+did not observe: a derived index whose curve stopped shows a series that ends.
+It offers no authorisation, because authorisation is a control over a party's
+books and would let one party decide another's settlements. It is a view of
+facts, and the only act it enables is to open a series.
+
+The fixings manager decides what one party's trades fix on. Its rows are the
+fixings the party's live trades require, whether or not any source stated them;
+its act is to adopt the observation, override it, authorise it or undo that, and
+every act is recorded and raises the event that fixes the party's trades. A
+party may override a value it agreed with a client, and the override applies to
+its trades alone, so two parties hold one observation as official and unofficial
+at the same moment.
+
+The consequence is the one this note exists to keep straight: a day the platform
+never stated is a hole in the system view and a decision in the manager. The
+system does not fill it, and the manager does not hide it.
+
+* What each screen must not do
+
+- The *system view* must not offer an override, an authorisation, or a way to
+  fill a missing day. A screen that shows a hole and offers to fill it is the
+  manager wearing the system view's title.
+- The *fixings manager* must not change an observation: a correction is the
+  publisher's act and reaches every party alike.
+- *Public rates* must not publish into a party's trades, and it must say which
+  feed it reads, because a second feed of one publisher is another way to the
+  same fixing.
+- The *fixing series page* must stay an act-free drill-down, whichever screen
+  sent the person there.
+
+* The open question: is the process a screen of its own?
+
+The fixing process — observation, authorisation, application and reversal — has
+a question of its own: *which trades does this fixing affect, and did the process
+run on all of them?* Two readings are defensible and one has to be chosen before
+the manager is built.
+
+| Option | What it means | What it costs |
+|--------+---------------+---------------|
+| A. The manager shows it | The selected fixing carries its affected trades, and the control reports are a second tab of the same screen | One screen with two tabs; the trade read is scoped to the selected fixing |
+| B. A screen of its own | A fixings process screen over a date range: what fixed, what did not, and the trades each touches | A second screen reading the same party fixings, and a person must know which to open |
+
+This note recommends *A*, for one reason the documents already state: the
+manager's rows *are* the party's fixings, and the affected trades are a property
+of one row. A separate process screen would read the same rows and offer the same
+acts, so the person would have to learn which of two screens is the real one.
+The control reports stay reports — they answer whether the process ran, not what
+this fixing did — and they open from the manager.
+
+The decision is the product owner's; it is recorded here so the manager is not
+built twice.
+
+* Where each one lives
+
+#+ATTR_HTML: :class hug-leading
+| Screen | Address today | Proposed |
+|--------+---------------+----------|
+| Fixings (system view) | none | =/market-data/fixings= |
+| Fixing series page | =/market-data/fixings= — *the same address the list needs* | =/market-data/fixings/:uri=, or =/market-data/fixing-series?uri= |
+| Public rates | =/market-data/public-rates= | unchanged |
+| Fixings manager | none | Under the party's own work, beside the trades it fixes, not under Market data |
+
+The collision is real and is fixed as part of the system view's task: the page
+the list opens cannot hold the address the list needs.
+
+* What exists today
+
+#+ATTR_HTML: :class hug-leading
+| Surface | Code | Documentation |
+|---------+------+---------------|
+| Fixings (system view) | The operation, the aggregate read and the C++ route exist on the fixings-screen branch; no page and no BFF route | Journey, prototype and task on the same branch; sign-off pending |
+| Fixing series page | =FixingSeriesPage.tsx=, built and routed | Its sprint task records that nothing links to it |
+| Public rates | =PublicRatesPage.tsx= and its record pages | Prototype and journey, both signed off |
+| Fixings manager | Nothing | The controls page, the process page and the capture of the hand-entered fixing |
+| Control reports | Nothing | Named in the controls page, not designed |
+
+* Contradictions this note corrects
+
+- The fixing series page and the new list both claim =/market-data/fixings=.
+- *Super administrator* and *system administrator* are one actor written two
+  ways; this note uses *super administrator* for the system view and reserves
+  *system administrator* for the installation's own operations.
+- *Fixings manager*, *party fixings manager*, *the party's fixings manager* and
+  *fixings view* are one screen; this note uses *fixings manager*.
+- A sprint 29 scenario calls the series page "Fixings"; the page is a *fixing
+  series page*, and *Fixings* is the list.
+- The controls page says ORE Studio has neither view yet; the system view is
+  being built, and this note states which half is which.
+
+* See also
+
+- [[id:FA5C96A3-1F8E-4F9B-8973-40D92055D7DD][System-level fixing observations and party-level fixings]] — the two levels this note gives a screen each.
+- [[id:CA61B445-B6DC-41D3-ACF9-D3FB32D0D342][The fixing process: observation, authorisation, application and reversal]] — the lifecycle the manager runs.
+- [[id:B5CA0D8F-D9C5-4F09-ABD7-7ED6F0FEF1A5][Fixing management and its controls]] — what the manager lists and the reports that check it.
+- [[id:784D9D97-721A-42EC-BA91-A85764979CD0][Fixings]] — the structure note this page belongs to.
+- [[file:../../agile/product_backlog/inbox/the_party_fixings_manager_enters_a_fixing_the_plat.org][The party fixings manager enters a fixing the platform never stated]] — the hand-entered day.

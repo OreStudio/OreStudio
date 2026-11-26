@@ -27,9 +27,17 @@ The journey only reads. The platform states what it observed, and the screen
 holds no authorisation: a day the platform never stated is a party's to enter,
 with an explanation, in its own fixings manager.
 
+*This is the system view, not the fixings manager.* The two read the same values
+and share nothing else: the system view states what the sources published,
+missing days included, and offers no act, while the fixings manager is where a
+party requires, adopts, overrides and authorises the fixings its trades use. The
+four surfaces and the question each answers are set out in
+[[id:5D2A8C41-6E3B-47F0-9A28-1C4B7E9D3F62][The fixing screens and what each one is for]]. A screen that offers to fill a
+missing day is the manager wearing this screen's title.
+
 * Actor and trigger
 
-The actor is the system administrator, the person who answers for the
+The actor is the super administrator, the person who answers for the
 installation rather than for a party. The trigger is a party reporting a fixing
 it cannot get, a check that a feed is stating what it should, or the morning
 question of whether the overnight curves ran. The journey starts at *Market
@@ -77,7 +85,7 @@ what an empty one is.
 
 | Step | Shape on the screen | Judgement |
 |------+---------------------+-----------|
-| Open the fixings | Breadcrumb, title, one sentence, Refresh | The standard draws it, RS-LIST-01 to RS-LIST-03 |
+| Open the fixings | Breadcrumb, title, one sentence, Refresh, and a line that says this is the system view and holds no authorisation | The standard draws it, RS-LIST-01 to RS-LIST-03 |
 | Read a row | Table, one row per series | A view no rule draws yet: the rows are series and not records, so no record acts apply |
 | Meet a series that holds nothing | A row marked =no day=, dimmed, its count at zero | A view no rule draws yet: RS-LIST-10 says show the empty state, and here the empty state is a row |
 | Narrow to a class, a currency, a source | Three pickers | The standard draws it, RS-LIST-04 |

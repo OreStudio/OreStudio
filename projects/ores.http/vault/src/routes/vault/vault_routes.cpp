@@ -80,6 +80,7 @@ void vault_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
                            .summary("Store a secret")
                            .description("Seals the value to the vault and forwards the write.")
                            .tags({"vault"})
+                           .entity_catalogue("vault", "secrets", "write")
                            .auth_required()
                            .handler([&session, keys](const ores::http::domain::http_request& req) {
                                return handle_write(req, session, *keys);
@@ -93,6 +94,7 @@ void vault_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
             .summary("Reveal one secret")
             .description("Resolves as this process, opens the answer, and records the person.")
             .tags({"vault"})
+            .entity_catalogue("vault", "secrets", "resolve")
             .auth_required()
             .handler([&session, keys](const ores::http::domain::http_request& req) {
                 return handle_reveal(req, session, *keys);

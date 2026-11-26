@@ -87,6 +87,9 @@ std::string area_of_component(std::string_view component) {
         {"scheduler", "operations"},
         {"storage", "operations"},
         {"http", "operations"},
+        // Custody is the installation's own life: the secrets it keeps are the
+        // ones its services present, not a party's records.
+        {"vault", "operations"},
     });
     for (const auto& [name, area] : table)
         if (name == component)

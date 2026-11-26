@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
 #+owner: marco
-#+branch: feature/value-only-the-trades-the-market-answers
+#+branch: feature/resolve-a-trade-sets-requirements-per-trade
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
 #+updated: 2026-11-25
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A caller that asks what a trade set needs learns, for each trade, the addresses 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 7E9EA6F5-B45A-4F9A-A1A3-34F12903158F
+:END:
+#+title: Task: State each simulated fixing under its administrator
+#+description: One simulated publisher states every simulated fixing, in vendor ids that are the item addresses, and 13 overnight indices are produced by both a public adapter and the simulator. Split the simulated fixings into a publisher per administrator, in that administrator's notation, each served by one simulated source.
+#+type: task
+#+level: s1
+#+filetags: :derive_term_indices_from_their_overnight_curves:sprint_31:v0:
+#+owner: marco
+#+branch: feature/state-each-simulated-fixing-under-its-administrator
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A fixing states who published it, so a simulated fixing must name the administrator whose fixing it stands for, as a public one does. The simulator serves a source of that publisher through the adapter contract, exactly as it serves a vendor's quotes; the catalogue names the publisher, its source, its notation and its vendor ids, and the system party routes each fixing item's publisher to one source.
+
+The architecture is already stated in doc/knowledge/architecture/synthetic_generation_of_fixings.org: for each administrator of a simulated source the bundle installs a publisher of kind reference (wmr for LSEG's WM/R rates, emmi for EURIBOR, iba for the legacy LIBOR settings), a simulated source of that publisher, and a vendor instrument per fixing in the publisher's notation. A fixing item has one producer at a time: an overnight rate with a public adapter is never simulated, and a licensed cut such as WM/R is always simulated.
+
+Today the catalogue has one publisher for all of it, simulated-fixings, with 82 vendor ids whose id_scheme is oresmd and whose external id is the item address, so the publisher has no notation of its own. It states 36 FX items across three of the seven cut codes and 46 IR indices. Thirteen overnight indices (AONIA, CAMARA, CDI, CORRA, CZEONIA, ESTR, FTIIE, NOWA, SOFR, SONIA, SORA, SWESTR, TONA) are also served by their public publisher, which the one-producer rule forbids.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Steps 1 and 2 of the plan: publishers per administrator, then one simulated source each. |
+| Last touched | 2026-11-26                               |
+
+* Acceptance
+
+- The system bundle installs a publisher of kind reference for each administrator of a simulated fixing, each with one simulated source on session synthetic-local, a shadow rate card and vendor instruments in that administrator's notation.
+- The WM/R fixing items are mapped by the wmr provider in the wmr notation, whose vendor ids are the cut keys of ores_refdata_cut_codes_tbl, and no fixing item is served by both a public publisher and the simulator.
+- On a fresh provision the fixings screen shows one row per fixing item per publisher, each naming its administrator, and no simulated series exists for an index whose publisher the system party routes live.
+
+* Plan
+
+The pattern is the one the system already runs for quotes: provider → source →
+session → adapter → vendor ids → mapping → item, with one adapter per source
+and the simulator chosen by its session code, never by its name. Only the
+catalogue rows and the ownership of the generators are wrong. The order below
+matters in one place: a publisher has to exist before its notation does.
+
+1. *Publishers per administrator* (system bundle SQL). =wmr= for LSEG's WM/R
+   rates, of kind =reference=, its description naming the seven cut codes it
+   administers; =emmi= for EURIBOR, =iba= for the legacy LIBOR settings, and the
+   administrator of each simulated index that has one. Keep =simulated-fixings=
+   only for an index with no administrator and say so in its description, or
+   delete it and leave those indices unserved: this is the one decision the task
+   needs from its owner.
+2. *One simulated source per publisher.* =wmr-a=, =emmi-a=, …, on session
+   =synthetic-local=, service =end_of_day=, =is_default=, with a shadow rate
+   card, built as =bloomberg-a= is built today.
+3. *Notations and vendor ids.* A =wmr= notation whose ids are the cut's own
+   keys, which =ores_marketdata_cut_codes_tbl.fixing_source_code= already holds
+   (=NYC1000= → =WMR1000NYC=, =LON1600= → =WMR1600LON=), registered in the
+   vendor notation registry; then the vendor instruments and mappings for the 36
+   FX items. The degenerate =oresmd= notation goes when =simulated-fixings= does.
+4. *Generators per source.* Each fixing generator attaches to the source of its
+   publisher, as its node name already suggests
+   (=synthetic.bloomberg.ir.yield_curve.sofr.usd=). The simulator keeps the
+   generators; the catalogue keeps the sources.
+5. *One producer per item.* Stop generating the thirteen indices a public
+   publisher already serves, and add a check that fails when a fixing item is
+   demanded from two providers the system party routes.
+6. *The screen.* Once a fixing names its administrator, the list states it: the
+   publisher's name beside the source, and the benchmark the item carries, so a
+   row reads =AUD/JPY · WM/R 10:00 New York= under a *Stated by* column.
+7. *Proof.* A fresh provision: every fixing row attributable to an administrator,
+   no item with two producers, the seven cut keys as vendor ids, and the fixings
+   screen reading as a production one does.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

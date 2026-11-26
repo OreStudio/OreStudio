@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
 #+owner: marco
-#+branch: feature/value-only-the-trades-the-market-answers
+#+branch: feature/record-a-runs-market-readiness
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
-#+updated: 2026-11-25
-#+environment:
+#+updated: 2026-11-26
+#+environment: jolly_knuth jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A run knows, before the engine sees it, which trades its market can answer: the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | Not yet started.                       |
+| Now          | Market data states the cause of a gap, then trading lists the scope's trades. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-25                               |
+| Next         | The readiness tables, the decision and the workflow step. |
+| Last touched | 2026-11-26                               |
 
 * Acceptance
 
@@ -42,9 +42,25 @@ A run knows, before the engine sees it, which trades its market can answer: the 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Decide the set before anything is written. A new =resolve_market_readiness=
+  step runs before =gather_trades=: it asks trading which trades the scope
+  holds and what each one needs, asks market data which addresses it answers,
+  records the answer, and hands the surviving trades to the export. Gathering
+  the trades afterwards writes only what the engine will see, so no second
+  export and no filtering of a blob are needed.
+- A gap names a cause the read can state. The coverage function already tells a
+  missing series from a series that holds no point at or before the as-of. The
+  coverage repository keeps those apart and a new market data op carries the
+  cause, so the record says =no_series= or =no_point= rather than "unanswered".
+- Readiness is three records, at the three grains the design page states: the
+  counts on the run, one row per trade, and one row per address. The counts go
+  on =report_instance=, which the step already loads to mark the run running;
+  the two detail grains are new tables.
+- The decision is a pure function of the per-trade requirements and the
+  coverage answer, so the rule is tested without a database, a NATS client or a
+  workflow.
+- A run with no complete trade fails in the readiness step, which is
+  preprocessing, names the causes, and never reaches submission.
 
 * Measurements
 

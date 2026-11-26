@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/purge-the-calendar-days-a-tenant-already-holds
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -28,11 +28,11 @@ rebuild that copy with a command rather than by restarting the service.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
@@ -61,9 +61,23 @@ triggers it.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The rebuild command already exists: =POST /api/refdata/calendars/{code}/rebuild=
+extends a calendar's days, and since the days moved to the owning level a
+system-tenant session builds the installation's copy while a tenant's rebuild of
+a shared calendar writes nothing. That item of the acceptance is therefore met
+by the surface that was already there, and this task adds the purge beside it.
+
+The purge is a command of its own, in the message model the materialisation
+already uses (=ores.refdata.calendar_materialisation_messages=): a request that
+names one calendar or none, and a response that reports the rows removed and the
+calendars they came from. The service lists the calendars the caller can read,
+keeps the ones it does not own, counts the caller's live rows for each, and calls
+the repository's batch close. A calendar the caller owns is skipped, because its
+days are the tenant's own. The handler takes the caller's context, so the table's
+delete policy confines the command to the caller's tenant.
+
+An HTTP route exposes it beside the rebuild, =POST
+/api/refdata/calendars/dates/purge=, and the route inventory is regenerated.
 
 * Measurements
 
@@ -77,7 +91,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The purge test | 9 assertions pass | =ores.refdata.core.tests "purge_removes_the_tenant_copies_of_the_installation_days"= | working tree |
+| The affected service tests | 28 cases, 3078 assertions | =ores.refdata.core.tests "[calendar_materialisation],[calendar_day],[tenor_resolution]"= | working tree |
 
 * Notes
 
@@ -105,3 +120,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A tenant can remove the copies of the installation's days that it was given
+before the days moved, and the installation's own copy is left alone.
+
+The command is =refdata.v1.ops.purge_calendar_date_copies=, with an HTTP route at
+=POST /api/refdata/calendars/dates/purge= that takes an optional calendar code.
+It reports the rows removed and the calendars they came from, skips a calendar
+the caller owns, and is idempotent: a second run removes nothing. The caller's
+context is the one the handler uses, so the delete policy keeps the command in
+the caller's tenant.
+
+The rebuild command the acceptance asked for already existed, as =POST
+/api/refdata/calendars/{code}/rebuild=, and the owning-level rule makes it build
+the installation's copy when the session is the system tenant's. It is stated in
+the plan rather than added again.
+
+Proved by a new case, =purge_removes_the_tenant_copies_of_the_installation_days=:
+it builds an installation calendar, writes a stale tenant row that contradicts
+it, shows the party read preferring the stale row, purges it, shows the
+installation's answer returning with its own holiday untouched, and shows the
+second purge removing nothing. The calendar, materialisation and tenor
+resolution cases pass beside it (28 cases, 3078 assertions).

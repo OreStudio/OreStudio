@@ -63,7 +63,7 @@ an API publishes no area, so it is counted under =(none)=.
 
 | Area | Owner components | Routes | Kinds |
 |------+------------------+--------+-------|
-|  | api, iam, series-identity-shapes, synthetic | 19 | unclassified 19 |
+|  | api, iam, refdata, series-identity-shapes, synthetic | 20 | unclassified 20 |
 | access | iam, server | 109 | composed view 2, resource 107 |
 | agile | agile-routes | 6 | composed view 2, resource 4 |
 | analytics | analytics, sensitivity-templates | 12 | resource 12 |
@@ -515,7 +515,7 @@ against the answer the BFF gives.
 
 * The inventory
 
-1530 routes: 344 answered by the BFF and 1186 by ores.http.
+1531 routes: 344 answered by the BFF and 1187 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -1051,9 +1051,10 @@ against the answer the BFF gives.
 | not an API | (none) | put | =/api/refdata/calendars= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_web_routes.cpp:325 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | resource | reference-data | get | =/api/refdata/calendars/:code/days= | bff | projects/ores.web/packages/bff/src/records.ts:609 | The materialised days of one calendar in one year, one page of a derived collection. |
 | resource | reference-data | post | =/api/refdata/calendars/:code/rebuild= | bff | projects/ores.web/packages/bff/src/records.ts:668 | Builds the materialised days of one calendar to the end of a year, a write to one calendar's derived rows. |
+|  |  | post | =/api/refdata/calendars/dates/purge= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_screen_routes.cpp:166 |  |
 | not an API | (none) | get | =/api/refdata/calendars/key/{key}= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_web_routes.cpp:313 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
-| resource | reference-data | get | =/api/refdata/calendars/{code}/days= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_screen_routes.cpp:101 | One calendar's built days in one year, and the build of its days to the end of a year, at the address and in the shape the BFF answered. |
-| resource | reference-data | post | =/api/refdata/calendars/{code}/rebuild= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_screen_routes.cpp:154 | One calendar's built days in one year, and the build of its days to the end of a year, at the address and in the shape the BFF answered. |
+| resource | reference-data | get | =/api/refdata/calendars/{code}/days= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_screen_routes.cpp:113 | One calendar's built days in one year, and the build of its days to the end of a year, at the address and in the shape the BFF answered. |
+| resource | reference-data | post | =/api/refdata/calendars/{code}/rebuild= | ores.http | projects/ores.http/refdata/src/routes/refdata/calendar_screen_routes.cpp:188 | One calendar's built days in one year, and the build of its days to the end of a year, at the address and in the shape the BFF answered. |
 | not an API | (none) | delete | =/api/refdata/counterparties= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_web_routes.cpp:337 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | get | =/api/refdata/counterparties= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_web_routes.cpp:300 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |
 | not an API | (none) | put | =/api/refdata/counterparties= | ores.http | projects/ores.http/refdata/src/routes/refdata/counterparty_web_routes.cpp:324 | The generic router's addresses, one generated unit per resource in the BFF's shapes, kept so the screens work when the BFF goes; the published collection per resource is the API. |

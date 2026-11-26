@@ -74,6 +74,46 @@ struct regenerate_calendar_dates_response {
 };
 
 /**
+ * @brief Removes a tenant's copies of the days the installation owns.
+ *
+ * The days of a calendar the installation owns are held once, in the system
+ * tenant, and every tenant reads them there. A tenant that was provisioned
+ * before that rule keeps its own rows for the same calendar, and the party read
+ * prefers them, so they mask the installation's later days. This command removes
+ * the caller's rows for each such calendar and leaves the installation's copy
+ * alone. A calendar the caller owns is not touched: its days are its own.
+ *
+ * It is idempotent: a second run finds nothing to remove. The delete policy of
+ * the table confines it to the caller's tenant, so a tenant purges only its own
+ * copies.
+ */
+struct purge_calendar_date_copies_request {
+    using response_type = struct purge_calendar_date_copies_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.ops.purge_calendar_date_copies";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::optional<std::string> calendar_code;
+
+    friend bool operator==(const purge_calendar_date_copies_request&,
+                           const purge_calendar_date_copies_request&) = default;
+};
+
+struct purge_calendar_date_copies_response {
+    bool success = false;
+    std::string message;
+    std::uint64_t rows_removed = 0;
+    std::uint64_t calendars_purged = 0;
+
+    friend bool operator==(const purge_calendar_date_copies_response&,
+                           const purge_calendar_date_copies_response&) = default;
+};
+
+/**
  * @brief The members of regenerate_calendar_dates_request, named as the wire names them and in the
  * order the type declares them.
  *
@@ -108,6 +148,40 @@ struct regenerate_calendar_dates_response {
     };
 }
 
+/**
+ * @brief The members of purge_calendar_date_copies_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<purge_calendar_date_copies_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"calendar_code",
+                                      &purge_calendar_date_copies_request::calendar_code},
+    };
+}
+
+/**
+ * @brief The members of purge_calendar_date_copies_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<purge_calendar_date_copies_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &purge_calendar_date_copies_response::success},
+        ::ores::utility::codec::field{"message", &purge_calendar_date_copies_response::message},
+        ::ores::utility::codec::field{"rows_removed",
+                                      &purge_calendar_date_copies_response::rows_removed},
+        ::ores::utility::codec::field{"calendars_purged",
+                                      &purge_calendar_date_copies_response::calendars_purged},
+    };
+}
+
 }
 namespace ores::utility::codec {
 
@@ -137,6 +211,34 @@ struct ORES_REFDATA_API_EXPORT
     static std::string
     write_msgpack(const ores::refdata::messaging::regenerate_calendar_dates_response& v);
     static ores::refdata::messaging::regenerate_calendar_dates_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::purge_calendar_date_copies_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::purge_calendar_date_copies_request& v);
+    static ores::refdata::messaging::purge_calendar_date_copies_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::purge_calendar_date_copies_request& v);
+    static ores::refdata::messaging::purge_calendar_date_copies_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REFDATA_API_EXPORT
+    wire_traits<ores::refdata::messaging::purge_calendar_date_copies_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::refdata::messaging::purge_calendar_date_copies_response& v);
+    static ores::refdata::messaging::purge_calendar_date_copies_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::refdata::messaging::purge_calendar_date_copies_response& v);
+    static ores::refdata::messaging::purge_calendar_date_copies_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

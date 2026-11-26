@@ -63,7 +63,7 @@ No store the system keeps grows without bound: each one has a declared policy, h
 | [[id:A898881E-B0A8-4E23-B717-DB7681AB2B18][Hold the calendar dates once, in the system tenant]] | DONE | 2026-11-25 | 2026-11-26 | The calendar dates are derived from rules and exceptions the platform authors, and every tenant needs the same days. Materialise them once in the system tenant, read them through the shared-reference policy, and keep the recompute path as the way the copy is rebuilt. |
 | [[id:BB0570CB-7C89-4079-AE37-39EB300F2252][Scope the calendar exceptions to a party]] | DONE | 2026-11-25 | 2026-11-25 | A holiday is a party's fact, not a tenant's: an HK party closes on days a UK party does not, and both sit in one installation. Give an exception a party scope, so the installation publishes the calendars and their rules once and each party adds the days it closes. |
 | [[id:A02A55EA-402D-4A03-A083-5C7C7B34D3D5][Fix the housekeeping publish test's actor]] | DONE | | 2026-11-26 | The pgTAP fixture writes rows as 'system', which an installation with a person refuses; name an actor the store holds. |
-| [[id:EFBFDD7E-D423-4F5E-A89E-894A1D4F286A][Purge the calendar days a tenant already holds]] | BACKLOG | | | A tenant provisioned before the days moved keeps its own copy and the read prefers it; purge it, and give the installation a rebuild command. |
+| [[id:EFBFDD7E-D423-4F5E-A89E-894A1D4F286A][Purge the calendar days a tenant already holds]] | DONE | 2026-11-26 | 2026-11-26 | A tenant provisioned before the days moved keeps its own copy and the read prefers it; purge it, and give the installation a rebuild command. |
 
 * Decisions
 

@@ -73,4 +73,51 @@ wire_traits<ores::refdata::messaging::regenerate_calendar_dates_response>::read_
     return object::read_msgpack<ores::refdata::messaging::regenerate_calendar_dates_response>(data);
 }
 
+std::string wire_traits<ores::refdata::messaging::purge_calendar_date_copies_request>::write_json(
+    const ores::refdata::messaging::purge_calendar_date_copies_request& v) {
+    return object::write_json(v);
+}
+
+ores::refdata::messaging::purge_calendar_date_copies_request
+wire_traits<ores::refdata::messaging::purge_calendar_date_copies_request>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::refdata::messaging::purge_calendar_date_copies_request>(text);
+}
+
+std::string
+wire_traits<ores::refdata::messaging::purge_calendar_date_copies_request>::write_msgpack(
+    const ores::refdata::messaging::purge_calendar_date_copies_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::refdata::messaging::purge_calendar_date_copies_request
+wire_traits<ores::refdata::messaging::purge_calendar_date_copies_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::refdata::messaging::purge_calendar_date_copies_request>(data);
+}
+
+std::string wire_traits<ores::refdata::messaging::purge_calendar_date_copies_response>::write_json(
+    const ores::refdata::messaging::purge_calendar_date_copies_response& v) {
+    return object::write_json(v);
+}
+
+ores::refdata::messaging::purge_calendar_date_copies_response
+wire_traits<ores::refdata::messaging::purge_calendar_date_copies_response>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::refdata::messaging::purge_calendar_date_copies_response>(text);
+}
+
+std::string
+wire_traits<ores::refdata::messaging::purge_calendar_date_copies_response>::write_msgpack(
+    const ores::refdata::messaging::purge_calendar_date_copies_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::refdata::messaging::purge_calendar_date_copies_response
+wire_traits<ores::refdata::messaging::purge_calendar_date_copies_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::refdata::messaging::purge_calendar_date_copies_response>(
+        data);
+}
+
 }

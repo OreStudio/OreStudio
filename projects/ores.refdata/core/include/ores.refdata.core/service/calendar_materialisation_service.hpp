@@ -105,6 +105,33 @@ public:
      */
     std::size_t regenerate_in_use(std::optional<std::chrono::year> end_year = std::nullopt);
 
+    /**
+     * @brief The rows removed and the calendars they came from.
+     */
+    struct purge_result final {
+        std::size_t rows_removed = 0;
+        std::size_t calendars_purged = 0;
+    };
+
+    /**
+     * @brief Removes this tenant's copies of the days the installation owns.
+     *
+     * A calendar of the installation's is read from the system tenant, so a
+     * tenant's own rows for it are stale: the party read prefers them, and they
+     * mask the installation's later days. This removes them and leaves the
+     * installation's copy alone. A calendar the caller owns keeps its days,
+     * because they are the tenant's own.
+     *
+     * The command is idempotent: a second run finds nothing to remove. The
+     * table's delete policy confines it to the caller's tenant.
+     *
+     * @param calendar_code Purge one calendar; absent means every calendar the
+     *        installation owns.
+     * @throws std::runtime_error if the named calendar does not exist.
+     */
+    [[nodiscard]] purge_result
+    purge_shared_copies(std::optional<std::string> calendar_code = std::nullopt);
+
 private:
     context ctx_;
 };

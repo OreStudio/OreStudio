@@ -48,6 +48,10 @@ std::vector<ores::nats::service::subscription> register_calendar_materialisation
         nats.queue_subscribe(regenerate_calendar_dates_request::nats_subject,
                              calendar_materialisation_registrar_queue_group,
                              [h](ores::nats::message msg) { h->regenerate(std::move(msg)); }));
+    subs.push_back(
+        nats.queue_subscribe(purge_calendar_date_copies_request::nats_subject,
+                             calendar_materialisation_registrar_queue_group,
+                             [h](ores::nats::message msg) { h->purge(std::move(msg)); }));
     return subs;
 }
 

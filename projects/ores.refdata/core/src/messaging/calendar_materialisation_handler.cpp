@@ -99,4 +99,43 @@ void calendar_materialisation_handler::regenerate(ores::nats::message msg) {
     }
 }
 
+void calendar_materialisation_handler::purge(ores::nats::message msg) {
+    ORES_LOG_SEV(calendar_materialisation_handler_lg(), debug) << "Handling " << msg.subject;
+    auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+    if (!req_ctx_expected) {
+        error_reply(nats_, msg, req_ctx_expected.error());
+        return;
+    }
+    const auto& req_ctx = *req_ctx_expected;
+    if (!has_permission(req_ctx, "refdata::calendars:write")) {
+        error_reply(nats_, msg, ores::service::error_code::forbidden);
+        return;
+    }
+    if (auto req = decode<purge_calendar_date_copies_request>(msg)) {
+        try {
+            service::calendar_materialisation_service svc(req_ctx);
+            const auto removed = svc.purge_shared_copies(req->calendar_code);
+            ORES_LOG_SEV(calendar_materialisation_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_,
+                  msg,
+                  purge_calendar_date_copies_response{
+                      .success = true,
+                      .rows_removed = static_cast<std::uint64_t>(removed.rows_removed),
+                      .calendars_purged = static_cast<std::uint64_t>(removed.calendars_purged)});
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(calendar_materialisation_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_,
+                  msg,
+                  purge_calendar_date_copies_response{.success = false, .message = e.what()});
+        }
+    } else {
+        ORES_LOG_SEV(calendar_materialisation_handler_lg(), warn)
+            << "Failed to decode: " << msg.subject;
+        error_reply(nats_, msg, ores::service::error_code::bad_request);
+    }
+}
+
+
 }

@@ -90,3 +90,58 @@ asks for it.
 :cpp_type: std::uint64_t
 :default: 0
 :END:
+
+** purge_calendar_date_copies_request
+:PROPERTIES:
+:subject: refdata.v1.ops.purge_calendar_date_copies
+:response: purge_calendar_date_copies_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Removes a tenant's copies of the days the installation owns.
+ *
+ * The days of a calendar the installation owns are held once, in the system
+ * tenant, and every tenant reads them there. A tenant that was provisioned
+ * before that rule keeps its own rows for the same calendar, and the party read
+ * prefers them, so they mask the installation's later days. This command removes
+ * the caller's rows for each such calendar and leaves the installation's copy
+ * alone. A calendar the caller owns is not touched: its days are its own.
+ *
+ * It is idempotent: a second run finds nothing to remove. The delete policy of
+ * the table confines it to the caller's tenant, so a tenant purges only its own
+ * copies.
+ */
+#+end_src
+
+*** calendar_code
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+Purge one calendar's copies; absent means every calendar the installation owns.
+
+** purge_calendar_date_copies_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** rows_removed
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:
+
+*** calendars_purged
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default: 0
+:END:

@@ -26,12 +26,12 @@ A party's set is narrowed by its desks and a desk's by its books, each level equ
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | Not yet started.                       |
+| Now          | Closed; the levels above and below it hold. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-25                               |
+| Next         | Seed ACME's three levels (7338D2E9), then build the screens. |
+| Last touched | 2026-11-26                             |
 
 * Acceptance
 
@@ -42,9 +42,31 @@ A party's set is narrowed by its desks and a desk's by its books, each level equ
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The desk is the middle of three levels, so every piece of it has a twin one
+level up or down, and the work is to copy the twin and then prove the chain as
+one thing:
+
+1. *The model.* A =business_units= flag with the same two states as the party's
+   and the book's, and a junction of the desk's permitted types, written as its
+   own literate model so the table, the notify trigger, the row-level security,
+   the C++ stack, the wire protocol and the shell recipes all come from
+   generation rather than from hand.
+2. *The rules.* Extend the hand-written approvals file so a resolution reads
+   the chain upwards — a book states a set, else its desk does, else its party
+   does — and six triggers hold both links, each with the two refusals its
+   parent link already had.
+3. *The proofs.* A pgTAP file of its own, because the party file is about two
+   levels: the desk's resolution in all four of its states, the refusals on
+   both links, and the replacement that is not a drop.
+4. *The wiring.* Compose the two generated registrars and the shell command
+   unit in the three files that compose them, or nothing registers the junction
+   and the commands never reach the REPL.
+
+Two things about the tree, rather than about the desk, stopped the work and are
+part of it: a junction's domain header did not include the uuid type it names,
+which no test caught until the shell compiled it alone, and the party's
+approval table had no party isolation policy, so a session could read another
+party's approvals.
 
 * Measurements
 
@@ -58,7 +80,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The desk's own proofs | 25 of 25 assertions pass | =./test/run_tests.sh test/refdata_business_unit_product_types_test.sql= | =c7831fefbe= |
+| The whole database suite | 111 files, 1061 assertions pass | =./test/run_tests.sh= | =25c7d42c21= |
+| The C++ suites around the change | 9 of 9 pass, of which =ores.refdata.core.tests= takes 94 s | =./compass.sh test run -- -R "refdata\|shell.application\|marketdata.api\|ores.service.tests"= | =25c7d42c21= |
+| A build of the whole tree | succeeds in 8 min 52 s | =./compass.sh build= | =25c7d42c21= |
+| The gates the codegen ports | exit 0, 12 warnings, all of them the open pull request's task rows or a wide type on another component | =compass-ng check --ratchet origin/main= | =25c7d42c21= |
+| The non-heavy local gate | 15 of 15 pass | =./compass.sh check --exclude-heavy= | =25c7d42c21= |
 
 * Notes
 
@@ -86,3 +113,47 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The chain now has its middle level, and every link of it is either permitted or
+refused by the database rather than by the caller.
+
+*The model.* =business_units.restricts_product_types= carries the same two
+states as the party's flag and the book's: false permits everything its party
+permits, true permits exactly the rows of the new
+=ores_refdata_business_unit_product_types_tbl=. The junction is generated from
+its own model, so it arrives with its notify trigger, its row-level security,
+its C++ domain type, codec, repository, service, history provider, event
+registrar, HTTPS routes and shell recipes: 42 files, none of them written by
+hand.
+
+*The rules.* =refdata_product_approvals_create.sql= resolves a set along the
+chain and never reads the product type catalogue: a book's own set where it
+states one, else its desk's, else its party's, and a book with no desk inherits
+its party's. Six triggers hold the two links — a desk may not permit a type its
+party does not, a book may not carry a type its desk does not, a parent may not
+drop a type a child carries, and neither may start restricting while a child
+carries something outside the set — and a seventh refuses a book that names a
+desk of another party, because that chain would resolve a set the book's party
+never approved.
+
+*Two holes the proofs found.* A version replacement closes a row and re-creates
+it for the same type, which is not a drop, and the close guards refused it
+whenever a child carried the type: they now act only on a row the delete rule
+closed, marked by =closed_by=. And a session could read another party's
+approvals, because the party's junction had no party isolation policy: it now
+carries the restrictive, select-only policy the party currencies carry. The desk
+junction needs none, because it names no party.
+
+*A defect in the tree, fixed beside it.* A junction's domain header named
+=boost::uuids::uuid= and included nothing that states the type, so it compiled
+only where another header brought the uuid header in first. =ores.shell.refdata=
+is the first unit that includes it alone and it did not compile; the template
+now gates the include on =has_uuid_left_or_right=, as the junction entity header
+already did.
+
+*Not done here.* Four wide-type warnings are new with the flag the two entities
+gained — =party=, =party_entity=, =business_unit= and =business_unit_entity=
+each hold one field more — and they are warnings, not refusals. Grouping the
+approval fields into a type of their own would clear them and is the right way
+to do it, but it is a change to two entities and their mappers, and it belongs
+with the screens that read them rather than with the chain.

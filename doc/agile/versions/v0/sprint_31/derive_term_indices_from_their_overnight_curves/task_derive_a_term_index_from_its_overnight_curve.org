@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-21
-#+updated: 2026-11-25
+#+updated: 2026-11-26
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -32,10 +32,10 @@ data beside the curve configs, and task 3's list reads it.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
-| Now          | Built and proven on a recreated database: the five indices are published from their own dataset as nodes of the feed graph, each series states 520 fixings, and a node whose curve stops states nothing and makes up no day. |
+| Now          | Rebased onto main and green on every check this branch touches; built and proven on a recreated database, where the five indices are published from their own dataset as nodes of the feed graph, each series states 520 fixings, and a node whose curve stops states nothing and makes up no day. |
 | Waiting on   | The tester's pass of the scenario.     |
 | Next         | The scenario run, then the task closes. |
-| Last touched | 2026-11-25                               |
+| Last touched | 2026-11-26                               |
 
 * Acceptance
 
@@ -207,24 +207,28 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Schema columns the rule adds | 3: rate_source, derived_spread_basis_points, derived_spread_source | =synthetic_ir_curve_generation_configs_create.sql= after a generate | 443f73ba93 |
-| Files the generate rewrote | 24 | =git status --short= after =compass generate= | 443f73ba93 |
-| Hand-written web schema the change broke | 1: the BFF write schema in =synthetic.ts= | =compass build=, TS1360 on the write type | 443f73ba93 |
-| Hand-written payload list the change broke | 1: =IR_WRITE_FIELDS= in =irFeeds.tsx= | reading the screen's save path | 443f73ba93 |
-| Derived configs seeded | 5: COP IBR 3M, JPY EYTIBOR 3M, KRW GENERIC 3M, PLN WIBOR 6M, USD SOFR 1M | =select ... where rate_source <> 'process'= on a recreated database | 443f73ba93 |
-| Families that admit the terms | 5, each by its own flags | the same query joined to the family catalogue | 443f73ba93 |
-| Databases the publish function broke | every dataset publish, on the new not-null column | =compass db recreate -y -k=, "null value in column rate_source" | 443f73ba93 |
-| Derived fixing series on a live run | 5, 520 fixings each, latest 2026-11-25 | =select s.oresmd_uri, count(f.*) ...= over the series and its fixings | 443f73ba93 |
-| Newest fixing of each | USD SOFR 1M 3.89%, COP IBR 3M 8.96%, JPY EYTIBOR 3M 1.32%, KRW GENERIC 3M 2.94%, PLN WIBOR 6M 5.60% | the same query's newest value | bd223ea0bf |
+| Schema columns the rule adds | 3: rate_source, derived_spread_basis_points, derived_spread_source | =synthetic_ir_curve_generation_configs_create.sql= after a generate | 7920d1c2c3 |
+| Files the generate rewrote | 24 | =git status --short= after =compass generate= | 7920d1c2c3 |
+| Hand-written web schema the change broke | 1: the BFF write schema in =synthetic.ts= | =compass build=, TS1360 on the write type | 7920d1c2c3 |
+| Hand-written payload list the change broke | 1: =IR_WRITE_FIELDS= in =irFeeds.tsx= | reading the screen's save path | 7920d1c2c3 |
+| Derived configs seeded | 5: COP IBR 3M, JPY EYTIBOR 3M, KRW GENERIC 3M, PLN WIBOR 6M, USD SOFR 1M | =select ... where rate_source <> 'process'= on a recreated database | 7920d1c2c3 |
+| Families that admit the terms | 5, each by its own flags | the same query joined to the family catalogue | 7920d1c2c3 |
+| Databases the publish function broke | every dataset publish, on the new not-null column | =compass db recreate -y -k=, "null value in column rate_source" | 7920d1c2c3 |
+| Derived fixing series on a live run | 5, 520 fixings each, latest 2026-11-25 | =select s.oresmd_uri, count(f.*) ...= over the series and its fixings | 7920d1c2c3 |
+| Newest fixing of each | USD SOFR 1M 3.89%, COP IBR 3M 8.96%, JPY EYTIBOR 3M 1.32%, KRW GENERIC 3M 2.94%, PLN WIBOR 6M 5.60% | the same query's newest value | fcb045c4a1 |
 | Term indices with no fixings whose currency has an overnight curve | 5: USD SOFR 1M, COP IBR 3M, JPY EYTIBOR 3M, KRW GENERIC 3M, PLN WIBOR 6M | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
-| Derived configs the dataset publish writes | 5, one collection, role =projection=, =auto_start= true | =select ... from ores_synthetic_ir_curve_generation_configs_tbl where rate_source <> 'process'= on a recreated database | bd223ea0bf |
-| Derived fixing series on the recreated database | 5 series of 520 fixings, latest 2026-11-25 | =select s.oresmd_uri, count(f.id), max(f.fixing_date) ... group by s.oresmd_uri= | bd223ea0bf |
-| Newest fixing of each, on the recreated database | USD SOFR 1M 3.94%, COP IBR 3M 8.96%, JPY EYTIBOR 3M 0.35%, KRW GENERIC 3M 2.94%, PLN WIBOR 6M 5.60% | the same query's newest value | bd223ea0bf |
-| Fixings a starved node states | 0; the series stays at 520 with its newest value unchanged while the curve's node is stopped, and gains no day of its own when the node starts again | =synthetic stop node synthetic.bloomberg.ir.yield_curve.sofr.usd=, count the series, =synthetic start node ...=, count again | b47bd1dd11 |
-| Derived fixings on a fresh provision, with no feed started by hand | 5 series of 520 fixings | =select ... where rate_source <> 'process'= and the series query, after =compass db recreate= and =services start= | f8e66497e3 |
-| Ids each derived adapter is asked for and accepts | derived-a 5 of 5, derived-fx-vol 2,275 of 2,275 | the market data log, "Adapter '...' accepted N and rejected 0 of N", and =compass smoke ticks= | f8e66497e3 |
-| Node verbs the shell gained | 2, =synthetic start node= and =synthetic stop node=, beside the folder and feed targets | =grep -n 'node <node-name>' synthetic_commands.cpp= | efd9ad0ea2 |
-| Ids the derived provider serves, and its notation reads back | 2,280: 2,275 volatility points on the scheme =derived_fx_vol= and 5 fixings on =oresmd= | the catalogue round-trip test, =ores.marketdata.core.tests= | 6bce3b17f9 |
+| Derived configs the dataset publish writes | 5, one collection, role =projection=, =auto_start= true | =select ... from ores_synthetic_ir_curve_generation_configs_tbl where rate_source <> 'process'= on a recreated database | fcb045c4a1 |
+| Derived fixing series on the recreated database | 5 series of 520 fixings, latest 2026-11-25 | =select s.oresmd_uri, count(f.id), max(f.fixing_date) ... group by s.oresmd_uri= | fcb045c4a1 |
+| Newest fixing of each, on the recreated database | USD SOFR 1M 3.94%, COP IBR 3M 8.96%, JPY EYTIBOR 3M 0.35%, KRW GENERIC 3M 2.94%, PLN WIBOR 6M 5.60% | the same query's newest value | fcb045c4a1 |
+| Fixings a starved node states | 0; the series stays at 520 with its newest value unchanged while the curve's node is stopped, and gains no day of its own when the node starts again | =synthetic stop node synthetic.bloomberg.ir.yield_curve.sofr.usd=, count the series, =synthetic start node ...=, count again | a4c0956bf3 |
+| Derived fixings on a fresh provision, with no feed started by hand | 5 series of 520 fixings | =select ... where rate_source <> 'process'= and the series query, after =compass db recreate= and =services start= | de82e8471c |
+| Ids each derived adapter is asked for and accepts | derived-a 5 of 5, derived-fx-vol 2,275 of 2,275 | the market data log, "Adapter '...' accepted N and rejected 0 of N", and =compass smoke ticks= | de82e8471c |
+| Node verbs the shell gained | 2, =synthetic start node= and =synthetic stop node=, beside the folder and feed targets | =grep -n 'node <node-name>' synthetic_commands.cpp= | 86247763df |
+| Ids the derived provider serves, and its notation reads back | 2,280: 2,275 volatility points on the scheme =derived_fx_vol= and 5 fixings on =oresmd= | the catalogue round-trip test, =ores.marketdata.core.tests= | 597073f43b |
+| Suites the change reaches that pass on the tree rebased onto main | 8 of 8 | =compass test run --preset linux-clang-release-ninja -- -j 4 -R 'ores\.(synthetic\.(api\|core\|service)\|shell\.(application\|synthetic)\|marketdata\.core\|analytics\.quant\|http\.synthetic)\.tests'= | 38421a0585 |
+| pgTAP suites that pass | 109 files, 1,022 tests | =projects/ores.sql/test/run_tests.sh= | 38421a0585 |
+| Other gate checks that pass | 6: build, web, format, codegen-tests, site-page, compass-ng | =compass check --only <id>=, =compass-ng check --ratchet= | 38421a0585 |
+| Wide types the rule's three columns push over their recorded ceiling | 3: the config's domain, write and entity structs | =compass-ng check=, =wide_types/over_ceiling=, which fails no gate | 38421a0585 |
 
 * Notes
 
@@ -272,10 +276,11 @@ nothing and makes up no day, and a live run shows the same end to end, where
 stopping the SOFR overnight curve's node logs the derived node as starved and
 adds no fixing to the series.
 
-The local gate is green on everything this branch touches: the build, the
-synthetic, shell and market-data suites, the ticks smoke, and every pgTAP suite
-but =scheduler_publish_housekeeping_test.sql=, which fails on a fixture of
-main's retention work (=Invalid modified_by: system=) and not on this branch.
+The local gate is green on everything this branch touches, on a tree rebased
+onto main: the build, the eight suites the change reaches, the ticks smoke, the
+whole pgTAP corpus, the web check, the codegen tests, the site pages and the
+compass-ng ratchet. The housekeeping fixture that failed here earlier was main's
+retention work, and main has since fixed it.
 
 Remaining before the task closes: the tester's pass of
 [[id:41603F5F-7F14-4BDA-913E-227A98F002AD][Check the derived term fixings]]. The scenario was corrected a second time —

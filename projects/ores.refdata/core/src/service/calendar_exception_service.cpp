@@ -147,6 +147,7 @@ calendar_exception_to_domain(const messaging::calendar_exception_write& write) {
     v.id = write.id;
     v.calendar_code = write.calendar_code;
     v.exception_date = write.exception_date;
+    v.party_id = write.party_id;
     v.is_business_day = write.is_business_day;
     v.description = write.description;
     return v;

@@ -221,6 +221,7 @@ set(files
     "service_book_gate_tests.cpp"
     "service_book_proposal_as_service_tests.cpp"
     "service_book_proposal_tests.cpp"
+    "service_calendar_day_service_tests.cpp"
     "service_calendar_materialisation_service_tests.cpp"
     "service_counterparty_gate_tests.cpp"
     "service_counterparty_proposal_tests.cpp"

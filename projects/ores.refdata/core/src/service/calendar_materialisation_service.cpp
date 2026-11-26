@@ -170,6 +170,17 @@ calendar_materialisation_service::regenerate(const std::string& calendar_code,
         throw std::runtime_error("No such calendar: " + calendar_code);
     const auto& cal = calendars.front();
 
+    // The days are held at the level that owns the calendar: a calendar of the
+    // installation's in the system tenant, and a tenant's own calendar in its
+    // tenant. Only the owning session builds them. A tenant that reads a shared
+    // calendar reads the installation's copy, which the installation builds.
+    if (cal.tenant_id != ctx_.tenant_id()) {
+        ORES_LOG_SEV(lg(), debug)
+            << "Calendar " << calendar_code
+            << " belongs to the installation, so its days are read and not built here.";
+        return 0;
+    }
+
     ores::variability::service::system_settings_service settings(ctx_);
     settings.refresh();
     const auto start_offset = read_int_setting(
@@ -199,10 +210,11 @@ calendar_materialisation_service::regenerate(const std::string& calendar_code,
         const auto range_end = year_end(std::chrono::year{horizon_year});
 
         repository::calendar_exception_repository exc_repo;
-        // The installation's exceptions apply to every party, and the caller's party
-        // adds its own beside them. A session with no party materialises the
-        // installation's baseline alone.
-        auto exceptions = exc_repo.read_for_party(ctx_, c.code, ctx_.party_id());
+        // The stored days are the installation's answer to the calendar, so only
+        // the installation's exceptions shape them. A party's own exceptions are
+        // applied over the stored days when the party reads them, and they are
+        // never written into the one copy.
+        auto exceptions = exc_repo.read_for_party(ctx_, c.code, std::nullopt);
 
         std::vector<domain::calendar_date> rows;
 
@@ -278,7 +290,8 @@ calendar_materialisation_service::regenerate(const std::string& calendar_code,
         repository::calendar_date_repository(ctx_).read_latest_by_calendar(calendar_code);
     std::set<std::chrono::year_month_day> existing_dates;
     for (const auto& e : existing)
-        existing_dates.insert(e.date);
+        if (e.tenant_id == ctx_.tenant_id().to_string())
+            existing_dates.insert(e.date);
 
     std::vector<domain::calendar_date> to_write;
     for (auto& row : rows) {

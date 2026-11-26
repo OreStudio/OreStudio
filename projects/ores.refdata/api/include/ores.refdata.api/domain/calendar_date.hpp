@@ -45,6 +45,17 @@ namespace ores::refdata::domain {
  * the UI (calendar detail screens, the holiday-aware date picker) and
  * ORE Studio's own tenor/schedule date-math -- so the answer is
  * consistent and never requires a live rule evaluation.
+ *
+ * The days are derived from the installation's calendar templates and
+ * exceptions, so they are held once, in the system tenant, and every tenant reads
+ * that one copy. The table therefore states :rls_own_or_system_tenant_rows: and
+ * its repository states :system_tenant_visible:, so a read takes the
+ * installation's rows beside the caller's own. A party holds no day of its own:
+ * it holds the exceptions that move the day, and the materialisation reads those
+ * beside the installation's when it answers for the party. The copy is the
+ * read-where-the-row-lies shape of
+ * [[id:B0BC735F-7E05-4882-A216-C250B26B0091][Precedence among the levels of
+ * reference data]].
  */
 struct calendar_date final {
     /**

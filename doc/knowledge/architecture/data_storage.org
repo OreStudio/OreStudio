@@ -79,6 +79,9 @@ the repositories and the handlers all read and write it.
 - [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]] — the three levels a published row belongs
   to, the bundle map, the one publish path, and what a published row's
   provenance and reproduction are.
+- [[id:B0BC735F-7E05-4882-A216-C250B26B0091][Precedence among the levels of reference data]] — the shapes a narrower level
+  uses to state a difference from a wider one, the order a read applies them in,
+  and the copy that ends the precedence.
 
 ** Object storage
 

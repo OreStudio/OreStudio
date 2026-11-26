@@ -28,7 +28,11 @@ United Kingdom opens, and both sit in one installation, so the row states the
 party it belongs to: =party_id= names the party, and a row that names none is the
 installation's. Two levels and no third: an exception is the installation's or a
 party's, never a tenant's, because a tenant's closure would close the day for
-every party it holds. Mirrors
+every party it holds. The overlay is the shape
+[[id:B0BC735F-7E05-4882-A216-C250B26B0091][Precedence among the levels of
+reference data]] states: the installation states the day for every party, and a
+party states only the day it moves.
+Mirrors
 =ores::analytics::quant::domain::calendar_exception= plus the usual
 refdata plumbing. Applies uniformly to *any* calendar -- transcribed
 or user-authored, based or base-less: a based calendar's full override
@@ -97,7 +101,8 @@ std::string("TARGET")
 
 The specific calendar date this exception applies to.
 
-One exception per (calendar, date) pair.
+One exception per (calendar, date) at each level: the installation states the
+day for every party, and a party may state a different answer for the same day.
 
 #+begin_src cpp :name generator
 std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(ctx.past_timepoint())}
@@ -138,13 +143,22 @@ std::string("Test exception")
 
 ** party_id
 :PROPERTIES:
-:type:     uuid
-:cpp_type: std::optional<boost::uuids::uuid>
-:nullable: true
+:type:        uuid
+:cpp_type:    std::optional<boost::uuids::uuid>
+:nullable:    true
+:natural_key: true
 :END:
 
 The party whose calendar this exception belongs to. NULL for the installation's
 own exceptions, which every party reads.
+
+The column is part of the natural key, because the level is part of what an
+exception says: the installation and a party may both answer for one day, and
+two parties may answer differently. The key of a row is therefore
+=(calendar, date, party)=, and the composite index the generator emits enforces
+it for a party's rows. A null party is distinct from every other null in that
+index, so the installation's rows carry their own unique index instead, declared
+in =** Indexes= below.
 
 #+begin_src cpp :name generator
 std::nullopt
@@ -158,6 +172,17 @@ std::nullopt
 :rls_tenant_isolation: true
 :rls_own_or_system_tenant_rows: true
 :END:
+
+** Indexes
+
+| name                                         | columns                                         | unique | current_only | where_extra        |
+|----------------------------------------------+-------------------------------------------------+--------+--------------+--------------------|
+| installation_uniq                            | tenant_id, calendar_code, exception_date        | true   | true         | party_id is null   |
+
+The composite index the generator emits carries =party_id=, so it constrains the
+party rows and leaves the installation's rows unconstrained: in PostgreSQL one
+null is distinct from another. This index is the installation's own rule, one
+row for a day and a calendar.
 
 * Foreign keys
 

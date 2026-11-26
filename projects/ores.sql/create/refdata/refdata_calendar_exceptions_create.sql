@@ -33,7 +33,11 @@
  * party it belongs to: party_id names the party, and a row that names none is the
  * installation's. Two levels and no third: an exception is the installation's or a
  * party's, never a tenant's, because a tenant's closure would close the day for
- * every party it holds. Mirrors
+ * every party it holds. The overlay is the shape
+ * [[id:B0BC735F-7E05-4882-A216-C250B26B0091][Precedence among the levels of
+ * reference data]] states: the installation states the day for every party, and a
+ * party states only the day it moves.
+ * Mirrors
  * ores::analytics::quant::domain::calendar_exception plus the usual
  * refdata plumbing. Applies uniformly to *any* calendar -- transcribed
  * or user-authored, based or base-less: a based calendar's full override
@@ -54,9 +58,9 @@ create table if not exists "ores_refdata_calendar_exceptions_tbl" (
     "version" integer not null,
     "calendar_code" text not null,
     "exception_date" date not null,
+    "party_id" uuid null,
     "is_business_day" boolean not null default false,
     "description" text null,
-    "party_id" uuid null,
     "modified_by" text not null,
     "performed_by" text not null,
     "acting_agent" text not null default '',
@@ -75,8 +79,8 @@ create table if not exists "ores_refdata_calendar_exceptions_tbl" (
 );
 
 -- Composite natural key: unique combination for active records
-create unique index if not exists calendar_exceptions_calendar_code_exception_date_uniq_idx
-on "ores_refdata_calendar_exceptions_tbl" (tenant_id, calendar_code, exception_date)
+create unique index if not exists calendar_exceptions_calendar_code_exception_date_party_id_uniq_idx
+on "ores_refdata_calendar_exceptions_tbl" (tenant_id, calendar_code, exception_date, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
@@ -91,6 +95,11 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 create index if not exists calendar_exceptions_tenant_idx
 on "ores_refdata_calendar_exceptions_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
+
+create unique index if not exists calendar_exceptions_installation_uniq_idx
+on "ores_refdata_calendar_exceptions_tbl" (tenant_id, calendar_code, exception_date)
+where valid_to = ores_utility_infinity_timestamp_fn()
+  and party_id is null;
 
 create or replace function ores_refdata_calendar_exceptions_insert_fn()
 returns trigger as $$

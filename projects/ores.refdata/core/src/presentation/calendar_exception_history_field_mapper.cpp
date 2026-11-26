@@ -43,10 +43,10 @@ render_calendar_exception_fields(const domain::calendar_exception& v) {
     fields.push_back({.name = "Calendar Code", .value = v.calendar_code});
     fields.push_back(
         {.name = "Exception Date", .value = std::format("{:%Y-%m-%d}", v.exception_date)});
-    fields.push_back({.name = "Is Business Day", .value = v.is_business_day ? "true" : "false"});
-    fields.push_back({.name = "Description", .value = v.description.value_or(std::string{})});
     fields.push_back({.name = "Party ID",
                       .value = v.party_id ? boost::uuids::to_string(*v.party_id) : std::string{}});
+    fields.push_back({.name = "Is Business Day", .value = v.is_business_day ? "true" : "false"});
+    fields.push_back({.name = "Description", .value = v.description.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

@@ -139,7 +139,7 @@ void calendar_exception_commands::register_commands(cli::Menu& root_menu, nats_c
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <calendar_code> <exception_date> <is_business_day> <description> <reason> "
+        "add <calendar_code> <exception_date> <party_id> <is_business_day> <description> <reason> "
         "<commentary>");
 
     menu->Insert(
@@ -147,15 +147,15 @@ void calendar_exception_commands::register_commands(cli::Menu& root_menu, nats_c
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <calendar_code> <exception_date> <is_business_day> <description> <reason> "
-        "<commentary> [--version <n>]");
+        "set <id> <calendar_code> <exception_date> <party_id> <is_business_day> <description> "
+        "<reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <calendar_code> <exception_date> <is_business_day> "
+        "put-many --count <n> <id> <calendar_code> <exception_date> <party_id> <is_business_day> "
         "<description> <reason> <commentary>");
 
     menu->Insert(
@@ -364,8 +364,8 @@ void calendar_exception_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 4 + 2) {
-            fail(out) << "Expected " << (4 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 5 + 2) {
+            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -374,6 +374,8 @@ void calendar_exception_commands::process_add(std::ostream& out,
             req.change.write.calendar_code, parsed->positionals[next++], "calendar_code");
         calendar_exception_read_token(
             req.change.write.exception_date, parsed->positionals[next++], "exception_date");
+        calendar_exception_read_token(
+            req.change.write.party_id, parsed->positionals[next++], "party_id");
         calendar_exception_read_token(
             req.change.write.is_business_day, parsed->positionals[next++], "is_business_day");
         calendar_exception_read_token(
@@ -422,8 +424,8 @@ void calendar_exception_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 5 + 2) {
-            fail(out) << "Expected " << (5 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 6 + 2) {
+            fail(out) << "Expected " << (6 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -432,6 +434,8 @@ void calendar_exception_commands::process_set(std::ostream& out,
             req.change.write.calendar_code, parsed->positionals[next++], "calendar_code");
         calendar_exception_read_token(
             req.change.write.exception_date, parsed->positionals[next++], "exception_date");
+        calendar_exception_read_token(
+            req.change.write.party_id, parsed->positionals[next++], "party_id");
         calendar_exception_read_token(
             req.change.write.is_business_day, parsed->positionals[next++], "is_business_day");
         calendar_exception_read_token(
@@ -492,8 +496,8 @@ void calendar_exception_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 5 + 2) {
-            fail(out) << "Expected " << (change_count * 5 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 6 + 2) {
+            fail(out) << "Expected " << (change_count * 6 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -504,6 +508,8 @@ void calendar_exception_commands::process_put_many(std::ostream& out,
                 change.write.calendar_code, parsed->positionals[next++], "calendar_code");
             calendar_exception_read_token(
                 change.write.exception_date, parsed->positionals[next++], "exception_date");
+            calendar_exception_read_token(
+                change.write.party_id, parsed->positionals[next++], "party_id");
             calendar_exception_read_token(
                 change.write.is_business_day, parsed->positionals[next++], "is_business_day");
             calendar_exception_read_token(

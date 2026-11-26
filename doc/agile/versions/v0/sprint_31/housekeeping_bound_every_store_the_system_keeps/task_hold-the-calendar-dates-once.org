@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/hold-the-calendar-dates-once
+#+pr: 5146
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
@@ -34,12 +34,12 @@ party]]).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-25                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-26                               |
 
 * Acceptance
 
@@ -107,9 +107,64 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Refdata suites, after the shared read | 6 of 6 passed | =compass.sh test run -- -R refdata= | working tree |
+| Calendar date reads that admit the installation's rows | every generated read | =calendar_date_repository.cpp=, its read predicates | working tree |
+| Refdata core suite, fresh database | 565 of 565 cases passed | =compass.sh test run -- -R ores.refdata.core.tests= | working tree |
+| Exceptions' natural key | (tenant, calendar, date, party) | =refdata_calendar_exceptions_create.sql= | working tree |
 
 * Notes
+
+** Where the work stands
+
+The task is implemented, and the refdata core suite passes on a fresh database.
+Three changes carry it.
+
+The exceptions' natural key now carries the party. =party_id= is a natural key
+column, so the generated composite index holds a party's rows to one per
+=(calendar, date)=; the installation's rows get their own partial unique index,
+=calendar_exceptions_installation_uniq_idx=, because PostgreSQL treats one null
+as distinct from another. A party and the installation can therefore both answer
+for one day, which is what the overlay needs.
+
+The materialisation writes at the level that owns the calendar: a calendar of
+the installation's in the system tenant, and a tenant's own calendar in its
+tenant. A tenant that reads a shared calendar writes nothing for it, so its
+provisioning step records no day. The stored days are the installation's answer,
+so they carry the installation's exceptions only; a party's exceptions are never
+written into the copy.
+
+=calendar_day_service= is the party-aware read. It takes the stored days, with
+the caller's own row winning over the shared one for a date, applies the
+installation's exceptions and then the party's own, and returns the resolved
+days. The tenor resolution and the pair expiry rule read through it, so two
+parties answer differently on one date.
+
+The tests are =a_party_reads_its_own_exception_over_the_days_the_installation_states=
+and =a_calendar_of_the_installation_is_built_once_and_read_by_a_tenant=, in
+=service_calendar_day_service_tests.cpp=.
+
+** A caution for the next reader
+
+The suite is not repeatable against a database that already holds a previous
+run's rows. Synthetic calendars are named =X-<counter>= from a per-process
+counter, so one run's code names a different calendar in the next, and the dates
+left under an old code make a calendar look materialised that nobody built in
+this run: the case "a calendar nobody materialised is refused" then resolves.
+A green run needs =compass db recreate= first. That is a defect of the fixtures
+and not of this work, and it is recorded here rather than fixed in this task.
+
+** What is left
+
+- *The copies a tenant already holds are not removed*, and there is no operator
+  command that rebuilds the installation's copy on demand. Both are the subject
+  of [[id:EFBFDD7E-D423-4F5E-A89E-894A1D4F286A][Purge the calendar days a
+  tenant already holds]], which this task names rather than absorbs: the purge
+  is a per-tenant act, and the command is a shell surface of its own.
+- The generated calendar-date list still shows the stored days, so a screen that
+  must show a party's own days needs a read of its own; this task serves the
+  date math.
+- An exception that names a date outside the materialised window is not applied,
+  because there is no stored day to move. The materialisation owns the window.
 
 * Test Scenarios
 
@@ -126,7 +181,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5146][#5146]] | [refdata] Hold the calendar dates once, in the system tenant |
 
 * Review
 
@@ -135,3 +190,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The dates are held once, in the system tenant, and a party states only the days
+it moves.
+
+- The exceptions' natural key carries the party, and the installation's rows
+  have a partial unique index of their own, so both levels can answer for one
+  day.
+- The materialisation writes at the level that owns the calendar: the
+  installation's calendars in the system tenant, and a tenant's own calendar in
+  its tenant. A tenant's run writes nothing for a shared calendar, so
+  provisioning a tenant adds no copy.
+- =calendar_day_service= answers a date for the caller's party: the stored days
+  with the installation's exceptions applied, then the party's own. The tenor
+  resolution and the pair expiry rule read through it, so two parties answer
+  differently on one date without either touching the stored copy.
+- The dates table's read admits the installation's rows beside the caller's
+  through the two model flags, and its soft-delete rule stays in the caller's
+  tenant.
+
+Proved on a fresh database: the refdata core suite passes, 565 cases including
+the two new ones (a party reading its own exception over the installation's day,
+and a tenant reading a calendar the installation built); the whole refdata label
+passed on the branch before it was merged with main, and the core suite again
+after the merge.
+
+Left to [[id:EFBFDD7E-D423-4F5E-A89E-894A1D4F286A][Purge the calendar days a
+tenant already holds]]: the purge of copies a tenant was given before this
+change, and the operator command that rebuilds the installation's copy. The
+screen read of a party's days is UI work and is named in the notes.

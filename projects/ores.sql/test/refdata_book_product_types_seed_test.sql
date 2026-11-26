@@ -39,7 +39,7 @@
 
 begin;
 
-select plan(9);
+select plan(11);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -79,12 +79,23 @@ from t_ctx;
 select set_config('app.visible_party_ids',
     '{' || (select party_id::text from t_ctx) || '}', true);
 
+insert into ores_refdata_business_units_tbl (
+    id, tenant_id, version, party_id, unit_name, status,
+    modified_by, performed_by, change_reason_code, change_commentary
+)
+select '00000000-0000-0000-0000-0000000f2001', ores_utility_system_tenant_id_fn(),
+    0, party_id, 'Group Treasury Desk', 'Active',
+    actor, actor, 'system.test', 'Book product type seed pgTAP fixture'
+from t_ctx;
+
 insert into ores_refdata_portfolios_tbl (
-    id, tenant_id, version, party_id, name, parent_portfolio_id, purpose_type,
-    is_virtual, status, modified_by, performed_by, change_reason_code, change_commentary
+    id, tenant_id, version, party_id, name, parent_portfolio_id, owner_unit_id,
+    purpose_type, is_virtual, status, modified_by, performed_by,
+    change_reason_code, change_commentary
 )
 select portfolio_id, ores_utility_system_tenant_id_fn(), 0, party_id,
-    a.name, null, 'Risk', false, 'Active',
+    a.name, null, '00000000-0000-0000-0000-0000000f2001',
+    'Risk', false, 'Active',
     actor, actor, 'system.test', 'Book product type seed pgTAP fixture'
 from t_ctx c
 cross join ores_dq_portfolios_artefact_tbl a
@@ -112,33 +123,85 @@ select is(
     'a published book states the product types it allows rather than leaving the question open');
 
 select is(
-    (select count(*) from (
-        select b.id
-        from t_book b
-        left join ores_refdata_book_product_types_tbl j
-            on j.tenant_id = ores_utility_system_tenant_id_fn()
-            and j.book_id = b.id
-            and j.valid_to = ores_utility_infinity_timestamp_fn()
-        group by b.id
-        having count(j.product_type_code) <> 121) missing),
-    0::bigint,
-    'each published book allows all 121 product types the catalogue states');
-
-select is(
     (select count(*) from t_book b
      where exists (
-         select c.code
-         from ores_trading_product_types_tbl c
-         where c.tenant_id = ores_utility_system_tenant_id_fn()
-           and c.valid_to = ores_utility_infinity_timestamp_fn()
+         select a.product_type_code
+         from ores_dq_book_product_types_artefact_tbl a, t_ctx c
+         where a.dataset_id = c.books_dataset_id
+           and a.book_id = b.id
          except
          select j.product_type_code
          from ores_refdata_book_product_types_tbl j
          where j.tenant_id = ores_utility_system_tenant_id_fn()
            and j.book_id = b.id
-           and j.valid_to = ores_utility_infinity_timestamp_fn())),
+           and j.valid_to = ores_utility_infinity_timestamp_fn())
+        or exists (
+         select j.product_type_code
+         from ores_refdata_book_product_types_tbl j
+         where j.tenant_id = ores_utility_system_tenant_id_fn()
+           and j.book_id = b.id
+           and j.valid_to = ores_utility_infinity_timestamp_fn()
+         except
+         select a.product_type_code
+         from ores_dq_book_product_types_artefact_tbl a, t_ctx c
+         where a.dataset_id = c.books_dataset_id
+           and a.book_id = b.id)),
     0::bigint,
-    'a published book allows every code of the catalogue and no other code');
+    'a published book states exactly the product types the dataset names for it, and no other');
+
+select is(
+    (select count(*) from ores_refdata_business_units_tbl u, t_ctx c
+     where u.id = '00000000-0000-0000-0000-0000000f2001'
+       and u.valid_to = ores_utility_infinity_timestamp_fn()
+       and u.restricts_product_types
+       and exists (
+           select j.product_type_code
+           from ores_refdata_business_unit_product_types_tbl j
+           where j.business_unit_id = u.id
+             and j.valid_to = ores_utility_infinity_timestamp_fn()
+           except
+           select bj.product_type_code
+           from ores_refdata_book_product_types_tbl bj
+           join ores_refdata_books_tbl b
+               on b.id = bj.book_id
+               and b.valid_to = ores_utility_infinity_timestamp_fn()
+           where b.owner_unit_id = u.id
+             and bj.valid_to = ores_utility_infinity_timestamp_fn())),
+    0::bigint,
+    'the desk the books hang from states a set that holds every type they carry');
+
+select is(
+    (select count(*) from ores_refdata_parties_tbl p, t_ctx c
+     where p.id = c.party_id
+       and p.valid_to = ores_utility_infinity_timestamp_fn()
+       and p.restricts_product_types
+       and exists (
+           select bj.product_type_code
+           from ores_refdata_book_product_types_tbl bj
+           join ores_refdata_books_tbl b
+               on b.id = bj.book_id
+               and b.valid_to = ores_utility_infinity_timestamp_fn()
+           where b.party_id = p.id
+             and bj.valid_to = ores_utility_infinity_timestamp_fn()
+           except
+           select j.product_type_code
+           from ores_refdata_party_product_types_tbl j
+           where j.party_id = p.id
+             and j.valid_to = ores_utility_infinity_timestamp_fn())),
+    0::bigint,
+    'the party states a set that holds what every one of its books carries');
+
+select is(
+    (select count(*) from ores_refdata_party_product_types_tbl j, t_ctx c
+     where j.party_id = c.party_id
+       and j.valid_to = ores_utility_infinity_timestamp_fn()
+       and not exists (
+           select 1 from ores_trading_product_types_tbl t
+           where t.tenant_id = ores_utility_system_tenant_id_fn()
+             and t.code = j.product_type_code
+             and t.valid_to = ores_utility_infinity_timestamp_fn())),
+    0::bigint,
+    'every type the party states is one the catalogue states');
 
 select is(
     (select count(*) from ores_refdata_book_product_types_tbl j

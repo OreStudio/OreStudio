@@ -3878,70 +3878,118 @@ begin
     end if;
 
     -- A book published from a curated dataset states the product types it
-    -- allows rather than leaving the question open: it carries
-    -- restricts_product_types = true and takes every code the system
-    -- catalogue holds. A later restriction and a deliberately narrow book
-    -- are both a row removed from the junction, which is a data change.
-    -- The books are held aside so the junction can name them and the
-    -- inserted count still reports books.
-    drop table if exists published_book_map;
-    create temp table published_book_map (
-        id uuid primary key
-    ) on commit drop;
-
-    with published as (
-        insert into ores_refdata_books_tbl (
-            tenant_id, id, version, party_id, name,
-            parent_portfolio_id, functional_currency, gl_account_ref, cost_center,
-            book_status, regulatory_book_type, book_purpose_type, ledger_feed_type,
-            is_sweepable, rates_centre_code, owner_unit_id,
-            restricts_product_types,
-            modified_by, performed_by, change_reason_code, change_commentary
-        )
-        select
-            p_target_tenant_id,
-            gen_random_uuid(), 0, v_root_party_id, a.name,
-            pmap.published_id, a.functional_currency, a.gl_account_ref, a.cost_center,
-            a.book_status, a.regulatory_book_type, a.book_purpose_type, a.ledger_feed_type,
-            a.is_sweepable,
-            -- The artefact template can't know which party it will be
-            -- published to, so a region-agnostic book (e.g. a group-level
-            -- regulatory capital book) leaves rates_centre_code null in the
-            -- artefact, meaning "inherit the publishing party's own
-            -- location" rather than a hardcoded region. Desk-level books
-            -- keep their real, party-independent region code in the
-            -- artefact (a GBP rates desk trades out of London regardless of
-            -- which legal entity owns the book).
-            coalesce(a.rates_centre_code, v_root_party.business_center_code),
-            pmap.published_owner_unit_id,
-            true,
-            v_actor, current_user, 'system.external_data_import',
-            'Published from organisation dataset'
-        from ores_dq_books_artefact_tbl a
-        join portfolio_ref_map pmap on pmap.artefact_id = a.parent_portfolio_id
-        cross join ores_refdata_parties_tbl v_root_party
-        where a.dataset_id = p_dataset_id
-          and v_root_party.id = v_root_party_id
-          and v_root_party.tenant_id = p_target_tenant_id
-          and v_root_party.valid_to = ores_utility_infinity_timestamp_fn()
-        returning id
+    -- permits rather than leaving the question open, and the dataset names
+    -- them: the affinity rows ride the books dataset, keyed by the book's
+    -- artefact id, which the published row keeps as its own id so the two
+    -- cannot drift apart.
+    insert into ores_refdata_books_tbl (
+        tenant_id, id, version, party_id, name,
+        parent_portfolio_id, functional_currency, gl_account_ref, cost_center,
+        book_status, regulatory_book_type, book_purpose_type, ledger_feed_type,
+        is_sweepable, rates_centre_code, owner_unit_id,
+        restricts_product_types,
+        modified_by, performed_by, change_reason_code, change_commentary
     )
-    insert into published_book_map (id)
-    select id from published;
+    select
+        p_target_tenant_id, a.id, 0, v_root_party_id, a.name,
+        pmap.published_id, a.functional_currency, a.gl_account_ref, a.cost_center,
+        a.book_status, a.regulatory_book_type, a.book_purpose_type, a.ledger_feed_type,
+        a.is_sweepable,
+        -- The artefact template can't know which party it will be
+        -- published to, so a region-agnostic book (e.g. a group-level
+        -- regulatory capital book) leaves rates_centre_code null in the
+        -- artefact, meaning "inherit the publishing party's own
+        -- location" rather than a hardcoded region. Desk-level books
+        -- keep their real, party-independent region code in the
+        -- artefact (a GBP rates desk trades out of London regardless of
+        -- which legal entity owns the book).
+        coalesce(a.rates_centre_code, v_root_party.business_center_code),
+        pmap.published_owner_unit_id,
+        true,
+        v_actor, current_user, 'system.external_data_import',
+        'Published from organisation dataset'
+    from ores_dq_books_artefact_tbl a
+    join portfolio_ref_map pmap on pmap.artefact_id = a.parent_portfolio_id
+    cross join ores_refdata_parties_tbl v_root_party
+    where a.dataset_id = p_dataset_id
+      and v_root_party.id = v_root_party_id
+      and v_root_party.tenant_id = p_target_tenant_id
+      and v_root_party.valid_to = ores_utility_infinity_timestamp_fn();
 
     get diagnostics v_inserted = row_count;
 
+    -- The book's set, from the affinity the dataset carries.
     insert into ores_refdata_book_product_types_tbl (
         book_id, tenant_id, product_type_code, version,
         modified_by, performed_by, change_reason_code, change_commentary
     )
-    select m.id, p_target_tenant_id, c.code, 0,
+    select a.book_id, p_target_tenant_id, a.product_type_code, 0,
         v_actor, current_user, 'system.external_data_import',
         'Published from organisation dataset'
-    from published_book_map m
-    cross join ores_trading_product_types_tbl c
-    where c.tenant_id = ores_utility_system_tenant_id_fn()
-      and c.valid_to = ores_utility_infinity_timestamp_fn();
+    from ores_dq_book_product_types_artefact_tbl a
+    join ores_refdata_books_tbl b
+        on b.id = a.book_id
+        and b.tenant_id = p_target_tenant_id
+        and b.valid_to = ores_utility_infinity_timestamp_fn()
+    where a.dataset_id = p_dataset_id;
+
+    -- A desk states the union of its books' sets, and the party the union of
+    -- all its books', which is the smallest set each level's children accept
+    -- and is not a second curation: the affinity is stated once, on the books.
+    -- A book with no desk is covered by the party's union, so a dataset whose
+    -- books hang from no unit still states a chain the database accepts.
+    insert into ores_refdata_business_unit_product_types_tbl (
+        business_unit_id, tenant_id, product_type_code, version,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select distinct b.owner_unit_id, p_target_tenant_id, j.product_type_code, 0,
+        v_actor, current_user, 'system.external_data_import',
+        'Derived from the books of the desk'
+    from ores_refdata_books_tbl b
+    join ores_refdata_book_product_types_tbl j
+        on j.book_id = b.id
+        and j.valid_to = ores_utility_infinity_timestamp_fn()
+    where b.tenant_id = p_target_tenant_id
+      and b.party_id = v_root_party_id
+      and b.valid_to = ores_utility_infinity_timestamp_fn()
+      and b.owner_unit_id is not null;
+
+    update ores_refdata_business_units_tbl u
+    set restricts_product_types = true
+    where u.tenant_id = p_target_tenant_id
+      and u.party_id = v_root_party_id
+      and u.valid_to = ores_utility_infinity_timestamp_fn()
+      and exists (
+          select 1
+          from ores_refdata_business_unit_product_types_tbl j
+          where j.business_unit_id = u.id
+            and j.valid_to = ores_utility_infinity_timestamp_fn());
+
+    insert into ores_refdata_party_product_types_tbl (
+        party_id, tenant_id, product_type_code, version,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select distinct v_root_party_id, p_target_tenant_id, j.product_type_code, 0,
+        v_actor, current_user, 'system.external_data_import',
+        'Derived from the books of the party'
+    from ores_refdata_book_product_types_tbl j
+    join ores_refdata_books_tbl b
+        on b.id = j.book_id
+        and b.valid_to = ores_utility_infinity_timestamp_fn()
+    where b.tenant_id = p_target_tenant_id
+      and b.party_id = v_root_party_id
+      and j.valid_to = ores_utility_infinity_timestamp_fn();
+
+    update ores_refdata_parties_tbl p
+    set restricts_product_types = true
+    where p.tenant_id = p_target_tenant_id
+      and p.id = v_root_party_id
+      and p.valid_to = ores_utility_infinity_timestamp_fn()
+      and exists (
+          select 1
+          from ores_refdata_party_product_types_tbl j
+          where j.party_id = p.id
+            and j.valid_to = ores_utility_infinity_timestamp_fn());
 
     return query
     select 'inserted'::text, v_inserted

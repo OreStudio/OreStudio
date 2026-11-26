@@ -693,6 +693,18 @@ def generate_books_populate(company, books, portfolios):
             f"{sql_str(ledger_feed_type(b))})"
         )
     values = ",\n".join(rows)
+    affinity_rows = []
+    for b in books:
+        types = b.get("product_types")
+        if not types:
+            raise SystemExit(
+                f"Book {b['name']} states no product types: every book names the "
+                "products it trades, so the seeded matrix can say what it permits.")
+        for product_type in types:
+            affinity_rows.append(
+                "        (v_dataset_id, ores_utility_system_tenant_id_fn(), "
+                f"{sql_str(b['id'])}, {sql_str(product_type)}, 0)")
+    affinity_values = ",\n".join(affinity_rows)
     code = f"acme.{company}.books"
     content = LICENSE_HEADER + GENERATED_NOTE + f"""
 /**
@@ -701,6 +713,10 @@ def generate_books_populate(company, books, portfolios):
  * parent_portfolio_id is the artefact-space id (uuid) of the owning row
  * in the matching portfolios dataset, resolved by name at publish time
  * (see ores_refdata_publish_books_from_dq_fn). This script is idempotent.
+ *
+ * The product types each book permits ride the same dataset as the books
+ * themselves: a book and its affinity are one population, curated once, and
+ * the publish states the published book's set from these rows.
  */
 
 DO $$
@@ -727,6 +743,15 @@ begin
     )
     values
 {values};
+
+    delete from ores_dq_book_product_types_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    insert into ores_dq_book_product_types_artefact_tbl (
+        dataset_id, tenant_id, book_id, product_type_code, version
+    )
+    values
+{affinity_values};
 end $$;
 """
     write(f"{company}_books_artefact_populate.sql", content)
@@ -872,6 +897,14 @@ def generate_staff_photos_populate(accounts):
     statements = []
     for photo_key, data_b64 in seen.items():
         image_id = str(uuid.uuid5(NAMESPACE, f"image:{photo_key}"))
+        # The check that a table has one writer must hear why this script is a
+        # second one, once for the script rather than once per photograph.
+        writer_exception = (
+            "        -- compass:except(single_writer/second_writer) expires=2027-05-18 "
+            "approver=marco reason=the populate script writes the system tenant's row and "
+            "the publish writes a tenant's own: a demonstration's photographs in its own "
+            "tenant, and the platform's flags and avatars in the system tenant\n"
+            if not statements else "")
         statements.append(f"""
     if not exists (
         select 1 from ores_assets_images_tbl
@@ -879,7 +912,7 @@ def generate_staff_photos_populate(accounts):
           and code = {sql_str(photo_key)}
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        insert into ores_assets_images_tbl (
+{writer_exception}        insert into ores_assets_images_tbl (
             id, tenant_id, version, code, description, mime_type, data,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (

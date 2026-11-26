@@ -32,6 +32,10 @@
  * parent_portfolio_id is the artefact-space id (uuid) of the owning row
  * in the matching portfolios dataset, resolved by name at publish time
  * (see ores_refdata_publish_books_from_dq_fn). This script is idempotent.
+ *
+ * The product types each book permits ride the same dataset as the books
+ * themselves: a book and its affinity are one population, curated once, and
+ * the publish states the published book's set from these rows.
  */
 
 DO $$
@@ -59,4 +63,18 @@ begin
     values
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'dc895200-ea7f-557d-b23b-bbde41a848bd', 0, 'Group Intercompany Loans', '05e93bbe-2a59-5432-8a4d-43b26d3d33cf', 'GBP', 'GL-TREAS-001', 'CC-GROUP-TREASURY', 'Active', 'Banking', false, 'GBLO', 'Trading', 'Automatic'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '22461eee-0110-53cb-bac0-d3dec0225487', 0, 'Group FX Hedges', '05e93bbe-2a59-5432-8a4d-43b26d3d33cf', 'GBP', 'GL-TREAS-002', 'CC-GROUP-TREASURY', 'Active', 'Banking', false, 'GBLO', 'Trading', 'Automatic');
+
+    delete from ores_dq_book_product_types_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    insert into ores_dq_book_product_types_artefact_tbl (
+        dataset_id, tenant_id, book_id, product_type_code, version
+    )
+    values
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'dc895200-ea7f-557d-b23b-bbde41a848bd', 'BondPosition', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'dc895200-ea7f-557d-b23b-bbde41a848bd', 'CashPosition', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '22461eee-0110-53cb-bac0-d3dec0225487', 'CrossCurrencySwap', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '22461eee-0110-53cb-bac0-d3dec0225487', 'FxForward', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '22461eee-0110-53cb-bac0-d3dec0225487', 'FxOption', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '22461eee-0110-53cb-bac0-d3dec0225487', 'FxSwap', 0);
 end $$;

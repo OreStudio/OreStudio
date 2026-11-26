@@ -19,7 +19,7 @@
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { readDatasetBundles, readinessOf } from './dq.js';
+import { readArtefactTypes, readDatasetBundles, readinessOf } from './dq.js';
 
 /**
  * The DQ reads, and the readiness the coverage screen draws.
@@ -40,7 +40,7 @@ describe('a DQ collection read', () => {
             async () =>
                 new Response(
                     JSON.stringify({
-                        dataset_bundles: [
+                        bundles: [
                             { code: 'party_essentials', name: 'Party essentials', level: 'tenant' },
                         ],
                     }),
@@ -75,5 +75,22 @@ describe('why a bundle member is not ready', () => {
 
     it('is ready when the dataset and its subject are there', () => {
         expect(readinessOf(member, [dataset], [artefactType]).reason).toBeNull();
+    });
+});
+
+describe('a DQ collection whose name is not the entity', () => {
+    it('takes the artefact types from the member the server calls types', async () => {
+        vi.stubGlobal(
+            'fetch',
+            async () =>
+                new Response(
+                    JSON.stringify({ types: [{ code: 'currency', target_subject: 'refdata' }] }),
+                    { status: 200 },
+                ),
+        );
+
+        const types = await readArtefactTypes();
+
+        expect(types.map((one) => one.code)).toEqual(['currency']);
     });
 });

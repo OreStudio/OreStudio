@@ -58,7 +58,7 @@ export async function readDatasets(): Promise<readonly Dataset[]> {
 /** The bundles, with the level each of them states. */
 export async function readDatasetBundles(): Promise<readonly DatasetBundle[]> {
     const page = await request(`${CPP}/api/v1/dq/dataset_bundles?limit=500`, { method: 'GET' });
-    return z.object({ dataset_bundles: rowsOf<DatasetBundle>() }).parse(page).dataset_bundles;
+    return z.object({ bundles: rowsOf<DatasetBundle>() }).parse(page).bundles;
 }
 
 /** Every bundle member, which the coverage screen groups by bundle. */
@@ -73,7 +73,7 @@ export async function readDatasetBundleMembers(): Promise<readonly DatasetBundle
 /** The artefact types, which name where a dataset's rows are staged and published. */
 export async function readArtefactTypes(): Promise<readonly ArtefactType[]> {
     const page = await request(`${CPP}/api/v1/dq/artefact_types?limit=500`, { method: 'GET' });
-    return z.object({ artefact_types: rowsOf<ArtefactType>() }).parse(page).artefact_types;
+    return z.object({ types: rowsOf<ArtefactType>() }).parse(page).types;
 }
 
 /**

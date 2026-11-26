@@ -94,6 +94,32 @@ public:
               vault_public_key_response{.success = true, .public_key = custody.public_key()});
     }
 
+    /**
+     * @brief Serves vault.v1.ops.register_consumer.
+     *
+     * A caller registers its own key. The subject comes from the token, so this
+     * can only ever write the row of the caller, which is why it asks for no
+     * permission beyond a session.
+     */
+    void register_consumer(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(custody_handler_lg(), msg);
+        auto guarded = guard(msg, "vault::consumers:read", true);
+        if (!guarded) {
+            return;
+        }
+        auto request = decode<register_consumer_request>(msg);
+        if (!request) {
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+
+        service::custody_service custody(guarded->ctx, *keys_);
+        const auto outcome = custody.register_consumer(guarded->subject, request->public_key);
+        reply(nats_,
+              msg,
+              register_consumer_response{.success = outcome.success, .message = outcome.message});
+    }
+
     /// Serves vault.v1.ops.write.
     void write(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(custody_handler_lg(), msg);
@@ -226,13 +252,14 @@ private:
      * the identity the vault seals to is the identity the store authenticated.
      */
     std::optional<guarded_request> guard(const ores::nats::message& msg,
-                                         const std::string& permission) {
+                                         const std::string& permission,
+                                         bool session_only = false) {
         auto ctx_expected = make_request_context(msg);
         if (!ctx_expected) {
             error_reply(nats_, msg, ctx_expected.error());
             return std::nullopt;
         }
-        if (!has_permission(*ctx_expected, permission)) {
+        if (!session_only && !has_permission(*ctx_expected, permission)) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return std::nullopt;
         }

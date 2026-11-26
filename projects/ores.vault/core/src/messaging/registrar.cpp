@@ -61,6 +61,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
         custody_queue_group,
         [handler](ores::nats::message msg) { handler->public_key(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
+        register_consumer_request::nats_subject,
+        custody_queue_group,
+        [handler](ores::nats::message msg) { handler->register_consumer(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
         write_secret_request::nats_subject,
         custody_queue_group,
         [handler](ores::nats::message msg) { handler->write(std::move(msg)); }));

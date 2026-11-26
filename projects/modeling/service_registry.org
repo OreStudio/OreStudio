@@ -705,7 +705,7 @@ daily returns as long as the expiry itself, so a ten-year quote needs ten years 
 
 * ores.compute.wrapper
 :PROPERTIES:
-:description: Compute grid worker nodes. {host_id} = stable UUID derived from hostname:replica_index; {work_dir} = ../run/wrappers/node_N; all replicas share the same certificate (ores.compute.wrapper.crt).
+:description: Compute grid worker nodes. {host_id} = stable UUID derived from hostname:replica_index; {work_dir} = ../run/wrappers/node_N, the node's own scratch; the package cache is ../run/packages, one directory per host shared by every replica; all replicas share the same certificate (ores.compute.wrapper.crt).
 :display_name: Compute Wrapper
 :summary:     Runs work units from the compute grid on one node and reports their results and logs.
 :account_var: compute_wrapper_user
@@ -719,4 +719,5 @@ daily returns as long as the expiry itself, so a ten-year quote needs ten years 
 - --host-id {host_id}
 - --tenant-id {tenant_id}
 - --work-dir {work_dir}
+- --package-dir ../run/packages
 - --http-base-url http://localhost:{http_port}

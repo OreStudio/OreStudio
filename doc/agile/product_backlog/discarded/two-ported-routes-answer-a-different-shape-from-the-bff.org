@@ -41,3 +41,7 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 * See also
 
 -
+
+* Resolution
+
+Resolved by recording both pairs in build/scripts/answer_shapes_exceptions.json with their cause: each is a null that states the absence of a delivery or a run, not a difference in the shape of the answer. The trades pair this note also listed was fixed on main before the gate that closed it.

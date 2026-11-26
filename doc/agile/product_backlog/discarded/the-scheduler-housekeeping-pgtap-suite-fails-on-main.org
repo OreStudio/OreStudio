@@ -37,3 +37,7 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 * See also
 
 -
+
+* Resolution
+
+Resolved on main by PR #5144, which names an actor the housekeeping publish test can prove. The gate's pgTAP check passed on 2026-11-26 against base 93e684a284.

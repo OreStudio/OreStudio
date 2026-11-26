@@ -32,6 +32,7 @@
  * data behind it.
  */
 
+#include "curve_publish_steps.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.api/domain/approval_kind.hpp"
@@ -45,7 +46,6 @@
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/service/series_snapshot_reader.hpp"
-#include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
@@ -139,8 +139,8 @@ private:
     ores::inbox::domain::approval_kind was_;
 };
 
-using ores::marketdata::service::app::publish_subject;
-using ores::marketdata::service::app::resolve_publish_subject;
+using publish_subject = ores::marketdata::service::tests::publish_subject;
+using ores::marketdata::service::tests::resolve_publish_subject;
 
 /// The instant the fixture's curve is bootstrapped against.
 const auto as_of = std::chrono::sys_days{std::chrono::year{2026} / 3 / 2} + std::chrono::hours{12};

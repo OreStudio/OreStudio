@@ -16,7 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.marketdata.service/app/fx_vol_surface_publish_service.hpp"
+#include "ores.marketdata.service/app/fx_vol_surface_publication_kind.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
@@ -108,37 +108,6 @@ blocking_failure_of(const domain::fx_vol_surface_calibration& calibration) {
 
 namespace {
 
-/// Applies the approved request to the surface it names, or says why the surface did not move.
-void apply_surface(const context& ctx,
-                   const std::string& request_id,
-                   const publication_subject& attempted,
-                   msg::publish_fx_vol_surface_response& resp) {
-    const auto applied =
-        apply_publication(ctx, derived_kind::fx_vol_surface, request_id, attempted);
-    resp.approval_request_id = request_id;
-    resp.state_code = applied.state_code;
-    switch (applied.status) {
-        case publication_status::published:
-            resp.success = true;
-            resp.message = "Published.";
-            resp.published_at = applied.facts.published_at;
-            resp.published_by = applied.facts.published_by;
-            break;
-        case publication_status::deferred:
-            // A surface has no compute of its own to defer: the calibration is
-            // stored before the raise, so only a refusal or a publication answers.
-            resp.message = applied.message;
-            break;
-        case publication_status::refused:
-            resp.message = applied.message;
-            break;
-    }
-}
-
-}
-
-namespace {
-
 /// Refuses a subject a request of this kind already asks to publish.
 ///
 /// One raise at a time: a second request for the same calibration would publish
@@ -165,86 +134,9 @@ open_raise_refusal(const context& ctx, const boost::uuids::uuid& blueprint_id, t
 
 }
 
-surface_publish_raise
-raise_surface_publish_set(const context& ctx,
-                          const boost::uuids::uuid& party_id,
-                          const std::vector<surface_publish_subject>& subjects,
-                          const std::string& reason) {
-    std::vector<publication_request> requests;
-    requests.reserve(subjects.size());
-    for (const auto& subject : subjects)
-        requests.push_back(
-            {.subject_key = boost::uuids::to_string(subject.blueprint_id), .as_of = subject.as_of});
-    if (requests.empty())
-        throw std::invalid_argument("A set of publishes names at least one surface to publish.");
-
-    // One decision for the party's set: the lifecycle judges each member before
-    // anything is raised, so a decider never answers for a surface the service
-    // would refuse, and what it cannot carry it names.
-    const auto raised =
-        raise_publication(ctx, derived_kind::fx_vol_surface, requests, reason, party_id);
-
-    surface_publish_raise out;
-    out.request_id = raised.request_id;
-    out.state_code = raised.state_code;
-    out.raised.reserve(raised.raised.size());
-    for (const auto& subject : raised.raised)
-        out.raised.push_back(subject.subject_id);
-    out.refused.reserve(raised.refused.size());
-    for (const auto& refused : raised.refused) {
-        boost::uuids::uuid named{};
-        try {
-            named = boost::uuids::string_generator{}(refused.first);
-        } catch (const std::exception&) {
-            // A subject key the store did not name as a uuid cannot be reported
-            // as one; the reason is still reported against a nil blueprint.
-        }
-        out.refused.emplace_back(named, refused.second);
-    }
-    return out;
-}
-
-msg::publish_fx_vol_surface_response
-fx_vol_surface_publish_service::publish(const context& ctx,
-                                        const msg::publish_fx_vol_surface_request& req) {
-    msg::publish_fx_vol_surface_response resp;
-    try {
-        const auto party = ores::service::messaging::session_party(ctx, "A surface");
-        const auto as_of = std::chrono::floor<std::chrono::microseconds>(req.as_of);
-        // The party and the output series are the blueprint's to say, so a caller
-        // cannot publish one party's surface under another's name.
-        const auto attempted =
-            resolve_publication_subject(ctx, derived_kind::fx_vol_surface, req.blueprint_id, as_of);
-
-        if (!req.approval_request_id.empty()) {
-            apply_surface(ctx, req.approval_request_id, attempted, resp);
-            return resp;
-        }
-        // One surface is a set of one, so a person's publish and a party's set
-        // are raised by the same act and cannot drift apart.
-        const auto raised = raise_publication(ctx,
-                                              derived_kind::fx_vol_surface,
-                                              {{.subject_key = req.blueprint_id, .as_of = as_of}},
-                                              req.reason,
-                                              party);
-        resp.approval_request_id = raised.request_id;
-        resp.state_code = raised.state_code;
-        if (raised.state_code != "approved") {
-            resp.success = true;
-            resp.message = "Raised. The publish waits on the decision.";
-            return resp;
-        }
-        apply_surface(ctx, resp.approval_request_id, raised.raised.front(), resp);
-    } catch (const std::exception& e) {
-        resp.success = false;
-        resp.message = e.what();
-    }
-    return resp;
-}
-
 msg::get_fx_vol_surface_publish_subject_response
-fx_vol_surface_publish_service::read(const context& ctx,
-                                     const msg::get_fx_vol_surface_publish_subject_request& req) {
+fx_vol_surface_published_reader::read(const context& ctx,
+                                      const msg::get_fx_vol_surface_publish_subject_request& req) {
     msg::get_fx_vol_surface_publish_subject_response out;
     out.approval_request_id = req.approval_request_id;
     try {
@@ -305,7 +197,7 @@ fx_vol_surface_publish_service::read(const context& ctx,
     return out;
 }
 
-msg::get_published_fx_vol_surface_response fx_vol_surface_publish_service::read_published(
+msg::get_published_fx_vol_surface_response fx_vol_surface_published_reader::read_published(
     const context& ctx, const msg::get_published_fx_vol_surface_request& req) {
     msg::get_published_fx_vol_surface_response out;
     try {

@@ -27,7 +27,7 @@ set(files
     "app_crm_ingest_bridge_tests.cpp"
     "app_curve_analytics_tests.cpp"
     "app_curve_notices_tests.cpp"
-    "app_curve_publish_gate_tests.cpp"
+    "app_curve_publication_tests.cpp"
     "app_delivery_meter_tests.cpp"
     "app_demand_calculator_tests.cpp"
     "app_derived_market_object_kind_tests.cpp"

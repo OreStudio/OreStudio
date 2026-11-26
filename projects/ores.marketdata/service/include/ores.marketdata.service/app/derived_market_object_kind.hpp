@@ -18,10 +18,8 @@
 #ifndef ORES_MARKETDATA_SERVICE_APP_DERIVED_MARKET_OBJECT_KIND_HPP
 #define ORES_MARKETDATA_SERVICE_APP_DERIVED_MARKET_OBJECT_KIND_HPP
 
-#include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.marketdata.service/app/curve_withdrawal.hpp"
-#include "ores.marketdata.service/app/fx_forward_publish_service.hpp"
-#include "ores.marketdata.service/app/fx_vol_surface_publish_service.hpp"
+#include "ores.marketdata.service/app/publication_kind_codes.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include <array>
 #include <optional>

@@ -157,12 +157,11 @@ market data share one database.
 ** Where the kinds stand
 
 The acts are one implementation, in =publication_lifecycle.cpp=, and each kind
-reaches it through the interface its own file implements:
-=curve_publish_gate.cpp=, =fx_forward_publish_service.cpp= and
-=fx_vol_surface_publish_service.cpp= hold the words and the reads a kind owns
-while the acts are shared, and the story's last task retires those files in
-favour of the declaration. What is still per kind on this page is the acts a
-kind does not have.
+reaches it through the interface it implements in its own file:
+=curve_publication_kind.cpp=, =fx_forward_publication_kind.cpp= and
+=fx_vol_surface_publication_kind.cpp= hold the words and the reads a kind owns,
+and a handler or a step answers a publish request through =answer_publication=.
+What is still per kind on this page is the acts a kind does not have.
 
 | Capability | IR curve | FX forward set | FX volatility surface |
 |------------+----------+----------------+-----------------------|

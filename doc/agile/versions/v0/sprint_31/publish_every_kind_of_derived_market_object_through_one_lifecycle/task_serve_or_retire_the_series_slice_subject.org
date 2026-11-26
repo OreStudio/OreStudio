@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 4ED5A5FE-7BBF-4378-AEFD-C22004F14D39
+:END:
+#+title: Task: Serve or retire the series slice subject
+#+description: get_series_slice is declared, coded and called by the BFF and the gateway, and the market data service subscribes to nothing, so every caller fails at runtime. Serve it, or retire it from the protocol, the BFF, the gateway and the web client.
+#+type: task
+#+level: s1
+#+filetags: :publish_every_kind_of_derived_market_object_through_one_lifecycle:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A caller either reaches the series slice or the subject is gone from every
+layer that names it, so an operation nobody serves is not advertised on four
+surfaces.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- Either the market data service subscribes to =marketdata.v1.ops.get_series_slice= and answers it from the reads it already has, or the subject is gone from the protocol, the codec, the BFF, the gateway and the web client.
+- A test proves the choice: a served subject answers, or a retired one has no subject constant and no caller.
+- The knowledge page that calls the subject unreachable states what happened to it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

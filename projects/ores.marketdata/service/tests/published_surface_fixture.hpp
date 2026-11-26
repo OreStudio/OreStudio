@@ -44,7 +44,7 @@
 #include "ores.marketdata.core/repository/fx_vol_surface_publish_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
-#include "ores.marketdata.service/app/fx_vol_surface_publish_service.hpp"
+#include "ores.marketdata.service/app/fx_vol_surface_publication_kind.hpp"
 #include "ores.refdata.api/domain/fx_option_convention.hpp"
 #include "ores.refdata.api/domain/fx_vol_surface_blueprint.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
@@ -118,7 +118,7 @@ public:
         ores::marketdata::messaging::get_published_fx_vol_surface_request req;
         req.blueprint_id = boost::uuids::to_string(blueprint_id_);
         req.as_of = as_of;
-        return ores::marketdata::service::app::fx_vol_surface_publish_service::read_published(
+        return ores::marketdata::service::app::fx_vol_surface_published_reader::read_published(
             *party, req);
     }
 

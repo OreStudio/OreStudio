@@ -229,6 +229,8 @@ task and name that file in the Command column.
 | pgTAP suites that pass | 109 files, 1,022 tests | =projects/ores.sql/test/run_tests.sh= | 38421a0585 |
 | Other gate checks that pass | 6: build, web, format, codegen-tests, site-page, compass-ng | =compass check --only <id>=, =compass-ng check --ratchet= | 38421a0585 |
 | Wide types the rule's three columns push over their recorded ceiling | 3: the config's domain, write and entity structs | =compass-ng check=, =wide_types/over_ceiling=, which fails no gate | 38421a0585 |
+| Fixing rows a series holds after a service restart | 520 rows over 520 days, unchanged, for all five | count the rows and the distinct =fixing_date=, then =compass services restart ores.synthetic.service=, then count again | e5d32a04bb |
+| Newest fixing of each after the restart fix | USD SOFR 1M 3.94%, COP IBR 3M 8.96%, JPY EYTIBOR 3M 0.35%, KRW GENERIC 3M 2.94%, PLN WIBOR 6M 5.60% | =select f.value ... where f.valid_to = ores_utility_infinity_timestamp_fn() and f.fixing_date = (select max(...))= | e5d32a04bb |
 
 * Notes
 
@@ -275,6 +277,14 @@ Starvation is proven twice: the unit test shows that a starved node states
 nothing and makes up no day, and a live run shows the same end to end, where
 stopping the SOFR overnight curve's node logs the derived node as starved and
 adds no fixing to the series.
+
+A day is stated once, including across a restart. A run that comes back finds
+the days the market holds and states no history, but it used to leave the last
+day fixed unset, so its first tick on a day the market already held stated that
+day again with the level it read by then, and the store kept a second version
+of one day's fixing. Reading the held days showed two series carrying 521 rows
+over 520 days. The newest held day is now the last day fixed, and a service
+restart leaves all five series at 520 rows over 520 days.
 
 The local gate is green on everything this branch touches, on a tree rebased
 onto main: the build, the eight suites the change reaches, the ticks smoke, the

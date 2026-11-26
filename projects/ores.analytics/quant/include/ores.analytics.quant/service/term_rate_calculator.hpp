@@ -68,14 +68,14 @@ public:
      * @brief The term index's rate over [start, end].
      *
      * @param overnight_rate The overnight index's rate at @p start. Read only
-     *        by =overnight_plus_spread=; the compounded rule takes its level
-     *        from the discount factors alone.
+     *        by the overnight-plus-spread rule; the compounded rule takes its
+     *        level from the discount factors alone.
      * @param discount_factor_start P(start); must be > 0.
      * @param discount_factor_end P(end); must be > 0.
      * @param convention The day-count convention of the overnight index, whose
      *        year fraction annualises both rules.
      * @param rule Which rule states the rate.
-     * @param spread_basis_points The spread the =overnight_plus_spread= rule
+     * @param spread_basis_points The spread the overnight-plus-spread rule
      *        adds, in basis points. Ignored by the compounded rule.
      * @throws std::invalid_argument if a discount factor is not positive, if
      *         @p end is not after @p start, or if the term's year fraction is

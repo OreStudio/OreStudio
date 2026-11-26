@@ -208,3 +208,60 @@ TEST_CASE("a_starved_node_states_no_fixing_and_makes_up_no_day", index_fixing_fe
         CHECK(tick->vendor_time != utc_at(a_later_monday, 12h));
     }
 }
+
+TEST_CASE("a_run_that_comes_back_states_no_history_and_fixes_only_the_day_it_lands_on",
+          index_fixing_feed_tags) {
+    manual_run_clock clock(utc_at(a_cut_friday, 14h));
+    ores::analytics::quant::service::run_market market(clock, {}, 7);
+    ores::nats::service::client nats(ores::testing::make_nats_options());
+    nats.connect();
+    REQUIRE(nats.is_connected());
+
+    const std::string subject = "test.synthetic.fixings.resumed";
+    auto ticks = nats.subscribe_buffered(subject, 64);
+    const auto spot = market.values().member_of(market_member_kind::spot, "synthetic.test.resumed");
+
+    // The market already holds the Friday: the node ran before and stated it.
+    index_fixing_feed feed(
+        nats,
+        index_fixing_feed_input{
+            .source_name = "synthetic.test.fixing.resumed",
+            .target = {.id = {.id_scheme = "oresmd",
+                              .external_id =
+                                  "oresmd://fx/EUR?type=fixing&index=fx&source=WMR1000NYC&ccy=USD",
+                              .field = "value"},
+                       .subject = subject,
+                       .provider_code = "simulated-fixings",
+                       .faults = {}},
+            .item = "oresmd://fx/EUR?type=fixing&index=fx&source=WMR1000NYC&ccy=USD",
+            .level_kind = market_member_kind::spot,
+            .level_codes = {"synthetic.test.resumed"},
+            .when = {},
+            .history_days = 3,
+            .run_seed = 42,
+            .held =
+                [](const std::string&, year_month_day) {
+                    return std::expected<std::set<year_month_day>, std::string>{
+                        std::set<year_month_day>{a_cut_friday}};
+                }},
+        market);
+
+    market.values().publish_spot(spot, 1.0842, utc_at(a_cut_friday, 14h));
+    CHECK(feed.tick({.elapsed_seconds = 1.0, .observed_at = utc_at(a_cut_friday, 14h)}) == "0");
+    CHECK(feed.publish_count() == 0);
+
+    // The next weekday is fixed from the level it runs at, and no day before it is made up.
+    const year_month_day a_later_monday{sys_days{a_cut_friday} + days{3}};
+    CHECK(feed.tick({.elapsed_seconds = 1.0, .observed_at = utc_at(a_later_monday, 9h)}) == "1");
+    CHECK(feed.publish_count() == 1);
+
+    for (int i = 0; i < 50 && ticks.size() < 1; ++i)
+        std::this_thread::sleep_for(milliseconds(100));
+    const auto sent = ticks.snapshot();
+    REQUIRE(sent.size() == 1);
+    const auto only =
+        ores::nats::default_wire_codec().decode<ores::marketdata::messaging::adapter_tick>(
+            sent.front().data);
+    REQUIRE(only);
+    CHECK(only->vendor_time == utc_at(a_later_monday, 12h));
+}

@@ -103,8 +103,8 @@ struct head_answer {
     std::size_t bytes_after_headers = 0;
 };
 
-std::optional<head_answer> head_send(std::uint16_t port, http::verb verb,
-                                     const std::string& target) {
+std::optional<head_answer>
+head_send(std::uint16_t port, http::verb verb, const std::string& target) {
     asio::io_context io;
     beast::tcp_stream stream(io);
     beast::error_code ec;

@@ -83,6 +83,7 @@ const fr: SourceCatalogue = {
             tenants: 'Locataires',
             operations: 'Opérations',
             reporting: 'Rapports',
+            dataquality: 'Qualité des données',
             development: 'Développement',
             api: 'API',
             parties: 'Parties',
@@ -8377,6 +8378,47 @@ const fr: SourceCatalogue = {
             aLaterCut: 'une coupure ultérieure du même type et périmètre',
             comparisonGap:
                 'Comparer un run de cette coupure avec un autre est le travail du parcours d’audit, qui lit les résultats des deux runs. Cet onglet nomme les runs et ouvre celui qu’une personne choisit.',
+        },
+    },
+    dq: {
+        area: {
+            title: 'Qualité des données',
+            lead: 'Si ce tenant détient les données de référence que ses valorisations lisent, et où chaque jeu de données est publié.',
+        },
+        coverage: {
+            title: 'Couverture des données de référence',
+            lead: 'Les ensembles qu’un tenant publie, les jeux de données que chacun porte, et la raison pour laquelle un jeu de données ne peut pas être publié.',
+            bundlesTitle: 'Ensembles par niveau',
+            bundlesLead:
+                'Le niveau décide quel tenant détient les lignes. Les données de plateforme et de monde se lisent là où elles sont, dans le tenant système.',
+            membersTitle: 'Jeux de données de l’ensemble',
+            membersLead:
+                'Chaque jeu de données, l’emplacement de ses lignes en attente, et la raison pour laquelle il ne peut pas être publié.',
+            reasonsTitle: 'Pourquoi un jeu de données ne peut pas être publié',
+            reasonsLead:
+                'Chaque raison a un responsable, afin que la personne qui peut la corriger sache que c’est à elle.',
+            noBundles:
+                'Cette base ne contient encore aucun ensemble. Une recréation les sème ; une base neuve ressemble à ceci avant la première publication.',
+            noMembers: 'Cet ensemble ne porte aucun jeu de données.',
+            noLevel: 'Aucun niveau indiqué',
+            notServed: 'Pas encore servi',
+            dataset: 'Jeu de données',
+            artefactType: 'Type d’artefact',
+            staged: 'En attente',
+            published: 'Publié',
+            readiness: 'Aptitude',
+            metadataComplete: 'Métadonnées complètes',
+            gap: 'Les comptes en attente et publiés ne sont pas encore servis : l’opération de couverture et la lecture de provenance restent à construire. L’écran dessine un tiret à leur place, car un zéro dirait que l’exécution n’a rien écrit.',
+            reason: {
+                noDataset: 'Aucune ligne de jeu de données',
+                noArtefactType: 'Aucun type d’artefact',
+                noTargetSubject: 'Aucun sujet cible',
+                noStagedRows: 'Aucune ligne en attente',
+            },
+            owner: {
+                dq: 'La qualité des données le corrige',
+                importer: 'L’importateur le corrige',
+            },
         },
     },
     reporting: {

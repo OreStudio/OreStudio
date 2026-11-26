@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
+:ores.cpp.http-route.enabled: true
 :ID: 73870A5E-9A27-4DAB-8E2A-E58E097C1218
 :END:
 #+title: ores.dq.dataset_bundle_member

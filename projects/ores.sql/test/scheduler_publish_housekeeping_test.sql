@@ -64,6 +64,18 @@ create temp table t_jobs on commit drop as
 select id from ores_dq_datasets_tbl
 where code = 'test.housekeeping_jobs' and valid_to = ores_utility_infinity_timestamp_fn();
 
+-- The person who makes the changes below. A store that holds a person refuses
+-- an actor it does not know, so the fixture names an account that exists; until
+-- the installation has one, the store accepts any name, which the fallback
+-- covers.
+create temp table t_actor on commit drop as
+select coalesce(
+    (select username from ores_iam_accounts_tbl
+     where valid_to = ores_utility_infinity_timestamp_fn()
+     order by username
+     limit 1),
+    'system') as username;
+
 insert into ores_dq_retention_policies_artefact_tbl (
     dataset_id, tenant_id, code, version, target_kind, target, action,
     retention_days, cadence_hours, enabled, description)
@@ -99,7 +111,8 @@ insert into ores_scheduler_retention_policies_tbl (
     modified_by, performed_by, change_reason_code, change_commentary)
 select r.code, r.tenant_id, r.version, r.target_kind, r.target, r.action, 365,
     r.cadence_hours, r.enabled, r.description,
-    'system', 'system', 'system.admin_reset', ''
+    (select username from t_actor), (select username from t_actor),
+    'system.admin_reset', ''
 from ores_scheduler_retention_policies_tbl r
 where r.tenant_id = ores_utility_system_tenant_id_fn()
   and r.code = 'test_store_a_90d'
@@ -195,7 +208,8 @@ insert into ores_scheduler_job_definitions_tbl (
     modified_by, performed_by, change_reason_code, change_commentary)
 select r.id, r.tenant_id, r.version, r.job_name, r.party_id, r.description, r.command,
     '* * * * *', r.action_type, r.action_payload, r.is_active,
-    'system', 'system', 'system.admin_reset', ''
+    (select username from t_actor), (select username from t_actor),
+    'system.admin_reset', ''
 from ores_scheduler_job_definitions_tbl r
 where r.tenant_id = ores_utility_system_tenant_id_fn()
   and r.job_name = 'test.sweep_job'

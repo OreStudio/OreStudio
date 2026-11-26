@@ -32,6 +32,7 @@ const AREAS = {
     trading: { nameKey: 'shell.menu.trading', to: '/trading' },
     marketdata: { nameKey: 'shell.menu.marketdata', to: '/market-data' },
     reporting: { nameKey: 'shell.menu.reporting', to: '/reporting' },
+    dq: { nameKey: 'shell.menu.dataquality', to: '/data-quality' },
     development: { nameKey: 'shell.menu.development', to: '/development' },
     tenants: { nameKey: 'shell.menu.tenants', to: '/tenants' },
 } as const;

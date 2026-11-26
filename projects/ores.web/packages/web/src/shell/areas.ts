@@ -95,6 +95,18 @@ export const MENU: readonly MenuItem[] = [
             'refdata::curve_configurations:read',
         ],
     },
+    {
+        // The area holds one screen today, so it asks for exactly what that
+        // screen reads.
+        nameKey: 'shell.menu.dataquality',
+        to: PATHS.dataQuality,
+        permission: [
+            'dq::datasets:read',
+            'dq::dataset_bundles:read',
+            'dq::dataset_bundle_members:read',
+            'dq::artefact_types:read',
+        ],
+    },
     { nameKey: 'shell.menu.development', to: '/development' },
     { nameKey: 'shell.menu.api', to: '/swagger', external: true },
     { nameKey: 'shell.menu.tenants', to: '/tenants', permission: DEPLOYMENT_READ },

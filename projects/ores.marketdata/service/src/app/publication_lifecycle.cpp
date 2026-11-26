@@ -43,6 +43,14 @@ const publication_kind& publication_kind_of(derived_kind kind) {
     throw std::logic_error("The lifecycle is asked for a kind it does not declare.");
 }
 
+std::string raise_permission_of(const ores::database::context& ctx, std::string_view kind_code) {
+    ores::inbox::service::approval_lifecycle lifecycle(ctx);
+    const auto kind = lifecycle.kind(std::string(kind_code));
+    if (!kind)
+        throw std::runtime_error("No such kind of request: " + std::string(kind_code) + ".");
+    return kind->raise_permission_code.value_or(std::string{});
+}
+
 publication_subject resolve_publication_subject(const ores::database::context& ctx,
                                                 derived_kind kind,
                                                 const std::string& subject_key,
@@ -187,6 +195,63 @@ publication_result apply_publication(const ores::database::context& ctx,
     out.status = publication_status::published;
     out.facts = std::move(facts);
     return out;
+}
+
+namespace {
+
+publication_answer answer_of(const publication_result& applied, const std::string& request_id) {
+    publication_answer out;
+    out.request_id = request_id;
+    out.state_code = applied.state_code;
+    out.message = applied.message;
+    out.published_by = applied.facts.published_by;
+    switch (applied.status) {
+        case publication_status::published:
+            out.outcome = publication_outcome::published;
+            out.published_at = applied.facts.published_at;
+            out.message = "Published.";
+            break;
+        case publication_status::deferred:
+            out.outcome = publication_outcome::deferred;
+            break;
+        case publication_status::refused:
+            out.outcome = publication_outcome::refused;
+            break;
+    }
+    return out;
+}
+
+}
+
+publication_answer answer_publication(const ores::database::context& ctx,
+                                      derived_kind kind,
+                                      const std::string& subject_key,
+                                      std::chrono::system_clock::time_point as_of,
+                                      const std::string& request_id,
+                                      const std::string& reason,
+                                      const boost::uuids::uuid& party_id) {
+    const auto attempted =
+        publication_kind_of(kind).resolve_subject(ctx, party_id, subject_key, as_of);
+
+    if (!request_id.empty())
+        return answer_of(apply_publication(ctx, kind, request_id, attempted), request_id);
+
+    const auto raised = raise_publication(ctx,
+                                          kind,
+                                          {{.subject_key = subject_key, .as_of = as_of}},
+                                          reason,
+                                          party_id,
+                                          set_raise::keep_acceptable);
+    if (raised.state_code != "approved") {
+        publication_answer out;
+        out.outcome = publication_outcome::raised;
+        out.request_id = raised.request_id;
+        out.state_code = raised.state_code;
+        out.message = "Raised. The publish waits on the decision.";
+        return out;
+    }
+    return answer_of(apply_publication(ctx, kind, raised.request_id, raised.raised.front()),
+                     raised.request_id);
 }
 
 }

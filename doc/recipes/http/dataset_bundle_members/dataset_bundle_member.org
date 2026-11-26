@@ -1,0 +1,221 @@
+:PROPERTIES:
+:ID: CC9EBC52-9E51-59B8-AFD5-526B2DD40E08
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: http_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I call the dataset_bundle_members endpoints over HTTP?
+#+description: Every endpoint the dataset_bundle_members resource answers over HTTP, with the request each one exports into the gateway's recipe library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:http:dataset_bundle_members:
+
+This file documents the dataset_bundle_members resource over HTTP, one section per endpoint. Every section exports its own Hurl file into =projects/ores.http/scripts/library/=. Running a file sends that one request, so a failure names the endpoint it came from.
+
+* Endpoints
+
+** =GET /api/v1/dq/dataset_bundle_members=
+:PROPERTIES:
+:ID: DFE44A9F-3187-58F4-9D1F-F5E9AF1390C8
+:END:
+
+List dataset bundle members. It needs a session.
+
+It forwards to =dq.v1.dataset_bundle_members.list=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/dq/dataset_bundle_members
+#+end_example
+
+#+name: dataset_bundle_members-list
+#+begin_src hurl :tangle dataset_bundle_members-list.hurl :exports none
+GET {{base_url}}/api/v1/dq/dataset_bundle_members
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/dq/dataset_bundle_members/__none__/__none__=
+:PROPERTIES:
+:ID: 5E1B35F4-D019-5CC5-96B6-24906A115068
+:END:
+
+Get one dataset bundle member. It needs a session.
+
+It forwards to =dq.v1.dataset_bundle_members.get=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/dq/dataset_bundle_members/__none__/__none__
+#+end_example
+
+#+name: dataset_bundle_members-get
+#+begin_src hurl :tangle dataset_bundle_members-get.hurl :exports none
+GET {{base_url}}/api/v1/dq/dataset_bundle_members/__none__/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/dq/dataset_bundle_members/get-many=
+:PROPERTIES:
+:ID: 89918FAC-F300-5CF7-8371-0ECEDDE2E9DB
+:END:
+
+Get many dataset bundle members. It needs a session.
+
+It forwards to =dq.v1.dataset_bundle_members.get_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/dq/dataset_bundle_members/get-many
+#+end_example
+
+#+name: dataset_bundle_members-get-many
+#+begin_src hurl :tangle dataset_bundle_members-get-many.hurl :exports none
+POST {{base_url}}/api/v1/dq/dataset_bundle_members/get-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/dq/dataset_bundle_members=
+:PROPERTIES:
+:ID: C435C96F-3303-56F0-9371-C3B62EA955CA
+:END:
+
+Create one dataset bundle member. It needs a session.
+
+It forwards to =dq.v1.dataset_bundle_members.put=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/dq/dataset_bundle_members
+#+end_example
+
+#+name: dataset_bundle_members-add
+#+begin_src hurl :tangle dataset_bundle_members-add.hurl :exports none
+POST {{base_url}}/api/v1/dq/dataset_bundle_members
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =PUT /api/v1/dq/dataset_bundle_members=
+:PROPERTIES:
+:ID: A5569757-B16D-5574-88A9-768DC86886EF
+:END:
+
+Replace one dataset bundle member. It needs a session.
+
+It forwards to =dq.v1.dataset_bundle_members.put=.
+
+The request is:
+
+#+begin_example
+PUT /api/v1/dq/dataset_bundle_members
+#+end_example
+
+#+name: dataset_bundle_members-set
+#+begin_src hurl :tangle dataset_bundle_members-set.hurl :exports none
+PUT {{base_url}}/api/v1/dq/dataset_bundle_members
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/dq/dataset_bundle_members/put-many=
+:PROPERTIES:
+:ID: 9B0E6F5B-22AE-510A-AF11-0C157887F5D6
+:END:
+
+Write many dataset bundle members. It needs a session.
+
+It forwards to =dq.v1.dataset_bundle_members.put_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/dq/dataset_bundle_members/put-many
+#+end_example
+
+#+name: dataset_bundle_members-put-many
+#+begin_src hurl :tangle dataset_bundle_members-put-many.hurl :exports none
+POST {{base_url}}/api/v1/dq/dataset_bundle_members/put-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =DELETE /api/v1/dq/dataset_bundle_members/__none__/__none__=
+:PROPERTIES:
+:ID: 54FA08E5-CA48-5070-9E6F-EDD6AB680B4A
+:END:
+
+Delete one dataset bundle member. It needs a session.
+
+It forwards to =dq.v1.dataset_bundle_members.delete=.
+
+The request is:
+
+#+begin_example
+DELETE /api/v1/dq/dataset_bundle_members/__none__/__none__
+#+end_example
+
+#+name: dataset_bundle_members-delete
+#+begin_src hurl :tangle dataset_bundle_members-delete.hurl :exports none
+DELETE {{base_url}}/api/v1/dq/dataset_bundle_members/__none__/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =POST /api/v1/dq/dataset_bundle_members/delete-many=
+:PROPERTIES:
+:ID: FBC626A9-6CB4-5169-A1C1-DE442E17FC1D
+:END:
+
+Delete many dataset bundle members. It needs a session.
+
+It forwards to =dq.v1.dataset_bundle_members.delete_many=.
+
+The request is:
+
+#+begin_example
+POST /api/v1/dq/dataset_bundle_members/delete-many
+#+end_example
+
+#+name: dataset_bundle_members-delete-many
+#+begin_src hurl :tangle dataset_bundle_members-delete-many.hurl :exports none
+POST {{base_url}}/api/v1/dq/dataset_bundle_members/delete-many
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+
+** =GET /api/v1/dq/dataset_bundle_members/by-bundle-code/__none__=
+:PROPERTIES:
+:ID: 6D15B59F-2C7F-5B53-81EE-BCFAF96013A5
+:END:
+
+List the dataset bundle members that reference one bundle code. It needs a session.
+
+It forwards to =dq.v1.dataset_bundle_members.list_by_bundle_code=.
+
+The request is:
+
+#+begin_example
+GET /api/v1/dq/dataset_bundle_members/by-bundle-code/__none__
+#+end_example
+
+#+name: dataset_bundle_members-by-bundle-code
+#+begin_src hurl :tangle dataset_bundle_members-by-bundle-code.hurl :exports none
+GET {{base_url}}/api/v1/dq/dataset_bundle_members/by-bundle-code/__none__
+Accept: application/json
+Authorization: Bearer {{token}}
+HTTP 200
+#+end_src
+

@@ -177,6 +177,13 @@ it applied none; the housekeeping pgTAP suite passes its 15 assertions and the
 whole suite its 1022; the scheduler fired the published jobs within ten minutes
 of starting.
 
+A defect in the work's own test surfaced later, and is fixed on its own task.
+The pgTAP test wrote =modified_by = 'system'=, which the store accepts only while
+the installation holds no person; on a provisioned database the insert is refused
+at line 106. See
+[[id:A02A55EA-402D-4A03-A083-5C7C7B34D3D5][Fix the housekeeping publish test's
+actor]]. The behaviour under test is unaffected, and no schema or code changed.
+
 Outstanding, and named for the next task: the sweep applies only a chunk drop, so
 the =delete_rows= and =expire_prefix= actions its policies may name still report
 =skipped=; the run ledger has no retention policy of its own, so it grows by one

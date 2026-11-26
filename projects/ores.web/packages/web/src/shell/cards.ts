@@ -58,6 +58,19 @@ export interface CardDef extends Pick<MenuItem, 'permission'> {
 }
 
 export const CARDS = {
+    coverage: {
+        titleKey: 'dq.coverage.title',
+        bodyKey: 'dq.coverage.lead',
+        to: PATHS.dataQualityCoverage,
+        icon: 'record',
+        screenTitleKey: 'dq.coverage.title',
+        permission: [
+            'dq::datasets:read',
+            'dq::dataset_bundles:read',
+            'dq::dataset_bundle_members:read',
+            'dq::artefact_types:read',
+        ],
+    },
     blotter: {
         titleKey: 'trading.blotter.title',
         bodyKey: 'trading.blotter.lead',
@@ -549,6 +562,7 @@ export const AREA_CARDS = {
         'conventions',
         'engineSettings',
     ],
+    dq: ['coverage'],
     tenants: ['tenants'],
     trading: ['blotter', 'authorisationQueue'],
 } as const satisfies Record<string, readonly CardId[]>;
@@ -562,6 +576,7 @@ export const AREA_PAGE: Record<CardArea, string> = {
     marketdata: '/market-data',
     operations: PATHS.operations,
     reporting: PATHS.reporting,
+    dq: PATHS.dataQuality,
     tenants: '/tenants',
     trading: PATHS.trading,
 };
@@ -612,6 +627,7 @@ export const FOLDERS: readonly FolderDef[] = [
     { to: '/requests', bodyKey: 'inbox.queue.lead', icon: 'document' },
     { to: PATHS.operations, bodyKey: 'operations.hub.description', icon: 'server' },
     { to: PATHS.reporting, bodyKey: 'reporting.area.lead', icon: 'chart' },
+    { to: PATHS.dataQuality, bodyKey: 'dq.area.lead', icon: 'database' },
     { to: '/development', bodyKey: 'development.lead', icon: 'apps' },
     { to: '/swagger', bodyKey: 'shell.api.lead', icon: 'server', external: true },
     { to: '/tenants', bodyKey: 'home.system.tenantsLead', icon: 'party' },

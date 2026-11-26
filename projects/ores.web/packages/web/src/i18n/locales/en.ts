@@ -89,6 +89,7 @@ export const en: SourceCatalogue = {
             tenants: 'Tenants',
             operations: 'Operations',
             reporting: 'Reporting',
+            dataquality: 'Data quality',
             development: 'Development',
             api: 'API',
             parties: 'Parties',
@@ -8248,6 +8249,46 @@ export const en: SourceCatalogue = {
             aLaterCut: 'a later cut of the same kind and scope',
             comparisonGap:
                 'Comparing one run of this cut with another is the audit journey’s work, which reads the two runs’ results. This tab names the runs and opens the one a person picks.',
+        },
+    },
+    dq: {
+        area: {
+            title: 'Data quality',
+            lead: 'Whether this tenant holds the reference data its valuations read, and where each dataset is published.',
+        },
+        coverage: {
+            title: 'Reference data coverage',
+            lead: 'The bundles a tenant publishes, the datasets each bundle carries, and the reason a dataset cannot publish.',
+            bundlesTitle: 'Bundles by level',
+            bundlesLead:
+                'The level decides which tenant holds the rows. Platform and world data is read where it lies, in the system tenant.',
+            membersTitle: 'Datasets in the bundle',
+            membersLead: 'Each dataset, where its rows are staged, and why it cannot publish.',
+            reasonsTitle: 'Why a dataset cannot publish',
+            reasonsLead:
+                'Each reason has an owner, so the person who can fix it knows it is theirs.',
+            noBundles:
+                'This database holds no bundle yet. A recreate seeds them; a fresh database looks like this before the first publish.',
+            noMembers: 'This bundle carries no dataset.',
+            noLevel: 'No level stated',
+            notServed: 'Not served yet',
+            dataset: 'Dataset',
+            artefactType: 'Artefact type',
+            staged: 'Staged',
+            published: 'Published',
+            readiness: 'Readiness',
+            metadataComplete: 'Metadata complete',
+            gap: 'The staged and published counts are not served yet: the coverage operation and the provenance read are still to build. The screen draws a dash in their place, because a zero would say the run wrote nothing.',
+            reason: {
+                noDataset: 'No dataset row',
+                noArtefactType: 'No artefact type',
+                noTargetSubject: 'No target subject',
+                noStagedRows: 'No staged rows',
+            },
+            owner: {
+                dq: 'Data quality fixes it',
+                importer: 'The importer fixes it',
+            },
         },
     },
     reporting: {

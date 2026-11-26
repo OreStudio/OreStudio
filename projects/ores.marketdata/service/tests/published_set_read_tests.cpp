@@ -18,9 +18,9 @@
  *
  */
 #include "curve_publish_fixture.hpp"
+#include "curve_publish_steps.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.marketdata.core/service/published_set_reader.hpp"
-#include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
 #include "ores.marketdata.service/app/curve_withdrawal.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -37,9 +37,9 @@ using ores::marketdata::messaging::get_latest_published_sets_request;
 using ores::marketdata::messaging::get_latest_published_sets_response;
 using ores::marketdata::service::published_set_reader;
 using ores::marketdata::service::app::curve_republish_service;
-using ores::marketdata::service::app::raise_publish_request;
-using ores::marketdata::service::app::record_publication;
-using ores::marketdata::service::app::verdict_on_publish;
+using ores::marketdata::service::tests::raise_publish_request;
+using ores::marketdata::service::tests::record_publication;
+using ores::marketdata::service::tests::verdict_on_publish;
 using ores::marketdata::service::app::withdraw_curve;
 using namespace ores::marketdata::service::tests;
 using ores::platform::time::datetime;

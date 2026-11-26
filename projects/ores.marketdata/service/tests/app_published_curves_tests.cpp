@@ -40,9 +40,9 @@ using ores::inbox::service::approval_lifecycle;
 using ores::marketdata::service::app::curve_republish_service;
 using ores::marketdata::service::app::get_published_curve_sets;
 using ores::marketdata::service::app::list_published_curves;
-using ores::marketdata::service::app::raise_publish_request;
-using ores::marketdata::service::app::record_publication;
-using ores::marketdata::service::app::verdict_on_publish;
+using ores::marketdata::service::tests::raise_publish_request;
+using ores::marketdata::service::tests::record_publication;
+using ores::marketdata::service::tests::verdict_on_publish;
 using ores::marketdata::service::app::withdraw_curve;
 using namespace ores::marketdata::service::tests;
 

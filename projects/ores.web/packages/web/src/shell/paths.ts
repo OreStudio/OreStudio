@@ -86,6 +86,8 @@ export const PATHS = {
     sensitivityTemplates: '/reporting/sensitivity-templates',
     cuts: '/reporting/cuts',
     cutTypes: '/refdata/cut-types',
+    dataQuality: '/data-quality',
+    dataQualityCoverage: '/data-quality/coverage',
 } as const;
 
 /** The address of one asset class's calibration list. */

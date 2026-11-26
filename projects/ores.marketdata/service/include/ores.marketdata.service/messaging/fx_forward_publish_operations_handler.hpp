@@ -23,8 +23,10 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/fx_forward_operation_protocol.hpp"
-#include "ores.marketdata.service/app/curve_publish_gate.hpp"
-#include "ores.marketdata.service/app/fx_forward_publish_service.hpp"
+#include "ores.marketdata.service/app/derived_market_object_kind.hpp"
+#include "ores.marketdata.service/app/fx_forward_publication_kind.hpp"
+#include "ores.marketdata.service/app/publication_kind_codes.hpp"
+#include "ores.marketdata.service/app/publication_lifecycle.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -86,8 +88,13 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        const auto resp =
-            ores::marketdata::service::app::fx_forward_publish_service::publish(*req_ctx, *req);
+        publish_fx_forward_response resp;
+        try {
+            answer(*req_ctx, *req, resp);
+        } catch (const std::exception& e) {
+            resp.success = false;
+            resp.message = e.what();
+        }
         ORES_LOG_SEV(fx_forward_publish_operations_handler_lg(), info)
             << "FX forward publish of " << req->pair_code << ": "
             << (resp.success ? resp.state_code : "refused: " + resp.message);
@@ -115,10 +122,32 @@ public:
         }
         reply(nats_,
               msg,
-              ores::marketdata::service::app::fx_forward_publish_service::read(*req_ctx, *req));
+              ores::marketdata::service::app::fx_forward_published_reader::read(*req_ctx, *req));
     }
 
 private:
+    /// The raise, or the apply of an approved request, through the one lifecycle.
+    static void answer(const ores::database::context& ctx,
+                       const publish_fx_forward_request& req,
+                       publish_fx_forward_response& resp) {
+        using namespace ores::marketdata::service::app;
+        const auto party = ores::service::messaging::session_party(ctx, "A forward set");
+        const auto answered =
+            answer_publication(ctx,
+                               derived_kind::fx_forward,
+                               req.pair_code,
+                               std::chrono::floor<std::chrono::microseconds>(req.as_of),
+                               req.approval_request_id,
+                               req.reason,
+                               party);
+        resp.approval_request_id = answered.request_id;
+        resp.state_code = answered.state_code;
+        resp.success = answered.outcome == publication_outcome::published;
+        resp.message = answered.message;
+        resp.published_at = answered.published_at;
+        resp.published_by = answered.published_by;
+    }
+
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;

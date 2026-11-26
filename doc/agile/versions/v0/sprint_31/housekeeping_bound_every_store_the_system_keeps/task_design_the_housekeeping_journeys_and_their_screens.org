@@ -8,7 +8,7 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch: feature/design-the-housekeeping-journeys-and-their-screens
-#+pr: 5172
+#+pr: 5174
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-26
@@ -92,6 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5174][#5174]] | [knowledge] Sign off the housekeeping prototype review |
 | [[https://github.com/OreStudio/OreStudio/pull/5172][#5172]] | [knowledge] Keep the plot on the store's page and triage in the list |
 | [[https://github.com/OreStudio/OreStudio/pull/5171][#5171]] | [knowledge] Plot the growth and let a policy be added in the housekeeping prototype |
 | [[https://github.com/OreStudio/OreStudio/pull/5169][#5169]] | [knowledge] Open a store on its own page in the housekeeping prototype |

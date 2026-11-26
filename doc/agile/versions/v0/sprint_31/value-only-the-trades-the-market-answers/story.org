@@ -2,12 +2,12 @@
 :ID: 8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF
 :END:
 #+title: Story: Value only the trades the market can answer
-#+description: A report resolves every trade's market data requirements before the engine runs, excludes each trade the market cannot answer and names the cause against its book, splits a run's errors into preprocessing, engine and postprocessing, and lets a product approval matrix at party and book level decide which types a book carries.
+#+description: A report resolves every trade's market data requirements before the engine runs, excludes each trade the market cannot answer and names the cause against its book, splits a run's errors into preprocessing, engine and postprocessing, and lets a product approval chain at party, desk and book level decide which types a book carries.
 #+type: story
 #+level: s2
 #+filetags: :marketdata:reporting:trading:synthetic:requirements:sprint_31:v0:
 #+created: 2026-11-25
-#+updated: 2026-11-25
+#+updated: 2026-11-26
 #+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,7 +15,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-A report values the trades whose market data the system can answer, and states plainly why it left the others out. The run resolves each trade's market data requirements before the engine sees it, excludes every trade the market cannot answer, and records where each error came from: the preprocessing of the run, the engine, or the postprocessing of its results. A product approval matrix at party level states what the party may trade, a book level matrix states what that book may carry, and the generator fills each book from the second.
+A report values the trades whose market data the system can answer, and states plainly why it left the others out. The run resolves each trade's market data requirements before the engine sees it, excludes every trade the market cannot answer, and records where each error came from: the preprocessing of the run, the engine, or the postprocessing of its results. A product approval chain states what the party may trade, what each desk within it may permit, and what each book may carry, each level equal to or narrower than the one above, and the generator fills each book from its own level of it.
 
 * Status
 
@@ -23,11 +23,10 @@ A report values the trades whose market data the system can answer, and states p
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
-| Now           | The model is fixed, and a party now states the product types it permits while a book narrows that set under a rule the database holds. |
+| Now           | The chain has its three levels and the database holds every link of it: a party states the types it permits, a desk narrows them and a book narrows its desk's. |
 | Waiting on    | Nothing. The demand work of [[id:03554F8C-7FFF-4735-BC5B-2CA45E58C621][Make the market data connection follow the trades]] follows this story's readiness read rather than preceding it. |
-| Next          | STARTED | BACKLOG | | | The chain gains the business unit between the party and the book: a desk states a set equal to or narrower than its party's, a book narrows its desk's, and the triggers hold both links. |
-| [[id:7338D2E9-647A-4C81-ACE9-46AE6F492FF1][Seed each book with the approval its name implies]], and then [[id:68C4B58E-0801-4770-98B8-3A8294D7220F][Fill each book from its approval matrix]]. |
-| Last touched  | 2026-11-25                               |
+| Next          | Seed each book with the approval its name implies ([[id:7338D2E9-647A-4C81-ACE9-46AE6F492FF1][Seed each book with the approval its name implies]]), and then fill each book from it ([[id:68C4B58E-0801-4770-98B8-3A8294D7220F][Fill each book from its approval matrix]]). |
+| Last touched  | 2026-11-26                             |
 
 * Acceptance
 
@@ -46,12 +45,14 @@ A report values the trades whose market data the system can answer, and states p
 | [[id:825E12E1-F068-4630-B5A0-CF7E2F2F6871][Scaffold story: Value only the trades the market can answer]] | DONE | 2026-11-25 | 2026-11-25 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:7B4089F8-EE63-4056-9B67-A750CC0A99F4][Write the decision: what a run may value, and what it reports]] | DONE | 2026-11-25 | 2026-11-25 | State a run's three attribution phases, the three grains of its market readiness, the six causes of a gap, and the partition of the population that excluding an incomplete trade produces. |
 | [[id:9EC5A975-0FD7-44F4-9C70-7921E0F7AD3D][State what a party may trade and what a book may carry]] | DONE | 2026-11-25 | 2026-11-25 | A party level approval matrix states the product types a party may trade, a book level matrix states the types that book may carry, and a book's matrix is refused unless it is a subset of its party's. |
+| [[id:7338D2E9-647A-4C81-ACE9-46AE6F492FF1][Seed each book with the approval its name implies]] | BACKLOG | | | Each published ACME book states the product types its name and purpose imply, the desks above them state a set that holds each of them, and the party states a set that holds every desk. |
 | [[id:68C4B58E-0801-4770-98B8-3A8294D7220F][Fill each book from its approval matrix]] | BACKLOG | | | The generator fills a book with the product types its approval matrix names, books no type the matrix does not name, and states per book what it booked and what it left out. |
 | [[id:90951C94-E994-400F-A7D1-F2E1FDF68FC9][Resolve a trade set's requirements per trade]] | BACKLOG | | | The trading operation that answers what a trade set needs returns the addresses of each trade rather than one flat set, so a caller can say which trade needs what. |
 | [[id:8574E05C-8C76-4B37-9C64-61B3C1E0EEC5][Record a run's market readiness and leave incomplete trades out]] | BACKLOG | | | Before the engine runs, a run resolves each trade's requirements, records which addresses the market answers at the as-of, excludes every trade with an unanswered requirement, and fails in preprocessing when no trade is complete. |
 | [[id:E6B29704-7BEF-4C2A-B95F-32623AF49200][State the phase of every error a run records]] | BACKLOG | | | An error a run records carries the phase that produced it, the preprocessing of the run, the engine, or the postprocessing of its results, beside the scope the engine names. |
 | [[id:110CE18D-C64C-4C40-8E8E-D0664176707C][Name the trades a book did not value]] | BACKLOG | | | A report states, for each of its books, the trades that were left out and the cause of each, and shows the run's errors by the phase that produced them. |
 | [[id:2AF1ED6D-FD86-48FF-B194-B00E108C08ED][Narrow the approval at the desk]] | DONE | 2026-11-25 | 2026-11-26 | The chain gains the business unit between the party and the book: a desk states a set equal to or narrower than its party's, a book narrows its desk's, and the triggers hold both links. |
+| [[id:6EF48536-68CE-43B7-B629-7EC4D679C602][Group the approval state of a party and a desk]] | BACKLOG | | | The approval flag pushed two wide types past their recorded ceiling; grouping it into its own type brings both back under, and the rule allows no other way out. |
 
 * Decisions
 
@@ -73,10 +74,14 @@ Settled on 2026-11-25, when the story was formed.
    complete: that is what makes an engine error a real valuation error.
 5. *A run with no complete trade fails in preprocessing.* An empty valuation is
    not a valuation, and the grid is not spent on one.
-6. *Two approval matrices, at party and at book.* The party's states what it may
-   trade, the book's what that book may carry, and the book's is a subset of the
-   party's. The generator fills a book from its own matrix, which is what makes
-   a population plausible: the book that trades cable holds cable options.
+6. *Three approval levels, at party, desk and book.* The party's set states what
+   it may trade, each desk's states what that desk permits, and each book's what
+   that book may carry, each level a subset of the one above it. The desk is the
+   level a firm grants a mandate to, and a book already names its owner unit, so
+   the chain follows a link the model had. A portfolio is not a level of it:
+   moving a book between portfolios is not an approval. See [[id:193B547F-EF40-4138-85F8-5AB8B5610DB4][Product approval matrix]].
+   The generator fills a book from its own set, which is what makes a population
+   plausible: the book that trades cable holds cable options.
 7. *Book affinity is data and not code.* It is the product approval matrix a real
    firm keeps, so the simulator and a real desk share it. No rule enters the
    platform for the simulator's sake: =expected_market_data= and

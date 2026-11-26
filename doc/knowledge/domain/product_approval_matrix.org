@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: 193B547F-EF40-4138-85F8-5AB8B5610DB4
+:END:
+#+title: Product Approval Matrix
+#+description: The permitted product types at the legal entity, the desk and the book, each level narrowing the one above it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:refdata:trading:approval:mandate:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+* Summary
+
+A product approval matrix states which product types a firm permits a part of
+itself to trade. This page argues that the matrix has three levels — the legal
+entity, the desk and the book — that each level may state a set equal to or
+narrower than the one above it and never wider, and that the portfolio tree is
+not a level of it. The argument rests on where authority sits in a trading firm:
+a mandate is granted to a legal entity and to a desk, while a portfolio is a
+grouping of books for aggregation and access that moves without an approval.
+
+* Detail
+
+** The three levels
+
+| Level | The row that states it | What it says |
+|-------+------------------------+--------------|
+| Legal entity | =party_product_types=, with =parties.restricts_product_types= | The product types the entity may trade at all |
+| Desk | =business_unit_product_types=, with =business_units.restricts_product_types= | The subset its desks may trade |
+| Book | =book_product_types=, with =books.restricts_product_types= | The subset one booking unit may carry |
+
+Each level has two states and not one. A level whose flag is false states no set
+and permits every product type the catalogue holds, which is what a level that
+has never been restricted does. A level whose flag is true states its set, and an
+empty set is then a decision: it permits nothing. The distinction matters because
+the same absence of rows means opposite things on either side of the flag, and a
+screen must say which of the two it draws.
+
+The three levels form a chain. A business unit's set is a subset of its party's,
+and a book's set is a subset of its business unit's, so a book's set is a subset
+of both. The chain is enforced where the sets meet, so no caller can break it: a
+row may not name a type its parent does not permit, a parent may not drop a type
+a child still carries, and a level may not start restricting while a child
+carries a type outside the set it would state.
+
+#+caption: The approval chain, and the portfolio tree that carries no approval.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/domain/product_approval_levels.png]]
+
+The figure is generated from =product_approval_levels.puml= beside this page,
+with =plantuml -tpng product_approval_levels.puml=.
+
+** Why the chain, and why each level is equal or narrower
+
+A firm's permission to trade something is granted once, to a legal entity, and
+delegated downwards as the organisation takes structure: a desk is chartered for
+part of what its entity may trade, and a book is opened for part of what its desk
+is chartered for. Delegation only narrows; a level that widened would grant a
+permission its grantor does not hold, which no approval process allows.
+
+Equality is permitted at every link, and it is the common case. A party with one
+desk that trades everything the party may trade states no desk set, and the desk
+inherits. A book that carries everything its desk carries states no set of its
+own. A level therefore states a set only where it differs from its parent, and
+the resolution reads the chain from the leaf upwards until it finds a stated set.
+
+** Why the portfolio tree is not a level
+
+A portfolio is the folder a book sits in. It aggregates books for reporting, it
+nests, its rights decide who may see the books under it, and a book is moved
+between portfolios as an administrative act — the [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] hub and
+[[id:A08424B7-E6D7-4993-955C-53AEC241ABA5][Books and portfolios]] state both. Three consequences keep it out of the
+matrix:
+
+1. *A move would change a permission.* If a book's set followed its portfolio, a
+   reorganisation that moved the book would change what it may trade, with
+   nobody approving anything. An approval record a view can move is not a
+   control.
+2. *The nesting has no settled meaning.* A portfolio tree can be several deep.
+   Whether a child portfolio inherits, intersects or overrides its parent is a
+   question with several defensible answers and no obvious one, and a control
+   cannot rest on an ambiguity.
+3. *Its rights answer a different question.* Portfolio rights decide visibility,
+   as [[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][book access and permissions]] argues. Visibility is who may look; the
+   matrix is what may be traded. A firm grants them in different processes to
+   different people.
+
+The desk is the level a firm actually grants, and the model already names it: a
+book carries an optional owner business unit, constrained to the units its
+portfolio names. The desk is therefore reached without a new link, which is the
+other reason it is the right level and the portfolio is not.
+
+** The rules the chain rests on
+
+| Rule | Where it holds |
+|------+----------------|
+| A level states a set, or states none | The flag on the level's own row |
+| A child's set is a subset of its parent's | One trigger per link, on the child's set |
+| A parent may not start restricting while a child exceeds the set | A trigger on the parent's flag |
+| A type a parent drops must not be carried by a child | A trigger on the parent's set |
+| A level that states no set permits every type the catalogue holds | The resolution, which answers no set rather than an empty one |
+
+The catalogue of product types belongs to the trading component, so the
+resolution states "every type the catalogue holds" as an absence rather than by
+reading the catalogue: a null answer means every type, and an empty array means
+none. That keeps the reference data from reading the trades.
+
+** Where the sets come from
+
+A provisioned tenant states its sets as data quality data, beside the records it
+stages: the book's set is a junction artefact of the books dataset, the desk's
+sits beside the business units, and the entity's is taken as the union of its
+desks when the population is published. The affinity a book's name implies —
+cable options in the book that trades cable — is stated once, in the dataset, and
+read both by the published set and by the generator that fills the book, so the
+two cannot drift.
+
+* See also
+
+- [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — completes: the hub this page extends, and the book whose set the
+  chain ends at.
+- [[id:F5675BE6-EDDD-48C2-85B1-A10C1F00F7F8][Business unit]] — completes: the desk, the middle level of the chain, and
+  the unit a book's owner field names.
+- [[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and portfolios]] — completes: the portfolio as the folder, and the
+  rights that decide who may see a book.
+- [[id:ED964111-1F24-4A3B-B4CE-665E2CF527B0][Product type]] — completes: the catalogue whose codes a set names, and
+  which belongs to the trading component.
+- [[id:A08424B7-E6D7-4993-955C-53AEC241ABA5][Books and portfolios (journeys)]] — exemplifies: the journey group that
+  states the portfolio as the folder.
+- [[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][book access and permissions]] — completes: the rights a portfolio and a
+  book carry, which are visibility and not permission.
+- [[id:AEA0BD34-1114-41C2-874D-84501B2C40CE][Approve what a party and its books may trade]] — answers: the journey that
+  draws the matrix on the records.
+- [[id:F77263EF-6F2D-4129-BA60-CA6C2F2D6153][Manage the product approval matrix]] — answers: the story that builds the
+  screens.
+
+* Sources
+
+The page states the design of this repository. Its claims derive from the book
+hub, the books and portfolios journey and the access page linked above, and from
+the model in =ores.refdata=: =parties=, =business_units=, =books= and their
+product type junctions. It cites no external work, because the claim is
+normative — where authority sits — rather than empirical.

@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
-#+updated: 2026-11-25
+#+updated: 2026-11-26
 #+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -80,12 +80,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| The desk's own proofs | 25 of 25 assertions pass | =./test/run_tests.sh test/refdata_business_unit_product_types_test.sql= | =c7831fefbe= |
+| The desk's own proofs | 30 of 30 assertions pass | =./test/run_tests.sh test/refdata_business_unit_product_types_test.sql= | =c7831fefbe=, raised at the review round |
 | The whole database suite | 111 files, 1061 assertions pass | =./test/run_tests.sh= | =25c7d42c21= |
 | The C++ suites around the change | 9 of 9 pass, of which =ores.refdata.core.tests= takes 94 s | =./compass.sh test run -- -R "refdata\|shell.application\|marketdata.api\|ores.service.tests"= | =25c7d42c21= |
 | A build of the whole tree | succeeds in 8 min 52 s | =./compass.sh build= | =25c7d42c21= |
 | The gates the codegen ports | exit 0, 12 warnings, all of them the open pull request's task rows or a wide type on another component | =compass-ng check --ratchet origin/main= | =25c7d42c21= |
 | The non-heavy local gate | 15 of 15 pass | =./compass.sh check --exclude-heavy= | =25c7d42c21= |
+| The party level's proofs after the review round | 16 of 16 assertions pass, two of them new and about the party isolation policy | =./test/run_tests.sh test/refdata_party_product_types_test.sql= | =403f9e37e1= |
+| Both approval files after the review round | 46 of 46 assertions pass | =./test/run_tests.sh test/refdata_party_product_types_test.sql test/refdata_business_unit_product_types_test.sql= | =403f9e37e1= |
 
 * Notes
 
@@ -110,7 +112,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The restriction guard listens only to =UPDATE=, while the entities are written by a version =INSERT=, so the flip the guard exists for never meets it | refdata_product_approvals_create.sql | Fixed | Both statements now guard, and two proofs flip through an insert. |
+| 2 | A book moved to another desk is not re-checked against the new desk's set | refdata_product_approvals_create.sql | Fixed | The move refuses a type the new desk does not hold, and allows the move where it does. |
+| 3 | The flag grew four wide types past their record, against a rule that lets a listed type shrink but never grow | compass/checks/wide_types.org | Deferred | Held by [[id:6EF48536-68CE-43B7-B629-7EC4D679C602][Group the approval state of a party and a desk]]: grouping the flag into its own type, since no ceiling may rise. |
+| 4 | No pgTAP case covers the restrictive party policy the branch adds | refdata_party_product_types_test.sql | Fixed | Two assertions: a session naming no party reads no row, and one naming the party reads its row. |
+| 5 | The story's Status table was malformed and the seed task was absent from its Tasks table | story.org | Fixed | Rewritten, with the seed task and the new one as rows. |
+| 6 | The desk has no accepted design line on this branch; the design page lived on the sibling branch | product_approval_matrix.org | Fixed | The page and its diagram are here, the hub links it, and Decision 6 names three levels. |
+| 7 | The parent dispatch is verbatim twice | refdata_product_approvals_create.sql | Fixed | One helper, =ores_refdata_book_parent_allowed_product_types_fn=. |
+| 8 | A comment heads the wrong group of index lines | refdata_create.sql | Fixed | It now says what the two lines load and why the desk's comes first. |
 
 * Result
 
@@ -151,9 +160,23 @@ is the first unit that includes it alone and it did not compile; the template
 now gates the include on =has_uuid_left_or_right=, as the junction entity header
 already did.
 
-*Not done here.* Four wide-type warnings are new with the flag the two entities
-gained — =party=, =party_entity=, =business_unit= and =business_unit_entity=
-each hold one field more — and they are warnings, not refusals. Grouping the
-approval fields into a type of their own would clear them and is the right way
-to do it, but it is a change to two entities and their mappers, and it belongs
-with the screens that read them rather than with the chain.
+*The review round.* Two holes the first proofs could not see, because they flipped
+the flag with an =UPDATE= and the product writes by =INSERT=. A party or a desk is
+version-inserted: the write closes the live row and inserts the next version, so
+a level that started restricting never met a guard that listened only to
+=UPDATE=. Both guards now read the live row on =INSERT= and are attached to both
+statements, and the proofs flip through a version insert, as the repository does.
+A book moved to another desk kept types that desk never approved; the move now
+refuses a book whose set the new desk does not hold and allows it where it does.
+The refusals are pinned by their message because the error code alone cannot tell
+these guards from the status and ancestry ones, and the isolation the new party
+policy adds is proved by two assertions of its own. The parent dispatch the book's
+resolution and the book's guard both made is now one function.
+
+*Not done here.* Four wide-type counts grew with the flag — =party= 20 against a
+recorded 19, =party_entity= 21 against 20, =business_unit= 16 where fifteen is
+the ceiling and the type joins no row, =business_unit_entity= 17 against 16 — and
+the rule keeps a listed type shrinking but never growing, so no ceiling rose. The
+fix is to group the flag into a type of its own, which the task
+[[id:6EF48536-68CE-43B7-B629-7EC4D679C602][Group the approval state of a party and a desk]]
+holds.

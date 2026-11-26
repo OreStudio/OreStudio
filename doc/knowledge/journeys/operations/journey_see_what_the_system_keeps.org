@@ -55,10 +55,14 @@ how long]].
    under management. A store counts as unbounded when no policy names it, or
    when its policy names an action the sweep cannot apply — the second case is
    the dangerous one, because it looks bounded on paper.
-3. *Scan the table.* Each row carries the store, the shape it has (a chunked
-   table, an ordinary table, an object-store prefix, a directory on a compute
-   host), the policy that bounds it, the period, the state, the size, the
-   growth and when it was last swept. The administrator reads the sizes first
+3. *Scan the table.* Each row carries the store by the name a person knows it
+   by — "Calendar dates", not =ores_refdata_calendar_dates_tbl= — with its
+   description a click away, the shape it has (a chunked table, an ordinary
+   table, an object-store prefix, a directory on a compute host), the policy
+   that bounds it, the period, the state, the size, the growth and when it was
+   last swept. The physical target sits beneath the name, because it is what
+   the database and the sweep name the store by, and it is not what a person
+   reads first. The administrator reads the sizes first
    and the states second, because a large bounded store is doing what it was
    told and a small unbounded one is a decision nobody made.
 4. *Order by what matters.* The system orders by size, by growth, by last
@@ -141,6 +145,15 @@ when asked, and the screen shows it as such.
 
 * What is missing
 
+- *A name and a description for a store.* The store's identity is its target
+  string, and nothing carries a human name or a sentence saying what the store
+  is: the policy's =description= describes the policy, and its =code= names the
+  policy. The store needs its own entry — a catalogue of the stores the
+  installation keeps, with a code, a display name, a description, the shape of
+  its target and how to measure it — and a policy should name one of those
+  entries. Without it this screen either derives "Refdata Calendar Dates" from
+  a table name, which says nothing about prefixes or directories, or writes
+  twelve names into the client.
 - *A size of a target.* Nothing in the tree reports how large a table, a chunk
   set, an object-store prefix or a host directory is; the only size query is a
   psql macro. The screen cannot answer its own first question without it. The

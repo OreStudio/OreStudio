@@ -65,6 +65,46 @@ separate page: the same person asks both, in one sitting, and the answer to
   editing journey needs, and it is drawn here rather than in a prototype of its
   own because a policy is edited from the store it bounds.
 
+** A store is not its target string
+
+The first review of this prototype said the obvious thing: nobody outside the
+database should have to read =ores_refdata_calendar_dates_tbl= to know that the
+store holds the calendars' business days. A row needs a human name and a
+sentence saying what the store is, and the physical target belongs beside them
+as a fact rather than as the title.
+
+Nothing in the tree carries that name today. A retention policy holds a =code=
+(the policy's name, =report_cashflows_90d=), a =target= (the physical table or
+prefix) and a =description= that describes the policy and not the store. Three
+ways to give the screen its names were weighed:
+
+- *Derive the name from the target.* =ores_refdata_calendar_dates_tbl= becomes
+  "Refdata Calendar Dates" by stripping the product and table affixes. It is
+  free and it is wrong twice: no description comes with it, and the targets
+  that are prefixes or directories (=compute/input/=,
+  =publish/run/wrappers=) have nothing to parse.
+- *Use the policy's name.* =report_cashflows_90d= names the policy, and a store
+  may have no policy at all, which is exactly the row that most needs a name.
+- *A store catalogue.* One row per store the installation keeps: its code, its
+  display name, its description, the shape its target has, the target itself,
+  how to measure it, and the component that owns it. A policy then names a
+  store, and "unbounded" becomes a store with no policy rather than a target
+  string that appears in none.
+
+The third is the layering the reference-data pages already state: the physical
+name is the row's identity and the presentation name is metadata the platform
+publishes. It also turns the story's inventory of every dimension that grows
+from a document into data the screen can read, and it gives the size read
+somewhere to hang: a store that says how to measure itself is one the size read
+can answer for.
+
+This prototype draws the first two ways badly on purpose and the third properly:
+the fixtures carry a =label= and a =description=, the target sits beneath the
+label in monospace, and the detail panel states both. When the catalogue exists,
+the label and the description come from it; until then they are the screen's own
+copy, which is a reason to build the catalogue rather than to write twelve names
+into a client.
+
 ** The states a store can be in
 
 | State | What the screen says | Why it matters |

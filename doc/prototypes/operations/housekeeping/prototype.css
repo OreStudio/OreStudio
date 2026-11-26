@@ -331,7 +331,22 @@ h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
 .data tr.selectable:focus-within td { background: #1f242c; }
 
 .storecell .sname { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
-.storecell .skind { display: block; font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
+.storecell .storetarget {
+    display: block;
+    font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    font-size: 0.78rem;
+    color: var(--muted, #5b6472);
+    overflow-wrap: anywhere;
+}
+
+.description {
+    margin: 0.25rem 0 0;
+    max-width: 68ch;
+    color: var(--muted, #5b6472);
+    font-size: 0.85rem;
+}
+
+.skind { display: block; font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
 .subline { display: block; font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
 .subline.warnline { color: #efd39a; }
 .subline.badline { color: #f0b7ae; }

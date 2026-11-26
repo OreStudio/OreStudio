@@ -81,6 +81,8 @@
         {
             id: 'calendar_dates',
             name: 'ores_refdata_calendar_dates_tbl',
+            label: 'Calendar dates',
+            description: 'The business days of every calendar, one row per calendar per day, derived from each calendar\'s rules and its exceptions. The installation publishes them once and every tenant reads the same copy.',
             group: 'timescale',
             kind: 'Timescale chunked table',
             where: 'System tenant · 1 copy',
@@ -94,6 +96,8 @@
         {
             id: 'report_cashflows',
             name: 'ores_reporting_report_cashflows_tbl',
+            label: 'Report run cashflows',
+            description: 'The cashflow rows each report run writes: the projected flows of every trade the run priced, one row per flow per measure. Kept so a run can be read again without pricing it again.',
             group: 'timescale',
             kind: 'Timescale chunked table',
             where: 'System tenant · 1 copy',
@@ -107,6 +111,8 @@
         {
             id: 'report_metrics',
             name: 'ores_reporting_report_metrics_tbl',
+            label: 'Report run metrics',
+            description: 'The summary figures each report run writes beside its cashflows, one row per metric per run. Kept under the same policy as the cashflows, because the two are read together.',
             group: 'timescale',
             kind: 'Timescale chunked table',
             where: 'System tenant · 1 copy',
@@ -120,6 +126,8 @@
         {
             id: 'delivery_counts',
             name: 'ores_marketdata_delivery_counts_tbl',
+            label: 'Market data delivery counts',
+            description: 'How many items each feed delivered for each series in each period: one row per series per period, carried forward on every flush rather than appended.',
             group: 'db',
             kind: 'Ordinary table',
             where: 'System tenant · grows by insert',
@@ -133,6 +141,8 @@
         {
             id: 'ticks',
             name: 'ores_marketdata_ticks_tbl',
+            label: 'Market data ticks',
+            description: 'The quotes every feed delivered, as they arrived, compressed by the store. The raw record a curve is built from, kept longer than anything derived from it.',
             group: 'timescale',
             kind: 'Timescale chunked table',
             where: 'System tenant · compressed',
@@ -146,6 +156,8 @@
         {
             id: 'compute_input',
             name: 'compute/input/',
+            label: 'Compute job inputs',
+            description: 'The input archives a report run hands to the grid, one per work unit: the trade set, the configuration and the market data the engine reads.',
             group: 'object',
             kind: 'Object store prefix',
             where: 'Object store · size not listed',
@@ -159,6 +171,8 @@
         {
             id: 'compute_output',
             name: 'compute/output/',
+            label: 'Compute job outputs',
+            description: 'The result archives the grid writes back, one per work unit: the engine\'s own output files and its log, packed together.',
             group: 'object',
             kind: 'Object store prefix',
             where: 'Object store · size not listed',
@@ -172,6 +186,8 @@
         {
             id: 'wrappers',
             name: 'publish/run/wrappers',
+            label: 'Compute node scratch',
+            description: 'The working folder each grid node keeps while it runs a job: the unpacked input, the engine\'s log and the output, until the job\'s result is uploaded.',
             group: 'scratch',
             kind: 'Host scratch directory',
             where: 'Compute host · 565 job folders',
@@ -185,6 +201,8 @@
         {
             id: 'packages',
             name: 'publish/run/packages',
+            label: 'Engine package cache',
+            description: 'The unpacked engine packages a host shares between its nodes, named by the package\'s digest so two versions holding the same bytes are one copy. Bounded by that keying rather than by a policy.',
             group: 'scratch',
             kind: 'Package cache',
             where: 'Compute host · one copy per host',
@@ -631,7 +649,8 @@
         const selected = S.selected === store.id;
         return '<tr class="selectable' + (selected ? ' selected' : '') + '" data-act="select" data-store="' + store.id + '">' +
             '<td class="storecell"><button type="button" class="linkish sname" data-act="select" data-store="' + store.id + '"' +
-            ' aria-expanded="' + selected + '" aria-controls="store-detail">' + esc(store.name) + '</button>' +
+            ' aria-expanded="' + selected + '" aria-controls="store-detail">' + esc(store.label) + '</button>' +
+            '<span class="storetarget">' + esc(store.name) + '</span>' +
             '<span class="skind">' + esc(store.kind) + ' · ' + esc(store.where) + '</span></td>' +
             '<td>' + boundedBy(store) + '</td>' +
             '<td>' + statusTag(store) + '</td>' +
@@ -716,7 +735,7 @@
                 '</p>';
         } else {
             body = '<div class="table-wrap"><table class="data">' +
-                '<caption class="visually-hidden">Recent runs for ' + esc(store.name) + '</caption>' +
+                '<caption class="visually-hidden">Recent runs for ' + esc(store.label) + '</caption>' +
                 '<thead><tr><th>Time</th><th>Policy</th><th>Outcome</th><th>Freed</th><th>Detail</th></tr></thead><tbody>' +
                 list.map(function (row) {
                     return '<tr>' +
@@ -741,8 +760,10 @@
 
         return '<section class="card detailpanel" id="store-detail" aria-labelledby="detail-heading">' +
             '<header><div><h2 id="detail-heading">Selected store</h2>' +
-            '<p class="meta">' + esc(store.name) + '</p></div>' + statusTag(store) + '</header>' +
+            '<p class="meta">' + esc(store.label) + ' · <span class="mono">' + esc(store.name) + '</span></p>' +
+            '<p class="description">' + esc(store.description) + '</p></div>' + statusTag(store) + '</header>' +
             '<div class="details c3">' +
+            detail('Target', esc(store.name), 'mono') +
             detail('Where it lives', esc(store.kind + ' · ' + store.where)) +
             detail('Size', esc(store.size)) +
             detail('Measured', esc(store.measure)) +
@@ -787,7 +808,8 @@
         }
 
         return '<article class="storecard">' +
-            '<header><h3>' + esc(store.name) + '</h3>' + statusTag(store) + '</header>' +
+            '<header><h3>' + esc(store.label) + '</h3>' + statusTag(store) + '</header>' +
+            '<p class="storetarget">' + esc(store.name) + '</p>' +
             '<p class="where">' + esc(store.kind) + ' · ' + esc(store.where) + '</p>' +
             '<div class="sizeline"><span class="bigsize">' + esc(store.size) + '</span><span class="meta">' + esc(sizeMeta) + '</span></div>' +
             bar +
@@ -1097,7 +1119,8 @@
 
     function editor(store) {
         const policy = policyFor(store);
-        const head = '<header class="editorhead"><div><h2 id="editor-heading">' + esc(store.name) + '</h2>' +
+        const head = '<header class="editorhead"><div><h2 id="editor-heading">' + esc(store.label) + '</h2>' +
+            '<p class="storetarget">' + esc(store.name) + '</p>' +
             '<p class="sub">' + esc(store.kind) + ' · ' + esc(store.where) + ' · ' + esc(store.size) + '</p></div>' +
             statusTag(store) + '</header>';
 
@@ -1238,7 +1261,7 @@
             '<p class="gist">State <b>' + esc(state.id) + '</b>. ' + esc(state.gist) + '</p>' +
             '<div class="grid">' +
             '<span>view: <span class="v">' + esc(S.view) + '</span></span>' +
-            '<span>selected: <span class="v">' + esc(selected ? selected.name : '—') + '</span></span>' +
+            '<span>selected: <span class="v">' + esc(selected ? selected.label : '—') + '</span></span>' +
             '<span>policies: <span class="v">' + policies().length + '</span></span>' +
             '<span>unbounded: <span class="v">' + unboundedCount() + ' of ' + STORES.length + '</span></span>' +
             '<span>runs: <span class="v">' + runRows().length + '</span></span>' +

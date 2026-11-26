@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | The route, the read and the column are in; the gate has not run on them. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Run the gate and raise the PR.         |
 | Last touched | 2026-11-25                               |
 
 * Acceptance

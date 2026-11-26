@@ -1,0 +1,297 @@
+:PROPERTIES:
+:ID: E9C02E90-72F4-4DA7-94FE-863D7FFEB28F
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.dq.bundle_roster
+#+description: Codegen operation model for the dq bundle roster verb, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: dq
+#+subcomponent: api
+#+entity_singular: bundle_roster
+#+namespace: ores::dq::messaging
+#+brief: Reports the bundles, and for one of them the members and what each has staged.
+#+filetags: :model:operation:dq:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+The bundle roster verb: one request that names a bundle or none, and one reply
+that carries every bundle and, for the one named, its members.
+
+It is an operation rather than an entity verb because the answer is a shape the
+tables do not hold: the level a bundle publishes at, the count of its members,
+and per member the count of rows its artefact table has staged. Three SQL
+functions compute that answer, and the handler that serves it stays hand-written
+beside this model.
+
+A request that names no bundle answers the roster alone, without members. The
+staged count costs one count per member's artefact table, so it is taken for the
+bundle a caller names and never for every bundle on the roster.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** bundle_roster_request
+:PROPERTIES:
+:subject:  dq.v1.ops.bundle_roster
+:response: bundle_roster_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the roster, or for one bundle of it with its members.
+ */
+#+end_src
+
+*** bundle_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The bundle whose members to read, or empty for the roster alone.
+ */
+#+end_src
+
+** bundle_roster_member
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One dataset a bundle carries, and what its artefact table holds.
+ */
+#+end_src
+
+*** display_order
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Where the member sits in the bundle's own order.
+ */
+#+end_src
+
+*** dataset_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The dataset the member names.
+ */
+#+end_src
+
+*** dataset_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The dataset's name, or a note that no dataset row was found.
+ */
+#+end_src
+
+*** artefact_type
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The artefact type whose table the dataset stages into.
+ */
+#+end_src
+
+*** artefact_table
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The table, or family of tables, the dataset stages into.
+ */
+#+end_src
+
+*** target_subject
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The subject a publish writes to, or a note that it names none.
+ */
+#+end_src
+
+*** staged_count
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many rows the dataset has staged, ready to publish.
+ */
+#+end_src
+
+*** is_publishable
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the member has both a dataset row and a target subject.
+ */
+#+end_src
+
+*** optional
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the member publishes only when a caller opts in.
+ */
+#+end_src
+
+** bundle_roster_bundle
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One bundle, the level it publishes at, and its members.
+ */
+#+end_src
+
+*** code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The bundle's code.
+ */
+#+end_src
+
+*** name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The bundle's name.
+ */
+#+end_src
+
+*** description
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the bundle carries.
+ */
+#+end_src
+
+*** level
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The level the bundle publishes at: platform, world or tenant.
+ */
+#+end_src
+
+*** dataset_count
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many datasets the bundle carries.
+ */
+#+end_src
+
+*** members
+:PROPERTIES:
+:cpp_type: std::vector<bundle_roster_member>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The members, in the bundle's own order, when the request named it.
+ */
+#+end_src
+
+** bundle_roster_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reports the roster, or why it could not be read.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the roster was read.
+ */
+#+end_src
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why it could not be read, when it could not.
+ */
+#+end_src
+
+*** bundles
+:PROPERTIES:
+:cpp_type: std::vector<bundle_roster_bundle>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Every bundle, ordered by code.
+ */
+#+end_src

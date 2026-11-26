@@ -32,6 +32,18 @@
       "address": "GET /api/marketdata/public-rates/coverage",
       "path": "series",
       "why": "The gateway answers no series where the BFF answers 142: it reads the durable fixings table, which this deployment holds empty, and the BFF reads the public rates' own series. Captured as 2C4E2094-15C2-44FE-959C-20D4D4A7E203 so the difference is tracked rather than excused as harmless."
+    },
+    {
+      "address": "GET /api/marketdata/quotes/feeds",
+      "why": "last_at is null until the live board has heard the feed at least once, and a string once it has. The corpus was captured with ticks flowing; the gate starts a fleet on a database it has just rebuilt, so the member is null there. The same pair passes when the check is run against a fleet that has been up, which is what makes this the state of the delivery and not a difference in the answer. The route writes null from found == heard.end() and no screen reads the member as a shape."
+    },
+    {
+      "address": "GET /api/reporting/reports",
+      "why": "latestRun is null for a definition that has no run, and an object once it has one. The corpus was captured where runs existed; the gate rebuilds the database before comparing, so no definition carries one. The route writes null when run_of finds no run for the definition, so the difference is the presence of a run and not the shape of the answer."
+    },
+    {
+      "address": "GET /api/trades",
+      "why": "rows[].structure_id is an optional uuid the summary carries, and the corpus was captured when no summary had one: the BFF writes no value of its own, it passes the summary through, so it answered null there. A trade that belongs to a structure now states it, which is the member holding a value and not a different shape. The pair comes and goes with whether the summaries in the database name a structure, which is why one gate reports it and the next does not. Re-capturing the corpus was tried and rejected: against an empty BFF it records quotes as array null and last_at as null, which would hide the very absence the other two entries explain."
     }
   ]
 }

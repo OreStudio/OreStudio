@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 9D20C630-1504-4E5C-9110-C83D00DB03A1
+:END:
+#+title: Story: Keep a secret encrypted, with its key outside the system
+#+description: A secret ORE must use is kept in one place, encrypted with AES-256-GCM under a key that lives outside the database, read only by the service that owns it and rotated without re-entering it.
+#+type: story
+#+level: s2
+#+filetags: :vault:secrets:crypto:security:iam:sprint_31:v0:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+ORE already needs one secret it cannot do without: the client secret that a provider's token exchange presents. Today it lives nowhere, because the rule was that a secret is named and never stored, and naming it was the only way to keep it out of the tree.
+
+This story gives the secrets ORE must use a home. A secret is written once, encrypted with AES-256-GCM under a key that lives outside the database, the repository and the environment file. Only the service that owns the secret reads it back, in memory, for a caller the bus already trusts. A rotation replaces the key without re-entering anyone's secret, as one audited act.
+
+The story settles what that home is before it builds one: a small service of ORE's own, inspired on a vault and not a copy of one, or a capability inside IAM, which already holds the rows the secrets belong to. A spike proves the cipher with one test before either choice is built on.
+
+Then the store is modelled, served, wired into the provider registry and proven by the gates, so that the first secret ORE needs never reaches a file again.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
+| Now           | The cipher seals and opens under a test. |
+| Waiting on    | Nothing.                               |
+| Next          | Decide what keeps the secrets, and what holds the key. |
+| Last touched  | 2026-11-26                               |
+
+* Acceptance
+
+- A secret is written once, encrypted, and read only by the service that keeps it: no wire surface carries a ciphertext, and no caller sees another tenant's plaintext.
+- The key that protects the secrets is never in the database, the repository or an environment file, and its home is recorded.
+- A ciphertext is bound to the row it belongs to, so a copy moved to another name, tenant or version does not open.
+- A rotation rewrites every secret under a new key as one audited act, and leaves each plaintext unchanged.
+- Every use of a secret is recorded against the caller that asked for it.
+- The provider registry takes its client secret from this store, so no provider secret is in a file.
+- The cipher is proven by a test before anything is built on it, and the gates cover the new code.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:17E7B2CD-DC2B-4ED1-9D3A-FF7890853738][Scaffold story: Keep a secret encrypted, with its key outside the system]] | DONE | 2026-11-26 | 2026-11-26 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:1271D12D-D727-4C03-B14C-5CA2E89A1507][Spike the seal and the open]] | DONE | 2026-11-26 | 2026-11-26 | One test seals a secret with AES-256-GCM and opens it again under its key, and the notes answer why the first attempt sealed nothing. |
+| [[id:3CD184EB-E6D2-48DB-8D0F-CDDC27C86CEF][Decide what keeps the secrets, and what holds the key]] | BACKLOG | | | Decide, before any code, whether ORE keeps the secrets it must use in a small service of its own or inside IAM, and where the key that protects them lives. |
+
+* Decisions
+
+- *The decision to store a secret belongs to this story* (2026-11-26, product
+  owner). The rule that a secret is named and never stored was replaced, while
+  the identity story was in flight, by the rule that a secret is encrypted in
+  the database under a key that lives outside it; see [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Sign a person up and in
+  through an external identity provider]]. That rule needs a store, a place to
+  put the key and an audit of every use, which is a capability of its own and
+  not a step in a sign-in. It is therefore built here, and the identity story
+  asks this store for its provider secret rather than growing one.
+
+* Out of scope
+
+- A secret ORE only proves and never recovers. A password hash is one-way by
+  design and stays in IAM.
+- The certificates a service presents to NATS, and the keys ORE signs its own
+  tokens with, until one of them must be rotated without a restart.
+- A general-purpose secret manager for the fleet: no dynamic credentials, no
+  leases, no PKI engine, and no storage engine of its own.
+- The test double's and the seeder's fixtures. They move here only once the
+  store exists and the gate can run without a file.

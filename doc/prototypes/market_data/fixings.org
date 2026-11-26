@@ -126,3 +126,13 @@ The prototype decides five things, and no more.
   where a row leads.
 - Nothing is written: Refresh reloads the page, and every act moves the query
   string.
+
+* The pages
+
+#+caption: The list: the filters, the series, the empty series and the legend.
+#+attr_html: :width 100%
+[[file:fixings/fixings-list.png]]
+
+#+caption: The row's act: where a series leads, which is the page the platform already has.
+#+attr_html: :width 100%
+[[file:fixings/fixings-series.png]]

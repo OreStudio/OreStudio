@@ -52,9 +52,12 @@ how long]].
 2. *Read the ground first.* The screen opens on a summary that a person can
    take in before reading any row: how many stores there are, how many are
    bounded by an enabled policy, how many are unbounded, and the total size
-   under management. A store counts as unbounded when no policy names it, or
-   when its policy names an action the sweep cannot apply — the second case is
-   the dangerous one, because it looks bounded on paper.
+   under management. Every store that can take one carries a default bound, so
+   a store without a policy is the exception: either its bound cannot be
+   expressed as an age, or somebody removed the default. A store counts as
+   unbounded when no policy names it, when its policy names an action the sweep
+   cannot apply, or when the policy is off or its last run failed — the skipped
+   action is the dangerous one, because it looks bounded on paper.
 3. *Scan the table.* Each row carries the store by the name a person knows it
    by — "Calendar dates", not =ores_refdata_calendar_dates_tbl= — with its
    description a click away, the shape it has (a chunked table, an ordinary

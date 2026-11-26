@@ -21,37 +21,40 @@ salt
 {
   <b>ORE STUDIO - SYSTEM ADMINISTRATION: OPERATIONS</b>
   --
-  <b>HOUSEKEEPING</b>  |  Stores (9) | Runs (3)
+  <b>HOUSEKEEPING</b>  |  Stores (9) | Runs (8)
   --
   {
-    Stores: 9 | Policies: 2 | <color:#b00020>Not bounded: 6</color> | Measured: 2.5 GB across 7 stores
+    Stores: 9 | Policies: 7 | <color:#b00020>Unbounded: 1</color> | Measured: 2.5 GB across 7 stores
   }
   --
-  <b><color:#b00020>6 of the 9 stores have nothing that bounds them.</color></b>
-  A store with no policy that applies is never deleted from. It grows until the
-  database or the disk is full. The policies held today freed 0 B because nothing
-  is older than its period yet; that does not bound the 6 stores below.
-  [ Show the 6 stores nothing bounds ]   [ Open the runs log ]
+  <b><color:#b00020>1 of the 9 stores is unbounded.</color></b>
+  The catalogue declares a default bound for every store that can take one, and 7
+  policies hold here, so every other store is bounded by a policy or by its content
+  digest. An unbounded store is never deleted from: it grows until the database or
+  the disk is full. The calendar dates are the gap: a policy bounds by age, and a
+  day behind the horizon is out of range rather than old.
+  [ Show the 1 unbounded ]   [ Open the runs log ]
   --
-  <b>EVERY STORE</b>                                  [ Not bounded (6) ]   2 policies · 9 stores
+  <b>EVERY STORE</b>                                  [ Unbounded (1) ]   7 policies · 9 stores
   A store with no policy that applies is kept for ever.
   {#
     Store (shape) | Bounded? | Bounded by | Size | Growth
-    Calendar dates (chunked) | <color:#b00020>Not bounded</color> | none -- no policy | 283 MB | +652 kB/wk
+    Calendar dates (chunked) | <color:#b00020>Unbounded</color> | none -- no policy | 283 MB | +652 kB/wk
     Report run cashflows (chunked) | Bounded | drop chunks, 90 days | 186 MB of 512 MB | +16.9 MB/wk
     Report run metrics (chunked) | Bounded | drop chunks, 90 days | 4 MB | +372 kB/wk
-    Market data delivery counts (ordinary) | <color:#b00020>Not bounded</color> | none -- no policy | 29 MB | +2.5 MB/wk
-    Market data ticks (chunked) | <color:#b00020>Not bounded</color> | none -- no policy | 16 kB | flat
-    Compute job inputs (prefix) | <color:#b00020>Not bounded</color> | none -- no policy | not measured | not measured
-    Compute job outputs (prefix) | <color:#b00020>Not bounded</color> | none -- no policy | not measured | not measured
-    Compute node scratch (host directory) | <color:#b00020>Not bounded</color> | none -- no policy | 1.9 GB of 2.0 GB | +145.7 MB/wk
+    Market data delivery counts (ordinary) | Bounded | delete rows, 30 days | 29 MB | +2.5 MB/wk
+    Market data ticks (chunked) | Bounded | drop chunks, 90 days | 16 kB | flat
+    Compute job inputs (prefix) | Bounded | expire objects, 7 days | not measured | not measured
+    Compute job outputs (prefix) | Bounded | expire objects, 90 days | not measured | not measured
+    Compute node scratch (host directory) | Bounded | release directory, 1 day | 1.9 GB of 2.0 GB | +145.7 MB/wk
     Engine package cache (package cache) | Bounded by keying | content digest | 209 MB | +19 MB/wk
   }
   --
   Each row also states the cost of having no bound: about 33 MB a year for the
-  calendars and about 7.4 GB a year for the node scratch, at the rate of the
-  last twelve weeks. A row opens that store's own page, where the plot,
-  the policy and the activity are. The plot is not in the list.
+  calendars, about 7.4 GB a year for the node scratch, at the rate of the last
+  twelve weeks. A row opens that store's own page, where the plot, the policy and
+  the activity are. The plot is not in the list. Unbounded is red because there is
+  no reading of it that is not bad.
 }
 
 @enduml

@@ -95,8 +95,7 @@ inline std::vector<generator_offer> fixing_offers(const std::vector<feed_start_t
     const auto offer = [&](std::string item,
                            ores::analytics::quant::domain::market_member_kind kind,
                            std::vector<std::string> level_codes,
-                           fixing_time when,
-                           std::optional<derived_fixing> derived = std::nullopt) {
+                           fixing_time when) {
         if (!offered.insert(item).second)
             return;
         const auto target = adapter_target_of(adapter_id,
@@ -105,22 +104,20 @@ inline std::vector<generator_offer> fixing_offers(const std::vector<feed_start_t
                                               faults);
         if (!target)
             return;
-        auto make =
-            [&build, target = *target, item, kind, level_codes, when, derived, held = inputs.held] {
-                return std::shared_ptr<ores::marketdata::domain::i_feed>(
-                    std::make_shared<index_fixing_feed>(
-                        build.nats,
-                        index_fixing_feed_input{.source_name = "synthetic.fixing." + item,
-                                                .target = target,
-                                                .item = item,
-                                                .level_kind = kind,
-                                                .level_codes = level_codes,
-                                                .derived = derived,
-                                                .when = when,
-                                                .run_seed = build.market.loop().run_seed(),
-                                                .held = held},
-                        build.market));
-            };
+        auto make = [&build, target = *target, item, kind, level_codes, when, held = inputs.held] {
+            return std::shared_ptr<ores::marketdata::domain::i_feed>(
+                std::make_shared<index_fixing_feed>(
+                    build.nats,
+                    index_fixing_feed_input{.source_name = "synthetic.fixing." + item,
+                                            .target = target,
+                                            .item = item,
+                                            .level_kind = kind,
+                                            .level_codes = level_codes,
+                                            .when = when,
+                                            .run_seed = build.market.loop().run_seed(),
+                                            .held = held},
+                    build.market));
+        };
         out.push_back(generator_offer{.id = target->id, .group = {}, .make = std::move(make)});
     };
 

@@ -236,40 +236,6 @@ feed_kind make_fx_spot_kind() {
     k.candidates = [](const ores::database::context& ctx, const std::string& id) {
         repo::fx_spot_generation_config_repository fx_repo;
         const auto rows = id.empty() ? fx_repo.read_latest(ctx) : fx_repo.read_latest(ctx, id);
-        // A derived index reads its currency's overnight curve, so the funding
-        // configs are read once for the whole request: the day-count convention
-        // that annualises each currency's compounded rate is refdata's, not the
-        // synthetic config's, and the row shape is what names it.
-        namespace rrepo = ores::refdata::repository;
-        namespace rmapping = ores::refdata::mapping;
-        rrepo::ir_curve_bootstrap_config_repository bootstrap_repo;
-        const auto bootstrap_configs = bootstrap_repo.read_latest(ctx);
-
-        const auto convention_of = [&bootstrap_configs](const std::string& currency) {
-            for (const auto& config : bootstrap_configs)
-                if (config.currency_code == currency && config.curve_family_role == "FUNDING") {
-                    try {
-                        return rmapping::parse_day_count_convention_code(
-                            config.day_count_convention);
-                    } catch (const std::exception&) {
-                        // A convention the calculator does not implement leaves the
-                        // compounded rate on the most common overnight basis rather
-                        // than refusing the whole request.
-                        return ores::analytics::quant::service::day_count_convention_code::A360;
-                    }
-                }
-            return ores::analytics::quant::service::day_count_convention_code::A360;
-        };
-
-        // A derived index says why it is not offered rather than vanishing from the
-        // run: the address its fixings take, the curve it reads and the term are all
-        // things a person can fix, and silence would say none of it.
-        const auto& registry_lg = []() -> auto& {
-            static auto instance =
-                ores::logging::make_logger("ores.synthetic.service.feed_kind_registry");
-            return instance;
-        };
-
         std::vector<feed_kind_candidate> out;
         out.reserve(rows.size());
         const auto shared = std::make_shared<fx_build_rows>();

@@ -209,17 +209,24 @@ def _substitute_args(args_template, def_row, keys_dir, log_level="info",
 # holds it; the file itself is generated once per checkout by
 # vault_credentials.ensure().
 SERVICE_CREDENTIALS = {
-    "ores.vault.service": ["vault.kek", "vault.transport.key"],
+    # Every retained key version, because a row records the one that sealed it,
+    # and the version file that says which one a write uses.
+    "ores.vault.service": ["vault.kek.*", "vault.transport.key"],
     "ores.http.server": ["gateway.transport.key"],
 }
 
 
 def _credential_lines(service_name, checkout_root):
-    """The LoadCredential= lines a service's unit needs, one per key."""
+    """The LoadCredential= lines a service's unit needs, one per key file.
+
+    A pattern stands for every file it matches, because a rotation adds a key
+    version and the unit has to see the ones already there.
+    """
+    keys_dir = Path(checkout_root) / "build" / "keys"
     lines = ""
-    for credential in SERVICE_CREDENTIALS.get(service_name, []):
-        path = f"{checkout_root}/build/keys/{credential}"
-        lines += f"LoadCredential={credential}:{path}\n"
+    for pattern in SERVICE_CREDENTIALS.get(service_name, []):
+        for path in sorted(keys_dir.glob(pattern)):
+            lines += f"LoadCredential={path.name}:{path}\n"
     return lines
 
 

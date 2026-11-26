@@ -36,6 +36,7 @@ set(files
     "generators/secret_generator.cpp"
     "generators/secret_use_generator.cpp"
     "messaging/consumer_protocol_codec.cpp"
+    "messaging/secret_operations_protocol_codec.cpp"
     "messaging/secret_protocol_codec.cpp"
     "messaging/secret_use_protocol_codec.cpp"
 )
@@ -65,6 +66,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.api/generators/secret_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.api/generators/secret_use_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.api/messaging/consumer_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.api/messaging/secret_operations_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.api/messaging/secret_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.api/messaging/secret_use_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.api/ores.vault.api.hpp"

@@ -24,6 +24,7 @@ set(files
     "consumer_protocol_codec_roundtrip_tests.cpp"
     "main.cpp"
     "secret_codec_roundtrip_tests.cpp"
+    "secret_operations_protocol_codec_roundtrip_tests.cpp"
     "secret_protocol_codec_roundtrip_tests.cpp"
     "secret_use_codec_roundtrip_tests.cpp"
     "secret_use_protocol_codec_roundtrip_tests.cpp"

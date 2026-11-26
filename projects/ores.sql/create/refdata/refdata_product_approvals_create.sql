@@ -20,20 +20,24 @@
 -- =============================================================================
 -- The product approval matrices, and the rule that joins them
 -- =============================================================================
--- A party states the product types it permits, and each of its books may state
--- a subset of them. Both sets are junctions with a flag on the row they hang
--- from, and the absence of rows means opposite things on either side of the
--- flag: every type when the flag is false, and none when it is true.
+-- A party states the product types it permits, each of its desks may state a
+-- subset of them, and each book may state a subset of its desk's. All three sets
+-- are junctions with a flag on the row they hang from, and the absence of rows
+-- means opposite things on either side of the flag: every type when the flag is
+-- false, and none when it is true.
 --
--- The functions below resolve a set from the two matrices without reading the
--- product type catalogue, which belongs to the trading component. A null answer
+-- The functions below resolve a set along the chain without reading the product
+-- type catalogue, which belongs to the trading component. A null answer
 -- therefore means "every type the catalogue states", and it is the caller that
 -- knows the catalogue. An empty array means none.
 --
--- The triggers keep the subset rule true on both sides of it: a book may not
--- name a type its party does not permit, a party may not drop a type a book
--- still carries, and a party may not start restricting while a book carries a
--- type outside the set it is about to state.
+-- The triggers keep the subset rule true at every link: a desk may not name a
+-- type its party does not permit, a book may not name a type its desk or party
+-- does not permit, a level may not drop a type a level below it still carries,
+-- and a level may not start restricting while a level below it carries a type
+-- outside the set it is about to state. The drops are guarded only where the
+-- link really goes away: a version replacement closes the row and re-creates it
+-- for the same type, so it leaves the set as it was and the guard stays quiet.
 
 create or replace function ores_refdata_party_allowed_product_types_fn(
     p_party_id uuid
@@ -140,9 +144,10 @@ end;
 $$ language plpgsql stable;
 
 comment on function ores_refdata_book_allowed_product_types_fn(uuid) is
-    'The product types a book may carry, resolved from the book and its party, or null when both permit every type the catalogue states.';
+    'The product types a book may carry, resolved from the book, its desk and its party, or null when all of them permit every type the catalogue states.';
 
--- A book may name a type only when its party permits it.
+-- A book may name a type only when its desk permits it, and its desk only when
+-- its party permits it.
 create or replace function ores_refdata_book_product_types_approval_fn()
 returns trigger as $$
 declare
@@ -185,14 +190,17 @@ end;
 $$ language plpgsql;
 
 comment on function ores_refdata_book_product_types_approval_fn() is
-    'Refuses a book product type its party does not permit.';
+    'Refuses a book product type its desk or party does not permit.';
 
--- A party may not drop a type a book of its own still carries.
+-- A party may not drop a type a desk or a book of its own still carries.
 create or replace function ores_refdata_party_product_types_close_fn()
 returns trigger as $$
 begin
+    -- A closed_by marker means the link was deleted. A row closed without one
+    -- is being replaced for the same type, which leaves the set as it was.
     if old.valid_to = ores_utility_infinity_timestamp_fn()
-       and new.valid_to <> ores_utility_infinity_timestamp_fn() then
+       and new.valid_to <> ores_utility_infinity_timestamp_fn()
+       and new.closed_by is not null and old.closed_by is null then
         perform 1
         from ores_refdata_business_units_tbl u
         join ores_refdata_business_unit_product_types_tbl j
@@ -231,10 +239,10 @@ end;
 $$ language plpgsql;
 
 comment on function ores_refdata_party_product_types_close_fn() is
-    'Refuses a party product type that a book of the party still carries.';
+    'Refuses a party product type that a desk or a book of the party still carries.';
 
--- A party may not start restricting while a book carries a type outside the
--- set the party is about to state.
+-- A party may not start restricting while a desk or a book carries a type
+-- outside the set the party is about to state.
 create or replace function ores_refdata_parties_approval_restriction_fn()
 returns trigger as $$
 declare
@@ -342,7 +350,8 @@ create or replace function ores_refdata_business_unit_product_types_close_fn()
 returns trigger as $$
 begin
     if old.valid_to = ores_utility_infinity_timestamp_fn()
-       and new.valid_to <> ores_utility_infinity_timestamp_fn() then
+       and new.valid_to <> ores_utility_infinity_timestamp_fn()
+       and new.closed_by is not null and old.closed_by is null then
         perform 1
         from ores_refdata_books_tbl b
         join ores_refdata_book_product_types_tbl j
@@ -407,6 +416,43 @@ $$ language plpgsql;
 
 comment on function ores_refdata_business_units_approval_restriction_fn() is
     'Refuses a desk that starts restricting while a book carries a type the desk would not permit.';
+
+-- A desk answers for the approval of its own party, so a book may not sit under
+-- a desk of another party: the chain would then resolve a set the book's party
+-- never approved.
+create or replace function ores_refdata_books_owner_unit_party_fn()
+returns trigger as $$
+declare
+    v_unit_party_id uuid;
+begin
+    if new.owner_unit_id is null then
+        return new;
+    end if;
+
+    select u.party_id into v_unit_party_id
+    from ores_refdata_business_units_tbl u
+    where u.id = new.owner_unit_id
+      and u.valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_unit_party_id is null or v_unit_party_id = new.party_id then
+        return new;
+    end if;
+
+    raise exception
+        'Book % may not belong to business unit %: the unit belongs to another party.',
+        new.id, new.owner_unit_id
+        using errcode = '23514';
+end;
+$$ language plpgsql;
+
+comment on function ores_refdata_books_owner_unit_party_fn() is
+    'Refuses a book whose desk belongs to another party.';
+
+drop trigger if exists ores_refdata_books_owner_unit_party_trg
+    on "ores_refdata_books_tbl";
+create trigger ores_refdata_books_owner_unit_party_trg
+before insert or update of owner_unit_id, party_id on "ores_refdata_books_tbl"
+for each row execute function ores_refdata_books_owner_unit_party_fn();
 
 drop trigger if exists ores_refdata_book_product_types_approval_trg
     on "ores_refdata_book_product_types_tbl";

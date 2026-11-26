@@ -808,29 +808,29 @@
         return '<tr class="selectable' + (selected ? ' selected' : '') + '" data-act="select" data-store="' + store.id + '">' +
             '<td class="storecell"><button type="button" class="linkish sname" data-act="select" data-store="' + store.id + '"' +
             ' aria-expanded="' + selected + '" aria-controls="store-detail">' + esc(store.label) + '</button>' +
-            '<span class="storetarget">' + esc(store.name) + '</span>' +
+            '<span class="storetarget" title="' + esc(store.name) + '">' + esc(store.name) + '</span>' +
             '<span class="skind">' + esc(store.kind) + ' · ' + esc(store.where) + '</span></td>' +
             '<td>' + boundedBy(store) + '</td>' +
             '<td>' + statusTag(store) + '</td>' +
-            '<td class="num">' + esc(store.size) + '</td>' +
-            '<td class="growthcell">' + sparkline(store, 96, 22) + '<span class="subline">' + esc(store.growth) + '</span></td>' +
-            '<td>' + sweepCell(store) + '</td>' +
-            '<td class="num">' + esc(policy ? policy.freed : '—') + '</td>' +
+            '<td class="growthcell"><span class="v">' + esc(store.size) + '</span>' +
+            sparkline(store, 96, 22) + '<span class="subline">' +
+            esc(store.growth) + ' · freed ' + esc(policy ? policy.freed : '—') + '</span></td>' +
             '</tr>';
     }
 
     function viewA() {
-        return '<section class="card">' +
+        return '<div class="split" data-selected="' + (S.selected ? 'yes' : 'no') + '">' +
+            '<section class="card master">' +
             '<header><div><h2>Every store</h2><p class="meta">A store with no policy says so, in the Bounded by column and in its State.</p></div>' +
             '<span class="meta">' + policies().length + ' policies · ' + unboundedCount() + ' unbounded</span></header>' +
             '<div class="table-wrap"><table class="data">' +
             '<caption class="visually-hidden">Every store, its bound, state, size, growth, last sweep and freed bytes</caption>' +
-            '<thead><tr><th>Store / Target</th><th>Bounded by (action + period)</th><th>State</th><th>Size</th><th>Growth</th><th>Last sweep</th><th>Freed</th></tr></thead>' +
+            '<thead><tr><th>Store / Target</th><th>Bounded by</th><th>State</th><th>Size and growth, twelve weeks</th></tr></thead>' +
             '<tbody>' + STORES.map(storeRow).join('') + '</tbody></table></div>' +
             '<p class="note">Sizes come from the database catalogues, the object-store listing and a directory walk. ' +
             'A Freed figure of 0 B means the last sweep found nothing older than the period; it does not mean the policy failed. ' +
             'A dash means there is no policy to free anything.</p>' +
-            '</section>' + detailPanel();
+            '</section>' + detailPanel() + '</div>';
     }
 
     function policyBlock(store, policy) {
@@ -965,10 +965,22 @@
     }
 
     function detailPanel() {
-        const store = storeById(S.selected) || STORES[0];
+        const store = storeById(S.selected);
+        if (!store) {
+            return '<section class="card detailpanel empty" id="store-detail" aria-live="polite">' +
+                '<h2>No store is open</h2>' +
+                '<p>Choose a store in the list to see its record, its growth and its log. ' +
+                'The list keeps every store in view, so the one you opened can be compared with the rest ' +
+                'without going back.</p></section>';
+        }
         const policy = policyFor(store);
 
         return '<section class="card detailpanel" id="store-detail" aria-labelledby="detail-heading">' +
+            '<div class="panelnav">' +
+            '<button type="button" class="btn secondary small backbtn" data-act="back">Back to the stores</button>' +
+            '<button type="button" class="btn secondary small" data-act="runs-store" data-store="' +
+            store.id + '">Log for this store</button>' +
+            '</div>' +
             '<header><div><h2 id="detail-heading">' + esc(store.label) + '</h2>' +
             '<p class="meta">A store of the installation · <span class="mono">' + esc(store.code) + '</span></p>' +
             '</div>' + statusTag(store) + '</header>' +
@@ -1609,7 +1621,7 @@
             return;
         }
 
-        if (['variant', 'state', 'view', 'select', 'runs-store', 'clear-runfilter', 'first-policy', 'edit-store', 'save'].indexOf(act) < 0) {
+        if (['variant', 'state', 'view', 'select', 'back', 'runs-store', 'clear-runfilter', 'first-policy', 'edit-store', 'save'].indexOf(act) < 0) {
             return;
         }
 
@@ -1640,6 +1652,9 @@
             if (S.view === 'runs') S.runFilter = null;
         } else if (act === 'select') {
             selectStore(el.getAttribute('data-store'));
+        } else if (act === 'back') {
+            S.selected = null;
+            if (S.view === 'runs' && S.runFilter) S.runFilter = null;
         } else if (act === 'runs-store') {
             S.view = 'runs';
             S.runFilter = el.getAttribute('data-store');

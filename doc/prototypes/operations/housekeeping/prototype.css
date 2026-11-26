@@ -34,6 +34,7 @@
 
 body {
     margin: 0;
+    padding-bottom: 6rem;
     background: var(--bg);
     color: var(--ink);
     font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -330,8 +331,89 @@ h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
 .data tr.selected td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
 .data tr.selectable:focus-within td { background: #1f242c; }
 
-.storecell .sname { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
-.storecell .growthcell .spark {
+.storecell .sname {
+    display: block;
+    font: inherit;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink);
+    text-align: left;
+    padding: 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+
+.storecell { min-width: 12rem; max-width: 16rem; }
+
+.storecell .storetarget {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
+    gap: 1rem;
+    align-items: start;
+}
+
+.split .master {
+    min-width: 0;
+}
+
+.detailpanel {
+    position: sticky;
+    top: 1rem;
+    /* the header above and the variant bar below take their own room */
+    max-height: calc(100vh - 12rem);
+    overflow-y: auto;
+}
+
+.detailpanel.empty h2 {
+    margin-top: 0;
+}
+
+.panelnav {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-bottom: 0.5rem;
+}
+
+.backbtn {
+    display: none;
+}
+
+/* A narrow screen cannot hold the two panes, so opening a store replaces the
+   list with that store, and the way back is stated. */
+
+@media (max-width: 1100px) {
+    .split {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .detailpanel {
+        position: static;
+        max-height: none;
+    }
+
+    .split[data-selected="yes"] .master {
+        display: none;
+    }
+
+    .split[data-selected="yes"] .backbtn {
+        display: inline-block;
+    }
+}
+
+.growthcell .v { display: block; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.growthcell .spark {
     display: block;
     color: var(--accent, #2f6feb);
     margin-bottom: 0.15rem;

@@ -59,6 +59,17 @@ task and name that file in the Command column.
 
 * Notes
 
+- *Four reads sent together do not all arrive.* On the provisioned environment
+  the screen stayed on Loading and the browser reported "Cannot reach the
+  server" for two reads the DQ service never logged. The service answered the
+  two bundle reads and never saw the datasets or artefact-types requests, so the
+  fault is between the browser and the service and not in either. Unauthenticated
+  concurrency and keep-alive reuse both pass, so it needs an authenticated read
+  to show itself. The reads are serialised as a mitigation with the reason in
+  the code; the gateway's HTTP session layer is where the cause lives and its
+  log is full of "Session error ... end of stream" for this client across the
+  whole session, before this work as well as after it.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

@@ -108,12 +108,14 @@ export interface Coverage {
 }
 
 export async function readCoverage(): Promise<Coverage> {
-    const [bundles, members, datasets, artefactTypes] = await Promise.all([
-        readDatasetBundles(),
-        readDatasetBundleMembers(),
-        readDatasets(),
-        readArtefactTypes(),
-    ]);
+    // One at a time, on purpose. Sent together, the gateway drops some of these
+    // on the floor: the browser reports "Cannot reach the server" for reads the
+    // service never saw. Serialising them is a mitigation for a fault in the
+    // gateway's HTTP session layer, recorded on the task, not a design choice.
+    const bundles = await readDatasetBundles();
+    const members = await readDatasetBundleMembers();
+    const datasets = await readDatasets();
+    const artefactTypes = await readArtefactTypes();
     return { bundles, members, datasets, artefactTypes };
 }
 

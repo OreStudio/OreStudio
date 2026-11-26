@@ -24,6 +24,7 @@ two items. The values stay decimal text, as they are stored.
 
 #+begin_src cpp :name includes
 #include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>

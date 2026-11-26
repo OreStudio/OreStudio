@@ -21,8 +21,8 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/logger.hpp"
+#include <charconv>
 #include <cstdint>
-#include <cstdio>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -131,13 +131,23 @@ std::string label_of(std::string_view uri) {
 
 /// The day a "YYYY-MM-DD" text states, which is the form PostgreSQL writes.
 std::optional<std::chrono::year_month_day> read_day(const std::string& text) {
+    const auto read_int = [&text](std::size_t& at, int& value) {
+        const auto [end, ec] = std::from_chars(text.data() + at, text.data() + text.size(), value);
+        if (ec != std::errc{})
+            return false;
+        at = static_cast<std::size_t>(end - text.data());
+        return true;
+    };
     int year = 0;
-    unsigned month = 0;
-    unsigned day = 0;
-    if (std::sscanf(text.c_str(), "%d-%u-%u", &year, &month, &day) != 3)
+    int month = 0;
+    int day = 0;
+    std::size_t at = 0;
+    if (!read_int(at, year) || at >= text.size() || text[at++] != '-' || !read_int(at, month) ||
+        at >= text.size() || text[at++] != '-' || !read_int(at, day))
         return std::nullopt;
-    return std::chrono::year_month_day{
-        std::chrono::year{year}, std::chrono::month{month}, std::chrono::day{day}};
+    return std::chrono::year_month_day{std::chrono::year{year},
+                                       std::chrono::month{static_cast<unsigned>(month)},
+                                       std::chrono::day{static_cast<unsigned>(day)}};
 }
 
 rows_t read_series(const ores::database::context& ctx) {

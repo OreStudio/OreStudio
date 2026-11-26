@@ -402,6 +402,20 @@ struct trade_population_plan final {
     std::vector<trade_type_outcome> type_outcomes;
 };
 
+/**
+ * @brief The product types one book of a scope permits, as the approval chain
+ * resolves them.
+ *
+ * The set is absent when the book, its desk and its party all restrict nothing,
+ * because every type is then permitted; it is empty when a level restricts and
+ * names nothing, which permits none. A planner reads the two apart: an absent
+ * set constrains nothing and an empty one is a book that may carry nothing.
+ */
+struct book_approval final {
+    boost::uuids::uuid book_id;
+    std::optional<std::vector<std::string>> allowed_product_types;
+};
+
 }
 
 #endif

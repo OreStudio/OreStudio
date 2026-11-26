@@ -62,6 +62,7 @@
 \ir ./dq_suppliers_artefact_drop.sql
 \ir ./dq_market_observations_artefact_drop.sql
 \ir ./dq_crm_topology_configs_artefact_drop.sql
+\ir ./dq_book_product_types_artefact_drop.sql
 \ir ./dq_books_artefact_drop.sql
 \ir ./dq_portfolios_artefact_drop.sql
 \ir ./dq_business_units_artefact_drop.sql

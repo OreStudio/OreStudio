@@ -32,6 +32,10 @@
  * parent_portfolio_id is the artefact-space id (uuid) of the owning row
  * in the matching portfolios dataset, resolved by name at publish time
  * (see ores_refdata_publish_books_from_dq_fn). This script is idempotent.
+ *
+ * The product types each book permits ride the same dataset as the books
+ * themselves: a book and its affinity are one population, curated once, and
+ * the publish states the published book's set from these rows.
  */
 
 DO $$
@@ -65,4 +69,49 @@ begin
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '4be94f90-623f-5e30-925b-f7ab9b9e41a6', 0, 'Asia EM NDF', '9d267f9c-60fd-5efa-b0b6-629364eaf8c2', 'USD', 'GL-FX-003', 'CC-HK-FX', 'Active', 'Trading', false, 'HKHK', 'Trading', 'Automatic'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), '1e188b7d-1381-509f-94fc-21a23fabe5db', 0, 'Liquidity Buffer Bonds', 'ab31236b-458a-579b-a1e4-c40a43331492', 'HKD', 'GL-TREAS-001', 'CC-HK-TREAS', 'Active', 'Banking', false, 'HKHK', 'Funding', 'Automatic'),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'db77f54f-896a-561e-bc0a-26f2b51da918', 0, 'HKD Cash Management Sweep', 'ed2324e4-cf78-5533-904a-5791977f86b7', 'HKD', 'GL-TREAS-002', 'CC-HK-TREAS', 'Active', 'Banking', true, 'HKHK', 'SweepTarget', 'Automatic');
+
+    delete from ores_dq_book_product_types_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    insert into ores_dq_book_product_types_artefact_tbl (
+        dataset_id, tenant_id, book_id, product_type_code, version
+    )
+    values
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd9bf9a94-d668-52de-8a3c-237a979c3d3e', 'CapFloor', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd9bf9a94-d668-52de-8a3c-237a979c3d3e', 'CrossCurrencySwap', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd9bf9a94-d668-52de-8a3c-237a979c3d3e', 'ForwardRateAgreement', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd9bf9a94-d668-52de-8a3c-237a979c3d3e', 'Swap', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd9bf9a94-d668-52de-8a3c-237a979c3d3e', 'Swaption', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b3afdc79-1a75-5463-841e-60efeba4ed10', 'CapFloor', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b3afdc79-1a75-5463-841e-60efeba4ed10', 'CrossCurrencySwap', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b3afdc79-1a75-5463-841e-60efeba4ed10', 'ForwardRateAgreement', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b3afdc79-1a75-5463-841e-60efeba4ed10', 'Swap', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'b3afdc79-1a75-5463-841e-60efeba4ed10', 'Swaption', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e9588269-eba8-50ef-9a7c-307e8c4c49b1', 'CreditDefaultSwap', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e9588269-eba8-50ef-9a7c-307e8c4c49b1', 'CreditDefaultSwapOption', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e9588269-eba8-50ef-9a7c-307e8c4c49b1', 'CreditLinkedSwap', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e9588269-eba8-50ef-9a7c-307e8c4c49b1', 'IndexCreditDefaultSwap', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e9588269-eba8-50ef-9a7c-307e8c4c49b1', 'IndexCreditDefaultSwapOption', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'e9588269-eba8-50ef-9a7c-307e8c4c49b1', 'SyntheticCDO', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '4282b503-fcef-5a45-b1b7-bbd62416804f', 'FxAverageForward', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '4282b503-fcef-5a45-b1b7-bbd62416804f', 'FxForward', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '4282b503-fcef-5a45-b1b7-bbd62416804f', 'FxSwap', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1762a42e-5813-534e-b202-68fbd5f9a462', 'FxAverageForward', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1762a42e-5813-534e-b202-68fbd5f9a462', 'FxForward', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1762a42e-5813-534e-b202-68fbd5f9a462', 'FxSwap', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '4be94f90-623f-5e30-925b-f7ab9b9e41a6', 'FxAverageForward', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '4be94f90-623f-5e30-925b-f7ab9b9e41a6', 'FxForward', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '4be94f90-623f-5e30-925b-f7ab9b9e41a6', 'FxSwap', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1e188b7d-1381-509f-94fc-21a23fabe5db', 'Bond', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1e188b7d-1381-509f-94fc-21a23fabe5db', 'BondFuture', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1e188b7d-1381-509f-94fc-21a23fabe5db', 'BondFutureOption', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1e188b7d-1381-509f-94fc-21a23fabe5db', 'BondOption', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1e188b7d-1381-509f-94fc-21a23fabe5db', 'BondPosition', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1e188b7d-1381-509f-94fc-21a23fabe5db', 'BondRepo', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1e188b7d-1381-509f-94fc-21a23fabe5db', 'BondTRS', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1e188b7d-1381-509f-94fc-21a23fabe5db', 'CallableBond', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1e188b7d-1381-509f-94fc-21a23fabe5db', 'CashPosition', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1e188b7d-1381-509f-94fc-21a23fabe5db', 'ConvertibleBond', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '1e188b7d-1381-509f-94fc-21a23fabe5db', 'ForwardBond', 0),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'db77f54f-896a-561e-bc0a-26f2b51da918', 'CashPosition', 0);
 end $$;

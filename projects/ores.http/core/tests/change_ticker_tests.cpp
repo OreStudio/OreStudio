@@ -49,7 +49,12 @@ TEST_CASE("a_change_recorded_between_ticks_reaches_the_stream", "[change_ticker]
     boost::asio::co_spawn(io, [&] { return ticker.run(io.get_executor()); }, boost::asio::detached);
     coalescer.record({.tenant = "acme", .party = "ops", .component = "iam", .entity = "book"});
 
-    io.run_for(std::chrono::milliseconds(100));
+    // A tick is a wall clock beat, so a loaded machine, or valgrind's slower
+    // one, can take longer to reach the first one than any fixed window. Wait
+    // for the frame the test is about, and fail only when it never comes.
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(10);
+    while (stream->size() == 0 && std::chrono::steady_clock::now() < deadline)
+        io.run_for(std::chrono::milliseconds(10));
     ticker.stop();
     io.run();
 

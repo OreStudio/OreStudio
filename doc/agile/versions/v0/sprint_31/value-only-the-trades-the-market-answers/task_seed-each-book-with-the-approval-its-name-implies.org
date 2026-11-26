@@ -26,11 +26,11 @@ A provisioned ACME states an initial approval matrix that is comprehensive acros
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | Starting. The gap is measured: every published book takes every code, the party states nothing, and the desks the chain now has are not published at all. |
+| Now          | Done. The books, the desks and the parties state the matrix, and the generator chooses within it and is checked against it. |
 | Waiting on   | Nothing.                               |
-| Next         | Add the desk level to the provision, since a book's set must sit inside its desk's. |
+| Next         | Nothing on this task. |
 | Last touched | 2026-11-26                             |
 
 * Acceptance
@@ -77,10 +77,45 @@ states a party's set.
 5. *One list, two readers.* The generator reads the published book's set to choose
    the types it books, so the affinity is stated once and cannot drift between
    the matrix and the population.
+
+   The set is read through the chain and not through the junctions. A book's
+   approval is resolved by =ores_refdata_book_allowed_product_types_fn=, and a
+   generator that read the three junction tables and resolved them itself would
+   be the second statement of one rule. So refdata serves the resolution:
+   =refdata.v1.ops.get_book_product_approvals= answers each book of a request with
+   the set it permits, or with no set at all when no level restricts. The
+   operation is a hand-written handler beside a codegen operation model, because
+   the answer is a table function and not a row of an entity.
+
+   The generator asks it once per run, before it plans, and plans *per book*: a
+   book's population is stated from the config's types narrowed to that book's
+   set, so a book never carries a product it does not permit. A book that permits
+   none of the config's types books nothing rather than widening the matrix to
+   fill itself, and a type no book of the config permits is reported with that
+   reason rather than as a market data gap. The plan is then checked against the
+   approvals, and a trade of a product its book does not permit is refused, so a
+   drift between the matrix the write path enforces and the one the planner chose
+   within is loud rather than discovered at a booking.
+
+   A population is planned per book, so the trades a config books into a book
+   number from that book's own first slot. A config scoped over several books
+   therefore states different trade identifiers than it did before this slice,
+   which is expected: the population is a rebuild and not a migration.
 6. *The seed test changes with the behaviour.*
    =refdata_book_product_types_seed_test.sql= asserts today that a published book
    takes every code. It asserts the book's own set instead, that the party's set
    covers every book, and that the union across the group covers the population.
+   It also asserts the read a choosing caller asks — the books in the order the
+   request named them, one row per permitted type, and a book that permits none
+   answering one row that names no type — and that every code any ACME book
+   dataset states is one the catalogue holds, which is what caught a book that
+   named a code the catalogue had retired.
+7. *The affinity covers the population the generator books.* The curated lists
+   were written per family and left codes no book stated: seven equity and
+   scripted products, a credit structure, an intraday power forward and a retired
+   code the catalogue no longer holds. The generator books one hundred and
+   nineteen codes across its eight planners, so the books' lists are widened until
+   every one of the hundred and nineteen has a book that may carry it.
 
 * Measurements
 
@@ -94,7 +129,15 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The database the branch's SQL builds | recreates, exit 0 | =./compass.sh db recreate -y -k= | 4ab4b1577e |
+| The seed test | 15 assertions, pass | =./projects/ores.sql/test/run_tests.sh test/refdata_book_product_types_seed_test.sql= | 4ab4b1577e |
+| The whole pgTAP suite | 111 files, 1074 assertions, pass | =./projects/ores.sql/test/run_tests.sh= | 4ab4b1577e |
+| The catalogue the books cover | 120 of 121 codes | =select count(distinct product_type_code) from ores_dq_book_product_types_artefact_tbl= | 4ab4b1577e |
+| The codes the generator books | 119, every one stated by a book | the eight planners' =codes()= arrays against the datasets | 4ab4b1577e |
+| The generator's own suite | 181 cases, 179 pass, 2 skipped (no ORE engine), 5292 assertions | =ores.synthetic.core.tests= | 4ab4b1577e |
+| The refdata service suite | 15 cases, 43 assertions, pass | =ores.refdata.service.tests= | 4ab4b1577e |
+| The ported gates | no finding new since =32bdf3ecfd= | =compass-ng check --ratchet origin/main= | 4ab4b1577e |
+| The changed C++ | clang-formatted | =./compass.sh check --only format= | 4ab4b1577e |
 
 * Notes
 
@@ -122,3 +165,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The provision states a matrix that is both narrower than the catalogue and
+complete for the population. Every published ACME book states the products its
+name and purpose imply; the desks state the union of their books and the parties
+the union of their own; and the generator chooses within those sets rather than
+discovering them when a booking is refused.
+
+The generator reads one book's answer at a time and plans that book's population
+against it, so a book that permits two products still holds its trades per book,
+a book that permits none of the config's types books nothing, and a type no book
+of the config permits is reported with the matrix as its reason rather than as a
+market data gap. The plan is checked against the approvals before it leaves, and
+that check was proved to fire: with the narrowing disabled it refuses the plan,
+naming the book and the set it permits.
+
+Coverage, measured on the reloaded database: the ACME books state 120 of the 121
+catalogue codes, and all 119 codes the eight planners book are stated by at least
+one book. The catalogue code no book states is the generic
+=ForwardVolatilityAgreement=, which no planner books, because the planners book
+the FX, equity and commodity agreements, which are separate codes.
+
+A config scoped over several books now numbers each book's trades from that
+book's own first slot, so the population such a config states has different trade
+identifiers than before this branch. That is expected: a population is a rebuild,
+not a migration, and a rebuild states the same population every time.

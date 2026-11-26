@@ -108,6 +108,7 @@ import { ClassificationsPage } from './refdata/ClassificationsPage.js';
 import { RefdataPage } from './refdata/RefdataPage.js';
 import { DqArea } from './dq/DqArea.js';
 import { CoveragePage } from './dq/CoveragePage.js';
+import { DatasetPage } from './dq/DatasetPage.js';
 import { CurrenciesPage, CurrencyImportPage, CurrencyPage } from './refdata/currencies.js';
 import { BookTradePage } from './trading/BookTradePage.js';
 import { BlotterPage } from './trading/BlotterPage.js';
@@ -1477,6 +1478,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <CoveragePage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.dataQualityDatasets}/:code`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <DatasetPage />
                     ),
                     'workspace',
                 )}

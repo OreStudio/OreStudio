@@ -185,6 +185,16 @@ describe('walking every screen', () => {
         expect(trailAt('/where-i-work')).toBe(trail(en('membership.where.title')));
     });
 
+    it('gives a dataset page the trail through the coverage list', () => {
+        expect(trailAt('/data-quality/datasets/iso.countries')).toBe(
+            trail(
+                en('shell.menu.dataquality'),
+                en('dq.coverage.title'),
+                'iso.countries',
+            ),
+        );
+    });
+
     it('gives the screens that have no card the trail of their area', () => {
         expect(trailAt('/tenants/new')).toBe(trail(en('shell.menu.tenants'), en('tenants.add')));
         expect(trailAt('/development')).toBe(trail(en('shell.menu.development')));

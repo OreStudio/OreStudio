@@ -47,10 +47,22 @@ const CPP = baseFor('dq');
  * The bundle roster, or the roster with one bundle's members.
  *
  * The server takes the staged count with one count per member, so it is asked
- * for the bundle in view and never for the roster as a whole.
+ * for the bundle in view and never for the roster as a whole. A dataset's own
+ * page knows the dataset and not the bundle that carries it, so it names the
+ * dataset and the server resolves the bundle.
  */
-export async function readBundleRoster(bundleCode = ''): Promise<readonly BundleRosterBundle[]> {
-    const query = bundleCode === '' ? '' : `?bundle_code=${encodeURIComponent(bundleCode)}`;
+export async function readBundleRoster(
+    bundleCode = '',
+    datasetCode = '',
+): Promise<readonly BundleRosterBundle[]> {
+    const params = new URLSearchParams();
+    if (bundleCode !== '') {
+        params.set('bundle_code', bundleCode);
+    }
+    if (datasetCode !== '') {
+        params.set('dataset_code', datasetCode);
+    }
+    const query = params.size === 0 ? '' : `?${params.toString()}`;
     const page = await request(`${CPP}/api/v1/dq/bundle_roster${query}`, { method: 'GET' });
     const answer = z
         .object({

@@ -25,6 +25,7 @@
 #ifndef ORES_REFDATA_DOMAIN_PARTY_PRODUCT_TYPE_HPP
 #define ORES_REFDATA_DOMAIN_PARTY_PRODUCT_TYPE_HPP
 
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
 #include <string_view>

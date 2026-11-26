@@ -57,6 +57,7 @@
 \set analytics_service_pw    `echo "$ORES_ANALYTICS_SERVICE_DB_PASSWORD"`
 \set storage_service_pw    `echo "$ORES_STORAGE_SERVICE_DB_PASSWORD"`
 \set inbox_service_pw    `echo "$ORES_INBOX_SERVICE_DB_PASSWORD"`
+\set vault_service_pw    `echo "$ORES_VAULT_SERVICE_DB_PASSWORD"`
 
 select ores_iam_service_accounts_upsert_fn(
     :'ddl_user',
@@ -250,6 +251,15 @@ select ores_iam_service_accounts_upsert_fn(
     :'inbox_service_pw',
     p_full_name => 'Inbox Service',
     p_picture_code => 'ores_inbox_service'
+);
+
+select ores_iam_service_accounts_upsert_fn(
+    :'vault_service_user',
+    'vault_service@system.ores',
+    'System service account for Vault NATS domain service',
+    :'vault_service_pw',
+    p_full_name => 'Vault Service',
+    p_picture_code => 'ores_vault_service'
 );
 
 -- Summary

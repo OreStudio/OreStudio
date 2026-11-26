@@ -721,3 +721,30 @@ daily returns as long as the expiry itself, so a ten-year quote needs ten years 
 - --work-dir {work_dir}
 - --package-dir ../run/packages
 - --http-base-url http://localhost:{http_port}
+
+# compass:except(service_integrity/unmet_obligation) expires=2027-01-31 approver=marco reason=the vault service is registered disabled until its application exists, so the telemetry must not expect it in the fleet yet; the serve task enables it with the application and deletes this exception
+* ores.vault.service
+:PROPERTIES:
+:psql_var:    vault_service
+:env_key:     VAULT_SERVICE
+:iam_role:    VaultService
+:description: Vault
+:display_name: Vault Service
+:summary:     Keeps the secrets ORE must present to another party, sealed under a key that lives outside the database, and seals each answer to the consumer that asked.
+:email:       vault_service@system.ores
+:replicas:    1
+:enabled:     false
+:depends_on:  ores.iam.service
+:END:
+
+Answers the five secret operations. It owns the vault tables and reads no other
+component's: the tenant and the subject arrive in the request context, and the
+permission in the token.
+
+The unit is disabled because its application is still the scaffold: an enabled
+unit of it never reports ready, and the fleet would carry a service that cannot
+start. The serve task turns it on with the application.
+
+** DML prefixes
+
+- ores_vault_

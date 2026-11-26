@@ -40,4 +40,5 @@ SERVICE_NAMES=(
     analytics
     storage
     inbox
+    vault
 )

@@ -7650,6 +7650,26 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'vault.v1.consumers.list': {
+        asOf: true,
+        filter: ['id_one_of', 'search'],
+        rows: ['consumers'],
+    },
+    'vault.v1.consumers_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'vault.v1.secrets.list': {
+        asOf: true,
+        filter: ['id_one_of', 'search'],
+        rows: ['secrets'],
+    },
+    'vault.v1.secrets_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'workflow.v1.definitions.list': {
         asOf: false,
         filter: [],

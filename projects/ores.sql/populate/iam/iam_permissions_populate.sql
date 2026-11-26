@@ -2320,6 +2320,16 @@ BEGIN
     -- Decides the approval part none, which exempts an act from approval, so it
     -- is held by nobody: a request naming only that part is never raised.
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'installation::approvals:none', 'Decide the part that exempts an act from approval; held by nobody');
+    -- The vault's own operations. The service role holds the wildcard, and the
+    -- handlers check the concrete codes beneath it.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::*', 'Full access to all vault operations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::secrets:read', 'Read and list secrets');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::secrets:write', 'Write and rotate secrets');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::secrets:delete', 'Delete secrets');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::consumers:read', 'Read and list consumers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::consumers:write', 'Register and update consumers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::consumers:delete', 'Delete consumers');
+
 END $$;
 
 

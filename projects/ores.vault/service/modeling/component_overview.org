@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 33941A34-E3CB-47E9-91F5-0ADB8305DD96
+:END:
+#+title: ores.vault.service
+#+description: The vault's NATS entrypoint: the five operations and the key it loads at start.
+#+type: ores.codegen.component
+#+component_kind: service
+#+level: cross
+#+filetags: :vault:service:component:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+name: vault.service
+#+full_name: ores.vault.service
+#+brief: Vault service entrypoint
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.vault.service component diagram
+#+caption: ores.vault.service
+[[file:ores.vault.service.png][file:ores.vault.service.png]]
+
+* Summary
+
+The runnable host. It reads the key encryption key and its own transport key
+from system credentials, wires the database and the bus, and serves the five
+operations to callers that pass the runner's token check. The unit is the only
+process that opens a stored secret.
+
+* Inputs
+
+- NATS requests on =vault.v1.ops.*=, carrying the caller's token.
+- The two system credentials, which the unit reads at start.
+- The database, through the pool.
+
+* Outputs
+
+- Responses, in which only a resolve carries a value and only in sealed form.
+- The audit rows, through =ores.vault.core=.
+- A heartbeat on the fleet's controller.
+
+* Entry points
+
+- =src/main.cpp= — the entry point.
+- =include/ores.vault.service/messaging/secret_event_registrar.hpp= and
+  =consumer_event_registrar.hpp= — the registrars the generated baseline
+  carries.
+- The five custody subjects join them with a registrar of their own, which the
+  serve task adds beside these.
+
+* Dependencies
+
+- =ores.vault.core=, =ores.nats=, =ores.service=, =ores.database=.
+
+* See also
+
+- [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — every
+  layer a working service needs.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.core.lib)
+#+end_src

@@ -47,10 +47,13 @@ def test_dependent_services_depend_on_iam(services):
 
 
 def test_extra_args_round_trip_multiple_flags(services):
+    # The wrapper gained --package-dir when the engine packages moved to one
+    # digest-named tree per host, and the expectation was not updated with it.
     assert services["ores.compute.wrapper"]["extra_args"] == [
         "--host-id {host_id}",
         "--tenant-id {tenant_id}",
         "--work-dir {work_dir}",
+        "--package-dir ../run/packages",
         "--http-base-url http://localhost:{http_port}",
     ]
 
@@ -60,11 +63,12 @@ def test_no_stale_controller_entry(services):
     assert "ores.controller.service" not in services
 
 
-def test_twenty_one_fleet_processes(services):
+def test_twenty_two_fleet_processes(services):
     # ores.workspace.service went with the ores.workspace component, and the
-    # official rates adapter, ores.marketdata.official, joined the fleet, so
-    # the registry names twenty-one fleet processes.
-    assert len(services) == 21
+    # official rates adapter, ores.marketdata.official, joined the fleet;
+    # ores.vault.service joined it with the custody of ORE's secrets, so the
+    # registry names twenty-two fleet processes.
+    assert len(services) == 22
 
 
 def test_storage_service_shares_the_http_server_storage_root(services):

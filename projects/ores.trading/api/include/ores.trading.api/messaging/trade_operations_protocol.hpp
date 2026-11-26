@@ -583,8 +583,8 @@ struct export_trades_to_storage_response {
 struct trade_requirement {
     std::string trade_id;
     /**
-     * @brief The distinct addresses this trade needs, in address order; empty when
-     * its instrument rows hold none.
+     * @brief The distinct addresses this trade needs, in ascending byte order; empty
+     * when its instrument rows hold none, or when the caller cannot read them.
      */
     std::vector<std::string> oresmd_uris;
 
@@ -632,22 +632,19 @@ struct resolve_market_data_requirements_response {
     bool success = false;
     std::string message;
     /**
-     * @brief The distinct addresses the trades need, in address order.
+     * @brief The distinct addresses the trades need, in ascending byte order.
      *
-     * The union of =trade_requirements=, stated for the caller that gathers market
-     * data and has no use for which trade asked for what.
+     * The union of the per-trade answer, for the caller that gathers market data and
+     * has no use for which trade asked for what.
      */
     std::vector<std::string> requirements;
     /**
      * @brief What each trade the request named needs, one entry per trade, in the
      * order the request named them.
      *
-     * A trade the request names twice answers once. A trade whose rows hold no
-     * address keeps its entry with no addresses, which is what tells a trade that
-     * names nothing from a trade the request did not name: the first is present and
-     * empty, the second is absent. A caller that then asks the market and is answered
-     * nothing has the third case — a trade that names addresses the market lacks —
-     * without needing this answer to say so.
+     * A trade the request names twice answers once. A trade that names nothing keeps
+     * its entry with no addresses; one the caller cannot read answers the same way,
+     * because the store tells a caller who may not see a row nothing about why.
      */
     std::vector<trade_requirement> trade_requirements;
 

@@ -23,7 +23,7 @@ A report values the trades whose market data the system can answer, and states p
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
-| Now           | The chain has its three levels and the database holds every link of it: a party states the types it permits, a desk narrows them and a book narrows its desk's. |
+| Now           | The chain has its three levels and the database holds every link of it, the generator books within a book's matrix and reports per book, and a trade set answers what each of its trades needs. |
 | Waiting on    | Nothing. The demand work of [[id:03554F8C-7FFF-4735-BC5B-2CA45E58C621][Make the market data connection follow the trades]] follows this story's readiness read rather than preceding it. |
 | Next          | Name the trades a book did not value ([[id:110CE18D-C64C-4C40-8E8E-D0664176707C][Name the trades a book did not value]]), which now has each trade's own requirements to state a trade's cause. |
 | Last touched  | 2026-11-26                             |

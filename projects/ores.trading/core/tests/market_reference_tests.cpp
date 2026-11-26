@@ -73,6 +73,23 @@ TEST_CASE("a-trade-the-request-names-twice-answers-once-in-its-first-place", "[m
     CHECK(answer[1].trade_id == first_trade);
 }
 
+TEST_CASE("a-trade-stated-in-another-spelling-finds-its-addresses", "[market_reference]") {
+    // The store writes the identifier its own way; the caller may state any spelling of it.
+    const auto upper = std::string{"11111111-1111-1111-1111-111111111111"};
+    const auto braced = "{" + upper + "}";
+
+    const std::vector<market_reference_row> rows{
+        {.trade_id = first_trade, .oresmd_uri = "oresmd://index/EUR-ESTR"}};
+
+    for (const auto& spelling : {upper, braced}) {
+        const auto answer = trade_requirements_from(rows, {spelling});
+        REQUIRE(answer.size() == 1);
+        // The answer echoes the caller's spelling and still carries the addresses.
+        CHECK(answer[0].trade_id == spelling);
+        CHECK(answer[0].oresmd_uris == std::vector<std::string>{"oresmd://index/EUR-ESTR"});
+    }
+}
+
 TEST_CASE("one-address-on-two-trades-is-stated-on-both", "[market_reference]") {
     const std::vector<market_reference_row> rows{
         {.trade_id = first_trade, .oresmd_uri = "oresmd://index/EUR-ESTR"},

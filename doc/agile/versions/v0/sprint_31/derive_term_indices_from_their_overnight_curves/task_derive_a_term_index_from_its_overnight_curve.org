@@ -231,6 +231,7 @@ task and name that file in the Command column.
 | Wide types the rule's three columns push over their recorded ceiling | 3: the config's domain, write and entity structs | =compass-ng check=, =wide_types/over_ceiling=, which fails no gate | 38421a0585 |
 | Fixing rows a series holds after a service restart | 520 rows over 520 days, unchanged, for all five | count the rows and the distinct =fixing_date=, then =compass services restart ores.synthetic.service=, then count again | e5d32a04bb |
 | Newest fixing of each after the restart fix | USD SOFR 1M 3.94%, COP IBR 3M 8.96%, JPY EYTIBOR 3M 0.35%, KRW GENERIC 3M 2.94%, PLN WIBOR 6M 5.60% | =select f.value ... where f.valid_to = ores_utility_infinity_timestamp_fn() and f.fixing_date = (select max(...))= | e5d32a04bb |
+| Ids the derived adapter serves while a curve's node is stopped | 4 of 5, the stopped curve's fixing withheld; 5 of 5 again once the node starts, and the series stays at 520 rows over 520 days | =synthetic stop node synthetic.bloomberg.ir.yield_curve.sofr.usd= as the system's administrator, then the market data log's "Adapter 'derived-a' ... announced", then =synthetic start node ...= | e5d32a04bb |
 
 * Notes
 
@@ -275,8 +276,10 @@ are gone.
 
 Starvation is proven twice: the unit test shows that a starved node states
 nothing and makes up no day, and a live run shows the same end to end, where
-stopping the SOFR overnight curve's node logs the derived node as starved and
-adds no fixing to the series.
+stopping the SOFR overnight curve's node leaves the derived node marked starved
+on the graph, drops the derived adapter from five served ids to four, and adds
+no fixing to the series. Starting the curve again brings the fifth id back and
+leaves the series at the days it already stated.
 
 A day is stated once, including across a restart. A run that comes back finds
 the days the market holds and states no history, but it used to leave the last

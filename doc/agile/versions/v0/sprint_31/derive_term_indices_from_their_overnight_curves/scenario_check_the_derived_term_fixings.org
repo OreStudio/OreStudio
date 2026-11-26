@@ -158,16 +158,20 @@ These are yours to ready, before the tester opens the client:
 - Go to *Market data* → *Simulated market* → the feed graph, and stop the
   node =synthetic.bloomberg.ir.yield_curve.sofr.usd=, the overnight curve
   the one-month term SOFR reads. In the shell it is =synthetic stop node
-  synthetic.bloomberg.ir.yield_curve.sofr.usd --reason-code common.other=.
+  synthetic.bloomberg.ir.yield_curve.sofr.usd --reason-code common.other=,
+  run by the system's own administrator: the node belongs to the provider,
+  so a party's administrator is refused it.
 - Confirm the derived node =synthetic.derived.ir.yield_curve.sofr.usd.1m=
   reads *starved* on the graph: it is a view of that curve, and an input
   that does not run starves it.
+- Confirm the fixings stop being announced: the market data log drops from
+  =Adapter 'derived-a' ... announced: ready (5 served, 0 unknown)= to four
+  served, and the rejected id is the one-month term SOFR's.
 - Confirm the fixing page for =...name=SOFR&tenor=1M= has gained no fixing,
-  and that no value repeats the one already stated for the day. The service
-  log says it once: "The node of 'synthetic.derived.ir.yield_curve.sofr.usd.1m'
-  is starved: it states no fixing until its input runs again."
-- Start the node again. Confirm the derived node reads *running*, and that
-  the days it was starved for stay empty: nothing is backfilled.
+  and that no value repeats the one already stated for the day.
+- Start the node again. Confirm the derived node reads *running*, that the
+  adapter serves five ids again, and that the days it was starved for stay
+  empty: nothing is backfilled.
 
 *** Result
 

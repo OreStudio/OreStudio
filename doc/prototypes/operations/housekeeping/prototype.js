@@ -998,6 +998,9 @@
             'plot. Without the series the screen can only say what the store holds now, which is the one ' +
             'question nobody asks twice.</p></section>' +
             policyBlock(store, policy) +
+            (S.editing === store.id ? '<section class="paneleditor" aria-labelledby="editor-heading">' +
+                '<div class="panelnav"><button type="button" class="btn secondary small" ' +
+                'data-act="cancel-edit">Close the editor</button></div>' + editor(store) + '</section>' : '') +
             activityLog(store) +
             recentRuns(store) +
             '</section>';
@@ -1621,7 +1624,7 @@
             return;
         }
 
-        if (['variant', 'state', 'view', 'select', 'back', 'runs-store', 'clear-runfilter', 'first-policy', 'edit-store', 'save'].indexOf(act) < 0) {
+        if (['variant', 'state', 'view', 'select', 'back', 'edit', 'cancel-edit', 'runs-store', 'clear-runfilter', 'first-policy', 'edit-store', 'save'].indexOf(act) < 0) {
             return;
         }
 
@@ -1629,6 +1632,7 @@
 
         if (act === 'save') {
             saveDraft();
+            S.editing = null;
             writeParams();
             return;
         }
@@ -1652,6 +1656,13 @@
             if (S.view === 'runs') S.runFilter = null;
         } else if (act === 'select') {
             selectStore(el.getAttribute('data-store'));
+        } else if (act === 'edit') {
+            S.editing = el.getAttribute('data-store');
+            S.draftKey = null;
+        } else if (act === 'cancel-edit') {
+            S.editing = null;
+            S.draftKey = null;
+            S.notice = null;
         } else if (act === 'back') {
             S.selected = null;
             if (S.view === 'runs' && S.runFilter) S.runFilter = null;
@@ -1661,10 +1672,15 @@
         } else if (act === 'clear-runfilter') {
             S.runFilter = null;
         } else if (act === 'first-policy' || act === 'edit-store') {
-            S.variant = 'C';
-            S.view = 'stores';
             const target = act === 'first-policy' ? 'calendar_dates' : el.getAttribute('data-store');
-            selectStore(target);
+            if (S.variant === 'A') {
+                S.editing = target;
+                selectStore(target);
+            } else {
+                S.variant = 'C';
+                S.view = 'stores';
+                selectStore(target);
+            }
             S.draftKey = null;
             S.notice = null;
         }

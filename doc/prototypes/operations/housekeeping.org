@@ -212,11 +212,20 @@ leaves the page.
 
 ** The verdict
 
-(None yet. The shape is proposed, not accepted: variant A carries forward on the
-strength of its density and its likeness to the logs screen, but the screen
-cannot be built until a size-of-target read exists, and the runs log cannot be
-read at all until PR #5126 adds the retention-run wire type. The prototype is
-the argument for building both.)
+Variant A is accepted: one table of every store, with the store's record, its
+plot and its log opening beside it. It carries the screen because it holds every
+store and every number at once and because it is the shape the logs screen
+already uses, so the person reads it twice a week without learning it twice.
+
+Variants B and C stay in the page as the alternatives A was weighed against, not
+as shapes to build. Their arguments are recorded above, and C's editor is no
+longer a variant of its own: a policy is changed in A's panel, where the store
+and its size are already in view.
+
+The screen still cannot be built until three things exist: the store catalogue
+that carries a human name and a description, the samples and the size read that
+the plot stands on, and the retention-run wire type PR #5126 adds for the log.
+The prototype is the argument for building all three.
 
 * See also
 

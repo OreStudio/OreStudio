@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
-#+updated: 2026-11-25
+#+updated: 2026-11-26
 #+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -41,12 +41,13 @@ A book is generated from its own approval matrix: every type the matrix names is
 
 * Plan
 
-Two of this task's three acceptance items arrived with
+The first acceptance item arrived with
 [[https://github.com/OreStudio/OreStudio/pull/5157][#5157]]: a book is filled from
-its own matrix, and a type the matrix permits but the generator cannot draw is
-refused with its reason. What is missing is the *report*: the run states its
-outcomes per configuration and per trade type, so nothing says what one book
-received and what it was denied.
+its own matrix. The other two are about the *report*, and the report did not
+exist: the run states its outcomes per configuration and per trade type, so
+nothing said what one book received and what it was denied, and a type the
+generator could not draw was reported against the configuration rather than
+against the book that lost it.
 
 1. *The plan states its outcomes per book.* =plan_for_scope= already computes
    each book's types and the reason each one plans nothing; the merge into the
@@ -81,11 +82,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| The full tree | builds, all targets | =./compass.sh build= | cd352d7386 |
-| The generator's suite | 184 cases, 182 pass, 2 skipped (no ORE engine), 5314 assertions | =ores.synthetic.core.tests= | cd352d7386 |
-| The synthetic service suite | 114 cases, 836 assertions, pass | =ores.synthetic.service.tests= | cd352d7386 |
-| The ported gates | no finding new since =origin/main= | =compass-ng check --ratchet origin/main= | cd352d7386 |
-| The changed C++ | clang-formatted | =./compass.sh check --only format= | cd352d7386 |
+| The full tree | builds, every target | =./compass.sh build= | 1376e6d2ec |
+| The generator's suite | 184 cases, 182 pass, 2 skipped (no ORE engine), 5453 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.synthetic.core.tests= | 1376e6d2ec |
+| The synthetic service suite | 114 cases, 836 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.synthetic.service.tests= | 1376e6d2ec |
+| The ported gates | no finding new since =origin/main= | =compass-ng check --ratchet origin/main= | 1376e6d2ec |
+| The changed C++ | clang-formatted | =./compass.sh check --only format= | 1376e6d2ec |
 
 * Notes
 
@@ -110,7 +111,21 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The Measurements cite =cd352d7386=, which no ref reaches: the rows were measured on a tree the branch does not hold | task doc | Fixed | Every row names the delivered commit and the command that produced it. |
+| 2 | The Command column named a binary rather than a command | task doc | Fixed | Each row states the command line. |
+| 3 | No decision was distilled into the story at close | =story.org= | Fixed | Decision 10 states the per-book report and why one outcome type serves both readings. |
+| 4 | A shut book keeping its entry was implemented but untested | =trade_population_tests.cpp= | Fixed | The case now states the shut book's entry, its zero count, and every stated type denied by the matrix. |
+| 5 | The Result claims the matrix refusal and the market's refusal are told apart, but only the matrix branch was tested | =trade_population_tests.cpp= | Fixed | The market-data case now asserts the same reason reaches every book. |
+| 6 | One concept written twice: the plan's =book_population_outcome= and the run's =trade_population_book= | api and service headers | Fixed | One type; the planner states the types and the planned count, the run states written and present. |
+| 7 | The service re-derived a book's planned count by walking the slots, which can disagree with the book's own types | =trade_population_service.cpp= | Fixed | The count is the plan's, and the test asserts the sum of a book's types equals its planned count. |
+| 8 | The same guarded lookup appears three times, and the miss it handles is unreachable | =trade_population_service.cpp= | Fixed | One lookup per slot, and a miss is refused rather than dropped. |
+| 9 | Three parallel maps keyed by trade type in the planner | =trade_population_planner.cpp= | Fixed | One map of outcomes holds both the count and the reason. |
+| 10 | The report renders "code count, reason" three ways | =provisioning_step_handler.hpp= | Fixed | One pass with two accumulators. |
+| 11 | The book is named by a bare uuid, which a person cannot read | =provisioning_step_handler.hpp= | Fixed | The line names the book the tenant calls it, falling back to the identifier. |
+| 12 | A test comment claimed the types were the plan's answer while asserting only non-emptiness | =trade_population_tests.cpp= | Fixed | The case asserts the count and that the sum of the types is the planned count. |
+| 13 | The configuration's reason semantics changed unasked: a planned type's reason is now cleared | =trade_population_planner.cpp= | Kept | A reason beside a non-zero count contradicts the count, which is the defect the change removes; the Result states it. |
+| 14 | The reason is free text and the test asserts a substring of it | =trade_population_tests.cpp= | Kept | The text is the observable a reader of the report sees; a constant shared with the test would only move the coupling. |
+| 15 | =matrix_refusal= names an event but holds a sentence | =trade_population_planner.cpp= | Fixed | Renamed =matrix_refusal_reason=. |
 
 * Result
 
@@ -130,4 +145,13 @@ names it.
 The two properties this task's acceptance asks for beyond the fill itself are
 therefore true of the report and not only of the store: a book whose matrix names
 a type the generator cannot draw states that type and its reason, and the report
-states per book what was booked and what was left out.
+states per book what was booked and what was left out. Both are asserted, not
+described: a shut book keeps its entry with every stated type denied, and a
+configuration whose market answers nothing carries the same reason into every
+book.
+
+Two changes reach beyond the report, and both are what make it honest. The
+configuration's own outcome list cleared a type's reason when the type planned
+trades, because a reason beside a count contradicts it; and a book's planned
+count is the sum of the types it states rather than a second walk of the slots,
+so the report cannot count a book twice or miss one.

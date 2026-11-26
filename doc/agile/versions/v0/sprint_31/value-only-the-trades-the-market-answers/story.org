@@ -96,6 +96,16 @@ Settled on 2026-11-25, when the story was formed.
    the repository collapses it to a distinct set before the run ever sees it. The
    first code change is to stop discarding the trade, not to build a new
    resolver.
+10. *A population states its outcome per book, and one type says both.* A run's
+    report names the trades it wrote by configuration and again by book, because
+    the first answers what the run did and the second where it landed. A book's
+    entry carries the types it booked and, for each type it did not, the reason:
+    its own approval matrix, the party's market data, or the builder. One outcome
+    type is used for both readings — the count says whether the book booked the
+    type and the reason says why it did not — rather than a booked type and a
+    left-out type saying the same thing twice. The plan owns the types and the
+    run owns the counts, and a book's planned count is the sum of its types, so
+    the two halves cannot disagree.
 
 * Out of scope
 

@@ -247,6 +247,7 @@ const WRITES: Readonly<Record<string, z.ZodType<Record<string, unknown>>>> = {
         id: z.uuid(),
         calendar_code: code,
         exception_date: isoDay,
+        party_id: z.uuid().nullable().default(null),
         is_business_day: z.boolean(),
         description: text.nullable(),
     }) satisfies z.ZodType<CalendarExceptionWrite>,

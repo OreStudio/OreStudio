@@ -178,6 +178,7 @@
 #include "ores.refdata.core/messaging/book_status_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/bundle_import_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/bundle_import_item_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/bundle_import_operations_registrar.hpp"
 #include "ores.refdata.core/messaging/business_centre_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/business_day_convention_type_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/business_process_history_provider_registrar.hpp"
@@ -505,6 +506,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_business_unit_type_handlers(nats, ctx, verifier));
     append(register_calendar_handlers(nats, ctx, verifier));
     append(register_calendar_date_handlers(nats, ctx, verifier));
+    append(register_bundle_import_operations_handlers(nats, ctx, verifier));
     append(register_calendar_materialisation_handlers(nats, ctx, verifier));
     append(register_cashflow_type_handlers(nats, ctx, verifier));
     append(register_configuration_document_handlers(nats, ctx, verifier));

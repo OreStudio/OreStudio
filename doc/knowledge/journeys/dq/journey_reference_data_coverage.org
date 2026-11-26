@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:user_journey:dq:
 #+created: 2026-11-22
-#+updated: 2026-11-22
+#+updated: 2026-11-26
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A data quality operator reads whether the tenant holds every catalogue it needs, names why a member is not ready, and publishes the bundle that fills the gap.
@@ -133,29 +133,30 @@ table per member.
 
 | Step | Operation | Subject | Provided today |
 |------+-----------+---------+----------------|
-| 1 | The bundles and their level | =dq.v1.dataset_bundles.list= | yes |
-| 1 | A bundle's member count | — | no: =ores_dq_bundles_list_fn= computes it, nothing serves it |
-| 2 | A bundle's members in order | =dq.v1.dataset_bundle_members.list_by_bundle_code= | yes |
+| 1 | The bundles, their level and their member count | =dq.v1.ops.bundle_roster= | yes |
+| 2 | A bundle's members in order | =dq.v1.ops.bundle_roster=, with =bundle_code= | yes |
 | 2 | The datasets | =dq.v1.datasets.list= | yes |
 | 2 | The artefact types and their subjects | =dq.v1.artefact_types.list= | yes |
-| 2, 3 | Readiness per member: dataset exists, subject set, publishable, optional | — | no: =ores_dq_bundle_datasets_list_fn= computes it, nothing serves it |
+| 2, 3 | Readiness per member: dataset exists, artefact type exists, subject set, publishable, optional | =dq.v1.ops.bundle_roster= | yes |
+| 2, 3 | The rows each member has staged | =dq.v1.ops.bundle_roster= | yes |
 | 4 | Preview of a publish | — | no: =ores_dq_bundle_preview_fn= computes it, nothing serves it |
 | 5 | Publish the bundle | =dq.v1.ops.publish_bundle= | yes |
 | 6 | Published rows for a dataset | — | no: each target service lists its own rows, and none filters by the dataset in the provenance |
 | 6 | The publication history | =dq.v1.publications.list= | yes, and always empty |
 
-The three operations that are missing are the three SQL functions the publish
-path already calls for its own purposes. They are computed today and served to
-no one.
+The roster is one operation and one ask. It answers the three discovery
+functions the publish path already calls for its own purposes —
+=ores_dq_bundles_list_fn= and =ores_dq_bundle_datasets_list_fn= — and it is the
+only read the coverage screen makes, because three round trips per bundle and one
+per member is what made the Qt client slow to trust. It takes the staged count
+only for the bundle a caller names, because the count costs one count per member,
+so the screen reads the roster once for the bundles and once for the bundle in
+view.
 
 * What is missing
 
-- *A coverage operation.* The three discovery functions —
-  =ores_dq_bundles_list_fn=, =ores_dq_bundle_datasets_list_fn= and
-  =ores_dq_bundle_preview_fn= — exist in the database and have no subject. The
-  screen needs one operation that answers all three, because three round trips
-  per bundle and one per member is what the Qt client did and what made the
-  screen slow to trust.
+- *A preview operation.* =ores_dq_bundle_preview_fn= exists in the database and
+  has no subject, so step 4 is the one read of the screen that is not served.
 - *A published-row count per dataset.* The provenance names the dataset on every
   published row, and nothing counts by it. Without the count the screen can say
   a bundle was published and cannot say how much of it landed.
@@ -169,10 +170,10 @@ no one.
   =ores_dq_<plural>_artefact_tbl=, so the staged count and the preview are only
   reachable through the coverage operation above. DQ publishes artefact types and
   datasets, not the rows they stage.
-- *A level on the bundle roster function.* =ores_dq_bundles_list_fn= returns the
-  bundle's name and member count and not its level, so a screen that used it
-  alone could not group the roster. The entity list carries the level; the two
-  must agree.
+- *A published count per bundle.* Step 1 says for each bundle whether it was
+  published, is partly published, or was never published. Nothing serves that
+  today, so the screen groups the roster by level and states the absence of the
+  rest.
 
 * Related journeys
 

@@ -8,7 +8,7 @@
 #+filetags: :derive_term_indices_from_their_overnight_curves:ir:curves:sprint_31:v0:
 #+owner: marco
 #+branch: feature/show-the-fx-and-ir-fixings-on-a-fixings-screen
-#+pr:
+#+pr: 5179
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -130,7 +130,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5179][#5179]] | [web] Show the fixing observations the platform states |
 
 * Review
 

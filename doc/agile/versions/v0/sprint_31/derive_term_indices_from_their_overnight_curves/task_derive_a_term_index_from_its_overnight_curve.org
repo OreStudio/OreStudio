@@ -231,6 +231,8 @@ task and name that file in the Command column.
 | Wide types the rule's three columns push over their recorded ceiling | 3: the config's domain, write and entity structs | =compass-ng check=, =wide_types/over_ceiling=, which fails no gate | 38421a0585 |
 | Fixing rows a series holds after a service restart | 520 rows over 520 days, unchanged, for all five | count the rows and the distinct =fixing_date=, then =compass services restart ores.synthetic.service=, then count again | e5d32a04bb |
 | Newest fixing of each after the restart fix | USD SOFR 1M 3.94%, COP IBR 3M 8.96%, JPY EYTIBOR 3M 0.35%, KRW GENERIC 3M 2.94%, PLN WIBOR 6M 5.60% | =select f.value ... where f.valid_to = ores_utility_infinity_timestamp_fn() and f.fixing_date = (select max(...))= | e5d32a04bb |
+| Fixing rows a node started by hand leaves | 520 rows over 520 days, unchanged, so the history is stated once | =synthetic stop node synthetic.derived.ir.yield_curve.sofr.usd.1m=, then =synthetic start node ...= as the system's administrator, then count the rows and the distinct =fixing_date= | 90ed090771 |
+| The acceptance test's discriminating value | 0.048193, where a fixing that read the overnight level would say 0.040000 | =ores.synthetic.api.tests=, =a_derived_index_fixes_the_compounded_forward_of_its_curve= | c4d93b510c |
 | Ids the derived adapter serves while a curve's node is stopped | 4 of 5, the stopped curve's fixing withheld; 5 of 5 again once the node starts, and the series stays at 520 rows over 520 days | =synthetic stop node synthetic.bloomberg.ir.yield_curve.sofr.usd= as the system's administrator, then the market data log's "Adapter 'derived-a' ... announced", then =synthetic start node ...= | e5d32a04bb |
 
 * Notes
@@ -262,7 +264,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The config's description says the feed publishes a derived rate where it publishes any other index rate; it does not, because a derived config runs no curve | =ores.synthetic.ir_curve_generation_config.org= | Fixed | The description says the fixing generator computes the rate from the curve it reads, and the generated copies follow |
+| 2 | A node a person starts by hand states the 520-day history again, because only the offered path passes the reader of the days the market holds | =feed_kind_registry.cpp=, =feed_factory.hpp= | Fixed | The build context carries the reader, the three start paths pass it; a live hand start leaves 520 rows over 520 days |
+| 3 | Nothing ties a derived fixing to its curve: the acceptance asks for a test that the term fixing equals the compounded forward | =feeds_index_fixing_feed_tests.cpp= | Fixed | The case publishes a curve and checks 0.048193 where reading the overnight level would say 0.040000 |
+| 4 | The demo dataset gains a spare COP curve that starts nothing and takes no template entry | =synthetic_ir_curve_configs_uniform_demo_populate.sql= | Fixed | Removed: the overnight rates seed's COP IBR curve is what the index reads |
+| 5 | The funding lookup takes any FUNDING row, whatever its tenor, and falls back to A360 without saying so | =feed_kind_registry.cpp= | Fixed | A FUNDING row that takes no tenor answers; the fallback keeps its comment |
+| 6 | The term-rate cases are sentences, and the derived notation test's mode line drops indent-tabs-mode | =term_rate_calculator_tests.cpp=, =derived_notation_tests.cpp= | Fixed | Both follow the checklist |
+| 7 | The starvation interaction has no diagram, and the screen standard still reads "Synthetic" under a heading that says Simulated market | =synthetic_feed_graph.org=, =feed_screen_standard.org= | Fixed | Diagram drawn, rendered and captioned; the prose names the screen once |
+| 8 | A function-local =registry_lg= lambda, where the file's loggers are free functions | =feed_kind_registry.cpp= | Fixed | Hoisted to the file's own convention |
+| 9 | The screen lists the rate sources rather than naming a value set | =irFeeds.tsx= | Deferred | =PRICE_SOURCES= already does the same; converting a screen to the value sets is its own task |
+| 10 | Eight positional parameters on =term_rate_calculator::rate=; =feed_node_halt= repeats =running_set= | =term_rate_calculator.hpp=, =feed_node_halt.hpp= | Deferred | Judgement calls of the smell baseline, recorded here rather than answered in a feature branch |
 
 * Result
 

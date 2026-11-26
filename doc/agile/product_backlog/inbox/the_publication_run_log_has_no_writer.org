@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :code:dq:publishing:
 #+created: 2026-11-21
-#+updated: 2026-11-21
+#+updated: 2026-11-26
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
@@ -24,6 +24,12 @@ publish function and records nothing.
 
 The log therefore reads empty however many publications ran.
 
+The row also has no column for an outcome or a message: =mode=, the four record
+counts, =target_table=, =published_by= and =published_at= are all it carries, so a
+run that failed has nowhere to say why. A dataset's own screen wants to show each
+publish with its errors and warnings, because a run that writes nothing and a run
+that writes nothing *and says why* are the same row today.
+
 * Why
 
 A screen that always shows nothing is worse than no screen: an operator reads
@@ -37,7 +43,11 @@ picks one:
   dataset, so the natural shape is a subscription on step completion that
   appends the counts a publish function returns, and then a screen shows real
   runs. This is the larger answer, and it needs the level and the target tenant
-  on the row to be worth reading.
+  on the row to be worth reading. It also needs an outcome and a message: a
+  failed step states its error in the workflow's step record, and the log row
+  does not, so the two must agree on where the reason lives before a screen can
+  draw it. The coverage design reads this log from a dataset's own screen; see
+  [[id:5344ADC1-E729-4846-BE07-C6BC2169C4C9][Is my reference data complete?]].
 
 The per-dataset table is the one at issue. The bundle-level audit table is
 already gone:

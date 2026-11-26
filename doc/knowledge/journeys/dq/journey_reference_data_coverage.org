@@ -57,15 +57,19 @@ is a journey of its own.
 
 2. *Read the members of one bundle.* The person selects a bundle. The system
    lists its members in display order with, for each: the dataset code and name,
-   the artefact type, the target subject, whether the dataset exists, whether it
-   has staged rows, and whether it is publishable at all. An optional member is
-   marked as optional, because it publishes only when someone asks for it.
+   how many rows it has staged, how many it has published, and its state. An
+   optional member is marked as optional, because it publishes only when someone
+   asks for it.
 
-3. *Read why a member is not ready.* The system states one of four reasons,
-   because each has a different owner: no dataset row names this member, the
-   dataset names no artefact type, the artefact type names no target subject, or
-   the artefact table holds no rows. The first three are DQ's to fix; the fourth
-   is the importer's.
+3. *Open the dataset and read why it is not ready.* A row opens the dataset's own
+   screen, which is the record page of one dataset. Its Details tab states where
+   the rows are staged, what a publish dispatches to, the two counts, when the
+   dataset was last published and by whom, and which of four reasons keeps it from
+   being ready: no dataset row names it, it names no artefact type, the artefact
+   type names no target subject, or its artefact table holds no rows. The first
+   three are DQ's to fix; the fourth is the importer's. Its Publications tab lists
+   every publish of that dataset with the outcome and what the run said, because a
+   run that wrote nothing and a run that failed are not the same answer.
 
 4. *Read what a publish would write.* The person opens the preview for the
    bundle. The system reports, per dataset, the number of staged rows and what a
@@ -84,10 +88,11 @@ is a journey of its own.
 
 * Screens and wireframes
 
-One screen answers the first four steps. The roster on the left is grouped by
-level; the selected bundle's members fill the right; the reasons a member is not
-ready sit under that table, and the actions are the two the person needs — the
-preview and the publish.
+Two screens answer the first four steps. The coverage list groups the bundles by
+level on the left and lists the selected bundle's datasets on the right; a row
+opens the second screen, the dataset's own page, with its details and its
+publication log. The actions are the two the person needs — the preview and the
+publish.
 
 #+caption: The coverage screen: the roster by level, the members of one bundle,
 #+caption: the reason a member is not ready, and the two actions.
@@ -112,7 +117,11 @@ and the publish it hands to is drawn by
 [[id:495EFAFA-A5B3-4DE4-93DB-FDFA577E3790][Publish a bundle prototype]]. A
 prototype stays on main once accepted, as
 [[id:708C2462-C1F8-455B-B091-9D9690FEEAAB][Keep journey prototypes on main]]
-requires; this one is not signed off yet.
+requires. This one was signed off on 2026-11-22, and the arrangement was
+reopened on 2026-11-26: the first build drew three cards where the design drew
+three tables, and the Qt Data Librarian's tree, table and accession card are the
+shape the area is meant to keep. The prototype now carries both arrangements and
+waits for one choice.
 
 * Entities composed
 
@@ -122,7 +131,7 @@ requires; this one is not signed off yet.
 | =dataset_bundle_member= | The member table's order and the optional mark | =dataset_code=, =display_order=, =optional= |
 | =dataset= | The member table's identity | =code=, =name=, =artefact_type= |
 | =artefact_type= | The member table's destination | =artefact_table=, =target_table=, =target_subject= |
-| =publication= | Not shown today: the run log it models has no writer | =published_at=, =dataset_code=, =mode=, the four counts, =published_by= |
+| =publication= | The dataset page's Publications tab. The run log it models has no writer and no outcome column, so the tab is designed and not served | =published_at=, =published_by=, =dataset_code=, =mode=, =target_table=, the four counts, and the outcome with what the run said |
 
 The published count is not a field of any of these. It is read from the
 provenance each published row carries, which names the dataset that wrote it; the
@@ -157,6 +166,11 @@ view.
 
 - *A preview operation.* =ores_dq_bundle_preview_fn= exists in the database and
   has no subject, so step 4 is the one read of the screen that is not served.
+- *A written and worded publication log.* The log has no writer and no column for
+  an outcome or a message, so a dataset's Publications tab has nothing to draw and
+  a failed run has nowhere to say why. Both halves are recorded in
+  [[id:5C20BEF9-13CA-48B5-8221-E83C1D6345DD][The publication run log has no
+  writer]].
 - *A published-row count per dataset.* The provenance names the dataset on every
   published row, and nothing counts by it. Without the count the screen can say
   a bundle was published and cannot say how much of it landed.

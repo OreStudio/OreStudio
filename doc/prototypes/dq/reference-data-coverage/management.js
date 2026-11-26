@@ -128,7 +128,7 @@
     /* The shell, the breadcrumb and the page header                      */
     /* ---------------------------------------------------------------- */
 
-    M.AREAS = ['Home', 'Reference data', 'Organisation', 'Market data', 'Trades', 'Requests', 'Operations'];
+    M.AREAS = ['Home', 'Reference data', 'Organisation', 'Market data', 'Trades', 'Requests', 'Operations', 'Data quality'];
 
     M.shell = function (area, person) {
         return '<header class="shell-head"><span class="brand">ORE Studio</span><nav>' +

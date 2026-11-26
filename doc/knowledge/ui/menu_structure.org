@@ -307,13 +307,20 @@ says what a party ran. A person who asks whether their valuations read complete
 reference data asks here, and the answer is the coverage of the bundles they
 publish.
 
-The area holds one screen: *Reference data coverage*, at
-=/data-quality/coverage=. It groups the bundles by the level each publishes at,
-names the datasets of the bundle in view, and gives the reason any dataset cannot
-publish with the owner of that reason. The level is grouped and not shown as a
-column, because it decides which tenant holds the rows: a platform or world
-bundle is seeded in the system tenant and read where it lies, and a tenant bundle
-is the tenant's own copy.
+The area holds one list screen, *Reference data coverage*, at
+=/data-quality/coverage=, and one record page under it. The list groups the
+bundles by the level each publishes at and names the datasets of the bundle in
+view. The level is grouped and not shown as a column, because it decides which
+tenant holds the rows: a platform or world bundle is seeded in the system tenant
+and read where it lies, and a tenant bundle is the tenant's own copy.
+
+A row of that list opens the dataset's own page at =/data-quality/datasets/:code=,
+which the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]
+shapes: the breadcrumb through the area and the list, then Details, Publications
+and History. It states where the dataset's rows are staged, what a publish
+dispatches to, both counts, when it was last published, and which of the four
+reasons keeps it from being ready. The Publications tab lists every publish of
+that dataset with its outcome and what the run said.
 
 The screen reads the bundle roster, which states the level of every bundle, the
 count of datasets each carries and, for the bundle in view, its members with the
@@ -360,7 +367,7 @@ the first step of every trail.
 | Reports | Reporting | A report definition is owned by the party that runs it, and Reporting is the topic a person looks in for what the party ran and how each run went |
 | Cuts | Reporting | A cut is the body a report's run prices from, and a person who asks what a number was computed from looks where the reports are |
 | Cut types | Reference data | A kind of cut is a lookup a person maintains: its rules the take, the resolution and the archive read, and it changes by the month as the currencies and calendars do |
-| Reference data coverage | Data quality | It says what reference data the tenant holds and whether each dataset in a bundle is fit to publish, which is neither how the installation runs nor what a party ran |
+| Reference data coverage, and a dataset's page | Data quality | It says what reference data the tenant holds and whether each dataset in a bundle is fit to publish, which is neither how the installation runs nor what a party ran |
 | Tests, Board, Backlog | Development | They are the work a team does on the product, not how an installation runs |
 | Versions and the database | Operations | They state the build and the store |
 | Requests | Requests | It is the one place for every kind of request |
@@ -400,6 +407,7 @@ the same thing. A screen has one address.
 | A cut's page | =/reporting/cuts/:id= |
 | Data quality, the area page | =/data-quality= |
 | Reference data coverage | =/data-quality/coverage= |
+| A dataset's page | =/data-quality/datasets/:code= |
 | Cut types | =/refdata/cut-types= |
 | A kind of cut's page | =/refdata/cut-types/:code= |
 | Development, with its tabs Tests, Board and Backlog | =/development= |

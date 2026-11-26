@@ -1,0 +1,56 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - SYSTEM ADMINISTRATION: OPERATIONS</b>
+  --
+  <b>HOUSEKEEPING / POLICY: report_cashflows_90d</b>
+  --
+  {
+    {#
+      Store | Size | Period | State
+      report_cashflows_90d | 186 MB | 90 d | applied
+      report_metrics_90d | 4 MB | 90 d | applied
+      report_text_values_90d | 0 B | 90 d | applied
+      delivery_counts | 29 MB | - | <color:#b00020>unbounded</color>
+    }
+    |
+    <b>report_cashflows_90d</b>
+    Target: ores_reporting_report_cashflows_tbl
+    Action: drop chunks (the engine's own chunks)
+    --
+    Period: [ 30 ] days<br>
+    Cadence: [ 24 ] hours<br>
+    Enabled: [x]<br>
+    --
+    Why: [ A quarter is the longest the audit allows. ]
+  }
+  --
+  <b>SAVE WILL RECORD</b>: Period 90 -> 30 days; next sweep 03:00; the store holds one
+  day of rows, so nothing is removed tonight. Written by super_admin with the reason above.
+  --
+  [ Save ]  [ Cancel ] -- a period that removes nothing tonight is not a failure
+}
+
+@enduml

@@ -1,0 +1,187 @@
+:PROPERTIES:
+:ID: F7C1E75E-9F08-437B-80C0-7D50B945CA52
+:END:
+#+title: User Journey: See what the system keeps
+#+description: A system administrator sees every store the installation keeps, what bounds it, how large it is and whether it is growing.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:operations:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator sees every store the installation keeps, what bounds it, how large it is and whether it is growing.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to know what this installation is keeping, how big each store is, and
+whether anything is growing with nothing to stop it." The journey is done when
+the administrator can say, for every store the installation keeps, what bounds
+it and how large it is — or has found the stores that nothing bounds.
+
+* Actor and trigger
+
+The system administrator: an account holding the =SuperAdmin= role and acting
+from the system tenant, in *system administration mode*. The screen belongs to
+the *Operations* area beside the services, the grid, the bus and the logs,
+because it answers a question about the installation and not about a tenant.
+
+The trigger is a capacity question rather than a fault: a backup that takes
+longer each week, a database that crossed a size somebody noticed, an audit
+that asks how long the installation keeps its report outputs, or the plain
+monthly check that nothing is filling the disk. A tenant cannot ask this
+question of itself: the stores are the installation's, and their policies are
+held by the system tenant, so a tenant administrator has no screen here.
+
+The journey reads. Nothing on it changes a store, and opening it writes
+nothing; the one act that writes is the step that leaves for
+[[id:C647D403-BFF0-4910-83E4-4EFEBD4F39C4][Change what is kept, and for
+how long]].
+
+* Steps
+
+1. *Open the housekeeping screen.* The administrator opens *Operations* and
+   chooses *Housekeeping*. The system shows one screen: every store the
+   installation keeps, one row each, with the policy that bounds it, its size,
+   its growth and the outcome of its last sweep.
+2. *Read the ground first.* The screen opens on a summary that a person can
+   take in before reading any row: how many stores there are, how many are
+   bounded by an enabled policy, how many are unbounded, and the total size
+   under management. A store counts as unbounded when no policy names it, or
+   when its policy names an action the sweep cannot apply — the second case is
+   the dangerous one, because it looks bounded on paper.
+3. *Scan the table.* Each row carries the store, the shape it has (a chunked
+   table, an ordinary table, an object-store prefix, a directory on a compute
+   host), the policy that bounds it, the period, the state, the size, the
+   growth and when it was last swept. The administrator reads the sizes first
+   and the states second, because a large bounded store is doing what it was
+   told and a small unbounded one is a decision nobody made.
+4. *Order by what matters.* The system orders by size, by growth, by last
+   sweep or by state. Growth is the number that answers the trigger: a store
+   that added 400 MB this week is a different problem from one holding 4 GB
+   that has not moved.
+5. *Open one store.* A row opens its detail: the policy's fields as the
+   server holds them, the size today, the history of its size, and the last
+   few runs of the sweep against it. The history is what separates a store
+   that grew once from a store that grows every hour.
+6. *Follow the store to its runs.* The detail links to the housekeeping log
+   filtered to that store, so the administrator can read what the sweep did
+   and why it says what it says, in
+   [[id:F6622109-4F52-4DE9-9C06-6B0EAA7C8D2E][Read the housekeeping log]].
+7. *Find what nothing bounds.* An unbounded store reads as such, with the
+   reason: no policy, a disabled policy, or an action the sweep does not
+   perform. The last is stated in the sweep's own words, so the screen reports
+   the platform's behaviour rather than a guess about it.
+8. *Leave by changing something.* From a store's detail the administrator
+   opens its policy in
+   [[id:C647D403-BFF0-4910-83E4-4EFEBD4F39C4][Change what is kept, and for
+   how long]], which is where a store stops being unbounded.
+
+* Screens and wireframes
+
+One screen, composed around the question "what is this installation keeping".
+A summary strip states the counts and the total; the table carries one row per
+store; a detail panel opens beside or below it for the selected store, with its
+policy, its size history and its recent sweeps.
+
+#+begin_example
+#+caption: The housekeeping screen: a summary of what is bounded and what is not, one row per store with its policy and size, and the selected store's detail.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/operations/wireframe_see_what_the_system_keeps.png]]
+#+end_example
+
+The wireframe's source sits beside this page as
+=wireframe_see_what_the_system_keeps.puml=, and
+=plantuml -tpng wireframe_see_what_the_system_keeps.puml= regenerates the
+image.
+
+* Prototype
+
+The clickable prototype argues three shapes for the same screen — a table of
+every store, cards grouped by where the store lives, and a two-pane list beside
+the policy editor — and the states a store can be in when the news is bad.
+
+- Design note :: [[id:F8EA4677-573F-4A81-A052-B3DA4E7BF8F6][The housekeeping screen prototype]]
+- Prototype :: [[file:../../../prototypes/operations/housekeeping/index.html][Housekeeping]]
+- Variant A (the table, and the shape carried forward) :: =index.html?variant=A=
+- Variant B (cards by store kind) :: =index.html?variant=B=
+- Variant C (list beside the policy editor) :: =index.html?variant=C=
+- States :: =?state=fresh|skipped|failed|disabled|empty=
+- Runs view :: =?variant=A&view=runs=
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| Retention policy | The policy that bounds a store: its target, action, period, cadence and state | [[id:2C7E4B19-8D6A-4F53-9B21-5E8A7C3D1F60][ores.scheduler.retention_policy]] |
+| Retention run | One sweep's record against one policy: when it ran, what it removed, the outcome and the detail | (no model yet: the table is =ores_scheduler_retention_runs_tbl=, and its wire type arrives with PR #5126) |
+| Job definition | The scheduled sweep itself, so the screen can say when it next runs | [[id:BD750888-6B72-48C1-AE74-DDC535705022][ores.scheduler.job_definition]] |
+| Job instance | The sweep's own runs, when the question is about the job rather than the policy | (generated from the job definition model) |
+
+The size of a store is not an entity: it is a measurement the server makes
+when asked, and the screen shows it as such.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| 1, 3 | List the retention policies | =scheduler.v1.retention_policies.list= | exists |
+| 3, 4 | The sweep's schedule and its last run | =scheduler.v1.ops.get_scheduler_status= | exists |
+| 3 | Sizes of the database stores | (no subject) | missing |
+| 4 | Growth of a store over time | (no subject) | missing |
+| 5, 6 | The runs of one policy | (no subject until PR #5126) | missing |
+| 7 | Which actions the sweep can apply | (no subject) | missing |
+
+* What is missing
+
+- *A size of a target.* Nothing in the tree reports how large a table, a chunk
+  set, an object-store prefix or a host directory is; the only size query is a
+  psql macro. The screen cannot answer its own first question without it. The
+  subject would be something like =scheduler.v1.retention_targets.sizes=,
+  answered from =pg_total_relation_size=, =timescaledb_information.chunks= and
+  the storage service's own accounting, and it belongs beside the policies
+  rather than in each screen.
+- *A growth history.* The runs ledger records what a sweep removed and not the
+  size it found, so no history exists to plot. The knowledge page promises
+  "the size of its target before and after … the measured size over time
+  yields a growth rate"; the schema does not deliver it. Until it does, the
+  screen states the size it reads now and says the trend is unknown.
+- *A read of the runs.* The table exists and the sweep writes it, but no wire
+  type does; PR #5126 adds one. Until it merges the screen can show only the
+  policy and the sweep's last job instance.
+- *Which actions the sweep performs.* The sweep performs one of the three the
+  policy model states, and records the rest as skipped. The screen must say so
+  from data, not from a constant in the client: the set of supported actions
+  belongs in the answer to the policies read.
+- *The object store's own numbers.* No read reports bytes under a prefix, so
+  the object-store rows can carry a policy and cannot carry a size.
+
+* Related journeys
+
+- [[id:C647D403-BFF0-4910-83E4-4EFEBD4F39C4][Change what is kept, and for how long]] — the store's detail leads here to
+  bound it.
+- [[id:F6622109-4F52-4DE9-9C06-6B0EAA7C8D2E][Read the housekeeping log]] — a store's recent sweeps lead here, filtered to
+  that store.
+- [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] — the host scratch a node keeps is one of the
+  stores, and the grid screen is where the node itself is read.
+- [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] — when a sweep fails, the lines behind the failure
+  are there.
+
+* Related knowledge
+
+- [[id:E92D8CA4-C33F-4AE2-808B-9092B100E9C5][Housekeeping of retained data]] — what a policy is, how the sweep applies it,
+  and why a chunk is the unit.
+- [[id:2C7E4B19-8D6A-4F53-9B21-5E8A7C3D1F60][ores.scheduler.retention_policy]] — the fields this journey shows.
+
+* See also
+
+- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]] — the group this journey belongs to.
+- [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] — the story that
+  established the policies and the sweep.

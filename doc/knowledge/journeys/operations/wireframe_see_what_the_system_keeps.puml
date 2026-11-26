@@ -1,0 +1,57 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - SYSTEM ADMINISTRATION: OPERATIONS</b>
+  --
+  <b>HOUSEKEEPING</b>  |  Stores | Runs
+  --
+  {
+    Stores: 9 | Bounded: 3 | <color:#b00020>Unbounded: 6</color> | Under management: 2.4 GB
+  }
+  --
+  {#
+    Store | Shape | Bounded by | Period | State | Size | Growth | Last sweep
+    ores_refdata_calendar_dates_tbl | chunked | none | - | <color:#b00020>unbounded</color> | 283 MB | flat | never
+    ores_reporting_report_cashflows_tbl | chunked | drop chunks | 90 d | applied | 186 MB | +186 MB/day | 17:15
+    ores_reporting_report_metrics_tbl | chunked | drop chunks | 90 d | applied | 4 MB | flat | 17:15
+    ores_marketdata_delivery_counts_tbl | ordinary | none | - | <color:#b00020>unbounded</color> | 29 MB | +365 MB/day | never
+    ores_marketdata_ticks_tbl | chunked | none | - | <color:#b00020>unbounded</color> | 16 kB | flat | never
+    compute/input/, compute/output/ | prefix | none | - | <color:#b00020>unbounded</color> | unknown | unknown | never
+    publish/run/wrappers | directory | none | - | <color:#b00020>unbounded</color> | 1.9 GB | +110 folders/h | never
+    publish/run/packages | directory | digest key | - | bounded by design | 209 MB | flat | n/a
+  }
+  --
+  <b>SELECTED: ores_marketdata_delivery_counts_tbl</b>
+  --
+  {
+    No policy names this store, so nothing bounds it.
+    It holds about 27,000 rows an hour, one per series per period.
+    [ Bound this store ]  [ Read its sweeps ]
+  }
+  --
+  Order: Size, Growth, Last sweep, State -- growth is the number the person came for
+}
+
+@enduml

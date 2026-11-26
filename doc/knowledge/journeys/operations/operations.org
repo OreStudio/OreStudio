@@ -15,9 +15,11 @@ bus is moving, what the logs recorded, and which builds sit under it all.
 These journeys are the operator's view of a running system, and they replace
 the telemetry and super-admin windows of the legacy =ores.qt= client.
 
-Five journeys belong to the system administrator. The last belongs to any
-signed-in person: the versions screen answers "what am I talking to", which a
-member asks as often as an administrator. *Who reaches the screens* sets out
+Eight journeys belong to the system administrator. The versions screen belongs
+to any signed-in person: it answers "what am I talking to", which a member asks
+as often as an administrator. Three of the eight are housekeeping's: what the
+installation keeps, the policy that bounds each store, and the log of what the
+sweeps did. *Who reaches the screens* sets out
 what each of the three signed-in contexts sees. Almost every journey here only
 reads: samples, summaries or lines that the installation writes about itself.
 The exception is the market data feeds journey, which starts and stops a feed. That is also what keeps them cheap to build: the server
@@ -34,6 +36,9 @@ already stores everything they show, with the gaps recorded below.
 | [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] | system administrator | The lines behind a symptom, found by time, level, source, component, tag or session |
 | [[id:C3D59907-9D6A-448C-9A61-9E750755BBFB][Check the versions and the database]] | any signed-in person | The client build, the server build, and the database fingerprint |
 | [[id:986CED57-341F-49DE-8F5D-F186771F10D8][Keep the market data sources running]] | system administrator | Each source with its adapter state, the ids it serves and rejects, its last tick and its quality drops |
+| [[id:F7C1E75E-9F08-437B-80C0-7D50B945CA52][See what the system keeps]] | system administrator | Every store the installation keeps, one row each: what bounds it, its size and its growth, with the unbounded ones stated as such |
+| [[id:C647D403-BFF0-4910-83E4-4EFEBD4F39C4][Change what is kept, and for how long]] | system administrator | A policy turned on or off and its period changed, with the change a person can look up afterwards |
+| [[id:F6622109-4F52-4DE9-9C06-6B0EAA7C8D2E][Read the housekeeping log]] | system administrator | What each sweep did: the policy, what it freed, and why a run failed or was skipped |
 
 * Who reaches the screens
 

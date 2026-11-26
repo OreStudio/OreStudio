@@ -1,0 +1,162 @@
+:PROPERTIES:
+:ID: F6622109-4F52-4DE9-9C06-6B0EAA7C8D2E
+:END:
+#+title: User Journey: Read the housekeeping log
+#+description: A system administrator reads what each housekeeping sweep did: the policy it applied, what it freed, and why a run failed or was skipped.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:operations:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator reads what each housekeeping sweep did: the policy it applied, what it freed, and why a run failed or was skipped.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to know what housekeeping has actually done, and what it says about the
+stores it did nothing for." The journey is done when the administrator has
+read the runs of a sweep — when each ran, the policy it applied, what it
+removed, whether it failed and why — or has established that no sweep has run
+in the window asked for.
+
+* Actor and trigger
+
+The system administrator: an account holding the =SuperAdmin= role and acting
+from the system tenant. The log belongs to *Operations*, where the other logs
+of the installation are read, so the person who reads the telemetry logs reads
+this one the same way.
+
+The trigger is a claim that needs proving: a store that is still large after
+its period passed, an audit that asks whether the policy is being applied, a
+sweep that failed, or a policy the platform reports as skipped. It is also the
+screen a person opens the morning after changing a period, to see the first run
+under it.
+
+Through a run's job the journey reaches the sweep's own instance, and through
+the policy it reaches the store, so the log is the bridge between "what the
+installation said it would do" and "what it did".
+
+* Steps
+
+1. *Open the runs log.* The administrator opens *Housekeeping* in *Operations*
+   and chooses *Runs*. The system shows one row per policy per sweep: when it
+   ran, which policy, which target, the outcome, what it freed and the detail
+   the sweep recorded.
+2. *Start on a window.* The screen opens on the last day, because the sweep
+   runs daily and the question is usually about last night. The window is a
+   range with an inclusive start and an exclusive end, so adjacent windows
+   tile without repeating a run.
+3. *Read the outcome first.* Each row's outcome is one of four the server
+   states, and the screen does not invent a fifth: *applied*, the action ran;
+   *skipped*, the sweep does not perform this action and says so; *failed*, the
+   action was attempted and raised; *dry*, the sweep was asked to report only.
+   A skipped row is the one that matters most, because the policy looks
+   enabled and the store is not being bounded.
+4. *Read what it freed.* Each row states the count the sweep removed and its
+   detail line. A run that freed nothing is not an error: a store whose oldest
+   data is younger than its period has nothing to remove, and the screen says
+   that in words rather than showing a zero that looks like a failure.
+5. *Narrow to one store.* The log filters by policy, by target and by outcome.
+   Arriving from a store's detail filters to that store, so the question "what
+   has housekeeping done for this store" is one click from the store.
+6. *Follow a run to its job.* Each sweep is a job the scheduler fires, so a row
+   links to the job instance that produced it: when it was triggered, when it
+   started and finished, its duration and the error the scheduler recorded.
+   That is the difference between "the sweep failed" and "the sweep was never
+   fired".
+7. *Follow a failure to its lines.* When a run failed, the detail carries the
+   server's message and the time, so the telemetry logs answer the rest, in
+   [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]],
+   filtered to the scheduler's component and that instant.
+8. *Nothing has run.* A window with no runs is one of three findings: the
+   sweep is disabled, its schedule is in the future, or the job never fired.
+   The screen says which, from the sweep's schedule and its last instance, and
+   links to where each is fixed.
+
+* Screens and wireframes
+
+One screen: the runs of the sweep, newest first, with a filter bar, the rows
+and a detail panel for one run. It is the same shape as the telemetry logs,
+deliberately, because the two are read by the same person for the same reason.
+
+#+begin_example
+#+caption: The housekeeping runs log: one row per policy per sweep with its outcome and what it freed, and the selected run's detail with its job.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/operations/wireframe_read_the_housekeeping_log.png]]
+#+end_example
+
+The source sits beside this page as
+=wireframe_read_the_housekeeping_log.puml=, and
+=plantuml -tpng wireframe_read_the_housekeeping_log.puml= regenerates the
+image.
+
+* Prototype
+
+The runs view of the same prototype: the table of runs, the outcome badges and
+the detail panel, in the states a sweep leaves behind.
+
+- Design note :: [[id:F8EA4677-573F-4A81-A052-B3DA4E7BF8F6][The housekeeping screen prototype]]
+- Prototype :: [[file:../../../prototypes/operations/housekeeping/index.html][Housekeeping]]
+- Runs :: =index.html?variant=A&view=runs=
+- A skipped run :: =index.html?variant=A&view=runs&state=skipped=
+- A failed run :: =index.html?variant=A&view=runs&state=failed=
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| Retention run | The row: policy, target, outcome, removed, detail, when | (no model yet; PR #5126 adds it) |
+| Retention policy | The policy a run applied, and the link back to the store | [[id:2C7E4B19-8D6A-4F53-9B21-5E8A7C3D1F60][ores.scheduler.retention_policy]] |
+| Job instance | The sweep's own run: trigger, start, completion, duration, error | (generated from the job definition model) |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| 1, 2, 5 | List the runs in a window | (no subject until PR #5126) | missing |
+| 3, 4 | The outcome and detail of a run | (no subject until PR #5126) | missing |
+| 6 | The sweep's job instances | =scheduler.v1.job_instances.list= | exists |
+| 7 | The lines behind a failure | =telemetry.v1.logs.list= | exists |
+| 8 | Whether the sweep is enabled and when it next fires | =scheduler.v1.ops.get_scheduler_status= | exists |
+
+* What is missing
+
+- *A read of the runs.* The table =ores_scheduler_retention_runs_tbl= is
+  written by the sweep and read by nothing over the wire; PR #5126 adds the
+  entity and protocol. Until it merges, this journey cannot be built, and the
+  honest screen is the one that says the log is not readable yet.
+- *Bytes, not counts.* A run records how many rows or chunks it removed.
+  "Freed 4 chunks" is not a size, and the person asking is asking about bytes.
+  A size per run needs the size read that
+  [[id:F7C1E75E-9F08-437B-80C0-7D50B945CA52][See what the system keeps]] also
+  needs, measured before and after the action.
+- *The window's paging.* The log is a store that only grows by one row per
+  policy per sweep, so a plain window read with a total is enough; there is no
+  reason to build paging beyond that, and the screen must not imply more
+  history than the store keeps.
+
+* Related journeys
+
+- [[id:F7C1E75E-9F08-437B-80C0-7D50B945CA52][See what the system keeps]] — the store a run applied to, and where the log is
+  reached from.
+- [[id:C647D403-BFF0-4910-83E4-4EFEBD4F39C4][Change what is kept, and for how long]] — the decision a run is the first
+  evidence of.
+- [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] — the lines behind a failed sweep.
+
+* Related knowledge
+
+- [[id:E92D8CA4-C33F-4AE2-808B-9092B100E9C5][Housekeeping of retained data]] — what the sweep does and why a chunk is the
+  unit it removes.
+- [[id:2C7E4B19-8D6A-4F53-9B21-5E8A7C3D1F60][ores.scheduler.retention_policy]] — the policy each run names.
+
+* See also
+
+- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]] — the group this journey belongs to.

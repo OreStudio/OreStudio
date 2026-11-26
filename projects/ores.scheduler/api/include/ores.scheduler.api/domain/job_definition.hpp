@@ -91,7 +91,9 @@ struct job_definition final {
     std::string job_name;
 
     /**
-     * @brief Optional party scope for this job. NULL for a tenant-scoped job and for a system job.
+     * @brief Optional party scope for this job. NULL for a tenant-scoped job and for a system job:
+     * a job that names no party is the tenant's own, so the tenant that holds it reads it, while a
+     * job that names one is read only by a session acting for a party it can see.
      */
     std::optional<boost::uuids::uuid> party_id;
 

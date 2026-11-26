@@ -57,7 +57,7 @@ overnight_month build_overnight_month(double first_rate, double step) {
 
 }
 
-TEST_CASE("A compounded term rate equals the overnight curve's own compounding",
+TEST_CASE("a_compounded_term_rate_equals_the_overnight_curves_own_compounding",
           "[term_rate_calculator]") {
     const auto m = build_overnight_month(0.05, 0.0001);
 
@@ -73,7 +73,7 @@ TEST_CASE("A compounded term rate equals the overnight curve's own compounding",
     REQUIRE(rate == Catch::Approx(m.compounded).epsilon(1e-12));
 }
 
-TEST_CASE("A flat overnight curve compounds to just above its own rate", "[term_rate_calculator]") {
+TEST_CASE("a_flat_overnight_curve_compounds_to_just_above_its_own_rate", "[term_rate_calculator]") {
     const auto m = build_overnight_month(0.05, 0.0);
 
     const auto rate = term_rate_calculator::rate(0.0,
@@ -91,7 +91,7 @@ TEST_CASE("A flat overnight curve compounds to just above its own rate", "[term_
     REQUIRE(rate - 0.05 < 2e-4);
 }
 
-TEST_CASE("The compounded rule ignores a spread", "[term_rate_calculator]") {
+TEST_CASE("the_compounded_rule_ignores_a_spread", "[term_rate_calculator]") {
     const auto m = build_overnight_month(0.05, 0.0001);
 
     const auto with = term_rate_calculator::rate(0.0,
@@ -114,7 +114,7 @@ TEST_CASE("The compounded rule ignores a spread", "[term_rate_calculator]") {
     REQUIRE(with == Catch::Approx(without));
 }
 
-TEST_CASE("A spread term rate is the overnight rate plus its basis points",
+TEST_CASE("a_spread_term_rate_is_the_overnight_rate_plus_its_basis_points",
           "[term_rate_calculator]") {
     const auto m = build_overnight_month(0.05, 0.0001);
 
@@ -130,7 +130,7 @@ TEST_CASE("A spread term rate is the overnight rate plus its basis points",
     REQUIRE(rate == Catch::Approx(m.last_rate + 0.0125).epsilon(1e-15));
 }
 
-TEST_CASE("A term rate refuses a curve that cannot state one", "[term_rate_calculator]") {
+TEST_CASE("a_term_rate_refuses_a_curve_that_cannot_state_one", "[term_rate_calculator]") {
     const auto m = build_overnight_month(0.05, 0.0);
 
     REQUIRE_THROWS_AS(term_rate_calculator::rate(0.05,

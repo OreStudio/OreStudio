@@ -8293,7 +8293,7 @@ export const en: SourceCatalogue = {
             published: 'Published',
             readiness: 'Readiness',
             metadataComplete: 'Metadata complete',
-            gap: 'The staged and published counts are not served yet: the coverage operation and the provenance read are still to build. The screen draws a dash in their place, because a zero would say the run wrote nothing.',
+            gap: 'The published count is not served yet: the provenance read is still to build. The screen draws a dash in its place, because a zero would say the run wrote nothing.',
             reason: {
                 noDataset: 'No dataset row',
                 noArtefactType: 'No artefact type',

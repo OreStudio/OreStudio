@@ -64,12 +64,8 @@ export const CARDS = {
         to: PATHS.dataQualityCoverage,
         icon: 'record',
         screenTitleKey: 'dq.coverage.title',
-        permission: [
-            'dq::datasets:read',
-            'dq::dataset_bundles:read',
-            'dq::dataset_bundle_members:read',
-            'dq::artefact_types:read',
-        ],
+        // The roster asks for this one read, so the card asks for it too.
+        permission: 'dq::datasets:read',
     },
     blotter: {
         titleKey: 'trading.blotter.title',

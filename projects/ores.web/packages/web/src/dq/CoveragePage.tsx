@@ -20,17 +20,11 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import type { ArtefactType } from '@ores/wire-protocol/generated/dq/domain/artefact_type';
-import type { Dataset } from '@ores/wire-protocol/generated/dq/domain/dataset';
-import type { DatasetBundle } from '@ores/wire-protocol/generated/dq/domain/dataset_bundle';
-import type { DatasetBundleMember } from '@ores/wire-protocol/generated/dq/domain/dataset_bundle_member';
-import {
-    readinessOf,
-    readBundleRoster,
-    readCoverage,
-    type MemberReadiness,
-    type NotReadyReason,
-} from '../api/dq.js';
+import type {
+    BundleRosterBundle,
+    BundleRosterMember,
+} from '@ores/wire-protocol/generated/dq/protocol/bundle_roster_protocol';
+import { readBundleRoster, reasonOf, type NotReadyReason } from '../api/dq.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
@@ -61,19 +55,22 @@ const REASONS: readonly NotReadyReason[] = [
     'no staged rows',
 ];
 
-/** The levels a bundle publishes at, in the order the model puts them. */
+/** The levels a bundle publishes at, in the order the publication model names them. */
 const LEVELS: readonly string[] = ['platform', 'world', 'tenant'];
 
-/** The bundles of one level, or of every level the roster does not name. */
-function bundlesAt(bundles: readonly DatasetBundle[], level: string): readonly DatasetBundle[] {
+/** The bundles of one level. */
+function bundlesAt(
+    bundles: readonly BundleRosterBundle[],
+    level: string,
+): readonly BundleRosterBundle[] {
     return bundles.filter((bundle) => bundle.level === level);
 }
 
 /**
- * The levels the roster draws: the three the publication model names, then any
+ * The levels the screen draws: the three the publication model names, then any
  * level a bundle states that the model does not, in the order the bundles give.
  */
-function levelsOf(bundles: readonly DatasetBundle[]): readonly string[] {
+function levelsOf(bundles: readonly BundleRosterBundle[]): readonly string[] {
     const extra = bundles
         .map((bundle) => bundle.level)
         .filter((level) => level !== '' && !LEVELS.includes(level));
@@ -83,50 +80,54 @@ function levelsOf(bundles: readonly DatasetBundle[]): readonly string[] {
 /**
  * Whether the tenant holds what its valuations read.
  *
- * One read of the four DQ collections, drawn as three cards: the bundles
- * grouped by the level they publish at, the members of the chosen bundle with
- * the reason any of them is not ready, and the reasons themselves with the
- * owner of each. The level is grouped and not shown as a column, because it
- * decides which tenant holds the rows and whether a tenant owes a copy.
+ * One read of the bundle roster, drawn as three cards: the bundles grouped by
+ * the level they publish at, the members of the chosen bundle, and the reasons a
+ * member cannot publish with the owner of each. The level is grouped and not
+ * shown as a column, because it decides which tenant holds the rows and whether
+ * a tenant owes a copy.
  *
- * The screen is a read. It publishes nothing: the publish itself is the
- * bundle's journey, and this page stays answerable to "is my reference data
- * complete?".
+ * The roster carries both the bundles and, for the bundle a caller names, its
+ * members with the number of rows each has staged. It is read twice for that
+ * reason: once for the roster, which names the bundle to open on, and once for
+ * the bundle in view, because the staged count costs one count per member in the
+ * service.
  *
- * Two figures the design asks for are not served yet, so the screen states
- * their absence rather than drawing a zero: the staged count per dataset needs
- * the coverage operation, and the published count needs a provenance read. A
- * zero here would say the run wrote nothing, which is the opposite claim.
+ * The screen is a read. It publishes nothing: the publish itself is the bundle's
+ * journey, and this page stays answerable to "is my reference data complete?".
+ *
+ * One figure the design asks for is not served yet, so the screen states its
+ * absence rather than drawing a zero: the rows already published need a
+ * provenance read. A zero here would say the run wrote nothing, which is the
+ * opposite claim.
  */
 export function CoveragePage(): ReactNode {
     const { t } = useTranslation();
     const [chosen, setChosen] = useState<string>();
-    const coverage = useQuery({ queryKey: ['dq-coverage'], queryFn: readCoverage });
+    const roster = useQuery({ queryKey: ['dq-roster', ''], queryFn: () => readBundleRoster() });
     // The bundle in view opens on the first of the roster, so a person sees the
     // counts without having to choose one first. It is derived here rather than
     // set from an effect, so the first render already asks for the right bundle.
-    const current = chosen ?? coverage.data?.bundles[0]?.code ?? '';
-    // The staged count costs one count per member in the service, so the roster
-    // is read for the bundle in view and never for the roster as a whole.
-    const roster = useQuery({
+    const current = chosen ?? roster.data?.[0]?.code ?? '';
+    const detail = useQuery({
         queryKey: ['dq-roster', current],
         queryFn: () => readBundleRoster(current),
+        enabled: current !== '',
     });
 
     const trail = <AreaTrail area="dq" screen={t('dq.coverage.title')} />;
 
-    if (coverage.isError) {
+    if (roster.isError) {
         return (
             <ScreenFrame
                 trail={trail}
                 title={t('dq.coverage.title')}
                 description={t('dq.coverage.lead')}
             >
-                <Notice tone="error">{coverage.error.message}</Notice>
+                <Notice tone="error">{roster.error.message}</Notice>
             </ScreenFrame>
         );
     }
-    if (coverage.data === undefined) {
+    if (roster.data === undefined) {
         return (
             <ScreenFrame
                 trail={trail}
@@ -138,8 +139,9 @@ export function CoveragePage(): ReactNode {
         );
     }
 
-    const { bundles, members, datasets, artefactTypes } = coverage.data;
+    const bundles = roster.data;
     const levels = levelsOf(bundles);
+    const members = detail.data?.find((bundle) => bundle.code === current)?.members ?? [];
 
     return (
         <div className="space-y-6">
@@ -148,7 +150,14 @@ export function CoveragePage(): ReactNode {
                 <PageHeader
                     title={t('dq.coverage.title')}
                     description={t('dq.coverage.lead')}
-                    actions={<RefreshQueries keys={[['dq-coverage']]} />}
+                    actions={
+                        <RefreshQueries
+                            keys={[
+                                ['dq-roster', ''],
+                                ['dq-roster', current],
+                            ]}
+                        />
+                    }
                 />
             </div>
 
@@ -171,7 +180,7 @@ export function CoveragePage(): ReactNode {
                                         <div className="flex flex-wrap gap-2">
                                             {held.map((bundle) => (
                                                 <button
-                                                    key={bundle.id}
+                                                    key={bundle.code}
                                                     type="button"
                                                     aria-pressed={bundle.code === current}
                                                     onClick={() => setChosen(bundle.code)}
@@ -197,13 +206,7 @@ export function CoveragePage(): ReactNode {
                     </Card>
 
                     <Card title={t('dq.coverage.membersTitle')} lead={t('dq.coverage.membersLead')}>
-                        <MembersTable
-                            current={current}
-                            members={members}
-                            datasets={datasets}
-                            artefactTypes={artefactTypes}
-                            staged={stagedByDataset(roster.data)}
-                        />
+                        <MembersTable members={members} />
                     </Card>
                 </>
             )}
@@ -243,45 +246,10 @@ function Card({
     );
 }
 
-/** The staged count of each member the roster answered for, by dataset code. */
-function stagedByDataset(
-    bundles:
-        | readonly {
-              readonly members: readonly {
-                  readonly dataset_code: string;
-                  readonly staged_count: number;
-              }[];
-          }[]
-        | undefined,
-): ReadonlyMap<string, number> {
-    const counts = new Map<string, number>();
-    for (const bundle of bundles ?? []) {
-        for (const member of bundle.members) {
-            counts.set(member.dataset_code, member.staged_count);
-        }
-    }
-    return counts;
-}
-
 /** The members of one bundle, each with the reason it is not ready. */
-function MembersTable({
-    current,
-    members,
-    datasets,
-    artefactTypes,
-    staged,
-}: {
-    readonly current: string | undefined;
-    readonly members: readonly DatasetBundleMember[];
-    readonly datasets: readonly Dataset[];
-    readonly artefactTypes: readonly ArtefactType[];
-    readonly staged: ReadonlyMap<string, number>;
-}): ReactNode {
+function MembersTable({ members }: { readonly members: readonly BundleRosterMember[] }): ReactNode {
     const { t } = useTranslation();
-    const held = members
-        .filter((member) => member.bundle_code === current)
-        .sort((left, right) => left.display_order - right.display_order)
-        .map((member) => readinessOf(member, datasets, artefactTypes));
+    const held = [...members].sort((left, right) => left.display_order - right.display_order);
 
     if (held.length === 0) {
         return <p className="text-sm text-ink-muted">{t('dq.coverage.noMembers')}</p>;
@@ -300,54 +268,48 @@ function MembersTable({
                     </tr>
                 </thead>
                 <tbody>
-                    {held.map((readiness: MemberReadiness) => (
-                        <tr
-                            key={readiness.member.dataset_code}
-                            className="border-b border-line-subtle last:border-b-0"
-                        >
-                            <td className="px-4 py-2">
-                                <span className="block font-mono text-xs">
-                                    {readiness.member.dataset_code}
-                                </span>
-                                <span className="block text-xs text-ink-faint">
-                                    {readiness.dataset?.name ?? ''}
-                                </span>
-                            </td>
-                            <td className="px-4 py-2 font-mono text-xs text-ink-muted">
-                                {readiness.dataset?.artefact_type ?? '—'}
-                            </td>
-                            <td className="px-4 py-2">
-                                {staged.has(readiness.member.dataset_code) ? (
-                                    staged.get(readiness.member.dataset_code)
-                                ) : (
-                                    <span
-                                        className="text-ink-faint"
-                                        title={t('dq.coverage.notServed')}
-                                    >
-                                        —
-                                    </span>
-                                )}
-                            </td>
-                            <td
-                                className="px-4 py-2 text-ink-faint"
-                                title={t('dq.coverage.notServed')}
+                    {held.map((member) => {
+                        const reason = reasonOf(member);
+                        return (
+                            <tr
+                                key={member.dataset_code}
+                                className="border-b border-line-subtle last:border-b-0"
                             >
-                                —
-                            </td>
-                            <td className="px-4 py-2">
-                                {readiness.reason === null ? (
-                                    <Tag>{t('dq.coverage.metadataComplete')}</Tag>
-                                ) : (
-                                    <Tag tone="down">
-                                        {t(REASON_KEY[readiness.reason])}
-                                        <span className="ml-2 text-ink-muted">
-                                            {t(OWNER_KEY[readiness.reason])}
-                                        </span>
-                                    </Tag>
-                                )}
-                            </td>
-                        </tr>
-                    ))}
+                                <td className="px-4 py-2">
+                                    <span className="block font-mono text-xs">
+                                        {member.dataset_code}
+                                    </span>
+                                    <span className="block text-xs text-ink-faint">
+                                        {member.dataset_name}
+                                    </span>
+                                </td>
+                                <td className="px-4 py-2 font-mono text-xs text-ink-muted">
+                                    {member.artefact_type === '' ? '—' : member.artefact_type}
+                                </td>
+                                <td className="px-4 py-2">
+                                    {member.staged_count.toLocaleString()}
+                                </td>
+                                <td
+                                    className="px-4 py-2 text-ink-faint"
+                                    title={t('dq.coverage.notServed')}
+                                >
+                                    —
+                                </td>
+                                <td className="px-4 py-2">
+                                    {reason === null ? (
+                                        <Tag>{t('dq.coverage.metadataComplete')}</Tag>
+                                    ) : (
+                                        <Tag tone="down">
+                                            {t(REASON_KEY[reason])}
+                                            <span className="ml-2 text-ink-muted">
+                                                {t(OWNER_KEY[reason])}
+                                            </span>
+                                        </Tag>
+                                    )}
+                                </td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </table>
         </div>

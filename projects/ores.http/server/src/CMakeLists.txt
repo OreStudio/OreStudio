@@ -65,6 +65,7 @@ target_link_libraries(${lib_target_name}
         ores.http.marketdata.lib
         ores.http.reporting.lib
         ores.http.trading.lib
+        ores.http.vault.lib
         ores.http.workflow.lib
         ores.eventing.core.lib
         ores.iam.client.lib

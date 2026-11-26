@@ -133,6 +133,7 @@ struct resolve_secret_response {
     std::string name;
     std::int32_t key_version = 0;
     std::string sealed_value;
+    std::string subject;
 
     friend bool operator==(const resolve_secret_response&,
                            const resolve_secret_response&) = default;
@@ -323,6 +324,7 @@ struct vault_public_key_response {
         ::ores::utility::codec::field{"name", &resolve_secret_response::name},
         ::ores::utility::codec::field{"key_version", &resolve_secret_response::key_version},
         ::ores::utility::codec::field{"sealed_value", &resolve_secret_response::sealed_value},
+        ::ores::utility::codec::field{"subject", &resolve_secret_response::subject},
     };
 }
 

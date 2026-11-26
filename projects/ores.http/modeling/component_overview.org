@@ -12,7 +12,7 @@
 #+full_name: ores.http
 #+brief: HTTP gateway
 #+component_kind: composite
-#+parts: analytics api assets client compute core dq iam marketdata nats refdata reporting server synthetic trading workflow
+#+parts: analytics api assets client compute core dq iam marketdata nats refdata reporting server synthetic trading vault workflow
 
 * Summary
 

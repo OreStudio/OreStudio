@@ -212,8 +212,8 @@ leaves the page.
 
 ** The verdict
 
-Variant A is accepted: one table of every store, with the store's record, its
-plot and its log opening beside it. It carries the screen because it holds every
+Variant A is accepted: one table of every store, and a page of its own for the
+store a person opens. It carries the screen because it holds every
 store and every number at once and because it is the shape the logs screen
 already uses, so the person reads it twice a week without learning it twice.
 

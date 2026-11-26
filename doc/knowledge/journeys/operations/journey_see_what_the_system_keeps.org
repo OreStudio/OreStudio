@@ -69,14 +69,14 @@ how long]].
    sweep or by state. Growth is the number that answers the trigger: a store
    that added 400 MB this week is a different problem from one holding 4 GB
    that has not moved.
-5. *Open one store.* A row opens that store's own record without leaving the
-   screen: its code and name, its description, the component that writes it,
+5. *Open one store.* A row opens that store's own page: its code and name, its description, the component that writes it,
    the shape of its target and the target itself, the column a row delete
    would compare, and what measures it. Beneath the record are the size now,
    the plot of its growth, the policy that bounds it, and the latest activity
    that names it — measurements, sweep runs, and the changes a person made.
    The plot is what separates a store that grew once from a store that grows
-   every hour; the activity is what says why.
+   every hour; the activity is what says why. A breadcrumb and a back action
+   return to the list, which keeps the comparison the person came for.
 6. *Follow the store to its runs.* The detail links to the housekeeping log
    filtered to that store, so the administrator can read what the sweep did
    and why it says what it says, in
@@ -92,21 +92,27 @@ how long]].
 
 * Screens and wireframes
 
-One screen, composed around the question "what is this installation keeping".
-A summary strip states the counts and the total; the table carries one row per
-store; a detail panel opens beside or below it for the selected store, with its
-policy, its size history and its recent sweeps.
+Two screens, in the shape the rest of the application uses. The list page is
+composed around the question "what is this installation keeping": a summary
+strip states the counts and the total, and the table carries one row per store.
+The store page is the record a row opens: the store's own fields, its plot, its
+policy and its log, with the way back to the list stated at its head.
 
 #+begin_example
-#+caption: The housekeeping screen: a summary of what is bounded and what is not, one row per store with its policy and size, and the selected store's detail.
+#+caption: The housekeeping list: a summary of what is bounded and what is not, and one row per store with its policy, its size and its growth.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/operations/wireframe_see_what_the_system_keeps.png]]
 #+end_example
 
-The wireframe's source sits beside this page as
-=wireframe_see_what_the_system_keeps.puml=, and
-=plantuml -tpng wireframe_see_what_the_system_keeps.puml= regenerates the
-image.
+#+begin_example
+#+caption: The store's own page: its record, the plot of its growth, its policy and the activity that names it, with the way back to the list at its head.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/operations/wireframe_open_a_store.png]]
+#+end_example
+
+The wireframes' sources sit beside this page as
+=wireframe_see_what_the_system_keeps.puml= and =wireframe_open_a_store.puml=,
+and =plantuml -tpng <name>.puml= regenerates each image.
 
 * Prototype
 

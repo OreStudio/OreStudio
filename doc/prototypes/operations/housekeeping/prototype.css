@@ -355,6 +355,32 @@ h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
     text-overflow: ellipsis;
 }
 
+.crumbs {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    margin: 0 0 0.75rem;
+    font-size: 0.85rem;
+    color: var(--ink-dim);
+}
+
+.crumbs .linkish {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: var(--accent-bright, #58a6ff);
+    cursor: pointer;
+    font: inherit;
+}
+
+.crumbs .sep {
+    color: var(--ink-faint);
+}
+
+.storepage {
+    max-width: 62rem;
+}
+
 .split {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
@@ -436,6 +462,18 @@ h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
 .section h3 {
     margin: 0 0 0.5rem;
     font-size: 0.95rem;
+}
+
+.record {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem 1.5rem;
+}
+
+@media (max-width: 820px) {
+    .record {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
 .recorddesc {

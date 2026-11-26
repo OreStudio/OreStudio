@@ -144,7 +144,6 @@ begin
         ('ZAR', 'zaronia', 0.0750),
         ('DKK', 'destr',   0.0280),
         ('PLN', 'polonia', 0.0550),
-        ('COP', 'ibr',     0.0900),
         ('TWD', 'taibor',  0.0200)
     ) as c(currency_code, index_family, theta);
 

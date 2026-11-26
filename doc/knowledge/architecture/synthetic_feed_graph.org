@@ -113,6 +113,13 @@ withdrawn offer is what stops it while the graph says it does not run; the
 guard inside the feed covers the run a person started by hand, which no demand
 withdraws.
 
+#+caption: A stop rebuilds the graph, the halted set carries the names to the offers and to every feed, and a node whose name is in it states nothing until the graph runs it again.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/how_a_starved_state_reaches_the_value.png]]
+
+Source: [[proj:doc/knowledge/architecture/how_a_starved_state_reaches_the_value.puml][=how_a_starved_state_reaches_the_value.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/how_a_starved_state_reaches_the_value.puml=.
+
 ** The choices, signed off
 
 *** How the edges are stored

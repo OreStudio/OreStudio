@@ -565,9 +565,11 @@ package "synthetic" #F9FBE7 {
     tenant and a party.
     A config may instead derive its rate from the currency's overnight curve,
     for a term index no publisher quotes: rate_source says which shape it
-    takes, and a spread index states the spread and who states it. The feed
-    publishes that derived rate where it publishes any other index rate, so a
-    fixing follows with no further machinery.
+    takes, and a spread index states the spread and who states it. The fixing
+    generator reads the rule on the config and computes the rate from the curve
+    itself: the compounded overnight forward over the term, or the overnight rate
+    plus the stated spread. A derived config states no index rate on the run's
+    board, because it runs no curve of its own.
     end note
 
     entity ores_synthetic_ir_curve_index_families_tbl <<temporal>> #C6F0D8 {

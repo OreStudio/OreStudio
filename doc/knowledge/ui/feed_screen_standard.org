@@ -382,8 +382,9 @@ is not drawn.
 
 ** The Simulated market screen
 
-Synthetic (=marketdata/synthetic/SyntheticScreen.tsx=) is one screen with two tabs,
-Dashboard and Provider. Everything on it is synthetic, so no label says so. The
+The simulated market (=marketdata/synthetic/SyntheticScreen.tsx=) is one screen with
+two tabs, Dashboard and Provider. Every node it shows belongs to the simulated
+market, so no label repeats it. The
 [[id:4F8C2A1D-6B3E-49F7-8A52-1C9E7D0B3A64][Synthetic feeds prototype]] shows it.
 
 Two facts drive every number, and they are not the same fact.

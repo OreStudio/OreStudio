@@ -28,11 +28,11 @@ surfaces.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] |
-| Now          | The subject is served. The record said otherwise and is corrected. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close the task, then take the gate task. |
+| Next         | Nothing. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance

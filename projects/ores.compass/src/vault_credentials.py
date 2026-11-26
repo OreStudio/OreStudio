@@ -19,7 +19,9 @@ being provisioned by different steps.
 
 from __future__ import annotations
 
+import os
 import subprocess
+import sys
 from pathlib import Path
 
 _KEK = "vault.kek"
@@ -77,14 +79,64 @@ def _generate_pair(keys_dir: Path, private_name: str, public_name: str,
     announce(f"  Written to {private} and {public}")
 
 
+def platform_store() -> Path | None:
+    """The directory the platform keeps its own credentials in, if it has one.
+
+    Linux has none: a manager places the files and states where, which is why
+    the checkout's ``build/keys`` is the deployment's master copy there. macOS
+    and Windows keep their own, and the C++ store reads them from exactly these
+    paths, so a key provisioned here is a key the service finds without any
+    environment variable naming it.
+    """
+    home = Path.home()
+    if sys.platform == "darwin":
+        return home / "Library" / "Application Support" / "ORES" / "credentials"
+    if sys.platform == "win32":
+        local = os.environ.get("LOCALAPPDATA")
+        return Path(local) / "ORES" / "credentials" if local else None
+    return None
+
+
+def _write_protected(path: Path, data: bytes, announce) -> None:
+    """Writes a private key where only this user can read it."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if sys.platform == "win32":
+        # DPAPI, so the protection travels with the file rather than with a
+        # directory permission. The C++ store decrypts it on the way back in.
+        import ctypes
+        from ctypes import wintypes
+
+        class blob(ctypes.Structure):
+            _fields_ = [("cbData", wintypes.DWORD), ("pbData", ctypes.POINTER(ctypes.c_char))]
+
+        buffer = ctypes.create_string_buffer(data, len(data))
+        source = blob(len(data), ctypes.cast(buffer, ctypes.POINTER(ctypes.c_char)))
+        target = blob()
+        if not ctypes.windll.crypt32.CryptProtectData(
+            ctypes.byref(source), None, None, None, None, 0, ctypes.byref(target)
+        ):
+            raise RuntimeError(f"Windows could not encrypt {path}")
+        try:
+            path.write_bytes(ctypes.string_at(target.pbData, target.cbData))
+        finally:
+            ctypes.windll.kernel32.LocalFree(target.pbData)
+    else:
+        path.write_bytes(data)
+        path.chmod(0o600)
+    announce(f"  Written to {path}")
+
+
 def ensure(checkout_root: Path, announce=print) -> dict[str, Path]:
     """Generates whatever is missing and answers every key's path.
 
     Idempotent: a key that is already present is left exactly as it is, so a
     restart or a deploy never replaces the key that protects the stored values.
     """
-    keys_dir = checkout_root / "build" / "keys"
+    store = platform_store()
+    keys_dir = store if store is not None else checkout_root / "build" / "keys"
     keys_dir.mkdir(parents=True, exist_ok=True)
+    if store is not None:
+        keys_dir.chmod(0o700)
 
     version_file = keys_dir / _KEK_VERSION
     if not version_file.is_file():

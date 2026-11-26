@@ -96,7 +96,7 @@ public:
     static constexpr std::string_view transport_credential = "vault.transport.key";
 
     /**
-     * @brief Loads the keys from the directory the environment names.
+     * @brief Loads the keys from the store the platform resolves.
      *
      * @return The keys, with every retained version and the public half derived
      * from the private one.
@@ -105,19 +105,6 @@ public:
      * credential is absent, or a key is not the length its cipher takes.
      */
     [[nodiscard]] static key_material load_from_credentials_directory();
-
-    /**
-     * @brief Loads the keys from a named directory.
-     *
-     * @param directory The directory holding the credential files.
-     * @return The keys, with every retained version and the public half derived
-     * from the private one.
-     *
-     * @throws std::runtime_error If the version credential is absent or
-     * unreadable, no key of the current version is present, or a key is not the
-     * length its cipher takes.
-     */
-    [[nodiscard]] static key_material load_from(const std::filesystem::path& directory);
 };
 
 }

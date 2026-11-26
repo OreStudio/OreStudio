@@ -20,7 +20,7 @@
 #include "ores.http/routes/vault/vault_routes.hpp"
 #include "ores.http.nats/forwarding.hpp"
 #include "ores.nats/service/request_helpers.hpp"
-#include "ores.security/crypto/key_file.hpp"
+#include "ores.platform/credentials/credential_store.hpp"
 #include "ores.security/crypto/sealed_box.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
 #include "ores.vault.api/messaging/custody_context.hpp"
@@ -33,7 +33,7 @@
 namespace ores::http::routes::vault {
 
 using namespace ores::logging;
-using ores::security::crypto::key_file;
+using ores::platform::credentials::credential_store;
 using ores::security::crypto::sealed_box;
 using ores::utility::convert::base64_converter;
 using ores::vault::messaging::custody_context;
@@ -55,18 +55,10 @@ constexpr std::string_view gateway_credential = "gateway.transport.key";
 }
 
 std::shared_ptr<const vault_routes::gateway_keys> vault_routes::load_keys() {
-    const auto directory = key_file::credential_directory();
-    if (!directory.has_value()) {
-        ORES_LOG_SEV(lg(), error) << "The gateway was started without "
-                                  << key_file::directory_variable;
-        throw std::runtime_error("The gateway has no key material: the unit was started without " +
-                                 std::string(key_file::directory_variable));
-    }
-
     auto keys = std::make_shared<gateway_keys>();
-    keys->private_key = key_file::read(*directory / gateway_credential, sealed_box::KEY_LEN);
+    keys->private_key = credential_store::read(gateway_credential, sealed_box::KEY_LEN);
     keys->public_key = sealed_box::public_key_of(keys->private_key);
-    ORES_LOG_SEV(lg(), info) << "Read the gateway's transport key from " << *directory;
+    ORES_LOG_SEV(lg(), info) << "Read the gateway's transport key";
     return keys;
 }
 

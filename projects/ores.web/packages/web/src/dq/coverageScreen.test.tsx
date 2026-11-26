@@ -137,6 +137,29 @@ const EMPTY: Coverage = {
 function render(coverage: Coverage): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['dq-coverage'], coverage);
+    const first = coverage.bundles[0]?.code ?? '';
+    client.setQueryData(['dq-roster', first], [
+        {
+            code: first,
+            name: 'World reference data',
+            description: '',
+            level: 'world',
+            dataset_count: 3,
+            members: [
+                {
+                    display_order: 1,
+                    dataset_code: 'currencies',
+                    dataset_name: 'currencies dataset',
+                    artefact_type: 'currency',
+                    artefact_table: 'dq_currencies_artefact_tbl',
+                    target_subject: 'refdata_currencies',
+                    staged_count: 160,
+                    is_publishable: true,
+                    optional: false,
+                },
+            ],
+        },
+    ]);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -167,9 +190,10 @@ describe('the coverage screen', () => {
         expect(html).toContain('Data quality fixes it');
     });
 
-    it('draws a dash where the staged and published counts are not served', () => {
+    it('draws the staged count the roster serves, and a dash for the published one', () => {
         const html = render(WORLD);
 
+        expect(html).toContain('160');
         expect(html).toContain('—');
         expect(html).toContain('The staged and published counts are not served yet');
         expect(html).toContain('Not served yet');

@@ -23,6 +23,10 @@ import type { ArtefactType } from '@ores/wire-protocol/generated/dq/domain/artef
 import type { Dataset } from '@ores/wire-protocol/generated/dq/domain/dataset';
 import type { DatasetBundle } from '@ores/wire-protocol/generated/dq/domain/dataset_bundle';
 import type { DatasetBundleMember } from '@ores/wire-protocol/generated/dq/domain/dataset_bundle_member';
+import type {
+    BundleRosterBundle,
+    BundleRosterResponse,
+} from '@ores/wire-protocol/generated/dq/protocol/bundle_roster_protocol';
 import { baseFor } from './servers.js';
 import { request } from './transport.js';
 
@@ -70,6 +74,29 @@ export async function readDatasetBundleMembers(): Promise<readonly DatasetBundle
 export async function readArtefactTypes(): Promise<readonly ArtefactType[]> {
     const page = await request(`${CPP}/api/v1/dq/artefact_types?limit=500`, { method: 'GET' });
     return z.object({ artefact_types: rowsOf<ArtefactType>() }).parse(page).artefact_types;
+}
+
+/**
+ * The bundle roster: the level each bundle publishes at, and for the bundle a
+ * caller names, its members with the number of rows each has staged.
+ *
+ * A request that names no bundle answers the roster alone, because the staged
+ * count costs one count per member in the service.
+ */
+export async function readBundleRoster(bundleCode = ''): Promise<readonly BundleRosterBundle[]> {
+    const query = bundleCode === '' ? '' : `?bundle_code=${encodeURIComponent(bundleCode)}`;
+    const page = await request(`${CPP}/api/v1/dq/bundle_roster${query}`, { method: 'GET' });
+    const answer = z
+        .object({
+            success: z.boolean(),
+            error_message: z.string(),
+            bundles: z.array(z.looseObject({})),
+        })
+        .parse(page) as unknown as BundleRosterResponse;
+    if (!answer.success) {
+        throw new Error(answer.error_message);
+    }
+    return answer.bundles;
 }
 
 /** Everything the coverage screen reads, in one call, so the four arrive together. */

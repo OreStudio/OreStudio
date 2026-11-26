@@ -24,7 +24,13 @@ import type { ArtefactType } from '@ores/wire-protocol/generated/dq/domain/artef
 import type { Dataset } from '@ores/wire-protocol/generated/dq/domain/dataset';
 import type { DatasetBundle } from '@ores/wire-protocol/generated/dq/domain/dataset_bundle';
 import type { DatasetBundleMember } from '@ores/wire-protocol/generated/dq/domain/dataset_bundle_member';
-import { readinessOf, readCoverage, type MemberReadiness, type NotReadyReason } from '../api/dq.js';
+import {
+    readinessOf,
+    readBundleRoster,
+    readCoverage,
+    type MemberReadiness,
+    type NotReadyReason,
+} from '../api/dq.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
@@ -96,6 +102,16 @@ export function CoveragePage(): ReactNode {
     const { t } = useTranslation();
     const [chosen, setChosen] = useState<string>();
     const coverage = useQuery({ queryKey: ['dq-coverage'], queryFn: readCoverage });
+    // The bundle in view opens on the first of the roster, so a person sees the
+    // counts without having to choose one first. It is derived here rather than
+    // set from an effect, so the first render already asks for the right bundle.
+    const current = chosen ?? coverage.data?.bundles[0]?.code ?? '';
+    // The staged count costs one count per member in the service, so the roster
+    // is read for the bundle in view and never for the roster as a whole.
+    const roster = useQuery({
+        queryKey: ['dq-roster', current],
+        queryFn: () => readBundleRoster(current),
+    });
 
     const trail = <AreaTrail area="dq" screen={t('dq.coverage.title')} />;
 
@@ -124,7 +140,6 @@ export function CoveragePage(): ReactNode {
 
     const { bundles, members, datasets, artefactTypes } = coverage.data;
     const levels = levelsOf(bundles);
-    const current = chosen ?? bundles[0]?.code;
 
     return (
         <div className="space-y-6">
@@ -187,6 +202,7 @@ export function CoveragePage(): ReactNode {
                             members={members}
                             datasets={datasets}
                             artefactTypes={artefactTypes}
+                            staged={stagedByDataset(roster.data)}
                         />
                     </Card>
                 </>
@@ -227,17 +243,39 @@ function Card({
     );
 }
 
+/** The staged count of each member the roster answered for, by dataset code. */
+function stagedByDataset(
+    bundles:
+        | readonly {
+              readonly members: readonly {
+                  readonly dataset_code: string;
+                  readonly staged_count: number;
+              }[];
+          }[]
+        | undefined,
+): ReadonlyMap<string, number> {
+    const counts = new Map<string, number>();
+    for (const bundle of bundles ?? []) {
+        for (const member of bundle.members) {
+            counts.set(member.dataset_code, member.staged_count);
+        }
+    }
+    return counts;
+}
+
 /** The members of one bundle, each with the reason it is not ready. */
 function MembersTable({
     current,
     members,
     datasets,
     artefactTypes,
+    staged,
 }: {
     readonly current: string | undefined;
     readonly members: readonly DatasetBundleMember[];
     readonly datasets: readonly Dataset[];
     readonly artefactTypes: readonly ArtefactType[];
+    readonly staged: ReadonlyMap<string, number>;
 }): ReactNode {
     const { t } = useTranslation();
     const held = members
@@ -278,11 +316,17 @@ function MembersTable({
                             <td className="px-4 py-2 font-mono text-xs text-ink-muted">
                                 {readiness.dataset?.artefact_type ?? '—'}
                             </td>
-                            <td
-                                className="px-4 py-2 text-ink-faint"
-                                title={t('dq.coverage.notServed')}
-                            >
-                                —
+                            <td className="px-4 py-2">
+                                {staged.has(readiness.member.dataset_code) ? (
+                                    staged.get(readiness.member.dataset_code)
+                                ) : (
+                                    <span
+                                        className="text-ink-faint"
+                                        title={t('dq.coverage.notServed')}
+                                    >
+                                        —
+                                    </span>
+                                )}
                             </td>
                             <td
                                 className="px-4 py-2 text-ink-faint"

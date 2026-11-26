@@ -1660,8 +1660,11 @@ TEST_CASE("the_run_states_each_book_s_trades_beside_the_book", "[trade_populatio
         CHECK(book.written == scene_trades_per_book);
         CHECK(book.already_present == 0);
         written += book.written;
-        // The types a book states are the plan's answer for it, not the run's.
-        CHECK_FALSE(book.type_outcomes.empty());
+        CHECK(book.written + book.already_present == book.planned);
+        std::uint32_t by_type = 0;
+        for (const auto& outcome : book.type_outcomes)
+            by_type += outcome.planned;
+        CHECK(by_type == book.planned);
     }
     CHECK(written == run.written);
 }
@@ -2710,10 +2713,22 @@ TEST_CASE("a_config_whose_types_have_no_candidate_plans_no_trade", "[trade_popul
 TEST_CASE("a_type_the_party_expects_nothing_for_says_so_rather_than_that_the_tenant_holds_none",
           "[trade_population]") {
     using namespace ores::synthetic::service;
-    const auto plan = plan_on_expected_market_data(fx_scope(), no_matrix(fx_scope()));
+    const auto scope = fx_scope();
+    const auto plan = plan_on_expected_market_data(scope, no_matrix(scope));
     REQUIRE_FALSE(plan.type_outcomes.empty());
     for (const auto& outcome : plan.type_outcomes)
         CHECK(outcome.reason.find("the party expects none") != std::string::npos);
+
+    // The same reason reaches each book, so a report can say which book lost what.
+    REQUIRE(plan.book_outcomes.size() == scope.book_ids.size());
+    for (const auto& book : plan.book_outcomes) {
+        CHECK(book.planned == 0);
+        REQUIRE_FALSE(book.type_outcomes.empty());
+        for (const auto& outcome : book.type_outcomes) {
+            CHECK(outcome.planned == 0);
+            CHECK(outcome.reason.find("the party expects none") != std::string::npos);
+        }
+    }
 }
 
 namespace {
@@ -2817,6 +2832,8 @@ TEST_CASE("the_plan_states_what_each_book_booked_and_what_it_was_denied", "[trad
     };
     REQUIRE(outcome_of("Bond") != narrow.type_outcomes.end());
     CHECK(outcome_of("Bond")->planned == scope.trades_per_book);
+    CHECK(narrow.planned == scope.trades_per_book);
+    CHECK(narrow.type_outcomes.size() == plan.type_outcomes.size());
     // A type the book's matrix does not permit is denied for that reason, not for the market's.
     REQUIRE(outcome_of("BondOption") != narrow.type_outcomes.end());
     CHECK(outcome_of("BondOption")->planned == 0);
@@ -2837,4 +2854,15 @@ TEST_CASE("a_book_that_permits_none_of_a_configs_types_books_nothing", "[trade_p
     CHECK(plan.slots.size() == scope.trades_per_book);
     for (const auto& slot : plan.slots)
         CHECK(slot.book_id == scope.book_ids.back());
+
+    // The shut book keeps its entry, with every type the config states denied.
+    REQUIRE(plan.book_outcomes.size() == 2);
+    const auto& shut = plan.book_outcomes.front();
+    CHECK(shut.book_id == scope.book_ids.front());
+    CHECK(shut.planned == 0);
+    CHECK(shut.type_outcomes.size() == plan.type_outcomes.size());
+    for (const auto& outcome : shut.type_outcomes) {
+        CHECK(outcome.planned == 0);
+        CHECK(outcome.reason.find("approval matrix does not permit") != std::string::npos);
+    }
 }

@@ -77,23 +77,28 @@ trade_population_run trade_population_service::run(
     run.outcomes.reserve(plan.slots.size());
 
     /*
-     * The books the report states, in the scope's own order. A book's trades are
-     * the plan's slots that name it, so the count the report gives is the count
-     * the run writes; the types are the plan's answer for that book.
+     * The books the report states, in the scope's own order. The plan already
+     * states each book's trades, because it planned them, so the run states only
+     * what it finds: the two counts do not come from different places that could
+     * disagree.
      */
+    run.books = plan.book_outcomes;
     std::map<boost::uuids::uuid, std::size_t> book_index;
-    for (const auto& book : plan.book_outcomes) {
-        book_index.emplace(book.book_id, run.books.size());
-        run.books.push_back(
-            trade_population_book{.book_id = book.book_id, .type_outcomes = book.type_outcomes});
-    }
-    for (const auto& slot : plan.slots) {
-        const auto found = book_index.find(slot.book_id);
-        if (found != book_index.end())
-            ++run.books[found->second].planned;
-    }
+    for (std::size_t i = 0; i < run.books.size(); ++i)
+        book_index.emplace(run.books[i].book_id, i);
 
     for (const auto& slot : plan.slots) {
+        /*
+         * Every slot's book is one the plan states an outcome for, because the
+         * planner takes its books from the same scope. A slot naming another is a
+         * defect the report must not paper over.
+         */
+        const auto found = book_index.find(slot.book_id);
+        if (found == book_index.end())
+            throw trade_population_error("Trade " + slot.internal_identifier +
+                                         " names a book the plan states no outcome for.");
+        auto& book = run.books[found->second];
+
         const auto stored = writer_.read_trade(slot.trade_id);
         if (stored.has_value()) {
             ++run.already_present;
@@ -106,8 +111,7 @@ trade_population_run trade_population_service::run(
                                          .already_present = true,
                                          .version = stored->version,
                                          .external_version = stored->external_version});
-            if (const auto found = book_index.find(slot.book_id); found != book_index.end())
-                ++run.books[found->second].already_present;
+            ++book.already_present;
             if (on_progress)
                 on_progress(run.written + run.already_present, run.planned);
             continue;
@@ -127,8 +131,7 @@ trade_population_run trade_population_service::run(
         }
 
         ++run.written;
-        if (const auto found = book_index.find(slot.book_id); found != book_index.end())
-            ++run.books[found->second].written;
+        ++book.written;
         if ((run.written + run.already_present) % progress_every == 0)
             ORES_LOG_SEV(population_lg(), info)
                 << "Trade population of config " << config << ": "

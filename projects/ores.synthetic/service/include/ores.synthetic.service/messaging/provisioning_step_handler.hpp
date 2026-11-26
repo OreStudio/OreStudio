@@ -55,6 +55,7 @@
 #include <chrono>
 #include <cstdint>
 #include <exception>
+#include <map>
 #include <optional>
 #include <ranges>
 #include <span>
@@ -364,26 +365,33 @@ private:
                  * books none of it, rather than the run reporting a short count
                  * with nowhere to look.
                  */
+                const auto names = book_names(party_nats);
                 for (const auto& book : population.books) {
-                    std::string line = entry.name + " for " + entry.party + ", book " +
-                                       boost::uuids::to_string(book.book_id) + ": " +
-                                       std::to_string(book.written) + " written, " +
-                                       std::to_string(book.already_present) + " present, of " +
-                                       std::to_string(book.planned);
+                    std::string booked;
+                    std::string left_out;
                     for (const auto& outcome : book.type_outcomes) {
-                        if (outcome.planned == 0)
-                            continue;
-                        line += ", booked ";
-                        line += outcome.trade_type_code + " " + std::to_string(outcome.planned);
-                    }
-                    for (const auto& outcome : book.type_outcomes) {
-                        if (outcome.planned != 0)
-                            continue;
-                        line += ", left out ";
+                        const auto is_booked = outcome.planned != 0;
+                        auto& line = is_booked ? booked : left_out;
+                        line += line.empty() ? "" : ", ";
                         line += outcome.trade_type_code;
-                        if (!outcome.reason.empty())
+                        if (is_booked)
+                            line += " " + std::to_string(outcome.planned);
+                        else if (!outcome.reason.empty())
                             line += " (" + outcome.reason + ")";
                     }
+
+                    const auto name = names.find(book.book_id);
+                    std::string line =
+                        entry.name + " for " + entry.party + ", book " +
+                        (name == names.end() ? boost::uuids::to_string(book.book_id) :
+                                               name->second) +
+                        ": " + std::to_string(book.written) + " written, " +
+                        std::to_string(book.already_present) + " present, of " +
+                        std::to_string(book.planned);
+                    if (!booked.empty())
+                        line += ", booked " + booked;
+                    if (!left_out.empty())
+                        line += ", left out " + left_out;
                     wf.record(line);
                 }
             } catch (const std::exception& e) {
@@ -430,6 +438,19 @@ private:
             if (book.party_id == party_id && book.name == name)
                 return book;
         return std::nullopt;
+    }
+
+    /// The name each book of the tenant states, so a report names a book a person reads.
+    static std::map<boost::uuids::uuid, std::string>
+    book_names(ores::nats::service::nats_client& client) {
+        ores::refdata::messaging::list_books_request request;
+        request.limit = 10000;
+        const auto response = ask(client, request);
+        require_read(response.result, "the books of the tenant");
+        std::map<boost::uuids::uuid, std::string> names;
+        for (const auto& book : response.books)
+            names.emplace(book.id, book.name);
+        return names;
     }
 
     /// The counterparties a party may face, each once and in a stable order.

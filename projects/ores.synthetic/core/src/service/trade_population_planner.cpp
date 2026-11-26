@@ -3934,7 +3934,7 @@ bool permits(const domain::book_approval& approval, std::string_view trade_type_
 }
 
 /// Why a book does not book a type: its own approval, before any market is asked.
-constexpr std::string_view matrix_refusal =
+constexpr std::string_view matrix_refusal_reason =
     "the book's approval matrix does not permit the product type";
 
 std::string joined(const std::vector<std::string>& codes) {
@@ -4085,8 +4085,7 @@ plan_on_expected_market_data(const domain::trade_generation_scope& scope,
      * some book plans is planned, so only a type that plans nowhere keeps a
      * reason: the count says whether the reason is the whole story.
      */
-    std::map<std::string, std::string> refusal_of;
-    std::map<std::string, std::uint32_t> planned_of;
+    std::map<std::string, domain::trade_type_outcome> config_of;
 
     for (const auto& book_id : scope.book_ids) {
         auto book_scope = scope;
@@ -4117,29 +4116,35 @@ plan_on_expected_market_data(const domain::trade_generation_scope& scope,
         for (const auto& code : stated) {
             const auto planned = planned_by_type.find(code);
             if (planned != planned_by_type.end()) {
+                book.planned += planned->second.planned;
                 book.type_outcomes.push_back(planned->second);
                 continue;
             }
-            book.type_outcomes.push_back(
-                {.trade_type_code = code, .planned = 0, .reason = std::string(matrix_refusal)});
+            book.type_outcomes.push_back({.trade_type_code = code,
+                                          .planned = 0,
+                                          .reason = std::string(matrix_refusal_reason)});
         }
         plan.book_outcomes.push_back(std::move(book));
 
         for (const auto& entry : planned_by_type) {
             const auto& outcome = entry.second;
-            planned_of[outcome.trade_type_code] += outcome.planned;
-            if (!outcome.reason.empty() && !refusal_of.contains(outcome.trade_type_code))
-                refusal_of.emplace(outcome.trade_type_code, outcome.reason);
+            auto& config = config_of[outcome.trade_type_code];
+            config.trade_type_code = outcome.trade_type_code;
+            config.planned += outcome.planned;
+            if (config.reason.empty())
+                config.reason = outcome.reason;
         }
     }
 
     for (const auto& code : stated) {
-        const auto planned = planned_of.contains(code) ? planned_of.at(code) : 0u;
+        const auto found = config_of.find(code);
+        const auto planned = found == config_of.end() ? 0u : found->second.planned;
         std::string reason;
-        if (planned == 0)
-            reason = refusal_of.contains(code) ? refusal_of.at(code) :
-                                                 std::string("no book of the config permits the "
-                                                             "product type");
+        if (planned == 0) {
+            const auto& own = found == config_of.end() ? std::string{} : found->second.reason;
+            reason =
+                own.empty() ? std::string("no book of the config permits the product type") : own;
+        }
         plan.type_outcomes.push_back(
             {.trade_type_code = code, .planned = planned, .reason = std::move(reason)});
     }

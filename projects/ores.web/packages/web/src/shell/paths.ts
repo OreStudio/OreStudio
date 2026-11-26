@@ -64,6 +64,7 @@ export const PATHS = {
     connectivity: '/market-data/connectivity',
     identityShapes: '/market-data/identity-shapes',
     fixingSeries: '/market-data/fixings',
+    fixingObservations: '/market-data/fixing-observations',
     instruments: '/market-data/instruments',
     rateLadder: '/market-data/rate-ladder',
     fxMontage: '/market-data/fx-montage',
@@ -333,3 +334,8 @@ export const MOVED: readonly (readonly [from: string, to: string])[] = [
     ['/audit', PATHS.signIns],
     ['/reporting/:name', `${PATHS.reports}/:name`],
 ];
+
+/** The fixing series page of one item, named by its oresmd URI. */
+export function fixingSeriesPath(uri: string): string {
+    return `${PATHS.fixingSeries}?uri=${encodeURIComponent(uri)}`;
+}

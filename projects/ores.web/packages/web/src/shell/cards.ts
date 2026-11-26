@@ -219,6 +219,14 @@ export const CARDS = {
         permission: 'marketdata::series_identity_shapes:read',
         screenTitleKey: 'marketdata.identityShapes.title',
     },
+    fixingObservations: {
+        titleKey: 'marketdata.fixingObservations.title',
+        bodyKey: 'marketdata.fixingObservations.lead',
+        to: PATHS.fixingObservations,
+        icon: 'chart',
+        permission: 'marketdata::market_fixings:read',
+        screenTitleKey: 'marketdata.fixingObservations.title',
+    },
     publicRates: {
         titleKey: 'marketdata.publicRates.title',
         bodyKey: 'marketdata.publicRates.lead',
@@ -536,6 +544,7 @@ export const AREA_CARDS = {
         'subscriptions',
         'connectivity',
         'identityShapes',
+        'fixingObservations',
         'publicRates',
         'calibration',
         'publishedCurves',

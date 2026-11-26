@@ -5672,6 +5672,38 @@ const pt: SourceCatalogue = {
                 party: 'Parte',
             },
         },
+        fixingObservations: {
+            title: 'Observações de fixings',
+            lead: 'O que as fontes publicaram: cada série FX e IR que a plataforma detém, o dia que cada uma alcança, e as que não têm qualquer valor.',
+            systemView:
+                'Esta é a vista de sistema das observações. Mostra o que as fontes publicaram e não oferece autorização; um dia que a plataforma nunca observou é introduzido por uma parte, no seu próprio gestor de fixings.',
+            filters: {
+                assetClass: 'Classe de activo',
+                everyClass: 'Todas as classes',
+                currency: 'Moeda',
+                everyCurrency: 'Todas as moedas',
+                source: 'Fonte',
+                everySource: 'Todas as fontes',
+            },
+            columns: {
+                series: 'Série',
+                assetClass: 'Classe',
+                underlying: 'Subjacente',
+                source: 'Fonte',
+                provider: 'Fornecedor',
+                latestValue: 'Último valor',
+                latestDay: 'Último dia',
+                days: 'Dias',
+                open: 'Abrir',
+            },
+            noDay: 'Sem dia',
+            emptyCount: '{count} de {total} séries não têm qualquer dia.',
+            none: 'O armazenamento não detém qualquer série de fixings FX ou IR.',
+            legendNoDay:
+                'Uma série que a plataforma detém e nunca observou: é uma linha, e a contagem é zero.',
+            legendEnded:
+                'Uma série que terminou mantém o último dia e a contagem, porque um fixing é um facto sobre uma data.',
+        },
         fixingSeries: {
             title: 'Série de fixings',
             lead: 'Os fixings guardados de um instrumento, a série a que pertencem e os feeds que os trouxeram.',

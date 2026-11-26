@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: 99F3E780-6AA0-4879-8F6F-2A1321ACDB85
+:END:
+#+title: Task: See the rows a dataset has staged
+#+description: The rows an artefact table holds, read over the bus and drawn on the dataset's page, so a person reads what a publish would write instead of trusting a count.
+#+type: task
+#+level: s1
+#+filetags: :dq:sql:web:coverage:sprint_31:v0:show_and_drive_the_dq_pipeline:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A dataset's page gains a Contents view: the rows its artefact table holds, paged,
+so a person reads the data a publish would write instead of trusting a count of
+it. The Qt Data Librarian never offered this: it read a dataset's own row and its
+metadata, and left the staged rows to psql.
+
+The view answers the question the coverage screen raises but cannot settle. A
+member says "512,186 rows staged", and a person who has never seen one of those
+rows cannot tell a correct catalogue from a plausible one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-26                               |
+
+* Acceptance
+
+- A read over the bus answers the rows of one dataset's artefact table, paged,
+  with the dataset named rather than the table: the caller does not know, and must
+  not need to know, that a dataset's rows live in =ores_<artefact type>_artefact_tbl=.
+- The read states the columns it answers as well as the rows, because every
+  artefact family has its own columns and the screen cannot know them.
+- The dataset's page draws them as a table with that heading, paged, so a family
+  of half a million rows reads like one of twelve.
+- The view is a read. Changing a row is
+  [[id:88F9E5B4-20FF-4EEC-B8A0-97B35970E120][its own task]].
+- A test reads the rows of a seeded dataset and asserts a known row and its
+  column names.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The hard part is not the read but the shape of the answer. There is one artefact
+table per family, and each carries its own columns beside the two every family
+shares, =dataset_id= and =tenant_id=. Countries carries =alpha2_code=,
+=alpha3_code=, =numeric_code=, =name=, =official_name= and =image_id=; the next
+family carries different ones. A screen that must draw any of them reads the
+columns with the rows, and the store can state them: the catalogue already
+describes every artefact type's table, and =information_schema= describes its
+columns. The design decision this task owns is which of the two the answer
+carries, and whether the read is one per family or one generic read over a
+whitelisted table name.
+
+Two limits worth stating in the design:
+
+- A count and a page are not the same evidence. The count says how much exists;
+  the page says whether it is right, and only for the rows it shows.
+- A family of half a million rows is the case to design for, not the exception:
+  =geo.ip2country= holds 512,186 in the provisioned environment.
+
+The write half is
+[[id:88F9E5B4-20FF-4EEC-B8A0-97B35970E120][Read and write an artefact row over
+the bus]], which reads one row by key to correct it. This task reads many to look
+at them. They share the read path and land in whichever order suits the sprint.
+
+Asked for on 2026-11-26, after the coverage screens were reviewed. The Data
+Librarian drew a lineage graph of a dataset and never its rows, which is the gap
+this closes.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

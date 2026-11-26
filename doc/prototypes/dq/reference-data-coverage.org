@@ -119,6 +119,12 @@ The page answers the questions a list cannot:
 - *History.* The versions of the dataset row, which the design defers: the entity
   is versioned and this prototype draws none of it.
 
+A fourth view is designed and not drawn here: the rows the dataset has staged.
+The page counts them today and never shows one, and the table they sit in has its
+own columns for every artefact family, so it is
+[[id:99F3E780-6AA0-4879-8F6F-2A1321ACDB85][a task of its own]] rather than a tab
+this prototype can draw from mock data.
+
 The list keeps the state column *and* the page exists, because they answer
 different questions: the list says which datasets need attention, and the page
 says what one dataset needs and what happened to it last time.

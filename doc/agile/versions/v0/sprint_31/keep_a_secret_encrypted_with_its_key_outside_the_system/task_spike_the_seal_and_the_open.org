@@ -1,0 +1,165 @@
+:PROPERTIES:
+:ID: 1271D12D-D727-4C03-B14C-5CA2E89A1507
+:END:
+#+title: Task: Spike the seal and the open
+#+description: One test seals a secret with AES-256-GCM and opens it again under its key, and the notes answer why the first attempt sealed nothing.
+#+type: task
+#+level: s1
+#+filetags: :keep_a_secret_encrypted_with_its_key_outside_the_system:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Prove that ORE can seal a secret and open it again, before anything is built on
+the assumption that it can. One test seals a plaintext under a 32-byte key with
+AES-256-GCM and opens it back to the same bytes; a second shows that a changed
+ciphertext, a changed key or a truncated blob fails to open rather than
+answering a different plaintext.
+
+A first attempt at this cipher was made while the identity story was in flight,
+and it sealed nothing: the call entered with a 32-byte key, reported no failing
+step, and answered no sealed value. The code was removed rather than left in the
+tree. So this spike writes the failing test first, keeps the program to one seal
+and one open, and records the shape that works before the cipher grows
+acceptance data, key versions and rotation.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-26                               |
+
+* Acceptance
+
+- One test seals a plaintext under a 32-byte key and opens it back to the same
+  bytes.
+- A changed ciphertext, tag or key fails to open; the sealer never answers a
+  wrong plaintext.
+- The sealer lives in =ores.security=, is exported, and the security test target
+  compiles and runs it.
+- The notes answer why the first attempt answered nothing, or state what could
+  not be recovered and what the working call had to observe.
+- The gate covers the new code.
+
+* Plan
+
+Two calls and one test, and nothing else.
+
+=ores::security::crypto::secret_sealer= holds one 32-byte key and answers =seal=
+and =open= as plain strings. The nonce is the sealer's to choose, so no caller
+can reuse one. A sealed value is one Base64 string, so the store that holds it
+needs one text column and not four. The key arrives as bytes the caller already
+has, because where the key lives is the next task's question and not this one's.
+
+The test lives in =crypto_secret_sealer_tests.cpp= beside the password hasher's,
+so it needs no database, no environment and no clock. It seals, opens, and then
+attacks its own value: a changed byte, a changed key and a truncated string each
+have to fail rather than answer something. The order is deliberate. The test was
+written and built first, and it failed at the link with the three symbols it
+wanted, which is the proof that it reaches the new code and not a stub.
+
+Deliberately absent, because the store decides them: the acceptance data that
+binds a ciphertext to its row, a key version, and rotation.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Test cases the sealer adds | 6 | =ores.security.tests "[crypto]"= → 32 assertions in 14 test cases | a309c95123 |
+| Test cases in the security suite | 74 | =ores.security.tests= → 215 assertions in 74 test cases | a309c95123 |
+| Wall time, whole security suite | 0.25 s | =time ores.security.tests= | a309c95123 |
+| Light gate | 9/9 | =./compass.sh check --exclude-heavy= | a309c95123 |
+
+* Notes
+
+** The shape of a sealed value
+
+Base64 of three fields in one string: a 12-byte nonce, a 16-byte tag, and the
+ciphertext after them. The header is therefore 28 bytes, and a value shorter
+than that is refused before any cipher call runs. Nothing yet binds the value to
+a row: that is acceptance data, and it belongs to the store.
+
+** Where a silent seal hides
+
+The first attempt's code was removed before it was committed, so this checkout
+keeps no diff, no log line and no test of it, and its cause cannot be recovered
+from the tree. Guessing at it would be worse than saying so. What can be said is
+where that shape of failure hides, and the working call had to observe all
+three:
+
+- Every OpenSSL call answers a status and none of them throws. A step that
+  answers 0 leaves an empty buffer and writes no log line of its own, which is
+  the reported shape exactly: a call that entered with a 32-byte key and
+  reported no failing step. Every step here is checked, and each failing step
+  throws with the step's name in the message.
+- GCM produces its tag at the end, so =EVP_EncryptFinal_ex= has to run before
+  the tag is read. The tag also lives in the context, so reading it after
+  =EVP_CIPHER_CTX_free= reads nothing.
+- A tag that does not authenticate is reported by =EVP_DecryptFinal_ex= alone.
+  =EVP_DecryptUpdate= answers 1 on a wrong tag, so a check that stops after the
+  update opens every tampered value and reports nothing.
+
+** What this does not prove
+
+The test proves the sealer against itself: one OpenSSL call in and one out. It
+does not prove that another implementation opens ORE's values, because no second
+GCM implementation is available in this checkout. The layout above is the
+contract a second implementation would follow.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=ores::security::crypto::secret_sealer= seals a plaintext under a 32-byte key
+with AES-256-GCM and opens it again. Six test cases prove it: the round trip,
+two seals of one plaintext differing from each other, and three refusals, of a
+changed byte, of a changed key, and of a truncated value.
+
+The cipher is now a foundation the store can stand on, so the spike is done and
+the decision task can choose where the store lives. What the spike deliberately
+left out is the store's own: the acceptance data that binds a ciphertext to its
+row, a key version, and the rotation that re-wraps every secret in one act.

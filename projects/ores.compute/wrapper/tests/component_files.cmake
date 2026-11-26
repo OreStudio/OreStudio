@@ -21,4 +21,5 @@
 # To modify, update the template and regenerate.
 set(files
     "main.cpp"
+    "package_cache_tests.cpp"
 )

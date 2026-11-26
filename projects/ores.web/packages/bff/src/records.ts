@@ -273,6 +273,7 @@ const WRITES: Readonly<Record<string, z.ZodType<Record<string, unknown>>>> = {
         status: code,
         image_id: z.uuid().nullable(),
         is_registration_default: z.boolean(),
+        restricts_product_types: z.boolean(),
     }) satisfies z.ZodType<PartyWrite>,
     'party-identifiers': z.object({
         id: z.uuid(),
@@ -317,6 +318,7 @@ const WRITES: Readonly<Record<string, z.ZodType<Record<string, unknown>>>> = {
         business_centre_code: z.string().max(100),
         unit_type_id: z.uuid().nullable(),
         status: code,
+        restricts_product_types: z.boolean(),
     }) satisfies z.ZodType<BusinessUnitWrite>,
     'ir-curve-bootstrap-configs': z.object({
         id: anyUuid,

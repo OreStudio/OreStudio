@@ -270,9 +270,13 @@ std::string index_fixing_feed::tick(const ores::analytics::quant::service::tick_
         // comes back after its input stopped finds the days it stated before, and states
         // none at all: the days it did not state while starved stay absent, because a
         // fixing is a fact about a date and not a value to make up. It then fixes the day
-        // its first tick falls on, and no earlier one.
+        // its first tick falls on, and no earlier one, unless the market holds that day
+        // already.
         if (!held.empty()) {
             history_stated_ = true;
+            // The newest day the market holds is the last day it stated, so the day this
+            // run lands on is not stated a second time where the market already holds it.
+            last_fixed_ = *held.rbegin();
             ORES_LOG_SEV(index_fixing_feed_lg(), debug)
                 << "The market holds " << held.size() << " day(s) of '" << input_.item
                 << "', so it states no history.";

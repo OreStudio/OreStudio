@@ -265,3 +265,53 @@ TEST_CASE("a_run_that_comes_back_states_no_history_and_fixes_only_the_day_it_lan
     REQUIRE(only);
     CHECK(only->vendor_time == utc_at(a_later_monday, 12h));
 }
+
+TEST_CASE("a_run_that_comes_back_states_no_fixing_for_the_day_the_market_holds",
+          index_fixing_feed_tags) {
+    manual_run_clock clock(utc_at(a_cut_friday, 14h));
+    ores::analytics::quant::service::run_market market(clock, {}, 7);
+    ores::nats::service::client nats(ores::testing::make_nats_options());
+    nats.connect();
+    REQUIRE(nats.is_connected());
+
+    const std::string subject = "test.synthetic.fixings.held_today";
+    auto ticks = nats.subscribe_buffered(subject, 64);
+    const auto spot =
+        market.values().member_of(market_member_kind::spot, "synthetic.test.held_today");
+
+    // The market already holds the day this run lands on: an earlier run stated it,
+    // and a fixing is a fact about a date, so the day is not stated a second time.
+    index_fixing_feed feed(
+        nats,
+        index_fixing_feed_input{
+            .source_name = "synthetic.test.fixing.held_today",
+            .target = {.id = {.id_scheme = "oresmd",
+                              .external_id =
+                                  "oresmd://fx/EUR?type=fixing&index=fx&source=WMR1000NYC&ccy=USD",
+                              .field = "value"},
+                       .subject = subject,
+                       .provider_code = "simulated-fixings",
+                       .faults = {}},
+            .item = "oresmd://fx/EUR?type=fixing&index=fx&source=WMR1000NYC&ccy=USD",
+            .level_kind = market_member_kind::spot,
+            .level_codes = {"synthetic.test.held_today"},
+            .when = {},
+            .history_days = 3,
+            .run_seed = 42,
+            .held =
+                [](const std::string&, year_month_day) {
+                    return std::expected<std::set<year_month_day>, std::string>{
+                        std::set<year_month_day>{a_cut_friday}};
+                }},
+        market);
+
+    market.values().publish_spot(spot, 1.0842, utc_at(a_cut_friday, 14h));
+    CHECK(feed.tick({.elapsed_seconds = 1.0, .observed_at = utc_at(a_cut_friday, 14h)}) == "0");
+
+    // The level moved during the day and the tick runs again: the day stays as it was
+    // stated, and nothing is published for it.
+    market.values().publish_spot(spot, 1.0901, utc_at(a_cut_friday, 20h));
+    CHECK(feed.tick({.elapsed_seconds = 1.0, .observed_at = utc_at(a_cut_friday, 20h)}) == "0");
+    CHECK(feed.publish_count() == 0);
+    CHECK(ticks.size() == 0);
+}

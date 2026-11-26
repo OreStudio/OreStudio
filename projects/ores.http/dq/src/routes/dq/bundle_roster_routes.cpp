@@ -49,16 +49,14 @@ void bundle_roster_routes::register_routes(
                          "",
                          false,
                          "The bundle whose members to read, or empty for the roster alone")
-            .handler([&session](const http_request& req) {
-                return handle_roster(req, session);
-            });
+            .handler([&session](const http_request& req) { return handle_roster(req, session); });
     const auto built = roster_route.build();
     router->add_route(built);
     registry->register_route(built);
 }
 
-boost::asio::awaitable<http_response>
-bundle_roster_routes::handle_roster(const http_request& req, nats_client& session) {
+boost::asio::awaitable<http_response> bundle_roster_routes::handle_roster(const http_request& req,
+                                                                          nats_client& session) {
     try {
         messaging::bundle_roster_request msg;
         msg.bundle_code = req.get_query_param("bundle_code");

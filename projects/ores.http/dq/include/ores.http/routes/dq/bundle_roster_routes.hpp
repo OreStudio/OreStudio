@@ -46,8 +46,7 @@ namespace ores::http::routes::dq {
  */
 class bundle_roster_routes {
 private:
-    inline static std::string_view logger_name =
-        "ores.http.routes.dq.bundle_roster_routes";
+    inline static std::string_view logger_name = "ores.http.routes.dq.bundle_roster_routes";
 
     static auto& lg() {
         using namespace ores::logging;

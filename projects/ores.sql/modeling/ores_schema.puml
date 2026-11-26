@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-835 tables in 23 groups.
+837 tables in 23 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -99,6 +99,7 @@ entity "refdata" as refdata {
   ores_refdata_business_centres_tbl
   ores_refdata_business_day_convention_types_tbl
   ores_refdata_business_processes_tbl
+  ores_refdata_business_unit_product_types_tbl
   ores_refdata_business_unit_types_tbl
   ores_refdata_business_units_tbl
   ores_refdata_calendar_dates_tbl
@@ -260,6 +261,7 @@ entity "refdata" as refdata {
   ores_refdata_party_id_schemes_tbl
   ores_refdata_party_identifiers_tbl
   ores_refdata_party_product_type_deal_classes_tbl
+  ores_refdata_party_product_types_tbl
   ores_refdata_party_relationships_tbl
   ores_refdata_party_roles_tbl
   ores_refdata_party_statuses_tbl
@@ -305,7 +307,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-222 tables — ores_schema.refdata.puml
+224 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {

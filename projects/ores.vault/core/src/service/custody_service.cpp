@@ -93,8 +93,9 @@ custody_result custody_service::write(const std::string& actor,
     try {
         // The value the caller sent is sealed to this process, and only this
         // process can open it: a broker, a log or a trace holds the ciphertext.
-        const std::string value = sealed_box::open(
-            keys_.transport_private_key, sealed_to_vault, messaging::custody_context::write(name, owner));
+        const std::string value = sealed_box::open(keys_.transport_private_key,
+                                                   sealed_to_vault,
+                                                   messaging::custody_context::write(name, owner));
 
         const auto version = keys_.current_version;
         const secret_sealer sealer(keys_.current_key());

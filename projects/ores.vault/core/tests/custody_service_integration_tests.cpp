@@ -23,10 +23,10 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
 #include "ores.vault.api/domain/consumer.hpp"
+#include "ores.vault.api/messaging/custody_context.hpp"
 #include "ores.vault.core/repository/consumer_repository.hpp"
 #include "ores.vault.core/repository/secret_use_repository.hpp"
 #include "ores.vault.core/security/credential_source.hpp"
-#include "ores.vault.api/messaging/custody_context.hpp"
 #include "ores.vault.core/service/custody_service.hpp"
 #include "test_suite.hpp"
 #include <boost/uuid/random_generator.hpp>
@@ -101,8 +101,9 @@ sealed_box::key_pair register_consumer(const ores::database::context& ctx,
 /// context the vault expects for a write.
 std::string
 seal_for_the_vault(const key_material& keys, const std::string& name, const std::string& owner) {
-    return sealed_box::seal(
-        keys.transport_public_key, plaintext, ores::vault::messaging::custody_context::write(name, owner));
+    return sealed_box::seal(keys.transport_public_key,
+                            plaintext,
+                            ores::vault::messaging::custody_context::write(name, owner));
 }
 
 }

@@ -8,7 +8,7 @@
 #+filetags: :publish_every_kind_of_derived_market_object_through_one_lifecycle:sprint_31:v0:
 #+owner: marco
 #+branch: feature/serve-or-retire-the-series-slice-subject
-#+pr:
+#+pr: 5147
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
@@ -106,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5147][#5147]] | [marketdata] Prove the series slice is served and correct the record |
 
 * Review
 

@@ -95,7 +95,9 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     check ("rate_source" in ('process', 'compounded_overnight', 'overnight_plus_spread')),
     check ("rate_source" = 'process' or "tenor" <> ''),
     check ("rate_source" <> 'overnight_plus_spread' or "derived_spread_source" is not null),
-    check ("rate_source" <> 'overnight_plus_spread' or "derived_spread_basis_points" <> 0)
+    check ("rate_source" <> 'overnight_plus_spread' or "derived_spread_basis_points" <> 0),
+    check ("rate_source" <> 'process' or "derived_spread_basis_points" = 0),
+    check ("rate_source" <> 'process' or "derived_spread_source" is null)
 );
 
 -- Composite natural key: unique combination for active records

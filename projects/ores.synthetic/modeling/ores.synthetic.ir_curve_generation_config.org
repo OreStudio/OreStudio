@@ -676,6 +676,8 @@ How strongly a market-wide regime moves this row, where one is the average.
 | "rate_source" = 'process' or "tenor" <> ''                |
 | "rate_source" <> 'overnight_plus_spread' or "derived_spread_source" is not null |
 | "rate_source" <> 'overnight_plus_spread' or "derived_spread_basis_points" <> 0 |
+| "rate_source" <> 'process' or "derived_spread_basis_points" = 0 |
+| "rate_source" <> 'process' or "derived_spread_source" is null |
 
 * Foreign keys
 

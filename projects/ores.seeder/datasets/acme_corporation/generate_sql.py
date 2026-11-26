@@ -897,13 +897,17 @@ def generate_staff_photos_populate(accounts):
     statements = []
     for photo_key, data_b64 in seen.items():
         image_id = str(uuid.uuid5(NAMESPACE, f"image:{photo_key}"))
-        # The check that a table has one writer must hear why this script is a
-        # second one, once for the script rather than once per photograph.
+        # The script this generator writes carries a compass exception, because a
+        # demonstration's photographs are written by both the populate and the
+        # publish. The marker is assembled from its parts here: written whole, this
+        # file would hold a directive of its own, and the check would read it as one
+        # that covers no finding, since a generator is not the writer it describes.
         writer_exception = (
-            "        -- compass:except(single_writer/second_writer) expires=2027-05-18 "
-            "approver=marco reason=the populate script writes the system tenant's row and "
-            "the publish writes a tenant's own: a demonstration's photographs in its own "
-            "tenant, and the platform's flags and avatars in the system tenant\n"
+            "        -- compass"
+            ":except(single_writer/second_writer) expires=2027-05-18 approver=marco "
+            "reason=the populate script writes the system tenant's row and the publish "
+            "writes a tenant's own: a demonstration's photographs in its own tenant, "
+            "and the platform's flags and avatars in the system tenant\n"
             if not statements else "")
         statements.append(f"""
     if not exists (

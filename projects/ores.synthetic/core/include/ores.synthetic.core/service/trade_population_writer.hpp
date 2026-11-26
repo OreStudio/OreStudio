@@ -97,6 +97,20 @@ public:
     resolve_scope(const boost::uuids::uuid& config_id) = 0;
 
     /**
+     * @brief The product types each of @p book_ids permits, as refdata resolves
+     * them through the book, its desk and its party.
+     *
+     * A book the answer does not name permits every type, which is what a party
+     * that states no matrix means. The resolution is refdata's own, so the
+     * generator chooses within the matrix the write path enforces rather than
+     * within a second statement of it.
+     *
+     * @throws trade_population_write_error when the answer cannot be read.
+     */
+    [[nodiscard]] virtual std::vector<domain::book_approval>
+    book_approvals(const std::vector<boost::uuids::uuid>& book_ids) = 0;
+
+    /**
      * @brief The trade as the store holds it, or nothing when it holds none.
      */
     [[nodiscard]] virtual std::optional<trade_population_stored>

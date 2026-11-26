@@ -22,8 +22,9 @@
  * pgTAP tests for the seed of the two junctions that say what allows a product
  * type.
  *
- * - A book published from a curated dataset states the product types it allows,
- *   and takes every code the system catalogue holds.
+ * - A book published from a curated dataset states exactly the product types the
+ *   dataset names for it, and the desk and the party above it state sets that
+ *   hold what it carries.
  * - A book a tenant creates carries no rows and allows everything, while a book
  *   that restricts with no rows allows nothing: the flag tells them apart.
  * - A provisioned tenant's roles all permit the whole catalogue, because the
@@ -39,7 +40,7 @@
 
 begin;
 
-select plan(11);
+select plan(14);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -247,6 +248,35 @@ select results_eq(
     $$values ('Empty Restricted Book'::text, true, 0::bigint),
              ('Unrestricted Book'::text, false, 0::bigint)$$,
     'a book that allows everything and one that allows nothing both hold no rows, and the flag tells them apart');
+
+-- The read a choosing caller asks: the resolution composed over several books.
+select is(
+    (select a.book_id
+     from ores_refdata_book_product_approvals_fn(
+         array['00000000-0000-0000-0000-0000000f1002'::uuid,
+               (select id from t_book order by name limit 1)]::uuid[]) a
+     limit 1),
+    '00000000-0000-0000-0000-0000000f1002'::uuid,
+    'the read answers the books in the order the request named them');
+
+select is(
+    (select count(*)
+     from ores_refdata_book_product_approvals_fn(
+         array[(select id from t_book order by name limit 1)]::uuid[]) a
+     where not a.permits_every_type
+       and a.product_type_code is not null),
+    (select count(*)
+     from ores_refdata_book_product_types_tbl j
+     where j.book_id = (select id from t_book order by name limit 1)
+       and j.valid_to = ores_utility_infinity_timestamp_fn()),
+    'a restricted book answers one row for every type it permits');
+
+select results_eq(
+    $$select a.book_id, a.permits_every_type, a.product_type_code
+      from ores_refdata_book_product_approvals_fn(
+          array['00000000-0000-0000-0000-0000000f1002'::uuid]) a$$,
+    $$values ('00000000-0000-0000-0000-0000000f1002'::uuid, false, null::text)$$,
+    'a book that permits nothing answers one row naming no type, and says it permits nothing');
 
 -- A tenant that people set up starts with roles that permit the catalogue.
 create temporary table t_tenant on commit drop as

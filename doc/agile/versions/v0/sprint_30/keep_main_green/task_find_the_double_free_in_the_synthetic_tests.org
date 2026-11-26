@@ -8,7 +8,7 @@
 #+filetags: :keep_main_green:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/find-the-double-free-in-the-synthetic-tests
-#+pr:
+#+pr: 5170
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-26
@@ -105,7 +105,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5170][#5170]] | [agile] Record how the synthetic double free is to be chased |
 
 * Review
 

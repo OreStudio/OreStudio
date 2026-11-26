@@ -8,7 +8,7 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch: feature/release-a-jobs-folder-once-its-output-is-uploaded
-#+pr:
+#+pr: 5161
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -82,7 +82,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5161][#5161]] | [compute] Release a job's folder once its output is uploaded |
 
 * Review
 

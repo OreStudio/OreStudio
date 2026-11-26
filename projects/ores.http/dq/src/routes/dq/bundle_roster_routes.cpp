@@ -42,6 +42,7 @@ void bundle_roster_routes::register_routes(
                          "to read its members with what each has staged; names none and the "
                          "answer is the roster alone.")
             .tags({"dq"})
+            .operation_catalogue("dq", "bundle_roster", "read")
             .auth_required()
             .query_param("bundle_code",
                          "string",

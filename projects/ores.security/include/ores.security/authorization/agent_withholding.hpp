@@ -53,6 +53,10 @@ inline bool is_withheld_from_agents(std::string_view code) {
     if (code.starts_with("iam::") || code.starts_with("inbox::") ||
         code.starts_with("variability::"))
         return true;
+    // The vault's writes, and its resolve of a secret's value, are a person's:
+    // a resolved secret is the one code whose answer is the secret itself.
+    if (code.starts_with("vault::"))
+        return true;
     static constexpr std::array<std::string_view, 6> decisions = {
         "approval", "authorisation", "authorization", "decision", ":decide", "authorise"};
     for (const auto word : decisions)

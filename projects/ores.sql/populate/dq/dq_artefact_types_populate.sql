@@ -296,6 +296,9 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_utility_system_tenant_id_fn(), 'retention_policies', 0, 'Retention Policies', 'The stores the platform bounds, published into the system tenant',
      'dq_retention_policies_artefact_tbl', 'scheduler_retention_policies_tbl', 'scheduler.v1.ops.publish_retention_policies_from_dq', 82,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'retained_stores', 0, 'Retained Stores', 'The stores the installation keeps, published into the system tenant',
+     'dq_retained_stores_artefact_tbl', 'scheduler_retained_stores_tbl', 'scheduler.v1.ops.publish_retained_stores_from_dq', 83,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

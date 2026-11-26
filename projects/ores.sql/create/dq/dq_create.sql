@@ -324,3 +324,4 @@
 \ir ./dq_report_configurations_artefact_create.sql
 \ir ./dq_job_definitions_artefact_create.sql
 \ir ./dq_retention_policies_artefact_create.sql
+\ir ./dq_retained_stores_artefact_create.sql

@@ -1,0 +1,365 @@
+:PROPERTIES:
+:ID: 9BB8AB7A-5138-4EED-AEB8-52EC9D23AF95
+:ores.cpp.wire-codec.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.scheduler.retained_store
+#+description: Codegen entity model for the scheduler =retained_stores= table. One store the installation keeps, named in the words a person reads, with the shape of its target and the bound it ships with.
+#+type: ores.codegen.entity
+#+component: scheduler
+#+filetags: :model:entity:scheduler:
+#+brief: One store the installation keeps, described in the words a person reads.
+#+entity_singular: retained_store
+#+entity_plural: retained_stores
+#+entity_title: Retained Store
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+Every store the installation keeps is a row here, before anything else knows
+about it. The row is what lets a person read "Calendar dates" instead of
+=ores_refdata_calendar_dates_tbl=, and what lets the sweep, the screen and the
+alerts agree on the set of stores without any of them carrying a list of tables.
+
+The catalogue is not a policy: it states what the store is and the bound it ships
+with, and a policy states what is applied now. That is why a store exists here
+whether or not a policy names it, and why the bound is one of three kinds rather
+than always an action and a period. A store bounded by its content keying needs
+no policy, and a store whose bound cannot be expressed as an age — the calendar
+days behind the horizon — states that it has none rather than carrying a default
+that would delete what pricing still needs.
+
+The rows describe the installation's own stores, so the platform authors them and
+the system tenant holds them: the classification that governs published rows
+makes the platform the author here, as it does for the policies those rows
+describe. The column is not null for that reason.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     scheduler
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The store's code, in the dotted form the components use.
+
+Examples: 'refdata.calendar_dates', 'reporting.report_cashflows',
+'compute.node_scratch'.
+
+** display_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The name a person reads on the screen, in place of the physical target.
+
+Examples: 'Calendar dates', 'Compute node scratch'.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::words(2))
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What the store holds, in a sentence, so a person knows what would be lost.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** owner_component
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The component that writes the store, and therefore the one to ask about it.
+
+Examples: 'refdata', 'reporting', 'marketdata', 'compute'.
+
+#+begin_src cpp :name generator
+std::string("scheduler")
+#+end_src
+
+** scope
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: std::string("platform")
+:END:
+
+Whether the platform or a single tenant owns the rows. It decides the audience of
+an alert about the store: the platform's stores are the system administrator's,
+and a tenant's are that tenant's.
+
+#+begin_src cpp :name generator
+std::string("platform")
+#+end_src
+
+** target_kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The shape of the target: a chunked table, an ordinary table, an object-store key
+prefix, or a directory on a compute host.
+
+#+begin_src cpp :name generator
+std::string("chunked_table")
+#+end_src
+
+** target
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The table name, the key prefix, or the directory the store lives in.
+
+#+begin_src cpp :name generator
+std::string("public.ores_scheduler_retained_stores_tbl")
+#+end_src
+
+** time_column
+:PROPERTIES:
+:type:     text
+:cpp_type:     std::optional<std::string>
+:nullable:     true
+:END:
+
+The column a deletion compares against the period. Null where nothing compares a
+column: an object prefix or a directory expires by its own age.
+
+#+begin_src cpp :name generator
+std::string("modified_timestamp")
+#+end_src
+
+** measure_kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the store's size is read: counts of rows, of objects, or of files.
+
+#+begin_src cpp :name generator
+std::string("relation_rows")
+#+end_src
+
+** bound_kind
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: std::string("policy")
+:END:
+
+The kind of bound the store ships with: a policy with an action and a period, a
+bound by content keying that needs no policy, or no bound at all where none can be
+expressed as an age.
+
+#+begin_src cpp :name generator
+std::string("policy")
+#+end_src
+
+** default_action
+:PROPERTIES:
+:type:     text
+:cpp_type:     std::optional<std::string>
+:nullable:     true
+:END:
+
+What the default policy does to the target past its period, when the bound is a
+policy.
+
+#+begin_src cpp :name generator
+std::string("drop_chunks")
+#+end_src
+
+** default_retention_days
+:PROPERTIES:
+:type:     integer
+:cpp_type:     std::optional<int>
+:nullable:     true
+:END:
+
+The default period, in days, when the bound is a policy.
+
+#+begin_src cpp :name generator
+faker::number::integer(7, 365)
+#+end_src
+
+** default_cadence_hours
+:PROPERTIES:
+:type:          integer
+:cpp_type:      int
+:nullable:      false
+:default_value: 24
+:END:
+
+The hours between two applications of the default policy.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 168)
+#+end_src
+
+** default_reason
+:PROPERTIES:
+:type:     text
+:cpp_type:     std::optional<std::string>
+:nullable:     true
+:END:
+
+Why the store keeps what it keeps for that period, stated once so the policy the
+installation creates carries it.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_scheduler_retained_stores_tbl
+:rls_tenant_isolation:          true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "scope" in ('platform', 'tenant') |
+| "target_kind" in ('chunked_table', 'table', 'object_prefix', 'directory') |
+| "measure_kind" in ('relation_rows', 'objects', 'files') |
+| "bound_kind" in ('policy', 'keying', 'none') |
+| "default_action" is null or "default_action" in ('drop_chunks', 'delete_rows', 'expire_prefix', 'release_directory') |
+| case when "bound_kind" = 'policy' then "default_action" is not null and coalesce("default_retention_days" > 0, false) else "default_action" is null and "default_retention_days" is null end |
+| "default_cadence_hours" > 0 |
+| "target" <> '' |
+| "time_column" is not null or "target_kind" in ('object_prefix', 'directory') |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:        api
+:wide_type_exception: // compass:except(wide_types/over_ceiling) expires=2027-05-26 approver=marco reason=the row is the store with the name and the description a person reads and the shape and target of what it keeps and the bound it ships with, beside the audit tail and the tenant that holds it
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: store
+:entity_plural_short:   stores
+:entity_singular_words: retained store
+:entity_plural_words:   retained stores
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rs
+:END:
+
+** Table display
+
+| column                 | header          |
+|------------------------+-----------------|
+| code                   | Code            |
+| display_name           | Name            |
+| owner_component        | Owner           |
+| target_kind            | Kind            |
+| target                 | Target          |
+| bound_kind             | Bound           |
+| default_retention_days | Period (days)   |
+| version                | Version         |
+| modified_by            | Modified By     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.scheduler/domain/retained_store.hpp
+:domain_class:           scheduler::domain::retained_store
+:protocol_include:       ores.scheduler/messaging/retained_store_protocol.hpp
+:collection_name:        stores
+:key_field:              code
+:has_pagination:         true
+:END:
+
+*** Detail fields
+
+| field                  | label           | type      | is_key | is_required | placeholder                        |
+|------------------------+-----------------+-----------+--------+-------------+------------------------------------|
+| code                   | Code            | line_edit | true   | true        | Enter the store's code             |
+| display_name           | Name            | line_edit |        | true        | Enter the name a person reads      |
+| owner_component        | Owner           | line_edit |        | true        | Enter the component that writes it |
+| scope                  | Scope           | combo_box |        | true        | Select the scope                   |
+| target_kind            | Kind            | combo_box |        | true        | Select a kind                      |
+| target                 | Target          | line_edit |        | true        | Enter a table, prefix or directory |
+| time_column            | Time column     | line_edit |        | false       | Enter the column a delete compares |
+| measure_kind           | Measured by     | combo_box |        | true        | Select what the size counts        |
+| bound_kind             | Bound           | combo_box |        | true        | Select the kind of bound           |
+| default_action         | Default action  | combo_box |        | false       | Select an action                   |
+| default_retention_days | Period (days)   | spin_box  |        | false       | Enter the default period           |
+| default_cadence_hours  | Cadence (hours) | spin_box  |        | true        | Enter the hours between sweeps     |
+| default_reason         | Reason          | text_edit |        | false       | Enter why it is kept so long       |
+| description            | Description     | text_edit |        |             | Enter what the store holds         |
+
+*** Columns
+
+| enum_name           | field                  | header          | type    | width |
+|---------------------+------------------------+-----------------+---------+-------|
+| Code                | code                   | Code            | string  | 200   |
+| DisplayName         | display_name           | Name            | string  | 220   |
+| OwnerComponent      | owner_component        | Owner           | string  | 140   |
+| Scope               | scope                  | Scope           | string  | 110   |
+| TargetKind          | target_kind            | Kind            | string  | 140   |
+| Target              | target                 | Target          | string  | 300   |
+| TimeColumn          | time_column            | Time column     | string  | 160   |
+| MeasureKind         | measure_kind           | Measured by     | string  | 140   |
+| BoundKind           | bound_kind             | Bound           | string  | 110   |
+| DefaultAction       | default_action         | Default action  | string  | 160   |
+| DefaultRetentionDays | default_retention_days | Period (days)  | int     | 110   |
+| DefaultCadenceHours | default_cadence_hours  | Cadence (hours) | int     | 120   |
+| Version             | version                | Version         | int     | 80    |
+| ModifiedBy          | modified_by            | Modified By     | string  | 120   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:2C7E4B19-8D6A-4F53-9B21-5E8A7C3D1F60][Retention policy]] — what the sweep applies to the stores this catalogue names.
+- [[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]] — the component that fires the sweep.

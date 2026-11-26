@@ -327,3 +327,144 @@ comment on function ores_scheduler_publish_retention_policies_from_dq_fn(uuid, u
  from the latest row it held, even where the publish closed it first, as
  replace_all does. A policy with the same contract is skipped, so a repeat publish
  adds no version.';
+
+-- =============================================================================
+-- Retained Stores
+-- =============================================================================
+
+-- compass:except(entity_writes/sql_writer) expires=2027-05-26 approver=marco reason=publishes a DQ dataset into the system tenant, like every other publish_from_dq function
+create or replace function ores_scheduler_publish_retained_stores_from_dq_fn(
+    p_dataset_id uuid,
+    p_target_tenant_id uuid,
+    p_mode text default 'upsert',
+    p_params jsonb default '{}'::jsonb
+)
+returns table (
+    action text,
+    record_count bigint
+) as $$
+declare
+    v_inserted bigint := 0;
+    v_updated bigint := 0;
+    v_skipped bigint := 0;
+    v_deleted bigint := 0;
+    v_dataset_name text;
+    v_exists boolean;
+    v_unchanged boolean;
+    v_new_version integer;
+    r record;
+begin
+    perform ores_utility_allow_version_replace_fn();
+
+    select name into v_dataset_name
+    from ores_dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    if p_mode not in ('upsert', 'insert_only', 'replace_all') then
+        raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
+    end if;
+
+    if p_mode = 'replace_all' then
+        update ores_scheduler_retained_stores_tbl
+        set valid_to = clock_timestamp()
+        where tenant_id = p_target_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and code in (
+              select dq.code from ores_dq_retained_stores_artefact_tbl dq
+              where dq.dataset_id = p_dataset_id
+                and dq.tenant_id = ores_utility_system_tenant_id_fn());
+
+        get diagnostics v_deleted = row_count;
+    end if;
+
+    for r in
+        select dq.code, dq.display_name, dq.description, dq.owner_component,
+               dq.scope, dq.target_kind, dq.target, dq.time_column, dq.measure_kind,
+               dq.bound_kind, dq.default_action, dq.default_retention_days,
+               dq.default_cadence_hours, dq.default_reason
+        from ores_dq_retained_stores_artefact_tbl dq
+        where dq.dataset_id = p_dataset_id
+          and dq.tenant_id = ores_utility_system_tenant_id_fn()
+    loop
+        select exists (
+            select 1 from ores_scheduler_retained_stores_tbl existing
+            where existing.tenant_id = p_target_tenant_id
+              and existing.code = r.code
+              and existing.valid_to = ores_utility_infinity_timestamp_fn()
+        ) into v_exists;
+
+        select exists (
+            select 1 from ores_scheduler_retained_stores_tbl existing
+            where existing.tenant_id = p_target_tenant_id
+              and existing.code = r.code
+              and existing.valid_to = ores_utility_infinity_timestamp_fn()
+              and (existing.display_name, existing.description, existing.owner_component,
+                   existing.scope, existing.target_kind, existing.target,
+                   existing.time_column, existing.measure_kind, existing.bound_kind,
+                   existing.default_action, existing.default_retention_days,
+                   existing.default_cadence_hours, existing.default_reason)
+                  is not distinct from
+                  (r.display_name, r.description, r.owner_component,
+                   r.scope, r.target_kind, r.target,
+                   r.time_column, r.measure_kind, r.bound_kind,
+                   r.default_action, r.default_retention_days,
+                   r.default_cadence_hours, r.default_reason)
+        ) into v_unchanged;
+
+        if v_unchanged then
+            v_skipped := v_skipped + 1;
+            continue;
+        end if;
+
+        if p_mode = 'insert_only' and v_exists then
+            v_skipped := v_skipped + 1;
+            continue;
+        end if;
+
+        insert into ores_scheduler_retained_stores_tbl (
+            code, tenant_id, version, display_name, description, owner_component,
+            scope, target_kind, target, time_column, measure_kind, bound_kind,
+            default_action, default_retention_days, default_cadence_hours,
+            default_reason,
+            modified_by, performed_by, change_reason_code, change_commentary
+        ) values (
+            r.code, p_target_tenant_id, 0, r.display_name, r.description,
+            r.owner_component, r.scope, r.target_kind, r.target, r.time_column,
+            r.measure_kind, r.bound_kind, r.default_action, r.default_retention_days,
+            r.default_cadence_hours, r.default_reason,
+            coalesce(ores_iam_current_service_fn(), current_user), current_user,
+            'system.external_data_import',
+            'Imported from DQ dataset: ' || v_dataset_name
+        )
+        returning version into v_new_version;
+
+        if v_new_version = 1 then
+            v_inserted := v_inserted + 1;
+        else
+            v_updated := v_updated + 1;
+        end if;
+    end loop;
+
+    return query
+    select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'updated'::text, v_updated
+    where v_updated > 0
+    union all select 'skipped'::text, v_skipped
+    where v_skipped > 0
+    union all select 'deleted'::text, v_deleted
+    where v_deleted > 0;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+comment on function ores_scheduler_publish_retained_stores_from_dq_fn(uuid, uuid, text, jsonb) is
+'Publishes the catalogue of stores a dataset stages into the target tenant. The
+ whole row is the platform''s statement of what the store is and the bound it ships
+ with, so every field is reconciled and a repeat publish adds no version. What an
+ installation decides about a bound it records in the policy, not here, which is
+ why a changed default leaves an existing policy alone.';

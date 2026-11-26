@@ -311,3 +311,4 @@
 \ir ./dq_legal_entities_artefact_drop.sql
 \ir ./dq_job_definitions_artefact_drop.sql
 \ir ./dq_retention_policies_artefact_drop.sql
+\ir ./dq_retained_stores_artefact_drop.sql

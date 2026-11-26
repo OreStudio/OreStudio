@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: scheduler
-Tables: 4
+Tables: 5
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -118,6 +118,55 @@ package "scheduler" #F1F8E9 {
     Execution history for scheduler jobs.
     Designed for TimescaleDB hypertable; degrades gracefully to a plain table.
     Partitioned by triggered_at.
+    end note
+
+    entity ores_scheduler_retained_stores_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * display_name : text
+        * description : text
+        * owner_component : text
+        * scope : text
+        * target_kind : text
+        * target : text
+          time_column : text
+        * measure_kind : text
+        * bound_kind : text
+          default_action : text
+          default_retention_days : integer
+        * default_cadence_hours : integer
+          default_reason : text
+        * modified_by : text
+        * performed_by : text
+        * acting_agent : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_scheduler_retained_stores_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Retained Store Table
+    Every store the installation keeps is a row here, before anything else knows
+    about it. The row is what lets a person read "Calendar dates" instead of
+    ores_refdata_calendar_dates_tbl, and what lets the sweep, the screen and the
+    alerts agree on the set of stores without any of them carrying a list of tables.
+    The catalogue is not a policy: it states what the store is and the bound it ships
+    with, and a policy states what is applied now. That is why a store exists here
+    whether or not a policy names it, and why the bound is one of three kinds rather
+    than always an action and a period. A store bounded by its content keying needs
+    no policy, and a store whose bound cannot be expressed as an age — the calendar
+    days behind the horizon — states that it has none rather than carrying a default
+    that would delete what pricing still needs.
+    The rows describe the installation's own stores, so the platform authors them and
+    the system tenant holds them: the classification that governs published rows
+    makes the platform the author here, as it does for the policies those rows
+    describe. The column is not null for that reason.
     end note
 
     entity ores_scheduler_retention_policies_tbl <<temporal>> #C6F0D8 {

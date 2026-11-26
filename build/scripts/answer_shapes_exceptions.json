@@ -40,6 +40,10 @@
     {
       "address": "GET /api/reporting/reports",
       "why": "latestRun is null for a definition that has no run, and an object once it has one. The corpus was captured where runs existed; the gate rebuilds the database before comparing, so no definition carries one. The route writes null when run_of finds no run for the definition, so the difference is the presence of a run and not the shape of the answer."
+    },
+    {
+      "address": "GET /api/trades",
+      "why": "rows[].structure_id is an optional uuid the summary carries, and the corpus was captured when no summary had one: the BFF writes no value of its own, it passes the summary through, so it answered null there. A trade that belongs to a structure now states it, which is the member holding a value and not a different shape. The pair comes and goes with whether the summaries in the database name a structure, which is why one gate reports it and the next does not. Re-capturing the corpus was tried and rejected: against an empty BFF it records quotes as array null and last_at as null, which would hide the very absence the other two entries explain."
     }
   ]
 }

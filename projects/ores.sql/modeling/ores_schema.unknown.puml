@@ -1,0 +1,130 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+' GENERATED FILE - DO NOT EDIT
+' Regenerate with: ./compass.sh generate
+'
+@startuml
+
+title ORES Database Schema — unknown
+hide circle
+skinparam linetype ortho
+
+' Layout: left-to-right stacks packages vertically
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 8
+skinparam ranksep 20
+
+note as GroupNote
+Group: unknown
+Tables: 2
+Index and the other groups: ores_schema.puml
+Table naming: <component>_<entity>_tbl
+end note
+
+'
+' ==================== unknown (Unknown) ====================
+'
+package "unknown" #FFFFFF {
+    entity ores_vault_consumers_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text
+        * public_key : text
+        * is_enabled : boolean
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * acting_agent : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_vault_consumers_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Consumer Table
+    A consumer of the vault: the identity a service's token carries, and the public
+    half of the key pair that service holds. The vault never takes a key from a
+    request. It reads the subject out of the verified token, finds the row that
+    names it, and seals the answer to the public key held here.
+    The private half is never in this table, never in the database and never in the
+    tree. It is a system credential of the consumer's unit, provisioned with the
+    deployment, so a copy of this table discloses nothing that can open an answer.
+    Two invariants decide the shape. A consumer registers once by its name, the
+    subject its token presents, which is the natural key: two rows for one subject
+    would give one service two keys, and the vault would have to choose. And a row
+    with no public key cannot be sealed to, so a consumer that has not been
+    provisioned is a consumer that receives nothing.
+    end note
+
+    entity ores_vault_secrets_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * name : text
+        * owner : text
+        * sealed_value : text
+        * key_version : integer
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * acting_agent : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_vault_secrets_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Secret Table
+    A secret one tenant keeps, sealed under a key that lives outside the database.
+    The row holds the sealed value and the version of the key that sealed it, and
+    the value is bound to the row it sits in, so a ciphertext copied into another
+    row, another tenant or another version does not open.
+    The plaintext is never a column and never a wire field. A consumer asks for the
+    value by name, and the answer leaves sealed to that consumer's own key, so the
+    value exists in the clear only inside the process that must use it.
+    Two invariants decide the shape. A tenant keeps a secret once by its name,
+    which is the natural key: the name is what a consumer asks for and what the
+    audit records, so a tenant cannot hold two secrets that answer one ask. And the
+    owner names the consumer permitted to resolve it, which is a fact about the
+    row and not about the caller: the vault answers a resolve with the owner's key,
+    and a row with no owner is a row nobody may read.
+    end note
+
+}
+
+
+'
+' ==================== Relationships ====================
+'
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.unknown.puml"
+' End:
+@enduml

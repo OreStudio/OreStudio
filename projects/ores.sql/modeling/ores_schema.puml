@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-836 tables in 22 groups.
+835 tables in 23 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -99,7 +99,6 @@ entity "refdata" as refdata {
   ores_refdata_business_centres_tbl
   ores_refdata_business_day_convention_types_tbl
   ores_refdata_business_processes_tbl
-  ores_refdata_business_unit_product_types_tbl
   ores_refdata_business_unit_types_tbl
   ores_refdata_business_units_tbl
   ores_refdata_calendar_dates_tbl
@@ -261,7 +260,6 @@ entity "refdata" as refdata {
   ores_refdata_party_id_schemes_tbl
   ores_refdata_party_identifiers_tbl
   ores_refdata_party_product_type_deal_classes_tbl
-  ores_refdata_party_product_types_tbl
   ores_refdata_party_relationships_tbl
   ores_refdata_party_roles_tbl
   ores_refdata_party_statuses_tbl
@@ -307,7 +305,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-224 tables — ores_schema.refdata.puml
+222 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {
@@ -325,7 +323,6 @@ entity "dq_staging" as dq_staging {
   ores_dq_bma_basis_swap_conventions_artefact_tbl
   ores_dq_bond_future_volatility_configs_artefact_tbl
   ores_dq_bond_yield_conventions_artefact_tbl
-  ores_dq_book_product_types_artefact_tbl
   ores_dq_books_artefact_tbl
   ores_dq_business_centres_artefact_tbl
   ores_dq_business_processes_artefact_tbl
@@ -504,7 +501,7 @@ entity "dq_staging" as dq_staging {
 }
 note bottom of dq_staging
 Data Staging
-190 tables — ores_schema.dq_staging.puml
+189 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {
@@ -1018,6 +1015,15 @@ entity "inbox" as inbox {
 note bottom of inbox
 Inbox — Approval Requests and Notifications
 18 tables — ores_schema.inbox.puml
+end note
+
+entity "unknown" as unknown {
+  ores_vault_consumers_tbl
+  ores_vault_secrets_tbl
+}
+note bottom of unknown
+Unknown
+2 tables — ores_schema.unknown.puml
 end note
 
 

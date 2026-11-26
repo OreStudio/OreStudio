@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 568A6F6A-A261-4CA1-A5D9-9D5DBCF0209A
+:END:
+#+title: ores.vault
+#+description: Custody of the secrets ORE must use: a sealed value, the key that protects it, and the consumer it is sealed to.
+#+type: ores.codegen.component
+#+component_kind: composite
+#+parts: api client core service
+#+level: cross
+#+filetags: 
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+name: vault
+#+full_name: ores.vault
+#+brief: Secret custody service
+
+* Summary
+
+=ores.vault= keeps the secrets ORE must present to another party. A secret is
+sealed under a key that lives outside the database, the key is a system
+credential of the service's unit, and a consumer receives the secret sealed to
+its own key rather than in the clear. The component decides no policy: IAM
+issues the permission code a caller must hold, and the vault records each use.
+
+* Sub-components
+
+| Sub-component | Brief |
+|---------------+-------|
+| [[id:85B593E6-8F46-47FE-9805-1A02EB599585][ores.vault.api]] | Domain types, sealed payloads and the NATS protocol of the vault. |
+| [[id:B08524D0-B321-462B-AA0D-2ACD74A9C436][ores.vault.client]] | The consumer's facade: sealed writes and resolves over NATS. |
+| [[id:8DBBDF68-9CE9-4341-AB6D-3982E8242BAC][ores.vault.core]] | The sealed secret store, its key versions and the audit of each resolve. |
+| [[id:33941A34-E3CB-47E9-91F5-0ADB8305DD96][ores.vault.service]] | The vault's NATS entrypoint: the five operations and the key it loads at start. |
+
+* Entity modules
+
+The module page for the vault's entities arrives with its first entity model.
+
+* Inputs
+
+- A sealed payload to write, which only the vault's transport key opens.
+- The name of a secret to resolve, and the subject of the caller asking for it.
+- The key encryption key and the vault's transport key, from system credentials.
+
+* Outputs
+
+- A sealed row: the nonce, the tag, the ciphertext and the key version.
+- A sealed answer, bound to the caller's registered key.
+- One audit record per resolve, holding the subject, the name and the version.
+
+* Entry points
+
+- =ores.vault.service= — the runnable host, on =vault.v1.ops.*=.
+- =ores.vault.client= — the facade a consumer links.
+
+* Dependencies
+
+- =ores.security= — the sealed box and the symmetric sealer.
+- =ores.database= — the vault's own schema, under the tenant isolation policy.
+- =ores.nats=, =ores.service= — the bus, the runner and the token check.
+
+* See also
+
+- [[id:F9F1A2BA-94C2-4DAA-8689-F0871AA56801][Secret Custody in the Vault]] — why the component exists and where it sits.
+- [[id:4F28F755-7DA1-4EDD-9983-256622B6088A][Sealed Delivery of a Secret to Its Consumer]] — the mechanism its operations use.
+- [[id:DBF20EC5-63BB-4DE5-957C-5322DE0E487F][Secrets Register]] — the values it will hold, by phase.
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — the roles the four parts take.

@@ -76,14 +76,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| The full tree | builds, every target | =./compass.sh build= | 3633180a61 |
-| The trading suite | 321 cases, 2033 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.trading.core.tests= | 3633180a61 |
-| The trading protocol suite | 5688 cases, 21442 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.trading.api.tests= | 3633180a61 |
-| The per-trade rows the answer is built from | 5 assertions, pass | =./projects/ores.sql/test/run_tests.sh test/trading_market_references_test.sql= | 3633180a61 |
-| The requirements service suite | 15 cases, 45 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.trading.service.tests= | 3633180a61 |
-| The ORE projection, which reads the same protocol | 607 cases, 521281 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.ore.core.tests= | 3633180a61 |
-| The ported gates | no finding new since =origin/main= | =compass-ng check --ratchet origin/main= | 3633180a61 |
-| The changed C++ | clang-formatted | =./compass.sh check --only format= | 3633180a61 |
+| The full tree | builds, every target | =./compass.sh build= | c345b0f1e2 |
+| The trading suite | 321 cases, 2033 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.trading.core.tests= | c345b0f1e2 |
+| The trading protocol suite | 5688 cases, 21442 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.trading.api.tests= | c345b0f1e2 |
+| The per-trade rows the answer is built from | 5 assertions, pass | =./projects/ores.sql/test/run_tests.sh test/trading_market_references_test.sql= | c345b0f1e2 |
+| The requirements service suite | 15 cases, 45 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.trading.service.tests= | c345b0f1e2 |
+| The ORE projection, which reads the same protocol | 607 cases, 521281 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.ore.core.tests= | c345b0f1e2 |
+| The ported gates | no finding new since =origin/main= | =compass-ng check --ratchet origin/main= | c345b0f1e2 |
+| The changed C++ | clang-formatted | =./compass.sh check --only format= | c345b0f1e2 |
 
 * Notes
 

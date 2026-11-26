@@ -332,6 +332,51 @@ calendar_materialisation_service::regenerate_all(std::optional<std::chrono::year
     return total;
 }
 
+calendar_materialisation_service::purge_result
+calendar_materialisation_service::purge_shared_copies(std::optional<std::string> calendar_code) {
+    ORES_LOG_SEV(lg(), debug) << "Purging the tenant's copies of the installation's days."
+                              << " calendar_code: " << (calendar_code ? *calendar_code : "all");
+
+    const auto own = ctx_.tenant_id();
+    repository::calendar_repository calendars;
+    std::set<std::string> owned;
+    std::set<std::string> shared;
+    for (const auto& c : calendars.read_latest(ctx_)) {
+        if (c.tenant_id == own)
+            owned.insert(c.code);
+        else
+            shared.insert(c.code);
+    }
+    for (const auto& code : owned)
+        shared.erase(code);
+
+    if (calendar_code) {
+        if (owned.contains(*calendar_code))
+            return {};
+        if (!shared.contains(*calendar_code))
+            throw std::runtime_error("No such calendar: " + *calendar_code);
+        shared = {*calendar_code};
+    }
+
+    purge_result out;
+    repository::calendar_date_repository days(ctx_);
+    const auto own_id = own.to_string();
+    for (const auto& code : shared) {
+        std::size_t removed = 0;
+        for (const auto& d : days.read_latest_by_calendar(code))
+            if (d.tenant_id == own_id)
+                ++removed;
+        if (removed == 0)
+            continue;
+        ORES_LOG_SEV(lg(), info) << "Purging " << removed << " day(s) of " << code
+                                 << " that the installation holds.";
+        days.remove_by_calendar(code);
+        out.rows_removed += removed;
+        ++out.calendars_purged;
+    }
+    return out;
+}
+
 std::size_t
 calendar_materialisation_service::regenerate_in_use(std::optional<std::chrono::year> end_year) {
     std::set<std::string> codes;

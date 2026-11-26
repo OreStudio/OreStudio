@@ -31,6 +31,7 @@
 #include "ores.refdata.core/repository/country_repository.hpp"
 #include "ores.refdata.core/repository/currency_calendar_repository.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
+#include "ores.refdata.core/service/calendar_day_service.hpp"
 #include "ores.refdata.core/service/calendar_materialisation_service.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -50,6 +51,7 @@ using namespace ores::refdata::generators;
 
 using ores::refdata::domain::calendar_exception;
 using ores::refdata::domain::calendar_rule;
+using ores::refdata::service::calendar_day_service;
 using ores::refdata::repository::calendar_date_repository;
 using ores::refdata::repository::calendar_exception_repository;
 using ores::refdata::repository::calendar_repository;
@@ -419,6 +421,86 @@ TEST_CASE("regenerate_in_use_builds_only_the_calendars_a_currency_names",
     CHECK(service.regenerate_in_use(today_y) > 0);
     CHECK_FALSE(date_repo.read_latest_by_calendar(calendars[0].code).empty());
     CHECK(date_repo.read_latest_by_calendar(calendars[1].code).empty());
+}
+
+TEST_CASE("purge_removes_the_tenant_copies_of_the_installation_days",
+          "[service][calendar_materialisation]") {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto gctx = ores::testing::make_generation_context(h);
+    const auto system_ctx =
+        h.context().with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
+
+    static boost::uuids::random_generator gen;
+    const auto code = std::string("XP-") + boost::uuids::to_string(gen());
+
+    const auto today_y = std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(
+                                                         std::chrono::system_clock::now())}
+                             .year();
+    const auto next_year = today_y + std::chrono::years{1};
+    const auto rule_holiday = nth_monday_of_june(next_year, 1);
+    const auto plain_business_day = nth_monday_of_june(next_year, 3);
+
+    // The installation's calendar and rule, built in the system tenant.
+    {
+        country_repository cty_repo;
+        cty_repo.write(system_ctx, {generate_country_sentinel(gctx)});
+        auto cal = generate_synthetic_calendar(gctx);
+        cal.tenant_id = ores::utility::uuid::tenant_id::system();
+        cal.code = code;
+        cal.source = "user";
+        cal.is_editable = true;
+        calendar_repository{}.write(system_ctx, {cal});
+        auto rule = make_first_monday_of_june_rule(h, code);
+        rule.tenant_id = ores::utility::uuid::tenant_id::system();
+        calendar_rule_repository{}.write(system_ctx, {rule});
+    }
+    calendar_materialisation_service(system_ctx).regenerate(code, rule_holiday.year());
+
+    // The tenant's stale copy answers the plain Monday as closed, which the
+    // installation does not, and the party read prefers it.
+    {
+        ores::refdata::domain::calendar_date stale;
+        stale.tenant_id = h.tenant_id().to_string();
+        stale.calendar_code = code;
+        stale.date = plain_business_day;
+        stale.is_business_day = false;
+        stale.source = "user_adjustment";
+        stale.modified_by = h.db_user();
+        stale.performed_by = h.db_user();
+        stale.change_reason_code = "system.test";
+        stale.change_commentary = "Synthetic test data";
+        calendar_date_repository(h.context()).write({stale});
+    }
+
+    const calendar_day_service days(h.context());
+    const auto before = days.days(code);
+    REQUIRE(!before.empty());
+    bool found = false;
+    for (const auto& day : before)
+        if (day.date == plain_business_day) {
+            found = true;
+            CHECK_FALSE(day.is_business_day);
+        }
+    REQUIRE(found);
+
+    const auto purged = calendar_materialisation_service(h.context()).purge_shared_copies(code);
+    CHECK(purged.rows_removed == 1);
+    CHECK(purged.calendars_purged == 1);
+
+    // The installation's answer shows again, and its own day is untouched.
+    const auto after = days.days(code);
+    for (const auto& day : after) {
+        if (day.date == plain_business_day)
+            CHECK(day.is_business_day);
+        if (day.date == rule_holiday)
+            CHECK_FALSE(day.is_business_day);
+    }
+
+    const auto again = calendar_materialisation_service(h.context()).purge_shared_copies(code);
+    CHECK(again.rows_removed == 0);
+    CHECK(again.calendars_purged == 0);
 }
 
 TEST_CASE("regenerate_unknown_calendar_throws", "[service][calendar_materialisation]") {

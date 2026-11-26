@@ -42,8 +42,34 @@ export interface RegenerateCalendarDatesResponse {
     rows_written: number;
 }
 
+/**
+ * @brief Removes a tenant's copies of the days the installation owns.
+ *
+ * The days of a calendar the installation owns are held once, in the system
+ * tenant, and every tenant reads them there. A tenant that was provisioned
+ * before that rule keeps its own rows for the same calendar, and the party read
+ * prefers them, so they mask the installation's later days. This command removes
+ * the caller's rows for each such calendar and leaves the installation's copy
+ * alone. A calendar the caller owns is not touched: its days are its own.
+ *
+ * It is idempotent: a second run finds nothing to remove. The delete policy of
+ * the table confines it to the caller's tenant, so a tenant purges only its own
+ * copies.
+ */
+export interface PurgeCalendarDateCopiesRequest {
+    calendar_code: string | null;
+}
+
+export interface PurgeCalendarDateCopiesResponse {
+    success: boolean;
+    message: string;
+    rows_removed: number;
+    calendars_purged: number;
+}
+
 export const subjects = {
     regenerate_calendar_dates_request: 'refdata.v1.ops.regenerate_calendar_dates',
+    purge_calendar_date_copies_request: 'refdata.v1.ops.purge_calendar_date_copies',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -52,4 +78,5 @@ export const subjects = {
  */
 export const requiresSession = {
     regenerate_calendar_dates_request: true,
+    purge_calendar_date_copies_request: true,
 } as const;

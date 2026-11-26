@@ -22,6 +22,7 @@
 
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/logger.hpp"
+#include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include <optional>
 #include <string>
@@ -65,7 +66,43 @@ public:
     [[nodiscard]] std::vector<std::string> read(const context& ctx,
                                                 const std::vector<std::string>& trade_ids,
                                                 const std::optional<std::string>& as_of);
+
+    /**
+     * @brief What each trade needs, one entry per trade named, in the order named.
+     *
+     * A trade the request names twice answers once. A trade whose rows hold no address keeps
+     * its entry with no addresses, which is what tells a trade that names nothing from one the
+     * request did not name.
+     *
+     * @param as_of The transaction time the trades are read at, or nothing for the current
+     *              rows, as =read= admits it.
+     */
+    [[nodiscard]] std::vector<messaging::trade_requirement>
+    read_by_trade(const context& ctx,
+                  const std::vector<std::string>& trade_ids,
+                  const std::optional<std::string>& as_of);
 };
+
+/**
+ * @brief What a row of one trade's addresses says: the trade, and one address it needs.
+ */
+struct market_reference_row final {
+    std::string trade_id;
+    std::string oresmd_uri;
+};
+
+/**
+ * @brief Folds the resolution's rows into one answer per trade the caller named.
+ *
+ * The answer states an entry for every trade asked about, in the order asked, and a trade
+ * that repeats answers once, on its first place. This is a plain function over rows so the
+ * reading is a thing a test can state without a database: a trade that names nothing and a
+ * trade that was never asked about are one absence apart, and a caller that cannot tell them
+ * apart cannot say which trades to investigate.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<messaging::trade_requirement>
+trade_requirements_from(const std::vector<market_reference_row>& rows,
+                        const std::vector<std::string>& trade_ids);
 
 }
 

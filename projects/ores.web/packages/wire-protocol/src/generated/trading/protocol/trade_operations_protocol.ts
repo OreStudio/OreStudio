@@ -454,6 +454,18 @@ export interface ExportTradesToStorageResponse {
 }
 
 /**
+ * @brief The addresses one trade needs.
+ */
+export interface TradeRequirement {
+    trade_id: string;
+    /**
+     * @brief The distinct addresses this trade needs, in address order; empty when
+     * its instrument rows hold none.
+     */
+    oresmd_uris: string[];
+}
+
+/**
  * @brief The market data a set of trades needs, as oresmd addresses.
  *
  * A run gathers the market data its trade set resolves to, and only trading can
@@ -481,8 +493,23 @@ export interface ResolveMarketDataRequirementsResponse {
     message: string;
     /**
      * @brief The distinct addresses the trades need, in address order.
+     *
+     * The union of =trade_requirements=, stated for the caller that gathers market
+     * data and has no use for which trade asked for what.
      */
     requirements: string[];
+    /**
+     * @brief What each trade the request named needs, one entry per trade, in the
+     * order the request named them.
+     *
+     * A trade the request names twice answers once. A trade whose rows hold no
+     * address keeps its entry with no addresses, which is what tells a trade that
+     * names nothing from a trade the request did not name: the first is present and
+     * empty, the second is absent. A caller that then asks the market and is answered
+     * nothing has the third case — a trade that names addresses the market lacks —
+     * without needing this answer to say so.
+     */
+    trade_requirements: TradeRequirement[];
 }
 
 export const subjects = {

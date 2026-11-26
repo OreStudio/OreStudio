@@ -578,6 +578,20 @@ struct export_trades_to_storage_response {
 };
 
 /**
+ * @brief The addresses one trade needs.
+ */
+struct trade_requirement {
+    std::string trade_id;
+    /**
+     * @brief The distinct addresses this trade needs, in address order; empty when
+     * its instrument rows hold none.
+     */
+    std::vector<std::string> oresmd_uris;
+
+    friend bool operator==(const trade_requirement&, const trade_requirement&) = default;
+};
+
+/**
  * @brief The market data a set of trades needs, as oresmd addresses.
  *
  * A run gathers the market data its trade set resolves to, and only trading can
@@ -619,8 +633,23 @@ struct resolve_market_data_requirements_response {
     std::string message;
     /**
      * @brief The distinct addresses the trades need, in address order.
+     *
+     * The union of =trade_requirements=, stated for the caller that gathers market
+     * data and has no use for which trade asked for what.
      */
     std::vector<std::string> requirements;
+    /**
+     * @brief What each trade the request named needs, one entry per trade, in the
+     * order the request named them.
+     *
+     * A trade the request names twice answers once. A trade whose rows hold no
+     * address keeps its entry with no addresses, which is what tells a trade that
+     * names nothing from a trade the request did not name: the first is present and
+     * empty, the second is absent. A caller that then asks the market and is answered
+     * nothing has the third case — a trade that names addresses the market lacks —
+     * without needing this answer to say so.
+     */
+    std::vector<trade_requirement> trade_requirements;
 
     friend bool operator==(const resolve_market_data_requirements_response&,
                            const resolve_market_data_requirements_response&) = default;
@@ -902,6 +931,21 @@ struct resolve_market_data_requirements_response {
 }
 
 /**
+ * @brief The members of trade_requirement, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_requirement>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"trade_id", &trade_requirement::trade_id},
+        ::ores::utility::codec::field{"oresmd_uris", &trade_requirement::oresmd_uris},
+    };
+}
+
+/**
  * @brief The members of resolve_market_data_requirements_request, named as the wire names them and
  * in the order the type declares them.
  *
@@ -935,6 +979,8 @@ wire_fields(std::type_identity<resolve_market_data_requirements_response>) {
                                       &resolve_market_data_requirements_response::message},
         ::ores::utility::codec::field{"requirements",
                                       &resolve_market_data_requirements_response::requirements},
+        ::ores::utility::codec::field{
+            "trade_requirements", &resolve_market_data_requirements_response::trade_requirements},
     };
 }
 
@@ -1106,6 +1152,16 @@ struct ORES_TRADING_API_EXPORT
     static std::string
     write_msgpack(const ores::trading::messaging::export_trades_to_storage_response& v);
     static ores::trading::messaging::export_trades_to_storage_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::trade_requirement> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::trade_requirement& v);
+    static ores::trading::messaging::trade_requirement read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::trade_requirement& v);
+    static ores::trading::messaging::trade_requirement
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

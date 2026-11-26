@@ -365,6 +365,27 @@ wire_traits<ores::trading::messaging::export_trades_to_storage_response>::read_m
     return object::read_msgpack<ores::trading::messaging::export_trades_to_storage_response>(data);
 }
 
+std::string wire_traits<ores::trading::messaging::trade_requirement>::write_json(
+    const ores::trading::messaging::trade_requirement& v) {
+    return object::write_json(v);
+}
+
+ores::trading::messaging::trade_requirement
+wire_traits<ores::trading::messaging::trade_requirement>::read_json(std::string_view text) {
+    return object::read_json<ores::trading::messaging::trade_requirement>(text);
+}
+
+std::string wire_traits<ores::trading::messaging::trade_requirement>::write_msgpack(
+    const ores::trading::messaging::trade_requirement& v) {
+    return object::write_msgpack(v);
+}
+
+ores::trading::messaging::trade_requirement
+wire_traits<ores::trading::messaging::trade_requirement>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::trading::messaging::trade_requirement>(data);
+}
+
 std::string
 wire_traits<ores::trading::messaging::resolve_market_data_requirements_request>::write_json(
     const ores::trading::messaging::resolve_market_data_requirements_request& v) {

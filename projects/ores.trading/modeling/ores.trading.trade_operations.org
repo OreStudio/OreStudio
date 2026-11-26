@@ -996,6 +996,33 @@ generates no service handler.
  */
 #+end_src
 
+** trade_requirement
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The addresses one trade needs.
+ */
+#+end_src
+
+*** trade_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** oresmd_uris
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The distinct addresses this trade needs, in address order; empty when
+ * its instrument rows hold none.
+ */
+#+end_src
+
 ** resolve_market_data_requirements_request
 :PROPERTIES:
 :subject:  trading.v1.ops.resolve_market_data_requirements
@@ -1062,6 +1089,28 @@ generates no service handler.
 #+begin_src cpp :name comment
 /**
  * @brief The distinct addresses the trades need, in address order.
+ *
+ * The union of =trade_requirements=, stated for the caller that gathers market
+ * data and has no use for which trade asked for what.
+ */
+#+end_src
+
+*** trade_requirements
+:PROPERTIES:
+:cpp_type: std::vector<trade_requirement>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What each trade the request named needs, one entry per trade, in the
+ * order the request named them.
+ *
+ * A trade the request names twice answers once. A trade whose rows hold no
+ * address keeps its entry with no addresses, which is what tells a trade that
+ * names nothing from a trade the request did not name: the first is present and
+ * empty, the second is absent. A caller that then asks the market and is answered
+ * nothing has the third case — a trade that names addresses the market lacks —
+ * without needing this answer to say so.
  */
 #+end_src
 

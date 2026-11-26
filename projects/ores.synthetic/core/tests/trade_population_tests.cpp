@@ -1647,6 +1647,25 @@ TEST_CASE("a_security_is_named_by_its_issuer", "[trade_population]") {
             security_id_for(second, 5, "Bond", second_issuer.id));
 }
 
+TEST_CASE("the_run_states_each_book_s_trades_beside_the_book", "[trade_population]") {
+    recording_writer writer(bond_scope());
+    trade_population_service service(writer);
+
+    const auto run = service.run(config_id);
+
+    REQUIRE(run.books.size() == 2);
+    std::uint32_t written = 0;
+    for (const auto& book : run.books) {
+        CHECK(book.planned == scene_trades_per_book);
+        CHECK(book.written == scene_trades_per_book);
+        CHECK(book.already_present == 0);
+        written += book.written;
+        // The types a book states are the plan's answer for it, not the run's.
+        CHECK_FALSE(book.type_outcomes.empty());
+    }
+    CHECK(written == run.written);
+}
+
 TEST_CASE("two_runs_over_one_scope_write_nothing_the_second_time", "[trade_population]") {
     recording_writer writer(bond_scope());
     trade_population_service service(writer);
@@ -2779,6 +2798,34 @@ TEST_CASE("a_plan_is_refused_when_a_trade_names_a_product_its_book_does_not_perm
         approval.allowed_product_types = std::vector<std::string>{"InflationSwap"};
 
     CHECK_THROWS_AS(refuse_products_the_books_do_not_permit(plan, shut), trade_population_error);
+}
+
+TEST_CASE("the_plan_states_what_each_book_booked_and_what_it_was_denied", "[trade_population]") {
+    using namespace ores::synthetic::service;
+    const auto scope = bond_scope();
+    const std::vector<std::string> permitted{"Bond"};
+    const auto plan = plan_on_expected_market_data(scope, narrow_matrix(scope, permitted));
+
+    REQUIRE(plan.book_outcomes.size() == scope.book_ids.size());
+    for (std::size_t i = 0; i < plan.book_outcomes.size(); ++i)
+        CHECK(plan.book_outcomes[i].book_id == scope.book_ids[i]);
+
+    const auto& narrow = plan.book_outcomes.front();
+    const auto outcome_of = [&](const std::string& code) {
+        return std::ranges::find_if(narrow.type_outcomes,
+                                    [&](const auto& o) { return o.trade_type_code == code; });
+    };
+    REQUIRE(outcome_of("Bond") != narrow.type_outcomes.end());
+    CHECK(outcome_of("Bond")->planned == scope.trades_per_book);
+    // A type the book's matrix does not permit is denied for that reason, not for the market's.
+    REQUIRE(outcome_of("BondOption") != narrow.type_outcomes.end());
+    CHECK(outcome_of("BondOption")->planned == 0);
+    CHECK(outcome_of("BondOption")->reason.find("approval matrix does not permit") !=
+          std::string::npos);
+
+    // The other book states no set, so it books the codes its own probe accepts.
+    const auto& open = plan.book_outcomes.back();
+    CHECK_FALSE(open.type_outcomes.empty());
 }
 
 TEST_CASE("a_book_that_permits_none_of_a_configs_types_books_nothing", "[trade_population]") {

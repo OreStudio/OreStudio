@@ -31,6 +31,23 @@
 namespace ores::synthetic::service {
 
 /**
+ * @brief What one run did with the trades of one book.
+ *
+ * The counts are the run's own — a slot names the book it lands in — and the type
+ * outcomes are the plan's for that book, so the report cannot claim a book
+ * received trades the run did not write. A type whose @c planned count is not
+ * zero is one the book booked; a type of zero keeps the reason it did not.
+ */
+struct trade_population_book final {
+    boost::uuids::uuid book_id;
+    std::uint32_t planned = 0;
+    std::uint32_t written = 0;
+    std::uint32_t already_present = 0;
+    /// One entry for each type the config states, in the class's own order.
+    std::vector<domain::trade_type_outcome> type_outcomes;
+};
+
+/**
  * @brief The result of one run of the generator over one configuration.
  */
 struct trade_population_run final {
@@ -47,6 +64,8 @@ struct trade_population_run final {
     std::vector<trade_population_outcome> outcomes;
     /// What each trade type the config books did: the trades planned, or why none.
     std::vector<domain::trade_type_outcome> type_outcomes;
+    /// One entry per book of the configuration's scope, in the order it names them.
+    std::vector<trade_population_book> books;
 };
 
 /**

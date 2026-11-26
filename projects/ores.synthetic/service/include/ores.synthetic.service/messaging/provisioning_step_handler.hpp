@@ -357,6 +357,35 @@ private:
                 }
                 if (!by_type.empty())
                     wf.record(entry.name + " for " + entry.party + " planned by type: " + by_type);
+                /*
+                 * What each book received, and what it was denied. The types are
+                 * the book's own answer, so a book whose matrix permits a product
+                 * the market cannot answer states that product and the reason it
+                 * books none of it, rather than the run reporting a short count
+                 * with nowhere to look.
+                 */
+                for (const auto& book : population.books) {
+                    std::string line = entry.name + " for " + entry.party + ", book " +
+                                       boost::uuids::to_string(book.book_id) + ": " +
+                                       std::to_string(book.written) + " written, " +
+                                       std::to_string(book.already_present) + " present, of " +
+                                       std::to_string(book.planned);
+                    for (const auto& outcome : book.type_outcomes) {
+                        if (outcome.planned == 0)
+                            continue;
+                        line += ", booked ";
+                        line += outcome.trade_type_code + " " + std::to_string(outcome.planned);
+                    }
+                    for (const auto& outcome : book.type_outcomes) {
+                        if (outcome.planned != 0)
+                            continue;
+                        line += ", left out ";
+                        line += outcome.trade_type_code;
+                        if (!outcome.reason.empty())
+                            line += " (" + outcome.reason + ")";
+                    }
+                    wf.record(line);
+                }
             } catch (const std::exception& e) {
                 ORES_LOG_SEV(lg(), ores::logging::warn)
                     << "generate_trades: " << entry.name << " for party " << entry.party

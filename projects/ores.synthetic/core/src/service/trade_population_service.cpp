@@ -23,6 +23,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <exception>
+#include <map>
 
 namespace ores::synthetic::service {
 
@@ -75,6 +76,23 @@ trade_population_run trade_population_service::run(
     run.type_outcomes = plan.type_outcomes;
     run.outcomes.reserve(plan.slots.size());
 
+    /*
+     * The books the report states, in the scope's own order. A book's trades are
+     * the plan's slots that name it, so the count the report gives is the count
+     * the run writes; the types are the plan's answer for that book.
+     */
+    std::map<boost::uuids::uuid, std::size_t> book_index;
+    for (const auto& book : plan.book_outcomes) {
+        book_index.emplace(book.book_id, run.books.size());
+        run.books.push_back(
+            trade_population_book{.book_id = book.book_id, .type_outcomes = book.type_outcomes});
+    }
+    for (const auto& slot : plan.slots) {
+        const auto found = book_index.find(slot.book_id);
+        if (found != book_index.end())
+            ++run.books[found->second].planned;
+    }
+
     for (const auto& slot : plan.slots) {
         const auto stored = writer_.read_trade(slot.trade_id);
         if (stored.has_value()) {
@@ -88,6 +106,8 @@ trade_population_run trade_population_service::run(
                                          .already_present = true,
                                          .version = stored->version,
                                          .external_version = stored->external_version});
+            if (const auto found = book_index.find(slot.book_id); found != book_index.end())
+                ++run.books[found->second].already_present;
             if (on_progress)
                 on_progress(run.written + run.already_present, run.planned);
             continue;
@@ -107,6 +127,8 @@ trade_population_run trade_population_service::run(
         }
 
         ++run.written;
+        if (const auto found = book_index.find(slot.book_id); found != book_index.end())
+            ++run.books[found->second].written;
         if ((run.written + run.already_present) % progress_every == 0)
             ORES_LOG_SEV(population_lg(), info)
                 << "Trade population of config " << config << ": "

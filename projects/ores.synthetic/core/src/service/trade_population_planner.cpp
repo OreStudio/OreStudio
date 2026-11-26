@@ -3933,6 +3933,10 @@ bool permits(const domain::book_approval& approval, std::string_view trade_type_
            approval.allowed_product_types->end();
 }
 
+/// Why a book does not book a type: its own approval, before any market is asked.
+constexpr std::string_view matrix_refusal =
+    "the book's approval matrix does not permit the product type";
+
 std::string joined(const std::vector<std::string>& codes) {
     std::string out;
     for (const auto& code : codes) {
@@ -4091,27 +4095,51 @@ plan_on_expected_market_data(const domain::trade_generation_scope& scope,
 
         /*
          * A book that permits none of the config's types books nothing, because a
-         * population must not widen a matrix to fill a book. The types it keeps
-         * out are reported with the matrix as their reason, below.
+         * population must not widen a matrix to fill a book. It keeps its entry in
+         * the plan so the report names it, and every stated type is denied for the
+         * one reason a type can be denied before the market is asked.
          */
-        if (book_scope.trade_type_codes.empty())
-            continue;
+        std::map<std::string, domain::trade_type_outcome> planned_by_type;
+        if (!book_scope.trade_type_codes.empty()) {
+            auto book_plan = plan_for_scope(book_scope);
+            for (const auto& outcome : book_plan.type_outcomes)
+                planned_by_type.emplace(outcome.trade_type_code, outcome);
+            for (auto& slot : book_plan.slots)
+                plan.slots.push_back(std::move(slot));
+        }
 
-        auto book_plan = plan_for_scope(book_scope);
-        for (const auto& outcome : book_plan.type_outcomes) {
+        /*
+         * The book's answer walks the config's types in the class's own order, so a
+         * reader sees the book's whole world: what it booked, what its matrix
+         * denied, and what the market could not answer.
+         */
+        domain::book_population_outcome book{.book_id = book_id};
+        for (const auto& code : stated) {
+            const auto planned = planned_by_type.find(code);
+            if (planned != planned_by_type.end()) {
+                book.type_outcomes.push_back(planned->second);
+                continue;
+            }
+            book.type_outcomes.push_back(
+                {.trade_type_code = code, .planned = 0, .reason = std::string(matrix_refusal)});
+        }
+        plan.book_outcomes.push_back(std::move(book));
+
+        for (const auto& entry : planned_by_type) {
+            const auto& outcome = entry.second;
             planned_of[outcome.trade_type_code] += outcome.planned;
             if (!outcome.reason.empty() && !refusal_of.contains(outcome.trade_type_code))
                 refusal_of.emplace(outcome.trade_type_code, outcome.reason);
         }
-        for (auto& slot : book_plan.slots)
-            plan.slots.push_back(std::move(slot));
     }
 
     for (const auto& code : stated) {
         const auto planned = planned_of.contains(code) ? planned_of.at(code) : 0u;
-        auto reason = refusal_of.contains(code) ? refusal_of.at(code) : std::string{};
-        if (planned == 0 && reason.empty())
-            reason = "no book of the config permits the product type";
+        std::string reason;
+        if (planned == 0)
+            reason = refusal_of.contains(code) ? refusal_of.at(code) :
+                                                 std::string("no book of the config permits the "
+                                                             "product type");
         plan.type_outcomes.push_back(
             {.trade_type_code = code, .planned = planned, .reason = std::move(reason)});
     }

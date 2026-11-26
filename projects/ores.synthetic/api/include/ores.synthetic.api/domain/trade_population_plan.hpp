@@ -392,6 +392,21 @@ struct trade_type_outcome final {
     std::string reason;
 };
 
+/**
+ * @brief What a population did with the trade types of one book.
+ *
+ * The same shape as the configuration's own outcomes, because it answers the
+ * same question of one book rather than of the whole run: a type whose @c
+ * planned count is not zero is one the book booked, and a type of zero keeps the
+ * reason it was not. A book that books nothing keeps its entry, so a report names
+ * it instead of leaving it out.
+ */
+struct book_population_outcome final {
+    boost::uuids::uuid book_id;
+    /// One entry for each type the config states, in the class's own order.
+    std::vector<trade_type_outcome> type_outcomes;
+};
+
 struct trade_population_plan final {
     boost::uuids::uuid config_id;
     boost::uuids::uuid party_id;
@@ -400,6 +415,8 @@ struct trade_population_plan final {
     std::vector<trade_population_structure> structures;
     /// One entry for each trade type the config books, in the class's own order.
     std::vector<trade_type_outcome> type_outcomes;
+    /// One entry for each book of the scope, in the order the scope names them.
+    std::vector<book_population_outcome> book_outcomes;
 };
 
 /**

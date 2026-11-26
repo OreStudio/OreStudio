@@ -1,0 +1,26 @@
+# Smokehouse provisioning, timed in phases
+# 2026-11-26T20:25:13Z  checkout 8ea24d7d14
+
+database recreate (compass db recreate -y -k): 216.992 s
+services start   (compass services start):     178.177 s
+provisioning     (bootstrap setup ... --profile smokehouse): 122.260 s
+
+The profile at this measurement is the floor: system_provision,
+publish_system_curves, start_auto_approval, publish_bundle, build_calendars,
+provision_party, end_auto_approval. No party bundle and no feed yet.
+
+$ tail of the provisioning run
+      info: System Party: published the bundle party_essentials
+      info: System Party: activated, onboarded, and the administrator given access to it
+  [5/6] end_auto_approval: completed
+      info: Turned auto-approval off: Provisioning is finished, so people decide from here on.
+  [6/6] complete_provisioning: completed
+      info: Marked the tenant active
+      info: Took the tenant out of bootstrap mode
+✓ All 6 step(s) completed.
+✓ System provisioned. Tenant 'Smokehouse'.
+Next: logout, then: login tenant_admin@smokehouse <password>  — the tenant is ready to work in.
+> logout
+✓ Logged out successfully.
+Script complete: 3 commands executed.
+ores-shell> Bye!

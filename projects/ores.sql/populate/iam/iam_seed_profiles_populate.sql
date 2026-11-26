@@ -154,6 +154,35 @@ on conflict (code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
 
+
+-- Smokehouse: the smallest tenant that still exercises the publishing
+-- lifecycle. One legal entity, one feed, and the four market-data steps, so a
+-- check can prove that curves, forwards and surfaces publish, supersede and
+-- announce without paying for a demonstration tenant. It is not a cut-down
+-- ACME: it orders none of the staff, trades, reports or photograph steps,
+-- because none of them publish anything.
+insert into ores_iam_seed_profiles_tbl (
+    id, code, name, summary, audience, bullets_json,
+    tenant_type, tenant_name, tenant_code, tenant_hostname, admin_username, admin_email,
+    inherits_admin_password, force_password_change, display_order,
+    version, modified_by, performed_by, change_reason_code, change_commentary
+) values (
+    gen_random_uuid(),
+    'smokehouse',
+    'Smokehouse',
+    'One legal entity, one feed, the publishing lifecycle end to end',
+    'For gate checks and smoke tests',
+    '["One legal entity and one synthetic feed", "Publishes its curves, forwards and surfaces", "Provisions in minutes rather than a quarter of an hour"]'::jsonb,
+    'evaluation', 'Smokehouse', 'smokehouse', 'smokehouse',
+    'tenant_admin', 'admin@smokehouse',
+    false, false, 27,
+    0, current_user, current_user, 'system.initial_load',
+    'Initial population of seed profiles'
+)
+on conflict (code)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
+
 -- The ordered step kinds. The arguments are the step kind's own: the kind
 -- fixes their shape in code and the profile supplies the values. The bundles
 -- differ between the two profiles, which is what makes them data.
@@ -185,6 +214,16 @@ cross join (values
     ('gleif_entity', 'build_calendars', 15, '{}'::jsonb),
     ('gleif_entity', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
     ('gleif_entity', 'provision_party', 30, '{"bundles": ["party_essentials", "party_reporting"]}'::jsonb),
+    -- The floor first: the smallest tenant this build can make, with no party
+    -- and no feed. It is what a measurement of the empty case costs, and the
+    -- steps below it add the party, its books and its data one at a time.
+    ('smokehouse', 'system_provision', 5, '{}'::jsonb),
+    ('smokehouse', 'publish_system_curves', 6, '{}'::jsonb),
+    ('smokehouse', 'start_auto_approval', 8, '{}'::jsonb),
+    ('smokehouse', 'publish_bundle', 10, '{"bundles": ["tenant_defaults", "lei_counterparties"], "opted_in_datasets": ["gleif.lei_counterparties.tiny"]}'::jsonb),
+    ('smokehouse', 'build_calendars', 15, '{}'::jsonb),
+    ('smokehouse', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
+    ('smokehouse', 'end_auto_approval', 9000, '{}'::jsonb),
     ('acme_demo', 'system_provision', 5, '{}'::jsonb),
     ('acme_demo', 'publish_system_curves', 6, '{}'::jsonb),
     ('acme_demo', 'start_auto_approval', 8, '{}'::jsonb),

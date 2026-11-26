@@ -80,6 +80,9 @@ is not this task's work.
 | A subject the service does not serve, for contrast | =No responders are available= | the same command against =ores.dev.bright_faraday.marketdata.v1.ops.get_series_slice= without the environment prefix | =0a84b06264= |
 | The registration test | 1 case, 2 assertions, pass | =ores.marketdata.core.tests "[registration]"= | =aacee4cc5f= |
 | Local checks, non-heavy | 9 of 9 | =compass check --exclude-heavy= | =aacee4cc5f= |
+| The full gate | 13 of 15: =ctest= and =answer-shapes= failed | =compass check= | =aacee4cc5f= |
+| =answer-shapes= on its own | pass, 309 pairs, 108 compared | =python3 build/scripts/check_answer_shapes.py .= | =aacee4cc5f= |
+| The three suites =ctest= failed | =ores.refdata.core.tests= and =ores.workflow.core.tests= pass serially; =ores.inbox.core.tests= passes alone on a fresh tenant | =ctest -R "ores\\.(refdata\\|inbox\\|workflow)\\.core\\.tests" -j 1= | =aacee4cc5f= |
 
 * Notes
 
@@ -128,3 +131,17 @@ The record is corrected in four places: the journey page (the subject is
 served, and no screen calls it yet), the story's acceptance and its task rows,
 this task's description, and the closed deletion task's Result, which said the
 service was the dead side.
+
+The gate failed twice and neither failure is this branch's:
+
+- =answer-shapes= reads live tick traffic, and =feeds[].last_at= is null until
+  a feed has ticked. It passed on its own a minute later.
+- =ctest= failed =ores.refdata.core.tests=, =ores.inbox.core.tests= and
+  =ores.workflow.core.tests=. The first failed on the pooler refusing
+  connections under =-- -j 4=; the last two on the shared test tenant being
+  inactive. =ores.testing='s =database_lifecycle_listener= terminates the shared
+  test tenant when a suite process exits, so a suite that starts after another
+  one exits finds it terminated. =ores.inbox.core.tests= needs it active and the
+  other two do not, which is why the three disagree between runs. Each passes on
+  its own with the pooler up, and inbox passes alone on a fresh database. This
+  is a race in the gate, not a property of a market data test file.

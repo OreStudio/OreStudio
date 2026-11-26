@@ -29,6 +29,8 @@
  * memory, and one row is written for each party, item and hour at each write.
  *
  * A row holds the deliveries counted so far in an hour, so a flush adds to the total and the rating step reads one row for the hour.
+ *
+ * The key is the party, the provider, the feed, the item and the hour, and the tenant is not in it. A party belongs to exactly one tenant, so two tenants cannot collide on this key, and the column is carried for row level security and for the reads that filter by it. The schema validator states the same exception, with that reason, in projects/ores.sql/utility/validation_ignore.txt.
  */
 
 create table if not exists "ores_marketdata_delivery_counts_tbl" (

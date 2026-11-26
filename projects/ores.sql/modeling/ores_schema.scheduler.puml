@@ -212,6 +212,7 @@ package "scheduler" #F1F8E9 {
     end note
 
     entity ores_scheduler_retention_runs_tbl  #F7E5FF {
+        * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
         * policy_code : text

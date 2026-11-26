@@ -1017,13 +1017,13 @@ Inbox — Approval Requests and Notifications
 18 tables — ores_schema.inbox.puml
 end note
 
-entity "unknown" as unknown {
+entity "vault" as vault {
   ores_vault_consumers_tbl
   ores_vault_secrets_tbl
 }
-note bottom of unknown
-Unknown
-2 tables — ores_schema.unknown.puml
+note bottom of vault
+Vault — Secret Custody
+2 tables — ores_schema.vault.puml
 end note
 
 

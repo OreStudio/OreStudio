@@ -20,7 +20,7 @@
 '
 @startuml
 
-title ORES Database Schema — unknown
+title ORES Database Schema — vault
 hide circle
 skinparam linetype ortho
 
@@ -31,16 +31,16 @@ skinparam nodesep 8
 skinparam ranksep 20
 
 note as GroupNote
-Group: unknown
+Group: vault
 Tables: 2
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
 
 '
-' ==================== unknown (Unknown) ====================
+' ==================== vault (Vault — Secret Custody) ====================
 '
-package "unknown" #FFFFFF {
+package "vault" #F3E8FD {
     entity ores_vault_consumers_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -109,6 +109,10 @@ package "unknown" #FFFFFF {
     The plaintext is never a column and never a wire field. A consumer asks for the
     value by name, and the answer leaves sealed to that consumer's own key, so the
     value exists in the clear only inside the process that must use it.
+    The sealed value itself is on the generated wire surfaces, because the sealed box
+    hands over one opaque string and the codec carries it as one. That is the
+    baseline and not the contract: describe answers the metadata alone, and only
+    the write request and the resolve reply carry a sealed value.
     Two invariants decide the shape. A tenant keeps a secret once by its name,
     which is the natural key: the name is what a consumer asks for and what the
     audit records, so a tenant cannot hold two secrets that answer one ask. And the
@@ -125,6 +129,6 @@ package "unknown" #FFFFFF {
 '
 
 ' Local Variables:
-' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.unknown.puml"
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.vault.puml"
 ' End:
 @enduml

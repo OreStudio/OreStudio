@@ -37,6 +37,7 @@ anybody deciding so.
 | Every code that is not a read whose resource or verb names an approval, an authorisation or a decision, in any component | =trading::trade_authorisation_requests:write=, =inbox::approvals:decide_finance=, =reporting::cut_approval_details:write= | an agent never authorises or decides, its own act or another's |
 | Every code ending =:exchange=, =:mint=, =:impersonate=, =:enter_as_service= or =:provision= | =iam::run_grants:exchange=, =iam::storage_capabilities:mint=, =iam::tenants:impersonate= | each one creates an identity or a capability, which only IAM and services may do |
 | Every =variability::= code that is not a read | =variability::flags:update= | the system's own configuration is administered by people |
+| Every =vault::= code that is not a read | =vault::secrets:resolve=, =vault::secrets:write= | a resolved secret is the answer itself, and the vault's writes decide what a service may open |
 | Every code ending =:review= or =:accept_terms=, and every verb ending =_service_origin= | =synthetic::variance_calibrations:review=, =marketdata::providers:accept_terms=, =trading::trades:write_service_origin= | a checker's review and a person's acceptance of terms are acts of judgement, and a write made as a service is a service's |
 
 =*= and =component::*= are expanded against the catalogue before the rules

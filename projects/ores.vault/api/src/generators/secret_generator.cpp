@@ -47,7 +47,7 @@ domain::secret generate_synthetic_secret(utility::generation::generation_context
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.name = std::string("identity_provider.google.client_secret") + "-" + std::to_string(idx);
-    r.owner = std::string("ores.http");
+    r.owner = std::string("http@system.ores");
     r.sealed_value = std::string("tw+/9+zJr9z55w001kE3JIKMVsxyInWcHcPlyHtFmyBG6qSRrDRcLG2");
     r.key_version = 1;
     r.description = std::string("The provider client's secret");

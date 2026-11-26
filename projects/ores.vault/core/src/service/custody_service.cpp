@@ -79,7 +79,7 @@ std::string custody_service::row_context(const std::string& name,
            std::to_string(key_version);
 }
 
-custody_result custody_service::write(const std::string& actor,
+custody_result custody_service::write(const std::string& subject,
                                       const std::string& name,
                                       const std::string& owner,
                                       const std::string& sealed_to_vault) {
@@ -115,11 +115,11 @@ custody_result custody_service::write(const std::string& actor,
         row.owner = owner;
         row.sealed_value = sealed;
         row.key_version = version;
-        row.modified_by = actor;
-        row.performed_by = actor;
+        row.modified_by = ctx_.actor();
+        row.performed_by = ctx_.actor();
         repo.write(ctx_, row);
 
-        record_use(actor, name, std::string(written), version);
+        record_use(subject, name, std::string(written), version);
 
         ORES_LOG_SEV(lg(), info) << "Wrote secret " << name << " at key version " << version;
         answer.success = true;
@@ -162,8 +162,8 @@ custody_result custody_service::register_consumer(const std::string& subject,
         row.tenant_id = ctx_.tenant_id();
         row.public_key = public_key;
         row.is_enabled = true;
-        row.modified_by = subject;
-        row.performed_by = subject;
+        row.modified_by = ctx_.actor();
+        row.performed_by = ctx_.actor();
         consumers.write(ctx_, row);
 
         answer.success = true;
@@ -207,7 +207,10 @@ custody_result custody_service::resolve(const std::string& subject, const std::s
     }
 
     const auto& row = rows.front();
-    if (row.owner != subject) {
+    // The owner is the consumer's own name, the actor its token carries, so a
+    // person can name the service a secret is for without knowing which process
+    // of it answers today. The key still comes from the row the subject names.
+    if (row.owner != ctx_.actor()) {
         record_use(subject, name, std::string(refused_not_owner), row.key_version);
         answer.message = "This secret belongs to another consumer";
         return answer;
@@ -246,20 +249,20 @@ custody_result custody_service::resolve(const std::string& subject, const std::s
     }
 }
 
-custody_result custody_service::remove(const std::string& actor, const std::string& name) {
+custody_result custody_service::remove(const std::string& subject, const std::string& name) {
     custody_result answer{.name = name};
 
     repository::secret_repository repo;
     const auto rows = repo.read_latest_by_name(ctx_, name);
     if (rows.empty()) {
-        record_use(actor, name, std::string(refused_unknown_secret), 0);
+        record_use(subject, name, std::string(refused_unknown_secret), 0);
         answer.message = "No such secret in this tenant";
         return answer;
     }
 
     try {
         repo.remove(ctx_, boost::uuids::to_string(rows.front().id));
-        record_use(actor, name, std::string(removed), 0);
+        record_use(subject, name, std::string(removed), 0);
         answer.success = true;
         ORES_LOG_SEV(lg(), info) << "Removed secret " << name;
         return answer;
@@ -270,7 +273,7 @@ custody_result custody_service::remove(const std::string& actor, const std::stri
     }
 }
 
-custody_result custody_service::rotate(const std::string& actor) {
+custody_result custody_service::rotate(const std::string& subject) {
     custody_result answer;
     const auto version = keys_.current_version;
     answer.key_version = version;
@@ -293,11 +296,11 @@ custody_result custody_service::rotate(const std::string& actor) {
             resealed.tenant_id = ctx_.tenant_id();
             resealed.sealed_value = sealed;
             resealed.key_version = version;
-            resealed.modified_by = actor;
-            resealed.performed_by = actor;
+            resealed.modified_by = ctx_.actor();
+            resealed.performed_by = ctx_.actor();
             repo.write(ctx_, resealed);
 
-            record_use(actor, row.name, std::string(rotated), version);
+            record_use(subject, row.name, std::string(rotated), version);
             ++answer.rotated;
             ORES_LOG_SEV(lg(), info) << "Re-wrapped " << row.name << " from version "
                                      << row.key_version << " to " << version;

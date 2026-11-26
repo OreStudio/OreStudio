@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: A70B8C34-CCAE-4512-B788-A975A320D2C9
+:END:
+#+title: Write scratch under the checkout's tmp directory
+#+description: Keep every scratch file, probe script and captured output under the checkout's tmp/, never the host's /tmp: this harness gives each bash call its own private /tmp, so scratch there is gone by the next call.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+Keep scratch files, probe scripts and captured output under the checkout's tmp/ directory. Never write them to the host's /tmp.
+
+*Why:* The host's /tmp is private to each bash call in this harness: a script written in one call is gone in the next, which lost a complete end-to-end HTTP script mid-run on 2026-11-26. A sandbox also mounts a private /tmp, so a file written there is invisible to the very reader it exists to inform -- the reason compass already writes its build logs to the checkout's tmp/ (compass.py _checkout_log_dir). The checkout's tmp/ is gitignored apart from .gitkeep, so it is safe but still inspectable.
+
+*How to apply:* Resolve scratch paths against the repository root, e.g. tmp/probe.sh, and refer to them the same way from later calls. Keep /tmp only where no checkout exists, as on the remote side of a deploy (env_deploy.py remote_tmp). If scratch turns out to be durable, move it into the repository proper rather than leaving it in tmp/.

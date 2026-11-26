@@ -81,6 +81,19 @@ public:
      * session.
      */
     void public_key(ores::nats::message msg) {
+        // A transport callback must never let an exception escape: it would
+        // take the subscription with it and leave the caller waiting.
+        auto original = msg;
+        try {
+            public_key_impl(std::move(msg));
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(custody_handler_lg(), error)
+                << original.subject << " failed: " << e.what();
+            error_reply(nats_, original, ores::service::error_code::bad_request);
+        }
+    }
+
+    void public_key_impl(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(custody_handler_lg(), msg);
         auto req_ctx_expected = make_request_context(msg);
         if (!req_ctx_expected) {
@@ -102,6 +115,19 @@ public:
      * permission beyond a session.
      */
     void register_consumer(ores::nats::message msg) {
+        // A transport callback must never let an exception escape: it would
+        // take the subscription with it and leave the caller waiting.
+        auto original = msg;
+        try {
+            register_consumer_impl(std::move(msg));
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(custody_handler_lg(), error)
+                << original.subject << " failed: " << e.what();
+            error_reply(nats_, original, ores::service::error_code::bad_request);
+        }
+    }
+
+    void register_consumer_impl(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(custody_handler_lg(), msg);
         auto guarded = guard(msg, "vault::consumers:read", true);
         if (!guarded) {
@@ -122,6 +148,19 @@ public:
 
     /// Serves vault.v1.ops.write.
     void write(ores::nats::message msg) {
+        // A transport callback must never let an exception escape: it would
+        // take the subscription with it and leave the caller waiting.
+        auto original = msg;
+        try {
+            write_impl(std::move(msg));
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(custody_handler_lg(), error)
+                << original.subject << " failed: " << e.what();
+            error_reply(nats_, original, ores::service::error_code::bad_request);
+        }
+    }
+
+    void write_impl(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(custody_handler_lg(), msg);
         auto guarded = guard(msg, "vault::secrets:write");
         if (!guarded) {
@@ -147,6 +186,19 @@ public:
 
     /// Serves vault.v1.ops.describe.
     void describe(ores::nats::message msg) {
+        // A transport callback must never let an exception escape: it would
+        // take the subscription with it and leave the caller waiting.
+        auto original = msg;
+        try {
+            describe_impl(std::move(msg));
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(custody_handler_lg(), error)
+                << original.subject << " failed: " << e.what();
+            error_reply(nats_, original, ores::service::error_code::bad_request);
+        }
+    }
+
+    void describe_impl(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(custody_handler_lg(), msg);
         auto guarded = guard(msg, "vault::secrets:read");
         if (!guarded) {
@@ -172,6 +224,19 @@ public:
 
     /// Serves vault.v1.ops.resolve.
     void resolve(ores::nats::message msg) {
+        // A transport callback must never let an exception escape: it would
+        // take the subscription with it and leave the caller waiting.
+        auto original = msg;
+        try {
+            resolve_impl(std::move(msg));
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(custody_handler_lg(), error)
+                << original.subject << " failed: " << e.what();
+            error_reply(nats_, original, ores::service::error_code::bad_request);
+        }
+    }
+
+    void resolve_impl(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(custody_handler_lg(), msg);
         auto guarded = guard(msg, "vault::secrets:resolve");
         if (!guarded) {
@@ -191,11 +256,25 @@ public:
                                       .message = outcome.message,
                                       .name = outcome.name,
                                       .key_version = outcome.key_version,
-                                      .sealed_value = outcome.sealed_value});
+                                      .sealed_value = outcome.sealed_value,
+                                      .subject = outcome.subject});
     }
 
     /// Serves vault.v1.ops.delete.
     void remove(ores::nats::message msg) {
+        // A transport callback must never let an exception escape: it would
+        // take the subscription with it and leave the caller waiting.
+        auto original = msg;
+        try {
+            remove_impl(std::move(msg));
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(custody_handler_lg(), error)
+                << original.subject << " failed: " << e.what();
+            error_reply(nats_, original, ores::service::error_code::bad_request);
+        }
+    }
+
+    void remove_impl(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(custody_handler_lg(), msg);
         auto guarded = guard(msg, "vault::secrets:delete");
         if (!guarded) {
@@ -216,6 +295,19 @@ public:
 
     /// Serves vault.v1.ops.rotate.
     void rotate(ores::nats::message msg) {
+        // A transport callback must never let an exception escape: it would
+        // take the subscription with it and leave the caller waiting.
+        auto original = msg;
+        try {
+            rotate_impl(std::move(msg));
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(custody_handler_lg(), error)
+                << original.subject << " failed: " << e.what();
+            error_reply(nats_, original, ores::service::error_code::bad_request);
+        }
+    }
+
+    void rotate_impl(ores::nats::message msg) {
         [[maybe_unused]] const auto correlation_id = log_handler_entry(custody_handler_lg(), msg);
         auto guarded = guard(msg, "vault::secrets:write");
         if (!guarded) {
@@ -259,6 +351,13 @@ private:
             error_reply(nats_, msg, ctx_expected.error());
             return std::nullopt;
         }
+        // A token whose act names an agent is refused here as well as at the
+        // token's making: no agent reads a secret, whatever its role holds.
+        if (ctx_expected->acts_for_agent()) {
+            ORES_LOG_SEV(custody_handler_lg(), warn) << "An agent asked the vault: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return std::nullopt;
+        }
         if (!session_only && !has_permission(*ctx_expected, permission)) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return std::nullopt;
@@ -294,7 +393,9 @@ private:
     }
 
     ores::nats::service::client& nats_;
-    const ores::database::context& ctx_;
+    // Held by value: the context the caller registered with dies with that call,
+    // so a reference to it would dangle by the time a request arrives.
+    ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     std::shared_ptr<const security::key_material> keys_;
 };

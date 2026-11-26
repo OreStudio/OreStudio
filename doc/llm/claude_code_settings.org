@@ -558,7 +558,7 @@ to distinguish it from an unrelated, perfectly fine =tail -f
 inspects the full command string as written, so it is what enforces
 CLAUDE.md's "never pipe or redirect a compass command" rule: every
 =compass= command that produces meaningful output prints its own
-well-known log-file path (=📝 Build output: /tmp/<label>_<target>_build.log
+well-known log-file path (=📝 Build output: tmp/<label>_<target>_build.log
 (tail -f to follow)=; see [[proj:projects/ores.compass/src/compass.py][=compass.py='s =_build_log_path=/=_direct_build_log_path=]]) —
 watching that reported file with a separate, standalone =tail= is the
 supported way to follow progress.

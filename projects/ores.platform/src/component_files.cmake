@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "credentials/credential_store.cpp"
     "environment/environment.cpp"
     "environment/real_environment_provider.cpp"
     "filesystem/file.cpp"
@@ -42,6 +43,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/concurrency/atomic_shared_ptr.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/concurrency/ores.platform.concurrency.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/concurrency/stoppable_thread.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/credentials/credential_store.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/environment/environment.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/environment/environment_provider.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/environment/fake_environment_provider.hpp"

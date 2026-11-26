@@ -148,8 +148,8 @@ package "vault" #F3E8FD {
     Two invariants decide the shape. A tenant keeps a secret once by its name,
     which is the natural key: the name is what a consumer asks for and what the
     audit records, so a tenant cannot hold two secrets that answer one ask. And the
-    owner names the consumer permitted to resolve it, which is a fact about the
-    row and not about the caller: the vault answers a resolve with the owner's key,
+    owner names the consumer permitted to resolve it, by the actor its token
+    carries, which is a fact about the row and not about the caller: the vault answers a resolve with the owner's key,
     and a row with no owner is a row nobody may read.
     end note
 

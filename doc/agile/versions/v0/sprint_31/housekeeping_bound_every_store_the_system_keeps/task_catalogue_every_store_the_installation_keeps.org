@@ -8,7 +8,7 @@
 #+filetags: :housekeeping:retention:catalogue:entity:sprint_31:housekeeping_bound_every_store_the_system_keeps:v0:
 #+owner: marco
 #+branch: feature/catalogue-every-store-the-installation-keeps
-#+pr:
+#+pr: 5175
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-26
@@ -104,7 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5175][#5175]] | [scheduler] Catalogue every store the installation keeps |
 
 * Review
 

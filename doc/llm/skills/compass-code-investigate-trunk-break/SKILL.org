@@ -36,10 +36,25 @@ the judgement: the disposition, and the shape of the report.
    one that goes green alone is a race and leaves the investigation. Done when
    every red is classified as one or the other.
 
-2. /Attribute it./ Work the recipe: the commit that changed the behaviour, the
-   trailers that name the work, the fleet row that names the environment, and
-   the task record that says what its own gate measured. Done when the report's
-   owner table is full and the commit chain is complete.
+2. /Attribute it./ When the red is a checker finding that names a path, a line
+   and a rule, let =compass-ng blame= do it in one command: it bisects main's
+   merges, then prints the commit, the pull request, the Story and Task titles,
+   the environment and the fix that rule asks for. It also says whether the
+   finding is already on main, sits on a branch main does not hold yet, or could
+   not be traced, which is the first thing the disposition needs. For a break no
+   checker names, work the recipe by hand: the commit that changed the
+   behaviour, the trailers that name the work, the fleet row that names the
+   environment, and the task record that says what its own gate measured. Done
+   when the report's owner table is full and the commit chain is complete.
+
+   #+begin_src sh :results verbatim
+   compass-ng blame <path>:<line>:<codec>/<rule>
+   #+end_src
+
+   Read its answer before trusting it: "already on main" makes the break the
+   owner's, while "from commits main does not hold yet" makes it the branch's,
+   and a trace that names no commit is a finding nobody has attributed yet —
+   which this skill answers with a capture, not a report.
 
 3. /Explain it./ State the rule that was broken, the path that breaks it, and
    the observation. Keep the reproduction verbatim. Done when a reader who
@@ -65,7 +80,7 @@ nothing in it says so.
 ## Owner
 | Field        | Value |
 |--------------+-------|
-| Environment  | <the commit's Environment trailer> |
+| Environment  | <the commit's Environment trailer, or the one blame names> |
 | Agent        | <the commit's Co-Authored-By> |
 | Person       | <the commit's author> |
 | Work         | <Story-ID> / <Task-ID>, with their titles |

@@ -61,11 +61,20 @@ task and name that file in the Command column.
 
 * Notes
 
-- The prototype is under review, and the review has its own branch:
+- The review of the prototype had its own branch:
   =review/housekeeping-prototype=, kept open with no pull request until the
-  review ends. Every comment lands there as a commit on that branch, so the
-  review reads as one history and not as one merged pull request per comment.
-  The branch merges once, when the shape is agreed.
+  review ended, so the review reads as one history and not as one merged pull
+  request per comment. The reviewer signed the prototype off on 2026-11-26, and
+  the verdict is recorded in =doc/prototypes/operations/housekeeping.org=.
+- The review changed the design as well as the drawing. The list now carries a
+  red verdict of boundedness, every store ships with a default bound from the
+  catalogue, and housekeeping raises notifications into the inbox of the tenant
+  that owns the store. The first two are tasks of this story
+  ([[id:6802E7DF-9851-41A8-B1CB-6E0E678D389C][Bound every store by default]],
+  [[id:53D81AE9-6031-4129-BBCE-52DEED048B9E][Tell the administrator a store is
+  unbounded]]), and the one store a default cannot cover — the calendar dates —
+  is captured ([[id:DE1FA71A-1FCA-473F-A0D4-8E810067C18A][A policy cannot bound
+  a store by date range]]).
 
 
 * Test Scenarios

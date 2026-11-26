@@ -337,6 +337,10 @@ leaves the page.
 
 ** The verdict
 
+Signed off on 2026-11-26, at the end of a review that ran as one branch
+(=review/housekeeping-prototype=) rather than as a pull request per comment, so
+the review reads as one history instead of a dozen merges.
+
 Variant A is accepted: one table of every store, and a page of its own for the
 store a person opens. It carries the screen because it holds every
 store and every number at once and because it is the shape the logs screen
@@ -346,6 +350,27 @@ Variants B and C stay in the page as the alternatives A was weighed against, not
 as shapes to build. Their arguments are recorded above, and C's editor is no
 longer a variant of its own: a policy is changed in A's panel, where the store
 and its size are already in view.
+
+The review settled three things beyond the shape, and each one moved the
+prototype:
+
+- the list carries the verdict of boundedness in red, because a store with no
+  bound that applies grows until the disk is full, and no reading of that is
+  merely a warning;
+- every store ships with a default bound from the catalogue, so unbounded is an
+  exception rather than the normal state, and the count on the screen can reach
+  zero — which is the only way the count is worth reading;
+- housekeeping tells the administrator through the inbox of the tenant that owns
+  the store, because the screen is pull and a disk fills while nobody is looking.
+
+Work the review produced, none of it built:
+
+- [[id:6802E7DF-9851-41A8-B1CB-6E0E678D389C][Bound every store by default]] — the
+  catalogue states the default, provisioning creates it.
+- [[id:53D81AE9-6031-4129-BBCE-52DEED048B9E][Tell the administrator a store is
+  unbounded]] — the notifications, with their audiences and their kinds.
+- [[id:DE1FA71A-1FCA-473F-A0D4-8E810067C18A][A policy cannot bound a store by
+  date range]] — the calendar dates, the one store a default cannot cover.
 
 The screen still cannot be built until three things exist: the store catalogue
 that carries a human name and a description, the samples and the size read that

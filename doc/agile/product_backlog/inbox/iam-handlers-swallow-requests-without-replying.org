@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 2737CE30-B0AB-44F2-AB6A-F29BC7834259
+:END:
+#+title: IAM account handlers swallow requests without replying
+#+description: Thirty-one declared iam request subjects subscribe a handler that returns without replying when the request does not decode or the session is missing, so a caller waits until it times out instead of receiving a refusal. Found by build/scripts/check_subject_coverage.py after it was made fail-closed: the earlier classifier counted an unanswered request as served. The worst case is iam.v1.accounts.put, where account_operations_handler logs "Failed to decode" and returns; the same shape appears in the account, party and password operations. Every entry point should answer with error_reply, as the generated handlers do.
+#+type: capture
+#+level: cross
+#+filetags: :iam:messaging:dead-subject:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

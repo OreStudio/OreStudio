@@ -671,6 +671,32 @@ CATALOGUE: tuple[Check, ...] = (
     ),
 
 
+    # Every subject a model declares as a request answers on the bus. The
+    # subscription side is not readable from the tree: half of it is generated
+    # per entity family, the step and history families declare theirs through
+    # tables, and the registrar cannot be run outside a service process. So the
+    # check asks the bus, as the consumer check does, and fails rather than
+    # skips when it cannot reach it.
+    Check(
+        id="subject-coverage",
+        title="Every subject a model declares as a request has a responder",
+        argv=(
+            "bash",
+            "-c",
+            "./compass.sh services start; python3 build/scripts/check_subject_coverage.py",
+        ),
+        classes=("cpp", "services", "modeling"),
+        phase=HEAVY,
+        after=("ticks-smoke",),
+        timeout=900,
+        fix="Serve the subject from the registrar of the component that owns the"
+            " model, or stop declaring it. A subject that is published rather"
+            " than requested needs no responder: give its message no"
+            " ':response:'. A defect that outlives this branch is recorded in"
+            " build/scripts/subject_coverage_exceptions.json with the artefact"
+            " that owns the fix.",
+    ),
+
     # Every ported route's answer, against the shape the BFF gave. The shapes are
     # recorded once in build/scripts/answer_shapes.json, because the BFF need not
     # be running for the comparison to mean something: the gateway replay is the
@@ -801,7 +827,8 @@ def expand_compass(results: list[Result], covered: list[Check]) -> list[Result]:
 # These checks stand up the database and the fleet. A change that compiles into
 # test binaries alone leaves every library and service as it was, so they would
 # prove again what main already proved.
-FLEET_CHECKS = ("db", "ticks-smoke", "step-consumers", "answer-shapes")
+FLEET_CHECKS = ("db", "ticks-smoke", "step-consumers", "answer-shapes",
+                "subject-coverage")
 FLEET_CLASSES = ("cpp", "services", "sql")
 COMPILED_SUFFIXES = (".cpp", ".hpp", ".h", ".ipp", ".c", ".cc", ".cxx")
 TEST_TARGET_SUFFIX = ".tests"

@@ -8,7 +8,7 @@
 #+filetags: :ci:branching:sprint_30:v0:
 #+created: 2026-11-11
 #+updated: 2026-11-11
-#+environment: brave_hopper
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -57,6 +57,7 @@ carries the remaining work from sprint 30's close. This story ships
 | [[id:70191ADC-EF7D-4E85-8BAF-DA50133B1DAC][Pin compass-ng v0.0.13 and make the name resolve in CI]] | DONE | 2026-11-23 | 2026-11-23 | The install step put the release's bin on PATH, but the binary is named compass and compass env configure looks for compass-ng, so the nightlies still stopped at Init environment. The pin also still named v0.0.12. |
 | [[id:FADB1650-62B7-4795-A8BA-00AEDA1BA389][Bring the export test onto the carried-quotes rule]] | DONE | 2026-11-24 | 2026-11-24 | 8f71717dfa made a run's export carry the interest rate quotes its curves are bootstrapped from, and left the narrowed-export test asserting the rule before it. ores.marketdata.core.tests fails on main on two assertions, and no PR workflow runs ctest, so nothing caught it. |
 | [[id:EA12FD69-D331-4005-B439-4DF49D5410DC][Clear the two checks main leaves red]] | DONE | 2026-11-24 | 2026-11-24 | The timescaledb library scan reads every cluster's directory even when it is given one, so the check fails on any machine with the extension installed. And the XML benchmark has no row after the commit that changed the measured files, so the check fails on every branch until someone measures. |
+| [[id:89DE512A-22DA-4A4A-A706-A4696D952CD6][Fix the nightly warnings and the change ticker test]] | STARTED | 2026-11-26 | | Task for: Keep main green |
 
 * Decisions
 

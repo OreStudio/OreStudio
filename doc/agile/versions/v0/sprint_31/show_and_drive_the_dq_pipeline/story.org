@@ -62,7 +62,7 @@ from the shared parts rather than from the prototype markup.
 | [[id:BE40AF90-534D-4A6A-B103-6AF9056E8E06][Publish a bundle as a run a person reads]] | BACKLOG | | | The publish-a-bundle prototype as a screen: the members in the closure's order, the optional ones, the mode, the preview, the run, the receipt, and a run log with a writer behind it. |
 | [[id:23FB17A7-814C-4985-8381-910F124C3502][Correct one artefact and republish its dataset]] | BACKLOG | | | The correct-one-artefact prototype as a screen: one staged row read, changed and written, then its dataset republished, with what the correction wrote. |
 | [[id:B6239647-6FC1-43CB-9F04-538FDA1F6314][Trace a published value to the dataset that wrote it]] | BACKLOG | | | The trace prototype as a screen: a published value to the dataset and artefact that wrote it, with the used-by question stated as the trading change it needs. |
-| [[id:B5770B99-21AB-467D-824D-64D383CA573B][Draw the counts the roster serves on the coverage screen]] | BACKLOG | | | api/dq.ts reads the bundle roster, and the coverage screen draws the staged count in place of the dash it states today, naming the gap only where the figure is still absent. |
+| [[id:B5770B99-21AB-467D-824D-64D383CA573B][Draw the counts the roster serves on the coverage screen]] | STARTED | 2026-11-26 | | api/dq.ts reads the bundle roster, and the coverage screen draws the staged count in place of the dash it states today, naming the gap only where the figure is still absent. |
 
 * Decisions
 

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :dq:web:coverage:sprint_31:v0:show_and_drive_the_dq_pipeline:
 #+owner: marco
-#+branch:
+#+branch: feature/draw-the-counts-on-the-coverage-screen
 #+pr:
 #+blocked_on:
 #+blocked_since:

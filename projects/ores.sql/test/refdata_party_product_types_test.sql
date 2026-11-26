@@ -46,10 +46,11 @@ select gen_random_uuid() as party_id,
        gen_random_uuid() as party_narrow_id,
        gen_random_uuid() as party_open_id,
        gen_random_uuid() as portfolio_id,
-       (select username from ores_iam_accounts_tbl
-        where account_type = 'service'
-          and valid_to = ores_utility_infinity_timestamp_fn()
-        order by username limit 1) as actor;
+       coalesce(
+           (select username from ores_iam_accounts_tbl
+            where valid_to = ores_utility_infinity_timestamp_fn()
+            order by account_type, username limit 1),
+           current_user) as actor;
 
 insert into ores_refdata_parties_tbl (
     id, tenant_id, version, short_code, full_name, codename,
@@ -140,7 +141,7 @@ select lives_ok(
           valid_from, valid_to)
       values ('00000000-0000-0000-0000-0000000ba002',
           ores_utility_system_tenant_id_fn(), 'Swap', 0,
-          'system.test', 'system.test', 'system.test', 'pgTAP fixture',
+          (select actor from t_ctx), (select actor from t_ctx), 'system.test', 'pgTAP fixture',
           now(), ores_utility_infinity_timestamp_fn())$$,
     'a book states a type its party permits');
 
@@ -151,7 +152,7 @@ select throws_ok(
           valid_from, valid_to)
       values ('00000000-0000-0000-0000-0000000ba002',
           ores_utility_system_tenant_id_fn(), 'Bond', 0,
-          'system.test', 'system.test', 'system.test', 'pgTAP fixture',
+          (select actor from t_ctx), (select actor from t_ctx), 'system.test', 'pgTAP fixture',
           now(), ores_utility_infinity_timestamp_fn())$$,
     '23514', null,
     'a book may not state a type its party does not permit');
@@ -204,7 +205,7 @@ insert into ores_refdata_book_product_types_tbl (
     valid_from, valid_to
 )
 values ('00000000-0000-0000-0000-0000000ba003', ores_utility_system_tenant_id_fn(),
-    'Bond', 0, 'system.test', 'system.test', 'system.test', 'pgTAP fixture',
+    'Bond', 0, (select actor from t_ctx), (select actor from t_ctx), 'system.test', 'pgTAP fixture',
     now(), ores_utility_infinity_timestamp_fn());
 
 select throws_ok(

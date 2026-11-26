@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 9BF69BF9-F032-4CEF-8A68-F4C912EF691C
+:END:
+#+title: Task: Find the double free in the synthetic service tests
+#+description: Task for: Keep main green
+#+type: task
+#+level: s1
+#+filetags: :keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/find-the-double-free-in-the-synthetic-tests
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Find what the gcc build frees twice in ores.synthetic.service.tests, and fix it there rather than in the suite.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-26                               |
+
+* Acceptance
+
+- The gcc release suite runs clean, and the fix names the owner that freed twice.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+What is known, so the next session starts where this one stopped.
+
+The gcc release nightly aborts in =ores.synthetic.service.tests= with
+=free(): double free detected in tcache 2=, inside
+=feed_config_calibrate_writes_only_with_the_write_permissions=
+(=feed_config_handler_tests.cpp=). It did the same on 25 and 26 November, so it
+is deterministic under gcc.
+
+Clang cannot reproduce it: fifteen runs of =[feed_config_handler]=, three runs
+of =[feed_config_handler],[integration]=, the single case, and the single case
+under valgrind with the service fleet up all pass. The live market-data service
+is not the difference, because the case is clean with it answering.
+
+The tree to work in is =build/output/linux-gcc-release-ninja=, built by the
+gcc preset. Run the suite with the environment loaded:
+
+#+begin_src sh
+set -a && . ./.env && set +a
+build/output/linux-gcc-release-ninja/publish/bin/ores.synthetic.service.tests
+#+end_src
+
+Then, in order: run it whole, since the corruption may be planted by an
+earlier case; run it under valgrind with the project suppressions, which
+reports an invalid free with a stack even where glibc only reports the
+double free; and if valgrind is still quiet, take the abort's backtrace from
+a core or from =catchsegv=.
+
+A glibc double free inside a process is not caused by another process, so
+the answer is in this binary, and the repair belongs in the handler or the
+client it calls, not in the test.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

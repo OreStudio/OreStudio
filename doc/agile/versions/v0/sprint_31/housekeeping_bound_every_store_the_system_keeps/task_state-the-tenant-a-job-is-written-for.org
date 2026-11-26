@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/state-the-tenant-a-job-is-written-for
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -28,12 +28,12 @@ in the tenant that owns it rather than in their own.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-25                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-26                               |
 
 * Acceptance
 
@@ -78,9 +78,47 @@ caller wants. Nothing else in the tree needs the second yet.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** The tenant travels in the session, not in a field
+
+The two shapes above both put a tenant on a message, and neither is needed. The
+tree already has the mechanism, and its own rule says to use it: a person or a
+service that needs a tenant's rows *enters the tenant* and uses the ordinary
+reads and writes, and no message grows a tenant parameter (see
+[[id:C3D570EF-468D-427D-B355-30C0443BCDDF][Read another tenant's data from
+inside it]]). =iam.v1.ops.enter_tenant_as_service= gives a service account a
+session scoped to a tenant, carrying the service's own permissions, and
+=make_tenant_session_provider= keeps that session alive.
+
+So the reporting service sends its scheduler requests under a session of the
+definition's tenant. The scheduler changes in no way at all: it stamps the row
+from the caller's claims, which is the rule every other write already follows,
+and the protocol keeps its shape. The third shape is therefore chosen: the
+tenant is the session that makes the request.
+
+** Where the work lands**
+
+1. The =ReportingService= role gains =iam::tenants:enter_as_service=. Without it
+   the entry is refused and no job can be scheduled.
+2. =report_scheduling_service= takes a factory that yields a client bound to a
+   tenant, and the reporting application wires it to
+   =make_tenant_session_provider=. Without a factory the class keeps using its
+   own session, so a caller with no tenant in hand still works.
+3. Schedule, restore and delete for a definition use the definition's tenant's
+   client. Reconciliation is now per tenant, because the scheduler's job list is
+   scoped by the session that asks: listing with the system session would see no
+   report job, put a copy back in the system tenant, and fire every report twice.
+4. The next-fire read already relays the caller's own session, so it needs
+   nothing.
+5. A scheduler test proves the landing: a put made under a token of another
+   tenant creates the row in that tenant and not in the system one. It is the
+   mechanism the reporting service now relies on, stated where it can be checked.
+
+** Verification**
+
+- the new scheduler test, run alone;
+- the reporting core suite, for the reconcile restructure;
+- =compass check --only build --only format --only component-drift= on the
+  branch, and the reporting and scheduler suites.
 
 * Measurements
 
@@ -94,7 +132,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Scheduler suite, with the new test | 34 cases, 146 assertions, pass | =ores.scheduler.core.tests= | 6631ea56f0 |
+| Reporting suite, whose service was restructured | 283 cases, 1645 assertions, pass | =ores.reporting.core.tests= | 6631ea56f0 |
+| pgTAP suites | pass, 80.8 s | =compass check --only pgtap= | 6631ea56f0 |
+| Format and model drift | pass | =compass check --only format --only component-drift= | 6631ea56f0 |
 
 * Notes
 
@@ -122,3 +163,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A report's job is now written inside the tenant that owns the definition, and
+that tenant reads it.
+
+- The reporting service enters the definition's tenant with
+  =iam.v1.ops.enter_tenant_as_service= and writes the job under the session it
+  gets there, so the scheduler stamps the row from the claims as it does for
+  every other write. Neither the write record nor the request carries a tenant,
+  and the scheduler changed in no way.
+- Reconciliation runs a tenant at a time, because its job list is scoped by the
+  session that asks. Under the service's own session it saw no report job, and
+  the restore step would have written a second copy in the system tenant, firing
+  every report twice. The same pass removes a report job that no definition in
+  the tenant accounts for, so a job left in the wrong tenant does not stay.
+- A tenant reads the jobs it holds. The scheduler's party read policy admitted a
+  row only when its party was one the session could see, and a job that names no
+  party -- the platform's jobs and the job of a whole tenant -- belongs to none,
+  so only the installation could read such a row. The policy now admits a null
+  party, and the tenant isolation policy still holds each row to its tenant.
+- The =ReportingService= role holds =iam::tenants:enter_as_service=. Without it
+  the entry is refused and nothing schedules.
+- The next-fire read took its definitions from the service's own context and
+  found none of them; it reads them in the caller's context.
+- A scheduler test states the landing over NATS: a put made under a token of the
+  test tenant creates the row in that tenant, the tenant's own list returns it,
+  and the installation's list does not.
+
+What the change does not cover: a tenant the service cannot enter, or a tenant
+with no system party yet, fails that tenant's scheduling with the refusal IAM
+gave, and the reconcile counts it as a failure for that tenant rather than
+retrying it. The entry is one round trip per tenant per pass, which is paid on
+every definition change; a cached session is the next step if that shows.
+
+The databases were recreated for this branch, because the policy and the role
+seed are schema and populate changes.

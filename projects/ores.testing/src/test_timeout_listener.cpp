@@ -19,8 +19,9 @@
  */
 #include "ores.testing/test_timeout_listener.hpp"
 #include "ores.platform/environment/environment.hpp"
+#include <cstdio>
 #include <cstdlib>
-#include <iostream>
+#include <string>
 
 namespace ores::testing {
 
@@ -84,17 +85,23 @@ void test_timeout_listener::watchdog_thread_func() {
 
         auto elapsed = std::chrono::steady_clock::now() - test_start_time_;
         if (elapsed > timeout_) {
-            // Log to both Boost.Log and stderr to ensure visibility
             ORES_LOG_SEV(lg(), error) << "TEST TIMEOUT: " << current_test_name_ << " exceeded "
                                       << timeout_.count() << " seconds limit!";
 
-            std::cerr << "\n\n"
-                      << "========================================\n"
-                      << "TEST TIMEOUT FAILURE\n"
-                      << "========================================\n"
-                      << "Test: " << current_test_name_ << "\n"
-                      << "Timeout: " << timeout_.count() << " seconds\n"
-                      << "========================================\n\n";
+            // A memcheck run reads the streams through a pipe, and a failed
+            // suite's output is not always what the run shows. C stdio puts
+            // the test name in the output whatever buffering the C++ streams
+            // chose.
+            const auto banner = "\n\n========================================\n"
+                                "TEST TIMEOUT FAILURE\n"
+                                "========================================\n"
+                                "Test: " +
+                                current_test_name_ +
+                                "\nTime limit: " + std::to_string(timeout_.count()) +
+                                " seconds\n"
+                                "========================================\n\n";
+            std::fwrite(banner.data(), 1, banner.size(), stderr);
+            std::fflush(stderr);
 
             // _Exit, not exit: the watchdog must not unwind a test that is
             // still running. Holding the lock is harmless, since nothing

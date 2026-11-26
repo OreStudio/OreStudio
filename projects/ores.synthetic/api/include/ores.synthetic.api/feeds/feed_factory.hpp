@@ -22,6 +22,7 @@
 
 #include "fx_spot_feed.hpp"
 #include "fx_vol_surface_feed.hpp"
+#include "index_fixing_feed.hpp"
 #include "ir_curve_feed.hpp"
 #include "ores.analytics.quant/math/rng_stream.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
@@ -30,11 +31,14 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.synthetic.api/feeds/node_journal.hpp"
+#include <chrono>
 #include <cstdint>
+#include <expected>
 #include <functional>
 #include <map>
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
 #include <string_view>
 #include <variant>
@@ -62,6 +66,16 @@ inline ores::analytics::quant::math::rng_stream price_stream_for(std::uint64_t r
 }
 
 /**
+ * @brief The days the market already holds of an item, up to a date.
+ *
+ * A feed states a history only when the market holds none of the item, so every caller
+ * that can build a fixing feed asks this first.
+ */
+using fixing_held_reader =
+    std::function<std::expected<std::set<std::chrono::year_month_day>, std::string>(
+        const std::string& item, std::chrono::year_month_day to)>;
+
+/**
  * @brief Shared inputs every producer builder needs, gathered once by the caller (application
  * auto-start, control-plane handlers) and passed to every factory::make() call.
  */
@@ -77,6 +91,17 @@ struct feed_build_context final {
     ores::analytics::quant::service::run_market& market;
     /// Where a feed says what happens to it and why; none by default.
     std::shared_ptr<node_journal> journal = {};
+    /**
+     * Whether the node of this name publishes nothing, because an operator stopped it or
+     * one of its inputs did. None means every node is assumed to run, which is what a test
+     * that drives one feed wants.
+     */
+    std::function<bool(const std::string& node_name)> node_halted = {};
+    /**
+     * The days the market already holds of an item, which a node built by hand asks before
+     * it states a history. None means the feed cannot tell, and it states one.
+     */
+    fixing_held_reader held_by_item = {};
 };
 
 /**
@@ -154,10 +179,35 @@ struct ir_curve_feed_build_input final {
 };
 
 /**
+ * @brief Build inputs for a derived index: the one fixing it states, and where it publishes.
+ *
+ * A derived index runs no curve and no process. Its node states the fixings of one
+ * index from the currency's overnight curve, under the provider that owns the
+ * computation, so the node is startable and stoppable like any other.
+ */
+struct derived_fixing_feed_build_input final {
+    /// The node's name, and the source the fixing generator publishes as.
+    std::string source_name;
+    /// The fixing's oresmd address, which the generator states each day.
+    std::string item;
+    /// The fixing the node states, and the adapter id it publishes through.
+    adapter_target target;
+    /// The rule that states its rate from the overnight curve.
+    derived_fixing rule;
+    /// Whether the node is starved, so it states no fixing while its curve does not run.
+    std::function<bool()> starved;
+    /// The days the market already holds of the item up to a date, so a history restated
+    /// after a restart leaves the days it stated before.
+    fixing_held_reader held;
+};
+
+/**
  * @brief One of the per-kind build inputs, discriminated by the kind string passed to make().
  */
-using feed_build_input = std::
-    variant<fx_spot_feed_build_input, ir_curve_feed_build_input, fx_vol_surface_feed_build_input>;
+using feed_build_input = std::variant<fx_spot_feed_build_input,
+                                      ir_curve_feed_build_input,
+                                      fx_vol_surface_feed_build_input,
+                                      derived_fixing_feed_build_input>;
 
 /**
  * @brief Maps a feed kind to the producer builder that constructs that kind from its persisted

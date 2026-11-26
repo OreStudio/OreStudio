@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_SERVICE_GENERATOR_FLEET_HPP
 #define ORES_SYNTHETIC_SERVICE_GENERATOR_FLEET_HPP
 
+#include "feed_node_halt.hpp"
 #include "generator_runner.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "running_set.hpp"
@@ -29,6 +30,7 @@
 #include <iterator>
 #include <memory>
 #include <mutex>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -128,6 +130,22 @@ public:
         return stopped;
     }
 
+    /**
+     * @brief The nodes that publish nothing, as the graph last read them.
+     *
+     * Written when a stop or a start lands, read by a feed on every tick: a node whose
+     * input stopped states nothing from that moment, rather than publishing the last
+     * value its input left on the board.
+     */
+    void set_halted(std::set<std::string> halted) {
+        halt_.set(std::move(halted));
+    }
+
+    /** Whether the node of this name publishes nothing. */
+    [[nodiscard]] bool is_halted(const std::string& node_name) const {
+        return halt_.contains(node_name);
+    }
+
     /** Takes an adapter's runner into the fleet, so its runs are read and stopped here. */
     void attach(generator_runner& runner) {
         std::lock_guard lock(mu_);
@@ -148,6 +166,7 @@ private:
 
     mutable std::mutex mu_;
     std::vector<generator_runner*> attached_;
+    feed_node_halt halt_;
     shared_surfaces surfaces_;
     running_set names_;
     // The runner the operator drives. No generator is offered to it, because a manual run is

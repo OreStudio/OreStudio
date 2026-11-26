@@ -22,6 +22,7 @@
 
 #include "feed_kind_registry.hpp"
 #include "feed_run_control.hpp"
+#include "fixing_inputs.hpp"
 #include "generator_fleet.hpp"
 #include "ores.analytics.quant/service/run_market.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
@@ -136,7 +137,12 @@ private:
             const auto label = std::to_string(wanted.size()) + " selected feeds";
             if (starting) {
                 const ores::synthetic::feed::feed_build_context build{
-                    .nats = nats_, .auth_nats = auth_nats_, .market = market_};
+                    .nats = nats_,
+                    .auth_nats = auth_nats_,
+                    .market = market_,
+                    .node_halted =
+                        [this](const std::string& name) { return generators_.is_halted(name); },
+                    .held_by_item = make_held_days_reader(*ctx, auth_nats_)};
                 const auto outcome = start_feeds(
                     registry_,
                     generators_,

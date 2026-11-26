@@ -23,7 +23,8 @@
  *
  * Registers the synthetic.market_data_providers dataset and stages the
  * simulated market data providers a synthetic collection can stand for: the
- * main data vendors, exchanges and brokers, and a fictional Demo provider for exercises. The dataset is a
+ * main data vendors, exchanges and brokers, a fictional Demo provider for exercises, and the
+ * Derived provider, which owns the ids the platform computes instead of quoting. The dataset is a
  * member of the system_core bundle, so the system provisioning step publishes
  * it into the system tenant through
  * ores_synthetic_publish_market_data_providers_from_dq_fn. Every provider is
@@ -103,7 +104,10 @@ begin
          8),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'latent', 0, 'Latent', 'reference',
          'The latent FX volatility surfaces, which no vendor publishes as its own. Each vendor quotes them with noise of its own, and the vendors'' sources hold them.',
-         9);
+         9),
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'derived', 0, 'Derived', 'reference',
+         'Market data the platform computes from data it already holds: the term indices no publisher quotes in the run, stated from their currency''s overnight curve.',
+         10);
 end $$;
 
 -- Summary

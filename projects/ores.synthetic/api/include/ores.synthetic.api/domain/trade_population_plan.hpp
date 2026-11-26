@@ -392,6 +392,28 @@ struct trade_type_outcome final {
     std::string reason;
 };
 
+/**
+ * @brief What one book of a population states and what a run did with it.
+ *
+ * The types are the planner's answer for the book: a type whose @c planned count
+ * is not zero is one the book booked, and a type of zero keeps the reason it was
+ * not. A book that books nothing keeps its entry, so a report names it instead of
+ * leaving it out.
+ *
+ * The counts are the run's: the planner leaves them at zero and a run states them
+ * as it writes, because only the writer knows a trade it found already on the
+ * books. @c planned is the sum of the types' own counts, so a reader can always
+ * check one against the other.
+ */
+struct book_population_outcome final {
+    boost::uuids::uuid book_id;
+    std::uint32_t planned = 0;
+    std::uint32_t written = 0;
+    std::uint32_t already_present = 0;
+    /// One entry for each type the config states, in the class's own order.
+    std::vector<trade_type_outcome> type_outcomes;
+};
+
 struct trade_population_plan final {
     boost::uuids::uuid config_id;
     boost::uuids::uuid party_id;
@@ -400,6 +422,8 @@ struct trade_population_plan final {
     std::vector<trade_population_structure> structures;
     /// One entry for each trade type the config books, in the class's own order.
     std::vector<trade_type_outcome> type_outcomes;
+    /// One entry for each book of the scope, in the order the scope names them.
+    std::vector<book_population_outcome> book_outcomes;
 };
 
 /**

@@ -179,7 +179,7 @@ The test for a screen is one question: which topic would a person look in?
 | Home | The dashboard, Active modules, Upcoming modules | Always |
 | Reference data | The cards below | Always |
 | Organisation | Staff, Hierarchy, Roles and Rescue access | Any one of those screens |
-| Market data | The prices and curves the platform receives or generates: the Catalogue, Subscriptions, Usage and cost, the Simulator (with the Synthetic screen), and the curve evolution | Any one of those screens |
+| Market data | The prices and curves the platform receives or generates: the Catalogue, Subscriptions, Usage and cost, the Simulator (with the Simulated market screen), and the curve evolution | Any one of those screens |
 | Trades | Trades, and Structures and packages, with the workflows Import a portfolio from ORE, Export a portfolio to ORE and Group trades | Any one of those screens |
 | Requests | Every request, a person's own, and the queue of those who decide | Always, because every person has their own |
 | Operations | Running services, Compute grid, Message bus, Telemetry logs, Versions and the database, and Sign-ins | Any one of those screens |
@@ -417,7 +417,7 @@ Market data has no screen for curve surfaces or for feeds of other kinds yet.
 They are added to the Market data area when they have screens; a feed of a new
 kind joins the Feed tree.
 
-The Synthetic screen, with its Dashboard and its Feed tree, is designed in the
+The Simulated market screen, with its Dashboard and its Feed tree, is designed in the
 [[id:4F8C2A1D-6B3E-49F7-8A52-1C9E7D0B3A64][Synthetic feeds prototype]] and built by the tasks of
 [[id:0A32284A-5F8C-4A99-9539-34923631DED3][Organise feeds by provider and scope]].
 

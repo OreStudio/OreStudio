@@ -22,6 +22,7 @@
 
 #include "ores.analytics.quant/domain/market_board.hpp"
 #include "ores.analytics.quant/service/run_market.hpp"
+#include "ores.analytics.quant/service/term_rate_calculator.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.nats/service/client.hpp"
@@ -71,6 +72,30 @@ fixing_due(const fixing_time& when,
            std::optional<std::chrono::year_month_day> last_fixed);
 
 /**
+ * @brief How a fixing is stated from its currency's overnight curve, when no
+ * feed quotes the index itself.
+ *
+ * A term index such as SOFR 1M has no publisher in the run and no curve of its
+ * own: its rate is the overnight curve's, compounded over the term, or that
+ * curve's overnight rate plus a stated spread. The rule is the curve config's
+ * own data, carried here so the generator reads one curve instead of a level.
+ */
+struct derived_fixing final {
+    /// The board member of the currency's overnight curve.
+    std::string curve_code;
+    /// Which rule states the rate.
+    ores::analytics::quant::service::term_rate_rule rule =
+        ores::analytics::quant::service::term_rate_rule::compounded_overnight;
+    /// The term's length in months, from the index's own tenor.
+    int term_months = 0;
+    /// The overnight index's day-count convention, which annualises the rate.
+    ores::analytics::quant::service::day_count_convention_code convention =
+        ores::analytics::quant::service::day_count_convention_code::A360;
+    /// The spread the spread rule adds, in basis points.
+    double spread_basis_points = 0.0;
+};
+
+/**
  * @brief What a fixing generator reads, and where it publishes.
  */
 struct index_fixing_feed_input final {
@@ -84,6 +109,9 @@ struct index_fixing_feed_input final {
     /// The board members the level is read from, in order; the first one published is read.
     /// A pair may be quoted by several spot feeds, of which only some run.
     std::vector<std::string> level_codes;
+    /// The rule that states the level from the currency's overnight curve, when the
+    /// index has no feed of its own. Set, it replaces @c level_codes.
+    std::optional<derived_fixing> derived;
     fixing_time when;
     /// How many business days of history the generator states on its first level.
     int history_days = 520;
@@ -92,6 +120,12 @@ struct index_fixing_feed_input final {
     std::function<std::expected<std::set<std::chrono::year_month_day>, std::string>(
         const std::string& item, std::chrono::year_month_day to)>
         held;
+    /**
+     * Whether the node of this feed is starved: an operator stopped it or one of its
+     * inputs. A starved node states nothing, so a fixing it owes is not taken from a
+     * level its input no longer publishes, and no day is made up when it resumes.
+     */
+    std::function<bool()> starved;
 };
 
 /**
@@ -141,6 +175,12 @@ private:
     index_fixing_feed_input input_;
     ores::analytics::quant::service::run_market& market_;
     std::vector<ores::analytics::quant::domain::market_board::member_id> level_members_;
+    /// The overnight curve a derived fixing reads its level from, when it has no members.
+    std::optional<ores::analytics::quant::domain::market_board::member_id> curve_member_;
+
+    /// The level to fix: the first published member's, or the rate the rule states
+    /// from the overnight curve.
+    [[nodiscard]] std::optional<double> level_rate() const;
     std::vector<std::string> series_uris_;
     std::optional<std::chrono::year_month_day> last_fixed_;
     bool history_stated_ = false;
@@ -148,6 +188,8 @@ private:
     std::optional<std::chrono::system_clock::time_point> next_held_read_;
     /// Whether a failed read of the held days has been logged at info already.
     bool held_failure_logged_ = false;
+    /// Whether the starved state has been logged already, so a run logs it once.
+    bool starved_logged_ = false;
     std::atomic<std::uint64_t> published_{0};
     std::optional<std::size_t> handle_;
 };

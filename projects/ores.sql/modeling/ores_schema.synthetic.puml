@@ -525,6 +525,9 @@ package "synthetic" #F9FBE7 {
         * enabled : boolean
         * auto_start : boolean
         * price_source : text
+        * rate_source : text
+        * derived_spread_basis_points : double
+          derived_spread_source : text
           description : text
         * fixed_leg_payment_frequency_code : text
         * source_name : text
@@ -560,6 +563,13 @@ package "synthetic" #F9FBE7 {
     ir_curve_template_entry rows, the same one-config-many-children shape
     fx_spot_generation_config uses for its gmm_component rows. Scoped to a
     tenant and a party.
+    A config may instead derive its rate from the currency's overnight curve,
+    for a term index no publisher quotes: rate_source says which shape it
+    takes, and a spread index states the spread and who states it. The fixing
+    generator reads the rule on the config and computes the rate from the curve
+    itself: the compounded overnight forward over the term, or the overnight rate
+    plus the stated spread. A derived config states no index rate on the run's
+    board, because it runs no curve of its own.
     end note
 
     entity ores_synthetic_ir_curve_index_families_tbl <<temporal>> #C6F0D8 {

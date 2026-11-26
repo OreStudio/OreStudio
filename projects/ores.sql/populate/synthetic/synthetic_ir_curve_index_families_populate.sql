@@ -47,8 +47,8 @@ values
      false, true, '',
      2, current_user, current_user, 'system.initial_load', 'Initial population of IR curve index families'),
     (ores_utility_system_tenant_id_fn(), 'sofr', 0, 'SOFR',
-     'Secured Overnight Financing Rate, published by the Federal Reserve Bank of New York. FOMC names its meeting-dated curve.',
-     true, false, 'FOMC',
+     'Secured Overnight Financing Rate, published by the Federal Reserve Bank of New York. FOMC names its meeting-dated curve; 1M, 3M and 6M are the term rates its overnight average compounds to.',
+     true, true, 'FOMC',
      3, current_user, current_user, 'system.initial_load', 'Initial population of IR curve index families'),
     (ores_utility_system_tenant_id_fn(), 'estr', 0, 'ESTR',
      'Euro short-term rate, published by the European Central Bank.',
@@ -151,8 +151,8 @@ values
      true, false, '',
      28, current_user, current_user, 'system.initial_load', 'Initial population of IR curve index families'),
     (ores_utility_system_tenant_id_fn(), 'ibr', 0, 'IBR',
-     'Colombian peso interbank reference rate.',
-     true, false, '',
+     'Colombian peso interbank reference rate: an overnight average, and term rates at 1M, 3M and 6M.',
+     true, true, '',
      29, current_user, current_user, 'system.initial_load', 'Initial population of IR curve index families'),
     (ores_utility_system_tenant_id_fn(), 'hibor', 0, 'HIBOR',
      'Hong Kong Interbank Offered Rate: an overnight index for CNH, and a term index at 2W, 1M and 3M for HKD.',
@@ -165,7 +165,19 @@ values
     (ores_utility_system_tenant_id_fn(), 'hufonia', 0, 'HUFONIA',
      'Hungarian forint overnight index average.',
      true, false, '',
-     32, current_user, current_user, 'system.initial_load', 'Initial population of IR curve index families')
+     32, current_user, current_user, 'system.initial_load', 'Initial population of IR curve index families'),
+    (ores_utility_system_tenant_id_fn(), 'eytibor', 0, 'EYTIBOR',
+     'Tokyo interbank offered rate for the yen: a term index quoted over TONA, with no overnight form of its own.',
+     false, true, '',
+     33, current_user, current_user, 'system.initial_load', 'Initial population of IR curve index families'),
+    (ores_utility_system_tenant_id_fn(), 'wibor', 0, 'WIBOR',
+     'Warsaw interbank offered rate for the zloty: a term index quoted over POLONIA, with no overnight form of its own.',
+     false, true, '',
+     34, current_user, current_user, 'system.initial_load', 'Initial population of IR curve index families'),
+    (ores_utility_system_tenant_id_fn(), 'generic', 0, 'GENERIC',
+     'The generic interbank term index of a currency whose own name no publisher states, quoted over that currency''s overnight average.',
+     false, true, '',
+     35, current_user, current_user, 'system.initial_load', 'Initial population of IR curve index families')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

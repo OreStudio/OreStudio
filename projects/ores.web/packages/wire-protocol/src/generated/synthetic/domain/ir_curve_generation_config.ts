@@ -45,6 +45,9 @@ export interface IrCurveGenerationConfig {
     enabled: boolean;
     auto_start: boolean;
     price_source: string;
+    rate_source: string;
+    derived_spread_basis_points: number;
+    derived_spread_source: string;
     description: string;
     fixed_leg_payment_frequency_code: string;
     source_name: string;

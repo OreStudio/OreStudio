@@ -30,6 +30,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.synthetic.api/domain/market_data_generation_config.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
+#include "ores.synthetic.api/feeds/index_fixing_feed.hpp"
 #include "ores.synthetic.service/export.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
@@ -138,6 +139,15 @@ struct feed_kind_candidate final {
      * meeting-dated curve, leave it empty.
      */
     std::optional<std::string> fixing_item;
+    /**
+     * @brief How the fixing item's rate is derived from its currency's overnight
+     * curve, when no feed quotes the index itself.
+     *
+     * Set, the fixing generator reads that curve instead of a board level, and the
+     * kind starts no curve feed of its own: the config declares an index, it does
+     * not run a process.
+     */
+    std::optional<ores::synthetic::feed::derived_fixing> derived;
     std::map<std::string, surface_view> views;
 
     /**

@@ -5194,11 +5194,11 @@ const fr: SourceCatalogue = {
                 },
             },
             invertedFrom: 'l’inverse du fixing {value}',
-            title: 'Calibrage',
+            title: 'Calibrage des flux',
             lead: "Comment chaque flux d'une classe d'actifs prend son niveau de départ et sa volatilité des fixings publics.",
             systemOnly:
-                'La calibration est un contrôle système. Seul un administrateur système peut l’ouvrir.',
-            tabs: 'Vues de la calibration',
+                'Le calibrage des flux est un contrôle système. Seul un administrateur système peut l’ouvrir.',
+            tabs: 'Vues du calibrage des flux',
             tab: {
                 feeds: 'Flux',
                 run: 'Calibration en cours',
@@ -6561,7 +6561,7 @@ const fr: SourceCatalogue = {
                 subscriptions: 'Souscriptions',
                 subscriptionsBody:
                     'Les fournisseurs qu’une partie prend, avec les droits qu’elle détient, et le flux qui sert chacun.',
-                synthetic: 'Synthétique',
+                synthetic: 'Marché simulé',
                 syntheticBody:
                     'Les flux que la plateforme génère : ce qui tourne par fournisseur, et chaque flux à démarrer et à arrêter.',
                 evolutionBody:
@@ -7017,7 +7017,7 @@ const fr: SourceCatalogue = {
                 "Le flux s'arrête s'il tourne. Son mélange est supprimé d'abord, puis le flux. L'historique de chacun reste.",
         },
         synthetic: {
-            title: 'Synthétique',
+            title: 'Marché simulé',
             lead: "Les données de marché que la plateforme génère au lieu de les recevoir : ce qui tourne par fournisseur, et les flux d'un fournisseur.",
             tabs: {
                 dashboard: 'Tableau de bord',
@@ -7117,12 +7117,27 @@ const fr: SourceCatalogue = {
             add: 'Nouvelle courbe de taux',
             addTitle: 'Nouvelle courbe de taux',
             priceSource: 'Taux de départ issu de',
+            rateSource: 'Taux issu de',
+            derivedSpread: 'Marge sur le taux au jour le jour',
+            derivedSpreadSource: 'Qui fixe la marge',
             tenorNeeded: 'Un indice à terme exige une durée, comme 3M ou 6M.',
             tenorNotAdmitted:
                 'Cette famille est un indice au jour le jour : une courbe de cette famille ne prend pas de durée.',
             tenorOnlyDated:
                 'Cette famille est un indice au jour le jour ; sa seule durée datée est {tenor}.',
             help: {
+                rate_source: {
+                    process:
+                        'Son propre moteur de courbe produit le taux, comme toute courbe cotée.',
+                    compounded_overnight:
+                        'Le taux au jour le jour capitalisé sur la période. SOFR 1M et IBR 3M sont ainsi établis.',
+                    overnight_plus_spread:
+                        'Le taux au jour le jour plus la marge ci-dessous. EYTIBOR 3M et WIBOR 6M sont ainsi établis.',
+                },
+                derived_spread_basis_points:
+                    "Points de base ajoutés au taux au jour le jour. Seul un taux à marge l'utilise.",
+                derived_spread_source:
+                    'Qui fixe la marge : le publieur, la convention de marché, ou la décision qui l’a fixée. Une marge sans source est un nombre invérifiable.',
                 tenor: "La durée d'un indice à terme, comme 3M ou 6M. Laissez vide pour un indice au jour le jour. FOMC désigne la variante datée des réunions pour SOFR.",
                 role: {
                     self_discounting: 'Une courbe qui sert aux deux usages.',

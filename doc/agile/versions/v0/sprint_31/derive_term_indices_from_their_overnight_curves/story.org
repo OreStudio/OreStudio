@@ -8,7 +8,7 @@
 #+filetags: :ir:curves:marketdata:sprint_31:v0:
 #+created: 2026-11-24
 #+updated: 2026-11-24
-#+environment: festive-dijkstra
+#+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 #+predecessor: 0F936789-FEBE-4330-97B9-DFE0837E4466
 
@@ -29,7 +29,7 @@ it is.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -51,7 +51,7 @@ it is.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:1993E4E7-A59B-4473-8635-C9F6DF974EB5][Derive a term index from its overnight curve]] | BACKLOG | | | Give a term index of a currency that has an overnight curve its curve and fixings from that curve: term SOFR and IBR from the compounded overnight forward, EYTIBOR, WIBOR and the generic indices with a stated spread. |
+| [[id:1993E4E7-A59B-4473-8635-C9F6DF974EB5][Derive a term index from its overnight curve]] | DONE | 2026-11-24 | 2026-11-26 | Give a term index of a currency that has an overnight curve its curve and fixings from that curve: term SOFR and IBR from the compounded overnight forward, EYTIBOR, WIBOR and the generic indices with a stated spread. |
 | [[id:DC6F4D69-5E3E-4562-9503-88C74329FF1E][Show the FX and IR fixings on a fixings screen]] | BACKLOG | | | A system-level Fixings screen lets the super administrator view every FX and IR observation across every source, read only. |
 
 * Decisions

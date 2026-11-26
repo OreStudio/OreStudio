@@ -44,6 +44,7 @@ drop function if exists ores_refdata_business_unit_allowed_product_types_fn(uuid
 drop function if exists ores_refdata_parties_approval_restriction_fn();
 drop function if exists ores_refdata_party_product_types_close_fn();
 drop function if exists ores_refdata_book_product_types_approval_fn();
+drop function if exists ores_refdata_book_product_approvals_fn(uuid[]);
 drop function if exists ores_refdata_book_allowed_product_types_fn(uuid);
 drop function if exists ores_refdata_book_parent_allowed_product_types_fn(uuid, uuid);
 drop function if exists ores_refdata_party_allowed_product_types_fn(uuid);

@@ -55,7 +55,7 @@ trade_population_run trade_population_service::run(
     ORES_LOG_SEV(population_lg(), info)
         << "Trade population of config " << config << ": resolving its scope";
     const auto scope = writer_.resolve_scope(config_id);
-    auto plan = plan_on_expected_market_data(scope);
+    auto plan = plan_on_expected_market_data(scope, writer_.book_approvals(scope.book_ids));
     group_into_structures(plan, scope.structures_per_book);
     ORES_LOG_SEV(population_lg(), info)
         << "Trade population of config " << config << " (" << scope.asset_class_code

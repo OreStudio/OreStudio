@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 189
+Tables: 190
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -318,6 +318,19 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_bond_yield_conventions_artefact_tbl
     Describes how ORE builds a bond yield: the compounding it is quoted on, the frequency it pays at, whether the price is clean or dirty, and the tolerances its solver runs to. Corresponds to the <BondYield> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). One field is required and six are optional. One file carries five elements and sets all six optional fields. The accuracy and the guess are floats in ORE and travel through a double column, because the refdata schema has no float type; a float widens to a double and narrows back with no loss. - Artefact Table
+    end note
+
+    entity ores_dq_book_product_types_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * book_id : uuid <<FK>>
+        * product_type_code : text
+        * version : integer
+    }
+
+    note right of ores_dq_book_product_types_artefact_tbl
+    Book Product Type - Artefact Table
     end note
 
     entity ores_dq_books_artefact_tbl  #F7E5FF {

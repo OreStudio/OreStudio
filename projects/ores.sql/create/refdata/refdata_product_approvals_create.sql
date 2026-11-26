@@ -161,6 +161,30 @@ $$ language plpgsql stable;
 comment on function ores_refdata_book_allowed_product_types_fn(uuid) is
     'The product types a book may carry, resolved from the book, its desk and its party, or null when all of them permit every type the catalogue states.';
 
+-- The same resolution for many books at once, in the order the caller named them.
+-- A caller that chooses products before it writes them reads a book at a time, and
+-- one call per book would ask the chain once per book for one answer.
+create or replace function ores_refdata_book_product_approvals_fn(
+    p_book_ids uuid[]
+) returns table (
+    book_id uuid,
+    permits_every_type boolean,
+    product_type_code text
+) as $$
+select book.book_id,
+       resolved.permitted is null,
+       type.code
+from unnest(p_book_ids) with ordinality as book(book_id, position)
+cross join lateral (
+    select ores_refdata_book_allowed_product_types_fn(book.book_id) as permitted
+) resolved
+left join lateral unnest(resolved.permitted) as type(code) on true
+order by book.position, type.code;
+$$ language sql stable;
+
+comment on function ores_refdata_book_product_approvals_fn(uuid[]) is
+    'The product types each of the books permits, one row per type, and one row naming no type for a book that either permits every type or permits nothing: permits_every_type tells the two apart.';
+
 -- A book may name a type only when its desk permits it, and its desk only when
 -- its party permits it.
 create or replace function ores_refdata_book_product_types_approval_fn()

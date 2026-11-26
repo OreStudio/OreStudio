@@ -49,6 +49,7 @@
 #include <cmath>
 #include <format>
 #include <map>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -3911,8 +3912,104 @@ domain::trade_generation_scope expected_candidates(domain::trade_generation_scop
     return scope;
 }
 
-domain::trade_population_plan
-plan_on_expected_market_data(const domain::trade_generation_scope& scope) {
+namespace {
+
+/// The approval a book of the scope carries, or nothing when the list names no set for it.
+const domain::book_approval* approval_of(std::span<const domain::book_approval> approvals,
+                                         const boost::uuids::uuid& book_id) {
+    const auto found =
+        std::ranges::find_if(approvals, [&](const auto& a) { return a.book_id == book_id; });
+    return found == approvals.end() ? nullptr : &*found;
+}
+
+/*
+ * Whether the book a slot lands in permits its product: an absent set constrains
+ * nothing, and a set that does not name the type permits no such product.
+ */
+bool permits(const domain::book_approval& approval, std::string_view trade_type_code) {
+    if (!approval.allowed_product_types)
+        return true;
+    return std::ranges::find(*approval.allowed_product_types, trade_type_code) !=
+           approval.allowed_product_types->end();
+}
+
+std::string joined(const std::vector<std::string>& codes) {
+    std::string out;
+    for (const auto& code : codes) {
+        if (!out.empty())
+            out += ", ";
+        out += code;
+    }
+    return out;
+}
+
+/*
+ * The config's types narrowed to those one book permits. A book constrains
+ * nothing when it states no set, which is what a tenant that states no approval
+ * matrix means.
+ */
+std::vector<std::string> types_the_book_permits(const std::vector<std::string>& stated,
+                                                std::span<const domain::book_approval> approvals,
+                                                const boost::uuids::uuid& book_id) {
+    const auto* approval = approval_of(approvals, book_id);
+    if (!approval)
+        throw trade_population_error("Book " + boost::uuids::to_string(book_id) +
+                                     " is in the config's scope and no approval was read for it.");
+    if (!approval->allowed_product_types)
+        return stated;
+
+    std::vector<std::string> permitted;
+    for (const auto& code : stated)
+        if (permits(*approval, code))
+            permitted.push_back(code);
+    return permitted;
+}
+
+/*
+ * The class's types the config books, in the class's own order. A config that
+ * states none books every type of its class; a stated type the class does not
+ * book is refused, because the population would otherwise leave it out without a
+ * word.
+ */
+std::vector<std::string> stated_codes(const std::vector<std::string>& class_codes,
+                                      const domain::trade_generation_scope& scope) {
+    for (const auto& code : scope.trade_type_codes) {
+        if (std::ranges::find(class_codes, code) == class_codes.end())
+            throw trade_population_error("The config states trade type '" + code +
+                                         "', which its asset class does not book.");
+    }
+    std::vector<std::string> stated;
+    for (const auto& code : class_codes)
+        if (scope.trade_type_codes.empty() ||
+            std::ranges::find(scope.trade_type_codes, code) != scope.trade_type_codes.end())
+            stated.push_back(code);
+    return stated;
+}
+
+}
+
+void refuse_products_the_books_do_not_permit(const domain::trade_population_plan& plan,
+                                             std::span<const domain::book_approval> approvals) {
+    for (const auto& slot : plan.slots) {
+        const auto* approval = approval_of(approvals, slot.book_id);
+        if (approval && permits(*approval, slot.trade_type_code))
+            continue;
+        throw trade_population_error("Book " + boost::uuids::to_string(slot.book_id) +
+                                     " may not carry product type " + slot.trade_type_code +
+                                     ": its approval matrix permits " +
+                                     (approval && approval->allowed_product_types &&
+                                              !approval->allowed_product_types->empty() ?
+                                          joined(*approval->allowed_product_types) :
+                                          std::string("nothing")) +
+                                     ".");
+    }
+}
+
+/*
+ * The population one book's scope states. The planner is asked once per book,
+ * because a book states its own approval and the answer is therefore the book's.
+ */
+domain::trade_population_plan plan_for_scope(const domain::trade_generation_scope& scope) {
     const auto& planner = planner_for(scope.asset_class_code);
     const auto candidates = expected_candidates(scope);
 
@@ -3968,4 +4065,58 @@ plan_on_expected_market_data(const domain::trade_generation_scope& scope) {
     return plan;
 }
 
+domain::trade_population_plan
+plan_on_expected_market_data(const domain::trade_generation_scope& scope,
+                             std::span<const domain::book_approval> approvals) {
+    const auto& planner = planner_for(scope.asset_class_code);
+    const auto stated = stated_codes(planner.codes(), scope);
+
+    domain::trade_population_plan plan;
+    plan.config_id = scope.config_id;
+    plan.party_id = scope.party_id;
+    plan.as_of_date = scope.as_of_date;
+
+    /*
+     * The reasons a type plans nothing are the probes' own, per book. A type that
+     * some book plans is planned, so only a type that plans nowhere keeps a
+     * reason: the count says whether the reason is the whole story.
+     */
+    std::map<std::string, std::string> refusal_of;
+    std::map<std::string, std::uint32_t> planned_of;
+
+    for (const auto& book_id : scope.book_ids) {
+        auto book_scope = scope;
+        book_scope.book_ids = {book_id};
+        book_scope.trade_type_codes = types_the_book_permits(stated, approvals, book_id);
+
+        /*
+         * A book that permits none of the config's types books nothing, because a
+         * population must not widen a matrix to fill a book. The types it keeps
+         * out are reported with the matrix as their reason, below.
+         */
+        if (book_scope.trade_type_codes.empty())
+            continue;
+
+        auto book_plan = plan_for_scope(book_scope);
+        for (const auto& outcome : book_plan.type_outcomes) {
+            planned_of[outcome.trade_type_code] += outcome.planned;
+            if (!outcome.reason.empty() && !refusal_of.contains(outcome.trade_type_code))
+                refusal_of.emplace(outcome.trade_type_code, outcome.reason);
+        }
+        for (auto& slot : book_plan.slots)
+            plan.slots.push_back(std::move(slot));
+    }
+
+    for (const auto& code : stated) {
+        const auto planned = planned_of.contains(code) ? planned_of.at(code) : 0u;
+        auto reason = refusal_of.contains(code) ? refusal_of.at(code) : std::string{};
+        if (planned == 0 && reason.empty())
+            reason = "no book of the config permits the product type";
+        plan.type_outcomes.push_back(
+            {.trade_type_code = code, .planned = planned, .reason = std::move(reason)});
+    }
+
+    refuse_products_the_books_do_not_permit(plan, approvals);
+    return plan;
+}
 }

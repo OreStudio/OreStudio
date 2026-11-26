@@ -10,7 +10,11 @@
     "book_status": "Active",
     "regulatory_book_type": "Banking",
     "is_sweepable": false,
-    "rates_centre_code": "GBLO"
+    "rates_centre_code": "GBLO",
+    "product_types": [
+      "BondPosition",
+      "CashPosition"
+    ]
   },
   {
     "company_code": "acme_group",
@@ -23,7 +27,13 @@
     "book_status": "Active",
     "regulatory_book_type": "Banking",
     "is_sweepable": false,
-    "rates_centre_code": "GBLO"
+    "rates_centre_code": "GBLO",
+    "product_types": [
+      "CrossCurrencySwap",
+      "FxForward",
+      "FxOption",
+      "FxSwap"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -37,7 +47,14 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "GBLO",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "CapFloor",
+      "CrossCurrencySwap",
+      "ForwardRateAgreement",
+      "Swap",
+      "Swaption"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -51,7 +68,13 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "GBLO",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "CapFloor",
+      "RateDigitalOption",
+      "Swaption",
+      "SwaptionStraddle"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -65,7 +88,11 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "GBLO",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "InflationSwap",
+      "Swap"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -79,7 +106,14 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "FRPA",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "CapFloor",
+      "CrossCurrencySwap",
+      "ForwardRateAgreement",
+      "Swap",
+      "Swaption"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -93,7 +127,15 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "FRPA",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "Ascot",
+      "CallableSwap",
+      "FlexiSwap",
+      "KnockOutSwap",
+      "PerformanceOption_01",
+      "RiskParticipationAgreement"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -107,7 +149,14 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "USNY",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "CapFloor",
+      "CrossCurrencySwap",
+      "ForwardRateAgreement",
+      "Swap",
+      "Swaption"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -121,7 +170,13 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "USNY",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "CapFloor",
+      "RateDigitalOption",
+      "Swaption",
+      "SwaptionStraddle"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -135,7 +190,14 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "CHZU",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "CapFloor",
+      "CrossCurrencySwap",
+      "ForwardRateAgreement",
+      "Swap",
+      "Swaption"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -149,7 +211,16 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "GBLO",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "CBO",
+      "CreditDefaultSwap",
+      "CreditDefaultSwapOption",
+      "CreditLinkedSwap",
+      "IndexCreditDefaultSwap",
+      "IndexCreditDefaultSwapOption",
+      "SyntheticCDO"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -163,7 +234,15 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "GBLO",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "CreditDefaultSwap",
+      "CreditDefaultSwapOption",
+      "CreditLinkedSwap",
+      "IndexCreditDefaultSwap",
+      "IndexCreditDefaultSwapOption",
+      "SyntheticCDO"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -177,7 +256,12 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "GBLO",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "FxAverageForward",
+      "FxForward",
+      "FxSwap"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -191,7 +275,32 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "GBLO",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "FxAccumulator",
+      "FxAsianOption",
+      "FxBarrierOption",
+      "FxBasketOption",
+      "FxBasketVarianceSwap",
+      "FxBestEntryOption",
+      "FxDigitalBarrierOption",
+      "FxDigitalOption",
+      "FxDoubleBarrierOption",
+      "FxDoubleTouchOption",
+      "FxEuropeanBarrierOption",
+      "FxForwardVolatilityAgreement",
+      "FxGenericBarrierOption",
+      "FxKIKOBarrierOption",
+      "FxOption",
+      "FxPairwiseVarianceSwap",
+      "FxRainbowOption",
+      "FxStrikeResettableOption",
+      "FxTaRF",
+      "FxTouchOption",
+      "FxVarianceSwap",
+      "FxWindowBarrierOption",
+      "FxWorstOfBasketSwap"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -205,7 +314,12 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "GBLO",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "FxAverageForward",
+      "FxForward",
+      "FxSwap"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -219,7 +333,32 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "GBLO",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "FxAccumulator",
+      "FxAsianOption",
+      "FxBarrierOption",
+      "FxBasketOption",
+      "FxBasketVarianceSwap",
+      "FxBestEntryOption",
+      "FxDigitalBarrierOption",
+      "FxDigitalOption",
+      "FxDoubleBarrierOption",
+      "FxDoubleTouchOption",
+      "FxEuropeanBarrierOption",
+      "FxForwardVolatilityAgreement",
+      "FxGenericBarrierOption",
+      "FxKIKOBarrierOption",
+      "FxOption",
+      "FxPairwiseVarianceSwap",
+      "FxRainbowOption",
+      "FxStrikeResettableOption",
+      "FxTaRF",
+      "FxTouchOption",
+      "FxVarianceSwap",
+      "FxWindowBarrierOption",
+      "FxWorstOfBasketSwap"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -233,7 +372,12 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "GBLO",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "FxAverageForward",
+      "FxForward",
+      "FxSwap"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -247,7 +391,12 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "GBLO",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "FxAverageForward",
+      "FxForward",
+      "FxSwap"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -261,7 +410,12 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "GBLO",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "FxAverageForward",
+      "FxForward",
+      "FxSwap"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -275,7 +429,40 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "GBLO",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "EquityAccumulator",
+      "EquityAsianOption",
+      "EquityAutoDeltaHedgedOption",
+      "EquityBarrierOption",
+      "EquityBasketOption",
+      "EquityBasketVarianceSwap",
+      "EquityBestEntryOption",
+      "EquityCliquetOption",
+      "EquityDigitalOption",
+      "EquityDoubleBarrierOption",
+      "EquityDoubleTouchOption",
+      "EquityEuropeanBarrierOption",
+      "EquityForward",
+      "EquityForwardVolatilityAgreement",
+      "EquityFutureOption",
+      "EquityGenericBarrierOption",
+      "EquityOption",
+      "EquityOptionPosition",
+      "EquityOutperformanceOption",
+      "EquityPairwiseVarianceSwap",
+      "EquityPosition",
+      "EquityRainbowOption",
+      "EquityStrikeResettableOption",
+      "EquitySwap",
+      "EquityTaRF",
+      "EquityTouchOption",
+      "EquityVarianceSwap",
+      "EquityWindowBarrierOption",
+      "EquityWorstOfBasketSwap",
+      "EuropeanOptionBarrier",
+      "TotalReturnSwap"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -289,7 +476,34 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "GBLO",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "CommodityAccumulator",
+      "CommodityAsianOption",
+      "CommodityAveragePriceOption",
+      "CommodityBasketOption",
+      "CommodityBasketVarianceSwap",
+      "CommodityBestEntryOption",
+      "CommodityDigitalAveragePriceOption",
+      "CommodityDigitalOption",
+      "CommodityForward",
+      "CommodityForwardVolatilityAgreement",
+      "CommodityGenericBarrierOption",
+      "CommodityOption",
+      "CommodityOptionStrip",
+      "CommodityPairwiseVarianceSwap",
+      "CommodityPosition",
+      "CommodityRainbowOption",
+      "CommoditySpreadOption",
+      "CommodityStrikeResettableOption",
+      "CommoditySwap",
+      "CommoditySwaption",
+      "CommodityTaRF",
+      "CommodityVarianceSwap",
+      "CommodityWindowBarrierOption",
+      "CommodityWorstOfBasketSwap",
+      "IntradayPowerForward"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -303,7 +517,16 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "GBLO",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "Autocallable_01",
+      "BalanceGuaranteedSwap",
+      "CompositeTrade",
+      "ContractForDifference",
+      "DoubleDigitalOption",
+      "PerformanceOption_01",
+      "ScriptedTrade"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -317,7 +540,15 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "GBLO",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "CreditDefaultSwap",
+      "CrossCurrencySwap",
+      "FxForward",
+      "FxSwap",
+      "IndexCreditDefaultSwap",
+      "Swap"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -331,7 +562,20 @@
     "regulatory_book_type": "Banking",
     "is_sweepable": false,
     "rates_centre_code": "GBLO",
-    "book_purpose_type": "Funding"
+    "book_purpose_type": "Funding",
+    "product_types": [
+      "Bond",
+      "BondFuture",
+      "BondFutureOption",
+      "BondOption",
+      "BondPosition",
+      "BondRepo",
+      "BondTRS",
+      "CallableBond",
+      "CashPosition",
+      "ConvertibleBond",
+      "ForwardBond"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -345,7 +589,10 @@
     "regulatory_book_type": "Banking",
     "is_sweepable": true,
     "rates_centre_code": "GBLO",
-    "book_purpose_type": "SweepTarget"
+    "book_purpose_type": "SweepTarget",
+    "product_types": [
+      "CashPosition"
+    ]
   },
   {
     "company_code": "acme_uk",
@@ -359,7 +606,10 @@
     "regulatory_book_type": "Banking",
     "is_sweepable": true,
     "rates_centre_code": "USNY",
-    "book_purpose_type": "SweepTarget"
+    "book_purpose_type": "SweepTarget",
+    "product_types": [
+      "CashPosition"
+    ]
   },
   {
     "company_code": "acme_us",
@@ -373,7 +623,14 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "USNY",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "CapFloor",
+      "CrossCurrencySwap",
+      "ForwardRateAgreement",
+      "Swap",
+      "Swaption"
+    ]
   },
   {
     "company_code": "acme_us",
@@ -387,7 +644,14 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "CATO",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "CapFloor",
+      "CrossCurrencySwap",
+      "ForwardRateAgreement",
+      "Swap",
+      "Swaption"
+    ]
   },
   {
     "company_code": "acme_us",
@@ -401,7 +665,15 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "USNY",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "CreditDefaultSwap",
+      "CreditDefaultSwapOption",
+      "CreditLinkedSwap",
+      "IndexCreditDefaultSwap",
+      "IndexCreditDefaultSwapOption",
+      "SyntheticCDO"
+    ]
   },
   {
     "company_code": "acme_us",
@@ -415,7 +687,12 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "USNY",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "FxAverageForward",
+      "FxForward",
+      "FxSwap"
+    ]
   },
   {
     "company_code": "acme_us",
@@ -429,7 +706,12 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "USNY",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "FxAverageForward",
+      "FxForward",
+      "FxSwap"
+    ]
   },
   {
     "company_code": "acme_us",
@@ -443,7 +725,12 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "USNY",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "FxAverageForward",
+      "FxForward",
+      "FxSwap"
+    ]
   },
   {
     "company_code": "acme_us",
@@ -457,7 +744,20 @@
     "regulatory_book_type": "Banking",
     "is_sweepable": false,
     "rates_centre_code": "USNY",
-    "book_purpose_type": "Funding"
+    "book_purpose_type": "Funding",
+    "product_types": [
+      "Bond",
+      "BondFuture",
+      "BondFutureOption",
+      "BondOption",
+      "BondPosition",
+      "BondRepo",
+      "BondTRS",
+      "CallableBond",
+      "CashPosition",
+      "ConvertibleBond",
+      "ForwardBond"
+    ]
   },
   {
     "company_code": "acme_us",
@@ -471,7 +771,10 @@
     "regulatory_book_type": "Banking",
     "is_sweepable": true,
     "rates_centre_code": "USNY",
-    "book_purpose_type": "SweepTarget"
+    "book_purpose_type": "SweepTarget",
+    "product_types": [
+      "CashPosition"
+    ]
   },
   {
     "company_code": "acme_hk",
@@ -485,7 +788,14 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "JPTO",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "CapFloor",
+      "CrossCurrencySwap",
+      "ForwardRateAgreement",
+      "Swap",
+      "Swaption"
+    ]
   },
   {
     "company_code": "acme_hk",
@@ -499,7 +809,14 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "HKHK",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "CapFloor",
+      "CrossCurrencySwap",
+      "ForwardRateAgreement",
+      "Swap",
+      "Swaption"
+    ]
   },
   {
     "company_code": "acme_hk",
@@ -513,7 +830,15 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "HKHK",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "CreditDefaultSwap",
+      "CreditDefaultSwapOption",
+      "CreditLinkedSwap",
+      "IndexCreditDefaultSwap",
+      "IndexCreditDefaultSwapOption",
+      "SyntheticCDO"
+    ]
   },
   {
     "company_code": "acme_hk",
@@ -527,7 +852,12 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "HKHK",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "FxAverageForward",
+      "FxForward",
+      "FxSwap"
+    ]
   },
   {
     "company_code": "acme_hk",
@@ -541,7 +871,12 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "HKHK",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "FxAverageForward",
+      "FxForward",
+      "FxSwap"
+    ]
   },
   {
     "company_code": "acme_hk",
@@ -555,7 +890,12 @@
     "regulatory_book_type": "Trading",
     "is_sweepable": false,
     "rates_centre_code": "HKHK",
-    "book_purpose_type": "Trading"
+    "book_purpose_type": "Trading",
+    "product_types": [
+      "FxAverageForward",
+      "FxForward",
+      "FxSwap"
+    ]
   },
   {
     "company_code": "acme_hk",
@@ -569,7 +909,20 @@
     "regulatory_book_type": "Banking",
     "is_sweepable": false,
     "rates_centre_code": "HKHK",
-    "book_purpose_type": "Funding"
+    "book_purpose_type": "Funding",
+    "product_types": [
+      "Bond",
+      "BondFuture",
+      "BondFutureOption",
+      "BondOption",
+      "BondPosition",
+      "BondRepo",
+      "BondTRS",
+      "CallableBond",
+      "CashPosition",
+      "ConvertibleBond",
+      "ForwardBond"
+    ]
   },
   {
     "company_code": "acme_hk",
@@ -583,6 +936,9 @@
     "regulatory_book_type": "Banking",
     "is_sweepable": true,
     "rates_centre_code": "HKHK",
-    "book_purpose_type": "SweepTarget"
+    "book_purpose_type": "SweepTarget",
+    "product_types": [
+      "CashPosition"
+    ]
   }
 ]

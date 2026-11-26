@@ -81,6 +81,9 @@ public:
     [[nodiscard]] domain::trade_generation_scope
     resolve_scope(const boost::uuids::uuid& config_id) override;
 
+    [[nodiscard]] std::vector<domain::book_approval>
+    book_approvals(const std::vector<boost::uuids::uuid>& book_ids) override;
+
     [[nodiscard]] std::optional<trade_population_stored>
     read_trade(const boost::uuids::uuid& trade_id) override;
 

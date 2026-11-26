@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: B08524D0-B321-462B-AA0D-2ACD74A9C436
+:ores.cpp.scaffold.enabled: true
+:END:
+#+title: ores.vault.client
+#+description: The consumer's facade: sealed writes and resolves over NATS.
+#+type: ores.codegen.component
+#+level: cross
+#+filetags: :vault:client:component:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+name: vault.client
+#+full_name: ores.vault.client
+#+brief: Vault client facade
+
+* Diagram
+
+#+attr_html: :width 100% :alt ores.vault.client component diagram
+#+caption: ores.vault.client
+[[file:ores.vault.client.png][file:ores.vault.client.png]]
+
+* Summary
+
+The consumer's side. It seals a write to the vault's transport key, and it
+opens a resolve with the consumer's own private key, so a service asks for a
+secret without linking the vault's logic or the key encryption key.
+
+* Inputs
+
+- The vault's transport public key, which is not a secret.
+- The consumer's own private key, from its system credential.
+- A name, a plaintext to write, and the tenant.
+
+* Outputs
+
+- The plaintext of a resolved secret, in memory.
+- The metadata of a secret, and the acknowledgement of a write.
+
+* Entry points
+
+- =include/ores.vault.client/domain/stub.hpp= — the placeholder the generated
+  baseline carries.
+- The facade that seals a write and opens a resolve arrives with the serve task.
+
+* Dependencies
+
+- =ores.nats= — the request and reply.
+- =ores.security= — =sealed_box=, to seal a write and open a resolve.
+- =ores.vault.api= — the types.
+
+* See also
+
+- [[id:4F28F755-7DA1-4EDD-9983-256622B6088A][Sealed Delivery of a Secret to Its
+  Consumer]] — what the facade carries out.

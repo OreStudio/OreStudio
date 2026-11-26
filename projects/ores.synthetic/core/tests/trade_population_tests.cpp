@@ -35,6 +35,7 @@
 #include <format>
 #include <map>
 #include <optional>
+#include <ranges>
 #include <set>
 #include <sstream>
 #include <string>
@@ -212,6 +213,19 @@ domain::trade_generation_scope fx_scope() {
     return scope;
 }
 
+/// The approvals a list of books carries when the tenant states no matrix: an absent set each.
+std::vector<domain::book_approval> no_matrix(const std::vector<boost::uuids::uuid>& book_ids) {
+    std::vector<domain::book_approval> approvals;
+    for (const auto& book_id : book_ids)
+        approvals.push_back(
+            domain::book_approval{.book_id = book_id, .allowed_product_types = std::nullopt});
+    return approvals;
+}
+
+std::vector<domain::book_approval> no_matrix(const domain::trade_generation_scope& scope) {
+    return no_matrix(scope.book_ids);
+}
+
 /**
  * @brief A writer that holds the trades a run booked, in a map.
  *
@@ -230,6 +244,11 @@ struct recording_writer final : trade_population_writer {
 
     domain::trade_generation_scope resolve_scope(const boost::uuids::uuid&) override {
         return scope;
+    }
+
+    std::vector<domain::book_approval>
+    book_approvals(const std::vector<boost::uuids::uuid>& book_ids) override {
+        return no_matrix(book_ids);
     }
 
     std::optional<trade_population_stored> read_trade(const boost::uuids::uuid& id) override {
@@ -2636,7 +2655,7 @@ TEST_CASE("a_pair_the_party_does_not_expect_leaves_the_draw_and_its_types_say_wh
     REQUIRE(candidates.currency_pairs.size() == 1);
     CHECK(candidates.currency_pairs.front().base == "EUR");
 
-    const auto plan = plan_on_expected_market_data(scope);
+    const auto plan = plan_on_expected_market_data(scope, no_matrix(scope));
 
     std::uint32_t planned = 0;
     std::size_t refused = 0;
@@ -2660,7 +2679,7 @@ TEST_CASE("a_pair_the_party_does_not_expect_leaves_the_draw_and_its_types_say_wh
 TEST_CASE("a_config_whose_types_have_no_candidate_plans_no_trade", "[trade_population]") {
     using namespace ores::synthetic::service;
     auto scope = fx_scope();
-    const auto plan = plan_on_expected_market_data(scope);
+    const auto plan = plan_on_expected_market_data(scope, no_matrix(scope));
     CHECK(plan.slots.empty());
     REQUIRE_FALSE(plan.type_outcomes.empty());
     for (const auto& outcome : plan.type_outcomes) {
@@ -2672,8 +2691,103 @@ TEST_CASE("a_config_whose_types_have_no_candidate_plans_no_trade", "[trade_popul
 TEST_CASE("a_type_the_party_expects_nothing_for_says_so_rather_than_that_the_tenant_holds_none",
           "[trade_population]") {
     using namespace ores::synthetic::service;
-    const auto plan = plan_on_expected_market_data(fx_scope());
+    const auto plan = plan_on_expected_market_data(fx_scope(), no_matrix(fx_scope()));
     REQUIRE_FALSE(plan.type_outcomes.empty());
     for (const auto& outcome : plan.type_outcomes)
         CHECK(outcome.reason.find("the party expects none") != std::string::npos);
+}
+
+namespace {
+
+/// The approvals two books carry when the first permits only @p codes and the second every type.
+std::vector<domain::book_approval> narrow_matrix(const domain::trade_generation_scope& scope,
+                                                 std::vector<std::string> codes) {
+    auto approvals = no_matrix(scope);
+    approvals.front().allowed_product_types = std::move(codes);
+    return approvals;
+}
+
+}
+
+TEST_CASE("a_book_carries_only_the_products_its_matrix_permits", "[trade_population]") {
+    using namespace ores::synthetic::service;
+    const auto scope = bond_scope();
+    const std::vector<std::string> permitted{"Bond", "CallableBond"};
+    const auto approvals = narrow_matrix(scope, permitted);
+
+    const auto plan = plan_on_expected_market_data(scope, approvals);
+
+    std::uint32_t in_the_narrow_book = 0;
+    std::set<std::string> other_book_types;
+    for (const auto& slot : plan.slots) {
+        if (slot.book_id == scope.book_ids.front()) {
+            ++in_the_narrow_book;
+            CHECK(std::ranges::find(permitted, slot.trade_type_code) != permitted.end());
+        } else {
+            other_book_types.insert(slot.trade_type_code);
+        }
+    }
+    // A book permitted two products still holds its trades per book, drawn from those two.
+    CHECK(in_the_narrow_book == scope.trades_per_book);
+    // The narrowing is the book's: a book whose set says nothing still draws every type.
+    CHECK(other_book_types.size() > permitted.size());
+
+    std::uint32_t planned = 0;
+    for (const auto& outcome : plan.type_outcomes)
+        planned += outcome.planned;
+    CHECK(planned == plan.slots.size());
+}
+
+TEST_CASE("a_type_no_book_of_the_config_permits_names_the_matrix_and_not_the_market",
+          "[trade_population]") {
+    using namespace ores::synthetic::service;
+    const auto scope = bond_scope();
+    auto approvals = no_matrix(scope);
+    for (auto& approval : approvals)
+        approval.allowed_product_types = std::vector<std::string>{"Bond"};
+
+    const auto plan = plan_on_expected_market_data(scope, approvals);
+
+    // Every book permits one product, so the population is that product and nothing else.
+    REQUIRE_FALSE(plan.slots.empty());
+    for (const auto& slot : plan.slots)
+        CHECK(slot.trade_type_code == "Bond");
+
+    for (const auto& outcome : plan.type_outcomes)
+        if (outcome.trade_type_code != "Bond") {
+            CHECK(outcome.planned == 0);
+            CHECK(outcome.reason.find("no book of the config permits") != std::string::npos);
+        }
+}
+
+TEST_CASE("a_plan_is_refused_when_a_trade_names_a_product_its_book_does_not_permit",
+          "[trade_population]") {
+    using namespace ores::synthetic::service;
+    const auto scope = bond_scope();
+    const auto plan = plan_on_expected_market_data(scope, no_matrix(scope));
+    REQUIRE_FALSE(plan.slots.empty());
+
+    /*
+     * The population the planner made is one its own books accept, so the check
+     * passes on it; a matrix that permits none of the planned products is the
+     * drift the check exists to refuse.
+     */
+    CHECK_NOTHROW(refuse_products_the_books_do_not_permit(plan, no_matrix(scope)));
+
+    auto shut = no_matrix(scope);
+    for (auto& approval : shut)
+        approval.allowed_product_types = std::vector<std::string>{"InflationSwap"};
+
+    CHECK_THROWS_AS(refuse_products_the_books_do_not_permit(plan, shut), trade_population_error);
+}
+
+TEST_CASE("a_book_that_permits_none_of_a_configs_types_books_nothing", "[trade_population]") {
+    using namespace ores::synthetic::service;
+    const auto scope = bond_scope();
+    const auto plan = plan_on_expected_market_data(scope, narrow_matrix(scope, {}));
+
+    // The narrow book books nothing, and the other book is not shrunk to fill it.
+    CHECK(plan.slots.size() == scope.trades_per_book);
+    for (const auto& slot : plan.slots)
+        CHECK(slot.book_id == scope.book_ids.back());
 }

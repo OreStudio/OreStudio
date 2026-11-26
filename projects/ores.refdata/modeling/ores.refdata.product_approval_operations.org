@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 0B3339D3-2B1E-45B3-A77C-9927A1FF6D18
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.refdata.product_approval_operations
+#+description: Codegen operation model for reading the product types a book permits, resolved through the book, its desk and its party.
+#+type: ores.codegen.operation
+#+component: refdata
+#+subcomponent: api
+#+entity_singular: product_approval_operations
+#+namespace: ores::refdata::messaging
+#+brief: Read the product types a book permits.
+#+filetags: :model:operation:refdata:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+The chain a book's approval is stated by has three levels, and one function
+resolves them: =ores_refdata_book_allowed_product_types_fn=. A caller that has to
+know what a book permits must not read the three junction tables and resolve them
+itself, because two statements of one rule drift apart. It asks this operation
+instead, and the answer is the resolution's own.
+
+The callers are the ones that choose before they write. The synthetic trade
+generator is the first: it reads each book's set to choose the products it books
+there, so the matrix constrains the population rather than being discovered when
+a booking is refused.
+
+The handler is hand-written beside this model, because the answer is a table
+function rather than a row of an entity.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/domain/protocol.hpp"
+#include <optional>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** book_product_approval
+
+#+begin_src cpp :name comment
+/**
+ * @brief The product types one book permits, as the chain resolves them.
+ *
+ * The set is absent when the book, its desk and its party all restrict nothing,
+ * because no level then names a type the catalogue does not: every type is
+ * permitted. The set is empty when a level restricts and names nothing, which
+ * permits none. A caller that folded the two together would read an open book
+ * and a shut one alike.
+ */
+#+end_src
+
+*** book_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+*** allowed_product_types
+:PROPERTIES:
+:cpp_type: std::optional<std::vector<std::string>>
+:END:
+
+** get_book_product_approvals_request
+:PROPERTIES:
+:subject:  refdata.v1.ops.get_book_product_approvals
+:response: get_book_product_approvals_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the resolved set of each book the request names.
+ *
+ * A book of another tenant is a row the caller cannot see through RLS, and the
+ * resolution answers an empty set for it, so a caller reads it as permitting
+ * nothing rather than permitting everything.
+ */
+#+end_src
+
+*** book_ids
+:PROPERTIES:
+:cpp_type: std::vector<boost::uuids::uuid>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The books to resolve, in the order the answer states them.
+ */
+#+end_src
+
+** get_book_product_approvals_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** approvals
+:PROPERTIES:
+:cpp_type: std::vector<book_product_approval>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One entry per distinct book named, in the order the request first named
+ * them.
+ *
+ * A book the request repeats answers once, because the answer is the book's and
+ * not the request's. A book that is not the tenant's resolves to the empty set,
+ * which is the resolution's answer for a row the caller cannot see.
+ */
+#+end_src

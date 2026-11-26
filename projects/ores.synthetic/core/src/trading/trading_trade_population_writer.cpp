@@ -42,6 +42,7 @@
 #include "ores.refdata.api/messaging/netting_set_protocol.hpp"
 #include "ores.refdata.api/messaging/ois_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/overnight_index_convention_protocol.hpp"
+#include "ores.refdata.api/messaging/product_approval_operations_protocol.hpp"
 #include "ores.refdata.api/messaging/swap_convention_protocol.hpp"
 #include "ores.refdata.api/messaging/yield_curve_config_protocol.hpp"
 #include "ores.synthetic.api/feeds/expected_market_data.hpp"
@@ -134,6 +135,27 @@ void state_reason(Row& row) {
     }
 }
 
+/*
+ * One read over the authenticated session, for every reference a run resolves.
+ * A refusal names the subject, because the caller's next move is to ask why the
+ * tenant's own data is not readable rather than to change the config.
+ */
+template <typename Request>
+typename Request::response_type read_from(ores::nats::service::nats_client& nats,
+                                          const ores::nats::wire_codec& codec,
+                                          const Request& request) {
+    const auto reply = nats.authenticated_request(Request::nats_subject, codec.encode(request));
+    const auto error = reply.headers.find("X-Error");
+    if (error != reply.headers.end())
+        throw trade_population_write_error(
+            std::format("{} was refused: {}", Request::nats_subject, error->second));
+    auto decoded = codec.decode<typename Request::response_type>(reply.data);
+    if (!decoded)
+        throw trade_population_write_error(std::format(
+            "{} answered something unreadable: {}", Request::nats_subject, decoded.error().what()));
+    return *decoded;
+}
+
 }
 
 trading_trade_population_writer::trading_trade_population_writer(
@@ -144,28 +166,28 @@ trading_trade_population_writer::trading_trade_population_writer(
     , booker_(std::move(booker))
     , fallback_(std::move(fallback)) {}
 
+std::vector<domain::book_approval>
+trading_trade_population_writer::book_approvals(const std::vector<boost::uuids::uuid>& book_ids) {
+    if (book_ids.empty())
+        return {};
+
+    ores::refdata::messaging::get_book_product_approvals_request request;
+    request.book_ids = book_ids;
+    const auto answer = read_from(nats_, ores::nats::default_wire_codec(), request);
+
+    std::vector<domain::book_approval> approvals;
+    approvals.reserve(answer.approvals.size());
+    for (const auto& approval : answer.approvals)
+        approvals.push_back(domain::book_approval{
+            .book_id = approval.book_id, .allowed_product_types = approval.allowed_product_types});
+    return approvals;
+}
+
 domain::trade_generation_scope
 trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_id) {
     const auto& codec = ores::nats::default_wire_codec();
-    /*
-     * One read helper for every reference this run resolves. A refusal names
-     * the subject, because the caller's next move is to ask why the tenant's
-     * own data is not readable rather than to change the config.
-     */
     const auto read = [&](const auto& request) {
-        using request_type = std::decay_t<decltype(request)>;
-        const auto reply =
-            nats_.authenticated_request(request_type::nats_subject, codec.encode(request));
-        const auto error = reply.headers.find("X-Error");
-        if (error != reply.headers.end())
-            throw trade_population_write_error(
-                std::format("{} was refused: {}", request_type::nats_subject, error->second));
-        auto decoded = codec.decode<typename request_type::response_type>(reply.data);
-        if (!decoded)
-            throw trade_population_write_error(std::format("{} answered something unreadable: {}",
-                                                           request_type::nats_subject,
-                                                           decoded.error().what()));
-        return *decoded;
+        return read_from(nats_, codec, request);
     };
 
     namespace synthetic = ores::synthetic::messaging;

@@ -1,0 +1,197 @@
+:PROPERTIES:
+:ID: 98B94056-0C78-4CC4-A0AC-1880BAB65FFD
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.vault.consumer
+#+description: Codegen entity model for the vault consumers table: the identity a token presents and the public key the vault seals to.
+#+type: ores.codegen.entity
+#+component: vault
+#+filetags: :model:entity:vault:consumers:
+#+entity_singular: consumer
+#+entity_plural: consumers
+#+entity_title: Consumer
+#+brief: A service the vault seals its answers to.
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+A consumer of the vault: the identity a service's token carries, and the public
+half of the key pair that service holds. The vault never takes a key from a
+request. It reads the subject out of the verified token, finds the row that
+names it, and seals the answer to the public key held here.
+
+The private half is never in this table, never in the database and never in the
+tree. It is a system credential of the consumer's unit, provisioned with the
+deployment, so a copy of this table discloses nothing that can open an answer.
+
+Two invariants decide the shape. A consumer registers once by its =name=, the
+subject its token presents, which is the natural key: two rows for one subject
+would give one service two keys, and the vault would have to choose. And a row
+with no public key cannot be sealed to, so a consumer that has not been
+provisioned is a consumer that receives nothing.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: vault
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:            uuid
+:cpp_type:        boost::uuids::uuid
+:primary_key:     true
+:skip_uuid_check: true
+:END:
+
+The consumer's surrogate key. Nothing addresses a consumer by it; the subject is
+what the token carries and what the vault looks up.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:sortable:     true
+:searchable:   true
+:END:
+
+The subject the consumer's token presents, such as =ores.http=, unique within
+the tenant. It is the identity the service runner authenticates, and the only
+thing the vault uses to find the key an answer is sealed to.
+
+#+begin_src cpp :name generator
+std::string("ores.http")
+#+end_src
+
+** public_key
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:END:
+
+The Base64 of the consumer's 32-byte X25519 public key. It is not a secret: it
+is the half the vault needs in order to seal, and it is useless without the
+private half held by the consumer's unit.
+
+#+begin_src cpp :name generator
+std::string("tw+/9+zJr9z55w001kE3JIKMVsxyInWcHcPlyHtFmyBG=")
+#+end_src
+
+** is_enabled
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  true
+:END:
+
+Whether the vault seals to this consumer at all. A disabled row keeps its key
+and its history and refuses every resolve, which is how a consumer is withdrawn
+without deleting what it asked for.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+What the consumer is, in a person's words, such as =The gateway=. Nothing reads
+it but a person.
+
+#+begin_src cpp :name generator
+std::string("The gateway")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:              ores_vault_consumers_tbl
+:rls_tenant_isolation:   true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: consumer
+:entity_plural_short:   consumers
+:entity_singular_words: consumer
+:entity_plural_words:   consumers
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: vc
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| name        | Name        |
+| description | About       |
+| is_enabled  | Enabled     |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name: consumers
+:key_field:       name
+:END:
+
+A consumer is addressed by its =name=, the subject its token presents.
+
+*** Detail fields
+
+| field       | label  | widget      | type      | is_key | is_required | placeholder      |
+|-------------+--------+-------------+-----------+--------+-------------+------------------|
+| name        | Name   | nameEdit    | line_edit | true   | true        | Enter a subject  |
+| description | About  | aboutEdit   | line_edit |        |             | What it is       |
+
+*** Columns
+
+| enum_name   | field       | header  | type    | width |
+|-------------+-------------+---------+---------+-------|
+| Name        | name        | Name    | string  | 240   |
+| IsEnabled   | is_enabled  | Enabled | boolean | 80    |
+
+** Paste blocks
+
+* See also
+
+- [[id:568A6F6A-A261-4CA1-A5D9-9D5DBCF0209A][ores.vault]] — component group overview.
+- [[id:FB84131B-BAC5-4E4B-BA4E-0ED8F0D24609][ores.vault.secret]] — the sealed value this consumer's key opens.
+- [[id:4F28F755-7DA1-4EDD-9983-256622B6088A][Sealed Delivery of a Secret to Its Consumer]] — why the key is looked up by subject.

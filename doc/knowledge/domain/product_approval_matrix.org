@@ -108,12 +108,12 @@ none. That keeps the reference data from reading the trades.
 ** Where the sets come from
 
 A provisioned tenant states its sets as data quality data, beside the records it
-stages: the book's set is a junction artefact of the books dataset, the desk's
-sits beside the business units, and the entity's is taken as the union of its
-desks when the population is published. The affinity a book's name implies —
-cable options in the book that trades cable — is stated once, in the dataset, and
-read both by the published set and by the generator that fills the book, so the
-two cannot drift.
+stages. The book's set is a junction artefact of the books dataset, and it is the
+only level curated: the publish states a desk's set as the union of its books' and
+the entity's as the union of its own books', which is the smallest set each level's
+children accept and keeps the affinity stated once. The affinity a book's name
+implies — cable options in the book that trades cable — is then read both by the
+published set and by the generator that fills the book, so the two cannot drift.
 
 * See also
 

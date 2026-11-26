@@ -418,6 +418,7 @@ set(files
     "portfolio_right_protocol_codec_roundtrip_tests.cpp"
     "producer_kind_codec_roundtrip_tests.cpp"
     "producer_kind_protocol_codec_roundtrip_tests.cpp"
+    "product_approval_operations_protocol_codec_roundtrip_tests.cpp"
     "product_family_code_codec_roundtrip_tests.cpp"
     "product_family_code_protocol_codec_roundtrip_tests.cpp"
     "publish_operation_protocol_codec_roundtrip_tests.cpp"

@@ -246,8 +246,11 @@ void fixing_series_routes::register_routes(
     registry->register_route(built);
 
     const auto listed =
-        router->get("/api/marketdata/fixings")
-            .catalogue("web_get_marketdata_fixings", "market-data", "fixings", false)
+        router->get("/api/marketdata/fixing-observations")
+            .catalogue("web_get_marketdata_fixing_observations",
+                       "market-data",
+                       "fixing_observations",
+                       false)
             .summary("Every FX and IR fixing series the store holds, as a screen lists them")
             .description("A composed view owned by ores.marketdata: one row for each fixing "
                          "series the store holds, with what it fixes, the source its values came "

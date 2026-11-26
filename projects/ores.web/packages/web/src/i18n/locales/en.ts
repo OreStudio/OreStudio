@@ -5667,13 +5667,15 @@ export const en: SourceCatalogue = {
         },
         fixingSeries: {
             title: 'Fixing series',
-            lead: 'The stored fixings of one item, the series they belong to, and the feeds that carried them.',
+            lead: 'Every fixing the store holds for this item, day by day, and the feeds that carried them.',
+            chart: 'The fixings of {item}',
             noUri: 'Open this page from an oresmd link, so it knows which item to show.',
             notStored: 'The store holds nothing for {uri}.',
             noValues: 'No fixing is stored for this item yet.',
             provenance: 'Feeds that carry this item',
             noFeeds: 'No feed names this item.',
             back: 'Back to market data',
+            backToObservations: 'Back to fixing observations',
             columns: {
                 provider: 'Publisher',
                 first: 'First fixing',

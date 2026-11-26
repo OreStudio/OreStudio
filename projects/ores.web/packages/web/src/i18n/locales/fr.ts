@@ -5747,13 +5747,15 @@ const fr: SourceCatalogue = {
         },
         fixingSeries: {
             title: 'Série de fixings',
-            lead: 'Les fixings stockés d’un instrument, la série à laquelle ils appartiennent et les flux qui les ont apportés.',
+            lead: 'Tous les fixings que le stock détient pour cet instrument, jour par jour, et les flux qui les ont apportés.',
+            chart: 'Les fixings de {item}',
             noUri: 'Ouvrez cette page depuis un lien oresmd pour qu’elle sache quel instrument afficher.',
             notStored: 'Le stock ne détient rien pour {uri}.',
             noValues: 'Aucun fixing n’est encore stocké pour cet instrument.',
             provenance: 'Flux qui apportent cet instrument',
             noFeeds: 'Aucun flux ne nomme cet instrument.',
             back: 'Retour aux données de marché',
+            backToObservations: 'Retour aux observations de fixings',
             columns: {
                 provider: 'Publisher',
                 first: 'Premier fixing',

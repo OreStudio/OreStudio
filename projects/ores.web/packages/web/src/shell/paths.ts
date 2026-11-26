@@ -341,7 +341,16 @@ export const MOVED: readonly (readonly [from: string, to: string])[] = [
     ['/reporting/:name', `${PATHS.reports}/:name`],
 ];
 
-/** The fixing series page of one item, named by its oresmd URI. */
-export function fixingSeriesPath(uri: string): string {
-    return `${PATHS.fixingSeries}?uri=${encodeURIComponent(uri)}`;
+/**
+ * The fixing series page of one item, named by its oresmd URI.
+ *
+ * The page titles itself with the name the list gave the item, so a reader who
+ * arrives from a list keeps the name they clicked; the name is carried in the
+ * address because the page cannot derive it from the URI.
+ */
+export function fixingSeriesPath(uri: string, label?: string): string {
+    const address = `${PATHS.fixingSeries}?uri=${encodeURIComponent(uri)}`;
+    return label === undefined || label === ''
+        ? address
+        : `${address}&label=${encodeURIComponent(label)}`;
 }

@@ -256,7 +256,8 @@ public:
                                       .message = outcome.message,
                                       .name = outcome.name,
                                       .key_version = outcome.key_version,
-                                      .sealed_value = outcome.sealed_value});
+                                      .sealed_value = outcome.sealed_value,
+                                      .subject = outcome.subject});
     }
 
     /// Serves vault.v1.ops.delete.
@@ -350,6 +351,13 @@ private:
             error_reply(nats_, msg, ctx_expected.error());
             return std::nullopt;
         }
+        // A token whose act names an agent is refused here as well as at the
+        // token's making: no agent reads a secret, whatever its role holds.
+        if (ctx_expected->acts_for_agent()) {
+            ORES_LOG_SEV(custody_handler_lg(), warn) << "An agent asked the vault: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return std::nullopt;
+        }
         if (!session_only && !has_permission(*ctx_expected, permission)) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return std::nullopt;
@@ -385,7 +393,9 @@ private:
     }
 
     ores::nats::service::client& nats_;
-    const ores::database::context& ctx_;
+    // Held by value: the context the caller registered with dies with that call,
+    // so a reference to it would dangle by the time a request arrives.
+    ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     std::shared_ptr<const security::key_material> keys_;
 };

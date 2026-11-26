@@ -23,9 +23,6 @@
 #include "ores.security/crypto/sealed_box.hpp"
 #include "ores.security/crypto/secret_sealer.hpp"
 #include <cctype>
-#include <fstream>
-#include <iterator>
-#include <optional>
 #include <stdexcept>
 #include <string>
 
@@ -39,42 +36,6 @@ namespace {
 [[nodiscard]] auto& lg() {
     static auto instance = make_logger("ores.vault.security.credential_source");
     return instance;
-}
-
-/// Reads a credential file as raw bytes, or says which file is missing.
-[[nodiscard]] std::vector<unsigned char> read_credential(const std::filesystem::path& path) {
-    std::ifstream in(path, std::ios::binary);
-    if (!in) {
-        ORES_LOG_SEV(lg(), error) << "No credential at " << path;
-        throw std::runtime_error("The vault has no credential at " + path.string());
-    }
-
-    const std::string bytes{std::istreambuf_iterator<char>(in), std::istreambuf_iterator<char>()};
-    return std::vector<unsigned char>(bytes.begin(), bytes.end());
-}
-
-/// Refuses a key whose length the cipher that takes it would refuse anyway.
-void check_length(const std::vector<unsigned char>& key,
-                  std::size_t expected,
-                  std::string_view what,
-                  const std::filesystem::path& path) {
-    if (key.size() != expected) {
-        ORES_LOG_SEV(lg(), error) << "The credential " << path << " holds " << key.size()
-                                  << " bytes and " << what << " takes " << expected;
-        throw std::runtime_error("The credential " + path.string() + " holds " +
-                                 std::to_string(key.size()) + " bytes and " + std::string(what) +
-                                 " takes " + std::to_string(expected));
-    }
-}
-
-/// The version a credential's name carries, or nothing when it carries none.
-[[nodiscard]] std::optional<int> version_of(const std::filesystem::path& path) {
-    const std::string suffix = path.filename().string().substr(
-        std::string(credential_source::kek_credential_prefix).size());
-    if (suffix.empty() || suffix.find_first_not_of("0123456789") != std::string::npos) {
-        return std::nullopt;
-    }
-    return std::stoi(suffix);
 }
 
 }

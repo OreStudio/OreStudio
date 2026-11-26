@@ -53,9 +53,9 @@ namespace ores::vault::domain {
  * Two invariants decide the shape. A tenant keeps a secret once by its name,
  * which is the natural key: the name is what a consumer asks for and what the
  * audit records, so a tenant cannot hold two secrets that answer one ask. And the
- * owner names the consumer permitted to resolve it, which is a fact about the
- * row and not about the caller: the vault answers a resolve with the owner's key,
- * and a row with no owner is a row nobody may read.
+ * owner names the consumer permitted to resolve it, by the actor its token
+ * carries, which is a fact about the row and not about the caller: the vault answers a resolve with
+ * the owner's key, and a row with no owner is a row nobody may read.
  */
 struct secret final {
     /**
@@ -82,9 +82,11 @@ struct secret final {
     std::string name;
 
     /**
-     * @brief The consumer permitted to resolve this secret, named as the subject its token carries,
-     * such as ores.http. The vault seals a resolve to this consumer's registered public key, so the
-     * owner is what decides who can open the answer.
+     * @brief The consumer permitted to resolve this secret, named by the actor its token carries,
+     * such as http@system.ores. The vault seals a resolve to the public key registered for the
+     * subject that actor's token carries, so the owner is what decides who can open the answer.
+     * Naming the actor rather than the subject lets a person write a secret for a service, whose
+     * subject changes with the process that registers, without knowing which process answers.
      */
     std::string owner;
 

@@ -58,7 +58,7 @@ carries the remaining work from sprint 30's close. This story ships
 | [[id:FADB1650-62B7-4795-A8BA-00AEDA1BA389][Bring the export test onto the carried-quotes rule]] | DONE | 2026-11-24 | 2026-11-24 | 8f71717dfa made a run's export carry the interest rate quotes its curves are bootstrapped from, and left the narrowed-export test asserting the rule before it. ores.marketdata.core.tests fails on main on two assertions, and no PR workflow runs ctest, so nothing caught it. |
 | [[id:EA12FD69-D331-4005-B439-4DF49D5410DC][Clear the two checks main leaves red]] | DONE | 2026-11-24 | 2026-11-24 | The timescaledb library scan reads every cluster's directory even when it is given one, so the check fails on any machine with the extension installed. And the XML benchmark has no row after the commit that changed the measured files, so the check fails on every branch until someone measures. |
 | [[id:89DE512A-22DA-4A4A-A706-A4696D952CD6][Fix the nightly warnings and the change ticker test]] | DONE | 2026-11-26 | 2026-11-26 | Task for: Keep main green |
-| [[id:A00ACCD0-E242-4AFE-9850-9208B0F92FCD][Fix the Windows compass install]] | BACKLOG | | | Task for: Keep main green |
+| [[id:A00ACCD0-E242-4AFE-9850-9208B0F92FCD][Fix the Windows compass install]] | DONE | 2026-11-26 | 2026-11-26 | Task for: Keep main green |
 
 * Decisions
 

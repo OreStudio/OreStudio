@@ -22,7 +22,7 @@
  * Derived Term Index Dataset
  *
  * Registers the derived feeds dataset and stages the term indices the
- * generated trades book that no publisher quotes in the run. Each index is a
+ * generated trades book, which no publisher quotes in the run. Each index is a
  * curve config that states its rate from its currency's overnight curve rather
  * than from a process of its own:
  *
@@ -40,15 +40,17 @@
  * The rows are staged as artefact rows of the dataset, as every other generated
  * feed is, and the dataset publish writes them into the system tenant's system
  * party under the Derived provider: one collection of its own, holding the five
- * term indices beside the overnight curves they read. The rows carry no process
- * parameters of their own -- a derived index reads a curve, it does not run one
- * -- but the entity requires the four columns of a Vasicek shape, so they hold
- * the levels of the overnight curve of the same currency and are otherwise
- * ignored by the feed.
+ * term indices beside the overnight curves they read. A derived index reads a
+ * curve, it does not run one, so it has no process of its own; the entity still
+ * requires the four columns of a Vasicek shape, and the feed never reads them.
+ * Theta and the initial rate hold the level of the same currency's overnight
+ * curve, so a row a person opens shows plausible numbers; kappa and sigma are
+ * the placeholders the shape needs, and no reader of a derived index reads
+ * either.
  *
- * The indices start with the service, as the overnight curves they read do: a
- * derived index that needed a person to start it would answer on no fresh
- * provision.
+ * The indices need no one to start them: each is offered to the adapter of the
+ * Derived provider, the run's subscription demands the fixing address, and the
+ * node runs from the first tick.
  *
  * This script is idempotent: it replaces the dataset's artefact rows.
  */

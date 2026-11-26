@@ -315,7 +315,9 @@ public:
             return;
         }
         auto delegated = person_client(msg);
-        service::report_scheduling_service scheduler(ctx_, svc_nats_, delegated);
+        // The definitions are the caller's, so they are read in the caller's
+        // context and not the service's own.
+        service::report_scheduling_service scheduler(req_ctx, svc_nats_, delegated);
         get_next_fire_response response;
         try {
             response = scheduler.next_fire_for_definitions(req->definition_ids);

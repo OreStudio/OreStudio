@@ -28,6 +28,7 @@
 #include "ores.reporting.core/export.hpp"
 #include "ores.scheduler.api/domain/cron_expression.hpp"
 #include "ores.scheduler.api/messaging/job_definition_protocol.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <expected>
@@ -47,9 +48,11 @@ namespace ores::reporting::service {
  *  2. On-demand scheduling: called by the schedule/unschedule NATS handlers
  *     to create or remove scheduler jobs for specific definitions.
  *
- * Scheduler jobs are the reporting service's own, so it puts and deletes them
- * with its own client. Run grants are a person's consent, so it asks IAM for
- * them with the client that relays the person's token.
+ * A report job is a row of the tenant that owns the definition, and every write
+ * names the tenant from the caller's claims, so the service enters that tenant
+ * and puts and deletes each job under the session it gets there. The tenant is
+ * not a field on any message. Run grants are a person's consent, so it asks IAM
+ * for them with the client that relays the person's token.
  */
 class ORES_REPORTING_CORE_EXPORT report_scheduling_service {
 private:
@@ -65,7 +68,8 @@ public:
     using context = ores::database::context;
 
     /**
-     * @param svc_nats    The service's own client, for scheduler jobs.
+     * @param svc_nats    The service's own client, which enters a tenant when a
+     *                    job has to be written there.
      * @param person_nats The client that relays the person's token, for run
      *                    grants. Reconciliation acts for no person and omits it.
      */
@@ -152,13 +156,29 @@ public:
 
 private:
     /**
+     * @brief The client that writes the job of one definition.
+     *
+     * A job is a row of the definition's tenant, and a write names the tenant
+     * from the session's claims, so the client is the service's own session
+     * entered into that tenant. The tenant is not added to the request: the
+     * entry states it, and the session states it for as long as it lasts.
+     *
+     * A tenant the service cannot enter is returned as the error it answered, so
+     * the caller reports it rather than scheduling nothing quietly.
+     */
+    std::expected<ores::nats::service::nats_client, std::string>
+    client_for(const ores::utility::uuid::tenant_id& tenant);
+
+    /**
      * @brief Build and send a put_job_definition_request to the scheduler.
      *
+     * @param client   The client of the tenant that owns the definition.
      * @param def      The report definition to schedule.
      * @param job_id   Pre-allocated UUID to use as the job's primary key.
      * @return success or unexpected(error message).
      */
-    std::expected<void, std::string> send_schedule_request(const domain::report_definition& def,
+    std::expected<void, std::string> send_schedule_request(ores::nats::service::nats_client& client,
+                                                           const domain::report_definition& def,
                                                            const boost::uuids::uuid& job_id);
 
     /**
@@ -176,9 +196,10 @@ private:
     build_job_change(const domain::report_definition& def, const boost::uuids::uuid& job_id);
 
     /**
-     * @brief Deletes a scheduler job with the service's own client.
+     * @brief Deletes a scheduler job with the client of the tenant that owns it.
      */
-    std::expected<void, std::string> send_delete_request(const boost::uuids::uuid& job_id,
+    std::expected<void, std::string> send_delete_request(ores::nats::service::nats_client& client,
+                                                         const boost::uuids::uuid& job_id,
                                                          const std::string& commentary);
 
     /**

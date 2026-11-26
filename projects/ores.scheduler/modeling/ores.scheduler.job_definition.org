@@ -87,7 +87,9 @@ UUID primary key for the job definition.
 :END:
 
 Optional party scope for this job. NULL for a tenant-scoped job and for a
-system job.
+system job: a job that names no party is the tenant's own, so the tenant that
+holds it reads it, while a job that names one is read only by a session acting
+for a party it can see.
 
 ** description
 :PROPERTIES:

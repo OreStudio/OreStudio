@@ -22,6 +22,7 @@
 set(files
     "authorization_grants_tests.cpp"
     "crypto_password_hasher_tests.cpp"
+    "crypto_sealed_box_tests.cpp"
     "crypto_secret_sealer_tests.cpp"
     "jwt_authenticator_tests.cpp"
     "main.cpp"

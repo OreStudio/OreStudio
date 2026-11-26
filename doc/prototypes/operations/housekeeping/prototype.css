@@ -493,17 +493,51 @@ h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
     font-size: 0.95rem;
 }
 
+.chart {
+    margin: 0;
+}
+
 .chart .growthchart {
     display: block;
     width: 100%;
-    max-width: 420px;
+    max-width: 560px;
     height: auto;
     color: var(--accent, #2f6feb);
 }
 
 .chart .axis {
-    stroke: var(--rule, #d8dde5);
+    stroke: var(--ink-faint, #8b949e);
     stroke-width: 1;
+}
+
+.chart .gridline {
+    stroke: var(--line-soft, #262c36);
+    stroke-width: 1;
+}
+
+.chart .tick {
+    stroke: var(--ink-faint, #8b949e);
+    stroke-width: 1;
+}
+
+.chart .series {
+    stroke: currentColor;
+    stroke-width: 1.75;
+}
+
+.chart .dot {
+    fill: currentColor;
+}
+
+.chart text {
+    fill: var(--ink-dim, #8b949e);
+    font-size: 11px;
+}
+
+.chart .axtitle {
+    fill: var(--ink-dim, #8b949e);
+    font-size: 11px;
+    letter-spacing: 0.02em;
 }
 
 .chartmeta {

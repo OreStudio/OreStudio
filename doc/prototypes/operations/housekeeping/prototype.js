@@ -769,30 +769,105 @@
             pointsFor(store.series, width, height) + '"/></svg>';
     }
 
+    /* A plot, not a line drawn on nothing: size against time, with both axes
+       labelled and ticked. The numbers are the store's samples, weekly. */
+
+    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    function weekLabels(count) {
+        const end = new Date(Date.UTC(2026, 10, 24));
+        const labels = [];
+        for (let i = count - 1; i >= 0; i--) {
+            const d = new Date(end.getTime() - i * 7 * 24 * 3600 * 1000);
+            labels.push(d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()]);
+        }
+        return labels;
+    }
+
     function growthChart(store) {
         if (!store.series) {
             return '<p class="note">The size of this store is not measured, so it has no history to plot. ' +
                 'The object store reports bytes per prefix only when asked, and no sampler reads it yet.</p>';
         }
-        const w = 420;
-        const h = 140;
+
         const series = store.series;
+        const labels = weekLabels(series.length);
+        const w = 560;
+        const h = 240;
+        const left = 64;
+        const right = 16;
+        const top = 12;
+        const bottom = 40;
+        const plotW = w - left - right;
+        const plotH = h - top - bottom;
+
+        const rawMax = Math.max.apply(null, series);
+        const rawMin = Math.min.apply(null, series);
+        // A flat store still needs a range to draw against.
+        const span = rawMax - rawMin || rawMax * 0.2 || 1;
+        const yMax = rawMax + span * 0.08;
+        const yMin = Math.max(0, rawMin - span * 0.08);
+        const ySpan = yMax - yMin || 1;
+
+        const xOf = (i) => left + (i / (series.length - 1)) * plotW;
+        const yOf = (v) => top + plotH - ((v - yMin) / ySpan) * plotH;
+
+        // Four horizontal gridlines, each with the size it stands for.
+        const ticks = 4;
+        let grid = '';
+        for (let i = 0; i <= ticks; i++) {
+            const value = yMin + (ySpan * i) / ticks;
+            const y = yOf(value).toFixed(1);
+            grid += '<line class="gridline" x1="' + left + '" y1="' + y + '" x2="' + (w - right) +
+                '" y2="' + y + '"/>' +
+                '<text class="ytick" x="' + (left - 8) + '" y="' + (Number(y) + 3.5).toFixed(1) +
+                '" text-anchor="end">' + esc(fmtMB(Math.round(value))) + '</text>';
+        }
+
+        // One tick a week, labelled every third week so the axis stays readable.
+        let xaxis = '';
+        for (let i = 0; i < series.length; i++) {
+            const x = xOf(i).toFixed(1);
+            if (i % 3 === 0 || i === series.length - 1) {
+                xaxis += '<text class="xtick" x="' + x + '" y="' + (h - bottom + 16) +
+                    '" text-anchor="middle">' + esc(labels[i]) + '</text>';
+            }
+            xaxis += '<line class="tick" x1="' + x + '" y1="' + (h - bottom) + '" x2="' + x +
+                '" y2="' + (h - bottom + 4) + '"/>';
+        }
+
+        const points = series.map((v, i) => xOf(i).toFixed(1) + ',' + yOf(v).toFixed(1)).join(' ');
+        const dots = series.map((v, i) => '<circle class="dot" cx="' + xOf(i).toFixed(1) + '" cy="' +
+            yOf(v).toFixed(1) + '" r="2.2"><title>' + esc(labels[i]) + ': ' + esc(fmtMB(v)) +
+            '</title></circle>').join('');
+
         const first = series[0];
         const last = series[series.length - 1];
         const delta = last - first;
         const weeks = series.length - 1;
         const perWeek = weeks ? delta / weeks : 0;
-        return '<div class="chart">' +
-            '<svg class="growthchart" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h +
-            '" role="img" aria-labelledby="chart-' + store.id + '">' +
-            '<title id="chart-' + store.id + '">' + esc(store.label) + ' size over twelve weeks, from ' +
-            esc(fmtMB(first)) + ' to ' + esc(store.size) + '</title>' +
-            '<line x1="0" y1="' + (h - 18) + '" x2="' + w + '" y2="' + (h - 18) + '" class="axis"/>' +
-            '<polyline fill="none" stroke="currentColor" stroke-width="1.75" points="' +
-            pointsFor(series, w, h - 18) + '"/></svg>' +
-            '<p class="chartmeta">' + esc(fmtMB(first)) + ' twelve weeks ago, ' + esc(store.size) +
-            ' today: ' + (delta >= 0 ? '+' : '') + esc(fmtMB(delta)) + ' over ' + weeks + ' weeks, about ' +
-            (perWeek >= 0 ? '+' : '') + esc(fmtMB(perWeek)) + ' a week.</p></div>';
+
+        return '<figure class="chart">' +
+            '<svg class="growthchart" viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-labelledby="chart-' +
+            store.id + '">' +
+            '<title id="chart-' + store.id + '">' + esc(store.label) + ' size over time: ' + esc(labels[0]) +
+            ' to ' + esc(labels[labels.length - 1]) + ', from ' + esc(fmtMB(first)) + ' to ' +
+            esc(store.size) + '</title>' +
+            grid +
+            '<line class="axis" x1="' + left + '" y1="' + top + '" x2="' + left + '" y2="' + (h - bottom) + '"/>' +
+            '<line class="axis" x1="' + left + '" y1="' + (h - bottom) + '" x2="' + (w - right) + '" y2="' +
+            (h - bottom) + '"/>' +
+            '<text class="axtitle" x="' + left + '" y="' + (top - 2) + '" text-anchor="start">Size</text>' +
+            '<text class="axtitle" x="' + (w - right) + '" y="' + (h - 6) +
+            '" text-anchor="end">Time, one point a week</text>' +
+            xaxis +
+            '<polyline class="series" fill="none" points="' + points + '"/>' +
+            dots +
+            '</svg>' +
+            '<figcaption class="chartmeta">' + esc(fmtMB(first)) + ' on ' + esc(labels[0]) + ', ' +
+            esc(store.size) + ' today: ' + (delta >= 0 ? '+' : '') + esc(fmtMB(delta)) + ' over ' + weeks +
+            ' weeks, about ' + (perWeek >= 0 ? '+' : '') + esc(fmtMB(perWeek)) + ' a week.</figcaption>' +
+            '</figure>';
     }
 
     function fmtMB(v) {

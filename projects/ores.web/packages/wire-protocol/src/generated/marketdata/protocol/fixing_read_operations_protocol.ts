@@ -269,11 +269,97 @@ export interface GetFixingCoverageResponse {
     counts: number[];
 }
 
+/**
+ * @brief One fixing series as a screen lists it: what it fixes, where the value
+ * came from, and the value it holds now.
+ */
+export interface FixingSeriesSummary {
+    /**
+     * @brief The series' own id, as text.
+     */
+    series_id: string;
+    /**
+     * @brief The series' address, which the series page it opens reads.
+     */
+    oresmd_uri: string;
+    /**
+     * @brief The address's scheme host, =fx= or =ir=.
+     */
+    asset_class: string;
+    /**
+     * @brief What the series fixes, in the words a screen shows: a pair such as
+     * =EUR/USD=, or an index such as =USD SOFR 1M=.
+     */
+    index_label: string;
+    /**
+     * @brief Where the values came from, as the fixings state it: the source of the
+     * observation, or the generator that computed it. Empty for a series that holds
+     * no value.
+     */
+    source: string;
+    /**
+     * @brief The provider the series belongs to.
+     */
+    provider_code: string;
+    /**
+     * @brief The value of the latest day, as decimal text. Empty for a series that
+     * holds no value.
+     */
+    latest_value: string;
+    /**
+     * @brief The latest day the series holds, or nothing for one that holds none.
+     */
+    latest_date: string | null;
+    /**
+     * @brief How many days the series holds, which is zero for one that holds none.
+     */
+    days: number;
+}
+
+/**
+ * @brief Asks for every fixing series the store holds, as a screen lists them.
+ *
+ * The summary is the database's, one aggregate over the series and their
+ * fixings: reading the fixings of every series to count them would carry
+ * hundreds of thousands of rows to a screen that shows a line each.
+ */
+export interface ListFixingSeriesSummariesRequest {
+    /**
+     * @brief The asset class to list, or empty for every one.
+     */
+    asset_class: string;
+    /**
+     * @brief The currency to list, or empty for every one. An FX series is listed
+     * under either of its currencies.
+     */
+    currency: string;
+    /**
+     * @brief The source to list, or empty for every one.
+     */
+    source: string;
+}
+
+/**
+ * @brief One summary for every series the filters admit, ordered by address.
+ */
+export interface ListFixingSeriesSummariesResponse {
+    /**
+     * @brief Whether the series were read.
+     */
+    result: Result;
+    /**
+     * @brief The summaries, ordered by address. A series that holds no value is one
+     * of them, with a count of zero.
+     */
+    series: FixingSeriesSummary[];
+}
+
 export const subjects = {
     get_fixing_request: 'marketdata.v1.ops.get_fixing',
     get_fixing_window_request: 'marketdata.v1.ops.get_fixing_window',
     get_pair_levels_request: 'marketdata.v1.ops.get_pair_levels',
     get_fixing_coverage_request: 'marketdata.v1.ops.get_fixing_coverage',
+    list_fixing_series_summaries_request: 'marketdata.v1.ops.list_fixing_series_summaries',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -285,4 +371,5 @@ export const requiresSession = {
     get_fixing_window_request: true,
     get_pair_levels_request: true,
     get_fixing_coverage_request: true,
+    list_fixing_series_summaries_request: true,
 } as const;

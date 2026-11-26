@@ -344,6 +344,109 @@ struct get_fixing_coverage_response {
 };
 
 /**
+ * @brief One fixing series as a screen lists it: what it fixes, where the value
+ * came from, and the value it holds now.
+ */
+struct fixing_series_summary {
+    /**
+     * @brief The series' own id, as text.
+     */
+    std::string series_id;
+    /**
+     * @brief The series' address, which the series page it opens reads.
+     */
+    std::string oresmd_uri;
+    /**
+     * @brief The address's scheme host, =fx= or =ir=.
+     */
+    std::string asset_class;
+    /**
+     * @brief What the series fixes, in the words a screen shows: a pair such as
+     * =EUR/USD=, or an index such as =USD SOFR 1M=.
+     */
+    std::string index_label;
+    /**
+     * @brief Where the values came from, as the fixings state it: the source of the
+     * observation, or the generator that computed it. Empty for a series that holds
+     * no value.
+     */
+    std::string source;
+    /**
+     * @brief The provider the series belongs to.
+     */
+    std::string provider_code;
+    /**
+     * @brief The value of the latest day, as decimal text. Empty for a series that
+     * holds no value.
+     */
+    std::string latest_value;
+    /**
+     * @brief The latest day the series holds, or nothing for one that holds none.
+     */
+    std::optional<std::chrono::year_month_day> latest_date;
+    /**
+     * @brief How many days the series holds, which is zero for one that holds none.
+     */
+    std::uint32_t days = 0;
+
+    friend bool operator==(const fixing_series_summary&, const fixing_series_summary&) = default;
+};
+
+/**
+ * @brief Asks for every fixing series the store holds, as a screen lists them.
+ *
+ * The summary is the database's, one aggregate over the series and their
+ * fixings: reading the fixings of every series to count them would carry
+ * hundreds of thousands of rows to a screen that shows a line each.
+ */
+struct list_fixing_series_summaries_request {
+    using response_type = struct list_fixing_series_summaries_response;
+    static constexpr std::string_view nats_subject =
+        "marketdata.v1.ops.list_fixing_series_summaries";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The asset class to list, or empty for every one.
+     */
+    std::string asset_class;
+    /**
+     * @brief The currency to list, or empty for every one. An FX series is listed
+     * under either of its currencies.
+     */
+    std::string currency;
+    /**
+     * @brief The source to list, or empty for every one.
+     */
+    std::string source;
+
+    friend bool operator==(const list_fixing_series_summaries_request&,
+                           const list_fixing_series_summaries_request&) = default;
+};
+
+/**
+ * @brief One summary for every series the filters admit, ordered by address.
+ */
+struct list_fixing_series_summaries_response {
+    /**
+     * @brief Whether the series were read.
+     */
+    ores::utility::domain::result result;
+    /**
+     * @brief The summaries, ordered by address. A series that holds no value is one
+     * of them, with a count of zero.
+     */
+    std::vector<fixing_series_summary> series;
+
+    friend bool operator==(const list_fixing_series_summaries_response&,
+                           const list_fixing_series_summaries_response&) = default;
+};
+
+/**
  * @brief The members of get_fixing_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -493,6 +596,61 @@ struct get_fixing_coverage_response {
     };
 }
 
+/**
+ * @brief The members of fixing_series_summary, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<fixing_series_summary>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"series_id", &fixing_series_summary::series_id},
+        ::ores::utility::codec::field{"oresmd_uri", &fixing_series_summary::oresmd_uri},
+        ::ores::utility::codec::field{"asset_class", &fixing_series_summary::asset_class},
+        ::ores::utility::codec::field{"index_label", &fixing_series_summary::index_label},
+        ::ores::utility::codec::field{"source", &fixing_series_summary::source},
+        ::ores::utility::codec::field{"provider_code", &fixing_series_summary::provider_code},
+        ::ores::utility::codec::field{"latest_value", &fixing_series_summary::latest_value},
+        ::ores::utility::codec::field{"latest_date", &fixing_series_summary::latest_date},
+        ::ores::utility::codec::field{"days", &fixing_series_summary::days},
+    };
+}
+
+/**
+ * @brief The members of list_fixing_series_summaries_request, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_fixing_series_summaries_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"asset_class",
+                                      &list_fixing_series_summaries_request::asset_class},
+        ::ores::utility::codec::field{"currency", &list_fixing_series_summaries_request::currency},
+        ::ores::utility::codec::field{"source", &list_fixing_series_summaries_request::source},
+    };
+}
+
+/**
+ * @brief The members of list_fixing_series_summaries_response, named as the wire names them and in
+ * the order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto
+wire_fields(std::type_identity<list_fixing_series_summaries_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"result", &list_fixing_series_summaries_response::result},
+        ::ores::utility::codec::field{"series", &list_fixing_series_summaries_response::series},
+    };
+}
+
 }
 namespace ores::utility::codec {
 
@@ -589,6 +747,44 @@ struct ORES_MARKETDATA_API_EXPORT
     static std::string
     write_msgpack(const ores::marketdata::messaging::get_fixing_coverage_response& v);
     static ores::marketdata::messaging::get_fixing_coverage_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::fixing_series_summary> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::fixing_series_summary& v);
+    static ores::marketdata::messaging::fixing_series_summary read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::fixing_series_summary& v);
+    static ores::marketdata::messaging::fixing_series_summary
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_fixing_series_summaries_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_fixing_series_summaries_request& v);
+    static ores::marketdata::messaging::list_fixing_series_summaries_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_fixing_series_summaries_request& v);
+    static ores::marketdata::messaging::list_fixing_series_summaries_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::list_fixing_series_summaries_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::list_fixing_series_summaries_response& v);
+    static ores::marketdata::messaging::list_fixing_series_summaries_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::list_fixing_series_summaries_response& v);
+    static ores::marketdata::messaging::list_fixing_series_summaries_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

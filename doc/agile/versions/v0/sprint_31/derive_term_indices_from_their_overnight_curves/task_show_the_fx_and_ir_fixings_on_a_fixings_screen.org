@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :derive_term_indices_from_their_overnight_curves:ir:curves:sprint_31:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/show-the-fx-and-ir-fixings-on-a-fixings-screen
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
-#+updated: 2026-11-22
+#+updated: 2026-11-26
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,12 +31,12 @@ an explanation, in the fixings manager that captures it: see
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
-| Now          | Not yet started.                       |
+| Now          | Planned; the summary operation is the first step. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-22                               |
+| Next         | Step 1: the summary operation in ores.marketdata. |
+| Last touched | 2026-11-26                               |
 
 * Acceptance
 
@@ -47,9 +47,43 @@ an explanation, in the fixings manager that captures it: see
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The screen lists every FX and IR fixing series the store holds, one row each:
+the index or pair, the source, the publisher, the latest value and its date,
+and how many days the series holds. No existing operation answers that.
+=GET /api/marketdata/fixing-series?uri=...= answers one series and builds its
+answer from =list_market_series=, =list_market_fixings= and the catalogue
+lists, which over every series would read hundreds of thousands of fixing rows.
+So the summary is computed in SQL by the market data service, and the screen
+reads it.
+
+1. *The summary operation.* =ores.marketdata.fixing_read_operations= already
+   holds the reads of the durable fixings, so the summary joins it rather than
+   opening a model of its own: =fixing_series_summary= (the series id, its
+   address, its asset class and display label, the source and provider, the
+   latest value and date, and the day count),
+   =list_fixing_series_summaries_request= with the asset-class, currency and
+   source filters, and its response. =compass generate= writes the protocol,
+   the codec, the TypeScript wire type and the round-trip test.
+2. *The query and its handler.* One statement over the series and its fixings,
+   the series left-joined so a series that holds no fixing keeps its row with a
+   count of zero. The handler sits beside =party_demand_handler.hpp=, runs in
+   the system tenant because the screen is system-level, asks the
+   =market_fixings:read= permission the fixing reads use, and is subscribed
+   beside the other market data operations.
+3. *The route on both servers.* A route on the C++ =ores.http= server and the
+   matching one on the TypeScript BFF, because the web app is served by both:
+   =GET /api/marketdata/fixings= with the three filters, each side with its own
+   test.
+4. *The screen.* A =FixingsPage= beside the Fixing series page it opens, a
+   table of the summaries with the three filters, and a row that opens
+   =FixingSeriesPage= by the series' address. A series with no day reads
+   *empty* rather than disappearing. No edit, approve or override control: the
+   system states what it observed, and a party's fixings manager is another
+   task's work.
+5. *Prove it.* A test of the handler's query, the route tests on both servers,
+   the screen's test, then a fresh provision with the screen showing the
+   simulated, ECB, BOC, IMF and TCMB series and the counts the fixing series
+   hold.
 
 * Measurements
 

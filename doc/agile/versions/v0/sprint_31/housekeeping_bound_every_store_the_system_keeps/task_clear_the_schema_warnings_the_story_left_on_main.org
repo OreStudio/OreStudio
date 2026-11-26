@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: 3A5A16E2-DCCA-41DF-A169-FAFB1509BDC7
+:END:
+#+title: Task: Clear the schema warnings the story left on main
+#+description: The validate-sql-schema job fails on any warning. Two of the three warnings main carries come from this story: the delivery counts' primary key omits the tenant, and the retention ledger has no tenant column at all. Make the tree state one truth for each.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping:schema:validator:ci:sprint_31:housekeeping_bound_every_store_the_system_keeps:v0:
+#+owner: marco
+#+branch: feature/clear-the-schema-warnings-the-story-left-on-main
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The schema validator reports nothing from this story's two files, so the
+validate-sql-schema job stops failing on work this story left behind. One of the
+two was a real disagreement, and the other a false positive that the tree now
+states as an exception with its reason.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-26                               |
+
+* Acceptance
+
+- The retention ledger carries the tenant whose policy ran, in its primary key and in its row level security
+- The sweep writes that tenant, and the due check reads the ledger for the policy's own tenant, so one tenant's run never suppresses another's
+- The delivery count's key stays the natural key, and the exception is recorded once with its reason, in the model and in the validator's ignore file
+- =./projects/ores.sql/utility/validate_schemas.sh= reports no warning from either file
+- =./compass.sh generate= leaves no diff
+
+* Plan
+
+- The ledger is per-tenant rather than system-wide: the sweep applies the
+  policies of one tenant, so a run belongs to that tenant, and the key and the
+  policy follow. This is the smaller change, and it is also the true one, since
+  the sweep's own read is filtered by tenant.
+- The delivery count keeps its natural key. A party belongs to exactly one
+  tenant, so the tenant cannot disambiguate a key it is implied by, and the
+  validator's ignore file is where this repository records exactly this kind of
+  exception, with the reason beside it.
+- The model states the same reason, so the exception is not only in a file the
+  validator reads.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Schema warnings from the two files | 0 | =./projects/ores.sql/utility/validate_schemas.sh= | da9f66f42f |
+| Schemas parsed | 841 tables | the same run | da9f66f42f |
+| Ledger rows the sweep wrote | 3, all in the system tenant | =select * from ores_scheduler_apply_retention_policies_fn()= | da9f66f42f |
+| Scheduler pgTAP suites | 23 of 23 passed | =./test/run_tests.sh test/scheduler_publish_*_test.sql= | da9f66f42f |
+| Local checks, non-heavy | 12 of 12 passed | =./compass.sh check --exclude-heavy= | da9f66f42f |
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Both warnings from this story are gone. The validator now reports 841 tables and
+one warning, the vault one, which belongs to another environment.
+
+The retention ledger gained the tenant it always implied: the column, the key,
+the index and the row level security policy, and the sweep writes the tenant of
+the policy it ran. The due check reads the ledger for that tenant as well, so a
+run under one tenant cannot suppress a policy under another.
+
+The delivery count keeps its natural key. A party belongs to exactly one tenant,
+so the key the validator asked for would carry a value the rest of the key
+already fixes; the exception is recorded once, with its reason, both in the model
+and in =validation_ignore.txt=.
+
+The third warning, on the vault's secret uses, is brave_hopper's and is left to
+it. The job stays red until that lands, which is why this task's acceptance is
+about the two files and not about the job.

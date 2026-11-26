@@ -46,7 +46,10 @@ target_link_libraries(${tests_target_name}
 
 target_link_libraries(${tests_target_name}
     PRIVATE
-        ores.eventing.core.lib)
+        ores.eventing.core.lib
+        # The credential test makes a temporary directory to write the two
+        # credential files into, and the vault itself links no platform code.
+        ores.platform.lib)
 
 add_custom_target(test_${tests_target_name}
     COMMENT "Testing ${tests_target_name}" VERBATIM

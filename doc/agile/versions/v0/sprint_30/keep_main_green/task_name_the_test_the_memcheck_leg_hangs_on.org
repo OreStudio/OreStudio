@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-26
 #+updated: 2026-11-26
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Make a memcheck run that a test hangs name that test, so the clang debug failure
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
@@ -40,9 +40,9 @@ Make a memcheck run that a test hangs name that test, so the clang debug failure
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Write the timeout banner through C stdio, so it reaches the run's output
+whatever the C++ streams did with their buffers, and upload every log CTest
+keeps rather than two named files.
 
 * Measurements
 
@@ -56,7 +56,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Gap in the clang debug run between a suite's last line and its failure | 61 s, which is the watchdog's first tick past 60 s | =grep -a "76: " build/tmp/ci/dbg.log= on the 26 November job 139743005889 | 6ec6e2c5ab |
+| Watchdog banner through a pipe after the change | 1 banner, naming the test and the limit | =ORES_TEST_TIMEOUT_SECONDS=0 ./ores.database.tests 2>&1 \| cat= | HEAD |
+| Logs the failed run artifact held | 107 MemoryChecker files and no LastTest.log | =gh run download 45770811633 -n memcheck-logs-linux-clang-debug= | c8bd2be |
 
 * Notes
 
@@ -84,3 +86,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The watchdog now writes its banner through C stdio and flushes it, so a suite
+it kills names the test in the run's output whatever buffering the C++ streams
+chose. The nightly uploads every log under =Testing/Temporary=, so the file
+that holds that output travels with the artifact on the next failure.
+
+Found on the way: the 26 November clang debug run shows a 61 second gap
+between its last printed case and the failure report, which is the watchdog's
+first check past its 60 second limit. The case that hung is not named in the
+run because the banner and the buffered output were lost, which is what this
+change fixes.
+
+Verified locally: the banner appears once, with the test name, when the output
+goes through a pipe, and the suite exits 1 as before.

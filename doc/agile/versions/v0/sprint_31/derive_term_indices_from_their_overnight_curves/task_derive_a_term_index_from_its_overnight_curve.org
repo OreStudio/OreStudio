@@ -258,11 +258,13 @@ via its "Verifies task" field.
 
 * Result
 
-The five term indices are published from a dataset of their own, run as view
-nodes reading the run's own overnight curves, and state 520 fixings each on a
-database recreated from the seeds. The rule, the arithmetic and the seeding all
-follow the design recorded above; the hand-written rows the earlier attempt
-used are gone.
+The five term indices are published from a dataset of their own, offered to the
+adapter of the derived provider, and state 520 fixings each on a fresh provision
+with nobody starting a feed: the run's subscription demands them, and the graph
+withholds the offer when the curve they read stops. They are view nodes reading
+the run's own overnight curves. The rule, the arithmetic and the seeding all
+follow the design recorded above; the hand-written rows the earlier attempt used
+are gone.
 
 Starvation is proven twice: the unit test shows that a starved node states
 nothing and makes up no day, and a live run shows the same end to end, where

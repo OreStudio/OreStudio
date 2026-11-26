@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: DC6F4D69-5E3E-4562-9503-88C74329FF1E
 :END:
-#+title: Task: Show the FX and IR fixings on a fixings screen
+#+title: Task: Show the FX and IR fixing observations on a screen
 #+description: A system-level Fixings screen lets the super administrator view every FX and IR observation across every source, read only.
 #+type: task
 #+level: s1
@@ -47,7 +47,7 @@ an explanation, in the fixings manager that captures it: see
 
 * Plan
 
-*The screen is the system view, not the fixings manager.* It states what the
+*The screen is called Fixing observations, and it is the system view, not the fixings manager.* It states what the
 sources published and offers no act; the party's fixings manager is another
 screen, where a party requires, adopts, overrides and authorises the fixings its
 trades use. The four fixing surfaces and the question each answers are set out in
@@ -55,9 +55,9 @@ trades use. The four fixing surfaces and the question each answers are set out i
 
 Two consequences for this task:
 
-- The list takes =/market-data/fixings=, and the fixing series page a row opens
-  moves to =/market-data/fixings/:uri=. The page holds that address today, so the
-  list cannot be routed until it moves.
+- The list takes =/market-data/fixing-observations=, and the fixing series page a
+  row opens keeps =/market-data/fixings?uri=, so the two names and the two
+  addresses do not collide.
 - Nothing on the screen offers to fill a missing day, to authorise a value, or
   to override one. A series that ended is shown ending.
 

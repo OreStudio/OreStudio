@@ -129,6 +129,44 @@ function renderList() {
       <div>This screen states observations and offers no authorisation: a day the platform never stated is entered by a party, in its own fixings manager.</div>`;
 }
 
+/* A series of daily values for the plot: the mock row's own latest value, walked
+ * backwards over sixty days. Deterministic, so a reload draws the same line. */
+function plot_points(s) {
+    if (s.days === 0) return [];
+    const seed = [...s.label].reduce((a, c) => a + c.charCodeAt(0), 0);
+    let value = parseFloat(s.latest) || 1;
+    const out = [];
+    for (let i = 0; i < Math.min(s.days, 60); ++i) {
+        out.push(value);
+        const step = Math.sin((seed + i) * 0.7) * 0.004 + Math.cos((seed + i) * 0.23) * 0.002;
+        value = Math.max(0.0001, value * (1 + step));
+    }
+    return out.reverse();
+}
+
+/* The line of values, with the first and last day and the range the line spans. */
+function plot_svg(s) {
+    const values = plot_points(s);
+    if (values.length === 0)
+        return '<p class="muted">This series holds no value, so there is nothing to plot.</p>';
+    const w = 900, h = 190, pad = 34;
+    const lo = Math.min(...values), hi = Math.max(...values);
+    const span = hi - lo || 1;
+    const x = (i) => pad + (i * (w - pad * 2)) / Math.max(1, values.length - 1);
+    const y = (v) => h - pad - ((v - lo) / span) * (h - pad * 2);
+    const line = values.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    const area = `${pad},${h - pad} ${line} ${w - pad},${h - pad}`;
+    return `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${s.label} over ${values.length} days"
+        style="width:100%;height:auto;background:transparent">
+      <polygon points="${area}" fill="rgba(63,185,80,.10)"></polygon>
+      <polyline points="${line}" fill="none" stroke="#3fb950" stroke-width="1.6"></polyline>
+      <text x="${pad}" y="16" fill="#8b949e" font-size="11">${hi.toFixed(6)}</text>
+      <text x="${pad}" y="${h - 6}" fill="#8b949e" font-size="11">${lo.toFixed(6)}</text>
+      <text x="${w - pad}" y="16" fill="#8b949e" font-size="11" text-anchor="end">latest ${s.latest} on ${s.day}</text>
+      <text x="${w - pad}" y="${h - 6}" fill="#8b949e" font-size="11" text-anchor="end">${values.length} days plotted</text>
+    </svg>`;
+}
+
 function renderSeriesPage() {
     const s = SERIES.find((one) => one.uri === openSeries || one.label === openSeries);
     if (!s) return false;
@@ -140,7 +178,7 @@ function renderSeriesPage() {
     const days = s.days === 0 ?
         '<p class="muted">This series holds no day. The platform holds it and never stated a value for it.</p>' :
         `<p>${s.days} days, the latest on ${s.day} at ${s.latest}.</p>`;
-    document.getElementById('sp-body').innerHTML = days + `
+    document.getElementById('sp-body').innerHTML = days + plot_svg(s) + `
       <table class="list">
         <thead><tr><th>Day</th><th>Value</th><th>Source</th></tr></thead>
         <tbody>${(s.days === 0 ? [] : [

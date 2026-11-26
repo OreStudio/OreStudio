@@ -448,44 +448,30 @@ $$ language plpgsql;
 comment on function ores_refdata_books_owner_unit_party_fn() is
     'Refuses a book whose desk belongs to another party.';
 
-drop trigger if exists ores_refdata_books_owner_unit_party_trg
-    on "ores_refdata_books_tbl";
-create trigger ores_refdata_books_owner_unit_party_trg
+create or replace trigger ores_refdata_books_owner_unit_party_trg
 before insert or update of owner_unit_id, party_id on "ores_refdata_books_tbl"
 for each row execute function ores_refdata_books_owner_unit_party_fn();
 
-drop trigger if exists ores_refdata_book_product_types_approval_trg
-    on "ores_refdata_book_product_types_tbl";
-create trigger ores_refdata_book_product_types_approval_trg
+create or replace trigger ores_refdata_book_product_types_approval_trg
 before insert or update on "ores_refdata_book_product_types_tbl"
 for each row execute function ores_refdata_book_product_types_approval_fn();
 
-drop trigger if exists ores_refdata_party_product_types_close_trg
-    on "ores_refdata_party_product_types_tbl";
-create trigger ores_refdata_party_product_types_close_trg
+create or replace trigger ores_refdata_party_product_types_close_trg
 before update on "ores_refdata_party_product_types_tbl"
 for each row execute function ores_refdata_party_product_types_close_fn();
 
-drop trigger if exists ores_refdata_parties_approval_restriction_trg
-    on "ores_refdata_parties_tbl";
-create trigger ores_refdata_parties_approval_restriction_trg
+create or replace trigger ores_refdata_parties_approval_restriction_trg
 before update on "ores_refdata_parties_tbl"
 for each row execute function ores_refdata_parties_approval_restriction_fn();
 
-drop trigger if exists ores_refdata_business_unit_product_types_approval_trg
-    on "ores_refdata_business_unit_product_types_tbl";
-create trigger ores_refdata_business_unit_product_types_approval_trg
+create or replace trigger ores_refdata_business_unit_product_types_approval_trg
 before insert or update on "ores_refdata_business_unit_product_types_tbl"
 for each row execute function ores_refdata_business_unit_product_types_approval_fn();
 
-drop trigger if exists ores_refdata_business_unit_product_types_close_trg
-    on "ores_refdata_business_unit_product_types_tbl";
-create trigger ores_refdata_business_unit_product_types_close_trg
+create or replace trigger ores_refdata_business_unit_product_types_close_trg
 before update on "ores_refdata_business_unit_product_types_tbl"
 for each row execute function ores_refdata_business_unit_product_types_close_fn();
 
-drop trigger if exists ores_refdata_business_units_approval_restriction_trg
-    on "ores_refdata_business_units_tbl";
-create trigger ores_refdata_business_units_approval_restriction_trg
+create or replace trigger ores_refdata_business_units_approval_restriction_trg
 before update on "ores_refdata_business_units_tbl"
 for each row execute function ores_refdata_business_units_approval_restriction_fn();

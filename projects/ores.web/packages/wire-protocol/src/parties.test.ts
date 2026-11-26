@@ -209,6 +209,7 @@ describe('OresClient create party', () => {
             status: 'Inactive',
             image_id: null,
             is_registration_default: false,
+            restricts_product_types: false,
         });
         expect(write.change.precondition).toEqual({ kind: 'must_not_exist', version: null });
         // The reason is left to the server, which states the new-record one.

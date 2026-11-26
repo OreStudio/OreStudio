@@ -32,7 +32,7 @@ write; invoke the skill for a cleanup pass.
 **Never pipe or redirect a `compass` command.** Run it bare — no `|`,
 no `2>&1`, no `>`. Every `compass build`/`deploy`/`site` command that
 produces meaningful output prints its own well-known log file path
-(e.g. `📝 Build output: /tmp/<label>_<target>_build.log`). To watch
+(e.g. `📝 Build output: tmp/<label>_<target>_build.log`). To watch
 progress, `tail -f`/`tail -n` *that reported file* as a separate,
 standalone command — never by piping the compass invocation itself.
 When a command is chatty and prints no log path of its own — a tangle, a

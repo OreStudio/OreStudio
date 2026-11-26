@@ -8082,7 +8082,7 @@ def cmd_shell(argv):
         return subprocess.run(cmd, cwd=PROJECT_ROOT, env=child_env).returncode
 
     label = env.get("ORES_CHECKOUT_LABEL", "local1")
-    log_path = Path(f"/tmp/ores_{label}_shell.log")
+    log_path = _build_log_dir() / f"ores_{label}_shell.log"
     print(f"📝 Progress log: {log_path} (tail -f to follow)")
     with open(log_path, "w") as log:
         return _run_logged(cmd, PROJECT_ROOT, log, env=child_env)

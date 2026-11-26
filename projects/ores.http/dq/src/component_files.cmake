@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "routes/dq/artefact_type_routes.cpp"
+    "routes/dq/bundle_roster_routes.cpp"
     "routes/dq/dataset_bundle_member_routes.cpp"
     "routes/dq/dataset_bundle_routes.cpp"
     "routes/dq/dataset_routes.cpp"
@@ -31,6 +32,7 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/ores.http.dq.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/dq/artefact_type_routes.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/dq/bundle_roster_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/dq/dataset_bundle_member_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/dq/dataset_bundle_routes.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.http/routes/dq/dataset_routes.hpp"

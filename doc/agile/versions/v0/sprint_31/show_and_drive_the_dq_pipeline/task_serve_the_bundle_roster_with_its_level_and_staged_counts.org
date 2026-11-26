@@ -8,7 +8,7 @@
 #+filetags: :dq:server:coverage:sprint_31:v0:show_and_drive_the_dq_pipeline:
 #+owner: marco
 #+branch: feature/serve-the-bundle-roster-with-its-level-and-staged-counts
-#+pr:
+#+pr: 5141
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
@@ -137,7 +137,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5141][#5141]] | [dq] Answer the bundle roster with its levels and staged counts |
 
 * Review
 

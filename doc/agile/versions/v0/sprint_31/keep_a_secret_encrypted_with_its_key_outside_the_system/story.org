@@ -109,5 +109,8 @@ Then the store is modelled, served, wired into the provider registry and proven 
   and a leaf that must be a file is certificate management rather than custody.
 - A general-purpose secret manager for the fleet: no dynamic credentials, no
   leases, no PKI engine, and no storage engine of its own.
+- The BFF and the screens. The write route is =ores.http='s own, so no server
+  sits between a person and the vault, and the screens that will call the route
+  are not part of this story.
 - The test double's and the seeder's fixtures. They move here only once the
   store exists and the gate can run without a file.

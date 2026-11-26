@@ -26,12 +26,12 @@ A caller that asks what a trade set needs learns, for each trade, the addresses 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                   |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | Not yet started.                       |
+| Now          | Done. The operation answers each trade beside the set, and the union is derived from it. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-25                               |
+| Next         | Nothing on this task. |
+| Last touched | 2026-11-26                             |
 
 * Acceptance
 
@@ -41,9 +41,28 @@ A caller that asks what a trade set needs learns, for each trade, the addresses 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The resolution is already per trade: =ores_trading_market_references_fn= returns
+=trade_id=, the address and the source. What collapses it is the read above the
+function, which asks for =distinct oresmd_uri= because every caller so far wanted
+the union, and the message, which has one list for the whole set.
+
+1. *The message carries both answers.* =resolve_market_data_requirements_response=
+   gains =trade_requirements=: one entry per trade the request names, in the order
+   it names them, each with its own distinct addresses. A trade named twice
+   answers once. A trade whose rows hold no address keeps its entry with no
+   addresses, which is what tells "this trade names nothing" apart from "this
+   trade was not in the set" — the second is absent from the answer, the first is
+   present and empty.
+2. *The union is derived, not read twice.* The repository reads the per-trade rows
+   once and the operation states the union from them, so the two answers cannot
+   disagree about which addresses the set needs. The union stays in the response
+   because a caller that only gathers market data wants the set and not the map.
+3. *The fold is a plain function.* Grouping rows into a trade's addresses, seeding
+   an entry for every trade asked about, is a function over rows, so a test states
+   it without a database: two addresses on one trade, a trade with none, the same
+   address on two trades, and a trade named twice.
+4. *The SQL function does not change.* It already answers per trade and the pgTAP
+   test already pins its rows; only the read above it changes.
 
 * Measurements
 
@@ -57,7 +76,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The full tree | builds, every target | =./compass.sh build= | 3633180a61 |
+| The trading suite | 321 cases, 2033 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.trading.core.tests= | 3633180a61 |
+| The trading protocol suite | 5688 cases, 21442 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.trading.api.tests= | 3633180a61 |
+| The per-trade rows the answer is built from | 5 assertions, pass | =./projects/ores.sql/test/run_tests.sh test/trading_market_references_test.sql= | 3633180a61 |
+| The requirements service suite | 15 cases, 45 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.trading.service.tests= | 3633180a61 |
+| The ORE projection, which reads the same protocol | 607 cases, 521281 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.ore.core.tests= | 3633180a61 |
+| The ported gates | no finding new since =origin/main= | =compass-ng check --ratchet origin/main= | 3633180a61 |
+| The changed C++ | clang-formatted | =./compass.sh check --only format= | 3633180a61 |
 
 * Notes
 
@@ -85,3 +111,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The operation answers what each trade needs beside what the set needs. A caller
+that has to say which trade lost its valuation now reads a trade's own addresses
+instead of inferring them from the union, and the caller that only gathers market
+data reads the same answer's union, which is now derived from the per-trade answer
+rather than read beside it.
+
+The three states a caller must tell apart are told apart by presence and emptiness
+rather than by a flag: a trade the request did not name is absent from the answer,
+a trade that names nothing is present with no addresses, and a trade that names
+addresses the market lacks is present with addresses the market's own answer does
+not hold — the last a fact about the market and not about this answer.
+
+The SQL function did not change. It has answered per trade since it was written and
+the pgTAP test already pins the row of a floating leg, the absence of one for a
+fixed leg, and the fact that a trade outside the set states nothing; what changed
+is the read above it and the message it fills.

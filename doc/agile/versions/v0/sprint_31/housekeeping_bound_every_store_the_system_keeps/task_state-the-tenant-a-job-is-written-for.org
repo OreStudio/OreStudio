@@ -8,7 +8,7 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch: feature/state-the-tenant-a-job-is-written-for
-#+pr:
+#+pr: 5152
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
@@ -154,7 +154,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5152][#5152]] | [reporting] State the tenant a report's job is written for |
 
 * Review
 

@@ -102,6 +102,9 @@ public:
      *
      * @param recipient_public_key The recipient's 32-byte public key.
      * @param plaintext The value. It may be empty, which still seals.
+     * @param context What this value belongs to: the subject, the name and the
+     * version a delivery names, so that a captured reply replayed to another
+     * consumer and another row does not open.
      * @return One Base64 value carrying the sender's public key, the nonce, the
      * tag and the ciphertext.
      *
@@ -111,13 +114,16 @@ public:
      * encrypt.
      */
     [[nodiscard]] static std::string seal(const std::vector<unsigned char>& recipient_public_key,
-                                          const std::string& plaintext);
+                                          const std::string& plaintext,
+                                          const std::string& context);
 
     /**
      * @brief Opens a value sealed to this private key.
      *
      * @param private_key The recipient's 32-byte private key.
      * @param sealed A value produced by seal(), for the public half.
+     * @param context The same context the value was sealed with. A reply
+     * replayed under any other context does not authenticate.
      * @return The plaintext.
      *
      * @throws std::invalid_argument If the key is not KEY_LEN bytes.
@@ -126,7 +132,8 @@ public:
      * never opens, and never answers a different plaintext.
      */
     [[nodiscard]] static std::string open(const std::vector<unsigned char>& private_key,
-                                          const std::string& sealed);
+                                          const std::string& sealed,
+                                          const std::string& context);
 };
 
 }

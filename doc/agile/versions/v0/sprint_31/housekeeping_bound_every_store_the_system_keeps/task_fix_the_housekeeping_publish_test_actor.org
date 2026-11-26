@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: A02A55EA-402D-4A03-A083-5C7C7B34D3D5
+:END:
+#+title: Task: Fix the housekeeping publish test's actor
+#+description: The pgTAP fixture writes rows as 'system', which an installation with a person refuses; name an actor the store holds.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: feature/fix-the-housekeeping-publish-test-actor
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The pgTAP test of the housekeeping publish passes on an installation that holds
+a person, not only on a database that has just been created. The fixture names
+an actor the store knows, and says why.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Fixed and proved in both states; waiting on the pull request. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the pull request.                |
+| Last touched | 2026-11-26                               |
+
+* Acceptance
+
+- The test passes on a database that holds no person, and on one that holds one
+- The fixture names an actor the store holds, and the reason is stated in the test
+- The change touches the test and no schema, behaviour or code
+
+* Analysis
+
+[[id:A71D89B6-2A44-4826-BF30-25E6E3AF631E][Deliver housekeeping as platform data]]
+introduced the test with two inserts that wrote =modified_by = 'system'=, as a
+stand-in for the person who restates a policy's period or a job's schedule.
+
+The store accepts any actor until the installation holds a person: the validator
+allows any name while the current tenant has no account of a type other than
+=service=, and after that it demands a username the accounts table holds, in any
+tenant. A freshly created database holds service accounts and no person, so the
+suite passed where it was written and fails where the corpus is provisioned and
+somebody has signed up.
+
+The fixture now takes its actor from the accounts table, with the bootstrap case
+as the fallback, so the suite reads the same in both states.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The suite on a database with no person | 15 of 15 passed | =./run_tests.sh scheduler_publish_housekeeping_test.sql= | working tree |
+| The suite on a database with a person | 15 of 15 passed | the same, after an account of type =user= was added to the system tenant | working tree |
+| The suite with a person before the fix | 1 of 15 ran, planned 15 | the same, at =df12de7626= | df12de7626 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

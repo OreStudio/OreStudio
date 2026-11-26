@@ -722,6 +722,7 @@ daily returns as long as the expiry itself, so a ten-year quote needs ten years 
 - --package-dir ../run/packages
 - --http-base-url http://localhost:{http_port}
 
+# compass:except(service_integrity/unmet_obligation) expires=2027-01-31 approver=marco reason=the service is registered ahead of its application so its unit, role and start order exist; the application is the first act of the serve task, which removes this exception
 * ores.vault.service
 :PROPERTIES:
 :psql_var:    vault_service

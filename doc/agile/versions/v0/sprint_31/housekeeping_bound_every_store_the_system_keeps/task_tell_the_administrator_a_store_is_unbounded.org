@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 53D81AE9-6031-4129-BBCE-52DEED048B9E
+:END:
+#+title: Task: Tell the administrator a store is unbounded
+#+description: Housekeeping raises a notification into the inbox of the administrator who can act, the system's or the tenant's by the scope of the store, when a store has no bound, when a sweep records a policy skipped or failed, and when a store passes its size budget. The notification names the store and links to its page; it never carries the numbers a person needs to act.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping:retention:inbox:notification:alerting:sprint_31:housekeeping_bound_every_store_the_system_keeps:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person who can act learns that a store has no bound, or no effective one,
+without opening the housekeeping screen. Housekeeping raises a notification into
+=ores.inbox= of the administrator who owns the store — the system's for a
+platform store, the tenant's for one a tenant writes — when a store has no
+policy, when a sweep records a policy skipped or failed, and when a store passes
+a size budget. The notification names the store, says what happened and links to
+its page; the numbers a person needs to act stay on the page, where the plot and
+the policy are.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-26                               |
+
+* Acceptance
+
+- Housekeeping adds a notification kind for each case it raises, with its message key and its arguments, as a seed row and no change to the subsystem
+- The audience is the holder of the administrator permission in the store's own tenant: the system tenant for a platform store, a tenant for a store that tenant writes
+- A notification names the store and links to its page, and carries no size, no growth rate and no policy period
+- One sweep that skips four policies raises one notification, not four: the inbox groups by kind and subject
+- Raising never fails the sweep: a delivery that fails is recorded and retried, and the sweep completes
+- A store that comes back under a bound raises nothing, so the count of open housekeeping notifications follows the count of unbounded stores
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

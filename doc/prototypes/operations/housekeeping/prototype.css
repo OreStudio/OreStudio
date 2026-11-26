@@ -162,6 +162,18 @@ h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
 .meta { font-size: 12px; color: var(--ink-faint); }
 .meta b { color: var(--ink); }
 
+/* The fixture a deep link selected, stated where the page title is. */
+.fixture {
+    margin: 10px 0 0;
+    padding: 8px 12px;
+    border-left: 2px solid var(--warn);
+    background: rgba(210, 153, 34, 0.08);
+    font-size: 12px;
+    color: #efd39a;
+    max-width: 70ch;
+}
+.fixture b { color: var(--ink); }
+
 /* One line of installation totals, present in every variant. */
 .statline {
     display: flex;
@@ -177,6 +189,7 @@ h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
 }
 .statline b { color: var(--ink); font-weight: 600; }
 .statline b.warn { color: var(--warn); }
+.statline b.bad { color: var(--bad); }
 
 /* Tabs are the way to the runs log in every variant. */
 .tabs {
@@ -267,6 +280,38 @@ h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
 
 .note { margin: 14px 0 0; font-size: 12px; color: var(--ink-faint); }
 .empty { margin: 0; font-size: 13px; color: var(--ink-dim); }
+
+/* The list's one filter: the stores nothing bounds. The chip carries the count,
+ * because the count is the work left to do. */
+.filters { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink-dim);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+.chip:hover { color: var(--ink); }
+.chip[aria-pressed="true"] {
+    background: rgba(248, 81, 73, 0.12);
+    border-color: rgba(248, 81, 73, 0.55);
+    color: #ff9a94;
+}
+.chip .count {
+    padding: 0 6px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 11px;
+    color: var(--ink-faint);
+}
+.chip[aria-pressed="true"] .count { border-color: rgba(248, 81, 73, 0.45); color: #ff9a94; }
+.chip .count.alert { border-color: rgba(248, 81, 73, 0.45); color: #ff9a94; }
 
 .details { display: grid; gap: 12px 32px; }
 .details.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }

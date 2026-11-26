@@ -18,16 +18,16 @@
 
 * Summary
 
-Housekeeping is the one administration screen whose subject is absence: the
-installation keeps a dozen stores, three of them bounded by a policy, and the
-screen's job is to make the unbounded ones impossible to miss. Measured on a
-provisioned tenant, the largest unbounded store was the compute host's own
-scratch — 565 job folders and 1.9 GB — followed by the delivery counts at
-about 365 MB a day, while the bounded report outputs were doing exactly what
-their policy said. The prototype argues three shapes for showing that in one
-place, and the states a store is in when the news is bad, including the one
-that reads as bounded and is not: a policy whose action the sweep cannot
-perform.
+Housekeeping is the one administration screen whose subject is absence: what
+nothing deletes. The installation keeps nine stores; a default policy bounds
+seven, the content digest bounds the package cache, and the screen's job is to
+make the bound — or its absence — impossible to miss. Measured on a provisioned
+tenant, the largest store with nothing bounding it was the compute host's own
+scratch — 565 job folders and 1.9 GB — followed by the delivery counts at about
+365 MB a day, while the bounded report outputs were doing exactly what their
+policy said. The prototype argues three shapes for showing that in one place,
+and the states a store is in when the news is bad, including the one that reads
+as bounded and is not: a policy whose action the sweep cannot perform.
 
 Everything here is mock data. The page calls no service, needs no build and no
 session, and every variant opens from one file with a query parameter.
@@ -49,8 +49,9 @@ separate page: the same person asks both, in one sitting, and the answer to
 
 ** The variants
 
-- *A — one table of every store.* Store, bounded-by, state, size, growth, last
-  sweep, freed, with a detail panel for the selected row. Carries forward: it
+- *A — one table of every store.* Store, whether anything bounds it, what
+  bounds it, size, growth, and a filter to the stores nothing bounds; the store
+  a person opens gets a page of its own. Carries forward: it
   is the only shape that holds all twelve rows and their numbers at once, and
   it is the shape the logs screen already uses, so the person reads it twice a
   week without learning it twice.
@@ -198,8 +199,12 @@ these should I look at". A twelve-point plot in every row is a shape a person
 tries to read nine times, and none of the nine gets read. The plot stays on the
 store's page, where there is one store and room to look at it.
 
-A row now states three things, in the order the eye asks them:
+A row now states four things, in the order the eye asks them:
 
+- *whether anything bounds it*, in one word and one colour — Bounded, Unbounded,
+  or Bounded by keying, in green, red and green. This is the column the list
+  exists for, and it is the first question because it is the only one with a
+  wrong answer;
 - *the size*, in bytes with its unit, because that is the number the question
   starts from;
 - *how close it is to a stated limit*, as a bar and a percentage — but only
@@ -218,21 +223,107 @@ refusal to keep accepting rows — and that mechanism belongs with the field, no
 after it. The prototype draws the indicator so the shape can be judged; the field
 and its consequence are for the task that adds them.
 
+** An unbounded store is the screen's verdict
+
+The sweep visits policies. A store no policy names is not visited at all: nothing
+deletes from it, nothing reports on it, and it appears in the run log only as an
+absence. So a store with no policy is not "unconfigured"; it is kept for ever,
+and it grows at whatever rate its writers write, until the database or the disk
+is full. The three journeys call that the failure the screen exists to prevent,
+and the list has to say it before it says anything else.
+
+Two things follow, and the prototype does both.
+
+The test is *bounded*, not *has a policy*. A policy that is switched off, that the
+sweep records as skipped, or whose last run failed leaves the store exactly as
+unbounded as no policy at all. The column therefore reads Bounded, Unbounded or
+Bounded by keying, and the reason — no policy, off, skipped, failed — sits beside
+it in the Bounded by cell, where the diagnosis belongs. This is not pedantry: a
+default that asks for a row delete is declared, enabled and recorded skipped on
+every sweep, and its store is unbounded.
+
+The verdict is red. An unbounded store has no reading that is not bad: it is the
+one state on this screen with a wrong answer, and amber would file it beside a
+store that is merely close to a budget.
+
+The cost is stated in bytes. A row says not only that nothing bounds it but what
+that means: *nothing removes it · about 7.4 GB a year*, from the same twelve-week
+series the plot draws. For a store whose size cannot be read the row says the
+worse thing honestly: *size not measured, so growth is invisible*. The plot and
+the alarm are one measurement seen two ways, which is why the samples have to be
+built before either works.
+
+The top of the page states the count — *1 of the 9 stores is unbounded* — with
+the way to filter the list to it. The list is then a work list, and its empty
+state is the goal: *every store has a bound*.
+
+** Bounded by default, and the one store a default cannot cover
+
+An alarm that fires on most of the list is wallpaper, so the count has to reach
+zero and stay there or nobody reads it. The reviewer decided the shape: the store
+catalogue declares a default bound for every store that can take one, and
+provisioning creates the policy, so an installation never ships unbounded. The
+cost is the opposite risk — data deleted on a default nobody read — which is why
+the default is a quarter for run output and a day for scratch, and why a policy
+states the reason it is kept.
+
+The fixture now shows that world. Seven of the nine stores carry a default
+policy, the package cache is bounded by its content digest, and one store is
+unbounded: the calendar dates. That one is the interesting case, because no
+default can cover it: a policy bounds by *age*, and a business day behind the
+horizon is not old, it is out of range. The days are re-derivable from the
+calendar's rules, so the bound they need is a delete by range — every day before
+the horizon start — which the policy model cannot express. The screen says so
+rather than showing a policy that would delete the days pricing still needs.
+
+The empty state changes meaning with this decision. It is no longer a fresh
+installation: it is an installation whose defaults somebody removed, and it reads
+as the alarm it is. The page therefore names the fixture it is showing whenever a
+deep link selects one, and a link to a state opens the list rather than the page
+of a store that the state no longer chooses.
+
+** Telling a person without them opening the screen
+
+The screen is pull. Housekeeping needs push as well, or nobody learns that a
+store is unbounded until it fills a disk. The platform already holds the
+mechanism: =ores.inbox= raises notifications of a stated kind, to an audience by
+permission, with a link to the thing and a message key the screen renders in the
+reader's language ([[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification
+requirements]]). Housekeeping contributes kinds and raises them; it does not
+build a channel of its own.
+
+| Case | Who is told | What the message says |
+|------+-------------+-----------------------|
+| A store is unbounded when the installation is provisioned | The system administrator, or the tenant's, by the store's scope | Which store, that it has no bound, and a link to its page |
+| A sweep records a policy skipped | The owner of the store | The action asked for, the action the sweep performs, and the store it leaves unbounded |
+| A sweep fails | The owner of the store | The store, the action and the server's message |
+| A store passes its size budget | The owner of the store | The size, the budget and the rate |
+
+Two rules keep the messages worth reading. A notification names the store and
+links to it; it never carries the numbers to act on, because a person who has to
+act needs the plot and the policy. And a sweep that skips four policies raises
+one message, not four: the inbox groups by kind and subject.
+
+The audience follows the store, not the person raising it. A store the platform
+owns is the system administrator's problem; a store a tenant's writes are the
+tenant's. That is the same scope the catalogue states for the store, which is why
+the catalogue has to carry it.
+
 ** The states a store can be in
 
 | State | What the screen says | Why it matters |
 |-------+----------------------+----------------|
-| fresh | Applied; freed 0, because nothing is older than the period | A zero is not a failure, and the screen must not imply one |
-| skipped | The policy is enabled and the store is not bounded: the sweep performs a chunk drop and this policy asks for something else | The dangerous state: it reads as bounded on paper |
-| failed | The sweep ran and raised; the detail is the server's message | The store is unbounded until somebody reads the message |
-| disabled | The policy is off, so the store is kept for ever | A decision, and it should read as one |
-| empty | No policy at all, with the way to add one | The store was never decided about |
+| fresh | Seven defaults hold, one store is unbounded, and the last sweep freed 0 B because nothing is older than its period | A zero is not a failure, and the screen must not imply one |
+| skipped | The defaults are declared and four cannot be applied, because the sweep performs a chunk drop and nothing else | The dangerous state: it reads as bounded on paper |
+| failed | Unbounded — the last sweep failed; the detail is the server's message | The store is unbounded until somebody reads the message |
+| disabled | Unbounded — the policy is off, so the store is kept for ever | A decision, and it should read as one |
+| empty (=Defaults removed=) | No default holds: somebody removed them, and every store but the package cache is unbounded | The alarm the state exists for |
 
 ** What is fake
 
-Everything. The sizes, the growth rates, the policies, the runs and the person
-signed in are mock data taken from one environment at one moment: 283 MB of
-calendar dates, 186 MB of report cashflows after 39 runs, 29 MB of delivery
+Everything. The sizes, the growth rates, the seven policies, the runs and the
+person signed in are mock data taken from one environment at one moment: 283 MB
+of calendar dates, 186 MB of report cashflows after 39 runs, 29 MB of delivery
 counts growing at about 27,000 rows an hour, 1.9 GB of host scratch. No request
 leaves the page.
 
@@ -246,6 +337,10 @@ leaves the page.
 
 ** The verdict
 
+Signed off on 2026-11-26, at the end of a review that ran as one branch
+(=review/housekeeping-prototype=) rather than as a pull request per comment, so
+the review reads as one history instead of a dozen merges.
+
 Variant A is accepted: one table of every store, and a page of its own for the
 store a person opens. It carries the screen because it holds every
 store and every number at once and because it is the shape the logs screen
@@ -255,6 +350,27 @@ Variants B and C stay in the page as the alternatives A was weighed against, not
 as shapes to build. Their arguments are recorded above, and C's editor is no
 longer a variant of its own: a policy is changed in A's panel, where the store
 and its size are already in view.
+
+The review settled three things beyond the shape, and each one moved the
+prototype:
+
+- the list carries the verdict of boundedness in red, because a store with no
+  bound that applies grows until the disk is full, and no reading of that is
+  merely a warning;
+- every store ships with a default bound from the catalogue, so unbounded is an
+  exception rather than the normal state, and the count on the screen can reach
+  zero — which is the only way the count is worth reading;
+- housekeeping tells the administrator through the inbox of the tenant that owns
+  the store, because the screen is pull and a disk fills while nobody is looking.
+
+Work the review produced, none of it built:
+
+- [[id:6802E7DF-9851-41A8-B1CB-6E0E678D389C][Bound every store by default]] — the
+  catalogue states the default, provisioning creates it.
+- [[id:53D81AE9-6031-4129-BBCE-52DEED048B9E][Tell the administrator a store is
+  unbounded]] — the notifications, with their audiences and their kinds.
+- [[id:DE1FA71A-1FCA-473F-A0D4-8E810067C18A][A policy cannot bound a store by
+  date range]] — the calendar dates, the one store a default cannot cover.
 
 The screen still cannot be built until three things exist: the store catalogue
 that carries a human name and a description, the samples and the size read that

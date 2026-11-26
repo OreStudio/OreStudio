@@ -207,33 +207,33 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Schema columns the rule adds | 3: rate_source, derived_spread_basis_points, derived_spread_source | =synthetic_ir_curve_generation_configs_create.sql= after a generate | 7920d1c2c3 |
-| Files the generate rewrote | 24 | =git status --short= after =compass generate= | 7920d1c2c3 |
-| Hand-written web schema the change broke | 1: the BFF write schema in =synthetic.ts= | =compass build=, TS1360 on the write type | 7920d1c2c3 |
-| Hand-written payload list the change broke | 1: =IR_WRITE_FIELDS= in =irFeeds.tsx= | reading the screen's save path | 7920d1c2c3 |
-| Derived configs seeded | 5: COP IBR 3M, JPY EYTIBOR 3M, KRW GENERIC 3M, PLN WIBOR 6M, USD SOFR 1M | =select ... where rate_source <> 'process'= on a recreated database | 7920d1c2c3 |
-| Families that admit the terms | 5, each by its own flags | the same query joined to the family catalogue | 7920d1c2c3 |
-| Databases the publish function broke | every dataset publish, on the new not-null column | =compass db recreate -y -k=, "null value in column rate_source" | 7920d1c2c3 |
-| Derived fixing series on a live run | 5, 520 fixings each, latest 2026-11-25 | =select s.oresmd_uri, count(f.*) ...= over the series and its fixings | 7920d1c2c3 |
-| Newest fixing of each | USD SOFR 1M 3.89%, COP IBR 3M 8.96%, JPY EYTIBOR 3M 1.32%, KRW GENERIC 3M 2.94%, PLN WIBOR 6M 5.60% | the same query's newest value | fcb045c4a1 |
+| Schema columns the rule adds | 3: rate_source, derived_spread_basis_points, derived_spread_source | =synthetic_ir_curve_generation_configs_create.sql= after a generate | e582cc9349 |
+| Files the generate rewrote | 24 | =git status --short= after =compass generate= | e582cc9349 |
+| Hand-written web schema the change broke | 1: the BFF write schema in =synthetic.ts= | =compass build=, TS1360 on the write type | e582cc9349 |
+| Hand-written payload list the change broke | 1: =IR_WRITE_FIELDS= in =irFeeds.tsx= | reading the screen's save path | e582cc9349 |
+| Derived configs seeded | 5: COP IBR 3M, JPY EYTIBOR 3M, KRW GENERIC 3M, PLN WIBOR 6M, USD SOFR 1M | =select ... where rate_source <> 'process'= on a recreated database | e582cc9349 |
+| Families that admit the terms | 5, each by its own flags | the same query joined to the family catalogue | e582cc9349 |
+| Databases the publish function broke | every dataset publish, on the new not-null column | =compass db recreate -y -k=, "null value in column rate_source" | e582cc9349 |
+| Derived fixing series on a live run | 5, 520 fixings each, latest 2026-11-25 | =select s.oresmd_uri, count(f.*) ...= over the series and its fixings | e582cc9349 |
+| Newest fixing of each | USD SOFR 1M 3.89%, COP IBR 3M 8.96%, JPY EYTIBOR 3M 1.32%, KRW GENERIC 3M 2.94%, PLN WIBOR 6M 5.60% | the same query's newest value | 5cafe9c0d5 |
 | Term indices with no fixings whose currency has an overnight curve | 5: USD SOFR 1M, COP IBR 3M, JPY EYTIBOR 3M, KRW GENERIC 3M, PLN WIBOR 6M | =evidence/fixing_gap_by_trade.sql=, readings in =evidence/fixing_gap_by_trade.txt= | c0f6ed8c38 |
-| Derived configs the dataset publish writes | 5, one collection, role =projection=, =auto_start= true | =select ... from ores_synthetic_ir_curve_generation_configs_tbl where rate_source <> 'process'= on a recreated database | fcb045c4a1 |
-| Derived fixing series on the recreated database | 5 series of 520 fixings, latest 2026-11-25 | =select s.oresmd_uri, count(f.id), max(f.fixing_date) ... group by s.oresmd_uri= | fcb045c4a1 |
-| Newest fixing of each, on the recreated database | USD SOFR 1M 3.94%, COP IBR 3M 8.96%, JPY EYTIBOR 3M 0.35%, KRW GENERIC 3M 2.94%, PLN WIBOR 6M 5.60% | the same query's newest value | fcb045c4a1 |
-| Fixings a starved node states | 0; the series stays at 520 with its newest value unchanged while the curve's node is stopped, and gains no day of its own when the node starts again | =synthetic stop node synthetic.bloomberg.ir.yield_curve.sofr.usd=, count the series, =synthetic start node ...=, count again | a4c0956bf3 |
-| Derived fixings on a fresh provision, with no feed started by hand | 5 series of 520 fixings | =select ... where rate_source <> 'process'= and the series query, after =compass db recreate= and =services start= | de82e8471c |
-| Ids each derived adapter is asked for and accepts | derived-a 5 of 5, derived-fx-vol 2,275 of 2,275 | the market data log, "Adapter '...' accepted N and rejected 0 of N", and =compass smoke ticks= | de82e8471c |
-| Node verbs the shell gained | 2, =synthetic start node= and =synthetic stop node=, beside the folder and feed targets | =grep -n 'node <node-name>' synthetic_commands.cpp= | 86247763df |
-| Ids the derived provider serves, and its notation reads back | 2,280: 2,275 volatility points on the scheme =derived_fx_vol= and 5 fixings on =oresmd= | the catalogue round-trip test, =ores.marketdata.core.tests= | 597073f43b |
-| Suites the change reaches that pass on the tree rebased onto main | 8 of 8 | =compass test run --preset linux-clang-release-ninja -- -j 4 -R 'ores\.(synthetic\.(api\|core\|service)\|shell\.(application\|synthetic)\|marketdata\.core\|analytics\.quant\|http\.synthetic)\.tests'= | 38421a0585 |
-| pgTAP suites that pass | 109 files, 1,022 tests | =projects/ores.sql/test/run_tests.sh= | 38421a0585 |
-| Other gate checks that pass | 6: build, web, format, codegen-tests, site-page, compass-ng | =compass check --only <id>=, =compass-ng check --ratchet= | 38421a0585 |
-| Wide types the rule's three columns push over their recorded ceiling | 3: the config's domain, write and entity structs | =compass-ng check=, =wide_types/over_ceiling=, which fails no gate | 38421a0585 |
-| Fixing rows a series holds after a service restart | 520 rows over 520 days, unchanged, for all five | count the rows and the distinct =fixing_date=, then =compass services restart ores.synthetic.service=, then count again | e5d32a04bb |
-| Newest fixing of each after the restart fix | USD SOFR 1M 3.94%, COP IBR 3M 8.96%, JPY EYTIBOR 3M 0.35%, KRW GENERIC 3M 2.94%, PLN WIBOR 6M 5.60% | =select f.value ... where f.valid_to = ores_utility_infinity_timestamp_fn() and f.fixing_date = (select max(...))= | e5d32a04bb |
-| Fixing rows a node started by hand leaves | 520 rows over 520 days, unchanged, so the history is stated once | =synthetic stop node synthetic.derived.ir.yield_curve.sofr.usd.1m=, then =synthetic start node ...= as the system's administrator, then count the rows and the distinct =fixing_date= | 90ed090771 |
-| The acceptance test's discriminating value | 0.048193, where a fixing that read the overnight level would say 0.040000 | =ores.synthetic.api.tests=, =a_derived_index_fixes_the_compounded_forward_of_its_curve= | c4d93b510c |
-| Ids the derived adapter serves while a curve's node is stopped | 4 of 5, the stopped curve's fixing withheld; 5 of 5 again once the node starts, and the series stays at 520 rows over 520 days | =synthetic stop node synthetic.bloomberg.ir.yield_curve.sofr.usd= as the system's administrator, then the market data log's "Adapter 'derived-a' ... announced", then =synthetic start node ...= | e5d32a04bb |
+| Derived configs the dataset publish writes | 5, one collection, role =projection=, =auto_start= true | =select ... from ores_synthetic_ir_curve_generation_configs_tbl where rate_source <> 'process'= on a recreated database | 5cafe9c0d5 |
+| Derived fixing series on the recreated database | 5 series of 520 fixings, latest 2026-11-25 | =select s.oresmd_uri, count(f.id), max(f.fixing_date) ... group by s.oresmd_uri= | 5cafe9c0d5 |
+| Newest fixing of each, on the recreated database | USD SOFR 1M 3.94%, COP IBR 3M 8.96%, JPY EYTIBOR 3M 0.35%, KRW GENERIC 3M 2.94%, PLN WIBOR 6M 5.60% | the same query's newest value | 5cafe9c0d5 |
+| Fixings a starved node states | 0; the series stays at 520 with its newest value unchanged while the curve's node is stopped, and gains no day of its own when the node starts again | =synthetic stop node synthetic.bloomberg.ir.yield_curve.sofr.usd=, count the series, =synthetic start node ...=, count again | 26df721649 |
+| Derived fixings on a fresh provision, with no feed started by hand | 5 series of 520 fixings | =select ... where rate_source <> 'process'= and the series query, after =compass db recreate= and =services start= | 72cd52717c |
+| Ids each derived adapter is asked for and accepts | derived-a 5 of 5, derived-fx-vol 2,275 of 2,275 | the market data log, "Adapter '...' accepted N and rejected 0 of N", and =compass smoke ticks= | 72cd52717c |
+| Node verbs the shell gained | 2, =synthetic start node= and =synthetic stop node=, beside the folder and feed targets | =grep -n 'node <node-name>' synthetic_commands.cpp= | 6018de8ddb |
+| Ids the derived provider serves, and its notation reads back | 2,280: 2,275 volatility points on the scheme =derived_fx_vol= and 5 fixings on =oresmd= | the catalogue round-trip test, =ores.marketdata.core.tests= | 36f77caf3e |
+| Suites the change reaches that pass on the tree rebased onto main | 8 of 8 | =compass test run --preset linux-clang-release-ninja -- -j 4 -R 'ores\.(synthetic\.(api\|core\|service)\|shell\.(application\|synthetic)\|marketdata\.core\|analytics\.quant\|http\.synthetic)\.tests'= | 301ce6dc09 |
+| pgTAP suites that pass | 109 files, 1,022 tests | =projects/ores.sql/test/run_tests.sh= | 301ce6dc09 |
+| Other gate checks that pass | 6: build, web, format, codegen-tests, site-page, compass-ng | =compass check --only <id>=, =compass-ng check --ratchet= | 301ce6dc09 |
+| Wide types the rule's three columns push over their recorded ceiling | 3: the config's domain, write and entity structs | =compass-ng check=, =wide_types/over_ceiling=, which fails no gate | 301ce6dc09 |
+| Fixing rows a series holds after a service restart | 520 rows over 520 days, unchanged, for all five | count the rows and the distinct =fixing_date=, then =compass services restart ores.synthetic.service=, then count again | 64cc7f6584 |
+| Newest fixing of each after the restart fix | USD SOFR 1M 3.94%, COP IBR 3M 8.96%, JPY EYTIBOR 3M 0.35%, KRW GENERIC 3M 2.94%, PLN WIBOR 6M 5.60% | =select f.value ... where f.valid_to = ores_utility_infinity_timestamp_fn() and f.fixing_date = (select max(...))= | 64cc7f6584 |
+| Fixing rows a node started by hand leaves | 520 rows over 520 days, unchanged, so the history is stated once | =synthetic stop node synthetic.derived.ir.yield_curve.sofr.usd.1m=, then =synthetic start node ...= as the system's administrator, then count the rows and the distinct =fixing_date= | cf0ecbac91 |
+| The acceptance test's discriminating value | 0.048193, where a fixing that read the overnight level would say 0.040000 | =ores.synthetic.api.tests=, =a_derived_index_fixes_the_compounded_forward_of_its_curve= | 6c63bfa916 |
+| Ids the derived adapter serves while a curve's node is stopped | 4 of 5, the stopped curve's fixing withheld; 5 of 5 again once the node starts, and the series stays at 520 rows over 520 days | =synthetic stop node synthetic.bloomberg.ir.yield_curve.sofr.usd= as the system's administrator, then the market data log's "Adapter 'derived-a' ... announced", then =synthetic start node ...= | 64cc7f6584 |
 
 * Notes
 

@@ -70,7 +70,7 @@ an API publishes no area, so it is counted under =(none)=.
 | assets | assets, server | 39 | composed view 2, resource 37 |
 | auth | audit, iam, server | 65 | resource 60, transport capability 5 |
 | changes | core, server | 5 | transport capability 5 |
-| dq | dq | 39 | resource 39 |
+| dq | dq | 40 | resource 40 |
 | grid | compute, grid-app-versions, grid-downloads, grid-jobs, operations | 28 | composed view 6, resource 22 |
 | market-data | adapters, connectivity, curves, fixing-series, market-reads, marketdata, public-rates, quotes, series, subscriptions | 101 | composed view 14, resource 87 |
 | operations | core, inbox, operations, server, workflow | 11 | composed view 4, resource 5, transport capability 2 |
@@ -515,7 +515,7 @@ against the answer the BFF gives.
 
 * The inventory
 
-1533 routes: 344 answered by the BFF and 1189 by ores.http.
+1534 routes: 344 answered by the BFF and 1190 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -1647,6 +1647,7 @@ against the answer the BFF gives.
 | resource | dq | get | =/api/v1/dq/artefact_types/{code}= | ores.http | projects/ores.http/dq/src/routes/dq/artefact_type_routes.cpp:362 | A generated DQ collection: the datasets, the dataset bundles and their members, and the artefact types, each with its list, one row by key or by one of its lookups, and the bulk get. These are the reads the DQ screens make. |
 | resource | dq | get | =/api/v1/dq/artefact_types/{code}/versions= | ores.http | projects/ores.http/dq/src/routes/dq/artefact_type_routes.cpp:464 | A generated DQ collection: the datasets, the dataset bundles and their members, and the artefact types, each with its list, one row by key or by one of its lookups, and the bulk get. These are the reads the DQ screens make. |
 | resource | dq | get | =/api/v1/dq/artefact_types/{code}/versions/{version}= | ores.http | projects/ores.http/dq/src/routes/dq/artefact_type_routes.cpp:481 | A generated DQ collection: the datasets, the dataset bundles and their members, and the artefact types, each with its list, one row by key or by one of its lookups, and the bulk get. These are the reads the DQ screens make. |
+| resource | dq | get | =/api/v1/dq/bundle_roster= | ores.http | projects/ores.http/dq/src/routes/dq/bundle_roster_routes.cpp:39 | A generated DQ collection: the datasets, the dataset bundles and their members, and the artefact types, each with its list, one row by key or by one of its lookups, and the bulk get. These are the reads the DQ screens make. |
 | resource | dq | get | =/api/v1/dq/dataset_bundle_members= | ores.http | projects/ores.http/dq/src/routes/dq/dataset_bundle_member_routes.cpp:327 | A generated DQ collection: the datasets, the dataset bundles and their members, and the artefact types, each with its list, one row by key or by one of its lookups, and the bulk get. These are the reads the DQ screens make. |
 | resource | dq | post | =/api/v1/dq/dataset_bundle_members= | ores.http | projects/ores.http/dq/src/routes/dq/dataset_bundle_member_routes.cpp:371 | A generated write of a DQ collection: create, replace, remove, or one of the bulk put and delete calls. The screens read; publishing is a workflow and not a write to these tables. |
 | resource | dq | put | =/api/v1/dq/dataset_bundle_members= | ores.http | projects/ores.http/dq/src/routes/dq/dataset_bundle_member_routes.cpp:385 | A generated write of a DQ collection: create, replace, remove, or one of the bulk put and delete calls. The screens read; publishing is a workflow and not a write to these tables. |

@@ -3960,8 +3960,7 @@ std::vector<std::string> types_the_book_permits(const std::vector<std::string>& 
 
     std::vector<std::string> permitted;
     for (const auto& code : stated)
-        if (std::ranges::find(*approval->allowed_product_types, code) !=
-            approval->allowed_product_types->end())
+        if (permits(*approval, code))
             permitted.push_back(code);
     return permitted;
 }
@@ -3987,15 +3986,10 @@ std::vector<std::string> stated_codes(const std::vector<std::string>& class_code
     return stated;
 }
 
-/*
- * Fails when a planned slot names a product the book it lands in does not
- * permit. The narrowing below should make this unreachable, and that is why it is
- * here: the matrix the write path enforces and the one the planner chose within
- * must be one answer, and a drift between them is not something a population may
- * discover at the booking.
- */
-void refuse_a_product_the_book_does_not_permit(const domain::trade_population_plan& plan,
-                                               std::span<const domain::book_approval> approvals) {
+}
+
+void refuse_products_the_books_do_not_permit(const domain::trade_population_plan& plan,
+                                             std::span<const domain::book_approval> approvals) {
     for (const auto& slot : plan.slots) {
         const auto* approval = approval_of(approvals, slot.book_id);
         if (approval && permits(*approval, slot.trade_type_code))
@@ -4071,8 +4065,6 @@ domain::trade_population_plan plan_for_scope(const domain::trade_generation_scop
     return plan;
 }
 
-}
-
 domain::trade_population_plan
 plan_on_expected_market_data(const domain::trade_generation_scope& scope,
                              std::span<const domain::book_approval> approvals) {
@@ -4124,8 +4116,7 @@ plan_on_expected_market_data(const domain::trade_generation_scope& scope,
             {.trade_type_code = code, .planned = planned, .reason = std::move(reason)});
     }
 
-    refuse_a_product_the_book_does_not_permit(plan, approvals);
+    refuse_products_the_books_do_not_permit(plan, approvals);
     return plan;
 }
-
 }

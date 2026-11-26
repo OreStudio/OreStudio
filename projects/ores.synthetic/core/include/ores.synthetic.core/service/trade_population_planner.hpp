@@ -88,6 +88,22 @@ plan_on_expected_market_data(const domain::trade_generation_scope& scope,
                              std::span<const domain::book_approval> approvals);
 
 /**
+ * @brief Fails when a planned trade names a product the book it lands in does not permit.
+ *
+ * =plan_on_expected_market_data= runs this before it answers, and it is stated
+ * apart from the planner because the two readings of the matrix must agree: the
+ * one the write path enforces and the one the planner chose within. A caller that
+ * holds a plan of its own — a resumed run, a cached plan, a test — checks it the
+ * same way rather than discovering the drift at a booking.
+ *
+ * @throws trade_population_error naming the book, the product, and the products
+ *         that book permits
+ */
+ORES_SYNTHETIC_CORE_EXPORT void
+refuse_products_the_books_do_not_permit(const domain::trade_population_plan& plan,
+                                        std::span<const domain::book_approval> approvals);
+
+/**
  * @brief Names the trade type code the bond family states for a plain bond.
  */
 inline constexpr std::string_view bond_trade_type_code = "Bond";

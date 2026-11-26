@@ -85,10 +85,12 @@ struct get_book_product_approvals_request {
 struct get_book_product_approvals_response {
     ores::utility::domain::result result;
     /**
-     * @brief One entry per book named, in the order the request named them.
+     * @brief One entry per distinct book named, in the order the request first named
+     * them.
      *
-     * A book that is not the tenant's resolves to the empty set, which is the
-     * resolution's answer for a row the caller cannot see.
+     * A book the request repeats answers once, because the answer is the book's and
+     * not the request's. A book that is not the tenant's resolves to the empty set,
+     * which is the resolution's answer for a row the caller cannot see.
      */
     std::vector<book_product_approval> approvals;
 

@@ -100,12 +100,14 @@ public:
      * @brief The product types each of @p book_ids permits, as refdata resolves
      * them through the book, its desk and its party.
      *
-     * A book the answer does not name permits every type, which is what a party
-     * that states no matrix means. The resolution is refdata's own, so the
-     * generator chooses within the matrix the write path enforces rather than
-     * within a second statement of it.
+     * A book no level restricts answers no set, and a book that permits nothing
+     * answers an empty one. The resolution is refdata's own, so the generator
+     * chooses within the matrix the write path enforces rather than within a
+     * second statement of it.
      *
-     * @throws trade_population_write_error when the answer cannot be read.
+     * @throws trade_population_write_error when the answer cannot be read. A
+     *         planner refuses a book of its scope that the answer does not name,
+     *         because an unread approval is not an open one.
      */
     [[nodiscard]] virtual std::vector<domain::book_approval>
     book_approvals(const std::vector<boost::uuids::uuid>& book_ids) = 0;

@@ -35,12 +35,6 @@ auto& lg() {
     return instance;
 }
 
-/*
- * The resolution of every book of the request, in the request's order, with one
- * row per type it permits. A book that permits every type and one that permits
- * none both answer a single row that names no type, and the flag tells the two
- * apart, so a caller reads a shut book as shut and not as open.
- */
 constexpr auto query = R"(select book_id::text,
        permits_every_type::text,
        product_type_code

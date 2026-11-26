@@ -213,13 +213,17 @@ domain::trade_generation_scope fx_scope() {
     return scope;
 }
 
-/// The approvals a scope's books carry when the tenant states no matrix: an absent set each.
-std::vector<domain::book_approval> no_matrix(const domain::trade_generation_scope& scope) {
+/// The approvals a list of books carries when the tenant states no matrix: an absent set each.
+std::vector<domain::book_approval> no_matrix(const std::vector<boost::uuids::uuid>& book_ids) {
     std::vector<domain::book_approval> approvals;
-    for (const auto& book_id : scope.book_ids)
+    for (const auto& book_id : book_ids)
         approvals.push_back(
             domain::book_approval{.book_id = book_id, .allowed_product_types = std::nullopt});
     return approvals;
+}
+
+std::vector<domain::book_approval> no_matrix(const domain::trade_generation_scope& scope) {
+    return no_matrix(scope.book_ids);
 }
 
 /**
@@ -244,11 +248,7 @@ struct recording_writer final : trade_population_writer {
 
     std::vector<domain::book_approval>
     book_approvals(const std::vector<boost::uuids::uuid>& book_ids) override {
-        std::vector<domain::book_approval> approvals;
-        for (const auto& book_id : book_ids)
-            approvals.push_back(
-                domain::book_approval{.book_id = book_id, .allowed_product_types = std::nullopt});
-        return approvals;
+        return no_matrix(book_ids);
     }
 
     std::optional<trade_population_stored> read_trade(const boost::uuids::uuid& id) override {
@@ -2758,6 +2758,27 @@ TEST_CASE("a_type_no_book_of_the_config_permits_names_the_matrix_and_not_the_mar
             CHECK(outcome.planned == 0);
             CHECK(outcome.reason.find("no book of the config permits") != std::string::npos);
         }
+}
+
+TEST_CASE("a_plan_is_refused_when_a_trade_names_a_product_its_book_does_not_permit",
+          "[trade_population]") {
+    using namespace ores::synthetic::service;
+    const auto scope = bond_scope();
+    const auto plan = plan_on_expected_market_data(scope, no_matrix(scope));
+    REQUIRE_FALSE(plan.slots.empty());
+
+    /*
+     * The population the planner made is one its own books accept, so the check
+     * passes on it; a matrix that permits none of the planned products is the
+     * drift the check exists to refuse.
+     */
+    CHECK_NOTHROW(refuse_products_the_books_do_not_permit(plan, no_matrix(scope)));
+
+    auto shut = no_matrix(scope);
+    for (auto& approval : shut)
+        approval.allowed_product_types = std::vector<std::string>{"InflationSwap"};
+
+    CHECK_THROWS_AS(refuse_products_the_books_do_not_permit(plan, shut), trade_population_error);
 }
 
 TEST_CASE("a_book_that_permits_none_of_a_configs_types_books_nothing", "[trade_population]") {

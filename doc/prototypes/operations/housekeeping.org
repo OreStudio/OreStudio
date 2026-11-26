@@ -278,7 +278,9 @@ rather than showing a policy that would delete the days pricing still needs.
 
 The empty state changes meaning with this decision. It is no longer a fresh
 installation: it is an installation whose defaults somebody removed, and it reads
-as the alarm it is.
+as the alarm it is. The page therefore names the fixture it is showing whenever a
+deep link selects one, and a link to a state opens the list rather than the page
+of a store that the state no longer chooses.
 
 ** Telling a person without them opening the screen
 
@@ -315,7 +317,7 @@ the catalogue has to carry it.
 | skipped | The defaults are declared and four cannot be applied, because the sweep performs a chunk drop and nothing else | The dangerous state: it reads as bounded on paper |
 | failed | Unbounded — the last sweep failed; the detail is the server's message | The store is unbounded until somebody reads the message |
 | disabled | Unbounded — the policy is off, so the store is kept for ever | A decision, and it should read as one |
-| empty | No default holds: somebody removed them, and every store but the package cache is unbounded | The alarm the state exists for |
+| empty (=Defaults removed=) | No default holds: somebody removed them, and every store but the package cache is unbounded | The alarm the state exists for |
 
 ** What is fake
 

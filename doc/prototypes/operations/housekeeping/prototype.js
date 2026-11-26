@@ -46,12 +46,12 @@
         {
             id: 'fresh',
             name: 'Fresh',
-            gist: 'Every enabled policy applied at 17:15 and freed 0 B because no chunk is older than its period yet. The zero is expected, not broken.'
+            gist: 'Every default bound applied at 17:15 and freed 0 B because nothing is older than its period yet. One store has no default the platform can state: the calendar dates. The zero is expected, not broken.'
         },
         {
             id: 'skipped',
             name: 'Skipped',
-            gist: 'An enabled delete-rows policy on the ordinary table is recorded as skipped: the sweep applies only a chunk drop today, so the store is not bounded.'
+            gist: 'The defaults are declared, and the sweep performs only a chunk drop, so the four defaults that ask for something else are recorded as skipped. Those stores read as bounded and are not.'
         },
         {
             id: 'failed',
@@ -65,8 +65,8 @@
         },
         {
             id: 'empty',
-            name: 'Empty',
-            gist: 'No retention policy exists at all. Nothing bounds any store but the digest-keyed package cache, and the screen offers the way to add one.'
+            name: 'Defaults removed',
+            gist: 'No retention policy exists at all, so somebody removed the defaults. Only the digest-keyed package cache is bounded, and the screen offers the way to add a policy back.'
         }
     ];
 
@@ -633,10 +633,21 @@
 
     /* -------------------------------------------------------- chrome */
 
+    /* A deep link carries a state, and a reviewer who lands on one without
+       knowing it is looking at a fixture reads the screen as a lie. The page
+       names the state it is showing. */
+
+    function fixtureLine() {
+        const state = stateById(S.state);
+        if (!state || state.id === 'fresh') return '';
+        return '<p class="fixture">Showing the <b>' + esc(state.name) + '</b> fixture: ' + esc(state.gist) + '</p>';
+    }
+
     function header() {
         return '<header class="pageheader"><div>' +
             '<h1>Housekeeping</h1>' +
             '<p class="sub">Every store the installation keeps, what bounds it, how large it is, and what the sweep has actually done.</p>' +
+            fixtureLine() +
             '</div><div class="head-actions">' +
             '<span class="meta">Signed in as system administrator · tenant system<br>Read at ' + esc(READ_AT) + '</span>' +
             '<a class="btn secondary" href="../../index.html">Back to prototypes</a>' +
@@ -1851,11 +1862,6 @@
         if (storeById(params.get('store'))) S.selected = params.get('store');
         if (storeById(params.get('runsfor'))) S.runFilter = params.get('runsfor');
         if (params.get('filter') === 'unbounded') S.onlyUnbounded = true;
-        if (!storeById(params.get('store'))) {
-            if (S.state === 'empty') S.selected = 'calendar_dates';
-            else if (S.state === 'skipped') S.selected = 'delivery_counts';
-            else if (S.state === 'failed' || S.state === 'disabled') S.selected = 'report_cashflows';
-        }
     }
 
     document.addEventListener('click', function (ev) {

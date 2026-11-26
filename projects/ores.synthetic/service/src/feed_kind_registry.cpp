@@ -105,6 +105,11 @@ read_calibration_policy(const ores::database::context& ctx, const std::string& a
 
 namespace {
 
+auto& registry_lg() {
+    static auto instance = ores::logging::make_logger("ores.synthetic.service.feed_kind_registry");
+    return instance;
+}
+
 /**
  * @brief The source name of the spot feed a surface names, or why it names none.
  *
@@ -381,30 +386,30 @@ feed_kind make_ir_curve_kind() {
         rrepo::ir_curve_bootstrap_config_repository bootstrap_repo;
         const auto bootstrap_configs = bootstrap_repo.read_latest(ctx);
 
+        // The convention an index's term is measured in is its overnight curve's own: the
+        // funding config of the currency that takes no tenor, which is the curve a derived
+        // index reads.
         const auto convention_of = [&bootstrap_configs](const std::string& currency) {
-            for (const auto& config : bootstrap_configs)
-                if (config.currency_code == currency && config.curve_family_role == "FUNDING") {
-                    try {
-                        return rmapping::parse_day_count_convention_code(
-                            config.day_count_convention);
-                    } catch (const std::exception&) {
-                        // A convention the calculator does not implement leaves the
-                        // compounded rate on the most common overnight basis rather
-                        // than refusing the whole request.
-                        return ores::analytics::quant::service::day_count_convention_code::A360;
-                    }
-                }
-            return ores::analytics::quant::service::day_count_convention_code::A360;
+            const auto funds = [&currency](const auto& config) {
+                return config.currency_code == currency && config.curve_family_role == "FUNDING" &&
+                       config.index_tenor.empty();
+            };
+            const auto funding = std::ranges::find_if(bootstrap_configs, funds);
+            if (funding == bootstrap_configs.end())
+                return ores::analytics::quant::service::day_count_convention_code::A360;
+            try {
+                return rmapping::parse_day_count_convention_code(funding->day_count_convention);
+            } catch (const std::exception&) {
+                // A convention the calculator does not implement leaves the compounded
+                // rate on the most common overnight basis rather than refusing the whole
+                // request.
+                return ores::analytics::quant::service::day_count_convention_code::A360;
+            }
         };
 
         // A derived index says why it is not offered rather than vanishing from the
         // run: the address its fixings take, the curve it reads and the term are all
         // things a person can fix, and silence would say none of it.
-        const auto& registry_lg = []() -> auto& {
-            static auto instance =
-                ores::logging::make_logger("ores.synthetic.service.feed_kind_registry");
-            return instance;
-        };
 
         std::vector<feed_kind_candidate> out;
         out.reserve(rows.size());
@@ -799,12 +804,19 @@ feed_start_attempt feed_kind_registry::make_feed(const feed_start_target& target
         return {.feed = {}, .failure = outcome.skip_reason};
 
     // A derived index reads a curve another node publishes, so it states nothing while the
-    // graph marks it starved: the caller that starts it is the one that reads the graph.
+    // graph marks it starved: the caller that starts it is the one that reads the graph. It
+    // also asks which days the market already holds, so a node started by hand states the
+    // history the market lacks and not one it has.
     if (auto* derived = std::get_if<feed::derived_fixing_feed_build_input>(&*outcome.input);
-        derived != nullptr && bctx.node_halted)
-        derived->starved = [halted = bctx.node_halted, name = target.row.candidate.source_name] {
-            return halted(name);
-        };
+        derived != nullptr) {
+        if (!derived->held)
+            derived->held = bctx.held_by_item;
+        if (bctx.node_halted)
+            derived->starved = [halted = bctx.node_halted,
+                                name = target.row.candidate.source_name] {
+                return halted(name);
+            };
+    }
 
     return {.feed = factory().make(target.row.kind->kind, bctx, *outcome.input), .failure = {}};
 }

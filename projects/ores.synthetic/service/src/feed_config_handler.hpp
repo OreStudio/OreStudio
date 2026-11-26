@@ -22,6 +22,7 @@
 
 #include "client_message.hpp"
 #include "feed_kind_registry.hpp"
+#include "fixing_inputs.hpp"
 #include "generator_fleet.hpp"
 #include "ores.analytics.quant/service/run_market.hpp"
 #include "ores.analytics.quant/service/tick_scheduler.hpp"
@@ -236,9 +237,9 @@ public:
                 .nats = nats_,
                 .auth_nats = auth_nats_,
                 .market = market_,
-                .node_halted = [this](const std::string& name) {
-                    return generators_.is_halted(name);
-                }};
+                .node_halted =
+                    [this](const std::string& name) { return generators_.is_halted(name); },
+                .held_by_item = make_held_days_reader(req_ctx, auth_nats_)};
             auto attempt = registry_.make_feed(*target, bctx);
             if (!attempt.feed) {
                 resp.success = false;

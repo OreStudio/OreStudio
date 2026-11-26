@@ -31,11 +31,14 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.synthetic.api/export.hpp"
 #include "ores.synthetic.api/feeds/node_journal.hpp"
+#include <chrono>
 #include <cstdint>
+#include <expected>
 #include <functional>
 #include <map>
 #include <memory>
 #include <optional>
+#include <set>
 #include <string>
 #include <string_view>
 #include <variant>
@@ -63,6 +66,16 @@ inline ores::analytics::quant::math::rng_stream price_stream_for(std::uint64_t r
 }
 
 /**
+ * @brief The days the market already holds of an item, up to a date.
+ *
+ * A feed states a history only when the market holds none of the item, so every caller
+ * that can build a fixing feed asks this first.
+ */
+using fixing_held_reader =
+    std::function<std::expected<std::set<std::chrono::year_month_day>, std::string>(
+        const std::string& item, std::chrono::year_month_day to)>;
+
+/**
  * @brief Shared inputs every producer builder needs, gathered once by the caller (application
  * auto-start, control-plane handlers) and passed to every factory::make() call.
  */
@@ -84,6 +97,11 @@ struct feed_build_context final {
      * that drives one feed wants.
      */
     std::function<bool(const std::string& node_name)> node_halted = {};
+    /**
+     * The days the market already holds of an item, which a node built by hand asks before
+     * it states a history. None means the feed cannot tell, and it states one.
+     */
+    fixing_held_reader held_by_item = {};
 };
 
 /**
@@ -180,9 +198,7 @@ struct derived_fixing_feed_build_input final {
     std::function<bool()> starved;
     /// The days the market already holds of the item up to a date, so a history restated
     /// after a restart leaves the days it stated before.
-    std::function<std::expected<std::set<std::chrono::year_month_day>, std::string>(
-        const std::string& item, std::chrono::year_month_day to)>
-        held;
+    fixing_held_reader held;
 };
 
 /**

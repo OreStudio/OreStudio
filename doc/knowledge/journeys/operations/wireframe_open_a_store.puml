@@ -1,0 +1,60 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - SYSTEM ADMINISTRATION: OPERATIONS</b>
+  --
+  Housekeeping / <b>Market data delivery counts</b>        [ Back to the stores ]  [ Log for this store ]
+  --
+  {
+    <b>Market data delivery counts</b>   <color:#b00020>Unbounded</color>
+    A store of the installation · marketdata.delivery_counts
+    --
+    <b>THE STORE</b>
+    {#
+      Code | marketdata.delivery_counts | Name | Market data delivery counts | Owner | Market data (marketdata)
+      Target kind | ordinary_table | Target | ores_marketdata_delivery_counts_tbl | Time column | period_start
+      Measured by | relation rows | Bounded by | Nothing -- no retention policy
+    }
+    How many items each feed delivered for each series in each period, carried forward.
+    --
+    Size now: 29 MB | Measured: about 27,000 rows/hour | Ordinary table · system tenant
+  }
+  --
+  <b>GROWTH OVER TWELVE WEEKS</b>      1 MB twelve weeks ago, 29 MB today: +28 MB, about +2.5 MB a week
+  --
+  <b>POLICY</b>: no retention policy covers this store. [ Create a policy ]  [ See its runs ]
+  --
+  <b>LATEST ACTIVITY AROUND THE STORE</b>
+  {#
+    When | What | Outcome | Activity
+    24 Nov 18:00 | Sampled | Measured | 29 MB, +0.6 MB since 17:00
+    24 Nov 18:00 | Refused | Refused | policy delivery_counts_30d could not be written
+    24 Nov 17:15 | Swept | Skipped | no policy applies
+  }
+  --
+  A store opens as its own page: the list keeps the comparison, the page gives the store its room.
+}
+
+@enduml

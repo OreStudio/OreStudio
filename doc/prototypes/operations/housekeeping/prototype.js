@@ -281,7 +281,7 @@
         variant: 'A',
         state: 'fresh',
         view: 'stores',
-        selected: 'report_cashflows',
+        selected: null,
         runFilter: null,
         panel: false,
         overrides: {},
@@ -807,7 +807,7 @@
         const selected = S.selected === store.id;
         return '<tr class="selectable' + (selected ? ' selected' : '') + '" data-act="select" data-store="' + store.id + '">' +
             '<td class="storecell"><button type="button" class="linkish sname" data-act="select" data-store="' + store.id + '"' +
-            ' aria-expanded="' + selected + '" aria-controls="store-detail">' + esc(store.label) + '</button>' +
+            ' aria-expanded="' + selected + '">' + esc(store.label) + '</button>' +
             '<span class="storetarget" title="' + esc(store.name) + '">' + esc(store.name) + '</span>' +
             '<span class="skind">' + esc(store.kind) + ' · ' + esc(store.where) + '</span></td>' +
             '<td>' + boundedBy(store) + '</td>' +
@@ -819,8 +819,11 @@
     }
 
     function viewA() {
-        return '<div class="split" data-selected="' + (S.selected ? 'yes' : 'no') + '">' +
-            '<section class="card master">' +
+        // A list of stores, and one page per store: the way the rest of the
+        // application works. The list is the page until a store is opened.
+        if (S.selected) return storePage();
+
+        return '<section class="card master">' +
             '<header><div><h2>Every store</h2><p class="meta">A store with no policy says so, in the Bounded by column and in its State.</p></div>' +
             '<span class="meta">' + policies().length + ' policies · ' + unboundedCount() + ' unbounded</span></header>' +
             '<div class="table-wrap"><table class="data">' +
@@ -830,7 +833,7 @@
             '<p class="note">Sizes come from the database catalogues, the object-store listing and a directory walk. ' +
             'A Freed figure of 0 B means the last sweep found nothing older than the period; it does not mean the policy failed. ' +
             'A dash means there is no policy to free anything.</p>' +
-            '</section>' + detailPanel() + '</div>';
+            '</section>';
     }
 
     function policyBlock(store, policy) {
@@ -964,20 +967,17 @@
             '<p class="description recorddesc">' + esc(store.description) + '</p>';
     }
 
-    function detailPanel() {
-        const store = storeById(S.selected);
-        if (!store) {
-            return '<section class="card detailpanel empty" id="store-detail" aria-live="polite">' +
-                '<h2>No store is open</h2>' +
-                '<p>Choose a store in the list to see its record, its growth and its log. ' +
-                'The list keeps every store in view, so the one you opened can be compared with the rest ' +
-                'without going back.</p></section>';
-        }
+    function storePage() {
+        const store = storeById(S.selected) || STORES[0];
         const policy = policyFor(store);
 
-        return '<section class="card detailpanel" id="store-detail" aria-labelledby="detail-heading">' +
+        return '<nav class="crumbs" aria-label="Breadcrumb">' +
+            '<button type="button" class="linkish" data-act="back">Housekeeping</button>' +
+            '<span class="sep">/</span><span aria-current="page">' + esc(store.label) + '</span>' +
+            '</nav>' +
+            '<section class="card storepage" id="store-detail" aria-labelledby="detail-heading">' +
             '<div class="panelnav">' +
-            '<button type="button" class="btn secondary small backbtn" data-act="back">Back to the stores</button>' +
+            '<button type="button" class="btn secondary small" data-act="back">Back to the stores</button>' +
             '<button type="button" class="btn secondary small" data-act="runs-store" data-store="' +
             store.id + '">Log for this store</button>' +
             '</div>' +
@@ -1647,10 +1647,8 @@
             S.draftKey = null;
             S.notice = null;
             S.runFilter = null;
-            if (S.state === 'empty') S.selected = 'calendar_dates';
-            else if (S.state === 'skipped') S.selected = 'delivery_counts';
-            else if (S.state === 'failed' || S.state === 'disabled') S.selected = 'report_cashflows';
-            else S.selected = 'report_cashflows';
+            S.selected = null;
+            S.editing = null;
         } else if (act === 'view') {
             S.view = el.getAttribute('data-view');
             if (S.view === 'runs') S.runFilter = null;

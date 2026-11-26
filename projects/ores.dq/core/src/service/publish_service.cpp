@@ -500,7 +500,8 @@ std::vector<messaging::bundle_roster_bundle> publish_service::list_bundle_roster
 std::vector<messaging::bundle_roster_member>
 publish_service::list_bundle_members(const std::string& bundle_code) {
     const auto sql = "SELECT display_order, dataset_code, dataset_name, artefact_type, "
-                     "artefact_table, target_subject, staged_count, is_publishable, optional "
+                     "artefact_table, target_subject, has_dataset, has_artefact_type, "
+                     "staged_count, is_publishable, optional "
                      "FROM ores_dq_bundle_datasets_list_fn($1)";
     const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
@@ -519,9 +520,11 @@ publish_service::list_bundle_members(const std::string& bundle_code) {
         member.artefact_type = text_of(row, 3);
         member.artefact_table = text_of(row, 4);
         member.target_subject = text_of(row, 5);
-        member.staged_count = number_of(row, 6);
-        member.is_publishable = flag_of(row, 7);
-        member.optional = flag_of(row, 8);
+        member.has_dataset = flag_of(row, 6);
+        member.has_artefact_type = flag_of(row, 7);
+        member.staged_count = number_of(row, 8);
+        member.is_publishable = flag_of(row, 9);
+        member.optional = flag_of(row, 10);
         members.push_back(std::move(member));
     }
 
@@ -559,7 +562,7 @@ publish_service::list_bundle_publishable_datasets(const std::string& bundle_code
     // a silently smaller publish reports success, and the caller has no way to
     // learn that part of the bundle never ran.
     const auto missing_sql = "SELECT dataset_code FROM ores_dq_bundle_datasets_list_fn($1) "
-                             "WHERE NOT has_artefacts ORDER BY display_order";
+                             "WHERE NOT has_dataset ORDER BY display_order";
     auto missing_rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         missing_sql,

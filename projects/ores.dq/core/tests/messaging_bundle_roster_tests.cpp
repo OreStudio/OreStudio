@@ -140,6 +140,12 @@ TEST_CASE("naming a bundle returns its members with what each has staged", "[mes
     for (const auto& member : world->members) {
         CHECK_FALSE(member.dataset_code.empty());
         CHECK_FALSE(member.artefact_type.empty());
+        // The presence of the dataset row, its artefact type and its target
+        // subject is stated as a fact, so the screen reads a flag and never a
+        // sentence the server wrote about a missing row.
+        CHECK(member.has_dataset);
+        CHECK(member.has_artefact_type);
+        CHECK_FALSE(member.target_subject.empty());
     }
 
     // The counts are the function's, not a number this handler invented.

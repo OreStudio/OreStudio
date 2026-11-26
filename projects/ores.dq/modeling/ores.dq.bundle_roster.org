@@ -102,7 +102,7 @@ bundle a caller names and never for every bundle on the roster.
 
 #+begin_src cpp :name comment
 /**
- * @brief The dataset's name, or a note that no dataset row was found.
+ * @brief The dataset's name, or empty when no dataset row names its code.
  */
 #+end_src
 
@@ -135,7 +135,31 @@ bundle a caller names and never for every bundle on the roster.
 
 #+begin_src cpp :name comment
 /**
- * @brief The subject a publish writes to, or a note that it names none.
+ * @brief The subject a publish writes to, or empty when it names none.
+ */
+#+end_src
+
+*** has_dataset
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether a dataset row names the member's code.
+ */
+#+end_src
+
+*** has_artefact_type
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the dataset's artefact type is one the store holds.
  */
 #+end_src
 

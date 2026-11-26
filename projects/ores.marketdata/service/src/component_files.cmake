@@ -40,6 +40,7 @@ set(files
     "app/feed_series.cpp"
     "app/fixing_ingest.cpp"
     "app/fixing_series_summaries.cpp"
+    "app/fixing_series_summary_handler.cpp"
     "app/fixing_sources.cpp"
     "app/fx_forward_ladder_service.cpp"
     "app/fx_forward_publication_kind.cpp"

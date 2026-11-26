@@ -47,6 +47,13 @@ struct trade_population_run final {
     std::vector<trade_population_outcome> outcomes;
     /// What each trade type the config books did: the trades planned, or why none.
     std::vector<domain::trade_type_outcome> type_outcomes;
+    /**
+     * @brief One entry per book of the scope, in the order it names them.
+     *
+     * The plan states each book's types and the run states its counts, so a report
+     * cannot claim a book received trades the run did not write.
+     */
+    std::vector<domain::book_population_outcome> books;
 };
 
 /**

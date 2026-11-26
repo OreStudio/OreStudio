@@ -61,6 +61,13 @@ task and name that file in the Command column.
 
 * Notes
 
+- The prototype is under review, and the review has its own branch:
+  =review/housekeeping-prototype=, kept open with no pull request until the
+  review ends. Every comment lands there as a commit on that branch, so the
+  review reads as one history and not as one merged pull request per comment.
+  The branch merges once, when the shape is agreed.
+
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

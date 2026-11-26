@@ -49,6 +49,7 @@ set(files
     "messaging_party_surface_hold_back_tests.cpp"
     "messaging_provider_system_owned_tests.cpp"
     "messaging_provider_terms_handler_tests.cpp"
+    "messaging_registration_tests.cpp"
     "messaging_series_ticks_handler_tests.cpp"
     "messaging_session_system_owned_tests.cpp"
     "messaging_tick_read_party_tests.cpp"

@@ -152,7 +152,13 @@ stopped, so this task leans on the experiment recorded on task B153E922: on a
 fresh database, serially, all three pass.
 
 Two rows of the original acceptance became tasks instead of code, and the
-reason is in each: get_series_slice is called by both the BFF and the gateway,
-so the subject is not dead from the caller's side -- the service is -- and
-retiring it touches three components; and the gate that fails a declared
-subject with no handler belongs to the check tooling, not to market data.
+reason is in each: get_series_slice is declared, generated and called by both
+the BFF and the gateway; and the gate that fails a declared subject with no
+handler belongs to the check tooling, not to market data.
+
+*Correction (2026-11-26):* this task's Result first said the service subscribed
+nothing and called the subject dead from the service's side. That is false.
+=registrar::register_handlers=, which the service runs at start-up, subscribes
+=marketdata.v1.ops.get_series_slice=, and the environment answers a request on
+it today. The claim came from the journey page that says the subject is
+unserved, and it is corrected there and on task 4ED5A5FE.

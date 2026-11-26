@@ -2852,6 +2852,28 @@ export const api = {
         ).fixings;
     },
 
+    /** Every FX and IR fixing series the platform states, with the filters a screen offers. */
+    async fixingObservations(filters: {
+        readonly assetClass?: string;
+        readonly currency?: string;
+        readonly source?: string;
+    }): Promise<readonly FixingObservation[]> {
+        const query = new URLSearchParams();
+        if (filters.assetClass !== undefined && filters.assetClass !== '') {
+            query.set('asset_class', filters.assetClass);
+        }
+        if (filters.currency !== undefined && filters.currency !== '') {
+            query.set('currency', filters.currency);
+        }
+        if (filters.source !== undefined && filters.source !== '') {
+            query.set('source', filters.source);
+        }
+        const suffix = query.toString() === '' ? '' : `?${query.toString()}`;
+        return fixingObservationsSchema.parse(
+            await request(`/api/marketdata/fixing-observations${suffix}`, { method: 'GET' }),
+        ).series;
+    },
+
     /** One stored item, named by its oresmd URI. */
     async fixingSeries(uri: string): Promise<FixingSeries> {
         const query = new URLSearchParams({ uri });
@@ -5179,6 +5201,31 @@ export type ConnectivityAdapter = z.infer<typeof connectivityAdapterSchema>;
 export type ConnectivitySession = z.infer<typeof connectivitySessionSchema>;
 export type ConnectivityFeed = z.infer<typeof connectivityFeedSchema>;
 export type ConnectivityScope = z.infer<typeof connectivityScopeSchema>;
+
+/**
+ * One fixing series as the system view lists it: what it fixes, the source its
+ * values came from, the value of its latest day and how many days it holds. A
+ * series that holds no day has an empty value and no latest day, and it is
+ * still a row.
+ */
+const fixingObservationSchema = z.object({
+    series_id: z.string(),
+    oresmd_uri: z.string(),
+    asset_class: z.string(),
+    index_label: z.string(),
+    source: z.string(),
+    provider_code: z.string(),
+    latest_value: z.string(),
+    latest_date: z.string().nullable(),
+    days: z.number(),
+});
+
+const fixingObservationsSchema = z.object({
+    series: z.array(fixingObservationSchema).default([]),
+});
+
+/** One fixing series as the system view lists it. */
+export type FixingObservation = z.infer<typeof fixingObservationSchema>;
 
 const fixingSeriesSchema = z.object({
     series: z

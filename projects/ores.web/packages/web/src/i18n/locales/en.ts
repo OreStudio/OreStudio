@@ -5633,6 +5633,38 @@ export const en: SourceCatalogue = {
                 party: 'Party',
             },
         },
+        fixingObservations: {
+            title: 'Fixing observations',
+            lead: 'What the sources published: every FX and IR series the platform holds, the day each one reaches, and the ones that hold no value.',
+            systemView:
+                'This is the system view of the observations. It states what the sources published and offers no authorisation; a day the platform never stated is entered by a party, in its own fixings manager.',
+            filters: {
+                assetClass: 'Asset class',
+                everyClass: 'Every class',
+                currency: 'Currency',
+                everyCurrency: 'Every currency',
+                source: 'Source',
+                everySource: 'Every source',
+            },
+            columns: {
+                series: 'Series',
+                assetClass: 'Class',
+                underlying: 'Underlying',
+                source: 'Source',
+                provider: 'Provider',
+                latestValue: 'Latest value',
+                latestDay: 'Latest day',
+                days: 'Days',
+                open: 'Open',
+            },
+            noDay: 'No day',
+            emptyCount: '{count} of {total} series hold no day.',
+            none: 'The store holds no FX or IR fixing series.',
+            legendNoDay:
+                'A series the platform holds and never stated: it is a row, and its count is zero.',
+            legendEnded:
+                'A series that ended keeps its latest day and its count, because a fixing is a fact about a date.',
+        },
         fixingSeries: {
             title: 'Fixing series',
             lead: 'The stored fixings of one item, the series they belong to, and the feeds that carried them.',

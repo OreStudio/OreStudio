@@ -29,6 +29,7 @@
 
 create table if not exists "ores_scheduler_retention_runs_tbl" (
     "id" uuid not null,
+    "tenant_id" uuid not null,
     "policy_code" text not null,
     "action" text not null,
     "target" text not null,
@@ -36,11 +37,25 @@ create table if not exists "ores_scheduler_retention_runs_tbl" (
     "removed" bigint not null,
     "outcome" text not null,
     "detail" text not null default '',
-    primary key ("id")
+    primary key ("tenant_id", "id")
 );
 
 create index if not exists scheduler_retention_runs_policy_idx
-on "ores_scheduler_retention_runs_tbl" ("policy_code", "ran_at" desc);
+on "ores_scheduler_retention_runs_tbl" ("tenant_id", "policy_code", "ran_at" desc);
+
+alter table ores_scheduler_retention_runs_tbl enable row level security;
+
+drop policy if exists retention_runs_tbl_tenant_isolation_policy
+    on ores_scheduler_retention_runs_tbl;
+
+create policy retention_runs_tbl_tenant_isolation_policy
+on ores_scheduler_retention_runs_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
 
 create or replace function ores_scheduler_apply_retention_policies_fn()
 returns table (
@@ -77,7 +92,8 @@ begin
           and p."valid_to" = ores_utility_infinity_timestamp_fn()
           and not exists (
               select 1 from "ores_scheduler_retention_runs_tbl" r
-              where r."policy_code" = p."code"
+              where r."tenant_id" = p."tenant_id"
+                and r."policy_code" = p."code"
                 and r."ran_at" > now() - make_interval(hours => p."cadence_hours")
           )
         order by p."code"
@@ -133,11 +149,15 @@ begin
         target := policy."target";
         removed := dropped;
 
+        -- The ledger carries the tenant of the policy it ran, not the tenant the
+        -- sweep ran in: a sweep that applies a tenant's own policies writes that
+        -- tenant's runs, and one row per run is what the screen reads back.
         insert into "ores_scheduler_retention_runs_tbl"
-            ("id", "policy_code", "action", "target", "ran_at", "removed", "outcome", "detail")
+            ("id", "tenant_id", "policy_code", "action", "target", "ran_at",
+             "removed", "outcome", "detail")
         values
-            (gen_random_uuid(), policy."code", policy."action", policy."target", now(),
-             dropped, outcome, failure);
+            (gen_random_uuid(), policy."tenant_id", policy."code", policy."action",
+             policy."target", now(), dropped, outcome, failure);
 
         return next;
     end loop;

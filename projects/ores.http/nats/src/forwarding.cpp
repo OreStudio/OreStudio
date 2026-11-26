@@ -71,6 +71,21 @@ constexpr std::array refusal_mappings{
     refusal_mapping{"unauthorized", http_status::unauthorized, "not-authenticated"},
 };
 
+/**
+ * @brief Every permission code the caller's roles carry, read again at this call
+ * so a grant taken away stops the next request.
+ */
+std::vector<std::string> caller_permissions(const ores::http::domain::http_request& req,
+                                            ores::nats::service::nats_client& session) {
+    const auto reply = forward(req, session, ores::iam::messaging::get_my_roles_request{});
+    rr::require_done(reply.result);
+
+    std::vector<std::string> granted;
+    for (const auto& role : reply.roles)
+        granted.insert(granted.end(), role.permission_codes.begin(), role.permission_codes.end());
+    return granted;
+}
+
 }
 
 rr::refusal refusal_for(std::string_view code) {
@@ -99,17 +114,22 @@ void refuse_lapsed(const ores::nats::service::session_expired_error& e) {
 void require_deployment_read(const ores::http::domain::http_request& req,
                              ores::nats::service::nats_client& session,
                              std::string_view what) {
-    const auto reply = forward(req, session, ores::iam::messaging::get_my_roles_request{});
-    rr::require_done(reply.result);
-
-    std::vector<std::string> granted;
-    for (const auto& role : reply.roles)
-        granted.insert(granted.end(), role.permission_codes.begin(), role.permission_codes.end());
-    if (ores::security::authorization::grants(granted, deployment_read))
+    if (ores::security::authorization::grants(caller_permissions(req, session), deployment_read))
         return;
     rr::refuse(http_status::forbidden,
                "forbidden",
                std::string(what) + " needs the read of the deployment as a whole.");
+}
+
+void require_permission(const ores::http::domain::http_request& req,
+                        ores::nats::service::nats_client& session,
+                        std::string_view permission,
+                        std::string_view what) {
+    if (ores::security::authorization::grants(caller_permissions(req, session), permission))
+        return;
+    rr::refuse(http_status::forbidden,
+               "forbidden",
+               std::string(what) + " needs " + std::string(permission) + ".");
 }
 
 http_response unanswered(std::string_view subject, const std::exception& e) {

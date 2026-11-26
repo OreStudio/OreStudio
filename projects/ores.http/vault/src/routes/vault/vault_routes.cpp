@@ -85,7 +85,8 @@ void vault_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
     auto reveal_route =
         router->get("/api/v1/vault/secrets/{name}/value")
             .summary("Reveal one secret")
-            .description("Resolves as this process, opens the answer, and records the person.")
+            .description("Checks the caller holds the resolve permission, asks the vault as this "
+                         "process because it holds the key the answer is sealed to, and opens it.")
             .tags({"vault"})
             .entity_catalogue("vault", "secrets", "resolve")
             .no_body()
@@ -137,6 +138,8 @@ vault_routes::handle_write(const ores::http::domain::http_request& req,
         // The person's own token travels with the request, so the vault checks
         // the permission they hold and records them as the actor.
         co_return respond(req, session, request);
+    } catch (const ores::http::net::record_routes::refusal& r) {
+        co_return ores::http::net::record_routes::answer(r);
     } catch (const std::exception& e) {
         ORES_LOG_SEV(lg(), warn) << "Write refused: " << e.what();
         co_return ores::http::domain::http_response::bad_request(e.what());
@@ -152,6 +155,12 @@ vault_routes::handle_reveal(const ores::http::domain::http_request& req,
         if (name.empty()) {
             co_return ores::http::domain::http_response::bad_request("The path names no secret");
         }
+
+        // The vault seals to the consumer its own token names, and the resolve
+        // below is asked as this process, so the person's permission is checked
+        // here: without it a session could reveal a secret it may not read.
+        ores::http::forwarding::require_permission(
+            req, session, "vault::secrets:resolve", "Revealing a secret");
 
         // The vault seals only to a consumer it knows, so the gateway states
         // its own public key first. The row is about this process: the vault
@@ -198,6 +207,8 @@ vault_routes::handle_reveal(const ores::http::domain::http_request& req,
         // and the screen.
         answer.headers["Cache-Control"] = "no-store";
         co_return answer;
+    } catch (const ores::http::net::record_routes::refusal& r) {
+        co_return ores::http::net::record_routes::answer(r);
     } catch (const std::exception& e) {
         ORES_LOG_SEV(lg(), warn) << "Reveal refused: " << e.what();
         co_return ores::http::domain::http_response::bad_request(e.what());

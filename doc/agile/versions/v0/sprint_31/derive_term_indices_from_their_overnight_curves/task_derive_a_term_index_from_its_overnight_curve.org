@@ -30,11 +30,11 @@ data beside the curve configs, and task 3's list reads it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
-| Now          | Rebased onto main and green on every check this branch touches; built and proven on a recreated database, where the five indices are published from their own dataset as nodes of the feed graph, each series states 520 fixings, and a node whose curve stops states nothing and makes up no day. |
-| Waiting on   | The tester's pass of the scenario.     |
-| Next         | The scenario run, then the task closes. |
+| Now          | Closed. The five indices state 520 fixings each on a fresh provision, a node whose curve stops states nothing, and a day is stated once across a restart and a hand start. |
+| Waiting on   | The tester's pass of the scenario, after the merge.     |
+| Next         | None; the scenario's pass is the tester's to record. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
@@ -306,7 +306,18 @@ whole pgTAP corpus, the web check, the codegen tests, the site pages and the
 compass-ng ratchet. The housekeeping fixture that failed here earlier was main's
 retention work, and main has since fixed it.
 
-Remaining before the task closes: the tester's pass of
-[[id:41603F5F-7F14-4BDA-913E-227A98F002AD][Check the derived term fixings]]. The scenario was corrected a second time —
-the provider had no dataset of its own and the feed names were not the scheme's
-— and now also walks the starved node.
+Two review rounds ran over the branch, and the second found three defects the
+branch's own tests had not: the config's description claimed behaviour the code
+does not have, a node a person starts by hand re-stated its history, and the
+acceptance test tying a fixing to its curve was never written. All three are
+fixed and measured; the * Review table records each finding and its decision,
+including the two left as judgement calls.
+
+The component audit finds nothing: =component_docs= reports no diagnostics over
+the components the task touched.
+
+The tester's pass of
+[[id:41603F5F-7F14-4BDA-913E-227A98F002AD][Check the derived term fixings]] follows the merge. The scenario was corrected
+a second time — the provider had no dataset of its own, the feed names were not
+the scheme's, and the starve step asked for a log line the run does not write —
+and now walks the starved node as the run shows it.

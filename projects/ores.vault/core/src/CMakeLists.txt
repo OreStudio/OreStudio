@@ -54,10 +54,6 @@ target_link_libraries(${lib_target_name}
 # baseline honest for every other component.
 
 target_link_libraries(${lib_target_name}
-    PUBLIC
-        ores.eventing.core.lib)
-
-target_link_libraries(${lib_target_name}
     PRIVATE
         ores.database.lib
         # compass:except(core_link_edges/forbidden_edge) expires=2027-11-26 approver=marco reason=the history provider every entity registers needs the shared dispatch registry, and the codegen baseline does not carry the link

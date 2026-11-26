@@ -1158,6 +1158,11 @@ BEGIN
     -- the run.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'InboxService', 'workflow::workflow_instances:write');
 
+    -- Vault service: full own-component + tenant read
+    PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'VaultService', 'Secret custody service', false);
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'VaultService', 'vault::*');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'VaultService', 'iam::tenants:read');
+
     -- Trading service: full own-component + all refdata reads + change reasons
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'TradingService', 'Trading domain service', false);
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'TradingService', 'trading::*');

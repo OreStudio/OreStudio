@@ -57,12 +57,14 @@ policy, because the permission code arrives already checked.
 
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}
-    PUBLIC
-        ores.eventing.core.lib)
-
-target_link_libraries(${lib_target_name}
     PRIVATE
         ores.database.lib
         # compass:except(core_link_edges/forbidden_edge) expires=2027-11-26 approver=marco reason=the history provider every entity registers needs the shared dispatch registry, and the codegen baseline does not carry the link
         ores.history.core.lib)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ores.eventing.core.lib)
 #+end_src

@@ -122,7 +122,8 @@ grant usage, select on all sequences in schema public
     :marketdata_service_user,
     :analytics_service_user,
     :storage_service_user,
-    :inbox_service_user;
+    :inbox_service_user,
+    :vault_service_user;
 
 alter default privileges in schema public
     grant usage, select on sequences
@@ -143,7 +144,8 @@ alter default privileges in schema public
     :marketdata_service_user,
     :analytics_service_user,
     :storage_service_user,
-    :inbox_service_user;
+    :inbox_service_user,
+    :vault_service_user;
 
 -- ---------------------------------------------------------------------------
 -- Schema fingerprint — read by every service at startup, which refuses to
@@ -167,7 +169,8 @@ grant select on ores_database_info_tbl
     :marketdata_service_user,
     :analytics_service_user,
     :storage_service_user,
-    :inbox_service_user;
+    :inbox_service_user,
+    :vault_service_user;
 
 -- ---------------------------------------------------------------------------
 -- Per-service grants
@@ -341,6 +344,11 @@ select _ores_grant_select_fn('ores_iam_', :'inbox_service_user');
 select _ores_grant_execute_fn('ores_inbox_expire_approval_requests_', :'inbox_service_user');
 select _ores_grant_execute_fn('ores_inbox_remind_expiring_approval_requests_', :'inbox_service_user');
 select _ores_grant_execute_fn('ores_inbox_stalled_applies_', :'inbox_service_user');
+
+-- ---------------------------------------------------------------------------
+-- vault_service: Vault domain service
+-- ---------------------------------------------------------------------------
+select _ores_grant_dml_fn('ores_vault_', :'vault_service_user');
 
 -- ---------------------------------------------------------------------------
 -- Clean up helper functions

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: A4DDC66A-676B-4671-BF03-E8E0FD431A95
+:END:
+#+title: The delivery counts have no retention policy
+#+description: The counters are carried forward, so a series holds one row per period and not one per flush, but nothing bounds the periods: on a provisioned ACME tenant 53,863 rows appeared for two hourly periods, about 27,000 rows an hour and roughly 365 MB a day, and no retention policy names the table.
+#+type: capture
+#+level: cross
+#+filetags: :housekeeping:retention:marketdata:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

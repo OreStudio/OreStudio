@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :dq:web:coverage:sprint_31:v0:show_and_drive_the_dq_pipeline:
 #+owner: marco
-#+branch:
+#+branch: feature/draw-the-counts-on-the-coverage-screen
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -32,11 +32,11 @@ dataset with its outcome and what the run said.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Both screens are drawn and the gate has to run on them. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Run the gate, then raise the PR.       |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
@@ -113,3 +113,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The page is at =/data-quality/datasets/:code=, reached from a row of the coverage
+list and reachable from a saved address: the page names the dataset and the
+server resolves the bundle that carries it, so it does not need the list to have
+been read first.
+
+The Details tab draws from the roster the coverage list already reads, and states
+every field the acceptance names. The Publications tab states why it holds
+nothing yet, and names both halves: the log has no writer, and no column holds an
+outcome or a message.
+
+Not drawn, on purpose: the History tab. The dataset's versions are served already,
+and drawing them is a screen of its own rather than a tab this task adds.

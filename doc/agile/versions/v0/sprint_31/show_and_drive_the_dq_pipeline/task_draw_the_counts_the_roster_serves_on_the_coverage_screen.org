@@ -148,3 +148,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The screen is the arrangement signed off on 2026-11-26. The bundles of every level
+sit in a tree on the left, each with its dataset count; the chosen bundle's
+datasets fill a dense table on the right with a text filter and a state filter
+over them; and a row opens the dataset's own page, which is
+[[id:F8B44A0B-844E-424D-8C12-162C4C500B4C][its own task]].
+
+The staged column draws the count the roster serves. The published column keeps
+its dash and the page names that absence, because the provenance read is still to
+build. The state column draws the reason a dataset cannot publish, and the row
+that is ready says so.
+
+Read once and drawn twice: the roster is asked for the bundles, which names the
+bundle to open on, and again for that bundle's members, because the staged count
+costs one count per member in the service.

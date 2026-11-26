@@ -18,6 +18,7 @@
  *
  */
 #include "ores.vault.core/service/custody_service.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.security/crypto/sealed_box.hpp"
 #include "ores.security/crypto/secret_sealer.hpp"

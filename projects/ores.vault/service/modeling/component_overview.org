@@ -1,4 +1,10 @@
 :PROPERTIES:
+:ores.cpp.service-app.enabled: nil
+:ores.cpp.service-app.config_options_header.enabled: true
+:ores.cpp.service-app.config_options_impl.enabled: true
+:ores.cpp.service-app.config_parser_header.enabled: true
+:ores.cpp.service-app.config_parser_impl.enabled: true
+:ores.cpp.service-app.config_parser_exception.enabled: true
 :ID: 33941A34-E3CB-47E9-91F5-0ADB8305DD96
 :END:
 #+title: ores.vault.service

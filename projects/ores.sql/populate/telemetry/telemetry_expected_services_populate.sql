@@ -242,6 +242,16 @@ on conflict (service_name) do update set
     description = excluded.description,
     service_account = excluded.service_account;
 
+insert into ores_telemetry_expected_services_tbl
+    (service_name, replicas, display_name, description, service_account)
+values ('ores.vault.service', 1, 'Vault Service', 'Keeps the secrets ORE must present to another party, sealed under a key that lives outside the database, and seals each answer to the consumer that asked.',
+        :'vault_service_user')
+on conflict (service_name) do update set
+    replicas = excluded.replicas,
+    display_name = excluded.display_name,
+    description = excluded.description,
+    service_account = excluded.service_account;
+
 -- Summary
 select 'Expected Services' as entity, count(*) as count
 from ores_telemetry_expected_services_tbl;

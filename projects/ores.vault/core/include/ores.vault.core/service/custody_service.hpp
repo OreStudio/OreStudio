@@ -20,7 +20,7 @@
 #ifndef ORES_VAULT_CORE_SERVICE_CUSTODY_SERVICE_HPP
 #define ORES_VAULT_CORE_SERVICE_CUSTODY_SERVICE_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.vault.core/export.hpp"
 #include "ores.vault.core/security/credential_source.hpp"
 #include <cstdint>

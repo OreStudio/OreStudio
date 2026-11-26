@@ -17,21 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/**
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: cpp_service_app_application.cpp.mustache
- * To modify, update the template and regenerate.
- */
 #include "ores.vault.service/app/application.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.service/service/domain_service_runner.hpp"
+#include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/version/version.hpp"
+#include "ores.vault.core/messaging/registrar.hpp"
 #include "ores.vault.service/app/application_exception.hpp"
-#include <boost/throw_exception.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <memory>
+#include <string>
+#include <utility>
 
 namespace ores::vault::service::app {
 
 using namespace ores::logging;
 
+namespace {
+constexpr std::string_view service_name = "ores.vault.service";
+constexpr std::string_view service_version = ORES_VERSION;
+}
 
 ores::database::context application::make_context(const ores::database::database_options& db_opts) {
     using ores::database::context_factory;
@@ -53,16 +60,32 @@ application::application() = default;
 boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                               const config::options& cfg) const {
 
-
     ORES_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.vault.service", 0, 1);
 
-    auto ctx = make_context(cfg.database);
-    (void)ctx;
-    (void)io_ctx;
+    ores::nats::service::client nats(cfg.nats);
+    nats.connect();
 
-    // TODO: register domain handlers and run NATS server
-    ORES_LOG_SEV(lg(), warn) << "ores.vault.service service is not yet implemented.";
+    // The registrar loads the two keys the deployment placed for this unit, and
+    // refuses to register anything when they are absent, so a vault with no
+    // keys fails to start rather than answering a request it cannot serve.
+    //
+    // Bound before the await, so no lambda of the call lives in this frame.
+    auto service_run = ores::service::service::run(
+        io_ctx,
+        nats,
+        make_context(cfg.database),
+        service_name,
+        [](auto& n, auto c, auto v) {
+            return ores::vault::messaging::registrar::register_handlers(
+                n, std::move(c), std::move(v));
+        },
+        [&nats](boost::asio::io_context& ioc) {
+            auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
+                std::string(service_name), std::string(service_version), nats);
+            boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
+        });
+    co_await std::move(service_run);
     co_return;
 }
 

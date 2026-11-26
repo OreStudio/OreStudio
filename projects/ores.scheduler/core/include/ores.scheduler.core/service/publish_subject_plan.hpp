@@ -41,8 +41,13 @@ inline constexpr std::string_view publish_job_definitions_from_dq_subject =
 inline constexpr std::string_view publish_retention_policies_from_dq_subject =
     "scheduler.v1.ops.publish_retention_policies_from_dq";
 
-inline constexpr std::array<std::string_view, 2> publish_from_dq_subjects{
-    publish_job_definitions_from_dq_subject, publish_retention_policies_from_dq_subject};
+inline constexpr std::string_view publish_retained_stores_from_dq_subject =
+    "scheduler.v1.ops.publish_retained_stores_from_dq";
+
+inline constexpr std::array<std::string_view, 3> publish_from_dq_subjects{
+    publish_job_definitions_from_dq_subject,
+    publish_retention_policies_from_dq_subject,
+    publish_retained_stores_from_dq_subject};
 
 /**
  * @brief The SQL function a publish-from-dq subject expands through.

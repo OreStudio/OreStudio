@@ -37,6 +37,8 @@ TEST_CASE("every subject the scheduler subscribes names its expansion function",
           "ores_scheduler_publish_job_definitions_from_dq_fn");
     CHECK(publish_from_dq_function("scheduler.v1.ops.publish_retention_policies_from_dq") ==
           "ores_scheduler_publish_retention_policies_from_dq_fn");
+    CHECK(publish_from_dq_function("scheduler.v1.ops.publish_retained_stores_from_dq") ==
+          "ores_scheduler_publish_retained_stores_from_dq_fn");
 }
 
 TEST_CASE("a subject without a version has no function", "[service][publish]") {

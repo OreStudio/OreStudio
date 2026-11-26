@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: B0D71847-2101-4B9C-B228-29A1D5E372B0
+:END:
+#+title: Task: Catalogue every store the installation keeps
+#+description: A store is an entity, not a table name. The catalogue states each store the installation keeps: its code, the name a person reads, what it holds, which component writes it, whether the platform or a tenant owns it, the shape and name of its target, the column a delete compares, how its size is measured, and the bound it ships with.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping:retention:catalogue:entity:sprint_31:housekeeping_bound_every_store_the_system_keeps:v0:
+#+owner: marco
+#+branch: feature/catalogue-every-store-the-installation-keeps
+#+pr: 5175
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The installation can name every store it keeps, in the words a person reads,
+before anybody writes a policy against one. A store is a row: its code, the name
+and description the screen shows instead of the physical target, the component
+that writes it, whether the platform or a tenant owns the rows, the shape and name
+of its target, the column a deletion compares, how its size is measured, and the
+bound it ships with. The sweep, the screen and the alerts all read the catalogue
+rather than carrying their own list of tables.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-26                               |
+
+* Acceptance
+
+- The catalogue is an entity with generated operations, delivered as platform data, so a store is described without a rebuild
+- A row states its code, its display name, its description, the component that writes it, the scope that owns it (platform or tenant), the kind and name of its target, the column a delete compares, and how its size is measured
+- A row states its default bound: a policy with an action, a period and a cadence, a bound by content keying that needs no policy, or no bound at all where none can be expressed as an age
+- The SQL refuses an unknown target kind, an unknown scope, an unknown measure, a policy with no period and a period with no policy
+- The rows for the nine stores measured in the investigation are seeded, each with the period the story's decision states, and a second publication leaves one row per store
+
+* Plan
+
+- Model the entity in the scheduler, beside the retention policy, because the
+  sweep, the screen and the alerts all read it and the scheduler already owns
+  the firing they ride on. Follow the policy's model: =code= is the key, the
+  audit tail comes from the entity generator, and the row is the platform's
+  statement of a fact about the software.
+- State the bound as a kind rather than always as an action and a period. Three
+  kinds cover what the investigation found: =policy= (with an action, a period
+  and a cadence), =keying= (the package cache, bounded by its digest), and
+  =none= (the calendar dates, whose bound is a range and not an age). The SQL
+  refuses a policy with no period and a period with no policy, so the two cannot
+  disagree.
+- Deliver the rows as platform data, like the policies: a DQ dataset,
+  =scheduler.retained_stores=, with an artefact table the generator produces, a
+  publish function that reconciles the whole row, a bundle member beside the
+  policies, and the seed rows for the ten stores the investigation names.
+- The whole row is reconciled and nothing is carried from the installation,
+  because the catalogue states what the platform keeps and the policy records
+  what an installation decided. A changed default therefore never rewrites a
+  policy that already exists; that decision belongs to the task that creates the
+  policies from the defaults.
+- Prove it with the generated codec tests, the publish subject plan test, a new
+  pgTAP test for the publish and the entity's checks, and the gates for the
+  classes the change touches.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Stores the catalogue publishes | 10 rows, one per store | =select code from ores_scheduler_retained_stores_tbl where valid_to = ores_utility_infinity_timestamp_fn()= | cc6e93dd76 |
+| Stores bounded by a policy | 7 of 10 | the same read, grouped by =bound_kind= | cc6e93dd76 |
+| pgTAP, catalogue publish | 8 of 8 passed | =./test/run_tests.sh test/scheduler_publish_retained_stores_test.sql= | cc6e93dd76 |
+| pgTAP, housekeeping publish | 15 of 15 passed | =./test/run_tests.sh test/scheduler_publish_housekeeping_test.sql= | cc6e93dd76 |
+| Scheduler suites | 3 of 3 passed | =./compass.sh test run --preset linux-clang-release-ninja -- -R scheduler= | cc6e93dd76 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5175][#5175]] | [scheduler] Catalogue every store the installation keeps |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The installation can name every store it keeps. =retained_store= is an entity in
+the scheduler with generated operations, a DQ dataset that publishes it into the
+system tenant, and ten seeded rows: the calendar dates, the three report run
+tables, ticks, the delivery counts, the two compute prefixes, node scratch and the
+package cache.
+
+The bound is a kind, because the investigation found three. Seven stores ship a
+policy — a quarter for the run output and the quotes, a month for the counters, a
+week for the job inputs, a day for scratch. The package cache ships =keying= and
+needs no policy. The calendar dates ship =none=, which is the row stating that an
+age cannot bound them.
+
+Three things went wrong on the way and are worth remembering. The generator reads
+=:default_value:= as a C++ expression, so a bare =platform= became a character
+constant and the build refused it. A nullable scalar needs
+=std::optional<=, or the entity's JSON form silently loses its shape and the
+compiler goes looking for a =text_form= that does not exist. And a SQL check that
+compares a nullable column passes when the comparison is null, so the rule that
+refuses a policy with no period needed a =case= rather than an =or=.
+
+What reads it: nothing yet. The sweep still names its own target, and the defaults
+are not yet turned into policies. That is the next task, and it is why this one
+publishes the catalogue without touching either.

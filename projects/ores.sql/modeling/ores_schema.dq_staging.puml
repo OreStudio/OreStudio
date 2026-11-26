@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 190
+Tables: 191
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -3085,6 +3085,31 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_reporting_regimes_artefact_tbl
     Contains a code representing a reporting regime under which a transaction may be reported. Each row is one value of an FpML coding scheme: a code, unique within its coding scheme, with the source that defines it and a description. The rows arrive through DQ from the FpML codelists. - Artefact Table
+    end note
+
+    entity ores_dq_retained_stores_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * code : text
+        * version : integer
+        * display_name : text
+        * description : text
+        * owner_component : text
+        * scope : text
+        * target_kind : text
+        * target : text
+          time_column : text
+        * measure_kind : text
+        * bound_kind : text
+          default_action : text
+          default_retention_days : integer
+        * default_cadence_hours : integer
+          default_reason : text
+    }
+
+    note right of ores_dq_retained_stores_artefact_tbl
+    Every store the installation keeps is a row here, before anything else knows about it. The row is what lets a person read "Calendar dates" instead of ores_refdata_calendar_dates_tbl, and what lets the sweep, the screen and the alerts agree on the set of stores without any of them carrying a list of tables. The catalogue is not a policy: it states what the store is and the bound it ships with, and a policy states what is applied now. That is why a store exists here whether or not a policy names it, and why the bound is one of three kinds rather than always an action and a period. A store bounded by its content keying needs no policy, and a store whose bound cannot be expressed as an age — the calendar days behind the horizon — states that it has none rather than carrying a default that would delete what pricing still needs. The rows describe the installation's own stores, so the platform authors them and the system tenant holds them: the classification that governs published rows makes the platform the author here, as it does for the policies those rows describe. The column is not null for that reason. - Artefact Table
     end note
 
     entity ores_dq_retention_policies_artefact_tbl  #F7E5FF {

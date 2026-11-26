@@ -24,3 +24,5 @@
 \ir ./scheduler_retention_sweep_drop.sql
 \ir ./scheduler_retention_policies_notify_trigger_drop.sql
 \ir ./scheduler_retention_policies_drop.sql
+\ir ./scheduler_retained_stores_notify_trigger_drop.sql
+\ir ./scheduler_retained_stores_drop.sql

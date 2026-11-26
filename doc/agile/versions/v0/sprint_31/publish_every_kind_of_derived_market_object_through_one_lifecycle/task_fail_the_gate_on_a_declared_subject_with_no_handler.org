@@ -87,12 +87,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Subjects the models declare | 306: 219 requests, 86 published, 1 templated | =python3 build/scripts/check_subject_coverage.py=, transcript in =evidence/subject_coverage.txt= | =PLACEHOLDER= |
-| Requests answered on the running fleet | 216 of 219; 3 recorded as known | the same command | =PLACEHOLDER= |
-| The three unserved subjects | =begin_bundle_import=, =stage_bundle_family=, =commit_bundle_import=, each called by the ore service's run configuration import | =grep -rn bundle_import projects/ores.ore/service/src/messaging/= | =PLACEHOLDER= |
-| The check's own cases | 8 pass | =python3 -m pytest build/scripts/tests/test_subject_coverage.py -q= | =PLACEHOLDER= |
-| The build-script suite | 184 pass | the gate's =build-script-tests= | =PLACEHOLDER= |
-| Local checks, non-heavy | 8 of 8 | =compass check --exclude-heavy= | =PLACEHOLDER= |
+| Subjects the models declare | 306: 219 requests, 86 published, 1 templated | =python3 build/scripts/check_subject_coverage.py=, transcript in =evidence/subject_coverage.txt= | =55ac68bb54= |
+| Requests answered on the running fleet | 216 of 219; 3 recorded as known | the same command | =55ac68bb54= |
+| The three unserved subjects | =begin_bundle_import=, =stage_bundle_family=, =commit_bundle_import=, each called by the ore service's run configuration import | =grep -rn bundle_import projects/ores.ore/service/src/messaging/= | =55ac68bb54= |
+| The check's own cases | 8 pass | =python3 -m pytest build/scripts/tests/test_subject_coverage.py -q= | =55ac68bb54= |
+| The build-script suite | 181 pass | the gate's =build-script-tests= | =55ac68bb54= |
+| Local checks, non-heavy | 8 of 8 | =compass check --exclude-heavy= | =55ac68bb54= |
+| The new check in the gate | pass, 84.5s | =compass check --only subject-coverage= | =55ac68bb54= |
 
 * Notes
 

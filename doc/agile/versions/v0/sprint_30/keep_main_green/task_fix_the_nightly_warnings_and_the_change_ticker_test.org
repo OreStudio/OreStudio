@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 89DE512A-22DA-4A4A-A706-A4696D952CD6
+:END:
+#+title: Task: Fix the nightly warnings and the change ticker test
+#+description: Task for: Keep main green
+#+type: task
+#+level: s1
+#+filetags: :keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/fix-the-nightly-warnings-and-the-change-ticker-test
+#+pr: 5155
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the Linux nightly build without warnings, and stop the change ticker test from failing under valgrind, so the only red left is the two failures that are still unexplained.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-26                               |
+
+* Acceptance
+
+- The gcc release build reports no warnings in random_ast_generator.cpp, catalogue_tools.cpp or anywhere else.
+- The change ticker test passes while the machine is loaded and under valgrind.
+
+* Plan
+
+1. Make the four deliberate fallthroughs in =random_ast_generator.cpp=
+   explicit, and keep the Switch as it is otherwise.
+2. Move =note= and =misread= out of =catalogue_tools::called=. Both are
+   closures the coroutine frame holds, which is what gcc reports.
+3. Give the change ticker test a deadline instead of a fixed window: run
+   the loop until the frame arrives, and fail only when it never does.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Ticker test under valgrind | 4 assertions in 1 test case, all passed | =valgrind --quiet --error-exitcode=99 --suppressions=build/valgrind/custom.supp ./ores.http.core.tests "a_change_recorded_between_ticks_reaches_the_stream"= | a0981e33dd |
+| Ticker suite | 14 assertions in 6 test cases, all passed | =./ores.http.core.tests "[change_ticker]"= | a0981e33dd |
+| MCP tool suite | 7064 assertions in 245 test cases, all passed | =./ores.http.api.tests= | a0981e33dd |
+| Warnings in the release build | 0 | =./compass.sh build= (linux-clang-release-ninja) then read the log | a0981e33dd |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5155][#5155]] | [trading,http] Answer the nightly's warnings and steady the ticker test |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The two warning sites lost their causes rather than their symptoms, and the
+ticker test now waits for the behaviour it asserts.
+
+- =random_ast_generator.cpp=: the four cumulative =switch= cases carry
+  =[[fallthrough]];=, so the intent is stated and =-Wimplicit-fallthrough==
+  has nothing to report.
+- =catalogue_tools.cpp=: =record_call= and =misread= are free helpers now, so
+  the coroutine frame holds no closure and gcc stops reporting
+  =-Wsubobject-linkage= on it.
+- =change_ticker_tests.cpp=: the first tick had a fixed hundred milliseconds
+  to arrive; under valgrind it can come later. The test runs the loop until
+  the frame arrives, with a ten second ceiling.
+
+Verified locally: the release build reports no warnings, the ticker suite and
+the MCP tool suite pass, and the ticker test passes under valgrind.
+
+Not verified locally: the gcc compiler, which is where the two warnings were
+reported. The nightlies are the check for those.

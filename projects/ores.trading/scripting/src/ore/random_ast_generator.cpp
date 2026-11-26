@@ -462,6 +462,7 @@ struct RandomASTGenerator {
                             args.push_back(current);
                             createTerm();
                             args.push_back(current);
+                            [[fallthrough]];
                         case 1:
                             // 4 +2 optional args
                             createTerm();
@@ -472,6 +473,7 @@ struct RandomASTGenerator {
                             args.push_back(current);
                             createTerm();
                             args.push_back(current);
+                            [[fallthrough]];
                         case 2:
                             // 2 optional args
                             createTerm();
@@ -506,6 +508,7 @@ struct RandomASTGenerator {
                             args.push_back(current);
                             createTerm();
                             args.push_back(current);
+                            [[fallthrough]];
                         case 1:
                             // 4 +2 optional args
                             createTerm();
@@ -516,6 +519,7 @@ struct RandomASTGenerator {
                             args.push_back(current);
                             createTerm();
                             args.push_back(current);
+                            [[fallthrough]];
                         case 2:
                             // 2 optional args
                             createTerm();

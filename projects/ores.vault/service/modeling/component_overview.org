@@ -41,7 +41,11 @@ process that opens a stored secret.
 * Entry points
 
 - =src/main.cpp= — the entry point.
-- =include/ores.vault.service/messaging/registrar.hpp= — the five subjects.
+- =include/ores.vault.service/messaging/secret_event_registrar.hpp= and
+  =consumer_event_registrar.hpp= — the registrars the generated baseline
+  carries.
+- The five custody subjects join them with a registrar of their own, which the
+  serve task adds beside these.
 
 * Dependencies
 

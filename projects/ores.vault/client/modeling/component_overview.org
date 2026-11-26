@@ -38,7 +38,9 @@ secret without linking the vault's logic or the key encryption key.
 
 * Entry points
 
-- =include/ores.vault.client/vault_client.hpp= — the facade.
+- =include/ores.vault.client/domain/stub.hpp= — the placeholder the generated
+  baseline carries.
+- The facade that seals a write and opens a resolve arrives with the serve task.
 
 * Dependencies
 

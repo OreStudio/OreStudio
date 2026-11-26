@@ -33,6 +33,11 @@
  * value by name, and the answer leaves sealed to that consumer's own key, so the
  * value exists in the clear only inside the process that must use it.
  *
+ * The sealed value itself is on the generated wire surfaces, because the sealed box
+ * hands over one opaque string and the codec carries it as one. That is the
+ * baseline and not the contract: describe answers the metadata alone, and only
+ * the write request and the resolve reply carry a sealed value.
+ *
  * Two invariants decide the shape. A tenant keeps a secret once by its name,
  * which is the natural key: the name is what a consumer asks for and what the
  * audit records, so a tenant cannot hold two secrets that answer one ask. And the

@@ -40,8 +40,7 @@ using ores::security::crypto::secret_sealer;
 using ores::vault::security::credential_source;
 
 /// Writes raw bytes to a credential file, as the deployment does.
-void write_credential(const std::filesystem::path& path,
-                      const std::vector<unsigned char>& bytes) {
+void write_credential(const std::filesystem::path& path, const std::vector<unsigned char>& bytes) {
     std::ofstream out(path, std::ios::binary);
     out.write(reinterpret_cast<const char*>(bytes.data()),
               static_cast<std::streamsize>(bytes.size()));
@@ -56,11 +55,14 @@ std::vector<unsigned char> make_key(unsigned char seed, std::size_t len) {
     return key;
 }
 
-/// Writes both credentials into a directory the test owns.
+/// Writes version 1 of the key, the version credential and the transport key
+/// into a directory the test owns.
 void provision(const std::filesystem::path& directory,
                const std::vector<unsigned char>& kek,
                const std::vector<unsigned char>& transport) {
-    write_credential(directory / credential_source::kek_credential, kek);
+    write_credential(directory / (std::string(credential_source::kek_credential_prefix) + "1"),
+                     kek);
+    write_credential(directory / credential_source::kek_version_credential, {'1', '\n'});
     write_credential(directory / credential_source::transport_credential, transport);
 }
 
@@ -78,19 +80,48 @@ TEST_CASE("the_vault_reads_its_two_credentials", "[vault][security]") {
     const auto keys = credential_source::load_from(directory.path());
     ORES_LOG_SEV(lg, info) << "Read both credentials, and derived the public half";
 
-    CHECK(keys.key_encryption_key == kek);
+    CHECK(keys.current_version == 1);
+    CHECK(keys.key_of(1) == kek);
     CHECK(keys.transport_private_key == transport);
     CHECK(keys.transport_public_key == sealed_box::public_key_of(transport));
 }
 
 TEST_CASE("a_missing_credential_is_refused", "[vault][security]") {
     scoped_temp_directory directory;
-    provision(directory.path(),
-              make_key(0, secret_sealer::KEY_LEN),
-              sealed_box::generate().private_key);
+    provision(
+        directory.path(), make_key(0, secret_sealer::KEY_LEN), sealed_box::generate().private_key);
     std::filesystem::remove(directory.path() / credential_source::transport_credential);
 
     CHECK_THROWS_AS(credential_source::load_from(directory.path()), std::runtime_error);
+}
+
+TEST_CASE("a_retained_second_version_is_read", "[vault][security]") {
+    auto lg(ores::logging::make_logger(test_suite));
+
+    scoped_temp_directory directory;
+    const auto second = make_key(3, secret_sealer::KEY_LEN);
+    provision(
+        directory.path(), make_key(0, secret_sealer::KEY_LEN), sealed_box::generate().private_key);
+    write_credential(
+        directory.path() / (std::string(credential_source::kek_credential_prefix) + "2"), second);
+
+    const auto keys = credential_source::load_from(directory.path());
+    ORES_LOG_SEV(lg, info) << "Two versions are retained; version 1 is current";
+
+    CHECK(keys.key_encryption_keys.size() == 2);
+    CHECK(keys.current_version == 1);
+    CHECK(keys.key_of(2) == second);
+}
+
+TEST_CASE("a_version_it_states_and_does_not_hold_is_refused", "[vault][security]") {
+    scoped_temp_directory directory;
+    provision(
+        directory.path(), make_key(0, secret_sealer::KEY_LEN), sealed_box::generate().private_key);
+    write_credential(directory.path() / credential_source::kek_version_credential, {'2', '\n'});
+
+    CHECK_THROWS_AS(credential_source::load_from(directory.path()), std::runtime_error);
+    CHECK_THROWS_AS(credential_source::load_from(std::filesystem::path("no-such-directory")),
+                    std::runtime_error);
 }
 
 TEST_CASE("a_credential_of_the_wrong_length_is_refused", "[vault][security]") {

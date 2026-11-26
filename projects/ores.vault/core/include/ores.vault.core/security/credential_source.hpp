@@ -23,6 +23,8 @@
 #include "ores.vault.core/export.hpp"
 #include <cstddef>
 #include <filesystem>
+#include <map>
+#include <stdexcept>
 #include <string_view>
 #include <vector>
 
@@ -31,23 +33,41 @@ namespace ores::vault::security {
 /**
  * @brief The keys the vault cannot start without.
  *
- * The key encryption key protects every stored value and never leaves the
- * process that reads it. The transport key pair is how a caller seals a value
- * to the vault and how the vault answers: the private half stays here, and the
- * public half is published so that a caller can seal to it.
+ * Every retained key encryption key is here, not only the current one: a row
+ * records the version that sealed it, so opening that row needs the key of that
+ * version, which a rotation must therefore keep.
  *
- * The public half is derived from the private half rather than read from a
- * second file, so the two cannot disagree.
+ * The transport key pair is how a caller seals a value to the vault and how the
+ * vault answers. The private half stays in this process, and the public half is
+ * derived from it rather than read from a second file, so the two cannot
+ * disagree.
  */
 struct ORES_VAULT_CORE_EXPORT key_material {
-    /// The AES-256 key that seals every stored value, at 32 bytes.
-    std::vector<unsigned char> key_encryption_key;
+    /// The AES-256 keys that seal stored values, by their version.
+    std::map<int, std::vector<unsigned char>> key_encryption_keys;
+
+    /// The version a write seals under, stated by the deployment.
+    int current_version = 0;
 
     /// The X25519 private key that opens what a caller sealed, at 32 bytes.
     std::vector<unsigned char> transport_private_key;
 
     /// The public half of the transport key, at 32 bytes. Not a secret.
     std::vector<unsigned char> transport_public_key;
+
+    /**
+     * @brief The key of one version.
+     *
+     * @param version The version a row records.
+     * @return The key that opens that row.
+     *
+     * @throws std::runtime_error If the deployment retains no key of that
+     * version, which is a row nothing can open.
+     */
+    [[nodiscard]] const std::vector<unsigned char>& key_of(int version) const;
+
+    /// The key a write seals under. Throws under the same condition as key_of.
+    [[nodiscard]] const std::vector<unsigned char>& current_key() const;
 };
 
 /**
@@ -66,8 +86,11 @@ public:
     /// The variable systemd sets to the directory of credentials it placed.
     static constexpr std::string_view directory_variable = "CREDENTIALS_DIRECTORY";
 
-    /// The credential holding the key encryption key: 32 raw bytes.
-    static constexpr std::string_view kek_credential = "vault.kek";
+    /// The credential holding the version a write seals under.
+    static constexpr std::string_view kek_version_credential = "vault.kek.version";
+
+    /// The prefix of a credential holding one version of the key encryption key.
+    static constexpr std::string_view kek_credential_prefix = "vault.kek.";
 
     /// The credential holding the transport private key: 32 raw bytes.
     static constexpr std::string_view transport_credential = "vault.transport.key";
@@ -75,7 +98,8 @@ public:
     /**
      * @brief Loads the keys from the directory the environment names.
      *
-     * @return The three keys, with the public half derived from the private.
+     * @return The keys, with every retained version and the public half derived
+     * from the private one.
      *
      * @throws std::runtime_error If the environment names no directory, a
      * credential is absent, or a key is not the length its cipher takes.
@@ -85,10 +109,12 @@ public:
     /**
      * @brief Loads the keys from a named directory.
      *
-     * @param directory The directory holding the two credential files.
-     * @return The three keys, with the public half derived from the private.
+     * @param directory The directory holding the credential files.
+     * @return The keys, with every retained version and the public half derived
+     * from the private one.
      *
-     * @throws std::runtime_error If a credential is absent, or a key is not the
+     * @throws std::runtime_error If the version credential is absent or
+     * unreadable, no key of the current version is present, or a key is not the
      * length its cipher takes.
      */
     [[nodiscard]] static key_material load_from(const std::filesystem::path& directory);

@@ -23,6 +23,7 @@ import subprocess
 from pathlib import Path
 
 _KEK = "vault.kek"
+_KEK_VERSION = "vault.kek.version"
 _TRANSPORT = "vault.transport.key"
 _TRANSPORT_PUBLIC = "vault.transport.pub"
 _GATEWAY = "gateway.transport.key"
@@ -85,20 +86,46 @@ def ensure(checkout_root: Path, announce=print) -> dict[str, Path]:
     keys_dir = checkout_root / "build" / "keys"
     keys_dir.mkdir(parents=True, exist_ok=True)
 
-    kek = keys_dir / _KEK
-    if not kek.is_file():
-        announce("Generating the vault's key encryption key...")
-        _openssl("rand", "-out", str(kek), str(_KEY_LEN))
-        kek.chmod(0o600)
-        announce(f"  Written to {kek}")
+    version_file = keys_dir / _KEK_VERSION
+    if not version_file.is_file():
+        announce("Generating the vault's key encryption key, version 1...")
+        first = keys_dir / f"{_KEK}.1"
+        _openssl("rand", "-out", str(first), str(_KEY_LEN))
+        first.chmod(0o600)
+        version_file.write_text("1\n")
+        announce(f"  Written to {first}, and the version to {version_file}")
 
     _generate_pair(keys_dir, _TRANSPORT, _TRANSPORT_PUBLIC, announce)
     _generate_pair(keys_dir, _GATEWAY, _GATEWAY_PUBLIC, announce)
 
-    return {
-        "kek": kek,
+    keys = {
         "transport": keys_dir / _TRANSPORT,
         "transport_public": keys_dir / _TRANSPORT_PUBLIC,
         "gateway": keys_dir / _GATEWAY,
         "gateway_public": keys_dir / _GATEWAY_PUBLIC,
+        "kek_version": version_file,
     }
+    keys.update(kek_keys(keys_dir))
+    return keys
+
+
+def current_version(keys_dir: Path) -> int:
+    """The version of the key a write seals under."""
+    return int((keys_dir / _KEK_VERSION).read_text().strip())
+
+
+def kek_keys(keys_dir: Path) -> dict[str, Path]:
+    """Every retained key encryption key, by version, newest last.
+
+    A rotation keeps the old keys: a row records the version that sealed it, so
+    the key that opens it has to still be there when the row is read.
+    """
+    found = {}
+    for path in sorted(keys_dir.glob(f"{_KEK}.*")):
+        suffix = path.name.rsplit(".", 1)[-1]
+        if not suffix.isdigit():
+            continue
+        found[f"kek.{suffix}"] = path
+    if not found:
+        raise RuntimeError(f"No key encryption key under {keys_dir}")
+    return found

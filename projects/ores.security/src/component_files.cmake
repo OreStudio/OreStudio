@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "crypto/password_hasher.cpp"
+    "crypto/sealed_box.cpp"
     "crypto/secret_sealer.cpp"
     "jwt/jwt_authenticator.cpp"
     "validation/email_validator.cpp"
@@ -32,6 +33,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/authorization/agent_withholding.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/authorization/grants.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/crypto/password_hasher.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/crypto/sealed_box.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/crypto/secret_sealer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.security/jwt/boost_json_traits.hpp"

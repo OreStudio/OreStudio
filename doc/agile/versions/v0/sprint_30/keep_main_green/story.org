@@ -59,6 +59,7 @@ carries the remaining work from sprint 30's close. This story ships
 | [[id:EA12FD69-D331-4005-B439-4DF49D5410DC][Clear the two checks main leaves red]] | DONE | 2026-11-24 | 2026-11-24 | The timescaledb library scan reads every cluster's directory even when it is given one, so the check fails on any machine with the extension installed. And the XML benchmark has no row after the commit that changed the measured files, so the check fails on every branch until someone measures. |
 | [[id:89DE512A-22DA-4A4A-A706-A4696D952CD6][Fix the nightly warnings and the change ticker test]] | DONE | 2026-11-26 | 2026-11-26 | Task for: Keep main green |
 | [[id:A00ACCD0-E242-4AFE-9850-9208B0F92FCD][Fix the Windows compass install]] | DONE | 2026-11-26 | 2026-11-26 | Task for: Keep main green |
+| [[id:93CC0B03-3875-4E47-BBC7-3B6D46C99687][Name the test the memcheck leg hangs on]] | BACKLOG | | | Task for: Keep main green |
 
 * Decisions
 

@@ -195,5 +195,5 @@ provider was registered without a dataset of its own, so no screen listed
 it, and the step named feeds by a source name the scheme does not write.
 Both are fixed: =synthetic.feeds.derived= is a dataset of the system
 bundle, and the feed names above are the scheme's. The five derived nodes
-also need starting first, because nothing starts a config node on its own.
-Re-run from the first step.
+needed starting by hand then; the run states them itself now, so the
+steps below start nothing. Re-run from the first step.

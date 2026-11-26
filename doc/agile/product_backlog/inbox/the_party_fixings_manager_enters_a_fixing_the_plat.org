@@ -13,16 +13,28 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+A party's fixings manager enters a fixing for one of the party's trades on a day
+the platform never stated, with the reason for it. The screen lists the days of
+each index the party's trades float on, marks the ones no series holds, and takes
+the value, the reason code and the explanation. The entry joins the controls the
+fixing process already states — authorise, override, unauthorise, undo — so an
+entry a second person has not authorised does not fix a trade.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+A derived term index publishes nothing while the currency's overnight curve feed
+is stopped, and it makes up no day when the curve returns: repeating the last
+value would claim something about a day nobody observed, and backfilling would
+rewrite a history the provider has no right to rewrite. The hole is permanent in
+the system's own series, and only the party can close it: its trades fix on what
+its operations decide, with an explanation, under the party's own approvals.
+Without this screen the hole reaches the risk run as a missing index and the
+run stops.
 
 * References
 
--
+- [[id:1993E4E7-A59B-4473-8635-C9F6DF974EB5][Task: Derive a term index from its overnight curve]], which records the starvation decision this screen serves.
 
 * See also
 
--
+- [[id:FA5C96A3-1F8E-4F9B-8973-40D92055D7DD][System-level fixing observations and party-level fixings]], the split between what the system observed and what a party decides its trades fix on.

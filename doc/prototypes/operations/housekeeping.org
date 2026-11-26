@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: F8EA4677-573F-4A81-A052-B3DA4E7BF8F6
+:END:
+#+title: The housekeeping screen prototype
+#+description: Three shapes for the screen that shows every store the installation keeps, and the states a store can be in when nothing bounds it.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:operations:housekeeping:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+| Item          | Where                                     |
+|---------------+-------------------------------------------|
+| Prototype     | [[file:housekeeping/][the prototype]]     |
+| Gemini review | none                                      |
+| Group         | [[file:index.org][Operations prototypes]]   |
+| Journeys      | [[id:F7C1E75E-9F08-437B-80C0-7D50B945CA52][See what the system keeps]], [[id:C647D403-BFF0-4910-83E4-4EFEBD4F39C4][Change what is kept]], [[id:F6622109-4F52-4DE9-9C06-6B0EAA7C8D2E][Read the housekeeping log]] |
+
+* Summary
+
+Housekeeping is the one administration screen whose subject is absence: the
+installation keeps a dozen stores, three of them bounded by a policy, and the
+screen's job is to make the unbounded ones impossible to miss. Measured on a
+provisioned tenant, the largest unbounded store was the compute host's own
+scratch — 565 job folders and 1.9 GB — followed by the delivery counts at
+about 365 MB a day, while the bounded report outputs were doing exactly what
+their policy said. The prototype argues three shapes for showing that in one
+place, and the states a store is in when the news is bad, including the one
+that reads as bounded and is not: a policy whose action the sweep cannot
+perform.
+
+Everything here is mock data. The page calls no service, needs no build and no
+session, and every variant opens from one file with a query parameter.
+
+* Detail
+
+** The question
+
+The screen must answer, in the order a person asks it:
+
+1. what is this installation keeping, and how large is each store;
+2. which of those stores has nothing stopping it;
+3. when a store is bounded, what bounds it and when that last took effect;
+4. what housekeeping has actually done, and what it said when it did nothing.
+
+The fourth question is why the runs log is part of this screen and not a
+separate page: the same person asks both, in one sitting, and the answer to
+"why is this still here" is a run's detail line.
+
+** The variants
+
+- *A — one table of every store.* Store, bounded-by, state, size, growth, last
+  sweep, freed, with a detail panel for the selected row. Carries forward: it
+  is the only shape that holds all twelve rows and their numbers at once, and
+  it is the shape the logs screen already uses, so the person reads it twice a
+  week without learning it twice.
+- *B — cards grouped by where the store lives.* Database tables, chunked
+  tables, the object store, the compute host's own disk. It is better at
+  "what is big" and worse at "what is unbounded", because a card that reads
+  "unbounded" among eight cards is one more card; the group heading is what
+  makes the absence legible, and none of the group headings says bounded.
+- *C — two panes, list beside the policy editor.* The maintenance shape: the
+  store and its size stay in view while the period is changed, and the save bar
+  states the change and the record it will write. This variant is the one the
+  editing journey needs, and it is drawn here rather than in a prototype of its
+  own because a policy is edited from the store it bounds.
+
+** The states a store can be in
+
+| State | What the screen says | Why it matters |
+|-------+----------------------+----------------|
+| fresh | Applied; freed 0, because nothing is older than the period | A zero is not a failure, and the screen must not imply one |
+| skipped | The policy is enabled and the store is not bounded: the sweep performs a chunk drop and this policy asks for something else | The dangerous state: it reads as bounded on paper |
+| failed | The sweep ran and raised; the detail is the server's message | The store is unbounded until somebody reads the message |
+| disabled | The policy is off, so the store is kept for ever | A decision, and it should read as one |
+| empty | No policy at all, with the way to add one | The store was never decided about |
+
+** What is fake
+
+Everything. The sizes, the growth rates, the policies, the runs and the person
+signed in are mock data taken from one environment at one moment: 283 MB of
+calendar dates, 186 MB of report cashflows after 39 runs, 29 MB of delivery
+counts growing at about 27,000 rows an hour, 1.9 GB of host scratch. No request
+leaves the page.
+
+** Where the code lives
+
+- =doc/prototypes/operations/housekeeping/index.html= — the prototype.
+- =doc/prototypes/operations/housekeeping/prototype.css= and =prototype.js=,
+  where the page needs them.
+- The design tokens are copied from =projects/ores.web/packages/web/src/styles.css=,
+  as the other prototypes do.
+
+** The verdict
+
+(None yet. The shape is proposed, not accepted: variant A carries forward on the
+strength of its density and its likeness to the logs screen, but the screen
+cannot be built until a size-of-target read exists, and the runs log cannot be
+read at all until PR #5126 adds the retention-run wire type. The prototype is
+the argument for building both.)
+
+* See also
+
+- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]] — the group the three journeys belong to.
+- [[id:E92D8CA4-C33F-4AE2-808B-9092B100E9C5][Housekeeping of retained data]] — what a policy is and what the sweep does.

@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: E4957BD6-3B40-41C5-A2AF-5AED8EF680C6
+:END:
+#+title: Task: Design the housekeeping journeys and their screens
+#+description: Housekeeping has no journey and no prototype: nobody has stated what an administrator needs to see when asking what the installation keeps, what bounds it and what the sweeps did. State the journeys, draw their wireframes and prototype the screen before it is built.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: feature/design-the-housekeeping-journeys-and-their-screens
+#+pr: 5162
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The three housekeeping journeys are stated, their wireframes drawn, and the screen is prototyped in the shapes the implementation can choose between.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-26                               |
+
+* Acceptance
+
+- The journeys for reading what the system keeps, changing a policy, and reading the sweep log exist in the Operations group
+- Each journey names the screens, the fields, the operations with their subjects, and what the server does not provide
+- A static prototype argues the shapes and the states a store can be in, kept under doc/prototypes/operations
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5162][#5162]] | [knowledge] State the housekeeping journeys and prototype their screen |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+Housekeeping had no journey and no prototype. It now has both, and both say
+what the server does not provide.
+
+- Three journeys in the Operations group: *See what the system keeps*, *Change
+  what is kept, and for how long*, and *Read the housekeeping log*. Each states
+  its actor, its steps, the fields it shows, every operation with its subject
+  and whether the server provides it, and what is missing.
+- Three wireframes, one per journey, drawn in PlantUML salt and rendered beside
+  them.
+- One static prototype under =doc/prototypes/operations/housekeeping/= arguing
+  three shapes — the table of every store, cards grouped by where a store
+  lives, and the list beside the policy editor — and five states: fresh,
+  skipped, failed, disabled, and no policy at all. The runs log is part of the
+  same screen, because the person who asks what is kept asks what was done
+  about it in the same sitting.
+
+The findings that matter more than the drawings: no size-of-target read exists,
+no wire type reads the runs ledger until PR #5126, and the sweep performs one of
+the three actions the policy model states, so a policy can read as bounded while
+nothing bounds it. The prototype draws that last state as a first-class warning
+rather than an error, because it is a decision the platform made and not a
+fault of the store.
+
+The three journeys are the design; the prototype is the argument. Nothing is
+accepted yet: the screen cannot be built until the size read and the runs read
+exist, and both are named in the journeys' * What is missing.

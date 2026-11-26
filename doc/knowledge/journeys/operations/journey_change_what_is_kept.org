@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: C647D403-BFF0-4910-83E4-4EFEBD4F39C4
+:END:
+#+title: User Journey: Change what is kept, and for how long
+#+description: A system administrator turns a retention policy on or off and changes its period, and the change is recorded with the reason.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:security:operations:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator turns a retention policy on or off and changes its period, and the change is recorded with the reason.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want this store kept for a shorter period — or not swept at all — and I want
+the change to be a decision somebody can look up later." The journey is done
+when the policy states the new period, the system has recorded who changed it
+and why, and the administrator knows when it will next take effect.
+
+* Actor and trigger
+
+The system administrator: an account holding the =SuperAdmin= role and acting
+from the system tenant. The policy is a row of the installation, so no tenant
+administrator can change one, and the screen lives in *Operations* beside the
+store it bounds.
+
+The trigger is a decision, not a symptom: a period that turns out to be longer
+than a regulation allows, a store that grows faster than the disk, a report
+whose outputs a team wants for a quarter instead of three months, or an
+incident that makes somebody want a store swept sooner. It is also the way out
+of
+[[id:F7C1E75E-9F08-437B-80C0-7D50B945CA52][See what the system keeps]], where
+an unbounded store is a finding with a link to here.
+
+This journey writes. It writes one policy row, and it writes the record of the
+change: who made it, when, and the reason, in the same bitemporal shape every
+other entity uses, so the previous period is still readable after the change.
+
+* Steps
+
+1. *Choose the store.* The administrator arrives from the store list, so the
+   policy is chosen rather than searched for. The screen shows the policy as
+   the server holds it, and the store's size beside it, because a period is a
+   decision about a quantity.
+2. *Say what should change.* The system takes a period in days, a cadence in
+   hours, and whether the policy is enabled. The period is the age past which
+   the action applies; the cadence is how often the sweep may act. Nothing
+   else about the policy is editable here: the target and the action say what
+   the store *is*, and changing them is a different decision.
+3. *See the change before making it.* The screen states what will change, in
+   the words the record will carry: "Period 90 → 30 days; next sweep at 03:00;
+   the store holds 186 MB written in the last day, so nothing is removed
+   tonight." A period that removes nothing yet is a legitimate answer and the
+   screen says so instead of implying the change failed.
+4. *State why.* The change carries a commentary, and the system refuses a
+   change that states none. The reason is what the next reader has when the
+   question is "why is this kept for 30 days" and the person who decided it is
+   not in the room.
+5. *Record the change.* The system writes the policy with the administrator as
+   =modified_by= and the commentary on the row, and the write is versioned like
+   every other: the old period remains readable at its version.
+6. *Read what the change did.* The screen shows the policy's next due sweep
+   from the sweep's own schedule, and links to the runs of that policy so the
+   administrator can come back and see the first sweep under the new period, in
+   [[id:F6622109-4F52-4DE9-9C06-6B0EAA7C8D2E][Read the housekeeping log]].
+7. *Turn a policy off.* Disabling states that the store is now kept for ever,
+   and the screen says that in those words. The policy stays, so the decision
+   can be read and reversed; nothing is deleted.
+8. *Say an action cannot work.* Where a policy names an action the sweep does
+   not perform, the screen refuses to present the change as effective: it
+   states that the store will stay unbounded until the sweep can apply that
+   action. A period that promises a deletion the platform cannot make is worse
+   than no policy, because it reads as a decision that was taken.
+
+* Screens and wireframes
+
+One screen: the store's policy as the server holds it on the left, the edits
+on the right, and a bar that states the change and the record it will write
+before the change is made. The variant that carries forward is the two-pane
+one, because the decision needs the store's size in view while the period is
+chosen.
+
+#+begin_example
+#+caption: The policy editor: the store and its size beside the period it is kept for, and the bar that states the change the save will record.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/operations/wireframe_change_what_is_kept.png]]
+#+end_example
+
+The source sits beside this page as =wireframe_change_what_is_kept.puml=, and
+=plantuml -tpng wireframe_change_what_is_kept.puml= regenerates the image.
+
+* Prototype
+
+The same prototype argues the editor as variant C: the stores list on the left,
+the policy on the right, and a save bar that states what will change.
+
+- Design note :: [[id:F8EA4677-573F-4A81-A052-B3DA4E7BF8F6][The housekeeping screen prototype]]
+- Prototype :: [[file:../../../prototypes/operations/housekeeping/index.html][Housekeeping]]
+- Editor :: =index.html?variant=C=
+- Disabled store :: =index.html?variant=C&state=disabled=
+- A store the sweep cannot bound :: =index.html?variant=C&state=skipped=
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| Retention policy | Every field the editor writes, and the audit columns the record keeps | [[id:2C7E4B19-8D6A-4F53-9B21-5E8A7C3D1F60][ores.scheduler.retention_policy]] |
+| Retention run | The runs the change will be judged by | (no model yet; PR #5126 adds it) |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| 1 | Read the policy | =scheduler.v1.retention_policies.get= | exists |
+| 1, 2 | The store's size | (no subject) | missing |
+| 3, 6 | When the sweep next runs | =scheduler.v1.ops.get_scheduler_status= | exists |
+| 5 | Write the policy | =scheduler.v1.retention_policies.put= | exists |
+| 6 | The runs of the policy | (no subject until PR #5126) | missing |
+| 8 | Which actions the sweep performs | (no subject) | missing |
+
+* What is missing
+
+- *The size beside the period.* The editor cannot show what a period would
+  keep without a size read, and none exists. Until it does, the screen states
+  the period and says the size is unknown rather than implying a quantity it
+  did not read.
+- *The set of actions the sweep performs.* Step 8 needs it from the server. A
+  constant in the client would go stale the first time the sweep learns
+  an action, and would make the screen's warning a lie.
+- *A dry run.* Step 3's answer — "nothing is removed tonight" — is a
+  statement the client cannot make honestly without asking the server what the
+  sweep would find. Either the answer comes with the policy read, or the
+  screen says only what it knows: the period and the next due sweep.
+
+* Related journeys
+
+- [[id:F7C1E75E-9F08-437B-80C0-7D50B945CA52][See what the system keeps]] — where the administrator arrives from, and where
+  the new size is read afterwards.
+- [[id:F6622109-4F52-4DE9-9C06-6B0EAA7C8D2E][Read the housekeeping log]] — where the first sweep under the new period is
+  read.
+
+* Related knowledge
+
+- [[id:E92D8CA4-C33F-4AE2-808B-9092B100E9C5][Housekeeping of retained data]] — why a period is data and not a schema
+  constant, and what the sweep does with it.
+- [[id:2C7E4B19-8D6A-4F53-9B21-5E8A7C3D1F60][ores.scheduler.retention_policy]] — the fields and their meanings.
+
+* See also
+
+- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]] — the group this journey belongs to.

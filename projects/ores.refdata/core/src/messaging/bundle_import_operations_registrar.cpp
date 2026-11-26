@@ -34,8 +34,9 @@
 namespace ores::refdata::messaging {
 
 namespace {
-static constexpr std::string_view bundle_import_operations_queue_group = "ores.refdata.service";
-}
+static constexpr std::string_view bundle_import_operations_registrar_queue_group =
+    "ores.refdata.service";
+} // namespace
 
 std::vector<ores::nats::service::subscription> register_bundle_import_operations_handlers(
     ores::nats::service::client& nats,
@@ -45,15 +46,15 @@ std::vector<ores::nats::service::subscription> register_bundle_import_operations
     auto h = std::make_shared<bundle_import_operations_handler>(nats, ctx, std::move(verifier));
     subs.push_back(
         nats.queue_subscribe(begin_bundle_import_request::nats_subject,
-                             bundle_import_operations_queue_group,
+                             bundle_import_operations_registrar_queue_group,
                              [h](ores::nats::message msg) { h->begin(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(stage_bundle_family_request::nats_subject,
-                             bundle_import_operations_queue_group,
+                             bundle_import_operations_registrar_queue_group,
                              [h](ores::nats::message msg) { h->stage(std::move(msg)); }));
     subs.push_back(
         nats.queue_subscribe(commit_bundle_import_request::nats_subject,
-                             bundle_import_operations_queue_group,
+                             bundle_import_operations_registrar_queue_group,
                              [h](ores::nats::message msg) { h->commit(std::move(msg)); }));
     return subs;
 }

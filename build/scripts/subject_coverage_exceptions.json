@@ -1,3 +1,159 @@
 {
-  "exceptions": []
+  "exceptions": [
+    {
+      "subject": "iam.v1.accounts.delete",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.accounts.put",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.assign_role",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.assign_role_by_name",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.change_password",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.create_initial_admin",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.get_account_roles",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.get_reporting_tree",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.get_role_permissions",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.list_account_permissions",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.list_my_permissions",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.list_role_holders",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.list_role_permissions",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.list_roles_page",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.lock_account",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.login",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.reset_password",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.reset_tenant",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.revoke_role",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.revoke_role_by_name",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.select_party",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.set_my_default_party",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.set_reporting_line",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.signup",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.switch_party",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.unlock_account",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.update_account",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.update_my_email",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.update_self_account",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.ops.update_self_account_contact_information",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    },
+    {
+      "subject": "iam.v1.roles_permissions.put",
+      "reason": "subscribed, and the handler returns without replying, so a caller waits until it times out",
+      "task": "2737CE30-B0AB-44F2-AB6A-F29BC7834259"
+    }
+  ]
 }

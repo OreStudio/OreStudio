@@ -36,6 +36,7 @@ namespace ores::refdata::messaging {
 
 using namespace ores::logging;
 using ores::service::messaging::decode;
+using ores::service::messaging::log_handler_entry;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using ores::service::messaging::reply;
@@ -56,7 +57,7 @@ bundle_import_operations_handler::bundle_import_operations_handler(
     , verifier_(verifier) {}
 
 void bundle_import_operations_handler::begin(ores::nats::message msg) {
-    ORES_LOG_SEV(bundle_import_operations_handler_lg(), debug) << "Handling " << msg.subject;
+    [[maybe_unused]] const auto cid = log_handler_entry(bundle_import_operations_handler_lg(), msg);
     auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
     if (!req_ctx_expected) {
         error_reply(nats_, msg, req_ctx_expected.error());
@@ -87,7 +88,7 @@ void bundle_import_operations_handler::begin(ores::nats::message msg) {
 }
 
 void bundle_import_operations_handler::stage(ores::nats::message msg) {
-    ORES_LOG_SEV(bundle_import_operations_handler_lg(), debug) << "Handling " << msg.subject;
+    [[maybe_unused]] const auto cid = log_handler_entry(bundle_import_operations_handler_lg(), msg);
     auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
     if (!req_ctx_expected) {
         error_reply(nats_, msg, req_ctx_expected.error());
@@ -118,7 +119,7 @@ void bundle_import_operations_handler::stage(ores::nats::message msg) {
 }
 
 void bundle_import_operations_handler::commit(ores::nats::message msg) {
-    ORES_LOG_SEV(bundle_import_operations_handler_lg(), debug) << "Handling " << msg.subject;
+    [[maybe_unused]] const auto cid = log_handler_entry(bundle_import_operations_handler_lg(), msg);
     auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
     if (!req_ctx_expected) {
         error_reply(nats_, msg, req_ctx_expected.error());

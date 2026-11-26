@@ -17,34 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.nats/domain/headers.hpp"
-#include "ores.nats/domain/message.hpp"
-#include "ores.nats/domain/wire_codec.hpp"
+#include "ores.logging/logger.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.refdata.api/messaging/bundle_import_operations_protocol.hpp"
 #include "ores.refdata.core/messaging/bundle_import_operations_registrar.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <string_view>
-#include <unordered_map>
 #include <vector>
 
-// Proves the three bundle import operations are reachable: a request on each of
-// them is answered over real NATS. The subjects were declared, generated and
-// called by the ORE run configuration import for two months while no registrar
-// subscribed them, and a caller could only find out by timing out.
+// Holds the registration of the three bundle import operations: the subjects
+// are declared with responses and called by the ORE run configuration import,
+// and a caller that finds nobody home only learns it by timing out.
 //
-// The answer here is a refusal, because the request carries no token: that is
-// the point. Any answer means a handler is subscribed and ran its prelude. What
-// each operation decides is service::bundle_import_operations_service, which
-// bundle_import_commit_tests.cpp drives without NATS.
+// The case reads what the registrar returns rather than sending a request, so
+// it holds whether the subjects are subscribed whether or not the fleet is up.
+// What each operation decides is service::bundle_import_operations_service,
+// which bundle_import_commit_tests.cpp drives without NATS; that a live request
+// is answered is held by build/scripts/check_subject_coverage.py.
 
 namespace {
 
-using namespace ores::refdata::messaging;
+inline auto& lg() {
+    static auto instance = ores::logging::make_logger("ores.refdata.core.tests");
+    return instance;
+}
 
 struct bundle_import_operations_fixture {
     ores::testing::scoped_database_helper db;
@@ -55,26 +56,32 @@ struct bundle_import_operations_fixture {
         : nats(ores::testing::make_nats_options()) {
         nats.connect();
         REQUIRE(nats.is_connected());
-        subs = register_bundle_import_operations_handlers(nats, db.context(), std::nullopt);
+        subs = ores::refdata::messaging::register_bundle_import_operations_handlers(
+            nats, db.context(), std::nullopt);
     }
 
-    /// Whether @p req on @p subject is answered with the error a caller with no
-    /// token earns. A subject nobody subscribes throws before it returns.
-    template <typename Req>
-    bool refused(std::string_view subject, const Req& req) {
-        const std::unordered_map<std::string, std::string> no_credentials;
-        const auto reply = nats.request_sync(
-            subject, ores::nats::default_wire_codec().encode(req), no_credentials);
-        return reply.headers.contains(std::string(ores::nats::headers::x_error));
+    [[nodiscard]] std::vector<std::string> subjects() const {
+        std::vector<std::string> subscribed;
+        subscribed.reserve(subs.size());
+        for (const auto& sub : subs)
+            subscribed.push_back(sub.subject());
+        return subscribed;
     }
 };
 
 }
 
-TEST_CASE("every_bundle_import_operation_answers_on_its_subject", "[bundle_import][messaging]") {
+TEST_CASE("every_bundle_import_operation_is_subscribed", "[bundle_import][messaging]") {
     bundle_import_operations_fixture f;
+    const auto subscribed = f.subjects();
+    ORES_LOG_SEV(lg(), info) << "subscribed " << subscribed.size() << " subject(s)";
 
-    CHECK(f.refused(begin_bundle_import_request::nats_subject, begin_bundle_import_request{}));
-    CHECK(f.refused(stage_bundle_family_request::nats_subject, stage_bundle_family_request{}));
-    CHECK(f.refused(commit_bundle_import_request::nats_subject, commit_bundle_import_request{}));
+    const std::vector<std::string_view> wanted{
+        ores::refdata::messaging::begin_bundle_import_request::nats_subject,
+        ores::refdata::messaging::stage_bundle_family_request::nats_subject,
+        ores::refdata::messaging::commit_bundle_import_request::nats_subject,
+    };
+    for (const auto subject : wanted)
+        CHECK(std::ranges::find(subscribed, f.nats.make_subject(subject)) != subscribed.end());
+    CHECK(subscribed.size() == wanted.size());
 }

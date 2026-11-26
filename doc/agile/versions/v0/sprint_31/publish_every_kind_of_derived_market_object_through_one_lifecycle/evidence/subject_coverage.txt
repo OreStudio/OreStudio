@@ -1,3 +1,16 @@
+# check_subject_coverage.py against the running fleet, before and after the three
+# bundle import subjects were served.
+#
+# The first transcript is the check as committed, whose classifier counted an
+# unanswered request as served. The review found that fail-open return; the check
+# was made fail-closed, and the second transcript is what it then finds: 31 iam
+# subjects whose handler returns without replying, excepted against capture
+# 2737CE30. The three bundle import subjects are served.
+#
+# The first transcript names capture 7B4D52F1, the duplicate this branch retired
+# in favour of FE34DD26; it is left as it ran.
+
+## Before: 216 of 219 answered, the three bundle import subjects unserved
 # check_subject_coverage.py against the running fleet
 # 2026-11-26T15:26:35Z  checkout eb1009994e
 
@@ -10,3 +23,15 @@ SKIP {component}.v1.history.get (projects/ores.history/modeling/ores.history.his
 216 of 219 declared request(s) answered; 3 did not; 86 published subject(s) and 1 templated subject(s) skipped.
 
 exit=0
+
+## After: 188 answered, the three served, 31 iam subjects silent and excepted
+# 2026-11-26T18:34:01Z  working tree on cd13f5fdf7 plus the review fixes
+$ python3 build/scripts/check_subject_coverage.py
+KNOWN iam.v1.accounts.delete: declared by delete_account_request in projects/ores.iam/modeling/ores.iam.account_messages.org; subscribed, and the handler returns without replying, so a caller waits until it times out (task 2737CE30-B0AB-44F2-AB6A-F29BC7834259)
+KNOWN iam.v1.accounts.put: declared by save_account_request in projects/ores.iam/modeling/ores.iam.account_messages.org; subscribed, and the handler returns without replying, so a caller waits until it times out (task 2737CE30-B0AB-44F2-AB6A-F29BC7834259)
+KNOWN iam.v1.ops.assign_role: declared by assign_role_request in projects/ores.iam/modeling/ores.iam.authorization_messages.org; subscribed, and the handler returns without replying, so a caller waits until it times out (task 2737CE30-B0AB-44F2-AB6A-F29BC7834259)
+...
+KNOWN iam.v1.accounts.put: declared by save_account_request in projects/ores.iam/modeling/ores.iam.account_messages.org; subscribed, and the handler returns without replying, so a caller waits until it times out (task 2737CE30-B0AB-44F2-AB6A-F29BC7834259)
+# (the remaining KNOWN lines name the other iam subjects)
+SKIP {component}.v1.history.get (projects/ores.history/modeling/ores.history.history_messages.org names get_entity_history_request): the generator names this subject per family.
+188 of 219 declared request(s) answered; 31 did not; 86 published subject(s) and 1 templated subject(s) skipped.

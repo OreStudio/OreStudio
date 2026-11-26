@@ -57,6 +57,10 @@ def test_a_prose_only_change_builds_the_pages_and_nothing_else_heavy():
     assert "site-page" in chosen
 
 
+def test_a_model_change_asks_the_bus_about_the_subjects_it_declares():
+    assert "subject-coverage" in select(["projects/ores.refdata/modeling/x.org"])
+
+
 def test_a_header_change_builds_and_tests():
     assert heavy(["projects/ores.iam/core/include/ores.iam.core/x.hpp"]) == {
         "answer-shapes", "build", "db", "ctest", "step-consumers",
@@ -204,7 +208,10 @@ def test_the_heavy_checks_are_the_ones_that_need_a_built_tree():
 
 def test_only_a_sql_change_runs_the_sql_suites():
     assert "pgtap" not in heavy(["projects/ores.iam/core/src/a.cpp"])
-    assert not heavy(["projects/ores.trading/modeling/ores.trading.trade.org"])
+    # A model change asks the bus about the subjects it declares; the SQL
+    # suites are not its business.
+    assert heavy(["projects/ores.trading/modeling/ores.trading.trade.org"]) == {
+        "subject-coverage"}
     assert "pgtap" in heavy(["projects/ores.sql/test/x_test.sql"])
 
 
@@ -383,7 +390,7 @@ def _run_heavy(monkeypatch, changed, build_status="PASS", skips=None):
     monkeypatch.setattr(local_checks, "fleet_skips", lambda changed, preset: skips)
     selected = [c for c in local_checks.CATALOGUE
                 if c.id in ("build", "db", "ctest", "ticks-smoke", "step-consumers",
-                    "answer-shapes")]
+                    "answer-shapes", "subject-coverage")]
     results = local_checks.run_all(selected, "origin/main", "p", 1, changed=changed)
     return ran, {r.check.id: r for r in results}
 
@@ -399,7 +406,7 @@ def test_the_heavy_phase_skips_the_fleet_after_the_build(monkeypatch):
 def test_a_run_of_every_check_or_a_failed_build_skips_nothing(monkeypatch):
     ran, _ = _run_heavy(monkeypatch, None)
     assert ran == ["build", "db", "ctest", "ticks-smoke", "step-consumers",
-                   "answer-shapes"]
+                   "subject-coverage", "answer-shapes"]
     ran, _ = _run_heavy(monkeypatch, [TEST_CPP], build_status="FAIL")
     assert "db" in ran
 
@@ -418,6 +425,7 @@ def test_the_report_names_why_a_check_was_skipped():
 def test_a_database_from_another_schema_is_rebuilt(monkeypatch):
     skips = {"ticks-smoke": "the change compiles only into x.tests",
              "step-consumers": "the change compiles only into x.tests",
+             "subject-coverage": "the change compiles only into x.tests",
              "answer-shapes": "the change compiles only into x.tests"}
     ran, results = _run_heavy(monkeypatch, [TEST_CPP], skips=skips)
     assert ran == ["build", "db", "ctest"]
@@ -429,7 +437,7 @@ def test_the_database_keeps_its_check_unless_its_schema_matches(monkeypatch):
                         lambda build_dir, wanted: {TEST_CPP: {"ores.trading.api.tests"}})
     monkeypatch.setattr(local_checks, "database_in_sync", lambda: False)
     assert set(local_checks.fleet_skips([TEST_CPP], "p")) == {
-        "ticks-smoke", "step-consumers", "answer-shapes"}
+        "ticks-smoke", "step-consumers", "subject-coverage", "answer-shapes"}
     monkeypatch.setattr(local_checks, "database_in_sync", lambda: True)
     assert set(local_checks.fleet_skips([TEST_CPP], "p")) == set(local_checks.FLEET_CHECKS)
 

@@ -111,13 +111,37 @@ def subject_prefix(env: dict[str, str]) -> str | None:
     return env.get("ORES_NATS_SUBJECT_PREFIX") or None
 
 
+class ExceptionFileError(Exception):
+    """The exceptions file cannot be read as the check needs to read it."""
+
+
 def load_exceptions(root: Path) -> dict[str, dict]:
-    """The subjects recorded as unserved, each with why and who owns the fix."""
+    """The subjects recorded as unserved, each with why and who owns the fix.
+
+    A malformed entry is an error rather than a skipped one: an exception that
+    cannot be read is an exception that silently stops excusing anything, and
+    the check would then fail for a reason its message does not explain.
+    """
     path = root / EXCEPTIONS
     if not path.is_file():
         return {}
-    data = json.loads(path.read_text())
-    return {entry["subject"]: entry for entry in data.get("exceptions", [])}
+    try:
+        data = json.loads(path.read_text())
+    except json.JSONDecodeError as e:
+        raise ExceptionFileError(f"{EXCEPTIONS} is not JSON: {e}") from e
+    entries = data.get("exceptions")
+    if not isinstance(entries, list):
+        raise ExceptionFileError(f"{EXCEPTIONS} needs an 'exceptions' list")
+    found: dict[str, dict] = {}
+    for index, entry in enumerate(entries):
+        if not isinstance(entry, dict):
+            raise ExceptionFileError(f"{EXCEPTIONS} entry {index} is not an object")
+        missing = [key for key in ("subject", "reason", "task") if not entry.get(key)]
+        if missing:
+            raise ExceptionFileError(
+                f"{EXCEPTIONS} entry {index} needs {', '.join(missing)}")
+        found[entry["subject"]] = entry
+    return found
 
 
 def declared_subjects(root: Path) -> tuple[list[tuple[str, str, str]], list[str], int]:
@@ -150,14 +174,18 @@ def declared_subjects(root: Path) -> tuple[list[tuple[str, str, str]], list[str]
 
 
 def classify(stderr: str, returncode: int) -> str:
-    """Whether the bus answered, named nobody, or said nothing at all."""
+    """Whether the bus answered, named nobody, or said nothing at all.
+
+    Only the CLI line that names an answer counts as one. Anything else is
+    silent: output this function cannot read is a reason to fail, not a reason
+    to believe a subscriber exists, because a CLI that rewords its progress
+    line would otherwise turn the check green for ever.
+    """
     if NO_RESPONDER in stderr:
         return ABSENT
     if ANSWERED in stderr:
         return SERVED
-    if TIMED_OUT in stderr.lower() or returncode != 0:
-        return SILENT
-    return SERVED
+    return SILENT
 
 
 def ask(nats: list[str], subject: str, timeout: int) -> str:
@@ -223,7 +251,11 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     total, served, findings, templated, published = check(root, nats, prefix, args.timeout)
-    exceptions = load_exceptions(root)
+    try:
+        exceptions = load_exceptions(root)
+    except ExceptionFileError as e:
+        print(f"FAIL: {e}", file=sys.stderr)
+        return 2
 
     unexcused, answered = triage(findings, exceptions)
     for subject in sorted(exceptions):

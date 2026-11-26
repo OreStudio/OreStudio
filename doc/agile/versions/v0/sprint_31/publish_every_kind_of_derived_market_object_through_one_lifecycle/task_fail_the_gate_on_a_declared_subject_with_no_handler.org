@@ -39,7 +39,7 @@ dead subject cannot be declared and advertised while nobody answers it.
 - A repo-owned check fails when a protocol model declares a subject that no handler registers, and names the subject and the file.
 - The check runs in the local gate for a change to a protocol model, a handler or the service that subscribes.
 - A test proves the check fails on a declared subject with no handler and passes when the handler is registered.
-- The check reads the subjects a service declares and the subjects its registrar subscribes without running the registrar, which creates a JetStream stream, claims it in a process-static set, binds a durable consumer and prunes the stream's other consumers. Task 4ED5A5FE wrote a unit test that called the registrar and withdrew it for that reason.
+- The check asks the bus rather than the registrar, which cannot be run outside a service process: it creates a JetStream stream, claims it in a process-static set, binds a durable consumer and prunes the stream's other consumers. Task 4ED5A5FE wrote a unit test that called the registrar and withdrew it for that reason.
 
 * Plan
 
@@ -88,12 +88,14 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Subjects the models declare | 306: 219 requests, 86 published, 1 templated | =python3 build/scripts/check_subject_coverage.py=, transcript in =evidence/subject_coverage.txt= | =55ac68bb54= |
-| Requests answered on the running fleet | 216 of 219; 3 recorded as known | the same command | =55ac68bb54= |
+| Requests answered on the running fleet, before the fix | 216 of 219 by the classifier as first written; of those, 31 never replied and the classifier counted them as served | the same command, transcript in =evidence/subject_coverage.txt= | =55ac68bb54= |
 | The three unserved subjects | =begin_bundle_import=, =stage_bundle_family=, =commit_bundle_import=, each called by the ore service's run configuration import | =grep -rn bundle_import projects/ores.ore/service/src/messaging/= | =55ac68bb54= |
 | The check's own cases | 8 pass | =python3 -m pytest build/scripts/tests/test_subject_coverage.py -q= | =55ac68bb54= |
-| The build-script suite | 181 pass | the gate's =build-script-tests= | =55ac68bb54= |
-| Local checks, non-heavy | 8 of 8 | =compass check --exclude-heavy= | =55ac68bb54= |
+| The build-script suite | 183 pass | the gate's =build-script-tests= | =cd13f5fdf7= |
+| Local checks, non-heavy | 12 of 12 | =compass check --exclude-heavy= | =cd13f5fdf7= |
 | The new check in the gate | pass, 84.5s | =compass check --only subject-coverage= | =55ac68bb54= |
+| The check after the fix, and after it was made fail-closed | 188 of 219 answered; the three bundle import subjects answer; 31 iam subjects never reply and are excepted against capture 2737CE30 | =python3 build/scripts/check_subject_coverage.py=, transcript in =evidence/subject_coverage.txt= | =cd13f5fdf7= |
+| The refdata core suite | 567 cases pass on a recreated database | =ctest -R ores.refdata.core.tests -j 1= | =cd13f5fdf7= |
 
 * Notes
 
@@ -143,7 +145,14 @@ for a refdata owner, because no environment was working on refdata:
 for the three operations, =register_bundle_import_operations_handlers= is called
 by the umbrella refdata registrar, and =messaging_bundle_import_operations_tests.cpp=
 asks each subject over real NATS and requires an answer. The exceptions file is
-empty, and the check reports 219 of 219.
+empty, and the three answer.
+
+Making the check fail-closed then found a second class of dead subject: 31 iam
+requests reach a handler that returns without replying, so a caller waits until
+it times out — the same symptom as no subscriber, one layer down. The check as
+first written counted those as served, which is why the first run reported 219
+of 219; that return was the defect. They are excepted against capture 2737CE30,
+because repairing iam's handlers is iam's work.
 
 What the check cannot see: a subject that answers is served by *something*, not
 necessarily by the handler its model names. It also says nothing about the 86

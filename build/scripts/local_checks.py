@@ -685,7 +685,7 @@ CATALOGUE: tuple[Check, ...] = (
             "-c",
             "./compass.sh services start; python3 build/scripts/check_subject_coverage.py",
         ),
-        classes=("cpp", "services"),
+        classes=("cpp", "services", "modeling"),
         phase=HEAVY,
         after=("ticks-smoke",),
         timeout=900,
@@ -827,7 +827,8 @@ def expand_compass(results: list[Result], covered: list[Check]) -> list[Result]:
 # These checks stand up the database and the fleet. A change that compiles into
 # test binaries alone leaves every library and service as it was, so they would
 # prove again what main already proved.
-FLEET_CHECKS = ("db", "ticks-smoke", "step-consumers", "answer-shapes")
+FLEET_CHECKS = ("db", "ticks-smoke", "step-consumers", "answer-shapes",
+                "subject-coverage")
 FLEET_CLASSES = ("cpp", "services", "sql")
 COMPILED_SUFFIXES = (".cpp", ".hpp", ".h", ".ipp", ".c", ".cc", ".cxx")
 TEST_TARGET_SUFFIX = ".tests"

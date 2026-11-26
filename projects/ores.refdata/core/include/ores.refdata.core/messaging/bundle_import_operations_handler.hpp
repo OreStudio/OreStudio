@@ -43,8 +43,19 @@ public:
         const ores::database::context& ctx,
         std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
+    /**
+     * @brief Opens a staging session, or answers the one the id already names.
+     */
     void begin(ores::nats::message msg);
+
+    /**
+     * @brief Stages one family payload against an open import.
+     */
     void stage(ores::nats::message msg);
+
+    /**
+     * @brief Applies every staged family of one import in one transaction.
+     */
     void commit(ores::nats::message msg);
 
 private:

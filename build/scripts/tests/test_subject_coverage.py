@@ -95,6 +95,26 @@ def test_a_declared_subject_that_nobody_answers_is_a_finding(tmp_path):
     assert asked == ["ores.test.demo.v1.ops.get_a_thing"]
 
 
+def test_one_root_fails_for_the_subject_nobody_serves_and_passes_for_the_one_that_is(tmp_path):
+    """The whole contract in one root: the same run flags the dead subject and
+    clears the served one, so the check is not passing because it found nothing
+    to say."""
+    model(tmp_path, "demo", REQUESTED + REQUESTED.replace(
+        "get_a_thing", "get_another_thing"))
+    served = "ores.test.demo.v1.ops.get_a_thing"
+
+    def answers_what_is_served(nats, subject, timeout):
+        return coverage.SERVED if subject == served else coverage.ABSENT
+
+    total, served_count, findings, _, _ = coverage.check(
+        tmp_path, ["nats"], "ores.test", 1, ask_fn=answers_what_is_served)
+
+    assert (total, served_count) == (2, 1)
+    assert [finding[0] for finding in findings] == ["demo.v1.ops.get_another_thing"]
+    unexcused, _ = coverage.triage(findings, {})
+    assert len(unexcused) == 1
+
+
 def test_the_same_subject_passes_when_something_answers_it(tmp_path):
     model(tmp_path, "demo", REQUESTED)
 

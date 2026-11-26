@@ -19,39 +19,39 @@
 
 salt
 {
-@startuml
-
-salt
-{
   <b>ORE STUDIO - SYSTEM ADMINISTRATION: OPERATIONS</b>
   --
-  <b>HOUSEKEEPING</b>  |  Stores | Runs
+  <b>HOUSEKEEPING</b>  |  Stores (9) | Runs (3)
   --
   {
-    Stores: 9 | Bounded: 3 | <color:#b00020>Unbounded: 6</color> | Under management: 2.4 GB
+    Stores: 9 | Policies: 2 | <color:#b00020>Not bounded: 6</color> | Measured: 2.5 GB across 7 stores
   }
   --
+  <b><color:#b00020>6 of the 9 stores have nothing that bounds them.</color></b>
+  A store with no policy that applies is never deleted from. It grows until the
+  database or the disk is full. The policies held today freed 0 B because nothing
+  is older than its period yet; that does not bound the 6 stores below.
+  [ Show the 6 stores nothing bounds ]   [ Open the runs log ]
+  --
+  <b>EVERY STORE</b>                                  [ Not bounded (6) ]   2 policies · 9 stores
+  A store with no policy that applies is kept for ever.
   {#
-    Store | Shape | Bounded by | Period | State | Size | Growth | Last sweep
-    ores_refdata_calendar_dates_tbl | chunked | none | - | <color:#b00020>unbounded</color> | 283 MB | flat | never
-    ores_reporting_report_cashflows_tbl | chunked | drop chunks | 90 d | applied | 186 MB | +186 MB/day | 17:15
-    ores_reporting_report_metrics_tbl | chunked | drop chunks | 90 d | applied | 4 MB | flat | 17:15
-    ores_marketdata_delivery_counts_tbl | ordinary | none | - | <color:#b00020>unbounded</color> | 29 MB | +365 MB/day | never
-    ores_marketdata_ticks_tbl | chunked | none | - | <color:#b00020>unbounded</color> | 16 kB | flat | never
-    compute/input/, compute/output/ | prefix | none | - | <color:#b00020>unbounded</color> | unknown | unknown | never
-    publish/run/wrappers | directory | none | - | <color:#b00020>unbounded</color> | 1.9 GB | +110 folders/h | never
-    publish/run/packages | directory | digest key | - | bounded by design | 209 MB | flat | n/a
+    Store (shape) | Bounded? | Bounded by | Size | Growth
+    Calendar dates (chunked) | <color:#b00020>Not bounded</color> | none -- no policy | 283 MB | +652 kB/wk
+    Report run cashflows (chunked) | Bounded | drop chunks, 90 days | 186 MB of 512 MB | +16.9 MB/wk
+    Report run metrics (chunked) | Bounded | drop chunks, 90 days | 4 MB | +372 kB/wk
+    Market data delivery counts (ordinary) | <color:#b00020>Not bounded</color> | none -- no policy | 29 MB | +2.5 MB/wk
+    Market data ticks (chunked) | <color:#b00020>Not bounded</color> | none -- no policy | 16 kB | flat
+    Compute job inputs (prefix) | <color:#b00020>Not bounded</color> | none -- no policy | not measured | not measured
+    Compute job outputs (prefix) | <color:#b00020>Not bounded</color> | none -- no policy | not measured | not measured
+    Compute node scratch (host directory) | <color:#b00020>Not bounded</color> | none -- no policy | 1.9 GB of 2.0 GB | +145.7 MB/wk
+    Engine package cache (package cache) | Bounded by keying | content digest | 209 MB | +19 MB/wk
   }
   --
-  <b>SELECTED: ores_marketdata_delivery_counts_tbl</b>
-  --
-  {
-    No policy names this store, so nothing bounds it.
-    It holds about 27,000 rows an hour, one per series per period.
-    [ Bound this store ]  [ Read its sweeps ]
-  }
-  --
-  Order: Size, Growth, Last sweep, State -- growth is the number the person came for
+  Each row also states the cost of having no bound: about 33 MB a year for the
+  calendars and about 7.4 GB a year for the node scratch, at the rate of the
+  last twelve weeks. A row opens that store's own page, where the plot,
+  the policy and the activity are. The plot is not in the list.
 }
 
 @enduml

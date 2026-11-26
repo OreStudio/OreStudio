@@ -66,7 +66,7 @@
         {
             id: 'empty',
             name: 'Empty',
-            gist: 'No retention policy exists at all. Every store but the digest-keyed package cache is unbounded, and the screen offers the way to add one.'
+            gist: 'No retention policy exists at all. Nothing bounds any store but the digest-keyed package cache, and the screen offers the way to add one.'
         }
     ];
 
@@ -287,6 +287,7 @@
         view: 'stores',
         selected: null,
         runFilter: null,
+        onlyUnbounded: false,
         panel: false,
         overrides: {},
         added: [],
@@ -399,15 +400,52 @@
         return STORES.filter(function (store) { return !isBounded(store); }).length;
     }
 
+    /* What "no bound" costs, in bytes. A store with nothing removing it is kept
+       for ever, so the measured rate of the last twelve weeks is the only
+       honest way to say how bad that is. An unmeasured store says so. */
+
+    function unboundedConsequence(store) {
+        if (store.keyed) return 'It needs no policy: the digest keying bounds it.';
+        if (store.sizeMB === null) return 'Its size is not measured, so its growth cannot be seen either.';
+        const rate = ratePerWeek(store);
+        if (rate === null) return 'Nothing removes what it holds.';
+        if (Math.abs(rate) < 0.05) return 'Nothing removes what it holds. It is not growing at the moment.';
+        return 'Nothing removes it: ' + (rate > 0 ? '+' : '') + fmtMB(rate) + ' a week, about ' +
+            (rate > 0 ? '+' : '') + fmtMB(rate * 52) + ' a year at the last twelve weeks.';
+    }
+
+    /* The column answers one question: does anything remove what this store
+       holds? A policy that exists is not the same answer: a policy switched off,
+       skipped or failed leaves the store exactly as unbounded as no policy at
+       all. The reason for the answer lives beside it, in the Bounded by cell. */
+
+    /* The list wants the verdict alone: the reason is in the cell beside it, and
+       a column of long labels is not scannable. The store's page and the cards
+       want the reason as well, so they ask for the longer form. */
+
+    function verdictOf(store) {
+        if (store.keyed) return { label: 'Bounded by keying', tone: 'ok' };
+        if (isBounded(store)) return { label: 'Bounded', tone: 'ok' };
+        const policy = policyFor(store);
+        if (policy && policy.lastOutcome === 'failed') return { label: 'Not bounded', tone: 'bad' };
+        if (policy && policy.lastOutcome === 'pending') return { label: 'Not bounded', tone: 'muted' };
+        return { label: 'Not bounded', tone: 'warn' };
+    }
+
+    function verdictTag(store) {
+        const verdict = verdictOf(store);
+        return '<span class="tag ' + verdict.tone + '">' + esc(verdict.label) + '</span>';
+    }
+
     function statusOf(store) {
         if (store.keyed) return { label: 'Bounded by keying', tone: 'ok' };
         const policy = policyFor(store);
-        if (!policy) return { label: 'Unbounded', tone: 'warn' };
-        if (!policy.enabled) return { label: 'Disabled — unbounded', tone: 'warn' };
-        if (policy.lastOutcome === 'skipped') return { label: 'Skipped — unbounded', tone: 'warn' };
-        if (policy.lastOutcome === 'failed') return { label: 'Failed — unbounded', tone: 'bad' };
-        if (policy.lastOutcome === 'pending') return { label: 'Pending first sweep', tone: 'muted' };
-        return { label: 'Applied', tone: 'ok' };
+        if (!policy) return { label: 'Not bounded', tone: 'warn' };
+        if (!policy.enabled) return { label: 'Not bounded — policy off', tone: 'warn' };
+        if (policy.lastOutcome === 'skipped') return { label: 'Not bounded — sweep skips it', tone: 'warn' };
+        if (policy.lastOutcome === 'failed') return { label: 'Not bounded — last sweep failed', tone: 'bad' };
+        if (policy.lastOutcome === 'pending') return { label: 'Not bounded yet — first sweep pending', tone: 'muted' };
+        return { label: 'Bounded', tone: 'ok' };
     }
 
     function statusTag(store) {
@@ -590,7 +628,7 @@
         return '<div class="statline">' +
             '<span><b>' + STORES.length + '</b> stores</span>' +
             '<span><b>' + policiesHeld + '</b> policies</span>' +
-            '<span><b class="warn">' + unboundedCount() + '</b> unbounded</span>' +
+            '<span><b class="warn">' + unboundedCount() + '</b> not bounded</span>' +
             '<span><b>' + fmtMB(knownTotalMB()) + '</b> measured across ' + knownCount() + ' stores</span>' +
             '<span>' + (STORES.length - knownCount()) + ' stores report no size</span>' +
             '</div>';
@@ -610,7 +648,7 @@
         if (S.state === 'empty' && held === 0) {
             return notice('warn', 'No retention policy exists.',
                 'The installation keeps ' + STORES.length + ' stores and holds no retention policy. ' + unbounded +
-                ' are unbounded; only <span class="mono">publish/run/packages</span> is bounded, by its content digest keying. Nothing removes old data or artefacts today.',
+                ' have nothing bounding them; only <span class="mono">publish/run/packages</span> is bounded, by its content digest keying. Nothing removes old data or artefacts today.',
                 '<button type="button" class="btn primary small" data-act="first-policy">Add the first policy</button>');
         }
 
@@ -647,15 +685,18 @@
             return notice('warn', 'A policy is switched off, so its store is kept for ever.',
                 '<span class="mono">report_cashflows_90d</span> was switched off at 17:20. It last applied at 16:15 and freed 0 B. ' +
                 'The table holds 186 MB and keeps every chunk past 90 days until the policy is enabled again. ' +
-                'That leaves ' + unbounded + ' of the ' + STORES.length + ' stores unbounded.',
+                'That leaves ' + unbounded + ' of the ' + STORES.length + ' stores with nothing bounding them.',
                 '<button type="button" class="btn secondary small" data-act="edit-store" data-store="report_cashflows">Open the policy editor</button>');
         }
 
-        return notice('info', 'Nothing to free yet — and nothing is wrong.',
-            'The enabled policies ran at 17:15 and freed 0 B: no chunk is older than 90 days. A zero is the expected answer ' +
-            'for a store bounded this week, not a failed sweep. Yet ' + unbounded + ' of the ' + STORES.length +
-            ' stores have no policy that bounds them, and are marked Unbounded below.',
-            S.view === 'runs' ? '' : '<button type="button" class="btn secondary small" data-act="view" data-view="runs">Open the runs log</button>');
+        return notice('warn', unbounded + ' of the ' + STORES.length + ' stores have nothing that bounds them.',
+            'A store with no policy that applies is never deleted from. It grows until the database or the disk is full, ' +
+            'which is the one failure this screen exists to prevent. The policies held today freed 0 B because nothing ' +
+            'is older than its period yet: a zero is the expected answer for a store bounded this week, not a failure. ' +
+            'It does not bound the ' + unbounded + ' stores below.',
+            '<button type="button" class="btn primary small" data-act="filter-unbounded">' +
+            (S.onlyUnbounded ? 'Show every store' : 'Show the ' + unbounded + ' stores nothing bounds') + '</button>' +
+            (S.view === 'runs' ? '' : '<button type="button" class="btn secondary small" data-act="view" data-view="runs">Open the runs log</button>'));
     }
 
     /* ------------------------------------------------------ variant A */
@@ -669,8 +710,12 @@
         }
 
         if (!policy) {
+            const rate = ratePerWeek(store);
+            let cost = 'Nothing removes what it holds';
+            if (store.sizeMB === null) cost = 'Size not measured, so growth is invisible';
+            else if (rate !== null && Math.abs(rate) >= 0.05) cost = 'Nothing removes it · about ' + fmtMB(rate * 52) + ' a year';
             return '<span class="none">None — no retention policy</span>' +
-                '<span class="subline">This store is not bounded</span>';
+                '<span class="subline warnline">' + esc(cost) + '</span>';
         }
 
         let html = esc(actionLabel(policy.action)) + ' · ' + policy.periodDays + ' days' +
@@ -918,15 +963,14 @@
     }
 
     function storeRow(store) {
-        const policy = policyFor(store);
         const selected = S.selected === store.id;
         return '<tr class="selectable' + (selected ? ' selected' : '') + '" data-act="select" data-store="' + store.id + '">' +
             '<td class="storecell"><button type="button" class="linkish sname" data-act="select" data-store="' + store.id + '"' +
             ' aria-expanded="' + selected + '">' + esc(store.label) + '</button>' +
             '<span class="storetarget" title="' + esc(store.name) + '">' + esc(store.name) + '</span>' +
             '<span class="skind">' + esc(store.kind) + ' · ' + esc(store.where) + '</span></td>' +
+            '<td>' + verdictTag(store) + '</td>' +
             '<td>' + boundedBy(store) + '</td>' +
-            '<td>' + statusTag(store) + '</td>' +
             '<td class="sizecell">' + sizeCell(store) + '</td>' +
             '<td class="growthcell">' + growthCell(store) + '</td>' +
             '</tr>';
@@ -937,16 +981,38 @@
         // application works. The list is the page until a store is opened.
         if (S.selected) return storePage();
 
+        const shown = S.onlyUnbounded
+            ? STORES.filter(function (store) { return !isBounded(store); })
+            : STORES;
+
+        let body;
+        if (shown.length === 0) {
+            body = '<p class="empty">Every store is bounded. Nothing here needs a decision.</p>';
+        } else {
+            const caption = S.onlyUnbounded
+                ? 'The stores nothing bounds, what bounds each, its size and its growth'
+                : 'Every store, whether anything bounds it, what bounds it, its size and its growth';
+            body = '<div class="table-wrap"><table class="data">' +
+                '<caption class="visually-hidden">' + caption + '</caption>' +
+                '<thead><tr><th>Store / Target</th><th>Bounded?</th><th>Bounded by</th><th>Size</th><th>Growth</th></tr></thead>' +
+                '<tbody>' + shown.map(storeRow).join('') + '</tbody></table></div>';
+        }
+
         return '<section class="card master">' +
-            '<header><div><h2>Every store</h2><p class="meta">A store with no policy says so, in the Bounded by column and in its State.</p></div>' +
-            '<span class="meta">' + policies().length + ' policies · ' + unboundedCount() + ' unbounded</span></header>' +
-            '<div class="table-wrap"><table class="data">' +
-            '<caption class="visually-hidden">Every store, its bound, state, size, growth, last sweep and freed bytes</caption>' +
-            '<thead><tr><th>Store / Target</th><th>Bounded by</th><th>State</th><th>Size</th><th>Growth</th></tr></thead>' +
-            '<tbody>' + STORES.map(storeRow).join('') + '</tbody></table></div>' +
+            '<header><div><h2>' + (S.onlyUnbounded ? 'The stores nothing bounds' : 'Every store') + '</h2>' +
+            '<p class="meta">' + (S.onlyUnbounded
+                ? 'This is the work list. Give each store a policy, or record why it needs none. It should end empty.'
+                : 'A store with no policy that applies is kept for ever. The Bounded by column says what would remove it.') +
+            '</p></div>' +
+            '<div class="filters">' +
+            '<button type="button" class="chip" aria-pressed="' + S.onlyUnbounded + '" data-act="filter-unbounded">' +
+            'Not bounded <span class="count">' + unboundedCount() + '</span></button>' +
+            '<span class="meta">' + policies().length + ' policies · ' + STORES.length + ' stores</span>' +
+            '</div></header>' +
+            body +
             '<p class="note">Sizes come from the database catalogues, the object-store listing and a directory walk. ' +
-            'A Freed figure of 0 B means the last sweep found nothing older than the period; it does not mean the policy failed. ' +
-            'A dash means there is no policy to free anything.</p>' +
+            'A policy that frees 0 B has found nothing older than its period; it is not a failure. ' +
+            'A store bounded by its content digest needs no policy.</p>' +
             '</section>';
     }
 
@@ -958,7 +1024,7 @@
         if (!policy) {
             return '<div class="section"><h3>Policy</h3>' +
                 inlineNotice('warn', 'No retention policy covers this store',
-                    'Nothing removes what it holds. ' + esc(store.note)) +
+                    esc(unboundedConsequence(store)) + ' ' + esc(store.note)) +
                 '<div class="section-actions">' +
                 '<button type="button" class="btn primary small" data-act="edit-store" data-store="' + store.id + '">Create a policy</button>' +
                 '<button type="button" class="btn secondary small" data-act="runs-store" data-store="' + store.id + '">See its runs</button>' +
@@ -972,7 +1038,7 @@
         } else if (policy.lastOutcome === 'skipped') {
             warning = inlineNotice('warn', 'This policy does not bound the store',
                 'The sweep applies only a chunk drop today, so this ' + esc(actionLabel(policy.action).toLowerCase()) +
-                ' policy is recorded as skipped. The store stays unbounded until the sweep can apply that action.');
+                ' policy is recorded as skipped. Nothing removes what it holds until the sweep can apply that action.');
         } else if (policy.lastOutcome === 'failed') {
             warning = inlineNotice('bad', 'The last sweep failed', esc(policy.detail));
         } else if (policy.lastOutcome === 'pending') {
@@ -1128,7 +1194,7 @@
         if (!policy) return '<b>No policy</b> — this store is not bounded';
 
         let line = '<b>' + esc(actionLabel(policy.action)) + ' · ' + policy.periodDays + ' days</b>';
-        if (!policy.enabled) line += ' — switched off, unbounded';
+        if (!policy.enabled) line += ' — switched off, nothing removes it';
         else if (policy.lastOutcome === 'skipped') line += ' — skipped, not bounded';
         else if (policy.lastOutcome === 'failed') line += ' — last sweep failed';
         else if (policy.lastOutcome === 'pending') line += ' — waiting for the first sweep';
@@ -1298,7 +1364,7 @@
     function effectText(store, policy, draft) {
         if (!draft.enabled) return 'The store is kept for ever while the policy is off.';
         if (policy && policy.lastOutcome === 'skipped') {
-            return 'The store stays unbounded: the sweep applies only a chunk drop today.';
+            return 'Nothing removes what it holds: the sweep applies only a chunk drop today.';
         }
         if (policy && policy.lastOutcome === 'failed') {
             return 'The store holds ' + store.size + '. The last sweep failed; the next retry is at 18:15.';
@@ -1307,9 +1373,9 @@
     }
 
     function addEffect(store, draft) {
-        if (!draft.enabled) return 'The policy is created switched off; the store stays unbounded.';
+        if (!draft.enabled) return 'The policy is created switched off; nothing removes what the store holds.';
         if (draft.action !== 'drop_chunks') {
-            return 'The first sweep records this policy as skipped: the sweep applies only a chunk drop today. The store stays unbounded.';
+            return 'The first sweep records this policy as skipped: the sweep applies only a chunk drop today. Nothing removes what the store holds.';
         }
         return 'The first sweep drops chunks older than ' + draft.periodDays + ' days. The store holds ' +
             store.size + ' today; no dry run exists, so the screen cannot state what it would free.';
@@ -1353,7 +1419,7 @@
         } else if (policy.lastOutcome === 'skipped') {
             warning = inlineNotice('warn', 'This policy cannot bound its store',
                 'The sweep applies only a chunk drop today, so a delete-rows policy is recorded as skipped. ' +
-                'Changing its period does not make it effective: the store stays unbounded until the sweep can apply that action.');
+                'Changing its period does not make it effective: nothing removes what the store holds until the sweep can apply that action.');
         } else if (policy.lastOutcome === 'failed') {
             warning = inlineNotice('bad', 'The last sweep failed', esc(policy.detail));
         }
@@ -1435,7 +1501,7 @@
             '</div>' +
             (unsupported ? '<div class="notice warn compact"><p class="title">This action will not bound the store</p><p>' +
                 'The sweep applies only a chunk drop today. A ' + esc(actionLabel(draft.action).toLowerCase()) +
-                ' policy is recorded as skipped, so the store stays unbounded.</p></div>' : '') +
+                ' policy is recorded as skipped, so nothing removes what the store holds.</p></div>' : '') +
             '<div class="savebar">' +
             '<p class="diff"><b>Will add:</b> ' + esc(diffText) + '</p>' +
             '<p class="effect">' + esc(effect) + '</p>' +
@@ -1607,7 +1673,7 @@
             '<span>view: <span class="v">' + esc(S.view) + '</span></span>' +
             '<span>selected: <span class="v">' + esc(selected ? selected.label : '—') + '</span></span>' +
             '<span>policies: <span class="v">' + policies().length + '</span></span>' +
-            '<span>unbounded: <span class="v">' + unboundedCount() + ' of ' + STORES.length + '</span></span>' +
+            '<span>not bounded: <span class="v">' + unboundedCount() + ' of ' + STORES.length + '</span></span>' +
             '<span>runs: <span class="v">' + runRows().length + '</span></span>' +
             '<span>run filter: <span class="v">' + esc(S.runFilter || 'all stores') + '</span></span>' +
             '</div>' +
@@ -1703,6 +1769,7 @@
             params.set('view', S.view);
             if (S.selected) params.set('store', S.selected);
             if (S.runFilter) params.set('runsfor', S.runFilter);
+            if (S.onlyUnbounded) params.set('filter', 'unbounded');
             window.history.replaceState(null, '', window.location.pathname + '?' + params.toString());
         } catch (err) {
             /* A page opened from the file system may refuse to rewrite its
@@ -1718,6 +1785,7 @@
         if (params.get('view') === 'stores') S.view = 'stores';
         if (storeById(params.get('store'))) S.selected = params.get('store');
         if (storeById(params.get('runsfor'))) S.runFilter = params.get('runsfor');
+        if (params.get('filter') === 'unbounded') S.onlyUnbounded = true;
         if (!storeById(params.get('store'))) {
             if (S.state === 'empty') S.selected = 'calendar_dates';
             else if (S.state === 'skipped') S.selected = 'delivery_counts';
@@ -1738,7 +1806,7 @@
             return;
         }
 
-        if (['variant', 'state', 'view', 'select', 'back', 'edit', 'cancel-edit', 'runs-store', 'clear-runfilter', 'first-policy', 'edit-store', 'save'].indexOf(act) < 0) {
+        if (['variant', 'state', 'view', 'select', 'back', 'edit', 'cancel-edit', 'runs-store', 'clear-runfilter', 'first-policy', 'edit-store', 'save', 'filter-unbounded'].indexOf(act) < 0) {
             return;
         }
 
@@ -1764,6 +1832,7 @@
             S.runFilter = null;
             S.selected = null;
             S.editing = null;
+            S.onlyUnbounded = false;
         } else if (act === 'view') {
             S.view = el.getAttribute('data-view');
             if (S.view === 'runs') S.runFilter = null;
@@ -1784,6 +1853,10 @@
             S.runFilter = el.getAttribute('data-store');
         } else if (act === 'clear-runfilter') {
             S.runFilter = null;
+        } else if (act === 'filter-unbounded') {
+            S.onlyUnbounded = !S.onlyUnbounded;
+            S.view = 'stores';
+            S.selected = null;
         } else if (act === 'first-policy' || act === 'edit-store') {
             const target = act === 'first-policy' ? 'calendar_dates' : el.getAttribute('data-store');
             if (S.variant === 'A') {

@@ -268,6 +268,37 @@ h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
 .note { margin: 14px 0 0; font-size: 12px; color: var(--ink-faint); }
 .empty { margin: 0; font-size: 13px; color: var(--ink-dim); }
 
+/* The list's one filter: the stores nothing bounds. The chip carries the count,
+ * because the count is the work left to do. */
+.filters { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink-dim);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+.chip:hover { color: var(--ink); }
+.chip[aria-pressed="true"] {
+    background: rgba(210, 153, 34, 0.12);
+    border-color: rgba(210, 153, 34, 0.6);
+    color: var(--warn);
+}
+.chip .count {
+    padding: 0 6px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 11px;
+    color: var(--ink-faint);
+}
+.chip[aria-pressed="true"] .count { border-color: rgba(210, 153, 34, 0.5); color: var(--warn); }
+
 .details { display: grid; gap: 12px 32px; }
 .details.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .details.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }

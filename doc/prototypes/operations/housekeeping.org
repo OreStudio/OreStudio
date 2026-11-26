@@ -49,8 +49,9 @@ separate page: the same person asks both, in one sitting, and the answer to
 
 ** The variants
 
-- *A — one table of every store.* Store, bounded-by, state, size, growth, last
-  sweep, freed, with a detail panel for the selected row. Carries forward: it
+- *A — one table of every store.* Store, whether anything bounds it, what
+  bounds it, size, growth, and a filter to the stores nothing bounds; the store
+  a person opens gets a page of its own. Carries forward: it
   is the only shape that holds all twelve rows and their numbers at once, and
   it is the shape the logs screen already uses, so the person reads it twice a
   week without learning it twice.
@@ -198,8 +199,11 @@ these should I look at". A twelve-point plot in every row is a shape a person
 tries to read nine times, and none of the nine gets read. The plot stays on the
 store's page, where there is one store and room to look at it.
 
-A row now states three things, in the order the eye asks them:
+A row now states four things, in the order the eye asks them:
 
+- *whether anything bounds it*, in one word and one colour — Bounded, Not bounded,
+  or Bounded by keying. This is the column the list exists for, and it is the
+  first question because it is the only one with a wrong answer;
 - *the size*, in bytes with its unit, because that is the number the question
   starts from;
 - *how close it is to a stated limit*, as a bar and a percentage — but only
@@ -218,15 +222,64 @@ refusal to keep accepting rows — and that mechanism belongs with the field, no
 after it. The prototype draws the indicator so the shape can be judged; the field
 and its consequence are for the task that adds them.
 
+** A store with no policy has no bound, and that is the screen's first job
+
+The sweep visits policies. A store no policy names is not visited at all: nothing
+deletes from it, nothing reports on it, and it appears in the run log only as an
+absence. So a store with no policy is not "unconfigured"; it is kept for ever,
+and it grows at whatever rate its writers write, until the database or the disk
+is full. The three journeys call that the failure the screen exists to prevent,
+and the list has to say it before it says anything else.
+
+Two things follow, and the prototype now does both.
+
+The test is *bounded*, not *has a policy*. A policy that is switched off, that the
+sweep records as skipped, or whose last run failed leaves the store exactly as
+unbounded as no policy at all. The column therefore reads Bounded, Not bounded or
+Bounded by keying, and the reason — no policy, off, skipped, failed — sits beside
+it in the Bounded by cell, where the diagnosis belongs. This is not pedantry: the
+delivery-counts store is the case that proves it, because a delete-rows policy is
+accepted, enabled, and recorded skipped on every sweep.
+
+The cost is stated in bytes. A row says not only that nothing bounds it but what
+that means: *nothing removes it · about 7.4 GB a year*, from the same twelve-week
+series the plot draws. For a store whose size cannot be read the row says the
+worse thing honestly: *size not measured, so growth is invisible*. The plot and
+the alarm are one measurement seen two ways, which is why the samples have to be
+built before either works.
+
+The top of the page states the count — "6 of the 9 stores have nothing that
+bounds them" — with the way to filter the list to those six. The list is then a
+work list, and its empty state is the goal: *every store is bounded*.
+
+There is a trap in this, and the prototype cannot settle it. An alarm that fires
+on six of nine rows is wallpaper; the count must reach zero and stay there, or
+nobody reads it. That leaves two shapes:
+
+- *the screen nags.* Every installation starts with most stores unbounded and a
+  person works through them once. Cheap, and it is what the prototype draws.
+- *the system never ships unbounded.* The store catalogue declares a default
+  bound per store — a quarter for report output, a week for delivery counters, a
+  day for job scratch — and provisioning creates the policy, so a store is
+  unbounded only when a person removed the bound. Unbounded then means a decision
+  somebody took, which is rare and worth a red banner. The risk is the opposite
+  one: data deleted on a default nobody read.
+
+The recommendation is the second, with the first kept as the place an exception
+is resolved. A store that ships unbounded contradicts the story this work belongs
+to, whose title is *bound every store the system keeps*. The decision is the
+reviewer's, because it decides whether a fresh installation deletes data on its
+own.
+
 ** The states a store can be in
 
 | State | What the screen says | Why it matters |
 |-------+----------------------+----------------|
-| fresh | Applied; freed 0, because nothing is older than the period | A zero is not a failure, and the screen must not imply one |
-| skipped | The policy is enabled and the store is not bounded: the sweep performs a chunk drop and this policy asks for something else | The dangerous state: it reads as bounded on paper |
-| failed | The sweep ran and raised; the detail is the server's message | The store is unbounded until somebody reads the message |
-| disabled | The policy is off, so the store is kept for ever | A decision, and it should read as one |
-| empty | No policy at all, with the way to add one | The store was never decided about |
+| fresh | Bounded; the last sweep freed 0 B because nothing is older than the period | A zero is not a failure, and the screen must not imply one |
+| skipped | Not bounded — the sweep skips it: the policy is enabled, and the sweep performs a chunk drop while this policy asks for something else | The dangerous state: it reads as bounded on paper |
+| failed | Not bounded — the last sweep failed; the detail is the server's message | The store is unbounded until somebody reads the message |
+| disabled | Not bounded — the policy is off, so the store is kept for ever | A decision, and it should read as one |
+| empty | Not bounded — no retention policy, with the way to add one | The store was never decided about, and nothing removes what it holds |
 
 ** What is fake
 

@@ -19,16 +19,12 @@
 
 salt
 {
-@startuml
-
-salt
-{
   <b>ORE STUDIO - SYSTEM ADMINISTRATION: OPERATIONS</b>
   --
   Housekeeping / <b>Market data delivery counts</b>        [ Back to the stores ]  [ Log for this store ]
   --
   {
-    <b>Market data delivery counts</b>   <color:#b00020>Unbounded</color>
+    <b>Market data delivery counts</b>   <color:#b00020>Not bounded</color>
     A store of the installation · marketdata.delivery_counts
     --
     <b>THE STORE</b>
@@ -44,7 +40,8 @@ salt
   --
   <b>GROWTH OVER TWELVE WEEKS</b>      1 MB twelve weeks ago, 29 MB today: +28 MB, about +2.5 MB a week
   --
-  <b>POLICY</b>: no retention policy covers this store. [ Create a policy ]  [ See its runs ]
+  <b>POLICY</b>: no retention policy covers this store. Nothing removes it: +2.5 MB a
+  week, about 132 MB a year at the last twelve weeks. [ Create a policy ]  [ See its runs ]
   --
   <b>LATEST ACTIVITY AROUND THE STORE</b>
   {#

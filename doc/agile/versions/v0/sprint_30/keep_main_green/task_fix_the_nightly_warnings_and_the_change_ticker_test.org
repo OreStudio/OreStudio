@@ -26,11 +26,11 @@ Make the Linux nightly build without warnings, and stop the change ticker test f
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
@@ -40,9 +40,12 @@ Make the Linux nightly build without warnings, and stop the change ticker test f
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Make the four deliberate fallthroughs in =random_ast_generator.cpp=
+   explicit, and keep the Switch as it is otherwise.
+2. Move =note= and =misread= out of =catalogue_tools::called=. Both are
+   closures the coroutine frame holds, which is what gcc reports.
+3. Give the change ticker test a deadline instead of a fixed window: run
+   the loop until the frame arrives, and fail only when it never does.
 
 * Measurements
 
@@ -56,7 +59,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Ticker test under valgrind | 4 assertions in 1 test case, all passed | =valgrind --quiet --error-exitcode=99 --suppressions=build/valgrind/custom.supp ./ores.http.core.tests "a_change_recorded_between_ticks_reaches_the_stream"= | a0981e33dd |
+| Ticker suite | 14 assertions in 6 test cases, all passed | =./ores.http.core.tests "[change_ticker]"= | a0981e33dd |
+| MCP tool suite | 7064 assertions in 245 test cases, all passed | =./ores.http.api.tests= | a0981e33dd |
+| Warnings in the release build | 0 | =./compass.sh build= (linux-clang-release-ninja) then read the log | a0981e33dd |
 
 * Notes
 
@@ -84,3 +90,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The two warning sites lost their causes rather than their symptoms, and the
+ticker test now waits for the behaviour it asserts.
+
+- =random_ast_generator.cpp=: the four cumulative =switch= cases carry
+  =[[fallthrough]];=, so the intent is stated and =-Wimplicit-fallthrough==
+  has nothing to report.
+- =catalogue_tools.cpp=: =record_call= and =misread= are free helpers now, so
+  the coroutine frame holds no closure and gcc stops reporting
+  =-Wsubobject-linkage= on it.
+- =change_ticker_tests.cpp=: the first tick had a fixed hundred milliseconds
+  to arrive; under valgrind it can come later. The test runs the loop until
+  the frame arrives, with a ten second ceiling.
+
+Verified locally: the release build reports no warnings, the ticker suite and
+the MCP tool suite pass, and the ticker test passes under valgrind.
+
+Not verified locally: the gcc compiler, which is where the two warnings were
+reported. The nightlies are the check for those.

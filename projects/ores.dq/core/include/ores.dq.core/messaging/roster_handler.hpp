@@ -20,7 +20,7 @@
 #ifndef ORES_DQ_CORE_MESSAGING_ROSTER_HANDLER_HPP
 #define ORES_DQ_CORE_MESSAGING_ROSTER_HANDLER_HPP
 
-#include "ores.database/domain/context_fwd.hpp"
+#include "ores.database/domain/context.hpp"
 #include "ores.dq.api/messaging/bundle_roster_protocol.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/service/publish_service.hpp"
@@ -108,7 +108,16 @@ public:
 
 private:
     ores::nats::service::client& nats_;
-    const ores::database::context& ctx_;
+
+    /**
+     * @brief The service's own context, held as a value and never as a reference.
+     *
+     * Registration receives the context as a temporary, so a reference would
+     * dangle as soon as registration returns and every request would then read
+     * a freed implementation. A copy costs one shared pointer increment.
+     */
+    ores::database::context ctx_;
+
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 
     static ores::logging::logger_t& lg() {

@@ -52,6 +52,7 @@ struct calendar_exception_write {
     boost::uuids::uuid id;
     std::string calendar_code;
     std::chrono::year_month_day exception_date;
+    std::optional<boost::uuids::uuid> party_id;
     bool is_business_day{};
     std::optional<std::string> description;
 
@@ -420,6 +421,7 @@ inline constexpr std::string_view deleted = "refdata.v1.events.calendar_exceptio
         utility::codec::field{"id", &calendar_exception_write::id},
         utility::codec::field{"calendar_code", &calendar_exception_write::calendar_code},
         utility::codec::field{"exception_date", &calendar_exception_write::exception_date},
+        utility::codec::field{"party_id", &calendar_exception_write::party_id},
         utility::codec::field{"is_business_day", &calendar_exception_write::is_business_day},
         utility::codec::field{"description", &calendar_exception_write::description},
     };

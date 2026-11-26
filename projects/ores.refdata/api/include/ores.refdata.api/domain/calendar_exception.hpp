@@ -94,9 +94,23 @@ struct calendar_exception final {
     /**
      * @brief The specific calendar date this exception applies to.
      *
-     * One exception per (calendar, date) pair.
+     * One exception per (calendar, date) at each level: the installation states the day for every
+     * party, and a party may state a different answer for the same day.
      */
     std::chrono::year_month_day exception_date;
+
+    /**
+     * @brief The party whose calendar this exception belongs to. NULL for the installation's own
+     * exceptions, which every party reads.
+     *
+     * The column is part of the natural key, because the level is part of what an exception says:
+     * the installation and a party may both answer for one day, and two parties may answer
+     * differently. The key of a row is therefore (calendar, date, party), and the composite index
+     * the generator emits enforces it for a party's rows. A null party is distinct from every other
+     * null in that index, so the installation's rows carry their own unique index instead, declared
+     * in ** Indexes below.
+     */
+    std::optional<boost::uuids::uuid> party_id;
 
     /**
      * @brief Whether exception_date is overridden to a business day.
@@ -113,12 +127,6 @@ struct calendar_exception final {
      * Purely informational; never interpreted by the instantiation engine.
      */
     std::optional<std::string> description;
-
-    /**
-     * @brief The party whose calendar this exception belongs to. NULL for the installation's own
-     * exceptions, which every party reads.
-     */
-    std::optional<boost::uuids::uuid> party_id;
 
     /**
      * @brief Username of the person who last modified this calendar exception.

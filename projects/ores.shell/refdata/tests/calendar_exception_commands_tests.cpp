@@ -158,7 +158,7 @@ TEST_CASE("calendar_exception_commands_process_add_requires_a_session", "[comman
     std::ostringstream out;
 
     command_feedback::reset();
-    calendar_exception_commands::process_add(out, session, calendar_exception_tokens(5));
+    calendar_exception_commands::process_add(out, session, calendar_exception_tokens(6));
 
     ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -192,7 +192,7 @@ TEST_CASE("calendar_exception_commands_process_set_requires_a_session", "[comman
     std::ostringstream out;
 
     command_feedback::reset();
-    calendar_exception_commands::process_set(out, session, calendar_exception_tokens(5));
+    calendar_exception_commands::process_set(out, session, calendar_exception_tokens(6));
 
     ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -226,7 +226,7 @@ TEST_CASE("calendar_exception_commands_process_put_many_requires_a_session", "[c
     std::ostringstream out;
 
     command_feedback::reset();
-    calendar_exception_commands::process_put_many(out, session, calendar_exception_tokens(5));
+    calendar_exception_commands::process_put_many(out, session, calendar_exception_tokens(6));
 
     ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

@@ -886,9 +886,9 @@ package "refdata" #FFF3E0 {
         * version : integer
         * calendar_code : text <<FK>>
         * exception_date : date
+          party_id : uuid <<FK>>
         * is_business_day : boolean
           description : text
-          party_id : uuid <<FK>>
         * modified_by : text
         * performed_by : text
         * acting_agent : text

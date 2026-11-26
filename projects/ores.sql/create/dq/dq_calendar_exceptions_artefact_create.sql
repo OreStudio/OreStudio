@@ -34,9 +34,9 @@ create table if not exists "ores_dq_calendar_exceptions_artefact_tbl" (
     "version" integer not null,
     "calendar_code" text not null,
     "exception_date" date not null,
+    "party_id" uuid null,
     "is_business_day" boolean not null default false,
-    "description" text null,
-    "party_id" uuid null
+    "description" text null
 );
 
 create index if not exists dq_calendar_exceptions_artefact_dataset_idx

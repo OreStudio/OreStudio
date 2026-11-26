@@ -417,9 +417,9 @@ package "dq_staging" #F3E5F5 {
         * version : integer
         * calendar_code : text
         * exception_date : date
+          party_id : uuid <<FK>>
         * is_business_day : boolean
           description : text
-          party_id : uuid <<FK>>
     }
 
     note right of ores_dq_calendar_exceptions_artefact_tbl

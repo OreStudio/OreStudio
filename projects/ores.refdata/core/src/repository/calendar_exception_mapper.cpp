@@ -32,7 +32,6 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
 #include <format>
-#include <optional>
 #include <sstream>
 #include <vector>
 
@@ -50,9 +49,9 @@ domain::calendar_exception calendar_exception_mapper::map(const calendar_excepti
     r.id = v.id;
     r.calendar_code = v.calendar_code;
     r.exception_date = v.exception_date;
+    r.party_id = v.party_id;
     r.is_business_day = v.is_business_day;
     r.description = v.description;
-    r.party_id = v.party_id;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -72,9 +71,9 @@ calendar_exception_entity calendar_exception_mapper::map(const domain::calendar_
     r.version = v.version;
     r.calendar_code = v.calendar_code;
     r.exception_date = v.exception_date;
+    r.party_id = v.party_id;
     r.is_business_day = v.is_business_day;
     r.description = v.description;
-    r.party_id = v.party_id;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

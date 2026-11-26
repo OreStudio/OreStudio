@@ -105,3 +105,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The housekeeping publish test now runs on a provisioned installation. The
+fixture takes the person who restates a policy's period and a job's schedule
+from =ores_iam_accounts_tbl=, and keeps ='system'= only as the bootstrap-state
+fallback, so the same fifteen assertions pass whether or not the installation
+holds a person.
+
+Proved in both states: 15 of 15 on a database that holds only service accounts,
+and 15 of 15 after one account of type =user= was added to the system tenant,
+where the test failed at line 106 with "planned 15 tests but ran 1" before the
+change. No schema, model or code changed; the store's actor rule is untouched.
+
+Delivered by pull request #5144.

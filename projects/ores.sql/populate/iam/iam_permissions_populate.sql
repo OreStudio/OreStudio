@@ -2325,6 +2325,7 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::*', 'Full access to all vault operations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::secrets:read', 'Read and list secrets');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::secrets:write', 'Write and rotate secrets');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::secrets:resolve', 'Resolve a secret sealed to the caller');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::secrets:delete', 'Delete secrets');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::consumers:read', 'Read and list consumers');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::consumers:write', 'Register and update consumers');

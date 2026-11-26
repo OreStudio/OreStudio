@@ -22,6 +22,7 @@
 set(files
     "messaging/consumer_history_provider_registrar.cpp"
     "messaging/consumer_registrar.cpp"
+    "messaging/registrar.cpp"
     "messaging/secret_history_provider_registrar.cpp"
     "messaging/secret_registrar.cpp"
     "messaging/secret_use_registrar.cpp"
@@ -38,6 +39,7 @@ set(files
     "repository/secret_use_repository.cpp"
     "security/credential_source.cpp"
     "service/consumer_service.cpp"
+    "service/custody_service.cpp"
     "service/secret_service.cpp"
     "service/secret_use_service.cpp"
 )
@@ -48,8 +50,10 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/messaging/consumer_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/messaging/consumer_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/messaging/consumer_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/messaging/registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/messaging/secret_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/messaging/secret_history_provider_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/messaging/secret_operations_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/messaging/secret_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/messaging/secret_use_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/messaging/secret_use_registrar.hpp"
@@ -67,6 +71,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/repository/secret_use_repository.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/security/credential_source.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/service/consumer_service.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/service/custody_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/service/secret_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/service/secret_use_service.hpp"
 )

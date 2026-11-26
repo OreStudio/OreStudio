@@ -26,6 +26,7 @@
 #include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/feed_protocol.hpp"
 #include "ores.marketdata.api/messaging/feed_scope_protocol.hpp"
+#include "ores.marketdata.api/messaging/fixing_read_operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_fixing_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/provider_protocol.hpp"
@@ -243,6 +244,54 @@ void fixing_series_routes::register_routes(
             .build();
     router->add_route(built);
     registry->register_route(built);
+
+    const auto listed =
+        router->get("/api/marketdata/fixings")
+            .catalogue("web_get_marketdata_fixings", "market-data", "fixings", false)
+            .summary("Every FX and IR fixing series the store holds, as a screen lists them")
+            .description("A composed view owned by ores.marketdata: one row for each fixing "
+                         "series the store holds, with what it fixes, the source its values came "
+                         "from, the value of its latest day and how many days it holds. A series "
+                         "that holds no value is a row with a count of zero, because a series "
+                         "that ended is a fact the screen states. The filters name one asset "
+                         "class, one currency and one source; the answer carries an ETag and "
+                         "stays fresh for 5 minutes.")
+            .tags({"marketdata"})
+            .auth_required()
+            .query_param("asset_class", "string", "", false, "fx or ir, or empty for both")
+            .query_param("currency", "string", "", false, "A currency, or empty for every one")
+            .query_param("source", "string", "", false, "A source, or empty for every one")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<marketdata_messaging::list_fixing_series_summaries_request>([&] {
+                    rr::refuse_unknown_params(req, {"asset_class", "currency", "source"});
+                    marketdata_messaging::list_fixing_series_summaries_request summary;
+                    summary.asset_class = req.get_query_param("asset_class");
+                    summary.currency = req.get_query_param("currency");
+                    summary.source = req.get_query_param("source");
+                    const auto reply = forwarding::forward(req, session, summary);
+                    ores::http::net::record_routes::require_ok(reply.result);
+                    const auto& rows = reply.series;
+                    std::vector<std::string> written;
+                    written.reserve(rows.size());
+                    for (const auto& one : rows) {
+                        written.push_back(
+                            "{\"series_id\":" + json::write(one.series_id) +
+                            ",\"oresmd_uri\":" + json::write(one.oresmd_uri) +
+                            ",\"asset_class\":" + json::write(one.asset_class) +
+                            ",\"index_label\":" + json::write(one.index_label) +
+                            ",\"source\":" + json::write(one.source) +
+                            ",\"provider_code\":" + json::write(one.provider_code) +
+                            ",\"latest_value\":" + json::write(one.latest_value) +
+                            ",\"latest_date\":" +
+                            (one.latest_date ? json::write(date_text(*one.latest_date)) : "null") +
+                            ",\"days\":" + std::to_string(one.days) + "}");
+                    }
+                    return fixing_series_answer(req, "{\"series\":" + rr::array_of(written) + "}");
+                });
+            })
+            .build();
+    router->add_route(listed);
+    registry->register_route(listed);
 }
 
 }

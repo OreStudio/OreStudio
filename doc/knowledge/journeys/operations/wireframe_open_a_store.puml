@@ -19,23 +19,19 @@
 
 salt
 {
-@startuml
-
-salt
-{
   <b>ORE STUDIO - SYSTEM ADMINISTRATION: OPERATIONS</b>
   --
   Housekeeping / <b>Market data delivery counts</b>        [ Back to the stores ]  [ Log for this store ]
   --
   {
-    <b>Market data delivery counts</b>   <color:#b00020>Unbounded</color>
+    <b>Market data delivery counts</b>   <color:#b00020>Unbounded -- sweep skips it</color>
     A store of the installation · marketdata.delivery_counts
     --
     <b>THE STORE</b>
     {#
       Code | marketdata.delivery_counts | Name | Market data delivery counts | Owner | Market data (marketdata)
       Target kind | ordinary_table | Target | ores_marketdata_delivery_counts_tbl | Time column | period_start
-      Measured by | relation rows | Bounded by | Nothing -- no retention policy
+      Measured by | relation rows | Bounded by | Delete rows -- 30 days
     }
     How many items each feed delivered for each series in each period, carried forward.
     --
@@ -44,14 +40,21 @@ salt
   --
   <b>GROWTH OVER TWELVE WEEKS</b>      1 MB twelve weeks ago, 29 MB today: +28 MB, about +2.5 MB a week
   --
-  <b>POLICY</b>: no retention policy covers this store. [ Create a policy ]  [ See its runs ]
+  <b>POLICY</b>  default bound
+  {#
+    Policy | delivery_counts_30d | Action | Delete rows | Enabled | Yes
+    Period | 30 days | Cadence | every 24 h | Last outcome | skipped
+    Last sweep | 24 Nov 17:15 | Freed | 0 B | Next sweep | 17:15 tomorrow, will skip again
+  }
+  This policy does not bound the store. The sweep applies only a chunk drop today,
+  so a row delete is recorded as skipped. Nothing removes what it holds until the
+  sweep can apply that action.  [ Open the policy editor ]  [ See its runs ]
   --
   <b>LATEST ACTIVITY AROUND THE STORE</b>
   {#
     When | What | Outcome | Activity
     24 Nov 18:00 | Sampled | Measured | 29 MB, +0.6 MB since 17:00
-    24 Nov 18:00 | Refused | Refused | policy delivery_counts_30d could not be written
-    24 Nov 17:15 | Swept | Skipped | no policy applies
+    24 Nov 17:15 | Swept | Skipped | Delete rows, 30 days, freed 0 B
   }
   --
   A store opens as its own page: the list keeps the comparison, the page gives the store its room.

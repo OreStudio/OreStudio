@@ -52,23 +52,26 @@ how long]].
 2. *Read the ground first.* The screen opens on a summary that a person can
    take in before reading any row: how many stores there are, how many are
    bounded by an enabled policy, how many are unbounded, and the total size
-   under management. A store counts as unbounded when no policy names it, or
-   when its policy names an action the sweep cannot apply — the second case is
-   the dangerous one, because it looks bounded on paper.
+   under management. Every store that can take one carries a default bound, so
+   a store without a policy is the exception: either its bound cannot be
+   expressed as an age, or somebody removed the default. A store counts as
+   unbounded when no policy names it, when its policy names an action the sweep
+   cannot apply, or when the policy is off or its last run failed — the skipped
+   action is the dangerous one, because it looks bounded on paper.
 3. *Scan the table.* Each row carries the store by the name a person knows it
    by — "Calendar dates", not =ores_refdata_calendar_dates_tbl= — with its
    description a click away, the shape it has (a chunked table, an ordinary
-   table, an object-store prefix, a directory on a compute host), the policy
-   that bounds it, the period, the state, the size, the growth and when it was
-   last swept. The physical target sits beneath the name, because it is what
+   table, an object-store prefix, a directory on a compute host), whether
+   anything bounds it, what bounds it and for how long, the size and the
+   growth. The physical target sits beneath the name, because it is what
    the database and the sweep name the store by, and it is not what a person
-   reads first. The administrator reads the sizes first
-   and the states second, because a large bounded store is doing what it was
-   told and a small unbounded one is a decision nobody made.
-4. *Order by what matters.* The system orders by size, by growth, by last
-   sweep or by state. Growth is the number that answers the trigger: a store
-   that added 400 MB this week is a different problem from one holding 4 GB
-   that has not moved.
+   reads first. The administrator reads the bound first and the size second,
+   because a large bounded store is doing what it was told and a small
+   unbounded one is a decision nobody made.
+4. *Order by what matters.* The system orders by size, by growth or by whether
+   anything bounds the store. Growth is the number that answers the trigger: a
+   store that added 400 MB this week is a different problem from one holding 4
+   GB that has not moved.
 5. *Open one store.* A row opens that store's own page: its code and name, its description, the component that writes it,
    the shape of its target and the target itself, the column a row delete
    would compare, and what measures it. Beneath the record are the size now,
@@ -82,9 +85,14 @@ how long]].
    and why it says what it says, in
    [[id:F6622109-4F52-4DE9-9C06-6B0EAA7C8D2E][Read the housekeeping log]].
 7. *Find what nothing bounds.* An unbounded store reads as such, with the
-   reason: no policy, a disabled policy, or an action the sweep does not
-   perform. The last is stated in the sweep's own words, so the screen reports
-   the platform's behaviour rather than a guess about it.
+   reason: no policy, a disabled policy, a failed run, or an action the sweep
+   does not perform. The last is stated in the sweep's own words, so the screen
+   reports the platform's behaviour rather than a guess about it. The screen
+   states the count at the top and filters the table to those stores, so the
+   question "what still nothing bounds" is one action rather than a reading of
+   every row; the count is the work left, and it should reach zero. Each row
+   also states the cost in bytes: what the store holds now, and what the rate of
+   the last twelve weeks comes to over a year.
 8. *Leave by changing something.* From a store's detail the administrator
    opens its policy in
    [[id:C647D403-BFF0-4910-83E4-4EFEBD4F39C4][Change what is kept, and for

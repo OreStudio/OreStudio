@@ -26,6 +26,7 @@ set(files
     "config/parser.cpp"
     "main.cpp"
     "messaging/job_definition_event_registrar.cpp"
+    "messaging/retained_store_event_registrar.cpp"
     "messaging/retention_policy_event_registrar.cpp"
 )
 
@@ -39,6 +40,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.service/config/parser_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.service/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.service/messaging/job_definition_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.service/messaging/retained_store_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.service/messaging/retention_policy_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.scheduler.service/ores.scheduler.service.hpp"
 )

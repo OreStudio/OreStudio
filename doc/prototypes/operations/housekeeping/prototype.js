@@ -46,12 +46,12 @@
         {
             id: 'fresh',
             name: 'Fresh',
-            gist: 'Every enabled policy applied at 17:15 and freed 0 B because no chunk is older than its period yet. The zero is expected, not broken.'
+            gist: 'Every default bound applied at 17:15 and freed 0 B because nothing is older than its period yet. One store has no default the platform can state: the calendar dates. The zero is expected, not broken.'
         },
         {
             id: 'skipped',
             name: 'Skipped',
-            gist: 'An enabled delete-rows policy on the ordinary table is recorded as skipped: the sweep applies only a chunk drop today, so the store is not bounded.'
+            gist: 'The defaults are declared, and the sweep performs only a chunk drop, so the four defaults that ask for something else are recorded as skipped. Those stores read as bounded and are not.'
         },
         {
             id: 'failed',
@@ -65,16 +65,16 @@
         },
         {
             id: 'empty',
-            name: 'Empty',
-            gist: 'No retention policy exists at all. Every store but the digest-keyed package cache is unbounded, and the screen offers the way to add one.'
+            name: 'Defaults removed',
+            gist: 'No retention policy exists at all, so somebody removed the defaults. Only the digest-keyed package cache is bounded, and the screen offers the way to add a policy back.'
         }
     ];
 
     const GROUPS = [
-        { id: 'db', name: 'Database tables', note: 'Ordinary tables. A row-level delete is the only action that bounds one.' },
-        { id: 'timescale', name: 'Timescale chunked tables', note: 'Chunked on write time. A chunk drop is the only action that bounds one.' },
-        { id: 'object', name: 'Object store', note: 'Key prefixes. A lifecycle rule is the only bound, and none exists.' },
-        { id: 'scratch', name: 'Compute host scratch', note: 'Directories and caches on the compute host. A release rule is the only bound.' }
+        { id: 'db', name: 'Database tables', note: 'Ordinary tables. No chunks to drop, so only a row delete bounds one.' },
+        { id: 'timescale', name: 'Timescale chunked tables', note: 'Chunked on write time. Only a chunk drop bounds one.' },
+        { id: 'object', name: 'Object store', note: 'Key prefixes. Only a lifecycle rule bounds one.' },
+        { id: 'scratch', name: 'Compute host scratch', note: 'Directories and caches on the compute host. Only a release rule bounds one.' }
     ];
 
     const STORES = [
@@ -97,12 +97,14 @@
             measure: '486,540 rows',
             growth: 'Growing · +18 MB over 30 days',
             defaultAction: 'drop_chunks',
-            note: 'Chunks are cut on write time. Nothing drops them, so the table is bounded by nothing yet.'
+            note: 'Chunks are cut on write time. A policy bounds by age, and a day behind the horizon is out of range rather than old, so no default bound can cover it.'
         },
         {
             id: 'report_cashflows',
             name: 'ores_reporting_report_cashflows_tbl',
             label: 'Report run cashflows',
+            limitMB: 512,
+            limitBytes: 536870912,
             code: 'reporting.report_cashflows',
             owner: 'Reporting (reporting)',
             timeColumn: 'written_at',
@@ -118,7 +120,7 @@
             measure: '186 MB after 39 runs',
             growth: 'Flat · 186 MB after 39 runs',
             defaultAction: 'drop_chunks',
-            note: 'Run output, kept for a quarter. The policy drops a chunk only once it is older than its period.'
+            note: 'Run output, kept for a quarter by the default bound. The policy drops a chunk only once it is older than its period.'
         },
         {
             id: 'report_metrics',
@@ -139,7 +141,7 @@
             measure: '4 MB after 39 runs',
             growth: 'Flat · 4 MB after 39 runs',
             defaultAction: 'drop_chunks',
-            note: 'Run output, kept for a quarter under the same shape of policy as the cashflows table.'
+            note: 'Run output, kept under the same default quarter as the cashflows table of the same run.'
         },
         {
             id: 'delivery_counts',
@@ -160,7 +162,7 @@
             measure: '~27,000 rows/hour',
             growth: 'Growing · ~27,000 rows/hour',
             defaultAction: 'delete_rows',
-            note: 'An ordinary table: there are no chunks to drop, so a delete-rows policy is the only action that could bound it.'
+            note: 'An ordinary table: there are no chunks to drop, so a row delete is the only action that can bound it.'
         },
         {
             id: 'ticks',
@@ -181,7 +183,7 @@
             measure: '60,223 rows',
             growth: 'Growing · 60,223 rows so far',
             defaultAction: 'drop_chunks',
-            note: 'Compressed chunks. No retention policy targets this table.'
+            note: 'Compressed chunks, kept under the default quarter for quotes.'
         },
         {
             id: 'compute_input',
@@ -202,7 +204,7 @@
             measure: 'Object count not listed',
             growth: 'Not measured · no byte total',
             defaultAction: 'expire_objects',
-            note: 'A key prefix with no lifecycle rule: nothing expires what it holds.'
+            note: 'A key prefix with a default expiry of a week. The sweep cannot expire objects yet.'
         },
         {
             id: 'compute_output',
@@ -223,12 +225,14 @@
             measure: 'Object count not listed',
             growth: 'Not measured · no byte total',
             defaultAction: 'expire_objects',
-            note: 'A key prefix with no lifecycle rule: run output accumulates with nothing to expire it.'
+            note: 'A key prefix with a default expiry of a quarter. The sweep cannot expire objects yet.'
         },
         {
             id: 'wrappers',
             name: 'publish/run/wrappers',
             label: 'Compute node scratch',
+            limitMB: 2048,
+            limitBytes: 2147483648,
             code: 'compute.node_scratch',
             owner: 'Compute (compute)',
             timeColumn: 'folder mtime',
@@ -244,7 +248,7 @@
             measure: '565 job folders · 3.4 MB per completed job',
             growth: 'Growing · +3.4 MB per completed job',
             defaultAction: 'release_directory',
-            note: 'A working directory is released only once its output is stored elsewhere; no release rule exists today.'
+            note: 'A working directory is released once its output is stored elsewhere. The default releases it after a day.'
         },
         {
             id: 'packages',
@@ -283,6 +287,7 @@
         view: 'stores',
         selected: null,
         runFilter: null,
+        onlyUnbounded: false,
         panel: false,
         overrides: {},
         added: [],
@@ -298,75 +303,125 @@
         return found ? found.name : action;
     }
 
+    function periodLabel(days) {
+        return Number(days) === 1 ? '1 day' : days + ' days';
+    }
+
+    /* Bounded by default. The store catalogue declares a default bound for
+       every store that can take one, and the installation creates the policy
+       when it provisions the store, so a store is never unbounded by omission.
+       A policy in this list is therefore the default, and a store without one
+       is either bounded another way or a gap somebody has to close.
+
+       The calendar dates have no default, and cannot have one: a policy bounds
+       by age, and the days behind the horizon are not old, they are out of
+       range. That gap is the one the screen must still show. */
+
+    const DEFAULT_BOUNDS = [
+        {
+            id: 'report_cashflows_90d',
+            storeId: 'report_cashflows',
+            action: 'drop_chunks',
+            periodDays: 90,
+            reason: 'Run output is read for a quarter; an older chunk can be recomputed from the run ledger.',
+            applied: 'No chunk was older than 90 days; the oldest chunk was written 28 Aug 2026.'
+        },
+        {
+            id: 'report_metrics_90d',
+            storeId: 'report_metrics',
+            action: 'drop_chunks',
+            periodDays: 90,
+            reason: 'Metrics are small and read beside the cashflows of the same run, so the same quarter applies.',
+            applied: 'No chunk was older than 90 days; the oldest chunk was written 2 Sep 2026.'
+        },
+        {
+            id: 'marketdata_ticks_90d',
+            storeId: 'ticks',
+            action: 'drop_chunks',
+            periodDays: 90,
+            reason: 'A curve is rebuilt from its quotes within a quarter; an older quote is superseded.',
+            applied: 'No chunk was older than 90 days; the oldest chunk was written 12 Sep 2026.'
+        },
+        {
+            id: 'delivery_counts_30d',
+            storeId: 'delivery_counts',
+            action: 'delete_rows',
+            periodDays: 30,
+            reason: 'A delivery counter is read for a month; an older row is read only during an incident.',
+            applied: 'No row was older than 30 days; the oldest row is from 2 Nov 2026.'
+        },
+        {
+            id: 'compute_inputs_7d',
+            storeId: 'compute_input',
+            action: 'expire_objects',
+            periodDays: 7,
+            reason: 'An input archive is the run\'s own copy of what it priced, and the run keeps its output, so a week is enough.',
+            applied: 'No object was older than 7 days; the oldest input archive is from 19 Nov 2026.'
+        },
+        {
+            id: 'compute_outputs_90d',
+            storeId: 'compute_output',
+            action: 'expire_objects',
+            periodDays: 90,
+            reason: 'Run output is kept as long as the database rows of the same run, which is a quarter.',
+            applied: 'No object was older than 90 days; the oldest output archive is from 4 Sep 2026.'
+        },
+        {
+            id: 'node_scratch_1d',
+            storeId: 'wrappers',
+            action: 'release_directory',
+            periodDays: 1,
+            reason: 'A job\'s folder is scratch once its output is uploaded; a day covers a job that is still running.',
+            applied: 'No folder was older than a day; the oldest folder was written today.'
+        }
+    ];
+
     function basePolicies() {
-        const list = [
-            {
-                id: 'report_cashflows_90d',
-                storeId: 'report_cashflows',
-                target: 'ores_reporting_report_cashflows_tbl',
-                action: 'drop_chunks',
-                periodDays: 90,
+        if (S.state === 'empty') return [];
+
+        return DEFAULT_BOUNDS.map(function (bound) {
+            const store = storeById(bound.storeId);
+            const policy = {
+                id: bound.id,
+                storeId: bound.storeId,
+                target: store.name,
+                action: bound.action,
+                periodDays: bound.periodDays,
                 cadenceHours: 24,
                 enabled: true,
-                reason: 'Cashflow runs are read for a quarter; an older chunk can be recomputed from the run ledger.',
+                reason: bound.reason,
                 lastOutcome: 'applied',
                 lastSweep: '24 Nov 2026, 17:15',
                 freed: '0 B',
-                detail: 'No chunk was older than 90 days; the oldest chunk was written 28 Aug 2026.'
-            },
-            {
-                id: 'report_metrics_90d',
-                storeId: 'report_metrics',
-                target: 'ores_reporting_report_metrics_tbl',
-                action: 'drop_chunks',
-                periodDays: 90,
-                cadenceHours: 24,
-                enabled: true,
-                reason: 'Metrics are small and read beside the cashflows of the same run, so the same quarter applies.',
-                lastOutcome: 'applied',
-                lastSweep: '24 Nov 2026, 17:15',
-                freed: '0 B',
-                detail: 'No chunk was older than 90 days; the oldest chunk was written 2 Sep 2026.'
+                detail: bound.applied
+            };
+
+            /* Today the sweep performs a chunk drop and nothing else, so a
+               default that asks for another action is declared and not applied:
+               the store reads as bounded and is not. */
+            if (S.state === 'skipped' && bound.action !== 'drop_chunks') {
+                policy.lastOutcome = 'skipped';
+                policy.detail = 'The sweep applies only a chunk drop today; the ' +
+                    actionLabel(bound.action).toLowerCase() + ' action was not attempted.';
             }
-        ];
 
-        if (S.state === 'skipped') {
-            list.push({
-                id: 'delivery_counts_7d',
-                storeId: 'delivery_counts',
-                target: 'ores_marketdata_delivery_counts_tbl',
-                action: 'delete_rows',
-                periodDays: 7,
-                cadenceHours: 24,
-                enabled: true,
-                reason: 'Delivery counters are useful for a week; an older row is read only during an incident.',
-                lastOutcome: 'skipped',
-                lastSweep: '24 Nov 2026, 17:15',
-                freed: '0 B',
-                detail: 'The sweep applies only a chunk drop today; the delete-rows action was not attempted.'
-            });
-        }
+            return policy;
+        }).map(function (policy) {
+            if (policy.storeId !== 'report_cashflows') return policy;
 
-        const cashflows = list[0];
+            if (S.state === 'failed') {
+                policy.lastOutcome = 'failed';
+                policy.detail = 'drop_chunks failed: connection reset by peer while listing chunks (SQLSTATE 08006). The policy remains enabled and retries at the next sweep.';
+            }
 
-        if (S.state === 'failed') {
-            cashflows.lastOutcome = 'failed';
-            cashflows.freed = '0 B';
-            cashflows.detail = 'drop_chunks failed: connection reset by peer while listing chunks (SQLSTATE 08006). The policy remains enabled and retries at the next sweep.';
-        }
+            if (S.state === 'disabled') {
+                policy.enabled = false;
+                policy.lastSweep = '24 Nov 2026, 16:15';
+                policy.detail = 'Applied at 16:15, before the policy was switched off at 17:20; no chunk was older than 90 days.';
+            }
 
-        if (S.state === 'disabled') {
-            cashflows.enabled = false;
-            cashflows.lastSweep = '24 Nov 2026, 16:15';
-            cashflows.freed = '0 B';
-            cashflows.detail = 'Applied at 16:15, before the policy was switched off at 17:20; no chunk was older than 90 days.';
-        }
-
-        if (S.state === 'empty') {
-            list.length = 0;
-        }
-
-        return list;
+            return policy;
+        });
     }
 
     function policies() {
@@ -395,15 +450,49 @@
         return STORES.filter(function (store) { return !isBounded(store); }).length;
     }
 
+    /* What "no bound" costs, in bytes. A store with nothing removing it is kept
+       for ever, so the measured rate of the last twelve weeks is the only
+       honest way to say how bad that is. An unmeasured store says so. */
+
+    function unboundedConsequence(store) {
+        if (store.keyed) return 'It needs no policy: the digest keying bounds it.';
+        if (store.sizeMB === null) return 'Its size is not measured, so its growth cannot be seen either.';
+        const rate = ratePerWeek(store);
+        if (rate === null) return 'Nothing removes what it holds.';
+        if (Math.abs(rate) < 0.05) return 'Nothing removes what it holds. It is not growing at the moment.';
+        return 'Nothing removes it: ' + (rate > 0 ? '+' : '') + fmtMB(rate) + ' a week, about ' +
+            (rate > 0 ? '+' : '') + fmtMB(rate * 52) + ' a year at the last twelve weeks.';
+    }
+
+    /* The column answers one question: does anything remove what this store
+       holds? A policy that exists is not the same answer: a policy switched off,
+       skipped or failed leaves the store exactly as unbounded as no policy at
+       all. The reason for the answer lives beside it, in the Bounded by cell. */
+
+    /* The list wants the verdict alone: the reason is in the cell beside it, and
+       a column of long labels is not scannable. The store's page and the cards
+       want the reason as well, so they ask for the longer form. */
+
+    function verdictOf(store) {
+        if (store.keyed) return { label: 'Bounded by keying', tone: 'ok' };
+        if (isBounded(store)) return { label: 'Bounded', tone: 'ok' };
+        return { label: 'Unbounded', tone: 'bad' };
+    }
+
+    function verdictTag(store) {
+        const verdict = verdictOf(store);
+        return '<span class="tag ' + verdict.tone + '">' + esc(verdict.label) + '</span>';
+    }
+
     function statusOf(store) {
         if (store.keyed) return { label: 'Bounded by keying', tone: 'ok' };
         const policy = policyFor(store);
-        if (!policy) return { label: 'Unbounded', tone: 'warn' };
-        if (!policy.enabled) return { label: 'Disabled — unbounded', tone: 'warn' };
-        if (policy.lastOutcome === 'skipped') return { label: 'Skipped — unbounded', tone: 'warn' };
-        if (policy.lastOutcome === 'failed') return { label: 'Failed — unbounded', tone: 'bad' };
-        if (policy.lastOutcome === 'pending') return { label: 'Pending first sweep', tone: 'muted' };
-        return { label: 'Applied', tone: 'ok' };
+        if (!policy) return { label: 'Unbounded', tone: 'bad' };
+        if (!policy.enabled) return { label: 'Unbounded — policy off', tone: 'bad' };
+        if (policy.lastOutcome === 'skipped') return { label: 'Unbounded — sweep skips it', tone: 'bad' };
+        if (policy.lastOutcome === 'failed') return { label: 'Unbounded — last sweep failed', tone: 'bad' };
+        if (policy.lastOutcome === 'pending') return { label: 'Unbounded yet — first sweep pending', tone: 'bad' };
+        return { label: 'Bounded', tone: 'ok' };
     }
 
     function statusTag(store) {
@@ -445,81 +534,54 @@
     /* ----------------------------------------------------------- runs */
 
     function tickDetail() {
-        if (S.state === 'skipped') return 'Sweep completed: 3 policies due, 2 applied, 1 skipped, 0 B freed, 1.6 s.';
-        if (S.state === 'failed') return 'Sweep completed: 2 policies due, 1 applied, 1 failed, 0 B freed, 3.1 s.';
-        if (S.state === 'disabled') return 'Sweep completed: 1 policy due, 1 applied, 0 B freed, 1.1 s.';
-        return 'Sweep completed: 2 policies due, 2 applied, 0 B freed, 1.4 s.';
+        const due = policies().filter(function (policy) { return policy.enabled; });
+        const applied = due.filter(function (policy) { return policy.lastOutcome === 'applied'; }).length;
+        const skipped = due.filter(function (policy) { return policy.lastOutcome === 'skipped'; }).length;
+        const failed = due.filter(function (policy) { return policy.lastOutcome === 'failed'; }).length;
+
+        const parts = [due.length + ' policies due', applied + ' applied'];
+        if (skipped) parts.push(skipped + ' skipped');
+        if (failed) parts.push(failed + ' failed');
+        parts.push('0 B freed', (1.2 + 0.12 * due.length).toFixed(1) + ' s');
+        return 'Sweep completed: ' + parts.join(', ') + '.';
     }
+
+    /* Every run the log holds comes from a policy, so the log cannot disagree
+       with the list: one array of policies produces both. */
 
     function runRows() {
         if (S.state === 'empty') return [];
 
-        const rows = [
-            {
-                at: '17:15:05',
-                sort: 5,
-                storeId: null,
-                store: 'All stores',
-                policyId: null,
-                policy: '(sweep tick)',
-                action: '—',
-                outcome: 'applied',
-                freed: '0 B',
-                detail: tickDetail()
-            },
-            {
-                at: '17:15:04',
-                sort: 4,
-                storeId: 'report_cashflows',
-                store: 'ores_reporting_report_cashflows_tbl',
-                policyId: 'report_cashflows_90d',
-                policy: 'report_cashflows_90d',
-                action: 'Drop chunks',
-                outcome: 'applied',
-                freed: '0 B',
-                detail: 'No chunk was older than 90 days; the oldest chunk was written 28 Aug 2026.'
-            },
-            {
-                at: '17:15:03',
-                sort: 3,
-                storeId: 'report_metrics',
-                store: 'ores_reporting_report_metrics_tbl',
-                policyId: 'report_metrics_90d',
-                policy: 'report_metrics_90d',
-                action: 'Drop chunks',
-                outcome: 'applied',
-                freed: '0 B',
-                detail: 'No chunk was older than 90 days; the oldest chunk was written 2 Sep 2026.'
-            }
-        ];
-
-        if (S.state === 'skipped') {
-            rows.push({
-                at: '17:15:02',
-                sort: 2,
-                storeId: 'delivery_counts',
-                store: 'ores_marketdata_delivery_counts_tbl',
-                policyId: 'delivery_counts_7d',
-                policy: 'delivery_counts_7d',
-                action: 'Delete rows',
-                outcome: 'skipped',
-                freed: '0 B',
-                detail: 'The sweep applies only a chunk drop today; the delete-rows action was not attempted. The store is not bounded.'
+        const rows = policies()
+            .filter(function (policy) { return policy.lastSweep && policy.lastOutcome !== 'pending'; })
+            .map(function (policy, index) {
+                const store = storeById(policy.storeId);
+                return {
+                    at: policy.lastSweep.replace('24 Nov 2026, ', '') + ':' + (20 - index),
+                    sort: 40 - index,
+                    storeId: policy.storeId,
+                    store: store ? store.name : policy.storeId,
+                    policyId: policy.id,
+                    policy: policy.id,
+                    action: actionLabel(policy.action),
+                    outcome: policy.lastOutcome,
+                    freed: policy.freed,
+                    detail: policy.detail
+                };
             });
-        }
 
-        if (S.state === 'failed') {
-            const cashflows = rows.filter(function (row) { return row.policyId === 'report_cashflows_90d'; })[0];
-            cashflows.outcome = 'failed';
-            cashflows.detail = 'drop_chunks failed: connection reset by peer while listing chunks (SQLSTATE 08006). The policy remains enabled and retries at the next sweep.';
-        }
-
-        if (S.state === 'disabled') {
-            const cashflows = rows.filter(function (row) { return row.policyId === 'report_cashflows_90d'; })[0];
-            cashflows.at = '16:15:04';
-            cashflows.sort = 1;
-            cashflows.detail = 'Applied before the policy was switched off at 17:20; no chunk was older than 90 days.';
-        }
+        rows.push({
+            at: '17:15:59',
+            sort: 99,
+            storeId: null,
+            store: 'All stores',
+            policyId: null,
+            policy: '(sweep tick)',
+            action: '—',
+            outcome: rows.some(function (row) { return row.outcome === 'failed'; }) ? 'failed' : 'applied',
+            freed: '0 B',
+            detail: tickDetail()
+        });
 
         return rows.sort(function (a, b) { return b.sort - a.sort; });
     }
@@ -571,10 +633,21 @@
 
     /* -------------------------------------------------------- chrome */
 
+    /* A deep link carries a state, and a reviewer who lands on one without
+       knowing it is looking at a fixture reads the screen as a lie. The page
+       names the state it is showing. */
+
+    function fixtureLine() {
+        const state = stateById(S.state);
+        if (!state || state.id === 'fresh') return '';
+        return '<p class="fixture">Showing the <b>' + esc(state.name) + '</b> fixture: ' + esc(state.gist) + '</p>';
+    }
+
     function header() {
         return '<header class="pageheader"><div>' +
             '<h1>Housekeeping</h1>' +
             '<p class="sub">Every store the installation keeps, what bounds it, how large it is, and what the sweep has actually done.</p>' +
+            fixtureLine() +
             '</div><div class="head-actions">' +
             '<span class="meta">Signed in as system administrator · tenant system<br>Read at ' + esc(READ_AT) + '</span>' +
             '<a class="btn secondary" href="../../index.html">Back to prototypes</a>' +
@@ -586,7 +659,7 @@
         return '<div class="statline">' +
             '<span><b>' + STORES.length + '</b> stores</span>' +
             '<span><b>' + policiesHeld + '</b> policies</span>' +
-            '<span><b class="warn">' + unboundedCount() + '</b> unbounded</span>' +
+            '<span><b class="bad">' + unboundedCount() + '</b> unbounded</span>' +
             '<span><b>' + fmtMB(knownTotalMB()) + '</b> measured across ' + knownCount() + ' stores</span>' +
             '<span>' + (STORES.length - knownCount()) + ' stores report no size</span>' +
             '</div>';
@@ -602,11 +675,17 @@
     function stateBanner() {
         const held = policies().length;
         const unbounded = unboundedCount();
+        const storeWord = unbounded === 1 ? ' stores is' : ' stores are';
+        const runsButton = S.view === 'runs'
+            ? ''
+            : '<button type="button" class="btn secondary small" data-act="view" data-view="runs">Open the runs log</button>';
 
         if (S.state === 'empty' && held === 0) {
-            return notice('warn', 'No retention policy exists.',
-                'The installation keeps ' + STORES.length + ' stores and holds no retention policy. ' + unbounded +
-                ' are unbounded; only <span class="mono">publish/run/packages</span> is bounded, by its content digest keying. Nothing removes old data or artefacts today.',
+            return notice('bad', 'No retention policy exists.',
+                'The installation keeps ' + STORES.length + ' stores and holds no retention policy, so ' + unbounded +
+                ' are unbounded; only <span class="mono">publish/run/packages</span> is bounded, by its content digest keying. ' +
+                'Nothing removes old data or artefacts today. The catalogue declares a default bound for every store that can take ' +
+                'one, so this is not a fresh installation: somebody removed the defaults.',
                 '<button type="button" class="btn primary small" data-act="first-policy">Add the first policy</button>');
         }
 
@@ -617,12 +696,15 @@
         }
 
         if (S.state === 'skipped') {
-            return notice('warn', 'A policy is enabled, but it does not bound its store.',
-                '<span class="mono">delivery_counts_7d</span> asks to delete rows older than 7 days from ' +
-                '<span class="mono">ores_marketdata_delivery_counts_tbl</span>. The sweep applies only a chunk drop today, ' +
-                'so the 17:15 run is recorded as skipped and the table keeps every row. It holds 29 MB and grows by about ' +
-                '27,000 rows an hour. This store is not bounded.',
-                '<button type="button" class="btn secondary small" data-act="runs-store" data-store="delivery_counts">See the skipped run</button>');
+            return notice('bad', 'The defaults are declared, and the sweep cannot apply four of them.',
+                'The catalogue states a default bound for every store that can take one, and this page holds ' + held +
+                ' policies because of it. The sweep performs a chunk drop and nothing else, so a default that asks for another ' +
+                'action is recorded as skipped: delete rows on the delivery counts, expire objects on the two compute prefixes, ' +
+                'and release the directory on the node scratch. Those stores read as bounded on paper and are not. ' +
+                unbounded + ' of the ' + STORES.length + storeWord + ' unbounded.',
+                '<button type="button" class="btn secondary small" data-act="runs-store" data-store="delivery_counts">See a skipped run</button>' +
+                '<button type="button" class="btn primary small" data-act="filter-unbounded">' +
+                (S.onlyUnbounded ? 'Show every store' : 'Show the ' + unbounded + ' unbounded') + '</button>');
         }
 
         if (S.state === 'failed') {
@@ -640,18 +722,27 @@
                     '-day period. No sweep applies it until the mock save is replaced by a real write.',
                     '');
             }
-            return notice('warn', 'A policy is switched off, so its store is kept for ever.',
+            return notice('bad', 'A policy is switched off, so its store is kept for ever.',
                 '<span class="mono">report_cashflows_90d</span> was switched off at 17:20. It last applied at 16:15 and freed 0 B. ' +
                 'The table holds 186 MB and keeps every chunk past 90 days until the policy is enabled again. ' +
                 'That leaves ' + unbounded + ' of the ' + STORES.length + ' stores unbounded.',
                 '<button type="button" class="btn secondary small" data-act="edit-store" data-store="report_cashflows">Open the policy editor</button>');
         }
 
-        return notice('info', 'Nothing to free yet — and nothing is wrong.',
-            'The enabled policies ran at 17:15 and freed 0 B: no chunk is older than 90 days. A zero is the expected answer ' +
-            'for a store bounded this week, not a failed sweep. Yet ' + unbounded + ' of the ' + STORES.length +
-            ' stores have no policy that bounds them, and are marked Unbounded below.',
-            S.view === 'runs' ? '' : '<button type="button" class="btn secondary small" data-act="view" data-view="runs">Open the runs log</button>');
+        if (unbounded === 0) {
+            return notice('ok', 'Every store has a bound.',
+                'The catalogue declares a default bound for every store that can take one, so provisioning creates the policy and ' +
+                'no store is unbounded by omission. ' + held + ' policies hold here, and the package cache needs none because its ' +
+                'content digest bounds it.', runsButton);
+        }
+
+        return notice('bad', unbounded + ' of the ' + STORES.length + storeWord + ' unbounded.',
+            'The catalogue declares a default bound for every store that can take one, and ' + held + ' policies hold here, so every ' +
+            'other store is bounded by a policy or by its content digest. An unbounded store is never deleted from: it grows until the ' +
+            'database or the disk is full, which is the one failure this screen exists to prevent. The calendar dates are the gap: ' +
+            'a policy bounds by age, and a day behind the horizon is out of range rather than old, so no default can cover it.',
+            '<button type="button" class="btn primary small" data-act="filter-unbounded">' +
+            (S.onlyUnbounded ? 'Show every store' : 'Show the ' + unbounded + ' unbounded') + '</button>' + runsButton);
     }
 
     /* ------------------------------------------------------ variant A */
@@ -665,11 +756,15 @@
         }
 
         if (!policy) {
+            const rate = ratePerWeek(store);
+            let cost = 'Nothing removes what it holds';
+            if (store.sizeMB === null) cost = 'Size not measured, so growth is invisible';
+            else if (rate !== null && Math.abs(rate) >= 0.05) cost = 'Nothing removes it · about ' + fmtMB(rate * 52) + ' a year';
             return '<span class="none">None — no retention policy</span>' +
-                '<span class="subline">This store is not bounded</span>';
+                '<span class="subline warnline">' + esc(cost) + '</span>';
         }
 
-        let html = esc(actionLabel(policy.action)) + ' · ' + policy.periodDays + ' days' +
+        let html = esc(actionLabel(policy.action)) + ' · ' + periodLabel(policy.periodDays) +
             '<span class="subline">every ' + policy.cadenceHours + ' h · <span class="mono">' + esc(policy.id) + '</span></span>';
 
         if (!policy.enabled) {
@@ -703,42 +798,72 @@
        did, and what a person changed. It is one log because the question "what
        has happened to this store" has one answer. */
 
-    const ACTIVITY = {
-        calendar_dates: [
-            { at: '24 Nov 18:00', kind: 'Sampled', outcome: 'info', label: 'Measured', what: '283 MB · 486,540 rows', detail: 'hourly sample, 12 points kept' },
-            { at: '24 Nov 17:15', kind: 'Swept', outcome: 'skipped', label: 'Skipped', what: 'no policy names this store', detail: 'nothing bounds it, so nothing was applied' }
-        ],
-        report_cashflows: [
-            { at: '24 Nov 18:00', kind: 'Sampled', outcome: 'info', label: 'Measured', what: '186 MB · +0.0 MB since 17:00', detail: 'hourly sample, 12 points kept' },
-            { at: '24 Nov 17:15', kind: 'Swept', outcome: 'applied', label: 'Applied', what: 'removed 0 chunks', detail: 'nothing older than 90 days' },
-            { at: '24 Nov 16:58', kind: 'Changed', outcome: 'info', label: 'Recorded', what: 'period 120 -> 90 days', detail: 'super_admin: a quarter is the longest the audit allows' }
-        ],
-        report_metrics: [
-            { at: '24 Nov 18:00', kind: 'Sampled', outcome: 'info', label: 'Measured', what: '4 MB · +0.0 MB since 17:00', detail: 'hourly sample' },
-            { at: '24 Nov 17:15', kind: 'Swept', outcome: 'applied', label: 'Applied', what: 'removed 0 chunks', detail: 'nothing older than 90 days' }
-        ],
-        delivery_counts: [
-            { at: '24 Nov 18:00', kind: 'Sampled', outcome: 'info', label: 'Measured', what: '29 MB · +0.6 MB since 17:00', detail: 'hourly sample; about 27,000 rows an hour' },
-            { at: '24 Nov 18:00', kind: 'Refused', outcome: 'failed', label: 'Refused', what: 'policy delivery_counts_30d could not be written', detail: 'the sweep performs a chunk drop; this store is an ordinary table' },
-            { at: '24 Nov 17:15', kind: 'Swept', outcome: 'skipped', label: 'Skipped', what: 'no policy applies', detail: 'nothing bounds it, so nothing was applied' }
-        ],
-        ticks: [
-            { at: '24 Nov 18:00', kind: 'Sampled', outcome: 'info', label: 'Measured', what: '16 kB · +0.0 kB since 17:00', detail: 'hourly sample; compressed by the store' }
-        ],
-        compute_input: [
-            { at: '24 Nov 18:00', kind: 'Sampled', outcome: 'skipped', label: 'Not measured', what: 'size not measured', detail: 'the storage service reports bytes per prefix only when asked, and no probe reads it yet' }
-        ],
-        compute_output: [
-            { at: '24 Nov 18:00', kind: 'Sampled', outcome: 'skipped', label: 'Not measured', what: 'size not measured', detail: 'the storage service reports bytes per prefix only when asked, and no probe reads it yet' }
-        ],
-        wrappers: [
-            { at: '24 Nov 18:00', kind: 'Sampled', outcome: 'info', label: 'Measured', what: '1.9 GB · 675 folders', detail: 'hourly sample; 3.4 MB per completed job' },
-            { at: '24 Nov 17:40', kind: 'Released', outcome: 'info', label: 'Released', what: 'job 95f40ef1 · 3,842,446 bytes', detail: 'the node released a completed job\'s folder' }
-        ],
-        packages: [
-            { at: '24 Nov 18:00', kind: 'Sampled', outcome: 'info', label: 'Measured', what: '209 MB · 1 copy', detail: 'keyed by package digest, shared by five nodes' }
-        ]
-    };
+    /* The activity around one store is built from the store's own policy, so a
+       store's page never tells a different story from its row. A person's
+       change and a node's release are the two events no policy produces, so
+       they are the two the fixtures state by hand. */
+
+    function activityFor(store) {
+        const policy = policyFor(store);
+        const rows = [];
+
+        rows.push({
+            at: '24 Nov 18:00',
+            kind: 'Sampled',
+            outcome: store.sizeMB === null ? 'skipped' : 'info',
+            label: store.sizeMB === null ? 'Not measured' : 'Measured',
+            what: store.sizeMB === null ? 'size not measured' : store.size + ' · ' + store.measure,
+            detail: store.sizeMB === null
+                ? 'the storage service reports bytes per prefix only when asked, and no probe reads it yet'
+                : 'hourly sample, kept as one row of the store samples'
+        });
+
+        if (policy && policy.lastOutcome !== 'pending') {
+            rows.push({
+                at: policy.lastSweep.replace('24 Nov 2026, ', '24 Nov '),
+                kind: 'Swept',
+                outcome: policy.lastOutcome,
+                label: policy.lastOutcome === 'applied' ? 'Applied' : policy.lastOutcome === 'skipped' ? 'Skipped' : 'Failed',
+                what: actionLabel(policy.action) + ' · ' + policy.periodDays + ' days · freed ' + policy.freed,
+                detail: policy.detail
+            });
+        }
+
+        if (!policy && !store.keyed) {
+            rows.push({
+                at: '24 Nov 17:15',
+                kind: 'Swept',
+                outcome: 'skipped',
+                label: 'Skipped',
+                what: 'no policy names this store',
+                detail: 'nothing bounds it, so nothing was applied'
+            });
+        }
+
+        if (store.id === 'report_cashflows') {
+            rows.push({
+                at: '24 Nov 16:58',
+                kind: 'Changed',
+                outcome: 'info',
+                label: 'Recorded',
+                what: 'period 120 -> 90 days',
+                detail: 'super_admin: a quarter is the longest the audit allows'
+            });
+        }
+
+        if (store.id === 'wrappers') {
+            rows.push({
+                at: '24 Nov 17:40',
+                kind: 'Released',
+                outcome: 'info',
+                label: 'Released',
+                what: 'job 95f40ef1 · 3,842,446 bytes',
+                detail: 'the node released a completed job\'s folder'
+            });
+        }
+
+        return rows;
+    }
 
     /* Growth: the size the installation measured, one point a week. The
        prototype draws twelve of them; in the product they come from the store
@@ -769,30 +894,105 @@
             pointsFor(store.series, width, height) + '"/></svg>';
     }
 
+    /* A plot, not a line drawn on nothing: size against time, with both axes
+       labelled and ticked. The numbers are the store's samples, weekly. */
+
+    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    function weekLabels(count) {
+        const end = new Date(Date.UTC(2026, 10, 24));
+        const labels = [];
+        for (let i = count - 1; i >= 0; i--) {
+            const d = new Date(end.getTime() - i * 7 * 24 * 3600 * 1000);
+            labels.push(d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()]);
+        }
+        return labels;
+    }
+
     function growthChart(store) {
         if (!store.series) {
             return '<p class="note">The size of this store is not measured, so it has no history to plot. ' +
                 'The object store reports bytes per prefix only when asked, and no sampler reads it yet.</p>';
         }
-        const w = 420;
-        const h = 140;
+
         const series = store.series;
+        const labels = weekLabels(series.length);
+        const w = 560;
+        const h = 240;
+        const left = 64;
+        const right = 16;
+        const top = 12;
+        const bottom = 40;
+        const plotW = w - left - right;
+        const plotH = h - top - bottom;
+
+        const rawMax = Math.max.apply(null, series);
+        const rawMin = Math.min.apply(null, series);
+        // A flat store still needs a range to draw against.
+        const span = rawMax - rawMin || rawMax * 0.2 || 1;
+        const yMax = rawMax + span * 0.08;
+        const yMin = Math.max(0, rawMin - span * 0.08);
+        const ySpan = yMax - yMin || 1;
+
+        const xOf = (i) => left + (i / (series.length - 1)) * plotW;
+        const yOf = (v) => top + plotH - ((v - yMin) / ySpan) * plotH;
+
+        // Four horizontal gridlines, each with the size it stands for.
+        const ticks = 4;
+        let grid = '';
+        for (let i = 0; i <= ticks; i++) {
+            const value = yMin + (ySpan * i) / ticks;
+            const y = yOf(value).toFixed(1);
+            grid += '<line class="gridline" x1="' + left + '" y1="' + y + '" x2="' + (w - right) +
+                '" y2="' + y + '"/>' +
+                '<text class="ytick" x="' + (left - 8) + '" y="' + (Number(y) + 3.5).toFixed(1) +
+                '" text-anchor="end">' + esc(fmtMB(Math.round(value))) + '</text>';
+        }
+
+        // One tick a week, labelled every third week so the axis stays readable.
+        let xaxis = '';
+        for (let i = 0; i < series.length; i++) {
+            const x = xOf(i).toFixed(1);
+            if (i % 3 === 0 || i === series.length - 1) {
+                xaxis += '<text class="xtick" x="' + x + '" y="' + (h - bottom + 16) +
+                    '" text-anchor="middle">' + esc(labels[i]) + '</text>';
+            }
+            xaxis += '<line class="tick" x1="' + x + '" y1="' + (h - bottom) + '" x2="' + x +
+                '" y2="' + (h - bottom + 4) + '"/>';
+        }
+
+        const points = series.map((v, i) => xOf(i).toFixed(1) + ',' + yOf(v).toFixed(1)).join(' ');
+        const dots = series.map((v, i) => '<circle class="dot" cx="' + xOf(i).toFixed(1) + '" cy="' +
+            yOf(v).toFixed(1) + '" r="2.2"><title>' + esc(labels[i]) + ': ' + esc(fmtMB(v)) +
+            '</title></circle>').join('');
+
         const first = series[0];
         const last = series[series.length - 1];
         const delta = last - first;
         const weeks = series.length - 1;
         const perWeek = weeks ? delta / weeks : 0;
-        return '<div class="chart">' +
-            '<svg class="growthchart" width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h +
-            '" role="img" aria-labelledby="chart-' + store.id + '">' +
-            '<title id="chart-' + store.id + '">' + esc(store.label) + ' size over twelve weeks, from ' +
-            esc(fmtMB(first)) + ' to ' + esc(store.size) + '</title>' +
-            '<line x1="0" y1="' + (h - 18) + '" x2="' + w + '" y2="' + (h - 18) + '" class="axis"/>' +
-            '<polyline fill="none" stroke="currentColor" stroke-width="1.75" points="' +
-            pointsFor(series, w, h - 18) + '"/></svg>' +
-            '<p class="chartmeta">' + esc(fmtMB(first)) + ' twelve weeks ago, ' + esc(store.size) +
-            ' today: ' + (delta >= 0 ? '+' : '') + esc(fmtMB(delta)) + ' over ' + weeks + ' weeks, about ' +
-            (perWeek >= 0 ? '+' : '') + esc(fmtMB(perWeek)) + ' a week.</p></div>';
+
+        return '<figure class="chart">' +
+            '<svg class="growthchart" viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-labelledby="chart-' +
+            store.id + '">' +
+            '<title id="chart-' + store.id + '">' + esc(store.label) + ' size over time: ' + esc(labels[0]) +
+            ' to ' + esc(labels[labels.length - 1]) + ', from ' + esc(fmtMB(first)) + ' to ' +
+            esc(store.size) + '</title>' +
+            grid +
+            '<line class="axis" x1="' + left + '" y1="' + top + '" x2="' + left + '" y2="' + (h - bottom) + '"/>' +
+            '<line class="axis" x1="' + left + '" y1="' + (h - bottom) + '" x2="' + (w - right) + '" y2="' +
+            (h - bottom) + '"/>' +
+            '<text class="axtitle" x="' + left + '" y="' + (top - 2) + '" text-anchor="start">Size</text>' +
+            '<text class="axtitle" x="' + (w - right) + '" y="' + (h - 6) +
+            '" text-anchor="end">Time, one point a week</text>' +
+            xaxis +
+            '<polyline class="series" fill="none" points="' + points + '"/>' +
+            dots +
+            '</svg>' +
+            '<figcaption class="chartmeta">' + esc(fmtMB(first)) + ' on ' + esc(labels[0]) + ', ' +
+            esc(store.size) + ' today: ' + (delta >= 0 ? '+' : '') + esc(fmtMB(delta)) + ' over ' + weeks +
+            ' weeks, about ' + (perWeek >= 0 ? '+' : '') + esc(fmtMB(perWeek)) + ' a week.</figcaption>' +
+            '</figure>';
     }
 
     function fmtMB(v) {
@@ -802,19 +1002,53 @@
         return (v % 1 === 0 ? v : v.toFixed(1)) + ' MB';
     }
 
+    /* The list says what a store holds and which way it is going. The plot is
+       on the store's page: twelve points in a row would be read as a shape at a
+       glance, which is exactly what a list of nine stores cannot afford. */
+
+    function ratePerWeek(store) {
+        if (!store.series) return null;
+        const weeks = store.series.length - 1;
+        if (!weeks) return null;
+        return (store.series[store.series.length - 1] - store.series[0]) / weeks;
+    }
+
+    function sizeCell(store) {
+        let out = '<span class="v">' + esc(store.size) + '</span>';
+        if (store.limitBytes) {
+            const pct = Math.min(100, (store.sizeMB / store.limitMB) * 100);
+            const tone = pct >= 90 ? 'bad' : pct >= 75 ? 'warn' : 'ok';
+            out += '<span class="limitbar" role="img" aria-label="' +
+                esc(Math.round(pct) + ' percent of the ' + fmtMB(store.limitMB) + ' budget') + '">' +
+                '<span class="fill ' + tone + '" style="width:' + pct.toFixed(1) + '%"></span></span>' +
+                '<span class="subline">of ' + esc(fmtMB(store.limitMB)) + ' · ' + Math.round(pct) + '%</span>';
+        } else {
+            out += '<span class="subline">no size budget</span>';
+        }
+        return out;
+    }
+
+    function growthCell(store) {
+        const rate = ratePerWeek(store);
+        if (rate === null) return '<span class="subline">not measured</span>';
+        const flat = Math.abs(rate) < 0.05;
+        const arrow = flat ? '→' : rate > 0 ? '↑' : '↓';
+        const tone = flat ? 'flat' : rate > 0 ? 'up' : 'down';
+        return '<span class="trend ' + tone + '">' + arrow + ' ' +
+            (flat ? 'flat' : (rate > 0 ? '+' : '') + esc(fmtMB(rate)) + '/wk') + '</span>';
+    }
+
     function storeRow(store) {
-        const policy = policyFor(store);
         const selected = S.selected === store.id;
         return '<tr class="selectable' + (selected ? ' selected' : '') + '" data-act="select" data-store="' + store.id + '">' +
             '<td class="storecell"><button type="button" class="linkish sname" data-act="select" data-store="' + store.id + '"' +
             ' aria-expanded="' + selected + '">' + esc(store.label) + '</button>' +
             '<span class="storetarget" title="' + esc(store.name) + '">' + esc(store.name) + '</span>' +
             '<span class="skind">' + esc(store.kind) + ' · ' + esc(store.where) + '</span></td>' +
+            '<td>' + verdictTag(store) + '</td>' +
             '<td>' + boundedBy(store) + '</td>' +
-            '<td>' + statusTag(store) + '</td>' +
-            '<td class="growthcell"><span class="v">' + esc(store.size) + '</span>' +
-            sparkline(store, 96, 22) + '<span class="subline">' +
-            esc(store.growth) + ' · freed ' + esc(policy ? policy.freed : '—') + '</span></td>' +
+            '<td class="sizecell">' + sizeCell(store) + '</td>' +
+            '<td class="growthcell">' + growthCell(store) + '</td>' +
             '</tr>';
     }
 
@@ -823,16 +1057,38 @@
         // application works. The list is the page until a store is opened.
         if (S.selected) return storePage();
 
+        const shown = S.onlyUnbounded
+            ? STORES.filter(function (store) { return !isBounded(store); })
+            : STORES;
+
+        let body;
+        if (shown.length === 0) {
+            body = '<p class="empty">Every store is bounded. Nothing here needs a decision.</p>';
+        } else {
+            const caption = S.onlyUnbounded
+                ? 'The stores nothing bounds, what bounds each, its size and its growth'
+                : 'Every store, whether anything bounds it, what bounds it, its size and its growth';
+            body = '<div class="table-wrap"><table class="data">' +
+                '<caption class="visually-hidden">' + caption + '</caption>' +
+                '<thead><tr><th>Store / Target</th><th>Bounded?</th><th>Bounded by</th><th>Size</th><th>Growth</th></tr></thead>' +
+                '<tbody>' + shown.map(storeRow).join('') + '</tbody></table></div>';
+        }
+
         return '<section class="card master">' +
-            '<header><div><h2>Every store</h2><p class="meta">A store with no policy says so, in the Bounded by column and in its State.</p></div>' +
-            '<span class="meta">' + policies().length + ' policies · ' + unboundedCount() + ' unbounded</span></header>' +
-            '<div class="table-wrap"><table class="data">' +
-            '<caption class="visually-hidden">Every store, its bound, state, size, growth, last sweep and freed bytes</caption>' +
-            '<thead><tr><th>Store / Target</th><th>Bounded by</th><th>State</th><th>Size and growth, twelve weeks</th></tr></thead>' +
-            '<tbody>' + STORES.map(storeRow).join('') + '</tbody></table></div>' +
+            '<header><div><h2>' + (S.onlyUnbounded ? 'The stores nothing bounds' : 'Every store') + '</h2>' +
+            '<p class="meta">' + (S.onlyUnbounded
+                ? 'This is the work list. Give each store a policy, or record why it needs none. It should end empty.'
+                : 'A store with no policy that applies is kept for ever. The Bounded by column says what would remove it.') +
+            '</p></div>' +
+            '<div class="filters">' +
+            '<button type="button" class="chip" aria-pressed="' + S.onlyUnbounded + '" data-act="filter-unbounded">' +
+            'Unbounded <span class="count' + (unboundedCount() ? ' alert' : '') + '">' + unboundedCount() + '</span></button>' +
+            '<span class="meta">' + policies().length + ' policies · ' + STORES.length + ' stores</span>' +
+            '</div></header>' +
+            body +
             '<p class="note">Sizes come from the database catalogues, the object-store listing and a directory walk. ' +
-            'A Freed figure of 0 B means the last sweep found nothing older than the period; it does not mean the policy failed. ' +
-            'A dash means there is no policy to free anything.</p>' +
+            'A policy that frees 0 B has found nothing older than its period; it is not a failure. ' +
+            'A store bounded by its content digest needs no policy.</p>' +
             '</section>';
     }
 
@@ -844,7 +1100,7 @@
         if (!policy) {
             return '<div class="section"><h3>Policy</h3>' +
                 inlineNotice('warn', 'No retention policy covers this store',
-                    'Nothing removes what it holds. ' + esc(store.note)) +
+                    esc(unboundedConsequence(store)) + ' ' + esc(store.note)) +
                 '<div class="section-actions">' +
                 '<button type="button" class="btn primary small" data-act="edit-store" data-store="' + store.id + '">Create a policy</button>' +
                 '<button type="button" class="btn secondary small" data-act="runs-store" data-store="' + store.id + '">See its runs</button>' +
@@ -858,7 +1114,7 @@
         } else if (policy.lastOutcome === 'skipped') {
             warning = inlineNotice('warn', 'This policy does not bound the store',
                 'The sweep applies only a chunk drop today, so this ' + esc(actionLabel(policy.action).toLowerCase()) +
-                ' policy is recorded as skipped. The store stays unbounded until the sweep can apply that action.');
+                ' policy is recorded as skipped. Nothing removes what it holds until the sweep can apply that action.');
         } else if (policy.lastOutcome === 'failed') {
             warning = inlineNotice('bad', 'The last sweep failed', esc(policy.detail));
         } else if (policy.lastOutcome === 'pending') {
@@ -872,7 +1128,7 @@
             detail('Target', esc(policy.target), 'mono') +
             detail('Action', esc(actionLabel(policy.action))) +
             detail('Enabled', policy.enabled ? 'Yes' : 'No — switched off') +
-            detail('Period', policy.periodDays + ' days') +
+            detail('Period', periodLabel(policy.periodDays)) +
             detail('Cadence', 'every ' + policy.cadenceHours + ' h') +
             detail('Last outcome', esc(policy.lastOutcome)) +
             detail('Last sweep', esc(policy.lastSweep)) +
@@ -921,7 +1177,7 @@
     }
 
     function activityLog(store) {
-        const list = ACTIVITY[store.id] || [];
+        const list = activityFor(store);
         let body;
 
         if (list.length === 0) {
@@ -961,7 +1217,7 @@
                 : '<span class="mono">' + esc(store.timeColumn) + '</span>') +
             detail('Measured by', esc(store.measureKind)) +
             detail('Bounded by', policy
-                ? esc(actionLabel(policy.action) + ' · ' + policy.periodDays + ' days')
+                ? esc(actionLabel(policy.action) + ' · ' + periodLabel(policy.periodDays))
                 : store.keyed ? 'Content digest keying' : 'Nothing — no retention policy') +
             '</div>' +
             '<p class="description recorddesc">' + esc(store.description) + '</p>';
@@ -1011,11 +1267,11 @@
     function policyLine(store) {
         const policy = policyFor(store);
         if (store.keyed) return 'Bounded by content digest keying — one copy per host';
-        if (!policy) return '<b>No policy</b> — this store is not bounded';
+        if (!policy) return '<b>No policy</b> — this store is unbounded';
 
-        let line = '<b>' + esc(actionLabel(policy.action)) + ' · ' + policy.periodDays + ' days</b>';
-        if (!policy.enabled) line += ' — switched off, unbounded';
-        else if (policy.lastOutcome === 'skipped') line += ' — skipped, not bounded';
+        let line = '<b>' + esc(actionLabel(policy.action)) + ' · ' + esc(periodLabel(policy.periodDays)) + '</b>';
+        if (!policy.enabled) line += ' — switched off, nothing removes it';
+        else if (policy.lastOutcome === 'skipped') line += ' — skipped, unbounded';
         else if (policy.lastOutcome === 'failed') line += ' — last sweep failed';
         else if (policy.lastOutcome === 'pending') line += ' — waiting for the first sweep';
         return line;
@@ -1137,7 +1393,7 @@
     function diffChanges(policy, draft) {
         const changes = [];
         if (draft.periodDays !== policy.periodDays) {
-            changes.push('Period ' + policy.periodDays + ' → ' + draft.periodDays + ' days');
+            changes.push('Period ' + periodLabel(policy.periodDays) + ' → ' + periodLabel(draft.periodDays));
         }
         if (draft.cadenceHours !== policy.cadenceHours) {
             changes.push('Cadence ' + policy.cadenceHours + ' → ' + draft.cadenceHours + ' hours');
@@ -1184,7 +1440,7 @@
     function effectText(store, policy, draft) {
         if (!draft.enabled) return 'The store is kept for ever while the policy is off.';
         if (policy && policy.lastOutcome === 'skipped') {
-            return 'The store stays unbounded: the sweep applies only a chunk drop today.';
+            return 'Nothing removes what it holds: the sweep applies only a chunk drop today.';
         }
         if (policy && policy.lastOutcome === 'failed') {
             return 'The store holds ' + store.size + '. The last sweep failed; the next retry is at 18:15.';
@@ -1193,11 +1449,11 @@
     }
 
     function addEffect(store, draft) {
-        if (!draft.enabled) return 'The policy is created switched off; the store stays unbounded.';
+        if (!draft.enabled) return 'The policy is created switched off; nothing removes what the store holds.';
         if (draft.action !== 'drop_chunks') {
-            return 'The first sweep records this policy as skipped: the sweep applies only a chunk drop today. The store stays unbounded.';
+            return 'The first sweep records this policy as skipped: the sweep applies only a chunk drop today. Nothing removes what the store holds.';
         }
-        return 'The first sweep drops chunks older than ' + draft.periodDays + ' days. The store holds ' +
+        return 'The first sweep drops chunks older than ' + periodLabel(draft.periodDays) + '. The store holds ' +
             store.size + ' today; no dry run exists, so the screen cannot state what it would free.';
     }
 
@@ -1239,7 +1495,7 @@
         } else if (policy.lastOutcome === 'skipped') {
             warning = inlineNotice('warn', 'This policy cannot bound its store',
                 'The sweep applies only a chunk drop today, so a delete-rows policy is recorded as skipped. ' +
-                'Changing its period does not make it effective: the store stays unbounded until the sweep can apply that action.');
+                'Changing its period does not make it effective: nothing removes what the store holds until the sweep can apply that action.');
         } else if (policy.lastOutcome === 'failed') {
             warning = inlineNotice('bad', 'The last sweep failed', esc(policy.detail));
         }
@@ -1255,14 +1511,14 @@
             detail('Target', esc(policy.target), 'mono') +
             detail('Action', esc(actionLabel(policy.action))) +
             detail('Enabled', policy.enabled ? 'Yes' : 'No — switched off') +
-            detail('Period', policy.periodDays + ' days') +
+            detail('Period', periodLabel(policy.periodDays)) +
             detail('Cadence', 'every ' + policy.cadenceHours + ' h') +
             detail('Last outcome', esc(policy.lastOutcome)) +
             detail('Last sweep', esc(policy.lastSweep)) +
             detail('Next due sweep', esc(nextSweepFor(policy))) +
             detail('Store size', esc(store.size)) +
             detail('Freed by the last sweep', esc(policy.freed)) +
-            detail('Bounded by', esc(actionLabel(policy.action) + ' · ' + policy.periodDays + ' days')) +
+            detail('Bounded by', esc(actionLabel(policy.action) + ' · ' + periodLabel(policy.periodDays))) +
             '</div>' +
             warning +
             '<form class="editorform" data-act="editor" aria-label="Policy fields">' +
@@ -1294,7 +1550,7 @@
         const canSave = reasonOk;
 
         const diffText = name + ' · ' + actionLabel(draft.action) + ' · ' + draft.periodDays +
-            ' days · every ' + draft.cadenceHours + ' h · ' + (draft.enabled ? 'enabled' : 'disabled') +
+            periodLabel(draft.periodDays) + ' · every ' + draft.cadenceHours + ' h · ' + (draft.enabled ? 'enabled' : 'disabled') +
             ' · ' + nextLine(draft);
         const effect = addEffect(store, draft);
         const audit = auditCreate(store, draft);
@@ -1321,7 +1577,7 @@
             '</div>' +
             (unsupported ? '<div class="notice warn compact"><p class="title">This action will not bound the store</p><p>' +
                 'The sweep applies only a chunk drop today. A ' + esc(actionLabel(draft.action).toLowerCase()) +
-                ' policy is recorded as skipped, so the store stays unbounded.</p></div>' : '') +
+                ' policy is recorded as skipped, so nothing removes what the store holds.</p></div>' : '') +
             '<div class="savebar">' +
             '<p class="diff"><b>Will add:</b> ' + esc(diffText) + '</p>' +
             '<p class="effect">' + esc(effect) + '</p>' +
@@ -1493,7 +1749,7 @@
             '<span>view: <span class="v">' + esc(S.view) + '</span></span>' +
             '<span>selected: <span class="v">' + esc(selected ? selected.label : '—') + '</span></span>' +
             '<span>policies: <span class="v">' + policies().length + '</span></span>' +
-            '<span>unbounded: <span class="v">' + unboundedCount() + ' of ' + STORES.length + '</span></span>' +
+            '<span>not bounded: <span class="v">' + unboundedCount() + ' of ' + STORES.length + '</span></span>' +
             '<span>runs: <span class="v">' + runRows().length + '</span></span>' +
             '<span>run filter: <span class="v">' + esc(S.runFilter || 'all stores') + '</span></span>' +
             '</div>' +
@@ -1589,6 +1845,7 @@
             params.set('view', S.view);
             if (S.selected) params.set('store', S.selected);
             if (S.runFilter) params.set('runsfor', S.runFilter);
+            if (S.onlyUnbounded) params.set('filter', 'unbounded');
             window.history.replaceState(null, '', window.location.pathname + '?' + params.toString());
         } catch (err) {
             /* A page opened from the file system may refuse to rewrite its
@@ -1604,11 +1861,7 @@
         if (params.get('view') === 'stores') S.view = 'stores';
         if (storeById(params.get('store'))) S.selected = params.get('store');
         if (storeById(params.get('runsfor'))) S.runFilter = params.get('runsfor');
-        if (!storeById(params.get('store'))) {
-            if (S.state === 'empty') S.selected = 'calendar_dates';
-            else if (S.state === 'skipped') S.selected = 'delivery_counts';
-            else if (S.state === 'failed' || S.state === 'disabled') S.selected = 'report_cashflows';
-        }
+        if (params.get('filter') === 'unbounded') S.onlyUnbounded = true;
     }
 
     document.addEventListener('click', function (ev) {
@@ -1624,15 +1877,16 @@
             return;
         }
 
-        if (['variant', 'state', 'view', 'select', 'back', 'edit', 'cancel-edit', 'runs-store', 'clear-runfilter', 'first-policy', 'edit-store', 'save'].indexOf(act) < 0) {
+        if (['variant', 'state', 'view', 'select', 'back', 'edit', 'cancel-edit', 'runs-store', 'clear-runfilter', 'first-policy', 'edit-store', 'save', 'filter-unbounded'].indexOf(act) < 0) {
             return;
         }
 
         ev.preventDefault();
 
         if (act === 'save') {
-            saveDraft();
+            // Closed before the draft is written, because the save renders.
             S.editing = null;
+            saveDraft();
             writeParams();
             return;
         }
@@ -1649,6 +1903,7 @@
             S.runFilter = null;
             S.selected = null;
             S.editing = null;
+            S.onlyUnbounded = false;
         } else if (act === 'view') {
             S.view = el.getAttribute('data-view');
             if (S.view === 'runs') S.runFilter = null;
@@ -1669,6 +1924,10 @@
             S.runFilter = el.getAttribute('data-store');
         } else if (act === 'clear-runfilter') {
             S.runFilter = null;
+        } else if (act === 'filter-unbounded') {
+            S.onlyUnbounded = !S.onlyUnbounded;
+            S.view = 'stores';
+            S.selected = null;
         } else if (act === 'first-policy' || act === 'edit-store') {
             const target = act === 'first-policy' ? 'calendar_dates' : el.getAttribute('data-store');
             if (S.variant === 'A') {

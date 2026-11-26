@@ -25,6 +25,7 @@
 #include "ores.scheduler.core/messaging/job_definition_registrar.hpp"
 #include "ores.scheduler.core/messaging/job_instance_handler.hpp"
 #include "ores.scheduler.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.scheduler.core/messaging/retained_store_registrar.hpp"
 #include "ores.scheduler.core/messaging/retention_policy_registrar.hpp"
 #include "ores.scheduler.core/messaging/scheduler_status_handler.hpp"
 #include "ores.scheduler.core/service/publish_subject_plan.hpp"
@@ -67,6 +68,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
     for (auto& sub : register_retention_policy_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
 
+    // The catalogue of stores is generated the same way, and for the same
+    // reason: without this call its subjects have no responder, so the table
+    // would be readable only by SQL.
+    for (auto& sub : register_retained_store_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+
     // The two operational views are computed, so their handlers are
     // hand-written beside the operation model that declares their subjects.
     {
@@ -92,6 +99,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         routes.on(service::publish_job_definitions_from_dq_subject,
                   [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
         routes.on(service::publish_retention_policies_from_dq_subject,
+                  [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
+        routes.on(service::publish_retained_stores_from_dq_subject,
                   [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
         subs.push_back(
             ores::service::messaging::serve_step_commands(nats, "ores.scheduler.service", routes));

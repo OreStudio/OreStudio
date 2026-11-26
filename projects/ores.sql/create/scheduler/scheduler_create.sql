@@ -28,5 +28,7 @@
 \ir ./scheduler_job_instances_create.sql
 \ir ./scheduler_retention_policies_create.sql
 \ir ./scheduler_retention_policies_notify_trigger_create.sql
+\ir ./scheduler_retained_stores_create.sql
+\ir ./scheduler_retained_stores_notify_trigger_create.sql
 \ir ./scheduler_retention_sweep_create.sql
 \ir ./scheduler_publish_from_dq_create.sql

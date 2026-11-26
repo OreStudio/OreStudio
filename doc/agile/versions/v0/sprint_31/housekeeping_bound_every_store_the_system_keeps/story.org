@@ -36,6 +36,8 @@ No store the system keeps grows without bound: each one has a declared policy, h
 - A person can see and change the policy of a dimension from a screen
 - Every housekeeping run is visible in the system as a scheduled task, with when it last ran, what it freed and whether it is enabled, so a person can tell what housekeeping is running and tune it
 - Each dimension has a mechanism that bounds it, or a recorded decision that it is kept indefinitely and why
+- An installation ships no store without a default bound that the sweep applies, so a store is unbounded only when a person removed the bound or when its bound cannot be expressed as an age
+- A store that is unbounded, whose policy is skipped or failed, or that passes its size budget reaches the administrator who owns it in their inbox, without them opening the housekeeping screen
 
 * Tasks
 
@@ -67,8 +69,36 @@ No store the system keeps grows without bound: each one has a declared policy, h
 | [[id:1BB81CE0-B782-46EA-BB7A-9927C7A85EA4][Hold the calendar exception's write schema with its type]] | DONE | 2026-11-26 | 2026-11-26 | The party scope regenerated the write type and left the BFF schema behind, so the web build failed; hold the two together and run the gate. |
 | [[id:E4957BD6-3B40-41C5-A2AF-5AED8EF680C6][Design the housekeeping journeys and their screens]] | DONE | 2026-11-26 | 2026-11-26 | Housekeeping has no journey and no prototype: nobody has stated what an administrator needs to see when asking what the installation keeps, what bounds it and what the sweeps did. State the journeys, draw their wireframes and prototype the screen before it is built. |
 | [[id:A2713EC6-D7F8-4BDC-96B4-C0FCF9FF1EAA][Apply every action a policy states]] | BACKLOG | | | The policy model names three actions and the sweep performs one: drop_chunks. A policy asking for a row delete or an object expiry is recorded as skipped, so a store reads as bounded while nothing bounds it. Implement the other two, prove the row delete on the delivery counts and the chunk drop on ticks, and state which actions the sweep performs in the read a screen uses. |
+| [[id:6802E7DF-9851-41A8-B1CB-6E0E678D389C][Bound every store by default]] | BACKLOG | | | The store catalogue declares a default retention policy for every store that can take one, and provisioning creates it, so no installation ships a store whose size grows without a bound. A store is unbounded only when somebody removed the default, which the screen then reads as the alarm it is. |
+| [[id:53D81AE9-6031-4129-BBCE-52DEED048B9E][Tell the administrator a store is unbounded]] | BACKLOG | | | Housekeeping raises a notification into the inbox of the administrator who can act, the system's or the tenant's by the scope of the store, when a store has no bound, when a sweep records a policy skipped or failed, and when a store passes its size budget. The notification names the store and links to its page; it never carries the numbers a person needs to act. |
+| [[id:B0D71847-2101-4B9C-B228-29A1D5E372B0][Catalogue every store the installation keeps]] | DONE | 2026-11-26 | 2026-11-26 | A store is an entity, not a table name. The catalogue states each store the installation keeps: its code, the name a person reads, what it holds, which component writes it, whether the platform or a tenant owns it, the shape and name of its target, the column a delete compares, how its size is measured, and the bound it ships with. |
 
 * Decisions
+
+- Every store ships bounded. The store catalogue declares a default retention
+  policy for each store that can take one, and provisioning creates it, so no
+  installation starts with a store that grows without a bound. The alternative —
+  a screen that nags until somebody works through every store — fails on its own
+  success: an alarm that fires on most of the list is wallpaper, and the count
+  only means something if it can reach zero. The cost is the opposite risk, that
+  a default deletes data nobody decided about, which the periods answer: a
+  quarter for run output, a month for counters, a week for job inputs, a day for
+  scratch. A store without a policy then means a person removed the default, or
+  the bound cannot be expressed as an age, and both are worth a notification.
+  The calendar dates are the second case: a policy bounds by age, and a business
+  day behind the horizon is not old, it is out of range, so that store needs a
+  delete by range and stays unbounded until it has one
+  ([[file:../../../../product_backlog/inbox/a_policy_cannot_bound_a_store_by_date_range.org][the capture]]).
+
+- Housekeeping tells the administrator; it does not wait to be asked. The screen
+  is pull, and a store fills a disk without anyone opening it, so housekeeping
+  raises notifications through =ores.inbox= rather than building a channel of its
+  own: a kind per case, an audience by permission in the store's own tenant, and
+  a link to the store's page. The message never carries the numbers a person
+  needs to act, because acting needs the plot and the policy, and a sweep that
+  skips four policies raises one message rather than four. A store the platform
+  owns is the system administrator's problem; a store a tenant writes is the
+  tenant's.
 
 - The node package cache is keyed by content, not by app version. A machine
   downloads and unpacks a package once per distinct digest, into a directory

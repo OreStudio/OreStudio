@@ -23,9 +23,9 @@ A report values the trades whose market data the system can answer, and states p
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
-| Now           | The chain has its three levels and the database holds every link of it: a party states the types it permits, a desk narrows them and a book narrows its desk's. |
+| Now           | The chain has its three levels and the database holds every link of it, the generator books within a book's matrix and reports per book, and a trade set answers what each of its trades needs. |
 | Waiting on    | Nothing. The demand work of [[id:03554F8C-7FFF-4735-BC5B-2CA45E58C621][Make the market data connection follow the trades]] follows this story's readiness read rather than preceding it. |
-| Next          | Name the trades a book did not value ([[id:110CE18D-C64C-4C40-8E8E-D0664176707C][Name the trades a book did not value]]), on the report this branch states per book. |
+| Next          | Name the trades a book did not value ([[id:110CE18D-C64C-4C40-8E8E-D0664176707C][Name the trades a book did not value]]), which now has each trade's own requirements to state a trade's cause. |
 | Last touched  | 2026-11-26                             |
 
 * Acceptance
@@ -47,7 +47,7 @@ A report values the trades whose market data the system can answer, and states p
 | [[id:9EC5A975-0FD7-44F4-9C70-7921E0F7AD3D][State what a party may trade and what a book may carry]] | DONE | 2026-11-25 | 2026-11-25 | A party level approval matrix states the product types a party may trade, a book level matrix states the types that book may carry, and a book's matrix is refused unless it is a subset of its party's. |
 | [[id:7338D2E9-647A-4C81-ACE9-46AE6F492FF1][Seed each book with the approval its name implies]] | DONE | 2026-11-25 | 2026-11-26 | Each published ACME book states the product types its name and purpose imply, the desks above them state a set that holds each of them, and the party states a set that holds every desk. The generator books only products a book permits ([[https://github.com/OreStudio/OreStudio/pull/5157][#5157]]). |
 | [[id:68C4B58E-0801-4770-98B8-3A8294D7220F][Fill each book from its approval matrix]] | DONE | 2026-11-26 | 2026-11-26 | The generator fills a book with the product types its approval matrix names, books no type the matrix does not name, and states per book what it booked and what it left out (the fill landed in [[https://github.com/OreStudio/OreStudio/pull/5157][#5157]], the report here). |
-| [[id:90951C94-E994-400F-A7D1-F2E1FDF68FC9][Resolve a trade set's requirements per trade]] | BACKLOG | | | The trading operation that answers what a trade set needs returns the addresses of each trade rather than one flat set, so a caller can say which trade needs what. |
+| [[id:90951C94-E994-400F-A7D1-F2E1FDF68FC9][Resolve a trade set's requirements per trade]] | DONE | 2026-11-26 | 2026-11-26 | The trading operation that answers what a trade set needs returns the addresses of each trade rather than one flat set, so a caller can say which trade needs what. The union stays and is derived from the per-trade answer. |
 | [[id:8574E05C-8C76-4B37-9C64-61B3C1E0EEC5][Record a run's market readiness and leave incomplete trades out]] | BACKLOG | | | Before the engine runs, a run resolves each trade's requirements, records which addresses the market answers at the as-of, excludes every trade with an unanswered requirement, and fails in preprocessing when no trade is complete. |
 | [[id:E6B29704-7BEF-4C2A-B95F-32623AF49200][State the phase of every error a run records]] | BACKLOG | | | An error a run records carries the phase that produced it, the preprocessing of the run, the engine, or the postprocessing of its results, beside the scope the engine names. |
 | [[id:110CE18D-C64C-4C40-8E8E-D0664176707C][Name the trades a book did not value]] | BACKLOG | | | A report states, for each of its books, the trades that were left out and the cause of each, and shows the run's errors by the phase that produced them. |

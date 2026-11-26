@@ -43,6 +43,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <optional>
+#include <set>
 #include <string>
 
 namespace ores::trading::messaging {
@@ -384,12 +385,24 @@ public:
         resolve_market_data_requirements_response resp;
         try {
             if (auto req = decode<resolve_market_data_requirements_request>(msg)) {
-                resp.requirements = repository::market_reference_repository{}.read(
+                const auto per_trade = repository::market_reference_repository{}.read_by_trade(
                     *ctx_expected, req->trade_ids, req->as_of);
+                /*
+                 * The union is stated from the per-trade answer, so the two cannot disagree
+                 * about which addresses the set needs.
+                 */
+                std::set<std::string> union_addresses;
+                for (const auto& trade : per_trade) {
+                    for (const auto& uri : trade.oresmd_uris)
+                        union_addresses.insert(uri);
+                    resp.trade_requirements.push_back(
+                        {.trade_id = trade.trade_id, .oresmd_uris = trade.oresmd_uris});
+                }
+                resp.requirements.assign(union_addresses.begin(), union_addresses.end());
                 resp.success = true;
                 resp.message = "Resolved " + std::to_string(resp.requirements.size()) +
-                               " requirement(s) from " + std::to_string(req->trade_ids.size()) +
-                               " trade(s).";
+                               " requirement(s) from " +
+                               std::to_string(resp.trade_requirements.size()) + " trade(s).";
             } else {
                 resp.message = "Invalid resolve_market_data_requirements_request.";
             }

@@ -8,7 +8,7 @@
 #+filetags: :keep_main_green:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/fix-the-nightly-warnings-and-the-change-ticker-test
-#+pr:
+#+pr: 5155
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-26
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5155][#5155]] | [trading,http] Answer the nightly's warnings and steady the ticker test |
 
 * Review
 

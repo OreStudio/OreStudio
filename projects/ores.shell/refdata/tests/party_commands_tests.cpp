@@ -157,7 +157,7 @@ TEST_CASE("party_commands_process_add_requires_a_session", "[commands]") {
     std::ostringstream out;
 
     command_feedback::reset();
-    party_commands::process_add(out, session, party_tokens(12));
+    party_commands::process_add(out, session, party_tokens(13));
 
     ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -191,7 +191,7 @@ TEST_CASE("party_commands_process_set_requires_a_session", "[commands]") {
     std::ostringstream out;
 
     command_feedback::reset();
-    party_commands::process_set(out, session, party_tokens(12));
+    party_commands::process_set(out, session, party_tokens(13));
 
     ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -225,7 +225,7 @@ TEST_CASE("party_commands_process_put_many_requires_a_session", "[commands]") {
     std::ostringstream out;
 
     command_feedback::reset();
-    party_commands::process_put_many(out, session, party_tokens(12));
+    party_commands::process_put_many(out, session, party_tokens(13));
 
     ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

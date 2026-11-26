@@ -140,7 +140,7 @@ void business_unit_commands::register_commands(cli::Menu& root_menu, nats_client
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <party_id> <unit_name> <parent_business_unit_id> <unit_code> <business_centre_code> "
-        "<unit_type_id> <status> <reason> <commentary>");
+        "<unit_type_id> <status> <restricts_product_types> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -148,7 +148,8 @@ void business_unit_commands::register_commands(cli::Menu& root_menu, nats_client
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <party_id> <unit_name> <parent_business_unit_id> <unit_code> "
-        "<business_centre_code> <unit_type_id> <status> <reason> <commentary> [--version <n>]");
+        "<business_centre_code> <unit_type_id> <status> <restricts_product_types> <reason> "
+        "<commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -156,7 +157,8 @@ void business_unit_commands::register_commands(cli::Menu& root_menu, nats_client
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <id> <party_id> <unit_name> <parent_business_unit_id> <unit_code> "
-        "<business_centre_code> <unit_type_id> <status> <reason> <commentary>");
+        "<business_centre_code> <unit_type_id> <status> <restricts_product_types> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -364,8 +366,8 @@ void business_unit_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 7 + 2) {
-            fail(out) << "Expected " << (7 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 8 + 2) {
+            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -385,6 +387,9 @@ void business_unit_commands::process_add(std::ostream& out,
         business_unit_read_token(
             req.change.write.unit_type_id, parsed->positionals[next++], "unit_type_id");
         business_unit_read_token(req.change.write.status, parsed->positionals[next++], "status");
+        business_unit_read_token(req.change.write.restricts_product_types,
+                                 parsed->positionals[next++],
+                                 "restricts_product_types");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -429,8 +434,8 @@ void business_unit_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -450,6 +455,9 @@ void business_unit_commands::process_set(std::ostream& out,
         business_unit_read_token(
             req.change.write.unit_type_id, parsed->positionals[next++], "unit_type_id");
         business_unit_read_token(req.change.write.status, parsed->positionals[next++], "status");
+        business_unit_read_token(req.change.write.restricts_product_types,
+                                 parsed->positionals[next++],
+                                 "restricts_product_types");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -506,8 +514,8 @@ void business_unit_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 8 + 2) {
-            fail(out) << "Expected " << (change_count * 8 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 9 + 2) {
+            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -529,6 +537,9 @@ void business_unit_commands::process_put_many(std::ostream& out,
             business_unit_read_token(
                 change.write.unit_type_id, parsed->positionals[next++], "unit_type_id");
             business_unit_read_token(change.write.status, parsed->positionals[next++], "status");
+            business_unit_read_token(change.write.restricts_product_types,
+                                     parsed->positionals[next++],
+                                     "restricts_product_types");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

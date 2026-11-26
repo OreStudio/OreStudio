@@ -112,6 +112,7 @@ std::string party_web_with_defaults(const std::string& body) {
         {
             rr::write_default{"party_category", R"json("Operational")json"},
             rr::write_default{"is_registration_default", R"json(false)json"},
+            rr::write_default{"restricts_product_types", R"json(false)json"},
         });
 }
 

@@ -109,7 +109,11 @@ void business_unit_web_require_writable(const http_request& req) {
 
 /// The body with the model's default for each write member it leaves out.
 std::string business_unit_web_with_defaults(const std::string& body) {
-    return body;
+    return rr::with_write_defaults(
+        body,
+        {
+            rr::write_default{"restricts_product_types", R"json(false)json"},
+        });
 }
 
 }

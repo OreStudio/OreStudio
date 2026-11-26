@@ -45,6 +45,7 @@ export interface Party {
     status: string;
     image_id: string | null;
     is_registration_default: boolean;
+    restricts_product_types: boolean;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

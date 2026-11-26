@@ -42,6 +42,7 @@ export interface BusinessUnitWrite {
     business_centre_code: string;
     unit_type_id: string | null;
     status: string;
+    restricts_product_types: boolean;
 }
 
 export interface BusinessUnitChange {

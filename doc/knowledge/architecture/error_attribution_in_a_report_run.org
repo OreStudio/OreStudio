@@ -1,0 +1,171 @@
+:PROPERTIES:
+:ID: DFC5F290-B8B6-4DEC-970C-D93C98FD39F8
+:END:
+#+title: Error Attribution in a Report Run
+#+description: A run attributes every failure to the phase that produced it and records an incomplete trade as a state, not an error.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:reporting:marketdata:phases:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+* Summary
+
+A report run produces values and failures, and its failures differ in kind. Some
+are the absence of an input the run needed, some are the engine's refusal to
+build or to price a trade, and some are the results failing to be read or
+recorded. This page argues that a run attributes every failure to the phase that
+produced it, that it keeps that attribution apart from the engine's own error
+scope, and that it records the absence of market data as a state of the trade
+rather than as an error. The consequence is a partition of the population: every
+booked trade is valued, failed or excluded, and a trade the engine failed is a
+trade whose market data was complete.
+
+* Detail
+
+** The failure a run cannot place
+
+A report's error carries the scope the engine groups it under, which the model of
+[[id:080B3871-8BAA-4AAA-A98F-3E79F4B83BAA][the report error event]] states as the engine's own group name, copied
+verbatim. That vocabulary describes what the engine itself refused, and it does so
+well: a trade that will not build, an analytic that will not build, a curve that
+will not build. It describes nothing else.
+
+A trade whose curve was never gathered never reaches the engine, so no engine
+group describes it. Recorded with the run's own scope, such a trade reads
+exactly as a run that failed for a reason no reader can act on: it says that
+something about the run went wrong, and not whether the market was short of
+data or the engine was short of a field. Two readers then want two different
+answers from one row. The first asks what to buy, or whose entitlement is
+missing; the second asks what to fix in the pricing.
+
+** The phases and what each refuses
+
+The run's own phases are those of
+[[id:4F9639E5-AA68-4D47-BB05-8FA864FF9855][the report execution pipeline]]: pre-processing, submission, execution,
+retrieval, post-processing and finalisation. The attribution groups them by the
+question a reader asks of a failure, and gives each group a name.
+
+| Attribution phase | Pipeline phases it covers | What it records |
+|-------------------+---------------------------+-----------------|
+| Preprocessing | pre-processing, submission | a trade that will not project into the engine's input; a requirement that cannot be resolved; an address the party's market does not answer; a package the grid refuses |
+| Engine | execution | the engine's own groups: a trade, an analytic, a curve or a configuration the engine refused |
+| Postprocessing | retrieval, post-processing, finalisation | a result that cannot be retrieved or read; a priced trade with no row; a value that is not finite; a write that fails |
+
+The grouping is the page's claim rather than a property of the engine. A failure
+that the grid refuses before execution is attributed to preprocessing because the
+engine never saw the trade, and a failure to retrieve belongs with the results
+because the engine had already produced them.
+
+** The completeness of a trade
+
+A trade's requirements are the oresmd addresses its instruments name, and the
+resolution of such a requirement is the subject of
+[[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]]. A run resolves the requirements of
+each trade before it submits any work. The party's market answers an address when
+a series the party holds, or one it reads under its entitlement, holds a point at
+or before the run's as-of. A trade is complete when every address it names is
+answered, and incomplete otherwise.
+
+The causes a run states for a gap are six, and each is a fact some existing read
+already holds:
+
+- the name is not an address, which is the state of an imported trade before its
+  names are resolved;
+- no supplier in the catalogue states the convention the address names;
+- the party is not entitled to a supplier that states it;
+- no series holds the address;
+- the series holds no point at or before the as-of;
+- the latest point is older than the run's limit, so the value is stale.
+
+** Readiness at three grains
+
+A run records its market readiness at three grains. The grain of the address
+answers why the market is short; the grain of the trade answers which trades the
+run loses; the grain of the run answers how much of the book survives. None is
+derived at read time from the others, because each answers a question the others
+cannot, and a report states the counts and the causes without repeating the
+resolution.
+
+** Exclusion and the meaning of an engine error
+
+An incomplete trade is excluded before submission, and the run does not send it.
+A trade is therefore excluded or failed, and never both. The counts partition
+the population, so that the number booked equals the number valued plus the
+number failed plus the number excluded.
+
+The partition carries the claim the page exists for. Because exclusion removes
+the trades whose data was absent, an error the engine reports against a trade is
+a statement about a trade whose market data was complete. A reader of that error
+need not ask whether the data was there, and may treat the error as a valuation
+error.
+
+** A run with nothing complete
+
+A run none of whose trades is complete has no valuation to produce. It fails in
+preprocessing, names the causes of the exclusions, and spends nothing on the
+grid. An empty result is not a valuation, and reporting one as a completed run
+would misrepresent it.
+
+** Two questions, two columns
+
+The scope of an error is what the failure is about, in the engine's vocabulary.
+The phase is which part of the run refused the work, in the run's vocabulary.
+Folding a preprocessing failure into the scope vocabulary would make the engine's
+words mean something the engine never said, and a reader could no longer tell
+which errors the engine itself emitted. Keeping the two apart also keeps the
+attribution true when the engine grows a group, because a new group joins the
+scope and needs no change to the phases.
+
+#+caption: The states of one trade through a report run, with the phase that moves it between them.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/report_run_trade_states.png]]
+
+The figure is generated from =report_run_trade_states.puml= beside it, with
+=plantuml -tpng report_run_trade_states.puml=.
+
+** What the attribution does not establish
+
+The attribution classifies failures, and it does not make a failing run pass. A
+curve that will not build remains an engine error on complete data, and it is a
+valuation error in the sense this page gives the term.
+
+It does not decide whether an excluded trade ought to be valued. That is a
+question of purchasing, of entitlement or of onboarding, and the readiness record
+gives it the facts it needs rather than the answer.
+
+The six causes are the ones the export and the coverage read can state. A cause
+no read can state is not invented for the record; the list grows when a read can
+state more.
+
+Readiness is read at the run's as-of. Two runs of one book on different dates can
+differ, and neither is the other's error.
+
+* See also
+
+- [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] — the structure note of the cluster this page
+  belongs to, and where it is read in the order.
+- [[id:4F9639E5-AA68-4D47-BB05-8FA864FF9855][Report execution pipeline]] — completes: the pipeline phases the
+  attribution groups, and the substitution mechanism that lets a run stop after
+  preparation.
+- [[id:08C54927-C7BD-48B7-BF7B-13DC3702FF68][Report pre-processing]] — contradicts: its list of what does not
+  exist predates the resolution and the narrowing a run now performs, and this
+  page states what the run does with a requirement the market does not answer.
+- [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — completes: what a requirement
+  is, and the closure a resolution performs.
+- [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][Tracking market data identity from fixing to report]] — completes: the
+  chain whose last link is the run this page classifies.
+- [[id:080B3871-8BAA-4AAA-A98F-3E79F4B83BAA][ores.reporting.report_error_event]] — exemplifies: the table that carries
+  the scope, and the model that argues the scope is the engine's.
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note of the market data cluster,
+  to which the readiness record belongs.
+- [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] — answers: the story that
+  builds the attribution this page states.
+
+* Sources
+
+The page states a design decision of this repository. Its claims derive from the
+pages linked above, from the model of the report error event, and from the export
+and coverage reads named in the causes. It cites no external work, because the
+claim is normative rather than empirical; the vocabulary of phases is this
+repository's, and the engine's vocabulary is taken verbatim from the engine.

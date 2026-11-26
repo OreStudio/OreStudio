@@ -34,6 +34,7 @@ set(files
     "generators_tests.cpp"
     "main.cpp"
     "message_codec_tests.cpp"
+    "messaging_bundle_roster_tests.cpp"
     "messaging_publish_bundle_level_tests.cpp"
     "nature_dimension_eventing_integration_tests.cpp"
     "origin_dimension_eventing_integration_tests.cpp"

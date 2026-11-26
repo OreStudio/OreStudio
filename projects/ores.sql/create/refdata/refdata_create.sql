@@ -191,6 +191,13 @@
 \ir ./refdata_counterparties_create.sql
 \ir ./refdata_counterparties_notify_trigger_create.sql
 
+-- The product approval matrices: the desk's set, the middle level of the chain,
+-- loads before the party's because the desk's rows reference a desk.
+\ir ./refdata_business_unit_product_type_create.sql
+\ir ./refdata_business_unit_product_types_notify_trigger_create.sql
+\ir ./refdata_party_product_type_create.sql
+\ir ./refdata_party_product_types_notify_trigger_create.sql
+
 -- Party-counterparty visibility junction
 \ir ./refdata_party_counterparty_create.sql
 \ir ./refdata_party_counterparties_notify_trigger_create.sql
@@ -263,6 +270,8 @@
 -- The product types a book allows, when it states them at all.
 \ir ./refdata_book_product_type_create.sql
 \ir ./refdata_book_product_types_notify_trigger_create.sql
+-- The rule that binds a book's set to its party's, and the two resolutions.
+\ir ./refdata_product_approvals_create.sql
 \ir ./refdata_book_changes_create.sql
 \ir ./refdata_book_changes_notify_trigger_create.sql
 \ir ./refdata_counterparty_changes_create.sql

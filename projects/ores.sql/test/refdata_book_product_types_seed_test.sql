@@ -40,7 +40,7 @@
 
 begin;
 
-select plan(14);
+select plan(15);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -248,6 +248,25 @@ select results_eq(
     $$values ('Empty Restricted Book'::text, true, 0::bigint),
              ('Unrestricted Book'::text, false, 0::bigint)$$,
     'a book that allows everything and one that allows nothing both hold no rows, and the flag tells them apart');
+
+-- Every dataset the ACME books are staged in, not only the group's: a book whose
+-- affinity names a code the catalogue has retired would publish a type no
+-- instrument holds, and the published chain would then permit a product that
+-- cannot be booked.
+select is(
+    (select count(*)
+     from ores_dq_book_product_types_artefact_tbl a
+     join ores_dq_datasets_tbl d
+         on d.id = a.dataset_id
+        and d.valid_to = ores_utility_infinity_timestamp_fn()
+     where d.code like 'acme.%%.books'
+       and not exists (
+           select 1 from ores_trading_product_types_tbl c
+           where c.tenant_id = ores_utility_system_tenant_id_fn()
+             and c.code = a.product_type_code
+             and c.valid_to = ores_utility_infinity_timestamp_fn())),
+    0::bigint,
+    'every product type the ACME book datasets state is one the catalogue holds');
 
 -- The read a choosing caller asks: the resolution composed over several books.
 select is(

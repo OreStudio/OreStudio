@@ -133,7 +133,7 @@
       "CallableSwap",
       "FlexiSwap",
       "KnockOutSwap",
-      "PerformanceOption",
+      "PerformanceOption_01",
       "RiskParticipationAgreement"
     ]
   },
@@ -213,6 +213,7 @@
     "rates_centre_code": "GBLO",
     "book_purpose_type": "Trading",
     "product_types": [
+      "CBO",
       "CreditDefaultSwap",
       "CreditDefaultSwapOption",
       "CreditLinkedSwap",
@@ -447,6 +448,7 @@
       "EquityFutureOption",
       "EquityGenericBarrierOption",
       "EquityOption",
+      "EquityOptionPosition",
       "EquityOutperformanceOption",
       "EquityPairwiseVarianceSwap",
       "EquityPosition",
@@ -457,7 +459,9 @@
       "EquityTouchOption",
       "EquityVarianceSwap",
       "EquityWindowBarrierOption",
-      "EquityWorstOfBasketSwap"
+      "EquityWorstOfBasketSwap",
+      "EuropeanOptionBarrier",
+      "TotalReturnSwap"
     ]
   },
   {
@@ -497,7 +501,8 @@
       "CommodityTaRF",
       "CommodityVarianceSwap",
       "CommodityWindowBarrierOption",
-      "CommodityWorstOfBasketSwap"
+      "CommodityWorstOfBasketSwap",
+      "IntradayPowerForward"
     ]
   },
   {
@@ -514,8 +519,12 @@
     "rates_centre_code": "GBLO",
     "book_purpose_type": "Trading",
     "product_types": [
+      "Autocallable_01",
+      "BalanceGuaranteedSwap",
       "CompositeTrade",
       "ContractForDifference",
+      "DoubleDigitalOption",
+      "PerformanceOption_01",
       "ScriptedTrade"
     ]
   },

@@ -331,7 +331,68 @@ h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
 .data tr.selectable:focus-within td { background: #1f242c; }
 
 .storecell .sname { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
-.storecell .storetarget {
+.storecell .growthcell .spark {
+    display: block;
+    color: var(--accent, #2f6feb);
+    margin-bottom: 0.15rem;
+}
+
+.spark.unknown {
+    display: block;
+    width: 96px;
+    height: 22px;
+    border-bottom: 1px dashed currentColor;
+    color: var(--muted, #5b6472);
+    margin-bottom: 0.15rem;
+}
+
+.recordsection {
+    margin: 1rem 0;
+}
+
+.recordsection h3,
+.section h3 {
+    margin: 0 0 0.5rem;
+    font-size: 0.95rem;
+}
+
+.recorddesc {
+    margin-top: 0.6rem;
+}
+
+.record .storetarget {
+    margin-bottom: 0;
+}
+
+.growthsection {
+    margin: 1.25rem 0;
+}
+
+.growthsection h3 {
+    margin: 0 0 0.5rem;
+    font-size: 0.95rem;
+}
+
+.chart .growthchart {
+    display: block;
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    color: var(--accent, #2f6feb);
+}
+
+.chart .axis {
+    stroke: var(--rule, #d8dde5);
+    stroke-width: 1;
+}
+
+.chartmeta {
+    margin: 0.35rem 0 0;
+    font-size: 0.82rem;
+    color: var(--muted, #5b6472);
+}
+
+.storetarget {
     display: block;
     font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
     font-size: 0.78rem;

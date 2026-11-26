@@ -105,6 +105,85 @@ the label and the description come from it; until then they are the screen's own
 copy, which is a reason to build the catalogue rather than to write twelve names
 into a client.
 
+** The store is an entity, and the screen shows its record
+
+The screen reads a store as a row of a catalogue, not as a target string with
+some numbers beside it. The prototype's detail panel states the record the way
+the entity would: *code*, *name*, *description*, *owner* (the component that
+writes the store), *target kind*, *target*, *time column* (what a row delete
+compares) and *measured by* (what the probe reads: relation rows, objects and
+bytes, files and bytes). The policy is a separate block beneath, because a
+policy is a decision about a store and not a property of one.
+
+A store that is described this way answers the three review comments at once:
+the name and the description are published rather than parsed out of a table
+name, the size and its plot hang off the same row, and the row is what a person
+clicks to open the details.
+
+** The measurement belongs to the store, by a key or by a trigger
+
+The samples are one row per store per cadence: the store it measures, when, and
+what it found. Whether the reference is a real foreign key or a trigger-checked
+one is an implementation choice the prototype does not draw; what it does draw
+is that a sample cannot exist without its store, so the panel can state a
+series as the store's own and the sampler can walk the catalogue to fill it.
+The prototype shows the series as twelve points and says where they come from;
+the numbers are fixtures.
+
+** Latest activity around the store**
+
+A store's panel ends with the activity that names it, newest first, from every
+source that records one: the sampler's measurements, the sweep's runs and their
+outcomes, a person's change to the policy, and the moments a store bounded
+something — a node releasing a job's folder, for instance. One log, because
+"what has happened to this store" has one answer, and reading it here saves the
+trip to the runs screen for the common case. The full log is one click away and
+stays the place a window is asked for.
+
+** Growth is a series, not an adjective
+
+The second review asked for the thing the screen is actually for: each store's
+growth over time, so that it can be plotted. "Growing · +18 MB over 30 days" is
+a sentence; a person cannot see a step, a cliff or a sawtooth in it, and those
+are the shapes that say what happened. The prototype draws a sparkline in every
+row and a twelve-week chart in the detail panel, and both are mock.
+
+What a real plot needs is a sample per store per cadence, kept as a series:
+
+- *The row.* One measurement of one store at one instant: the store it belongs
+  to, when it was taken, the size in bytes, and whatever else the store is
+  measured by (rows, chunks, objects, folders). The store's catalogue entry
+  says how it is measured, which is why the catalogue is the thing to build
+  first.
+- *The store.* A Timescale hypertable chunked on the measurement instant, the
+  same shape the grid, node, session and stream samples already use, so the
+  screen reads a series the platform already knows how to keep and to bound.
+  Its own retention policy is then one more row, and the sweep that drops
+  chunks can drop this store's chunks too.
+- *The sampler.* A scheduled job that walks the catalogue and writes one sample
+  per store, on a cadence a person can state; hourly is enough to see a day and
+  cheap enough to keep for a quarter. It is separate from the sweep: the sweep
+  acts on a period, and the sampler only looks.
+- *The read.* A series read by store and window, which is also the size read
+  the screen needs today: the latest point is the "size now" the table shows,
+  and the points before it are the chart.
+
+The plot then answers what no single number can: a store that steps once and
+flattens is a run that happened; one that climbs steadily is a decision nobody
+made; one that sawtooths is a policy that drops and the store that regrows into
+it. This is the analysis the review asked for, and it is the one thing on the
+screen that a person will come back to look at rather than read once.
+
+** Clicking a row opens the store**
+
+The screen is a list and a drill-down, not a list of lists: selecting a row
+opens that store's own panel — its name and description, its facts, its growth
+chart, its policy and its recent runs — in the same page, and the row states
+that it is open (=aria-expanded=). Variant C is the same selection with the
+editor beside it instead of the panel below. Nothing on the screen navigates
+away to read one store, because the comparison the person is making against the
+other rows is the reason they are on the screen at all.
+
 ** The states a store can be in
 
 | State | What the screen says | Why it matters |

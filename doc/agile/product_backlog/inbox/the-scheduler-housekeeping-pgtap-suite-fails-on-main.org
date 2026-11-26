@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 7A9E2079-F53B-4540-818D-0ACC035CBED0
+:END:
+#+title: Blame: scheduler_publish_housekeeping_test.sql fails on main…
+#+description: Blame: scheduler_publish_housekeeping_test.sql fails on main, planning 15 tests and running 1.
+
+Owner: commit df12de7626 '[scheduler] Deliver housekeeping as a published dataset', PR #5130, Story-ID 8D2AD473 (Bound every store the system keeps), Task-ID A71D89B6 (Hold every job definition in a tenant), Environment solid_dirac. That task is DONE, so this arrives as a capture rather than a note on it.
+
+Technical: the suite plans 15 tests and stops at the first, psql reporting 'Invalid modified_by: system. Must be a valid account username or service role' at line 106. The publish path validates modified_by against accounts and service roles, and the suite writes 'system', which a freshly recreated database holds as neither. Reproduced on the 2026-11-25 gate and again alone, so it is a break and not a race:
+
+  ./projects/ores.sql/test/run_tests.sh
+  .../scheduler_publish_housekeeping_test.sql  (Wstat: 768 (exited 3) Tests: 1 Failed: 0)
+  Parse errors: Bad plan.  You planned 15 tests but ran 1.
+  Result: FAIL
+
+Disposition: hand back to solid_dirac. The change is schema and behaviour in a closed task's work, outside the blast radius of any branch that would fix it, and the suite has to name a real service role or the validator has to admit the platform identity.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

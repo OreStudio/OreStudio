@@ -8,7 +8,7 @@
 #+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
 #+owner: marco
 #+branch: feature/fill-each-book-from-its-approval-matrix
-#+pr:
+#+pr: 5160
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
@@ -104,7 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5160][#5160]] | [synthetic] State a trade population per book |
 
 * Review
 

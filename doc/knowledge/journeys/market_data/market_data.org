@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:user_journey:marketdata:
 #+created: 2026-10-06
-#+updated: 2026-11-13
+#+updated: 2026-11-26
 
 A curve or a surface is a composite object the desk is responsible for: it is
 built from what the market sends, corrected by hand where the market is wrong
@@ -61,6 +61,7 @@ the provenance is what tells them apart.
 | [[id:AFABC8A2-61A8-486E-80EC-65856914AA17][Manage the yield curve process types]] | system administrator | The short-rate models and their parameters, kept as data rather than code |
 | [[id:D46E4DEF-7431-419B-BA88-476AA7B98D24][Manage market data subscriptions]] | party administrator | The providers a party takes, the source that serves each, the usage and the cost, as a record screen, the same for live and simulated sources |
 | [[id:3888BB1A-F216-46E0-92FA-6C0E6A0CD33C][Run the public sources]] | system administrator | Whether each public provider's fixings arrive, its terms, a pause, a backfill of a range, and where each feed started |
+| [[id:2B8F5C71-4A6D-4E39-9B12-6C7D0E3A5F84][See the fixings the platform states]] | system administrator | Every FX and IR series the platform holds, its latest value and day, how many days it holds, and the ones that hold none |
 
 * Related
 

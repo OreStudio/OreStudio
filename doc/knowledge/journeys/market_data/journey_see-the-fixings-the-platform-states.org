@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: 2B8F5C71-4A6D-4E39-9B12-6C7D0E3A5F84
+:END:
+#+title: User Journey: See the fixings the platform states
+#+description: A system administrator reads every FX and IR fixing series the platform holds, one row each, to see what it states, where the values came from, and how far each series reaches; a row opens the series page, and a series that holds no day is shown rather than hidden.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:fixings:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator reads every FX and IR fixing series the platform holds, one row each, to see what it states, where the values came from, and how far each series reaches; a row opens the series page, and a series that holds no day is shown rather than hidden.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"What does the platform state, and how current is each part of it?" The journey
+is done when the person has seen every fixing series the platform holds, can say
+which of them stopped and which never started, and can open the series behind a
+row to read its days.
+
+The journey only reads. The platform states what it observed, and the screen
+holds no authorisation: a day the platform never stated is a party's to enter,
+with an explanation, in its own fixings manager.
+
+* Actor and trigger
+
+The actor is the system administrator, the person who answers for the
+installation rather than for a party. The trigger is a party reporting a fixing
+it cannot get, a check that a feed is stating what it should, or the morning
+question of whether the overnight curves ran. The journey starts at *Market
+data / Fixings* and ends when the person leaves the page.
+
+* Steps
+
+1. *Open the fixings.* The person opens *Market data / Fixings*. The system
+   states every FX and IR fixing series the store holds, one row each: what the
+   series fixes, its class, the underlying or pair, the source its values came
+   from, the provider that owns it, the value of its latest day, that day, and
+   how many days it holds.
+2. *Read a row.* The person reads one series: =USD SOFR 1M=, stated by
+   =derived-a= under =derived=, at 3.94% on 26 November, 520 days held. A series
+   that ended states the last day it reached and the days it holds, and carries
+   its last value; nothing is carried forward to a day nobody observed.
+3. *Meet a series that holds nothing.* A series the platform holds and never
+   stated is a row, and it says =no day= with a count of zero rather than
+   disappearing. It is the state the person is often looking for.
+4. *Narrow to a class.* The person asks for the IR series alone, or the FX
+   series alone, and the list answers that class.
+5. *Narrow to a currency.* The person asks for one currency. An FX series is
+   listed under either of the two currencies it names: =EUR/USD= answers both
+   =EUR= and =USD=.
+6. *Narrow to a source.* The person asks for the series one source states, such
+   as =ecb-frankfurter= or =derived-a=, and reads how many series it fills and
+   how far each reaches.
+7. *Search.* The person types part of a pair, an index, a source or a provider,
+   and the list narrows to the rows that name it.
+8. *Open the series.* The person opens a row, and the fixing series page shows
+   that series by its address: its days, its values, and the feeds that carry
+   it. The list is the way in; it builds no second reading.
+9. *Leave.* The address holds the filters, so the person can send the exact view
+   to someone else.
+
+* Screens and wireframes
+
+One read-only list. The filters come first, then the rows, then a legend that
+says what the two states mean, so a person never reads a row without knowing
+what an empty one is.
+
+#+caption: Fixings: the filters, the series the platform states, and what an empty series reads as.
+#+attr_html: :width 100%
+[[proj:doc/prototypes/market_data/fixings/fixings-list.png]]
+
+| Step | Shape on the screen | Judgement |
+|------+---------------------+-----------|
+| Open the fixings | Breadcrumb, title, one sentence, Refresh | The standard draws it, RS-LIST-01 to RS-LIST-03 |
+| Read a row | Table, one row per series | A view no rule draws yet: the rows are series and not records, so no record acts apply |
+| Meet a series that holds nothing | A row marked =no day=, dimmed, its count at zero | A view no rule draws yet: RS-LIST-10 says show the empty state, and here the empty state is a row |
+| Narrow to a class, a currency, a source | Three pickers | The standard draws it, RS-LIST-04 |
+| Search | One field over label, address, source and provider | The standard draws it, RS-LIST-05 |
+| Open the series | The row's act opens the existing page | The standard draws it, the record page the platform has |
+| Leave | Address holds the filters | The standard draws it, RS-LIST-20 |
+
+The steps keep no state across a reply, so no workflow is needed.
+
+The owner has not yet signed off this journey and its prototype.
+
+* Prototype
+
+A static page at =doc/prototypes/market_data/fixings/index.html=: mock data only,
+no backend, no build step and no session. It argues that one list answers what
+the platform states, and that an empty series is a row rather than a gap.
+
+- States :: =ok=, =empty= (a series that holds no day), =ended= (a series whose latest day is behind), =filtered=
+- Address :: =?class=&currency=&source=&find=&state=empty&series=
+- Source :: =doc/prototypes/market_data/fixings/index.html=
+- Note :: =doc/prototypes/market_data/fixings.org=
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =market_series= | The series: its address, its provider and the party that holds it | [[id:6C7FBF9C-21F4-44FE-8E12-5731BCE14399][Market series identity]] |
+| =market_fixing= | The days and values of the series, and the source each was observed from | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][Market observation]] |
+| =provider= | Who owns the series | [[id:5604CFFC-EDD8-4291-BF56-AB7EEE0007E7][Provider]] |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the fixings | the series with their latest day, count, source and value | =marketdata.v1.ops.list_fixing_series_summaries= | exists |
+| Open the series | one item's series, its values and the feeds that carry it | =GET /api/marketdata/fixing-series?uri=...= | exists |
+| Narrow to a class, a currency, a source | the same read, filtered | the same operation, with =asset_class=, =currency= and =source= | exists |
+
+The read is the one the task built: the aggregate is the database's, and a
+series that holds no value is one of its rows with a count of zero.
+
+* What is missing
+
+- A rhythm per series, so the screen could say a series is *late* rather than
+  only *last stated on a day*. The prototype leaves that out and states the
+  latest day, which a person judges against the series' own rhythm.
+- The count of days a series is missing since the day it should have stated,
+  which follows from the same rhythm.
+
+* Related journeys
+
+- [[id:EB918DE7-51D7-47D6-BF7E-C48EBB21CBDD][Read a pair's FX forward ladder]] — what a party does with a fixing once it has one.
+- [[file:journey_run-the-public-feeds.org][Run the public feeds]] — the publishers, their terms and their freshness.
+
+* Related knowledge
+
+- [[id:FA5C96A3-1F8E-4F9B-8973-40D92055D7DD][System-level fixing observations and party-level fixings]] — why the platform states observations and a party adopts them.
+- [[file:../../../agile/product_backlog/inbox/the_party_fixings_manager_enters_a_fixing_the_plat.org][The party fixings manager enters a fixing the platform never stated]] — the other half of a missing day.
+
+* See also
+
+- [[file:../../../prototypes/market_data/fixings.org][Fixings, prototype]] — the design note.
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index this journey belongs to.

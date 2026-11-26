@@ -56,16 +56,23 @@ So the disposition is **serve**. The work is the proof and the record, not the
 handler, which has answered since sprint 27:
 
 - *A probe on the running environment.* A request on the prefixed subject
-  reaches a responder. An unserved subject answers =No responders are
+  reaches a responder. A subject nobody serves answers =No responders are
   available= instead.
-- *A test on the wiring.* =messaging_registration_tests.cpp= asks the service's
-  own =register_handlers= what it subscribes, and finds the slice subject among
-  the answer. The handler suites prove the handler; nothing proved the
-  subscription that makes the handler reachable at all.
+- *The handler's answer*, which =messaging_tick_read_party_tests.cpp= already
+  drives over real NATS on a test-scoped subject.
 - *Correct the records that call the subject unserved*: the journey page, the
   story's acceptance and task rows, this task's description, the closed
   deletion task's Result and Plan, and the architecture analysis that repeated
   the claim.
+
+A registration test was written and withdrawn. Calling
+=registrar::register_handlers= from a test breaks its own precondition, "only
+ever called once per service process", because it reaches
+=serve_step_commands=: that creates a JetStream stream, claims the stream in a
+process-static set that throws on a second claim, binds the service's durable
+consumer and prunes the other consumers. A test that provisions infrastructure
+in the shared NATS store to prove one string is in a list is the wrong lever,
+and the right one is a check over the registrar, which task 12B71000 owns.
 
 Retiring was the other branch and was not taken. The read works, the gateway
 and the BFF both route it, and deleting it would remove a typed read, its
@@ -85,9 +92,8 @@ task and named in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| The slice subject on the running environment | a responder answers; =X-Error: unauthorized=, the prelude refusing a request that carries no token | =build/scripts/nats.sh req ores.dev.bright_faraday.marketdata.v1.ops.get_series_slice '{}'=, transcript in =evidence/probe_the_slice_subject.txt= | =0d4dee1acd= |
-| A subject nobody serves, for contrast | =No responders are available= | the same command against =ores.dev.bright_faraday.marketdata.v1.ops.no_such_operation=, in the same transcript | =0d4dee1acd= |
-| The registration test | 1 case, 2 assertions, pass | =ores.marketdata.core.tests "[registration]"= | =aacee4cc5f= |
+| The slice subject on the running environment | a responder answers; =X-Error: unauthorized=, the prelude refusing a request that carries no token | =build/scripts/nats.sh req ores.dev.bright_faraday.marketdata.v1.ops.get_series_slice '{}'=, transcript in =evidence/probe_the_slice_subject.txt= | =be2c24b4c6= |
+| A subject nobody serves, for contrast | =No responders are available= | the same command against =ores.dev.bright_faraday.marketdata.v1.ops.no_such_operation=, in the same transcript | =be2c24b4c6= |
 | Local checks, non-heavy | 9 of 9 | =compass check --exclude-heavy= | =aacee4cc5f= |
 | The full gate | 13 of 15: =ctest= and =answer-shapes= failed | =compass check= | =aacee4cc5f= |
 | =answer-shapes= on its own | pass, 309 pairs, 108 compared | =python3 build/scripts/check_answer_shapes.py .= | =aacee4cc5f= |
@@ -136,13 +142,18 @@ is refused only for want of credentials. The claim that the service subscribed
 nothing was inherited from one journey page and went three records deep before
 anyone sent a request.
 
-The durable proof is =messaging_registration_tests.cpp=: it runs the service's
-registrar and asserts the slice subject is among the subscriptions. That closes
-the gap the handler suites leave, where a working handler and a missing
-subscription look identical from the tests. It holds the nearer half only: a
-test binary cannot see that the service calls the registrar, so the case would
-stay green if =application.cpp= stopped calling it. That gap is what task
-12B71000, the gate check over declared subjects, exists to close.
+The proof is the probe, and it is a probe because the durable form of this
+check belongs somewhere else. The handler's answer is already held by
+=messaging_tick_read_party_tests.cpp=, which drives =series_slice_handler= over
+real NATS on a test-scoped subject; what no test held was the registration. The
+test written for it here called =register_handlers=, and that function creates
+a JetStream stream, claims it in a process-static set, binds the service's
+durable consumer and prunes the stream's other consumers, so a single run of a
+test binary provisions infrastructure in the shared NATS store. The case is
+withdrawn rather than kept with that side effect. The check that holds the
+registration without calling it, a comparison of the declared subjects against
+what the registrar subscribes, is task 12B71000, and its description now says
+the registrar cannot be called to find that out.
 
 The record is corrected in five places: the journey page (the subject is
 served, and no screen calls it yet), the story's acceptance and its task rows,
@@ -165,4 +176,4 @@ workflow pass. The inbox suite passed once, then failed on a re-run with
 terminated, and then passed twice in a row. The second failure is unexplained
 rather than diagnosed: the suite provisions its own tenant, so a terminated
 one should not reach it. Both failures belong to the gate and the harness, not
-to a market data test file this branch adds.
+to a market data file this branch touches.

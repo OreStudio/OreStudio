@@ -147,12 +147,12 @@ second opinion at the published set.
    yesterday's calibration, and the person who decides cannot open the fit the
    maker saw. The change history states that the row changed and when; it does
    not give back the grid.
-2. *The slice subject is served and no screen calls it.* =marketdata.v1.ops.get_series_slice=
-   is served by =series_slice_handler=, which reads one component's term
-   structure through =series_slice_reader=, and both the gateway and the BFF
-   route =/api/curves/slice= to it. No web screen calls the route: the steps
-   above read the grid whole, and the smile is one row of that grid. The first
-   caller would be a view that wants one expiry on its own.
+2. *The slice has no screen.* =marketdata.v1.ops.get_series_slice= is served,
+   by =series_slice_handler= reading one component's term structure through
+   =series_slice_reader=, and both the gateway and the BFF route
+   =/api/curves/slice= to it. No web screen calls the route: the steps above
+   read the grid whole, and the smile is one row of that grid. The first caller
+   would be a view that wants one expiry on its own.
 3. *The grid is as fine as the blueprint says.* The mesh is the output grid, so a
    strike between two columns has no value until something interpolates. The
    blueprint names the interpolation across expiries and not across strikes, so

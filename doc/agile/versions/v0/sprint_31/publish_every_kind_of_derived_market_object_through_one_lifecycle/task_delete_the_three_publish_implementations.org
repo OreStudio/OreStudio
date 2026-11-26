@@ -2,7 +2,7 @@
 :ID: 88CDEB14-2F43-407C-847F-0D85C96C74C4
 :END:
 #+title: Task: Delete the three publish implementations
-#+description: Remove the three copies of the lifecycle and the subject no caller serves.
+#+description: Remove the three copies of the lifecycle so that the raise, the decide, the apply and the notice exist once.
 #+type: task
 #+level: s1
 #+filetags: :publish_every_kind_of_derived_market_object_through_one_lifecycle:sprint_31:v0:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
-#+updated: 2026-11-24
+#+updated: 2026-11-26
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -156,9 +156,9 @@ reason is in each: get_series_slice is declared, generated and called by both
 the BFF and the gateway; and the gate that fails a declared subject with no
 handler belongs to the check tooling, not to market data.
 
-*Correction (2026-11-26):* this task's Result first said the service subscribed
-nothing and called the subject dead from the service's side, and the Plan above
-still says that serving it would be a new handler. Both are false.
+*Correction (2026-11-26):* this task's description said the subject had no
+caller, its Result said the service subscribed nothing, and the Plan above says
+that serving it would be a new handler. All three are false.
 =registrar::register_handlers=, which the service runs at start-up, subscribes
 =marketdata.v1.ops.get_series_slice= to =series_slice_handler=, which has
 answered since sprint 27, and the environment answers a request on it today.

@@ -34,7 +34,7 @@ ores.marketdata holds one implementation of the raise, the decide, the apply and
 - All three kinds publish through the one path, and the curve's published behaviour is unchanged, proved by a test against the behaviour the delivered tree has.
 - An FX forward publish supersedes the set it replaces and writes its notice, as every kind does.
 - The three publish implementations are deleted and the lifecycle exists once.
-- The get_series_slice subject is served: a request on it reaches a handler, and a test holds the registration that makes the handler reachable. No declared subject is left unreachable.
+- The get_series_slice subject is served, and no declared subject is left unreachable.
 
 * Tasks
 
@@ -44,7 +44,7 @@ ores.marketdata holds one implementation of the raise, the decide, the apply and
 | [[id:B153E922-AE1D-48FB-9998-5AD72DF9113A][Serve the raise, the decide and the apply once]] | DONE | 2026-11-25 | 2026-11-25 | One raise, one apply and one supersession, called for every kind through the declaration. |
 | [[id:AFAA7027-4896-4E22-B76F-A743DABF0CDC][Carry the forward set's supersession and notice]] | DONE | 2026-11-25 | 2026-11-25 | Give the FX forward set the supersession columns and the publish notice every other kind has. |
 | [[id:88CDEB14-2F43-407C-847F-0D85C96C74C4][Delete the three publish implementations]] | DONE | 2026-11-25 | 2026-11-25 | Remove the three copies of the lifecycle so it exists once. |
-| [[id:4ED5A5FE-7BBF-4378-AEFD-C22004F14D39][Serve or retire the series slice subject]] | STARTED | 2026-11-26 | | The task was premised on the subject being unserved. It is served: the service subscribes it, and the gateway and the BFF route it. Prove the wiring with a test, and correct the records that called the subject unserved. |
+| [[id:4ED5A5FE-7BBF-4378-AEFD-C22004F14D39][Serve or retire the series slice subject]] | STARTED | 2026-11-26 | | The task was premised on the subject being unserved. It is served: the service subscribes it, and the gateway and the BFF route it. Correct the records that called it unserved, and leave the registration check to the gate task. |
 | [[id:12B71000-B339-4807-815B-5FD290383EA3][Fail the gate on a declared subject with no handler]] | BACKLOG | | | A declared NATS operation subject with no registered handler is invisible until a caller tries it and times out. Add a repo-owned gate check that fails when a declared subject has no handler, with a test that proves it fails on one. |
 
 * Decisions

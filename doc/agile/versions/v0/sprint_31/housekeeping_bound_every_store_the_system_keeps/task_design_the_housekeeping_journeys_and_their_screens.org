@@ -8,7 +8,7 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch: feature/design-the-housekeeping-journeys-and-their-screens
-#+pr:
+#+pr: 5162
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-26
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5162][#5162]] | [knowledge] State the housekeeping journeys and prototype their screen |
 
 * Review
 

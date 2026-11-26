@@ -52,7 +52,7 @@ it is.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:1993E4E7-A59B-4473-8635-C9F6DF974EB5][Derive a term index from its overnight curve]] | DONE | 2026-11-24 | 2026-11-26 | Give a term index of a currency that has an overnight curve its curve and fixings from that curve: term SOFR and IBR from the compounded overnight forward, EYTIBOR, WIBOR and the generic indices with a stated spread. |
-| [[id:DC6F4D69-5E3E-4562-9503-88C74329FF1E][Show the FX and IR fixings on a fixings screen]] | BACKLOG | | | A system-level Fixings screen lets the super administrator view every FX and IR observation across every source, read only. |
+| [[id:DC6F4D69-5E3E-4562-9503-88C74329FF1E][Show the FX and IR fixings on a fixings screen]] | STARTED | 2026-11-26 | | A system-level Fixings screen lets the super administrator view every FX and IR observation across every source, read only. |
 
 * Decisions
 

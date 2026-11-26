@@ -137,6 +137,14 @@ registrar subscribes them. They are recorded in the exceptions file against capt
 which already held the defect and now holds the blame report, because serving
 them is refdata's work and not this task's.
 
+The three are served now. The fix went in on this branch rather than waiting
+for a refdata owner, because no environment was working on refdata:
+=bundle_import_operations_handler= runs the session, the permission and the wire
+for the three operations, =register_bundle_import_operations_handlers= is called
+by the umbrella refdata registrar, and =messaging_bundle_import_operations_tests.cpp=
+asks each subject over real NATS and requires an answer. The exceptions file is
+empty, and the check reports 219 of 219.
+
 What the check cannot see: a subject that answers is served by *something*, not
 necessarily by the handler its model names. It also says nothing about the 86
 published subjects, whose consumers are a different question.

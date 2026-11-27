@@ -394,90 +394,17 @@ next unit of the scheduler clean-up.
  */
 #+end_src
 
-** store_bound
+** store_bound_action
 :PROPERTIES:
 :END:
 
 #+begin_src cpp :name comment
 /**
- * @brief One store, what bounds it, whether it is bounded now, and its size.
- */
-#+end_src
-
-*** code
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-#+begin_src cpp :name comment
-/**
- * @brief The store's catalogue code.
- */
-#+end_src
-
-*** display_name
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-#+begin_src cpp :name comment
-/**
- * @brief The name a person reads.
- */
-#+end_src
-
-*** description
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-#+begin_src cpp :name comment
-/**
- * @brief What the store holds.
- */
-#+end_src
-
-*** owner_component
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-#+begin_src cpp :name comment
-/**
- * @brief The component that writes the store.
- */
-#+end_src
-
-*** target_kind
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-#+begin_src cpp :name comment
-/**
- * @brief The shape of the target: a chunked table, an ordinary table, a prefix or a directory.
- */
-#+end_src
-
-*** target
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-#+begin_src cpp :name comment
-/**
- * @brief The table, prefix or directory the store lives in.
- */
-#+end_src
-
-*** bound_kind
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-#+begin_src cpp :name comment
-/**
- * @brief The kind of bound the store ships with: =policy=, =keying= or =none=.
+ * @brief What bounds the store, and whether that mechanism applies today.
+ *
+ * The mechanism is not the action. A policy may ask for an object expiry the
+ * sweep cannot perform, and the store is then not bounded however clear its
+ * policy reads.
  */
 #+end_src
 
@@ -550,29 +477,42 @@ next unit of the scheduler clean-up.
  */
 #+end_src
 
-*** last_outcome
+** store_last_run
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the bound last did, in its own words.
+ *
+ * A run that freed nothing is not a failure, and the detail line is what tells
+ * the two apart; a screen that dropped it would have to guess.
+ */
+#+end_src
+
+*** outcome
 :PROPERTIES:
 :cpp_type: std::optional<std::string>
 :END:
 
 #+begin_src cpp :name comment
 /**
- * @brief What the last run reported: =applied=, =skipped= or =failed=.
+ * @brief =applied=, =skipped= or =failed=.
  */
 #+end_src
 
-*** last_run_at
+*** ran_at
 :PROPERTIES:
 :cpp_type: std::optional<std::string>
 :END:
 
 #+begin_src cpp :name comment
 /**
- * @brief When the bound last ran, in ISO-8601 UTC.
+ * @brief When it ran, in ISO-8601 UTC.
  */
 #+end_src
 
-*** last_removed
+*** removed
 :PROPERTIES:
 :cpp_type: std::int64_t
 :default:  0
@@ -580,18 +520,31 @@ next unit of the scheduler clean-up.
 
 #+begin_src cpp :name comment
 /**
- * @brief What the last run removed: chunks, rows or objects.
+ * @brief What it removed: chunks, rows or objects.
  */
 #+end_src
 
-*** last_detail
+*** detail
 :PROPERTIES:
 :cpp_type: std::optional<std::string>
 :END:
 
 #+begin_src cpp :name comment
 /**
- * @brief The run's own words, which is what a person needs when it did nothing.
+ * @brief The run's own words.
+ */
+#+end_src
+
+** store_size
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the store held when it was last measured.
+ *
+ * A store nothing measures answers with no sample rather than a size of zero, so
+ * the absence of =sampled_at= is what tells an empty store from an unmeasured one.
  */
 #+end_src
 
@@ -601,23 +554,11 @@ next unit of the scheduler clean-up.
 :default:  0
 :END:
 
-#+begin_src cpp :name comment
-/**
- * @brief What the store held when it was last measured, if it has been.
- */
-#+end_src
-
 *** measure_count
 :PROPERTIES:
 :cpp_type: std::int64_t
 :default:  0
 :END:
-
-#+begin_src cpp :name comment
-/**
- * @brief How many rows, objects or files it held.
- */
-#+end_src
 
 *** sampled_at
 :PROPERTIES:
@@ -626,9 +567,87 @@ next unit of the scheduler clean-up.
 
 #+begin_src cpp :name comment
 /**
- * @brief When it was measured, in ISO-8601 UTC. Absent when nothing has measured it.
+ * @brief When it was measured, in ISO-8601 UTC.
  */
 #+end_src
+
+** store_bound
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One store, with what bounds it, what it last did and how large it is.
+ */
+#+end_src
+
+*** code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The store's catalogue code.
+ */
+#+end_src
+
+*** display_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The name a person reads.
+ */
+#+end_src
+
+*** description
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** owner_component
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** target_kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** target
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** bound_kind
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The kind of bound the store ships with: =policy=, =keying= or =none=.
+ */
+#+end_src
+
+*** bound
+:PROPERTIES:
+:cpp_type: store_bound_action
+:END:
+
+*** last_run
+:PROPERTIES:
+:cpp_type: store_last_run
+:END:
+
+*** size
+:PROPERTIES:
+:cpp_type: store_size
+:END:
 
 ** list_store_bounds_response
 :PROPERTIES:

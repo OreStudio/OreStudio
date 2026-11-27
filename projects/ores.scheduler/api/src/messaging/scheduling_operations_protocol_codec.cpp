@@ -180,6 +180,68 @@ wire_traits<ores::scheduler::messaging::list_store_bounds_request>::read_msgpack
     return object::read_msgpack<ores::scheduler::messaging::list_store_bounds_request>(data);
 }
 
+std::string wire_traits<ores::scheduler::messaging::store_bound_action>::write_json(
+    const ores::scheduler::messaging::store_bound_action& v) {
+    return object::write_json(v);
+}
+
+ores::scheduler::messaging::store_bound_action
+wire_traits<ores::scheduler::messaging::store_bound_action>::read_json(std::string_view text) {
+    return object::read_json<ores::scheduler::messaging::store_bound_action>(text);
+}
+
+std::string wire_traits<ores::scheduler::messaging::store_bound_action>::write_msgpack(
+    const ores::scheduler::messaging::store_bound_action& v) {
+    return object::write_msgpack(v);
+}
+
+ores::scheduler::messaging::store_bound_action
+wire_traits<ores::scheduler::messaging::store_bound_action>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::scheduler::messaging::store_bound_action>(data);
+}
+
+std::string wire_traits<ores::scheduler::messaging::store_last_run>::write_json(
+    const ores::scheduler::messaging::store_last_run& v) {
+    return object::write_json(v);
+}
+
+ores::scheduler::messaging::store_last_run
+wire_traits<ores::scheduler::messaging::store_last_run>::read_json(std::string_view text) {
+    return object::read_json<ores::scheduler::messaging::store_last_run>(text);
+}
+
+std::string wire_traits<ores::scheduler::messaging::store_last_run>::write_msgpack(
+    const ores::scheduler::messaging::store_last_run& v) {
+    return object::write_msgpack(v);
+}
+
+ores::scheduler::messaging::store_last_run
+wire_traits<ores::scheduler::messaging::store_last_run>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::scheduler::messaging::store_last_run>(data);
+}
+
+std::string wire_traits<ores::scheduler::messaging::store_size>::write_json(
+    const ores::scheduler::messaging::store_size& v) {
+    return object::write_json(v);
+}
+
+ores::scheduler::messaging::store_size
+wire_traits<ores::scheduler::messaging::store_size>::read_json(std::string_view text) {
+    return object::read_json<ores::scheduler::messaging::store_size>(text);
+}
+
+std::string wire_traits<ores::scheduler::messaging::store_size>::write_msgpack(
+    const ores::scheduler::messaging::store_size& v) {
+    return object::write_msgpack(v);
+}
+
+ores::scheduler::messaging::store_size
+wire_traits<ores::scheduler::messaging::store_size>::read_msgpack(std::span<const std::byte> data) {
+    return object::read_msgpack<ores::scheduler::messaging::store_size>(data);
+}
+
 std::string wire_traits<ores::scheduler::messaging::store_bound>::write_json(
     const ores::scheduler::messaging::store_bound& v) {
     return object::write_json(v);

@@ -155,37 +155,13 @@ export interface GetSchedulerStatusResponse {
 export interface ListStoreBoundsRequest {}
 
 /**
- * @brief One store, what bounds it, whether it is bounded now, and its size.
+ * @brief What bounds the store, and whether that mechanism applies today.
+ *
+ * The mechanism is not the action. A policy may ask for an object expiry the
+ * sweep cannot perform, and the store is then not bounded however clear its
+ * policy reads.
  */
-export interface StoreBound {
-    /**
-     * @brief The store's catalogue code.
-     */
-    code: string;
-    /**
-     * @brief The name a person reads.
-     */
-    display_name: string;
-    /**
-     * @brief What the store holds.
-     */
-    description: string;
-    /**
-     * @brief The component that writes the store.
-     */
-    owner_component: string;
-    /**
-     * @brief The shape of the target: a chunked table, an ordinary table, a prefix or a directory.
-     */
-    target_kind: string;
-    /**
-     * @brief The table, prefix or directory the store lives in.
-     */
-    target: string;
-    /**
-     * @brief The kind of bound the store ships with: =policy=, =keying= or =none=.
-     */
-    bound_kind: string;
+export interface StoreBoundAction {
     /**
      * @brief What the bound does past its period, when it is a policy.
      */
@@ -211,34 +187,71 @@ export interface StoreBound {
      * @brief Whether the mechanism the bound names exists and runs today.
      */
     bounded_now: boolean;
+}
+
+/**
+ * @brief What the bound last did, in its own words.
+ *
+ * A run that freed nothing is not a failure, and the detail line is what tells
+ * the two apart; a screen that dropped it would have to guess.
+ */
+export interface StoreLastRun {
     /**
-     * @brief What the last run reported: =applied=, =skipped= or =failed=.
+     * @brief =applied=, =skipped= or =failed=.
      */
-    last_outcome: string | null;
+    outcome: string | null;
     /**
-     * @brief When the bound last ran, in ISO-8601 UTC.
+     * @brief When it ran, in ISO-8601 UTC.
      */
-    last_run_at: string | null;
+    ran_at: string | null;
     /**
-     * @brief What the last run removed: chunks, rows or objects.
+     * @brief What it removed: chunks, rows or objects.
      */
-    last_removed: number;
+    removed: number;
     /**
-     * @brief The run's own words, which is what a person needs when it did nothing.
+     * @brief The run's own words.
      */
-    last_detail: string | null;
-    /**
-     * @brief What the store held when it was last measured, if it has been.
-     */
+    detail: string | null;
+}
+
+/**
+ * @brief What the store held when it was last measured.
+ *
+ * A store nothing measures answers with no sample rather than a size of zero, so
+ * the absence of =sampled_at= is what tells an empty store from an unmeasured one.
+ */
+export interface StoreSize {
     size_bytes: number;
-    /**
-     * @brief How many rows, objects or files it held.
-     */
     measure_count: number;
     /**
-     * @brief When it was measured, in ISO-8601 UTC. Absent when nothing has measured it.
+     * @brief When it was measured, in ISO-8601 UTC.
      */
     sampled_at: string | null;
+}
+
+/**
+ * @brief One store, with what bounds it, what it last did and how large it is.
+ */
+export interface StoreBound {
+    /**
+     * @brief The store's catalogue code.
+     */
+    code: string;
+    /**
+     * @brief The name a person reads.
+     */
+    display_name: string;
+    description: string;
+    owner_component: string;
+    target_kind: string;
+    target: string;
+    /**
+     * @brief The kind of bound the store ships with: =policy=, =keying= or =none=.
+     */
+    bound_kind: string;
+    bound: StoreBoundAction;
+    last_run: StoreLastRun;
+    size: StoreSize;
 }
 
 /**

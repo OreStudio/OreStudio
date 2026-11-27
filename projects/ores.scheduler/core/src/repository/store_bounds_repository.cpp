@@ -135,20 +135,23 @@ messaging::store_bound store_bound_from_row(const std::vector<std::optional<std:
     bound.target_kind = column(row, 4, "target_kind");
     bound.target = column(row, 5, "target");
     bound.bound_kind = column(row, 6, "bound_kind");
-    bound.action = absent_if_empty(row.size() > 7 ? row[7] : std::nullopt);
+
+    bound.bound.action = absent_if_empty(row.size() > 7 ? row[7] : std::nullopt);
     if (row.size() > 8 && row[8] && !row[8]->empty())
-        bound.retention_days = to_int(row[8]);
-    bound.policy_code = absent_if_empty(row.size() > 9 ? row[9] : std::nullopt);
-    bound.policy_enabled = to_bool(row.size() > 10 ? row[10] : std::nullopt);
-    bound.mechanism = column(row, 11, "mechanism");
-    bound.bounded_now = to_bool(row.size() > 12 ? row[12] : std::nullopt);
-    bound.last_outcome = absent_if_empty(row.size() > 13 ? row[13] : std::nullopt);
-    bound.last_run_at = absent_if_empty(row.size() > 14 ? row[14] : std::nullopt);
-    bound.last_removed = to_int64(row.size() > 15 ? row[15] : std::nullopt);
-    bound.last_detail = absent_if_empty(row.size() > 16 ? row[16] : std::nullopt);
-    bound.size_bytes = to_int64(row.size() > 17 ? row[17] : std::nullopt);
-    bound.measure_count = to_int64(row.size() > 18 ? row[18] : std::nullopt);
-    bound.sampled_at = absent_if_empty(row.size() > 19 ? row[19] : std::nullopt);
+        bound.bound.retention_days = to_int(row[8]);
+    bound.bound.policy_code = absent_if_empty(row.size() > 9 ? row[9] : std::nullopt);
+    bound.bound.policy_enabled = to_bool(row.size() > 10 ? row[10] : std::nullopt);
+    bound.bound.mechanism = column(row, 11, "mechanism");
+    bound.bound.bounded_now = to_bool(row.size() > 12 ? row[12] : std::nullopt);
+
+    bound.last_run.outcome = absent_if_empty(row.size() > 13 ? row[13] : std::nullopt);
+    bound.last_run.ran_at = absent_if_empty(row.size() > 14 ? row[14] : std::nullopt);
+    bound.last_run.removed = to_int64(row.size() > 15 ? row[15] : std::nullopt);
+    bound.last_run.detail = absent_if_empty(row.size() > 16 ? row[16] : std::nullopt);
+
+    bound.size.size_bytes = to_int64(row.size() > 17 ? row[17] : std::nullopt);
+    bound.size.measure_count = to_int64(row.size() > 18 ? row[18] : std::nullopt);
+    bound.size.sampled_at = absent_if_empty(row.size() > 19 ? row[19] : std::nullopt);
     return bound;
 }
 

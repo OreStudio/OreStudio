@@ -88,54 +88,66 @@ TEST_CASE("a bounds row states the store, its bound and its size", "[repository]
     CHECK(bound.owner_component == "marketdata");
     CHECK(bound.target_kind == "table");
     CHECK(bound.bound_kind == "policy");
-    REQUIRE(bound.action.has_value());
-    CHECK(*bound.action == "delete_rows");
-    REQUIRE(bound.retention_days.has_value());
-    CHECK(*bound.retention_days == 30);
-    REQUIRE(bound.policy_code.has_value());
-    CHECK(*bound.policy_code == "delivery_counts_30d");
-    CHECK(bound.policy_enabled);
-    CHECK(bound.mechanism == "sweep");
-    CHECK(bound.bounded_now);
-    REQUIRE(bound.last_outcome.has_value());
-    CHECK(*bound.last_outcome == "applied");
-    CHECK(bound.last_removed == 2);
-    CHECK(bound.size_bytes == 32768);
-    CHECK(bound.measure_count == 27);
-    REQUIRE(bound.sampled_at.has_value());
-    CHECK(*bound.sampled_at == "2026-11-27T03:15:00Z");
+    REQUIRE(bound.bound.action.has_value());
+    CHECK(*bound.bound.action == "delete_rows");
+    REQUIRE(bound.bound.retention_days.has_value());
+    CHECK(*bound.bound.retention_days == 30);
+    REQUIRE(bound.bound.policy_code.has_value());
+    CHECK(*bound.bound.policy_code == "delivery_counts_30d");
+    CHECK(bound.bound.policy_enabled);
+    CHECK(bound.bound.mechanism == "sweep");
+    CHECK(bound.bound.bounded_now);
+    REQUIRE(bound.last_run.outcome.has_value());
+    CHECK(*bound.last_run.outcome == "applied");
+    CHECK(bound.last_run.removed == 2);
+    CHECK(bound.size.size_bytes == 32768);
+    CHECK(bound.size.measure_count == 27);
+    REQUIRE(bound.size.sampled_at.has_value());
+    CHECK(*bound.size.sampled_at == "2026-11-27T03:15:00Z");
 }
 
-TEST_CASE("a store nothing has measured reports no size rather than zero",
-          "[repository][bounds]") {
+TEST_CASE("a store nothing has measured reports no size rather than zero", "[repository][bounds]") {
     const auto bound = store_bound_from_row(unmeasured_row());
 
     CHECK(bound.code == "compute.job_inputs");
-    CHECK(bound.mechanism == "storage_lifecycle");
-    CHECK_FALSE(bound.bounded_now);
-    CHECK_FALSE(bound.sampled_at.has_value());
-    CHECK(bound.size_bytes == 0);
-    REQUIRE(bound.last_detail.has_value());
-    CHECK(*bound.last_detail == "the storage lifecycle expires an object prefix");
+    CHECK(bound.bound.mechanism == "storage_lifecycle");
+    CHECK_FALSE(bound.bound.bounded_now);
+    CHECK_FALSE(bound.size.sampled_at.has_value());
+    CHECK(bound.size.size_bytes == 0);
+    REQUIRE(bound.last_run.detail.has_value());
+    CHECK(*bound.last_run.detail == "the storage lifecycle expires an object prefix");
 }
 
 TEST_CASE("a store with no policy reports an absent action and period", "[repository][bounds]") {
-    row_type row{"refdata.calendar_dates", "Calendar dates", "The business days.",
-                 "refdata",           "chunked_table",   "public.ores_refdata_calendar_dates_tbl",
-                 "none",              std::nullopt,      std::nullopt,
-                 std::nullopt,        "f",               "none",
-                 "f",                 std::nullopt,      std::nullopt,
-                 "0",                 std::nullopt,      "57344",
-                 "486540",            "2026-11-27T03:15:00Z"};
+    row_type row{"refdata.calendar_dates",
+                 "Calendar dates",
+                 "The business days.",
+                 "refdata",
+                 "chunked_table",
+                 "public.ores_refdata_calendar_dates_tbl",
+                 "none",
+                 std::nullopt,
+                 std::nullopt,
+                 std::nullopt,
+                 "f",
+                 "none",
+                 "f",
+                 std::nullopt,
+                 std::nullopt,
+                 "0",
+                 std::nullopt,
+                 "57344",
+                 "486540",
+                 "2026-11-27T03:15:00Z"};
 
     const auto bound = store_bound_from_row(row);
 
     CHECK(bound.bound_kind == "none");
-    CHECK_FALSE(bound.action.has_value());
-    CHECK_FALSE(bound.retention_days.has_value());
-    CHECK_FALSE(bound.policy_code.has_value());
-    CHECK(bound.mechanism == "none");
-    CHECK_FALSE(bound.bounded_now);
-    CHECK(bound.size_bytes == 57344);
-    CHECK(bound.measure_count == 486540);
+    CHECK_FALSE(bound.bound.action.has_value());
+    CHECK_FALSE(bound.bound.retention_days.has_value());
+    CHECK_FALSE(bound.bound.policy_code.has_value());
+    CHECK(bound.bound.mechanism == "none");
+    CHECK_FALSE(bound.bound.bounded_now);
+    CHECK(bound.size.size_bytes == 57344);
+    CHECK(bound.size.measure_count == 486540);
 }

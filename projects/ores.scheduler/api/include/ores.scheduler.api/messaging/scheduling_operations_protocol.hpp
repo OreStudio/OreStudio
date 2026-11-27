@@ -220,37 +220,13 @@ struct list_store_bounds_request {
 };
 
 /**
- * @brief One store, what bounds it, whether it is bounded now, and its size.
+ * @brief What bounds the store, and whether that mechanism applies today.
+ *
+ * The mechanism is not the action. A policy may ask for an object expiry the
+ * sweep cannot perform, and the store is then not bounded however clear its
+ * policy reads.
  */
-struct store_bound {
-    /**
-     * @brief The store's catalogue code.
-     */
-    std::string code;
-    /**
-     * @brief The name a person reads.
-     */
-    std::string display_name;
-    /**
-     * @brief What the store holds.
-     */
-    std::string description;
-    /**
-     * @brief The component that writes the store.
-     */
-    std::string owner_component;
-    /**
-     * @brief The shape of the target: a chunked table, an ordinary table, a prefix or a directory.
-     */
-    std::string target_kind;
-    /**
-     * @brief The table, prefix or directory the store lives in.
-     */
-    std::string target;
-    /**
-     * @brief The kind of bound the store ships with: =policy=, =keying= or =none=.
-     */
-    std::string bound_kind;
+struct store_bound_action {
     /**
      * @brief What the bound does past its period, when it is a policy.
      */
@@ -276,34 +252,77 @@ struct store_bound {
      * @brief Whether the mechanism the bound names exists and runs today.
      */
     bool bounded_now = false;
+
+    friend bool operator==(const store_bound_action&, const store_bound_action&) = default;
+};
+
+/**
+ * @brief What the bound last did, in its own words.
+ *
+ * A run that freed nothing is not a failure, and the detail line is what tells
+ * the two apart; a screen that dropped it would have to guess.
+ */
+struct store_last_run {
     /**
-     * @brief What the last run reported: =applied=, =skipped= or =failed=.
+     * @brief =applied=, =skipped= or =failed=.
      */
-    std::optional<std::string> last_outcome;
+    std::optional<std::string> outcome;
     /**
-     * @brief When the bound last ran, in ISO-8601 UTC.
+     * @brief When it ran, in ISO-8601 UTC.
      */
-    std::optional<std::string> last_run_at;
+    std::optional<std::string> ran_at;
     /**
-     * @brief What the last run removed: chunks, rows or objects.
+     * @brief What it removed: chunks, rows or objects.
      */
-    std::int64_t last_removed = 0;
+    std::int64_t removed = 0;
     /**
-     * @brief The run's own words, which is what a person needs when it did nothing.
+     * @brief The run's own words.
      */
-    std::optional<std::string> last_detail;
-    /**
-     * @brief What the store held when it was last measured, if it has been.
-     */
+    std::optional<std::string> detail;
+
+    friend bool operator==(const store_last_run&, const store_last_run&) = default;
+};
+
+/**
+ * @brief What the store held when it was last measured.
+ *
+ * A store nothing measures answers with no sample rather than a size of zero, so
+ * the absence of =sampled_at= is what tells an empty store from an unmeasured one.
+ */
+struct store_size {
     std::int64_t size_bytes = 0;
-    /**
-     * @brief How many rows, objects or files it held.
-     */
     std::int64_t measure_count = 0;
     /**
-     * @brief When it was measured, in ISO-8601 UTC. Absent when nothing has measured it.
+     * @brief When it was measured, in ISO-8601 UTC.
      */
     std::optional<std::string> sampled_at;
+
+    friend bool operator==(const store_size&, const store_size&) = default;
+};
+
+/**
+ * @brief One store, with what bounds it, what it last did and how large it is.
+ */
+struct store_bound {
+    /**
+     * @brief The store's catalogue code.
+     */
+    std::string code;
+    /**
+     * @brief The name a person reads.
+     */
+    std::string display_name;
+    std::string description;
+    std::string owner_component;
+    std::string target_kind;
+    std::string target;
+    /**
+     * @brief The kind of bound the store ships with: =policy=, =keying= or =none=.
+     */
+    std::string bound_kind;
+    store_bound_action bound;
+    store_last_run last_run;
+    store_size size;
 
     friend bool operator==(const store_bound&, const store_bound&) = default;
 };
@@ -493,6 +512,58 @@ struct list_store_samples_response {
 }
 
 /**
+ * @brief The members of store_bound_action, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<store_bound_action>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"action", &store_bound_action::action},
+        ::ores::utility::codec::field{"retention_days", &store_bound_action::retention_days},
+        ::ores::utility::codec::field{"policy_code", &store_bound_action::policy_code},
+        ::ores::utility::codec::field{"policy_enabled", &store_bound_action::policy_enabled},
+        ::ores::utility::codec::field{"mechanism", &store_bound_action::mechanism},
+        ::ores::utility::codec::field{"bounded_now", &store_bound_action::bounded_now},
+    };
+}
+
+/**
+ * @brief The members of store_last_run, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<store_last_run>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"outcome", &store_last_run::outcome},
+        ::ores::utility::codec::field{"ran_at", &store_last_run::ran_at},
+        ::ores::utility::codec::field{"removed", &store_last_run::removed},
+        ::ores::utility::codec::field{"detail", &store_last_run::detail},
+    };
+}
+
+/**
+ * @brief The members of store_size, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<store_size>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"size_bytes", &store_size::size_bytes},
+        ::ores::utility::codec::field{"measure_count", &store_size::measure_count},
+        ::ores::utility::codec::field{"sampled_at", &store_size::sampled_at},
+    };
+}
+
+/**
  * @brief The members of store_bound, named as the wire names them and in the order
  * the type declares them.
  *
@@ -509,19 +580,9 @@ struct list_store_samples_response {
         ::ores::utility::codec::field{"target_kind", &store_bound::target_kind},
         ::ores::utility::codec::field{"target", &store_bound::target},
         ::ores::utility::codec::field{"bound_kind", &store_bound::bound_kind},
-        ::ores::utility::codec::field{"action", &store_bound::action},
-        ::ores::utility::codec::field{"retention_days", &store_bound::retention_days},
-        ::ores::utility::codec::field{"policy_code", &store_bound::policy_code},
-        ::ores::utility::codec::field{"policy_enabled", &store_bound::policy_enabled},
-        ::ores::utility::codec::field{"mechanism", &store_bound::mechanism},
-        ::ores::utility::codec::field{"bounded_now", &store_bound::bounded_now},
-        ::ores::utility::codec::field{"last_outcome", &store_bound::last_outcome},
-        ::ores::utility::codec::field{"last_run_at", &store_bound::last_run_at},
-        ::ores::utility::codec::field{"last_removed", &store_bound::last_removed},
-        ::ores::utility::codec::field{"last_detail", &store_bound::last_detail},
-        ::ores::utility::codec::field{"size_bytes", &store_bound::size_bytes},
-        ::ores::utility::codec::field{"measure_count", &store_bound::measure_count},
-        ::ores::utility::codec::field{"sampled_at", &store_bound::sampled_at},
+        ::ores::utility::codec::field{"bound", &store_bound::bound},
+        ::ores::utility::codec::field{"last_run", &store_bound::last_run},
+        ::ores::utility::codec::field{"size", &store_bound::size},
     };
 }
 
@@ -674,6 +735,34 @@ struct ORES_SCHEDULER_API_EXPORT
     write_msgpack(const ores::scheduler::messaging::list_store_bounds_request& v);
     static ores::scheduler::messaging::list_store_bounds_request
     read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT wire_traits<ores::scheduler::messaging::store_bound_action> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::store_bound_action& v);
+    static ores::scheduler::messaging::store_bound_action read_json(std::string_view text);
+    static std::string write_msgpack(const ores::scheduler::messaging::store_bound_action& v);
+    static ores::scheduler::messaging::store_bound_action
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT wire_traits<ores::scheduler::messaging::store_last_run> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::store_last_run& v);
+    static ores::scheduler::messaging::store_last_run read_json(std::string_view text);
+    static std::string write_msgpack(const ores::scheduler::messaging::store_last_run& v);
+    static ores::scheduler::messaging::store_last_run read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT wire_traits<ores::scheduler::messaging::store_size> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::store_size& v);
+    static ores::scheduler::messaging::store_size read_json(std::string_view text);
+    static std::string write_msgpack(const ores::scheduler::messaging::store_size& v);
+    static ores::scheduler::messaging::store_size read_msgpack(std::span<const std::byte> data);
 };
 template <>
 struct ORES_SCHEDULER_API_EXPORT wire_traits<ores::scheduler::messaging::store_bound> {

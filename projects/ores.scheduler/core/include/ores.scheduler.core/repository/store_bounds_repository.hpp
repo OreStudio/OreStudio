@@ -20,7 +20,7 @@
 #ifndef ORES_SCHEDULER_CORE_REPOSITORY_STORE_BOUNDS_REPOSITORY_HPP
 #define ORES_SCHEDULER_CORE_REPOSITORY_STORE_BOUNDS_REPOSITORY_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.scheduler.api/messaging/scheduling_operations_protocol.hpp"
 #include "ores.scheduler.core/export.hpp"

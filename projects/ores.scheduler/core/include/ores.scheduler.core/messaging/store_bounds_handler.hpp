@@ -20,7 +20,7 @@
 #ifndef ORES_SCHEDULER_CORE_MESSAGING_STORE_BOUNDS_HANDLER_HPP
 #define ORES_SCHEDULER_CORE_MESSAGING_STORE_BOUNDS_HANDLER_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.scheduler.api/messaging/scheduling_operations_protocol.hpp"

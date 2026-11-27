@@ -59,6 +59,18 @@ TEST_CASE("ores::scheduler::messaging::list_store_bounds_request", "[codec][roun
     ores::testing::check_wire_roundtrip<ores::scheduler::messaging::list_store_bounds_request>();
 }
 
+TEST_CASE("ores::scheduler::messaging::store_bound_action", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::scheduler::messaging::store_bound_action>();
+}
+
+TEST_CASE("ores::scheduler::messaging::store_last_run", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::scheduler::messaging::store_last_run>();
+}
+
+TEST_CASE("ores::scheduler::messaging::store_size", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::scheduler::messaging::store_size>();
+}
+
 TEST_CASE("ores::scheduler::messaging::store_bound", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::scheduler::messaging::store_bound>();
 }

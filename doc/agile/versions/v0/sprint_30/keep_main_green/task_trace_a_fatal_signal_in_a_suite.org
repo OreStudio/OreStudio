@@ -8,7 +8,7 @@
 #+filetags: :keep_main_green:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/trace-a-fatal-signal-in-a-suite
-#+pr:
+#+pr: 5197
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-27
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5197][#5197]] | [testing] Trace the stack a suite dies on |
 
 * Review
 

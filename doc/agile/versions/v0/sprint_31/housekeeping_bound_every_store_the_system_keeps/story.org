@@ -183,6 +183,29 @@ No store the system keeps grows without bound: each one has a declared policy, h
   One sweep raises one notice however many policies it leaves unapplied: the
   ledger's instant is the transaction's, so the sweep's own rows share it.
 
+- An object prefix is bounded by an action that reaches the store, not by the
+  store's own lifecycle rule. A bucket rule expires by prefix and age without a
+  caller and without a ledger, so it cannot be asked what it would remove and it
+  states the period outside the installation's own data, where no screen reads
+  it and no policy version records it. The sweep cannot do the work either: it
+  is SQL, and SQL cannot reach an object store, which is why the two prefixes
+  read =skipped= for as long as they did. So the object half of housekeeping is
+  an action of its own, =expire_prefix=, which asks the database which object
+  policies are due — beside the rule the table sweep uses, so the two cannot
+  disagree about when a store is next treated — asks the storage service to
+  expire each prefix at its cutoff, and writes one ledger row per policy stating
+  what the cutoff held, what was removed and what a limit left. A dry run is the
+  same path with nothing removed, so the plan is readable before a sweep acts.
+
+- An expiry is one operation, and it states age to the whole second. A caller
+  that lists a page, removes part of it and reports the whole page has stated
+  something it did not do, so the storage service selects and removes in one
+  request, bounded by a limit whose remainder the reply states. Age is stated to
+  the second because the file clock is converted through the clocks' current
+  difference: a finer instant differs between two reads of one untouched file,
+  and a cutoff a caller derives from a listing would not include the object it
+  came from.
+
 * Out of scope
 
 -

@@ -28,9 +28,9 @@ Every key family in the object store expires by a stated rule, so a run's inputs
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Slice 2: the storage service answers one expiry. |
+| Now          | Slice 3: the scheduler applies an object prefix's period. |
 | Waiting on   | Nothing.                               |
-| Next         | Add =storage.v1.objects.expire= with a cutoff and a dry-run flag. |
+| Next         | Wire =expire_prefix= into the sweep and add =housekeeping plan=. |
 | Last touched | 2026-11-27                               |
 
 * Acceptance
@@ -100,6 +100,10 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | The listing states age | a file whose write instant is set ten days back lists as ten days old, to within a day | =compass test run -- -R 'ores\\.storage\\.core\\.tests'= | f7e0beccc6 |
 | The storage suites | ores.storage.api, .core and .service pass 3 of 3 | the same command | f7e0beccc6 |
+| An expiry states without removing | one object ten days old and one a minute old, cutoff seven days: the dry run selects 1 object and 2 bytes, removes 0, and the listing still holds both | =compass test run -- -R 'ores\\.storage\\.'= | c8f3acefb2 |
+| An expiry removes what it selected | the same pair, without the flag: 1 removed and 2 bytes freed, and the listing holds the recent object alone | the same command | c8f3acefb2 |
+| An expiry bounds one call | three old objects with a limit of two: 2 removed and 1 left, and the second call removes the last and leaves none | the same command | c8f3acefb2 |
+| The storage and shell suites | ores.storage.api, .core, .service and ores.shell.storage pass 4 of 4 | =compass test run -- -R 'ores\\.storage\\.|ores\\.shell\\.storage'= | c8f3acefb2 |
 
 * Notes
 

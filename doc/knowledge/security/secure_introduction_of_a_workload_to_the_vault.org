@@ -145,6 +145,21 @@ the request, and a consumer that asks for another's entry is refused as one that
 holds no such secret. The exchange is therefore a narrower power than a token,
 not a wider one, and it cannot be used as a general login.
 
+Step 3 needs the vault's transport public key before the workload holds a
+session, and the read that publishes it (=vault.v1.ops.public_key=) requires
+one. The deployment therefore places it as a second credential beside the unit's
+own key: a public key is not a secret, and placing it costs one more entry in the
+unit's declaration while keeping the exchange free of a call it cannot make.
+
+Sealing the answer rather than sending the nonce in clear does one thing, and the
+one thing is enough. A nonce is good for a single redemption, so whoever presents
+it first is served, and a delivery sealed to the consumer's registered key means
+the one served is not necessarily the one who can read it. Had the nonce
+travelled in clear, any listener could present it first and leave the real
+workload holding a spent challenge, unable to start until the next attempt. The
+seal keeps the capability off the bus, and the delivery's own seal keeps the
+value from the listener either way.
+
 ** Where the platform's own secrets live
 
 The exchange answers in one tenant, and it is the system tenant, because what it

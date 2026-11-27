@@ -314,6 +314,11 @@ export interface FixingSeriesSummary {
      * @brief How many days the series holds, which is zero for one that holds none.
      */
     days: number;
+    /**
+     * @brief How the value was made, which is OBSERVED for one a source stated and
+     * the derivation's own name for one the run computed.
+     */
+    derivation_kind: string;
 }
 
 /**

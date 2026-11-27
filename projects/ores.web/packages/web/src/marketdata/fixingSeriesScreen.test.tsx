@@ -28,7 +28,13 @@ import { FixingSeriesPage } from './FixingSeriesPage.js';
 const URI = 'oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD';
 
 const SERIES: FixingSeries = {
-    series: { id: 's1', oresmd_uri: URI, provider_code: 'ecb', version: 1 },
+    series: {
+        id: 's1',
+        oresmd_uri: URI,
+        provider_code: 'ecb',
+        version: 1,
+        derivation_kind: 'OBSERVED',
+    },
     publisher: { code: 'ecb', name: 'European Central Bank' },
     values: {
         first: '2026-10-29',

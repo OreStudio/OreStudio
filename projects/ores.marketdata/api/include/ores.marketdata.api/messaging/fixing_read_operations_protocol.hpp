@@ -389,6 +389,11 @@ struct fixing_series_summary {
      * @brief How many days the series holds, which is zero for one that holds none.
      */
     std::uint32_t days = 0;
+    /**
+     * @brief How the value was made, which is OBSERVED for one a source stated and
+     * the derivation's own name for one the run computed.
+     */
+    std::string derivation_kind = "OBSERVED";
 
     friend bool operator==(const fixing_series_summary&, const fixing_series_summary&) = default;
 };
@@ -616,6 +621,7 @@ struct list_fixing_series_summaries_response {
         ::ores::utility::codec::field{"latest_value", &fixing_series_summary::latest_value},
         ::ores::utility::codec::field{"latest_date", &fixing_series_summary::latest_date},
         ::ores::utility::codec::field{"days", &fixing_series_summary::days},
+        ::ores::utility::codec::field{"derivation_kind", &fixing_series_summary::derivation_kind},
     };
 }
 

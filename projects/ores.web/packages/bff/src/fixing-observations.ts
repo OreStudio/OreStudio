@@ -41,6 +41,7 @@ const summarySchema = z.looseObject({
     latest_value: z.string(),
     latest_date: z.string().nullable().default(null),
     days: z.number().int().default(0),
+    derivation_kind: z.string().default('OBSERVED'),
 });
 
 /**

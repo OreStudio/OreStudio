@@ -26,9 +26,37 @@
 #include "ores.marketdata.service/app/tick_plan.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <optional>
 #include <string>
 
 namespace ores::marketdata::service::app {
+
+/**
+ * @brief How the value of an item was made, as a series of that item states it.
+ *
+ * The producer made the value once, so every series of the item states the same
+ * derivation: a party's series takes the one the item already carries rather
+ * than starting as an observed value.
+ */
+struct series_derivation final {
+    std::string kind;
+    boost::uuids::uuid config_id;
+    int config_version = 0;
+
+    bool operator==(const series_derivation& other) const = default;
+};
+
+/**
+ * @brief The derivation of @p series_uri under @p provider_code, as a series of
+ * the item already states it, or nothing when it states none.
+ *
+ * A computed index is seeded with its derivation under the system party before
+ * any fixing lands, so a series created later for a party reads it from there.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT std::optional<series_derivation>
+derivation_of(const ores::database::context& tenant_ctx,
+              const std::string& series_uri,
+              const std::string& provider_code);
 
 /**
  * @brief The series a tick creates when it lands in one for the first time.
@@ -55,7 +83,8 @@ create_feed_series(const ores::database::context& tenant_ctx,
                    const boost::uuids::uuid& id,
                    const std::string& series_uri,
                    const core::series_classification& classification,
-                   const std::string& service_account);
+                   const std::string& service_account,
+                   const std::optional<series_derivation>& derivation = std::nullopt);
 
 }
 

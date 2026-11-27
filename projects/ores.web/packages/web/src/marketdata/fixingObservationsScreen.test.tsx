@@ -17,11 +17,12 @@ const SOFR: FixingObservation = {
     oresmd_uri: 'oresmd://ir/USD?type=fixing&index=ibor&name=SOFR&tenor=1M',
     asset_class: 'ir',
     index_label: 'USD SOFR 1M',
-    source: 'derived-a',
-    provider_code: 'derived',
+    source: 'cme-a',
+    provider_code: 'cme',
     latest_value: '0.039436',
     latest_date: '2026-11-26',
     days: 520,
+    derivation_kind: 'IR_CURVE_BOOTSTRAP',
 };
 
 const EMPTY: FixingObservation = {
@@ -29,11 +30,12 @@ const EMPTY: FixingObservation = {
     oresmd_uri: 'oresmd://ir/CHF?type=fixing&index=ibor&name=SARON&tenor=3M',
     asset_class: 'ir',
     index_label: 'CHF SARON 3M',
-    source: '',
-    provider_code: 'derived',
+    source: 'snb-a',
+    provider_code: 'snb',
     latest_value: '',
     latest_date: null,
     days: 0,
+    derivation_kind: 'OBSERVED',
 };
 
 const FILTERS = ['', '', ''];
@@ -58,10 +60,17 @@ describe('the fixing observations screen', () => {
 
         expect(html).toContain('Fixing observations');
         expect(html).toContain('USD SOFR 1M');
-        expect(html).toContain('derived-a');
+        expect(html).toContain('cme-a');
         expect(html).toContain('0.039436');
         expect(html).toContain('2026-11-26');
         expect(html).toContain('520');
+    });
+
+    it('says which series the run computed, and which a source stated', () => {
+        const html = render([SOFR, EMPTY]);
+
+        expect(html).toContain('computed: ir curve bootstrap');
+        expect(html).not.toContain('computed: observed');
     });
 
     it('shows a series that holds no day as a row rather than hiding it', () => {

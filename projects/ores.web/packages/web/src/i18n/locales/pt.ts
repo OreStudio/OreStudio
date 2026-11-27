@@ -5862,6 +5862,9 @@ const pt: SourceCatalogue = {
                 'Uma série que a plataforma detém e nunca observou: é uma linha, e a contagem é zero.',
             legendEnded:
                 'Uma série que terminou mantém o último dia e a contagem, porque um fixing é um facto sobre uma data.',
+            computed: 'calculada: {method}',
+            legendComputed:
+                'Uma série que a execução calculou em vez de uma fonte ter observado: o fornecedor nomeia o administrador cujo índice é este, e o método nomeia como o valor foi feito.',
         },
         fixingSeries: {
             title: 'Série de fixings',
@@ -5876,6 +5879,7 @@ const pt: SourceCatalogue = {
             backToObservations: 'Voltar às observações de fixings',
             columns: {
                 provider: 'Publisher',
+                derivation: 'Como foi feita',
                 first: 'Primeiro fixing',
                 last: 'Último fixing',
                 count: 'Fixings detidos',
@@ -5886,6 +5890,7 @@ const pt: SourceCatalogue = {
                 session: 'Sessão',
                 supplier: 'Fornecedor',
             },
+            observed: 'Observada',
         },
         curveBlueprints: {
             title: 'Plantas de curva',

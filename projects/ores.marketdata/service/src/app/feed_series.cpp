@@ -21,6 +21,7 @@
 #include "ores.marketdata.api/domain/market_series_asset_class.hpp"
 #include "ores.marketdata.core/repository/market_series_asset_class_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -45,14 +46,34 @@ domain::market_series make_feed_series(const consumer& owner,
     return series;
 }
 
+std::optional<series_derivation> derivation_of(const ores::database::context& tenant_ctx,
+                                               const std::string& series_uri,
+                                               const std::string& provider_code) {
+    repository::market_series_repository series_repo;
+    for (const auto& one : series_repo.read_latest_by_uri(tenant_ctx, series_uri))
+        if (one.provider_code == provider_code && one.derivation_kind != "OBSERVED")
+            return series_derivation{.kind = one.derivation_kind,
+                                     .config_id = one.derivation_config_id,
+                                     .config_version = one.derivation_config_version};
+    return std::nullopt;
+}
+
 domain::market_series create_feed_series(const ores::database::context& tenant_ctx,
                                          const consumer& owner,
                                          const boost::uuids::uuid& id,
                                          const std::string& series_uri,
                                          const core::series_classification& classification,
-                                         const std::string& service_account) {
+                                         const std::string& service_account,
+                                         const std::optional<series_derivation>& derivation) {
     auto series =
         make_feed_series(owner, id, series_uri, classification.series_subclass, service_account);
+    if (derivation) {
+        series.derivation_kind = derivation->kind;
+        series.derivation_config_id = derivation->config_id;
+        series.derivation_config_version = derivation->config_version;
+        series.change_commentary = "Created by the feed ingest loop for source " +
+                                   owner.source_name + ", stating the derivation the item carries";
+    }
     repository::market_series_repository{}.write(tenant_ctx, series);
 
     std::vector<domain::market_series_asset_class> classes;

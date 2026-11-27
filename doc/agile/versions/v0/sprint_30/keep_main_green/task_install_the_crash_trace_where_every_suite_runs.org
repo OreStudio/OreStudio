@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-27
 #+updated: 2026-11-27
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Put the fatal-signal trace in the listener every suite registers, so the gcc dou
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-27                               |
 
 * Acceptance
@@ -39,9 +39,9 @@ Put the fatal-signal trace in the listener every suite registers, so the gcc dou
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Move the handler into =logging_listener=, which 111 of the 114 suites
+register, and install it from =testCaseStarting= there. Leave the timeout
+listener as it was.
 
 * Measurements
 
@@ -55,7 +55,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Suites that register the timeout listener | 31 of 114, so the first cut left most suites untraced | =grep -rh CATCH_REGISTER_LISTENER --include=main.cpp projects \| sort \| uniq -c= | HEAD |
+| Suites that register the logging listener | 111 of 114, including the synthetic service suite the gcc leg aborts in | same | HEAD |
 
 * Notes
 
@@ -83,3 +84,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The trace now installs from =logging_listener=, which 111 of the 114 suites
+register, and the synthetic service suite is one of them.
+
+Verified locally: =ores.synthetic.service.tests=, which registers only the
+logging and database listeners, writes =TEST FATAL SIGNAL: SIGABRT= and its
+frames when it is sent one, and exits 134 as an aborted process does.

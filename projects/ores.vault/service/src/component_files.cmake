@@ -22,6 +22,7 @@
 set(files
     "app/application.cpp"
     "app/host.cpp"
+    "app/provisioning.cpp"
     "config/options.cpp"
     "config/parser.cpp"
     "main.cpp"
@@ -35,6 +36,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.service/app/application.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.service/app/application_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.service/app/host.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.service/app/provisioning.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.service/config/options.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.service/config/parser.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.service/config/parser_exception.hpp"

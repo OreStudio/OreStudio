@@ -141,6 +141,45 @@ public:
     custody_result rotate(const std::string& subject);
 
     /**
+     * @brief Stores a value the deployment hands the vault directly.
+     *
+     * This is the one path with no caller to authenticate. It exists because the
+     * first value a deployment stores is the password of the service that issues
+     * the tokens a write would otherwise need, so the circle has to be broken
+     * where the keys already are. The value therefore arrives in this process,
+     * which seals it under the key encryption key and never leaves a copy
+     * outside the row.
+     *
+     * The owner is stated rather than derived, because the deployment provisions
+     * for a consumer it is not. The act is recorded as the vault's own.
+     *
+     * @param subject The subject the act is recorded under.
+     * @param name The secret's name.
+     * @param owner The consumer permitted to resolve it.
+     * @param value The plaintext.
+     */
+    custody_result provision_secret(const std::string& subject,
+                                    const std::string& name,
+                                    const std::string& owner,
+                                    const std::string& value);
+
+    /**
+     * @brief Registers a consumer's key for a consumer the deployment names.
+     *
+     * The same act as @ref register_consumer, except that the name and the actor
+     * are stated rather than taken from the caller's token: a deployment
+     * provisions the consumers a service will become, before any of them can
+     * speak.
+     *
+     * @param name The consumer's name, which is the subject its token will carry.
+     * @param actor The account the consumer runs as.
+     * @param public_key The consumer's public key, Base64-encoded.
+     */
+    custody_result provision_consumer(const std::string& name,
+                                      const std::string& actor,
+                                      const std::string& public_key);
+
+    /**
      * @brief Issues the nonce a consumer answers to prove itself before any token.
      *
      * The context must be scoped to the system tenant, where the deployment's
@@ -173,6 +212,11 @@ public:
                                      const std::string& sealed_answer);
 
 private:
+    /// Writes one consumer's row, under the name and the account it is given.
+    custody_result store_consumer(const std::string& name,
+                                  const std::string& actor,
+                                  const std::string& public_key);
+
     /// Appends one row to the record of uses.
     void record_use(const std::string& subject,
                     const std::string& name,

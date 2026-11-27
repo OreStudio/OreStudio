@@ -134,11 +134,12 @@ custody_result custody_service::write(const std::string& subject,
     }
 }
 
-custody_result custody_service::register_consumer(const std::string& subject,
-                                                  const std::string& public_key) {
+custody_result custody_service::store_consumer(const std::string& name,
+                                               const std::string& actor,
+                                               const std::string& public_key) {
     custody_result answer;
 
-    if (subject.empty() || public_key.empty()) {
+    if (name.empty() || public_key.empty()) {
         answer.message = "A consumer needs a subject and a public key";
         return answer;
     }
@@ -151,7 +152,7 @@ custody_result custody_service::register_consumer(const std::string& subject,
         }
 
         repository::consumer_repository consumers;
-        const auto existing = consumers.read_latest_by_name(ctx_, subject);
+        const auto existing = consumers.read_latest_by_name(ctx_, name);
 
         domain::consumer row;
         if (!existing.empty()) {
@@ -159,10 +160,10 @@ custody_result custody_service::register_consumer(const std::string& subject,
         } else {
             boost::uuids::random_generator generate;
             row.id = generate();
-            row.name = subject;
+            row.name = name;
         }
         row.tenant_id = ctx_.tenant_id();
-        row.actor = ctx_.actor();
+        row.actor = actor;
         row.public_key = public_key;
         row.is_enabled = true;
         row.modified_by = ctx_.actor();
@@ -170,14 +171,41 @@ custody_result custody_service::register_consumer(const std::string& subject,
         consumers.write(ctx_, row);
 
         answer.success = true;
-        answer.subject = subject;
-        ORES_LOG_SEV(lg(), info) << "Registered consumer " << subject;
+        answer.subject = name;
+        ORES_LOG_SEV(lg(), info) << "Registered consumer " << name << " running as " << actor;
         return answer;
     } catch (const std::exception& e) {
-        ORES_LOG_SEV(lg(), error) << "Registration of " << subject << " failed: " << e.what();
+        ORES_LOG_SEV(lg(), error) << "Registration of " << name << " failed: " << e.what();
         answer.message = e.what();
         return answer;
     }
+}
+
+custody_result custody_service::register_consumer(const std::string& subject,
+                                                  const std::string& public_key) {
+    // The row is about the caller, so both its name and the account it runs as
+    // are the caller's own.
+    return store_consumer(subject, ctx_.actor(), public_key);
+}
+
+custody_result custody_service::provision_consumer(const std::string& name,
+                                                   const std::string& actor,
+                                                   const std::string& public_key) {
+    // The deployment states both, because the consumer it registers is not the
+    // one asking: the unit does not exist yet.
+    return store_consumer(name, actor, public_key);
+}
+
+custody_result custody_service::provision_secret(const std::string& subject,
+                                                 const std::string& name,
+                                                 const std::string& owner,
+                                                 const std::string& value) {
+    // The value is sealed to the vault and then opened by the write below, so
+    // provisioning runs the same path the bus does instead of a parallel one
+    // that would drift from it.
+    const auto sealed = sealed_box::seal(
+        keys_.transport_public_key, value, messaging::custody_context::write(name, owner));
+    return write(subject, name, owner, sealed);
 }
 
 custody_result custody_service::describe(const std::string& name) const {

@@ -215,6 +215,32 @@ any other, its keys are already the ones that would seal the value, and the
 alternative turns *the vault cannot hold its own key* into *two services cannot
 hold their own passwords* while adding a person's login to the cold start.
 
+The verb is =ores.vault.service --provision=, and it reads one JSON document
+naming the consumers to register and the values to store:
+
+#+begin_src json
+{"consumers": [{"name": "iam_service@system.ores",
+                "actor": "iam_service@system.ores",
+                "public_key": "<base64, 32 bytes>"}],
+ "secrets":   [{"name": "db.iam_service.password",
+                "owner": "iam_service@system.ores",
+                "value": "<the generated password>"}]}
+#+end_src
+
+Consumers are written before secrets, so a value's owner is a consumer the vault
+knows by the time the value arrives. The document is read from a pipe or from a
+file the deployment keeps nowhere: a file of plaintext passwords is the shape
+this step exists to remove. Each entry is reported as it is written and a failure
+stops the run with a non-zero exit, so a deployment that provisions half of what
+it states hears about it.
+
+Two details make the act safe to repeat and to audit. A secret written twice
+becomes a new version of the same name rather than a second secret, because the
+store is versioned. And the value is sealed to the vault's own transport key and
+then opened by the ordinary write, so provisioning runs the path the bus runs
+instead of a parallel one that could drift from it; the audit records the vault's
+own account as the performer and the consumer as the owner.
+
 ** What it does not do
 
 The bootstrap key lives as long as the unit's deployment, so the guarantee is

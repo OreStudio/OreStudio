@@ -19,15 +19,19 @@
  */
 #include "ores.vault.service/app/application.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.vault.core/messaging/registrar.hpp"
 #include "ores.vault.service/app/application_exception.hpp"
+#include "ores.vault.service/app/provisioning.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <iostream>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -62,6 +66,18 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     ORES_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.vault.service", 0, 1);
+
+    // The deployment's own step runs before the bus, because the first value it
+    // stores is the password of the service that issues the tokens the bus
+    // would ask for. It answers no request, so it opens no subscription.
+    if (!cfg.provision.empty()) {
+        auto ctx = make_context(cfg.database);
+        const auto system_ctx = ores::database::service::tenant_context::with_system_tenant(ctx);
+        if (provision_from(system_ctx, cfg.provision, std::cout, std::cerr) != 0) {
+            throw std::runtime_error("Provisioning did not write every entry");
+        }
+        co_return;
+    }
 
     ores::nats::service::client nats(cfg.nats);
     nats.connect();

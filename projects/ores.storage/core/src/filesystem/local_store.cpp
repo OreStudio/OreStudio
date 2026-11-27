@@ -19,6 +19,7 @@
  */
 #include "ores.storage.core/filesystem/local_store.hpp"
 #include "ores.logging/logger.hpp"
+#include "ores.platform/time/time_utils.hpp"
 #include <algorithm>
 #include <atomic>
 #include <fstream>
@@ -201,6 +202,39 @@ bool local_store::remove(const std::string& bucket, const std::string& key) {
     return existed;
 }
 
+local_store::expiry local_store::expire(const std::string& bucket,
+                                        const std::string& prefix,
+                                        std::chrono::system_clock::time_point older_than,
+                                        std::size_t limit,
+                                        bool dry_run) {
+    expiry result;
+
+    std::vector<entry> passed;
+    for (auto& entry : list(bucket, prefix)) {
+        if (entry.last_modified <= older_than)
+            passed.push_back(std::move(entry));
+    }
+
+    const auto selected = std::min(limit, passed.size());
+    result.remaining = passed.size() - selected;
+    for (std::size_t i = 0; i < selected; ++i) {
+        result.selected += 1;
+        result.selected_bytes += passed[i].size_bytes;
+    }
+
+    if (dry_run)
+        return result;
+
+    for (std::size_t i = 0; i < selected; ++i) {
+        if (remove(bucket, passed[i].key)) {
+            result.removed += 1;
+            result.removed_bytes += passed[i].size_bytes;
+        }
+    }
+
+    return result;
+}
+
 std::vector<local_store::entry> local_store::list(const std::string& bucket,
                                                   const std::string& prefix) const {
     std::vector<entry> entries;
@@ -226,7 +260,14 @@ std::vector<local_store::entry> local_store::list(const std::string& bucket,
         if (!prefix.empty() && !key.starts_with(prefix))
             continue;
 
-        entries.push_back(entry{std::move(key), item.file_size(item_ec)});
+        const auto written = std::filesystem::last_write_time(item.path(), item_ec);
+        // Age is stated to the whole second: the file clock is converted through
+        // the clocks' current difference, so a finer instant differs between two
+        // reads of one untouched file, and a cutoff a caller derives from a
+        // listing would then not include the object it came from.
+        const auto written_at = std::chrono::time_point_cast<std::chrono::seconds>(
+            ores::platform::time::time_utils::file_time_to_system_clock(written));
+        entries.push_back(entry{std::move(key), item.file_size(item_ec), written_at});
     }
 
     std::sort(entries.begin(), entries.end(), [](const entry& left, const entry& right) {

@@ -259,6 +259,48 @@ wire_traits<ores::storage::messaging::archive_listing>::read_msgpack(
     return object::read_msgpack<ores::storage::messaging::archive_listing>(data);
 }
 
+std::string wire_traits<ores::storage::messaging::expire_objects_request>::write_json(
+    const ores::storage::messaging::expire_objects_request& v) {
+    return object::write_json(v);
+}
+
+ores::storage::messaging::expire_objects_request
+wire_traits<ores::storage::messaging::expire_objects_request>::read_json(std::string_view text) {
+    return object::read_json<ores::storage::messaging::expire_objects_request>(text);
+}
+
+std::string wire_traits<ores::storage::messaging::expire_objects_request>::write_msgpack(
+    const ores::storage::messaging::expire_objects_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::storage::messaging::expire_objects_request
+wire_traits<ores::storage::messaging::expire_objects_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::storage::messaging::expire_objects_request>(data);
+}
+
+std::string wire_traits<ores::storage::messaging::expire_objects_response>::write_json(
+    const ores::storage::messaging::expire_objects_response& v) {
+    return object::write_json(v);
+}
+
+ores::storage::messaging::expire_objects_response
+wire_traits<ores::storage::messaging::expire_objects_response>::read_json(std::string_view text) {
+    return object::read_json<ores::storage::messaging::expire_objects_response>(text);
+}
+
+std::string wire_traits<ores::storage::messaging::expire_objects_response>::write_msgpack(
+    const ores::storage::messaging::expire_objects_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::storage::messaging::expire_objects_response
+wire_traits<ores::storage::messaging::expire_objects_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::storage::messaging::expire_objects_response>(data);
+}
+
 std::string wire_traits<ores::storage::messaging::list_archive_entries_request>::write_json(
     const ores::storage::messaging::list_archive_entries_request& v) {
     return object::write_json(v);

@@ -1116,6 +1116,11 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SchedulerService', 'dq::change_reasons:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SchedulerService', 'dq::change_reason_categories:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SchedulerService', 'marketdata::curve_bootstrap:publish');
+    -- The housekeeping sweep expires an object prefix past its period. That is a
+    -- listing and a removal in the storage service, so the job's own identity
+    -- needs both codes and nothing wider.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SchedulerService', 'storage::objects:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SchedulerService', 'storage::objects:delete');
 
     -- Reporting service: full own-component + shared reads + scheduler write/delete
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'ReportingService', 'Reporting domain service', false);

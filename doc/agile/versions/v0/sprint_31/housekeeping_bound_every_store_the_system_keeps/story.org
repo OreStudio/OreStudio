@@ -51,7 +51,7 @@ No store the system keeps grows without bound: each one has a declared policy, h
 | [[id:F95F16DD-83B5-421E-8B8E-45749D1E81BC][Carry the delivery counts forward]] | DONE | 2026-11-24 | 2026-11-25 | The delivery counts append a version on every flush, so one counter becomes 54,000 rows a day; carry the value forward instead. |
 | [[id:4499B9AF-677B-4844-831F-A321842F5E79][Bound the report run outputs by age]] | DONE | 2026-11-25 | 2026-11-25 | A run writes about 7 MB of cashflows, metrics and text values that are kept for ever; drop the chunks past a stated run age. |
 | [[id:B9067B9B-3EB5-41B6-AE82-98976EC63C9D][Share one package cache across a host's nodes]] | DONE | 2026-11-26 | 2026-11-26 | Each wrapper node keeps its own copy of an engine package, 266 MB for one version; key the cache by digest and share one copy per host. |
-| [[id:2914A129-36F6-4AD5-940F-2B4D500B5D24][Give object storage a lifecycle]] | BACKLOG | | | No key family in the object store expires; expire run inputs and output, compute output and old engine packages by prefix and age. |
+| [[id:2914A129-36F6-4AD5-940F-2B4D500B5D24][Give object storage a lifecycle]] | DONE | 2026-11-27 | 2026-11-27 | No key family in the object store expires; expire run inputs and output, compute output and old engine packages by prefix and age. |
 | [[id:A54B0989-BFCB-45C6-80B7-279BF9843E78][Decide whether calendar dates are stored or computed]] | DONE | 2026-11-25 | 2026-11-25 | Calendar dates hold 612 MB, copied per tenant; decide whether to keep, compute or share them, and record the decision. |
 | [[id:FD9467AA-D6B6-40A6-A6C1-D975EB9170E0][Model the retention policy]] | DONE | 2026-11-25 | 2026-11-25 | Declare a retention policy as data, so a period changes without a schema rebuild and one screen can show every policy. |
 | [[id:57122E23-9100-4DB1-A5B7-84ED45E14A7F][Build the housekeeping sweep]] | DONE | | 2026-11-25 | One scheduled executor reads the policies, applies them including where the engine runs no job, and records telemetry per policy. |
@@ -182,6 +182,29 @@ No store the system keeps grows without bound: each one has a declared policy, h
   second statement of those numbers would drift from the page that reads them.
   One sweep raises one notice however many policies it leaves unapplied: the
   ledger's instant is the transaction's, so the sweep's own rows share it.
+
+- An object prefix is bounded by an action that reaches the store, not by the
+  store's own lifecycle rule. A bucket rule expires by prefix and age without a
+  caller and without a ledger, so it cannot be asked what it would remove and it
+  states the period outside the installation's own data, where no screen reads
+  it and no policy version records it. The sweep cannot do the work either: it
+  is SQL, and SQL cannot reach an object store, which is why the two prefixes
+  read =skipped= for as long as they did. So the object half of housekeeping is
+  an action of its own, =expire_prefix=, which asks the database which object
+  policies are due — beside the rule the table sweep uses, so the two cannot
+  disagree about when a store is next treated — asks the storage service to
+  expire each prefix at its cutoff, and writes one ledger row per policy stating
+  what the cutoff held, what was removed and what a limit left. A dry run is the
+  same path with nothing removed, so the plan is readable before a sweep acts.
+
+- An expiry is one operation, and it states age to the whole second. A caller
+  that lists a page, removes part of it and reports the whole page has stated
+  something it did not do, so the storage service selects and removes in one
+  request, bounded by a limit whose remainder the reply states. Age is stated to
+  the second because the file clock is converted through the clocks' current
+  difference: a finer instant differs between two reads of one untouched file,
+  and a cutoff a caller derives from a listing would not include the object it
+  came from.
 
 * Out of scope
 

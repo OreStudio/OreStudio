@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/give-object-storage-a-lifecycle
+#+pr: 5213
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
-#+updated: 2026-11-24
+#+updated: 2026-11-27
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Every key family in the object store expires by a stated rule, so a run's inputs
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-24                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-27                               |
 
 * Acceptance
 
@@ -41,9 +41,50 @@ Every key family in the object store expires by a stated rule, so a run's inputs
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The catalogue already states what bounds these stores: the mechanism is
+=policy=, the action is =expire_prefix=, and the period and the cadence are its
+columns. What is missing is something that can act on them. The sweep is a SQL
+function, =ores_scheduler_apply_retention_policies_fn=, and SQL cannot reach the
+object store: the two object prefixes are the rows that read =skipped= with the
+reason in the ledger.
+
+Two mechanisms can bound an object prefix, and only one of them can say what it
+would remove.
+
+- The store's own lifecycle is a bucket rule the installation writes once: the
+  store expires by prefix and age without a caller and without a ledger. It
+  cannot be asked what it would remove, so the acceptance point that a sweep
+  says what it would remove fails. It also states the period outside the
+  installation's own data, where no screen reads it and no policy version
+  records it, which is the second thing the story decided against.
+- An action that reaches the store reads the prefix, compares each object's age
+  with the period, and reports or removes. It states what it would remove before
+  it does, writes what it removed into the ledger beside the tables' runs, and
+  leaves the catalogue as the one place a period is stated.
+
+The second is chosen. It is three slices, each verifiable on its own.
+
+1. The listing states an object's age. =object_summary= gains the instant the
+   object was last written: the local store reads it from the filesystem, and
+   the transfer client reads the store's =Last-Modified= header. Without it a
+   caller cannot tell a minute-old object from a year-old one, and a period
+   cannot be applied.
+2. The storage service answers one expiry: =storage.v1.objects.expire= takes a
+   bucket, a prefix, a cutoff and a dry-run flag, and answers the objects it
+   would remove with the bytes they hold and, when it is not a dry run, what it
+   removed. One operation rather than a list-then-delete loop on the caller's
+   side, so a caller cannot remove half a page and report a whole one.
+3. The scheduler applies it. A job whose action is =expire_prefix= takes the
+   prefix from the catalogue and the period from the policy, calls the storage
+   service, and writes the run to the ledger with the outcome =planned=,
+   =applied= or =failed=. =housekeeping plan= runs the same path with the dry
+   run set and prints the run without writing it.
+
+The engine package cache takes no rule. The catalogue bounds it by its keying: a
+package is named by its digest, so two versions holding the same bytes are one
+copy, and the only way to shrink the cache is to remove a package a node may be
+running. That is the node's decision, made when it releases a job's folder, and
+it is why the catalogue states =keying= for that store and no policy for it.
 
 * Measurements
 
@@ -57,7 +98,18 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The listing states age | a file whose write instant is set ten days back lists as ten days old, to within a day | =compass test run -- -R 'ores\\.storage\\.core\\.tests'= | f7e0beccc6 |
+| The storage suites | ores.storage.api, .core and .service pass 3 of 3 | the same command | f7e0beccc6 |
+| An expiry states without removing | one object ten days old and one a minute old, cutoff seven days: the dry run selects 1 object and 2 bytes, removes 0, and the listing still holds both | =compass test run -- -R 'ores\\.storage\\.'= | c8f3acefb2 |
+| An expiry removes what it selected | the same pair, without the flag: 1 removed and 2 bytes freed, and the listing holds the recent object alone | the same command | c8f3acefb2 |
+| An expiry bounds one call | three old objects with a limit of two: 2 removed and 1 left, and the second call removes the last and leaves none | the same command | c8f3acefb2 |
+| The object policies that are due | two, =job_inputs_7d= on =compute/input/= for 7 days and =job_outputs_90d= on =compute/output/= for 90 days, and no table policy | =compass sql -- -c "select * from ores_scheduler_due_object_policies_fn()"= | 6a41951082 |
+| The expiry fired and was recorded | the job reports =last: 19:22 (succeeded)=, and the run reads 2 objects and 22 bytes removed at =19:21:01= | =scheduler status=, then =housekeeping runs --policy job_inputs_7d= | 6a41951082 |
+| The old objects left and the recent one stayed | =compute/input/= held two files written thirty days back and one written today; after the run it holds the recent one | =ls -l --time-style=+%F publish/storage/ores/compute/input/ | 6a41951082 |
+| A dry run removes nothing | one object of 11 bytes is stated as =would_remove= and =would_bytes=, =removed= is 0, and the object is still listed | =objects expire-objects ores compute/input/ "2026-11-20 00:00:00Z"= | 6a41951082 |
+| The SQL suites | 1122 assertions in 116 files | =compass check --only pgtap= | 6a41951082 |
+| The component suites | ores.scheduler.api, .core, .service, ores.storage.api, .core, .service and ores.shell.storage pass 7 of 7 | =compass test run -- -R 'ores\.(scheduler|storage)\.|ores\.shell\.storage'= | 6a41951082 |
+| The storage and shell suites | ores.storage.api, .core, .service and ores.shell.storage pass 4 of 4 | =compass test run -- -R 'ores\\.storage\\.|ores\\.shell\\.storage'= | c8f3acefb2 |
 
 * Notes
 
@@ -76,7 +128,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5213][#5213]] | [storage] Give object storage a lifecycle |
 
 * Review
 
@@ -85,3 +137,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+An object prefix is bounded by the same policy as a table, and the sweep that
+applies it now reaches the store. `ores.scheduler.object_expiry` runs half an
+hour after the table sweep: it asks the database which object policies are due,
+asks the storage service to expire each prefix at the cutoff its period states,
+and writes a row per policy into the run ledger beside the tables' runs.
+
+The ledger row states the cutoff's work and the run's: how many objects it held
+and their bytes, how many were removed, and what a limit left for the next
+firing. A dry run writes the same row with the outcome `planned` and removes
+nothing, which is how a person reads the plan first.
+
+Against a provisioned installation, two objects thirty days old left
+`compute/input/` and a twelve-byte one written a minute earlier stayed; the row
+reads "the cutoff held 2 object(s) of 22 byte(s); removed 2 of 22 byte(s)". The
+same question asked from the shell, with `objects expire-objects` and a cutoff,
+answers one object and eleven bytes and removes none.
+
+The engine package cache keeps no rule, and the task's acceptance is met by the
+catalogue rather than by an omission: a package is named by its digest, so the
+cache is bounded by its keying, and removing one a node may be running is the
+node's decision when it releases a job's folder. That record is the third
+sibling, already closed.

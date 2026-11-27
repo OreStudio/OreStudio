@@ -21,15 +21,18 @@
 /**
  * Job Definitions Artefact Population Script
  *
- * Stages the two jobs the platform declares for housekeeping: the sweep that
- * applies the retention policies, and the sampler that measures the stores. A
- * policy names a table and not a job, so the datasets stand apart and this one
- * declares no dependency.
+ * Stages the jobs the platform declares for housekeeping: the sweep that applies
+ * the retention policies of the tables, the expiry that applies the ones of the
+ * object prefixes, the sampler that measures the stores, and the pass that tells
+ * a person what nothing bounds. A policy names a store and not a job, so the
+ * datasets stand apart and this one declares no dependency.
  *
- * The sweep is fired once a day. Each policy states its own cadence, and the
- * sweep applies the ones that are due, so the schedule here is the tick. The
- * sampler runs every hour, which is the finest cadence the screen's plot needs
- * and the coarsest that still shows a store growing within a day.
+ * The two sweeps are fired once a day, half an hour apart so that the object
+ * expiry reads a ledger the table sweep has already written. Each policy states
+ * its own cadence, and a sweep applies the ones that are due, so the schedule
+ * here is the tick. The sampler runs every hour, which is the finest cadence the
+ * screen's plot needs and the coarsest that still shows a store growing within a
+ * day.
  */
 
 \echo '--- Job Definitions Artefacts ---'
@@ -77,6 +80,14 @@ values
      '15 * * * *',
      'execute_sql',
      '{}'::jsonb,
+     true),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id',
+     'ores.scheduler.object_expiry',
+     'Expire the object prefixes whose policies are due',
+     '',
+     '30 3 * * *',
+     'expire_prefix',
+     '{"dry_run": false}'::jsonb,
      true),
     (ores_utility_system_tenant_id_fn(), :'v_dataset_id',
      'ores.scheduler.housekeeping_alerts',

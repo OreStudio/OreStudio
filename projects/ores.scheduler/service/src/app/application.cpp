@@ -28,6 +28,7 @@
 #include "ores.scheduler.core/service/mq_action_handler.hpp"
 #include "ores.scheduler.core/service/nats_publish_action_handler.hpp"
 #include "ores.scheduler.core/service/nats_request_action_handler.hpp"
+#include "ores.scheduler.core/service/object_expiry_action_handler.hpp"
 #include "ores.scheduler.core/service/scheduler_loop.hpp"
 #include "ores.scheduler.core/service/sql_action_handler.hpp"
 #include "ores.scheduler.service/app/application_exception.hpp"
@@ -105,6 +106,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         std::make_unique<ores::scheduler::service::nats_publish_action_handler>(nats, svc_nats));
     handlers.push_back(
         std::make_unique<ores::scheduler::service::nats_request_action_handler>(svc_nats));
+    // The table sweep is SQL and cannot reach an object store, so the object
+    // half of housekeeping is an action of its own.
+    handlers.push_back(
+        std::make_unique<ores::scheduler::service::object_expiry_action_handler>(svc_nats));
 
     auto loop = std::make_shared<ores::scheduler::service::scheduler_loop>(
         nats, db_ctx, std::move(handlers));

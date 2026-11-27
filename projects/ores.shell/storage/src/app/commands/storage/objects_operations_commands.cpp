@@ -120,6 +120,13 @@ void objects_operations_commands::register_commands(cli::Menu& root_menu, nats_c
         "list-objects <bucket> <prefix> [--offset <v>] [--limit <v>]");
 
     menu->Insert(
+        "expire-objects",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_expire_objects(std::ref(out), std::ref(session), std::move(args));
+        },
+        "expire-objects <bucket> <prefix> <older_than> [--limit <v>] [--dry_run <v>]");
+
+    menu->Insert(
         "list-archive-entries",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_list_archive_entries(std::ref(out), std::ref(session), std::move(args));
@@ -363,6 +370,76 @@ void objects_operations_commands::process_list_objects(std::ostream& out,
             out, session, std::string(req.nats_subject), req);
     } else {
         result = do_request<ores::storage::messaging::list_objects_response>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
+}
+
+void objects_operations_commands::process_expire_objects(std::ostream& out,
+                                                         nats_client& session,
+                                                         const std::vector<std::string>& args) {
+    ORES_LOG_SEV(lg(), debug) << "Initiating expire-objects request.";
+
+    using request_type = ores::storage::messaging::expire_objects_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run expire-objects." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "limit", .requires_value = true, .default_value = ""},
+        {.name = "dry_run", .requires_value = true, .default_value = ""},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 3;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.bucket = parsed->positionals[next++];
+        req.prefix = parsed->positionals[next++];
+        req.older_than = ores::shell::app::from_token<std::chrono::system_clock::time_point>(
+            parsed->positionals[next++], "older_than");
+        if (const auto& raw_limit = parsed->flag("limit"); !raw_limit.empty()) {
+            req.limit = ores::shell::app::from_token<std::uint32_t>(raw_limit, "limit");
+        }
+        if (const auto& raw_dry_run = parsed->flag("dry_run"); !raw_dry_run.empty()) {
+            if (!parse_flag(raw_dry_run, req.dry_run)) {
+                fail(out) << "dry_run must be 'true' or 'false'." << std::endl;
+                return;
+            }
+        }
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::storage::messaging::expire_objects_response> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::storage::messaging::expire_objects_response>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::storage::messaging::expire_objects_response>(
             out, session, std::string(req.nats_subject), req);
     }
     if (!result)

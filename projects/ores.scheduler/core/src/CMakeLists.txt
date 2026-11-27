@@ -69,6 +69,9 @@ target_link_libraries(${lib_target_name}
         # The publish-from-dq handler decodes the command the workflow engine
         # dispatches, which is DQ's message rather than the scheduler's.
         ores.dq.api.lib
+        # The object expiry action speaks the storage protocol, because the
+        # sweep that bounds the tables is SQL and cannot reach an object store.
+        ores.storage.api.lib
         ores.service.lib
         ores.utility.lib
         ores.security.lib

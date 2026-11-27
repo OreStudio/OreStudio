@@ -34,14 +34,41 @@ Today the catalogue has one publisher for all of it, simulated-fixings, with 82 
 | Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Steps 1 and 2 of the plan: publishers per administrator, then one simulated source each. |
+| Next         | Step 1 of the plan: the publisher rows, from =wmr= to the central banks, with the LIBOR exception stated. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
 
 - The system bundle installs a publisher of kind reference for each administrator of a simulated fixing, each with one simulated source on session synthetic-local, a shadow rate card and vendor instruments in that administrator's notation.
 - The WM/R fixing items are mapped by the wmr provider in the wmr notation, whose vendor ids are the cut keys of ores_refdata_cut_codes_tbl, and no fixing item is served by both a public publisher and the simulator.
+- Neither KRW GENERIC nor JPY EYTIBOR exists anywhere in the catalogue or the store, and no fixing item is published by a source whose publisher administers nothing.
+- LIBOR fixes under iba, and iba states that the settings are retired and kept for the teaching material.
 - On a fresh provision the fixings screen shows one row per fixing item per publisher, each naming its administrator, and no simulated series exists for an index whose publisher the system party routes live.
+
+* Decisions
+
+- *No invented indices.* =KRW GENERIC 3M= is ORE's fallback name for a currency
+  whose IBOR ORE does not know, and =JPY EYTIBOR 3M= names a benchmark the market
+  retired. Neither has an administrator, so neither is a fixing the platform can
+  state. Both are deleted with their series, their curve configs and their
+  derived instruments. Nothing floats on them: no leg of the portfolio names
+  either.
+- *LIBOR keeps publishing.* Its administrator retired the settings between 2021
+  and 2023, and the teaching material still uses them. The simulator publishes
+  LIBOR as if the settings continued, under =iba=, the administrator that
+  published them. The exception is deliberate and is recorded here and on the
+  page that owns the subject, so a reader does not read it as stale data.
+- *The three real term indices stay derived.* =USD SOFR 1M=, =COP IBR 3M= and
+  =PLN WIBOR 6M= are computed by us from the run's overnight curves, so
+  =derived= publishes them, as it publishes the FX volatilities we infer. Naming
+  CME, Banco de la República or GPW Benchmark would attribute our arithmetic to
+  them; when a real source of the same term index arrives, the rank rule replaces
+  the derived one.
+- *=simulated-fixings= goes.* With every index attributed and the invented ones
+  removed, no fixing is left without an administrator, so the catch-all publisher
+  has nothing to publish.
+- *The demo portfolio is not re-pointed.* The 279 legs that float on LIBOR stay
+  where they are, for the reason above.
 
 * Plan
 
@@ -51,21 +78,24 @@ and the simulator chosen by its session code, never by its name. Only the
 catalogue rows and the ownership of the generators are wrong. The order below
 matters in one place: a publisher has to exist before its notation does.
 
-1. *Publishers per administrator* (system bundle SQL). =wmr= for LSEG's WM/R
-   rates, of kind =reference=, its description naming the seven cut codes it
-   administers; =emmi= for EURIBOR, =iba= for the legacy LIBOR settings, and the
-   administrator of each simulated index that has one. Keep =simulated-fixings=
-   only for an index with no administrator and say so in its description, or
-   delete it and leave those indices unserved: this is the one decision the task
-   needs from its owner.
-2. *One simulated source per publisher.* =wmr-a=, =emmi-a=, …, on session
-   =synthetic-local=, service =end_of_day=, =is_default=, with a shadow rate
-   card, built as =bloomberg-a= is built today.
+1. *Publishers per administrator* (system bundle SQL), of kind =reference=, each
+   description naming what it administers: =wmr= for LSEG's WM/R rates and its
+   seven cut codes; =iba= for the LIBOR settings, stating that the settings are
+   retired and stay published for teaching; =emmi= for EURIBOR; the administrator
+   of each remaining simulated index — =snb=, =danmarks-nationalbank=, =mnb=,
+   =bok=, =rbnz=, =nbp=, =banxico=, =cbc=, =rbi=, =kofia= and the rest, using the
+   provider the catalogue already holds where one exists.
+2. *One simulated source per publisher.* =wmr-a=, =iba-a=, =emmi-a=, …, on
+   session =synthetic-local=, service =end_of_day=, =is_default=, with a shadow
+   rate card, built as =bloomberg-a= is built today.
 3. *Notations and vendor ids.* A =wmr= notation whose ids are the cut's own
    keys, which =ores_marketdata_cut_codes_tbl.fixing_source_code= already holds
    (=NYC1000= → =WMR1000NYC=, =LON1600= → =WMR1600LON=), registered in the
-   vendor notation registry; then the vendor instruments and mappings for the 36
-   FX items. The degenerate =oresmd= notation goes when =simulated-fixings= does.
+   vendor notation registry. The rate publishers need no new notation: their
+   instrument is the currency, the index name and the tenor, which is how the
+   administrator names a setting (=USD LIBOR 3M=). Then the vendor instruments
+   and mappings for every item. The degenerate =oresmd= notation goes when
+   =simulated-fixings= does.
 4. *Generators per source.* Each fixing generator attaches to the source of its
    publisher, as its node name already suggests
    (=synthetic.bloomberg.ir.yield_curve.sofr.usd=). The simulator keeps the
@@ -73,12 +103,16 @@ matters in one place: a publisher has to exist before its notation does.
 5. *One producer per item.* Stop generating the thirteen indices a public
    publisher already serves, and add a check that fails when a fixing item is
    demanded from two providers the system party routes.
-6. *The screen.* Once a fixing names its administrator, the list states it: the
+6. *Delete the invented indices.* =KRW GENERIC=, =JPY EYTIBOR= with their series,
+   their curve configs and their derived instruments, so the catalogue states no
+   index that no one administers.
+7. *The screen.* Once a fixing names its administrator, the list states it: the
    publisher's name beside the source, and the benchmark the item carries, so a
    row reads =AUD/JPY · WM/R 10:00 New York= under a *Stated by* column.
-7. *Proof.* A fresh provision: every fixing row attributable to an administrator,
-   no item with two producers, the seven cut keys as vendor ids, and the fixings
-   screen reading as a production one does.
+8. *Proof.* A fresh provision: every fixing row attributable to an administrator,
+   no item with two producers, neither invented index anywhere, the seven cut
+   keys as vendor ids, LIBOR still fixing, and the screen reading as a production
+   one does.
 
 * Measurements
 

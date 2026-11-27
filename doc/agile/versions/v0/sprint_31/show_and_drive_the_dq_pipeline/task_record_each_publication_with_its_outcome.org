@@ -107,3 +107,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The writer is in, and it is the live path: the step that publishes a dataset
+records its run from every component that runs one, through one SECURITY DEFINER
+function the service roles may call. The log states the outcome and the messages
+the run produced, and a failed run is recorded beside the successes.
+
+Proven by publishing a bundle on 2026-11-27: four datasets logged as published and
+one as failed, each with the person who asked and, for the failure, the error the
+target raised.
+
+Not yet in: the read over HTTP and the dataset page's Publications tab, which is
+the other half of the acceptance. The generated list answers the bus and has no
+route, and the tab still states the absence it stated before the writer existed.
+This task stays started until the tab draws these rows.

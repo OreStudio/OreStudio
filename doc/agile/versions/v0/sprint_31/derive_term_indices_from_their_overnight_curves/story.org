@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :ir:curves:marketdata:sprint_31:v0:
 #+created: 2026-11-24
-#+updated: 2026-11-24
+#+updated: 2026-11-27
 #+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 #+predecessor: 0F936789-FEBE-4330-97B9-DFE0837E4466
@@ -31,10 +31,10 @@ it is.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
-| Now           | Not yet started.                       |
+| Now           | Two of the three tasks are done: the term indices are derived, and the fixings screen lists them. |
 | Waiting on    | Nothing.                               |
-| Next          | Start with the term index derivation.  |
-| Last touched  | 2026-11-24                               |
+| Next          | Retire =derived= as a publisher and annotate the derivation. |
+| Last touched  | 2026-11-27                               |
 
 * Acceptance
 
@@ -52,7 +52,7 @@ it is.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:1993E4E7-A59B-4473-8635-C9F6DF974EB5][Derive a term index from its overnight curve]] | DONE | 2026-11-24 | 2026-11-26 | Give a term index of a currency that has an overnight curve its curve and fixings from that curve: term SOFR and IBR from the compounded overnight forward, EYTIBOR, WIBOR and the generic indices with a stated spread. |
-| [[id:DC6F4D69-5E3E-4562-9503-88C74329FF1E][Show the FX and IR fixings on a fixings screen]] | STARTED | 2026-11-26 | | A system-level Fixings screen lets the super administrator view every FX and IR observation across every source, read only. |
+| [[id:DC6F4D69-5E3E-4562-9503-88C74329FF1E][Show the FX and IR fixings on a fixings screen]] | DONE | 2026-11-26 | 2026-11-27 | A system-level Fixings screen lets the super administrator view every FX and IR observation across every source, read only. |
 | [[id:7E9EA6F5-B45A-4F9A-A1A3-34F12903158F][State each simulated fixing under its administrator]] | DONE | 2026-11-27 | 2026-11-27 | One simulated publisher states every simulated fixing, in vendor ids that are the item addresses, and 13 overnight indices are produced by both a public adapter and the simulator. Split the simulated fixings into a publisher per administrator, in that administrator's notation, each served by one simulated source. |
 | [[id:0B9995FC-96D1-4785-AEBD-512397ECA7D5][Annotate a derived value instead of naming a derived provider]] | BACKLOG | | | The derived provider conflates who owns an item with how its value was made: 194 series, 2,612 fixings and 2,280 vendor ids sit under it, while the series already carries derivation_kind and every observation carries its lineage. Retire the provider and annotate the derivation. |
 

@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: FAA3F122-C971-423E-9D91-35ABE535EDE3
+:END:
+#+title: Four of the seven WM/R cut codes mint no fixing
+#+description: The reference data holds seven cut codes but only three name a fixing item, so the catalogue states four cuts that no item, no instrument and no fixing reaches.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:fixing:tech_debt:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=ores_refdata_cut_codes_tbl= holds seven WM/R cut codes. Only three of them name
+a fixing item, so only three have an instrument, a mapping and a fixing:
+=WMR1000NYC=, =WMR1100WAR= and =WMR1200BUD=. =LON1200=, =LON1600=, =NYC1230= and
+=TKY1500= exist in the reference data and nowhere else.
+
+* Why
+
+A catalogue that describes seven cuts and states three of them invites the
+reading that four cuts are broken. Either the four cuts get their pairs and
+items, or the reference data states only the cuts the store serves.
+
+* References
+
+- =ores_refdata_cut_codes_tbl.fixing_source_code=.
+- The WM/R publisher installed by =marketdata_fixing_publishers_catalogue_populate.sql=.
+
+* See also
+
+-

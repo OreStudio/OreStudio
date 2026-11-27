@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-26
-#+updated: 2026-11-26
+#+updated: 2026-11-27
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -35,7 +35,7 @@ Today the catalogue has one publisher for all of it, simulated-fixings, with 82 
 | Now          | Implemented and proved on a fresh provision. |
 | Waiting on   | Nothing.                               |
 | Next         | A pull request, then the screen step of the plan once the reads carry the publisher name and the benchmark. |
-| Last touched | 2026-11-26                               |
+| Last touched | 2026-11-27                               |
 
 * Acceptance
 
@@ -137,13 +137,14 @@ task and name that file in the Command column.
 * Result
 
 The fixings the platform states are now stated by the administrators that own
-them. A fresh provision installs eighteen publishers of kind =reference=, their
+them. A fresh provision installs seventeen publishers of kind =reference=, their
 sources, shadow rate cards, subscriptions and routes; sixty-nine instruments in
 their own notations; and the simulator offers each source only the items its
-provider maps. On the rebuilt database eighteen providers state fixings — the
-WM/R cuts under =wmr=, the LIBOR settings under =iba=, the rest under their
-central banks — the catch-all publisher states none, no item has two producers,
-and neither invented index exists anywhere.
+provider maps. On the rebuilt database seventeen administrators state fixings —
+the WM/R cuts under =wmr=, the LIBOR settings under =iba=, the rest under their
+central banks — beside =derived= for the three indices we compute. The catch-all
+publisher states none, no item has two producers, and neither invented index
+exists anywhere.
 
 Two things are left for other work. The screen still shows the source code
 rather than the publisher's name and the benchmark the item carries, which needs

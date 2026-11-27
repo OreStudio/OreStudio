@@ -42,7 +42,6 @@ const provider_notation* notation_of(std::string_view provider) {
     static const fixing_setting_notation iba{"iba"};
     static const fixing_setting_notation emmi{"emmi"};
     static const fixing_setting_notation hkab{"hkab"};
-    static const fixing_setting_notation gpw{"gpw"};
     static const fixing_setting_notation banrep{"banrep"};
     static const fixing_setting_notation snb{"snb"};
     static const fixing_setting_notation danmarks_nationalbank{"danmarks-nationalbank"};
@@ -68,7 +67,6 @@ const provider_notation* notation_of(std::string_view provider) {
           static_cast<const provider_notation*>(&iba),
           static_cast<const provider_notation*>(&emmi),
           static_cast<const provider_notation*>(&hkab),
-          static_cast<const provider_notation*>(&gpw),
           static_cast<const provider_notation*>(&banrep),
           static_cast<const provider_notation*>(&snb),
           static_cast<const provider_notation*>(&danmarks_nationalbank),

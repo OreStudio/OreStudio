@@ -37,9 +37,24 @@ msg::vendor_id setting_id_of(std::string external) {
 
 }
 
-TEST_CASE("a_rate_publisher_is_registered_for_each_administrator",
+TEST_CASE("every_rate_administrator_of_the_catalogue_is_registered",
           "[vendor_notation][fixing_setting]") {
-    for (const auto* provider : {"iba", "emmi", "hkab", "gpw", "banrep", "snb", "mnb", "bok"}) {
+    for (const auto* provider : {"iba",
+                                 "emmi",
+                                 "hkab",
+                                 "banrep",
+                                 "snb",
+                                 "danmarks-nationalbank",
+                                 "mnb",
+                                 "bok",
+                                 "nbp",
+                                 "rbnz",
+                                 "sarb",
+                                 "boi",
+                                 "nifc",
+                                 "fbil",
+                                 "tba",
+                                 "bist"}) {
         const auto* sut = vendor::notation_of(provider);
         REQUIRE(sut != nullptr);
         CHECK(sut->id_scheme() == "setting");

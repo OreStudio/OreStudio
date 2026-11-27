@@ -27,10 +27,10 @@ namespace {
 namespace vendor = ores::marketdata::vendor;
 namespace msg = ores::marketdata::messaging;
 
-const std::string aud_jpy_nyc(
+const std::string cut_aud_jpy_nyc(
     "oresmd://fx/AUD?type=fixing&index=fx&source=WMR1000NYC&ccy=JPY");
 
-msg::vendor_id id_of(std::string external) {
+msg::vendor_id cut_id_of(std::string external) {
     return msg::vendor_id{.id_scheme = "wmr_cut", .external_id = std::move(external), .field = "value"};
 }
 
@@ -44,12 +44,12 @@ TEST_CASE("the_wmr_notation_is_registered", "[vendor_notation][wmr]") {
 
 TEST_CASE("a_cut_fixing_is_written_as_its_cut_and_pair", "[vendor_notation][wmr]") {
     const vendor::wmr_cut_notation sut;
-    const auto written = sut.write(vendor::quote_description{vendor::index_fixing{aud_jpy_nyc}});
+    const auto written = sut.write(vendor::quote_description{vendor::index_fixing{cut_aud_jpy_nyc}});
     REQUIRE(written.has_value());
-    CHECK(*written == id_of("WMR1000NYC AUDJPY"));
+    CHECK(*written == cut_id_of("WMR1000NYC AUDJPY"));
     const auto read = sut.read(*written);
     REQUIRE(read.has_value());
-    CHECK(*read == vendor::quote_description{vendor::index_fixing{aud_jpy_nyc}});
+    CHECK(*read == vendor::quote_description{vendor::index_fixing{cut_aud_jpy_nyc}});
 }
 
 TEST_CASE("the_wmr_notation_refuses_what_is_not_a_cut", "[vendor_notation][wmr]") {
@@ -57,8 +57,8 @@ TEST_CASE("the_wmr_notation_refuses_what_is_not_a_cut", "[vendor_notation][wmr]"
     CHECK_FALSE(sut.write(vendor::quote_description{vendor::fx_spot_quote{"EUR", "USD"}}));
     CHECK_FALSE(sut.write(vendor::quote_description{
         vendor::index_fixing{"oresmd://ir/USD?type=fixing&index=ibor&name=SOFR"}}));
-    CHECK_FALSE(sut.read(id_of("WMR1000NYC")));
-    CHECK_FALSE(sut.read(id_of("WMR1000NYC EUR")));
-    CHECK_FALSE(sut.read(id_of("WMR1000NYC eurusd")));
-    CHECK_FALSE(sut.read(id_of("")));
+    CHECK_FALSE(sut.read(cut_id_of("WMR1000NYC")));
+    CHECK_FALSE(sut.read(cut_id_of("WMR1000NYC EUR")));
+    CHECK_FALSE(sut.read(cut_id_of("WMR1000NYC eurusd")));
+    CHECK_FALSE(sut.read(cut_id_of("")));
 }

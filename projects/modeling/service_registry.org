@@ -406,6 +406,7 @@
 ** Select prefixes
 
 - ores_iam_
+- ores_marketdata_
 - ores_dq_
 - ores_trading_
 - ores_variability_

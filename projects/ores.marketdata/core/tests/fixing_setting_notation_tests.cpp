@@ -27,10 +27,10 @@ namespace {
 namespace vendor = ores::marketdata::vendor;
 namespace msg = ores::marketdata::messaging;
 
-const std::string libor_3m("oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M");
-const std::string saron("oresmd://ir/CHF?type=fixing&index=ibor&name=SARON");
+const std::string setting_libor_3m("oresmd://ir/USD?type=fixing&index=ibor&name=LIBOR&tenor=3M");
+const std::string setting_saron("oresmd://ir/CHF?type=fixing&index=ibor&name=SARON");
 
-msg::vendor_id id_of(std::string external) {
+msg::vendor_id setting_id_of(std::string external) {
     return msg::vendor_id{.id_scheme = "setting", .external_id = std::move(external), .field = "value"};
 }
 
@@ -49,23 +49,23 @@ TEST_CASE("a_rate_publisher_is_registered_for_each_administrator",
 TEST_CASE("a_setting_is_written_as_its_currency_name_and_tenor",
           "[vendor_notation][fixing_setting]") {
     const vendor::fixing_setting_notation sut{"iba"};
-    const auto written = sut.write(vendor::quote_description{vendor::index_fixing{libor_3m}});
+    const auto written = sut.write(vendor::quote_description{vendor::index_fixing{setting_libor_3m}});
     REQUIRE(written.has_value());
-    CHECK(*written == id_of("USD LIBOR 3M"));
+    CHECK(*written == setting_id_of("USD LIBOR 3M"));
     const auto read = sut.read(*written);
     REQUIRE(read.has_value());
-    CHECK(*read == vendor::quote_description{vendor::index_fixing{libor_3m}});
+    CHECK(*read == vendor::quote_description{vendor::index_fixing{setting_libor_3m}});
 }
 
 TEST_CASE("a_setting_without_a_tenor_is_written_without_one",
           "[vendor_notation][fixing_setting]") {
     const vendor::fixing_setting_notation sut{"snb"};
-    const auto written = sut.write(vendor::quote_description{vendor::index_fixing{saron}});
+    const auto written = sut.write(vendor::quote_description{vendor::index_fixing{setting_saron}});
     REQUIRE(written.has_value());
-    CHECK(*written == id_of("CHF SARON"));
+    CHECK(*written == setting_id_of("CHF SARON"));
     const auto read = sut.read(*written);
     REQUIRE(read.has_value());
-    CHECK(*read == vendor::quote_description{vendor::index_fixing{saron}});
+    CHECK(*read == vendor::quote_description{vendor::index_fixing{setting_saron}});
 }
 
 TEST_CASE("the_setting_notation_refuses_what_is_not_a_rate_setting",
@@ -74,13 +74,13 @@ TEST_CASE("the_setting_notation_refuses_what_is_not_a_rate_setting",
     CHECK_FALSE(sut.write(vendor::quote_description{vendor::fx_spot_quote{"EUR", "USD"}}));
     CHECK_FALSE(sut.write(vendor::quote_description{
         vendor::index_fixing{"oresmd://fx/EUR?type=fixing&index=fx&source=ECB&ccy=USD"}}));
-    CHECK_FALSE(sut.read(id_of("USD")));
-    CHECK_FALSE(sut.read(id_of("USD LIBOR 3M EXTRA")));
-    CHECK_FALSE(sut.read(id_of("usd LIBOR 3M")));
-    auto wrong_scheme = id_of("USD LIBOR 3M");
+    CHECK_FALSE(sut.read(setting_id_of("USD")));
+    CHECK_FALSE(sut.read(setting_id_of("USD LIBOR 3M EXTRA")));
+    CHECK_FALSE(sut.read(setting_id_of("usd LIBOR 3M")));
+    auto wrong_scheme = setting_id_of("USD LIBOR 3M");
     wrong_scheme.id_scheme = "wmr_cut";
     CHECK(sut.read(wrong_scheme).error().reason == vendor::notation_error::kind::wrong_scheme);
-    auto wrong_field = id_of("USD LIBOR 3M");
+    auto wrong_field = setting_id_of("USD LIBOR 3M");
     wrong_field.field = "PX_LAST";
     CHECK(sut.read(wrong_field).error().reason == vendor::notation_error::kind::wrong_field);
 }

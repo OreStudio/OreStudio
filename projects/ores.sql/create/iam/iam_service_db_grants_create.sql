@@ -286,10 +286,8 @@ select _ores_grant_dml_fn('ores_compute_', :'compute_service_user');
 -- ---------------------------------------------------------------------------
 select _ores_grant_dml_fn('ores_synthetic_', :'synthetic_service_user');
 select _ores_grant_dml_fn('ores_refdata_', :'synthetic_service_user');
--- The catalogue says which fixing items each provider states, so the simulator
--- reads its instruments and their mappings before it offers a generator.
-select _ores_grant_select_fn('ores_marketdata_', :'synthetic_service_user');
 select _ores_grant_select_fn('ores_iam_', :'synthetic_service_user');
+select _ores_grant_select_fn('ores_marketdata_', :'synthetic_service_user');
 select _ores_grant_select_fn('ores_dq_', :'synthetic_service_user');
 select _ores_grant_select_fn('ores_trading_', :'synthetic_service_user');
 select _ores_grant_select_fn('ores_variability_', :'synthetic_service_user');

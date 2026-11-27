@@ -55,8 +55,9 @@ worth knowing:
 
 - =--dry-run= prints the exact =ores.shell= command and runs nothing. The
   password is masked.
-- =-u= and =-p= override the login. The defaults are =ORES_SHELL_LOGIN_USERNAME=
-  and =ORES_SHELL_LOGIN_PASSWORD=.
+- =-u= and =-p= override the login. The default username is
+  =ORES_SHELL_LOGIN_USERNAME= from =.env=; the password is not in the file, so
+  export =ORES_SHELL_LOGIN_PASSWORD= or type it at the shell's prompt.
 - =--log-enabled= and =--log-level= forward to the shell's own log file. The run
   also prints a progress log path.
 

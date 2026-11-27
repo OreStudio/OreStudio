@@ -85,7 +85,8 @@ task and name that file in the Command column.
 | The BFF's run-error rows, which serve the phase | 10 tests | =npm run test --workspace @ores/bff -- --run src/grid-report-runs.test.ts= | =441cb29dd4= |
 | The format gate | passed | =compass check --only format= | =441cb29dd4= |
 | The ratchet, which records two new wide-type warnings | 2 new diagnostics, exit 0 | =compass-ng check --ratchet 1fd8150a69= | =441cb29dd4= |
-| The local gate, including the database and the whole suite | 22 of 22 checks passed; 100% of 115 suites | =compass check= | =441cb29dd4= |
+| The local gate, including the database and the whole suite | 21 of 22 checks passed; 100% of 115 suites; =pgtap= fails in a scheduler test this branch does not touch | =compass check= | =9bd911c298= |
+| The web tree: typecheck, format and every test | 2727 tests in the client, 234 in the BFF, 61 in the wire protocol | =npm test= in =projects/ores.web= | =9bd911c298= |
 
 * Notes
 
@@ -106,6 +107,14 @@ The plan changed in two places once the code was read.
 Two surfaces moved with the column, because both write an error row: the shell's
 =fail-report= command gained the phase as its first positional argument, and the
 agent eval seed states =preprocess= on the run-level row it writes.
+
+The gate's one failure is not this branch's. =pgtap= fails in
+=scheduler_housekeeping_alerts_test.sql=: the pass is expected to raise four
+notices for stores nothing bounds and raises none, and the function warns that
+no account raises them. The same file passed at the base this branch was
+rebased from before the housekeeping work landed, and the branch touches
+neither the test nor the scheduler and inbox SQL. It is captured in
+[[file:../../../product_backlog/inbox/pgtap-housekeeping-alerts-raise-nothing.org][the inbox]].
 
 The ratchet records the column as two new wide-type warnings:
 =report_error_event= and its entity now hold seventeen fields against a recorded

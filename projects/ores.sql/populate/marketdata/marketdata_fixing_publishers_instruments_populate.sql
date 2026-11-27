@@ -42,12 +42,12 @@
 -- The administrator of each rate index the simulator states today. An index
 -- whose administrator publishes it through an adapter is not here, because its
 -- instrument already exists under that administrator.
-create temporary table t_fixing_administrator (
+create temporary table t_fixing_publisher_administrator (
     index_name text primary key,
     provider_code text not null
 );
 
-insert into t_fixing_administrator (index_name, provider_code) values
+insert into t_fixing_publisher_administrator (index_name, provider_code) values
     ('LIBOR', 'iba'),
     ('EURIBOR', 'emmi'),
     ('HIBOR', 'hkab'),
@@ -67,11 +67,11 @@ insert into t_fixing_administrator (index_name, provider_code) values
     ('IBR', 'banrep');
 
 -- The items the catch-all publisher states today, split into their notation.
-create temporary table t_fixing_inventory (
+create temporary table t_fixing_publisher_inventory (
     provider_code text, id_scheme text, external_id text, field text, oresmd_uri text
 );
 
-insert into t_fixing_inventory (provider_code, id_scheme, external_id, field, oresmd_uri)
+insert into t_fixing_publisher_inventory (provider_code, id_scheme, external_id, field, oresmd_uri)
 select distinct 'wmr', 'wmr_cut',
        substring(m.oresmd_uri from 'source=([A-Z0-9]+)') || ' ' ||
            split_part(split_part(m.oresmd_uri, '?', 1), '/', 4) || substring(m.oresmd_uri from 'ccy=([A-Z]{3})'),
@@ -96,7 +96,7 @@ from ores_marketdata_market_data_mappings_tbl m
 join ores_marketdata_market_data_vendor_instruments_tbl v
   on v.id = m.vendor_instrument_id
  and v.valid_to = ores_utility_infinity_timestamp_fn()
-join t_fixing_administrator a
+join t_fixing_publisher_administrator a
   on a.index_name = substring(m.oresmd_uri from 'name=([A-Za-z]+)')
 where v.provider_code = 'simulated-fixings'
   and m.valid_to = ores_utility_infinity_timestamp_fn()
@@ -111,7 +111,7 @@ select md5(t.provider_code || '|' || t.id_scheme || '|' || t.external_id || '|' 
        ores_utility_system_tenant_id_fn(), 0, t.provider_code, t.id_scheme, t.external_id, t.field,
        false, '', current_user, current_user, 'system.initial_load',
        'Initial population of the fixing publishers'' instruments'
-from t_fixing_inventory t
+from t_fixing_publisher_inventory t
 where not exists (
     select 1 from ores_marketdata_market_data_vendor_instruments_tbl v
     where v.tenant_id = ores_utility_system_tenant_id_fn()
@@ -129,7 +129,7 @@ insert into ores_marketdata_market_data_mappings_tbl (
 select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, v.id, t.oresmd_uri,
        timestamptz '2026-01-01 00:00:00+00', current_user, current_user, 'system.initial_load',
        'Initial population of the fixing publishers'' mappings'
-from t_fixing_inventory t
+from t_fixing_publisher_inventory t
 join ores_marketdata_market_data_vendor_instruments_tbl v
   on v.tenant_id = ores_utility_system_tenant_id_fn()
  and v.provider_code = t.provider_code
@@ -144,6 +144,9 @@ where not exists (
       and m.oresmd_uri = t.oresmd_uri
       and m.valid_to = ores_utility_infinity_timestamp_fn()
 );
+
+drop table if exists t_fixing_publisher_administrator;
+drop table if exists t_fixing_publisher_inventory;
 
 -- Summary
 select v.provider_code, v.id_scheme, count(*) as instruments

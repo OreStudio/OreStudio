@@ -320,6 +320,7 @@ select ores_utility_allow_version_replace_fn();
 \echo ''
 \echo '--- Market Data: Simulated Fixings (read from the staged currency pairs) ---'
 \ir marketdata/marketdata_vendor_fixing_instruments_populate.sql
+\ir marketdata/marketdata_fixing_publishers_instruments_populate.sql
 
 -- =============================================================================
 -- FSM Layer (must precede Trading — activity types reference FSM transitions)

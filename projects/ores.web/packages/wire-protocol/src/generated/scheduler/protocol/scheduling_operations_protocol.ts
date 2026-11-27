@@ -171,6 +171,14 @@ export interface StoreBoundAction {
      */
     retention_days: number | null;
     /**
+     * @brief How many hours the bound waits between two applications of itself.
+     *
+     * It is the policy's own cadence when one bounds the store and the catalogue's
+     * default when none does, so the form that creates a policy opens on the period
+     * and the cadence the installation ships with.
+     */
+    cadence_hours: number | null;
+    /**
      * @brief The policy that bounds the store today, if one does.
      */
     policy_code: string | null;
@@ -178,6 +186,23 @@ export interface StoreBoundAction {
      * @brief Whether that policy is switched on.
      */
     policy_enabled: boolean;
+    /**
+     * @brief The version of that policy a write must still match.
+     *
+     * A change names the version it read, so a period somebody else moved in the
+     * meantime is refused rather than overwritten. It is zero when no policy exists,
+     * which is what a create claims: nothing is there yet.
+     */
+    policy_version: number;
+    /**
+     * @brief Why the store is kept for that period, in the policy's own words.
+     *
+     * A write carries it back unchanged, because a form that changes a period is not
+     * the place that decides why the store is kept. When no policy bounds the store
+     * it is the reason the catalogue ships with, so a person sees the words they are
+     * about to adopt.
+     */
+    policy_description: string | null;
     /**
      * @brief What bounds the store: =sweep=, =storage_lifecycle=, =node_release=,
      * =content_keying=, =policy_off= or =none=.
@@ -245,6 +270,22 @@ export interface StoreBound {
     owner_component: string;
     target_kind: string;
     target: string;
+    /**
+     * @brief The column a row delete compares against the period, where one does.
+     *
+     * A store bounded by age is bounded on a column of its own, and the column is
+     * what a person has to read to know which age the period means. A store the
+     * database measures as a whole, or one whose bound lives in another component,
+     * names no column.
+     */
+    time_column: string | null;
+    /**
+     * @brief What the store is measured in: =relation_rows=, =objects= or =files=.
+     *
+     * The size is always bytes; this is the other number the sample carries, and
+     * without it a count of twenty-seven says nothing about what was counted.
+     */
+    measure_kind: string | null;
     /**
      * @brief The kind of bound the store ships with: =policy=, =keying= or =none=.
      */

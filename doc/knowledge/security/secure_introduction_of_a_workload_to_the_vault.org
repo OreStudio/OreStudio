@@ -184,11 +184,12 @@ its own material is not in its own store.
 The challenge is issued to whoever asks for it, since a caller that has no
 credential cannot be identified before it answers one. It is therefore bounded
 rather than trusted: a challenge is good once, for a short time, and it is
-useless to anyone who cannot open it. The request that answers it names the
-consumer, the nonce and the secret it asks for, and the vault opens the request
-with all three authenticated, so a nonce issued for one consumer cannot be
-redirected to another and a nonce issued for one secret cannot be spent on a
-second.
+useless to anyone who cannot open it, and the vault holds no more than a fixed
+number of them at once, so asking for challenges cannot be used to fill its
+memory. The request that answers it names the consumer, the nonce and the secret
+it asks for, and the vault opens the request with all three authenticated, so a
+nonce issued for one consumer cannot be redirected to another and a nonce
+issued for one secret cannot be spent on a second.
 
 * Patterns used
 

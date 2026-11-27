@@ -357,3 +357,51 @@ TEST_CASE("a_consumer_cannot_redeem_another_consumers_secret", "[vault][custody]
     CHECK_FALSE(refused.success);
     CHECK(refused.sealed_value.empty());
 }
+
+TEST_CASE("a_challenge_answered_by_another_consumer_is_refused", "[vault][custody][integration]") {
+    using ores::vault::security::challenge_registry;
+    using ores::vault::messaging::custody_context;
+
+    scoped_database_helper h;
+    const auto& ctx = h.context();
+    const auto system = ores::database::service::tenant_context::with_system_tenant(ctx);
+    const auto keys = keys_with({1}, 1);
+    const auto asked = unique_subject();
+    const auto other = unique_subject();
+    const auto asked_pair = register_consumer(system, asked);
+    register_consumer(system, other);
+
+    custody_service custody(system, keys);
+    REQUIRE(custody
+                .write(asked,
+                       secret_name,
+                       consumer_actor,
+                       seal_for_the_vault(keys, secret_name, consumer_actor))
+                .success);
+
+    challenge_registry challenges;
+    const auto issued = custody.issue_challenge(challenges, asked);
+    REQUIRE(issued.success);
+
+    // The other consumer holds the nonce, because the challenge is no secret to
+    // the process that could read this test's memory, but the challenge was not
+    // issued to it.
+    const auto nonce = sealed_box::open(asked_pair.private_key,
+                                        issued.sealed_value,
+                                        custody_context::challenge(asked, issued.challenge_id));
+    const auto answer =
+        sealed_box::seal(keys.transport_public_key,
+                         nonce,
+                         custody_context::credential(other, issued.challenge_id, secret_name));
+
+    const auto refused =
+        custody.redeem_credential(challenges, other, issued.challenge_id, secret_name, answer);
+    CHECK_FALSE(refused.success);
+    CHECK(refused.sealed_value.empty());
+
+    // And the challenge it named is spent, so the consumer it was issued to
+    // must ask again.
+    const auto spent =
+        custody.redeem_credential(challenges, asked, issued.challenge_id, secret_name, answer);
+    CHECK_FALSE(spent.success);
+}

@@ -351,7 +351,10 @@ custody_result custody_service::issue_challenge(security::challenge_registry& re
                              nonce_text,
                              messaging::custody_context::challenge(consumer, challenge_id));
 
-        registry.issue(challenge_id, consumer, nonce_text);
+        if (!registry.issue(challenge_id, consumer, nonce_text)) {
+            answer.message = "The vault holds as many challenges as it will issue at once";
+            return answer;
+        }
         answer.challenge_id = challenge_id;
         answer.success = true;
         ORES_LOG_SEV(lg(), info) << "Issued a challenge to " << consumer;

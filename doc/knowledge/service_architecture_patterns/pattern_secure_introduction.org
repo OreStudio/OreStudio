@@ -124,8 +124,8 @@ the Vault]], which is this pattern's one use here.
 - *A challenge the store will not bound.* The challenge is issued to whoever
   asks, because a caller with no credential cannot be identified first. Unbounded,
   it is a resource an attacker spends and a nonce an attacker replays; bound to
-  one use and a short life, and sealed to the registered key, it costs an
-  attacker nothing it can use.
+  one use, a short life and a cap on how many the store holds at once, and sealed
+  to the registered key, it costs an attacker nothing it can use.
 - *A bootstrap key that lives forever.* The material the platform delivers is a
   deployment credential, not a session credential. Its theft is bounded only by
   re-registration and restart, so it belongs to the same rotation as the

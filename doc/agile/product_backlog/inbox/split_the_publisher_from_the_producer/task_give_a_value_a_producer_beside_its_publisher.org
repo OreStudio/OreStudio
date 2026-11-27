@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: 777EEF85-0CFA-4E5F-A9FF-338489810D22
+:END:
+#+title: Task: Give a value a producer beside its publisher
+#+description: The series key names one party, so a real view and a simulated view of one item collide and every derivation mints a provider. Record what produced the value, with its kind, beside the publisher whose item it is, and let the two ranks coexist for a party.
+#+type: task
+#+level: s1
+#+filetags: :split_the_publisher_from_the_producer:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:142FDA27-36E6-4C0D-95F2-6FAE223FC5E3][Split the publisher of a market data value from its producer]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A series says both whose item it is and what made the value. A real source and a
+simulated source can then hold the same item for one party, the ranking replaces
+one with the other, and a derivation needs no publisher of its own.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:142FDA27-36E6-4C0D-95F2-6FAE223FC5E3][Split the publisher of a market data value from its producer]] |
+| Now          | Not yet started.                       |
+| Waiting on   | The owner settling the shape of the split, below. |
+| Next         | Settle the columns, then write the schema and the key. |
+| Last touched | 2026-11-27                               |
+
+* Acceptance
+
+- =market_series= names the producer that made the value and its kind, beside the
+  publisher whose item the value is.
+- The producer kind is one of real, simulated or derived, validated against
+  refdata as =derivation_kind= already is.
+- The identity key holds a real and a simulated view of one item as two series for
+  one party, and the ranking replaces one with the other. A test proves the
+  replacement.
+- A read of a series and the screen that shows one state the producer and its kind.
+- A derived value needs no publisher of its own: the producer is =ore= and
+  =derivation_kind= names the computation.
+
+* Plan
+
+1. *Settle the shape.* The recommendation is a nullable publisher, so the column
+   can say that no party owns an item, beside a producer code and its kind. The
+   producer kind joins refdata's =producer_kinds=, which holds VENDOR and
+   SYNTHETIC today and no reader.
+2. *Schema.* Add the columns to =market_series=, move the unique key to include
+   the producer kind, and keep =providers.precedence= as the rank. The identity
+   table follows the same key.
+3. *Stamp at land time.* The feed states the publisher, and its session states
+   whether the source generates or observes: =sessions.supplier_code=,
+   =adapter_code= and =environment= already hold it for every source.
+4. *Reads and screen.* One read of a series carries the four facts: item,
+   publisher, producer, kind.
+5. *Do not re-file anything here.* Moving the items the =derived= provider holds
+   is [[id:0B9995FC-96D1-4785-AEBD-512397ECA7D5][its own task]].
+6. *Prove.* A test adds a real source of an item a simulated source already holds,
+   for one party, and the calibration policy picks the real one.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Series held by the =latent= provider | 0 | =./compass.sh sql -- -c "select count(*) from ores_marketdata_market_series_tbl where provider_code='latent' and valid_to=ores_utility_infinity_timestamp_fn()"= | =eb7fd32aa7= |
+| Series held by =ore= | 3,648 | the same query grouped by =provider_code= | =eb7fd32aa7= |
+| Series held by =derived= | 318 | the same query | =eb7fd32aa7= |
+
+The last two describe the smokehouse store on the branch that measured them, not
+main. They are the reason =ore= is the producer of our own computation: the code
+is already in the store at ten times the size of =derived=.
+
+* Notes
+
+- The open point is a publisher that may be absent. The key's unique index must
+  use =nulls not distinct=, as the identity table already does, or two values with
+  no publisher collide on nothing.
+- =composite= and =demo= stay publishers. Neither makes a value of its own: one
+  names a rule that blends providers' series, the other a fictional publisher for
+  exercises.
+- The refdata table's own doc comment says the axis is "a property of the
+  producer, not of the series". This task makes that true by stamping it, and
+  removes the contradiction with the task that would delete it
+  ([[id:8D5C8A02-A6E3-4195-9FD1-140A0293C78B][Remove the marks of the simulator]],
+  backlog).
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

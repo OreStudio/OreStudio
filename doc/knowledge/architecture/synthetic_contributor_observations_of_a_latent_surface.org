@@ -1,25 +1,31 @@
 :PROPERTIES:
 :ID: D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334
 :END:
-#+title: A synthetic contributor publishes noisy observations of a latent surface
+#+title: Synthetic contributor observations of a latent surface
 #+description: Inside the simulator adapter a surface's state is a latent market that synthetic contributors observe, each a provider with its own noise, so a tenant meets a broker-like feed and the clean contributor is the truth tests compare against.
 #+type: knowledge
 #+level: cross
 #+filetags: :marketdata:synthetic:architecture:volatility:
 #+created: 2026-11-03
-#+updated: 2026-11-12
+#+updated: 2026-11-27
 
 * Summary
 
 A synthetic volatility surface never leaves the simulator as itself. Its state is
 a latent market, and synthetic contributors observe it: each contributor is a
-provider of its own and publishes the pair's delta ladder with noise, gaps and a
+provider of its own and quotes the pair's delta ladder with noise, gaps and a
 bias of its own, as several brokers quoting one market do. A tenant therefore
 marks its surface from contributor quotes, as a desk marks from broker quotes.
-The noise touches only what is published, so the dynamics do not depend on it,
-and a contributor whose noise profile is =none= publishes the clean quotes,
+The noise touches only what is quoted, so the dynamics do not depend on it, and
+a contributor whose noise profile is =none= returns the clean quotes unchanged,
 which are the truth a test compares a marked surface against. The whole layer is
 behind the adapter seam.
+
+The latent market is the internal value of the model: it is consumed by the
+contributors alone, no tick carries it, and it never becomes a series. A
+contributor's quotes are external, because a party may be entitled to them.
+[[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] states the
+two standings.
 
 * Detail
 
@@ -35,8 +41,9 @@ behind the adapter seam.
 
 The generator prices the clean quotes from its state once a step, as
 [[id:BB2B7C4C-FD4E-4DCA-BF1D-00F929622B87][Synthetic market data generation: approach]]
-describes, and each contributor turns them into its own. An observation is
-computed and published, and nothing of it returns to the state.
+describes, and each contributor turns them into its own. The contributor
+computes an observation and hands it to the ingest, and nothing of it returns to
+the state.
 
 ** The generator
 
@@ -54,7 +61,7 @@ Its configuration is four tables, each holding typed facts and nothing derived:
 |-------+-------------+-------|
 | =fx_vol_surface_feed= | pair | the tick rate, the skew and curvature drivers' reversion and volatility, and three correlations |
 | =fx_vol_surface_feed_expiry= | feed and quoted expiry | the tenor, and the reversion and volatility of the forward variance of the segment ending there |
-| =fx_vol_contributor= | contributor | the provider it publishes as, and its noise profile |
+| =fx_vol_contributor= | contributor | the provider it quotes as, and its noise profile |
 | =fx_vol_surface_feed_contributor= | feed and contributor | which contributors quote which pair |
 
 The expiries are ordered by length, so no row stores a position. A contributor's
@@ -70,13 +77,13 @@ from a real vol source or from
 
 ** Why the layer exists
 
-A curve's quotes are its pillars, and the IR curve producer publishes them
+A curve's quotes are its pillars, and the IR curve producer quotes them
 directly. A surface's quotes are not the surface: in a real market several
 contributors quote a fuller ladder than any one model needs, at different times,
 with points missing and numbers that disagree, and a desk constructs its own
-surface from them. A generator that published its clean surface would test none
-of that construction. The layer gives a tenant the inputs a desk receives and
-leaves the construction to the tenant's surface blueprint, as
+surface from them. A generator that handed its clean surface to the tenant would
+test none of that construction. The layer gives a tenant the inputs a desk
+receives and leaves the construction to the tenant's surface blueprint, as
 [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]]
 describes.
 
@@ -86,7 +93,7 @@ A surface's quotes are volatilities at delta labels, and a delta becomes a strik
 only against the forward of its expiry. The generator therefore holds, per
 currency, the latent curve its rate quotes come from -- it is the state of the
 short-rate model each IR curve feed steps -- and strikes every surface against it
-without publishing it. A contributor's quote is an observation of a surface solved
+without exposing that curve as a datum. A contributor's quote is an observation of a surface solved
 in that market, so the whole contributor layer sits on top of one forward per
 expiry and one curve per currency. The design, the interface and the four choices
 it settles are [[id:675E89FC-B5AA-4250-8B86-78062F0F22BC][Forwards for synthetic volatility surfaces]]; the reason a
@@ -95,7 +102,7 @@ party's own curve differs from it by the bootstrap is
 
 ** Every quote is a mid
 
-Valuation runs on mids, so a contributor publishes a mid for every point. The
+Valuation runs on mids, so a contributor quotes a mid for every point. The
 noise scale per point stands in for the width of the market. Two-way prices, a
 bid and an ask around the mid, are an extension of the contributor and leave the
 mid path unchanged.
@@ -113,7 +120,7 @@ measured, which no real feed allows.
 
 The layer is inside the simulator adapter, which
 [[id:69287DA4-3558-4EAE-972B-82BC7F9296E9][stops at the adapter seam]]:
-contributors publish through the four messages of
+contributors quote through the four messages of
 [[id:5DFA094B-4F9F-4190-8251-8D4D0B77A5C7][An adapter and the service meet at four messages]],
 and their quotes are stored as series keyed by item, provider and party. Past
 the seam a contributor's quote is a vendor's quote, as
@@ -124,6 +131,6 @@ requires, so a real vendor replaces a contributor by a change of route.
 
 - [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] — the structure note that orders this cluster.
 - [[id:69287DA4-3558-4EAE-972B-82BC7F9296E9][The simulator stops at the adapter seam]] — completes: stale values, gaps and bad ticks per contributor and per point, where that note's fault injection works per generator.
-- [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]] — completes: the construction a tenant performs on the quotes the contributors publish.
+- [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface: from quotes to a published set]] — completes: the construction a tenant performs on the quotes the contributors make.
 - [[id:F64DB34E-084D-4437-B536-392AA26D8B77][Simulated sources as data rather than code paths]] — exemplifies: noise that lives entirely behind the seam.
 - [[id:478EFA03-AB47-4286-A3CE-583C7438632D][User Journey: Adjust a curve or surface by hand]] — answers: what a trader's hand marks correct, which a clean feed would leave nothing to correct.

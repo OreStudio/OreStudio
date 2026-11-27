@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 6ABDF5E7-0FDE-47A7-839A-5CB87FDF52EE
+:END:
+#+title: Task: Give a value a standing of internal or external
+#+description: A latent surface is consumed by the generators alone and never becomes a series, yet nothing on the value says so. State the standing, so a reader knows whether a party can ever be entitled to it, and metering and the reads agree.
+#+type: task
+#+level: s1
+#+filetags: :split_the_publisher_from_the_producer:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-27
++#+updated: 2026-11-27
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:142FDA27-36E6-4C0D-95F2-6FAE223FC5E3][Split the publisher of a market data value from its producer]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A value states whether a party can ever read it. An internal value is consumed by
+the generators of the synthetic market alone: no series, no entitlement, no bill.
+An external value may reach a party, through its subscription or through the set
+published for it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:142FDA27-36E6-4C0D-95F2-6FAE223FC5E3][Split the publisher of a market data value from its producer]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Settle where the standing lives, then add it. |
+| Last touched | 2026-11-27                               |
+
+* Acceptance
+
+- A source states a standing, internal or external, and every series records the
+  standing of the source that landed it.
+- An internal source produces no series, no entitlement and no delivery count. A
+  read that asks for one says it is internal rather than that it is missing.
+- The latent node of the feed graph is the one internal value, and the graph read
+  reports its standing.
+- A test proves that an internal source lands no series and meters nothing.
+
+* Plan
+
+1. *Settle where the standing lives.* The recommendation is on the source, as a
+   column of the feed, because an internal value has no series to carry it. A
+   series repeats the standing of the source at land time, so a read of one needs
+   no join.
+2. *Add it.* Default external, so no existing source changes meaning. The
+   simulator sets it from the node kind the graph already reads: =latent= is
+   internal, and =source=, =upstream= and =view= are external.
+3. *Teach the readers.* The series read, the feed graph read and the screen that
+   shows a series.
+4. *Migrate the latent surface.* Its feed becomes internal and keeps publishing
+   nothing.
+5. *Prove.* A test runs an internal source and asserts no series, no observation
+   and no delivery count.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Series, instruments, mappings, feeds, subscriptions and routes the =latent= provider holds | 0 in all six | five counts joined by =union all= over the six tables | =eb7fd32aa7= |
+
+The measurement is why the standing does not need a party: the =latent= provider
+row is referenced by nothing, and its only life is the namespace token of the
+naming scheme.
+
+* Notes
+
+- =internal= and =external= are the words the hub now defines. Availability was
+  rejected: in an architecture document it already means uptime.
+- Delivery was rejected for the act of making a value available, because in this
+  platform it means settlement: =delivery_start= and =delivery_end= are series
+  identity fields, and the platform speaks of non-deliverable currencies.
+- The system party is a party. A feed only the system tenant watches is external,
+  with one very privileged consumer, so the pair stays binary.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

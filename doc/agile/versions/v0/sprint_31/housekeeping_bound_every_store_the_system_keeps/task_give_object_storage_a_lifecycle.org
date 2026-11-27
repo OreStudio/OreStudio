@@ -28,9 +28,9 @@ Every key family in the object store expires by a stated rule, so a run's inputs
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Slice 1: the listing states an object's age. |
+| Now          | Slice 2: the storage service answers one expiry. |
 | Waiting on   | Nothing.                               |
-| Next         | Read =object_summary= through the protocol, the local store and the transfer client. |
+| Next         | Add =storage.v1.objects.expire= with a cutoff and a dry-run flag. |
 | Last touched | 2026-11-27                               |
 
 * Acceptance
@@ -98,7 +98,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The listing states age | a file whose write instant is set ten days back lists as ten days old, to within a day | =compass test run -- -R 'ores\\.storage\\.core\\.tests'= | f7e0beccc6 |
+| The storage suites | ores.storage.api, .core and .service pass 3 of 3 | the same command | f7e0beccc6 |
 
 * Notes
 

@@ -56,7 +56,8 @@ This contradicts the page that blesses a derived source of our own (Derivation o
 - A real source of a derived item still replaces it by rank, and a test proves
   the replacement. *Not done here*: the rule is the route resolution the store
   already applies, which no change of this task touches, and no test was written
-  for a computed item.
+  for a computed item. Captured as
+  [[file:doc/agile/product_backlog/inbox/no-test-proves-a-live-source-replaces-a-computed-fixing.org][No test proves a live source of a computed item replaces the simulated one]].
 
 * Decisions
 
@@ -196,4 +197,5 @@ and the provider survives for them alone, with its fixing source gone.
 The rank replacement the acceptance asks for was not built: a computed fixing is
 stated by the administrator's simulated source, and a live source of the same
 item would win by the route resolution the store already applies. No test proves
-that for a computed item.
+that for a computed item, which is captured as
+[[file:doc/agile/product_backlog/inbox/no-test-proves-a-live-source-replaces-a-computed-fixing.org][No test proves a live source of a computed item replaces the simulated one]].

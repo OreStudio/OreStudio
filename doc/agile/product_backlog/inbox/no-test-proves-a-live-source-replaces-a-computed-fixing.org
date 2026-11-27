@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: B031E84D-E8D2-4170-AC39-E37E5FE3F34B
+:END:
+#+title: No test proves a live source of a computed item replaces the simulated one
+#+description: A computed fixing is stated by the administrator's simulated source; a live source of the same item should win by the route resolution the store already applies, and nothing proves it for a computed item.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:fixing:derived:testing:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The three term indices the run computes are stated by the administrator's
+*simulated* source: =cme-a= for Term SOFR 1M, =banrep-a= for IBR 3M, =gpw-a= for
+WIBOR 6M. A live source of the same item, when one arrives, should replace the
+simulated one by the route resolution: the store keeps one active source for each
+(party, provider), and a vendor ranked above another replaces it by precedence.
+
+Nothing proves that for a computed fixing. The route resolution is exercised for
+quotes, and the fixing sources are ranked in =fixing_sources.cpp= for the FX
+cross matrix, but no test adds a live source of an item whose value the run
+computed and shows it winning.
+
+* Why
+
+The rank rule is the whole argument for filing a computed value under the
+administrator whose item it is: the administrator's own live feed, or a vendor
+whose precedence is higher, replaces what the run computes without changing where
+the item lives. If that does not hold, the file-under-the-owner decision buys
+nothing but a truer name.
+
+The task
+[[id:0B9995FC-96D1-4785-AEBD-512397ECA7D5][Annotate a derived value instead of naming a derived provider]]
+asked for the test and did not write it, and its Result says so.
+
+* References
+
+- =projects/ores.marketdata/service/src/app/fixing_sources.cpp= — the rank a
+  publisher carries, and how a fixing item resolves to one source.
+- =projects/ores.sql/populate/marketdata/marketdata_fixing_publishers_catalogue_populate.sql=
+  — the precedence each publisher is installed with.
+- =ores_marketdata_routes_tbl= and =ores_marketdata_feeds_tbl= — the one active
+  source for each (party, provider).
+
+* See also
+
+- [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exactly one source for each provider]]
+- [[id:2B427A34-3AB0-4BCD-9984-0CC30CDA4A47][The FX volatility quotes have no owner to file them under]]

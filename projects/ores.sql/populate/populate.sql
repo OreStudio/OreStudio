@@ -404,7 +404,7 @@ select ores_utility_allow_version_replace_fn();
 -- the collection that names it.
 \echo ''
 \echo '--- Derived Fixing Instruments ---'
-\ir synthetic/synthetic_ir_curve_derived_fixing_instruments_populate.sql
+\ir synthetic/synthetic_ir_curve_computed_fixing_instruments_populate.sql
 
 
 -- The tenor convention resolutions name tenor schedules, and a schedule row

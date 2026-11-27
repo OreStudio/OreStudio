@@ -42,6 +42,7 @@ TEST_CASE("every_rate_administrator_of_the_catalogue_is_registered",
     for (const auto* provider : {"iba",
                                  "emmi",
                                  "hkab",
+                                 "gpw",
                                  "banrep",
                                  "snb",
                                  "danmarks-nationalbank",
@@ -54,7 +55,8 @@ TEST_CASE("every_rate_administrator_of_the_catalogue_is_registered",
                                  "nifc",
                                  "fbil",
                                  "tba",
-                                 "bist"}) {
+                                 "bist",
+                                 "cme"}) {
         const auto* sut = vendor::notation_of(provider);
         REQUIRE(sut != nullptr);
         CHECK(sut->id_scheme() == "setting");

@@ -113,9 +113,9 @@ join ores_marketdata_market_data_mappings_tbl m
   on m.vendor_instrument_id = v.id
  and m.tenant_id = ores_utility_system_tenant_id_fn()
  and m.valid_to = ores_utility_infinity_timestamp_fn()
--- The derived provider serves two kinds of id, and each of its sources serves one: a route
--- demands every item of its provider unless the feed is scoped, so this scope keeps the
--- volatility points with their own adapter and leaves the term index fixings to derived-a.
+-- A provider's route demands every item of the provider unless the feed is scoped, so the
+-- volatility points are scoped to the source that states them. The provider states no fixing:
+-- a computed fixing belongs to the administrator that owns its index.
 where v.tenant_id = ores_utility_system_tenant_id_fn()
   and v.provider_code = 'derived'
   and v.id_scheme = 'derived_fx_vol'

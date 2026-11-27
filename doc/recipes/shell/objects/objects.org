@@ -110,7 +110,7 @@ The command is shaped like this:
 objects expire-objects <bucket> <prefix> <older_than> [--limit <v>] [--dry_run <v>]
 #+end_example
 
-It is addressed at =storage.v1.objects.expire=.
+It is addressed at =storage.v1.ops.expire_objects=.
 
 #+name: objects-expire-objects
 #+begin_src ores-shell :tangle objects-expire-objects.ores :exports none

@@ -190,6 +190,10 @@ export interface ArchiveListing {
  * caller that lists a page, removes part of it and reports the whole page has
  * stated something it did not do. The store answers what it found and what it
  * did in one reply, and a dry run answers the first without doing the second.
+ *
+ * It is an operation and not an entity verb: it removes a set the caller
+ * describes by an age rather than an entity by its key, so it lives in the ops
+ * namespace beside the read of what a package holds.
  */
 export interface ExpireObjectsRequest {
     bucket: string;
@@ -245,7 +249,7 @@ export const subjects = {
     get_objects_request: 'storage.v1.objects.get',
     delete_objects_request: 'storage.v1.objects.delete',
     list_objects_request: 'storage.v1.objects.list',
-    expire_objects_request: 'storage.v1.objects.expire',
+    expire_objects_request: 'storage.v1.ops.expire_objects',
     list_archive_entries_request: 'storage.v1.ops.list_archive_entries',
 } as const;
 /**

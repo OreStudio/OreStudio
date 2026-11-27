@@ -470,7 +470,7 @@ states what exists and not how long it has been there.
 
 ** expire_objects_request
 :PROPERTIES:
-:subject: storage.v1.objects.expire
+:subject: storage.v1.ops.expire_objects
 :response: expire_objects_response
 :END:
 
@@ -482,6 +482,10 @@ states what exists and not how long it has been there.
  * caller that lists a page, removes part of it and reports the whole page has
  * stated something it did not do. The store answers what it found and what it
  * did in one reply, and a dry run answers the first without doing the second.
+ *
+ * It is an operation and not an entity verb: it removes a set the caller
+ * describes by an age rather than an entity by its key, so it lives in the ops
+ * namespace beside the read of what a package holds.
  */
 #+end_src
 

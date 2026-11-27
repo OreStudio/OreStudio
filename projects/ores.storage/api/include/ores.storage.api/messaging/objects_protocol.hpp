@@ -266,10 +266,14 @@ struct archive_listing {
  * caller that lists a page, removes part of it and reports the whole page has
  * stated something it did not do. The store answers what it found and what it
  * did in one reply, and a dry run answers the first without doing the second.
+ *
+ * It is an operation and not an entity verb: it removes a set the caller
+ * describes by an age rather than an entity by its key, so it lives in the ops
+ * namespace beside the read of what a package holds.
  */
 struct expire_objects_request {
     using response_type = struct expire_objects_response;
-    static constexpr std::string_view nats_subject = "storage.v1.objects.expire";
+    static constexpr std::string_view nats_subject = "storage.v1.ops.expire_objects";
     /**
      * @brief Whether the caller must have established a session first.
      *

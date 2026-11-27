@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
 #+owner: marco
-#+branch: feature/value-only-the-trades-the-market-answers
+#+branch: feature/state-the-phase-of-every-error
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
-#+updated: 2026-11-25
-#+environment:
+#+updated: 2026-11-27
+#+environment: jolly_knuth jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A reader of a run's errors can tell where each one came from: the run's own prep
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | Not yet started.                       |
+| Now          | Read the error event, its recorder and the three writers. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-25                               |
+| Next         | The phase lookup, the column, then the writers. |
+| Last touched | 2026-11-27                               |
 
 * Acceptance
 
@@ -41,9 +41,21 @@ A reader of a run's errors can tell where each one came from: the run's own prep
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The phase is data, not an enum in code: a lookup table with the three rows
+  the story names, seeded, as the error scope already is. A phase the run
+  cannot state is then a row nobody seeds rather than a value nobody compiled.
+- =report_error_event= gains =phase_code= beside =scope_code=, and the model
+  states why the scope stays the engine's own group name: the two answer
+  different questions, and folding one into the other would make the engine's
+  words mean something the engine never said.
+- One recorder writes every error a run holds, so it is the one place that
+  states the phase. Each caller names it: the engine log reader states engine,
+  the results ingester states postprocessing, and a workflow step that refuses
+  its work states preprocessing.
+- The compensation that fails the report is dispatched by the failing step, so
+  the phase travels with that command rather than being guessed at the far end.
+- A read answers a run's count of errors per phase, so a screen can open the
+  errors of one phase without reading them all.
 
 * Measurements
 

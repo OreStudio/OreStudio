@@ -318,7 +318,8 @@ TEST_CASE("a_history_reply_whose_arrays_differ_in_length_is_answered_as_a_bad_ga
     CHECK(answer.status == http_status::bad_gateway);
 }
 
-TEST_CASE("a_read_over_the_ceiling_states_the_sequence_of_the_last_quote_it_sent", "[quotes]") {
+TEST_CASE("a_read_over_the_ceiling_states_the_sequence_of_the_last_quote_it_sent",
+          "[quotes][slow]") {
     auto lg(make_logger(test_suite));
     quotes_transport transport;
     auto board = std::make_shared<quote_board>(transport.subscriber());

@@ -32,6 +32,13 @@ void test_timeout_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo
     timeout_ = std::chrono::seconds(environment::get_int_value_or_default(
         "ORES_TEST_TIMEOUT_SECONDS", static_cast<int>(timeout_.count())));
 
+    // A case tagged slow reads a whole page or walks a whole corpus, so an
+    // instrumented run multiplies a time a native run already spends. The
+    // limit still exists, ten times further away, so a hang there is still
+    // named and no other case waits longer.
+    if (testInfo.tagsAsString().find("[slow]") != std::string::npos)
+        timeout_ *= 10;
+
     current_test_name_ = testInfo.name;
     test_start_time_ = std::chrono::steady_clock::now();
     {

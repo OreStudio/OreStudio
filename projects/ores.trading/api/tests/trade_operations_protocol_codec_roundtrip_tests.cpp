@@ -126,3 +126,12 @@ TEST_CASE("ores::trading::messaging::resolve_market_data_requirements_response",
     ores::testing::check_wire_roundtrip<
         ores::trading::messaging::resolve_market_data_requirements_response>();
 }
+
+TEST_CASE("ores::trading::messaging::list_book_trade_ids_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::trading::messaging::list_book_trade_ids_request>();
+}
+
+TEST_CASE("ores::trading::messaging::list_book_trade_ids_response",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::trading::messaging::list_book_trade_ids_response>();
+}

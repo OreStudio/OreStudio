@@ -71,12 +71,26 @@ public:
      *
      * The trades' instruments are appended to @p instruments, whose arrays
      * cover the page's trades only.
+     *
+     * @param trade_ids The trades to read, or every trade of the books when
+     *                  empty. A run writes only the trades its market can
+     *                  answer, and it decides that before it exports any.
      */
     std::vector<messaging::trade_export_item>
     export_books(const std::vector<std::string>& book_ids,
                  std::uint32_t offset,
                  std::uint32_t limit,
-                 domain::instrument_batch& instruments) const;
+                 domain::instrument_batch& instruments,
+                 const std::vector<std::string>& trade_ids = {}) const;
+
+    /**
+     * @brief The trades booked in a set of books, as identifiers only.
+     *
+     * A run asks this before it exports anything, because it decides which
+     * trades its market can answer and exports only those. The ids are in
+     * ascending order, so two reads of one set read alike.
+     */
+    std::vector<std::string> trade_ids_of_books(const std::vector<std::string>& book_ids) const;
 
 private:
     std::vector<messaging::trade_export_item>

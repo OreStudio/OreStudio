@@ -827,23 +827,48 @@ std::vector<trade_export_item>
 trade_export_service::export_books(const std::vector<std::string>& book_ids,
                                    std::uint32_t offset,
                                    std::uint32_t limit,
-                                   domain::instrument_batch& instruments) const {
+                                   domain::instrument_batch& instruments,
+                                   const std::vector<std::string>& trade_ids) const {
     if (book_ids.empty())
         return {};
-    const auto trade_ids = ores::database::query_builder::execute_parameterized_string_query(
+    // The caller either wants the books' trades or a set of them inside those books, so the
+    // filter narrows the booking read rather than replacing it: a trade id outside the books
+    // is not the caller's to export.
+    const auto restrict =
+        trade_ids.empty() ? std::string{} : std::string("AND b.trade_id = ANY($5::uuid[]) ");
+    std::vector<std::string> params{ctx_.tenant_id().to_string(),
+                                    to_uuid_array(book_ids),
+                                    std::to_string(offset),
+                                    std::to_string(limit)};
+    if (!trade_ids.empty())
+        params.push_back(to_uuid_array(trade_ids));
+    const auto page_ids = ores::database::query_builder::execute_parameterized_string_query(
+        ctx_,
+        "SELECT b.trade_id::text FROM ores_trading_trade_bookings_tbl b "
+        "WHERE b.tenant_id = $1::uuid "
+        "AND b.valid_to = ores_utility_infinity_timestamp_fn() "
+        "AND b.book_id = ANY($2::uuid[]) " +
+            restrict + "ORDER BY b.trade_id OFFSET $3::integer LIMIT $4::integer",
+        params,
+        lg(),
+        "Reading the trades booked in a set of books.");
+    return export_trades(page_ids, instruments);
+}
+
+std::vector<std::string>
+trade_export_service::trade_ids_of_books(const std::vector<std::string>& book_ids) const {
+    if (book_ids.empty())
+        return {};
+    return ores::database::query_builder::execute_parameterized_string_query(
         ctx_,
         "SELECT b.trade_id::text FROM ores_trading_trade_bookings_tbl b "
         "WHERE b.tenant_id = $1::uuid "
         "AND b.valid_to = ores_utility_infinity_timestamp_fn() "
         "AND b.book_id = ANY($2::uuid[]) "
-        "ORDER BY b.trade_id OFFSET $3::integer LIMIT $4::integer",
-        {ctx_.tenant_id().to_string(),
-         to_uuid_array(book_ids),
-         std::to_string(offset),
-         std::to_string(limit)},
+        "ORDER BY b.trade_id",
+        {ctx_.tenant_id().to_string(), to_uuid_array(book_ids)},
         lg(),
-        "Reading the trades booked in a set of books.");
-    return export_trades(trade_ids, instruments);
+        "Reading the trade ids booked in a set of books.");
 }
 
 std::vector<trade_export_item>

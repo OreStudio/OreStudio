@@ -20,7 +20,7 @@
 #ifndef ORES_DQ_API_MESSAGING_RECORD_PUBLICATION_HPP
 #define ORES_DQ_API_MESSAGING_RECORD_PUBLICATION_HPP
 
-#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/context_fwd.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.utility/codec/json_codec.hpp"

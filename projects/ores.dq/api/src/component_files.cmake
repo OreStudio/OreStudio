@@ -393,6 +393,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/publish_datasets_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/publish_from_dq_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/publish_params.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/record_publication.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/report_definition_template_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/subject_area_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.api/messaging/treatment_dimension_protocol.hpp"

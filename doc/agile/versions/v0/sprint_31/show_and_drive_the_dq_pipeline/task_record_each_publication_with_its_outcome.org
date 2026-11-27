@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: 7DCAF97F-EF6C-447F-BC1B-561DE85B3F49
+:END:
+#+title: Task: Record each publication with its outcome and what it said
+#+description: The publish path writes one row per dataset it dispatches, and the row carries an outcome and the messages the run produced, so a dataset's page can say when it was published, whether it worked, and why not.
+#+type: task
+#+level: s1
+#+filetags: :dq:sql:publishing:sprint_31:v0:show_and_drive_the_dq_pipeline:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores_dq_dataset_publications_tbl= gains a writer and the columns a reader needs:
+one row for each dataset a publish dispatches, carrying the outcome, the messages
+the run produced, and what it wrote. A dataset's page then says when it was last
+published, whether that run worked, and why it did not.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-26                               |
+
+* Acceptance
+
+- The bundle and dataset publish verbs append one row per dataset they dispatch,
+  and the row is written whatever the outcome.
+- The row carries an outcome — published, published with warnings, or failed — and
+  the messages that go with it, each with a severity, so an operator reads why a
+  run wrote nothing.
+- A row and the workflow step it came from agree on the reason: the step already
+  states its error, and the log row states the same one.
+- A test publishes a dataset that fails and reads the row back with its outcome and
+  its message.
+- The dataset page's Publications tab draws from it with no mock data.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+This was captured before it was pulled into the sprint:
+[[id:5C20BEF9-13CA-48B5-8221-E83C1D6345DD][The publication run log has no writer]].
+Read it first; it records what =record_publication= was, why =publish()= has no
+caller, and the two coherent answers, one of which this task takes.
+
+The outcome and the message are part of the same task and not a second one,
+because a row that exists and cannot say why it failed is a row the screen cannot
+use: the design in
+[[id:5344ADC1-E729-4846-BE07-C6BC2169C4C9][Is my reference data complete?]] draws
+the message beside the counts, and the coverage prototype draws it in the
+Publications tab.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

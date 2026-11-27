@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :web:ux:standards:navigation:
 #+created: 2026-10-10
-#+updated: 2026-10-31
+#+updated: 2026-11-26
 
 * Summary
 
@@ -165,13 +165,14 @@ The test for a screen is one question: which topic would a person look in?
 | Requests | What is waiting for an answer? |
 | Operations | How is the installation running, and who has signed in? |
 | Reporting | What has a party run, and how did each run go? |
+| Data quality | What reference data does the tenant hold, and is it fit to publish? |
 | Development | What is the team doing to the product, and what can a tester run? |
 | Tenants | Which tenants does this installation hold? |
 
 ** The areas
 
 #+begin_src text
-  Home   Reference data   Organisation   Market data   Trades   Requests   Operations   Reporting   Development   Tenants
+  Home   Reference data   Organisation   Market data   Trades   Requests   Operations   Reporting   Data quality   Development   Tenants
 #+end_src
 
 | Area | Screens | Drawn when the person holds the read of |
@@ -184,6 +185,7 @@ The test for a screen is one question: which topic would a person look in?
 | Requests | Every request, a person's own, and the queue of those who decide | Always, because every person has their own |
 | Operations | Running services, Compute grid, Message bus, Telemetry logs, Versions and the database, and Sign-ins | Any one of those screens |
 | Reporting | Reports, the definitions a party runs, and the cuts they price from | Any one of those screens |
+| Data quality | Reference data coverage | =dq::datasets:read= |
 | Development | The tests a tester can run, the board and the backlog, and the documents they open | Always |
 | Tenants | The tenants, their parties and people, and onboarding | The read of the deployment |
 
@@ -296,6 +298,54 @@ how the installation runs, and it is not work the team does on the product.
 The trail of the list is Home, Reporting, Reports. A definition's page adds the
 definition's name: Home, Reporting, Reports, then the name.
 
+*** Data quality
+
+Data quality is its own area. Its topic is the reference data a tenant holds and
+whether each dataset in it is fit to publish, which is a different question from
+the two areas beside it: Operations says how the installation runs, and Reporting
+says what a party ran. A person who asks whether their valuations read complete
+reference data asks here, and the answer is the coverage of the bundles they
+publish.
+
+The area holds one list screen, *Reference data coverage*, at
+=/data-quality/coverage=, and one record page under it. The list groups the
+bundles by the level each publishes at and names the datasets of the bundle in
+view. The level is grouped and not shown as a column, because it decides which
+tenant holds the rows: a platform or world bundle is seeded in the system tenant
+and read where it lies, and a tenant bundle is the tenant's own copy.
+
+A row of that list opens the dataset's own page at =/data-quality/datasets/:code=,
+which the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]
+shapes: the breadcrumb through the area and the list, then Details and
+Publications. It states where the dataset's rows are staged, what a publish
+dispatches to, both counts, when it was last published, and which of the four
+reasons keeps it from being ready.
+
+The published count, the last publication and the Publications tab are drawn and
+state their absence rather than a zero or an empty table: the provenance read and
+a run log with a writer are the tasks this design names, and a zero would say the
+run wrote nothing. The History tab is not drawn yet; the dataset's versions are
+served, and drawing them is a screen of its own.
+
+The screen reads the bundle roster, which states the level of every bundle, the
+count of datasets each carries and, for the bundle in view, its members with the
+number of rows each has staged. It is a read: the publish itself is the bundle's
+journey, and the page stays answerable to "is my reference data complete?". The
+count of rows already published needs a provenance read that is not built, so the
+column states its absence and never a zero, because a zero would say the run
+wrote nothing.
+
+A member is ready to publish when a dataset row names its code, when the
+dataset's artefact type is one the store holds and names a target subject, and
+when its artefact table holds at least one row. The first three are Data
+quality's to fix and the fourth is the importer's, which is why the screen states
+the reason and not "not ready".
+
+The area page is drawn for a person who holds =dq::datasets:read=, which is the
+one read the roster operation asks for. The page asks for no other read, because
+the roster answers the bundles, their members and the staged counts in one
+request.
+
 ** The account menu
 
 The account menu stands in the header with the notification bell. It holds My
@@ -322,6 +372,7 @@ the first step of every trail.
 | Reports | Reporting | A report definition is owned by the party that runs it, and Reporting is the topic a person looks in for what the party ran and how each run went |
 | Cuts | Reporting | A cut is the body a report's run prices from, and a person who asks what a number was computed from looks where the reports are |
 | Cut types | Reference data | A kind of cut is a lookup a person maintains: its rules the take, the resolution and the archive read, and it changes by the month as the currencies and calendars do |
+| Reference data coverage, and a dataset's page | Data quality | It says what reference data the tenant holds and whether each dataset in a bundle is fit to publish, which is neither how the installation runs nor what a party ran |
 | Tests, Board, Backlog | Development | They are the work a team does on the product, not how an installation runs |
 | Versions and the database | Operations | They state the build and the store |
 | Requests | Requests | It is the one place for every kind of request |
@@ -359,6 +410,9 @@ the same thing. A screen has one address.
 | Engine run settings | =/reporting/engine-settings= |
 | Cuts | =/reporting/cuts= |
 | A cut's page | =/reporting/cuts/:id= |
+| Data quality, the area page | =/data-quality= |
+| Reference data coverage | =/data-quality/coverage= |
+| A dataset's page | =/data-quality/datasets/:code= |
 | Cut types | =/refdata/cut-types= |
 | A kind of cut's page | =/refdata/cut-types/:code= |
 | Development, with its tabs Tests, Board and Backlog | =/development= |

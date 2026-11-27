@@ -97,15 +97,12 @@ export const MENU: readonly MenuItem[] = [
     },
     {
         // The area holds one screen today, so it asks for exactly what that
-        // screen reads.
+        // screen reads. The roster is one read, and it answers the bundles, the
+        // members and the staged counts, so the four collections the screen used
+        // to read are not the price of arriving.
         nameKey: 'shell.menu.dataquality',
         to: PATHS.dataQuality,
-        permission: [
-            'dq::datasets:read',
-            'dq::dataset_bundles:read',
-            'dq::dataset_bundle_members:read',
-            'dq::artefact_types:read',
-        ],
+        permission: 'dq::datasets:read',
     },
     { nameKey: 'shell.menu.development', to: '/development' },
     { nameKey: 'shell.menu.api', to: '/swagger', external: true },

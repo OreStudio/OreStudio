@@ -98,7 +98,8 @@ returns table (
     artefact_type text,
     artefact_table text,
     target_subject text,
-    has_artefacts boolean,
+    has_dataset boolean,
+    has_artefact_type boolean,
     is_publishable boolean,
     optional boolean,
     staged_count bigint
@@ -114,12 +115,16 @@ begin
             m.display_order,
             d.id as dataset_id,
             m.dataset_code,
-            coalesce(d.name, '(not found)')::text as dataset_name,
-            coalesce(d.artefact_type, 'none')::text as artefact_type,
+            d.name as dataset_name,
+            d.artefact_type as artefact_type,
             at.artefact_table,
-            coalesce(at.target_subject, '(none)')::text as target_subject,
-            (d.id is not null)::boolean as has_artefacts,
-            (d.id is not null and at.target_subject is not null)::boolean as is_publishable,
+            at.target_subject as target_subject,
+            (d.id is not null)::boolean as has_dataset,
+            (d.id is not null and at.code is not null)::boolean as has_artefact_type,
+            -- The same three facts the roster states, so one definition of ready
+            -- answers the publish path and the screen that names the reason.
+            (d.id is not null and at.code is not null and
+             at.target_subject is not null)::boolean as is_publishable,
             m.optional
         from ores_dq_dataset_bundle_members_tbl m
         left join ores_dq_datasets_tbl d
@@ -157,7 +162,8 @@ begin
         artefact_type := v_member.artefact_type;
         artefact_table := v_member.artefact_table;
         target_subject := v_member.target_subject;
-        has_artefacts := v_member.has_artefacts;
+        has_dataset := v_member.has_dataset;
+        has_artefact_type := v_member.has_artefact_type;
         is_publishable := v_member.is_publishable;
         optional := v_member.optional;
         staged_count := v_staged;

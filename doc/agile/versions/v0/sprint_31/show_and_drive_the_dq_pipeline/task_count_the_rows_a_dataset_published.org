@@ -59,6 +59,11 @@ task and name that file in the Command column.
 
 * Notes
 
+The bundle's own state — published, part published, never published — is the same
+count summed over its members, so the coverage list's state column and the
+dataset's published column land together. The design draws both in
+[[id:5344ADC1-E729-4846-BE07-C6BC2169C4C9][Is my reference data complete?]].
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

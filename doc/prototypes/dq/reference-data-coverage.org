@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :prototype:ui:dq:
 #+created: 2026-11-22
-#+updated: 2026-11-22
+#+updated: 2026-11-26
 
 | Item          | Where                                          |
 |---------------+------------------------------------------------|
@@ -68,6 +68,16 @@ publishes nothing. The publish itself is the journey's next step and is drawn by
 =?empty=1=, =?actor=<person>=, =?gaps=0=. The bar at the foot switches between
 the tenant as it is and a fresh database, and hides the server-gap notes.
 
+=?layout=librarian= draws the same model in the shape of the Qt Data Librarian
+and the record screen standard: a tree of the levels and their bundles on the
+left, and a dense table of the chosen bundle's datasets on the right, with a text
+and a state filter. A row opens the dataset's own screen.
+
+=?view=dataset&dataset=<code>= is that screen: the record page of one dataset,
+with a Details tab, a Publications tab and a History tab. =?tab=details|
+publications|history= chooses the tab. =?q=<text>= and
+=?state=all|bad|unpublished|published= are the two filters on the table.
+
 ** What is fake
 
 The bundles, their counts, and every staged and published figure, and the demo
@@ -88,18 +98,78 @@ breadcrumb, the page header, the refresh, the table, the badges and the server-g
 note. The conventions mock data the script carries is inert here. Nothing is
 built, imported or served.
 
+** The dataset's own screen
+
+A row in the table does not open a card beside it, because a dataset is a record
+and the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] gives
+a record a page of its own: the breadcrumb, the display field as the title, the
+key and the level as the lead, then the tabs.
+
+The page answers the questions a list cannot:
+
+- *Details.* What the dataset is and where it goes: its name and code, the bundle
+  that carries it and that bundle's level, its artefact type and table, the target
+  subject a publish dispatches to, the two counts, whether it is optional, when it
+  was last published and by whom, and its readiness with the owner of the reason.
+- *Publications.* Every publish of this dataset, one row each: when, by whom, the
+  mode, the four counts, the outcome, and what the run said. A warning is a row
+  the run chose not to write; an error is a row it could not. A run that wrote
+  nothing and said why is the row an operator actually needs, and the current log
+  cannot hold it.
+- *History.* The versions of the dataset row, which the design defers: the entity
+  is versioned and this prototype draws none of it.
+
+A fourth view is designed and not drawn here: the rows the dataset has staged.
+The page counts them today and never shows one, and the table they sit in has its
+own columns for every artefact family, so it is
+[[id:99F3E780-6AA0-4879-8F6F-2A1321ACDB85][a task of its own]] rather than a tab
+this prototype can draw from mock data.
+
+The list keeps the state column *and* the page exists, because they answer
+different questions: the list says which datasets need attention, and the page
+says what one dataset needs and what happened to it last time.
+
+** The build, and the second layout
+
+The first screen built from this design does not draw it. Three cards became a
+grid of bundle chips, the roster table with its datasets, checked and state
+columns became that grid, the member table lost its target subject and its state,
+and the reasons table lost the meaning of each reason and kept only a badge. The
+result states the same facts in more space and reads nothing like the Qt Data
+Librarian the area replaces.
+
+The librarian layout is the answer to that. It keeps the model and changes the
+arrangement: the tree answers "which bundle", the table answers "which dataset",
+and the card answers "what does this dataset need". It is a variant on this page
+and not a second page, so the two can be compared side by side with one query
+string.
+
 ** Verdict
 
-The layout holds. Grouping the bundles by level is the smallest thing that shows
-the level mattering, and the member table is the smallest thing that shows why a
-member is not ready. One question is left open: the published count costs one read
-per dataset, so it may belong behind the bundle rather than on every row of the
-list, which is where the idleness is most visible today. The history is not drawn
-here at all, because the run log has no writer; when it gets one, it belongs to
-the publish journey and not to this screen.
+The layout holds, in one of its two arrangements. Grouping the bundles by level is
+the smallest thing that shows the level mattering. One question is left open: the
+published count costs one read per dataset, so it may belong behind the bundle
+rather than on every row of the list. The history is not drawn here at all,
+because the run log has no writer; when it gets one, it belongs to the publish
+journey and not to this screen.
 
-*Signed off* on 2026-11-22 by Marco, on the page as it stands. The open question
-above is a note for the build, not a change to this design.
+*Signed off* on 2026-11-22 by Marco, on the table layout as it stood. That sign-off
+was for a design the build did not follow, and the Data Librarian comparison
+reopened the arrangement.
+
+*Signed off* again on 2026-11-26 by Marco, on the librarian arrangement and the
+dataset's own page, with these decisions:
+
+- The list is the Data Librarian's master-detail: the bundles by level on the left,
+  the chosen bundle's datasets in a dense table on the right, with a text and a
+  state filter.
+- A dataset is a record, so a row opens its own page and not a card beside the
+  table. The page follows the
+  [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]].
+- The page states when the dataset was last published, and every publish with its
+  outcome and what the run said, in its own Publications tab.
+
+The table layout stays on the page only as the record of what was first drawn.
 
 * See also
 

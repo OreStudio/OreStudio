@@ -88,7 +88,13 @@ export const PATHS = {
     cutTypes: '/refdata/cut-types',
     dataQuality: '/data-quality',
     dataQualityCoverage: '/data-quality/coverage',
+    dataQualityDatasets: '/data-quality/datasets',
 } as const;
+
+/** The address of one dataset's page, under the coverage area. */
+export function datasetPath(code: string): string {
+    return `${PATHS.dataQualityDatasets}/${encodeURIComponent(code)}`;
+}
 
 /** The address of one asset class's calibration list. */
 export function calibrationPath(assetClass: string): string {

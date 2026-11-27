@@ -82,6 +82,22 @@ struct bundle_roster_fixture {
         ores::dq::messaging::bundle_roster_request req;
         req.bundle_code = bundle_code;
 
+        return ask(req, token);
+    }
+
+    /** Asks the roster for the bundle that carries one dataset. */
+    ores::dq::messaging::bundle_roster_response roster_of_dataset(const std::string& dataset_code) {
+        const auto token =
+            keys.token_without_party(db.tenant_id().to_string(), {"dq::datasets:read"});
+        ores::dq::messaging::bundle_roster_request req;
+        req.dataset_code = dataset_code;
+
+        return ask(req, token);
+    }
+
+    ores::dq::messaging::bundle_roster_response
+    ask(const ores::dq::messaging::bundle_roster_request& req, const std::string& token) {
+
         const auto reply = ores::testing::request(nats, roster_subject + roster_method, token, req);
         const auto decoded =
             ores::testing::decode_reply<ores::dq::messaging::bundle_roster_response>(reply);
@@ -140,6 +156,12 @@ TEST_CASE("naming a bundle returns its members with what each has staged", "[mes
     for (const auto& member : world->members) {
         CHECK_FALSE(member.dataset_code.empty());
         CHECK_FALSE(member.artefact_type.empty());
+        // The presence of the dataset row, its artefact type and its target
+        // subject is stated as a fact, so the screen reads a flag and never a
+        // sentence the server wrote about a missing row.
+        CHECK(member.has_dataset);
+        CHECK(member.has_artefact_type);
+        CHECK_FALSE(member.target_subject.empty());
     }
 
     // The counts are the function's, not a number this handler invented.
@@ -158,6 +180,26 @@ TEST_CASE("naming a bundle returns its members with what each has staged", "[mes
                                     world->members.end(),
                                     [](const auto& member) { return member.staged_count > 0; });
     CHECK(staged);
+}
+
+TEST_CASE("naming a dataset answers the bundle that carries it", "[messaging][roster]") {
+    bundle_roster_fixture f;
+    const auto named = f.roster("world");
+    REQUIRE(named.success);
+    const auto* world = find_bundle(named, "world");
+    REQUIRE(world != nullptr);
+    REQUIRE_FALSE(world->members.empty());
+    const auto dataset_code = world->members.front().dataset_code;
+
+    // A dataset's own page knows the dataset and not its bundle, so the roster
+    // resolves the one from the other.
+    const auto resp = f.roster_of_dataset(dataset_code);
+    REQUIRE(resp.success);
+    const auto* found = find_bundle(resp, "world");
+    REQUIRE(found != nullptr);
+    REQUIRE_FALSE(found->members.empty());
+    CHECK(found->members.size() == world->members.size());
+    CHECK(found->members.front().dataset_code == dataset_code);
 }
 
 TEST_CASE("a bundle that carries nothing answers no members", "[messaging][roster]") {

@@ -19,61 +19,114 @@
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { readDatasetBundles, readinessOf } from './dq.js';
+import type { BundleRosterMember } from '@ores/wire-protocol/generated/dq/protocol/bundle_roster_protocol';
+import { readBundleRoster, reasonOf } from './dq.js';
 
 /**
- * The DQ reads, and the readiness the coverage screen draws.
+ * The DQ read, and the readiness the coverage screen draws from it.
  *
- * The server's collection envelopes are asserted here because a screen that read
- * the wrong key would draw an empty table and look like a tenant with no
- * reference data, which is the failure the coverage screen exists to catch.
+ * The roster's envelope is asserted here because a screen that read the wrong
+ * key would draw an empty page and look like a tenant with no reference data,
+ * which is the failure the coverage screen exists to catch.
  */
 
 afterEach(() => {
     vi.unstubAllGlobals();
 });
 
-describe('a DQ collection read', () => {
-    it('takes the rows from the collection the server names', async () => {
+describe('the bundle roster read', () => {
+    it('takes the bundles from the answer the server writes', async () => {
         vi.stubGlobal(
             'fetch',
             async () =>
                 new Response(
                     JSON.stringify({
-                        dataset_bundles: [
-                            { code: 'party_essentials', name: 'Party essentials', level: 'tenant' },
+                        success: true,
+                        error_message: '',
+                        bundles: [
+                            {
+                                code: 'party_essentials',
+                                name: 'Party essentials',
+                                level: 'tenant',
+                                dataset_count: 2,
+                                members: [],
+                            },
                         ],
                     }),
                     { status: 200 },
                 ),
         );
 
-        const bundles = await readDatasetBundles();
+        const bundles = await readBundleRoster();
 
         expect(bundles.map((one) => one.code)).toEqual(['party_essentials']);
         expect(bundles[0].level).toBe('tenant');
     });
+
+    it('asks for the members of the bundle it names', async () => {
+        const asked: string[] = [];
+        vi.stubGlobal('fetch', async (url: string) => {
+            asked.push(url);
+            return new Response(JSON.stringify({ success: true, error_message: '', bundles: [] }), {
+                status: 200,
+            });
+        });
+
+        await readBundleRoster('world');
+
+        expect(asked[0]).toContain('bundle_code=world');
+    });
+
+    it('reports what the server said when the read fails', async () => {
+        vi.stubGlobal(
+            'fetch',
+            async () =>
+                new Response(
+                    JSON.stringify({
+                        success: false,
+                        error_message: 'The store is not reachable.',
+                        bundles: [],
+                    }),
+                    { status: 200 },
+                ),
+        );
+
+        await expect(readBundleRoster()).rejects.toThrow('The store is not reachable.');
+    });
 });
 
 describe('why a bundle member is not ready', () => {
-    const member = { bundle_code: 'party_essentials', dataset_code: 'refdata.conventions' };
-    const dataset = { code: 'refdata.conventions', artefact_type: 'conventions' };
-    const artefactType = { code: 'conventions', target_subject: 'refdata.v1.ops.publish' };
+    const member: BundleRosterMember = {
+        display_order: 1,
+        dataset_code: 'refdata.conventions',
+        dataset_name: 'Conventions',
+        artefact_type: 'conventions',
+        artefact_table: 'dq_conventions_artefact_tbl',
+        target_subject: 'refdata.v1.ops.publish',
+        has_dataset: true,
+        has_artefact_type: true,
+        staged_count: 12,
+        is_publishable: true,
+        optional: false,
+    };
 
     it('names the missing dataset', () => {
-        expect(readinessOf(member, [], [artefactType]).reason).toBe('no dataset');
+        expect(reasonOf({ ...member, has_dataset: false })).toBe('no dataset');
     });
 
     it('names the missing artefact type', () => {
-        expect(readinessOf(member, [dataset], []).reason).toBe('no artefact type');
+        expect(reasonOf({ ...member, has_artefact_type: false })).toBe('no artefact type');
     });
 
     it('names the missing target subject', () => {
-        const bare = { code: 'conventions', target_subject: null };
-        expect(readinessOf(member, [dataset], [bare]).reason).toBe('no target subject');
+        expect(reasonOf({ ...member, target_subject: '' })).toBe('no target subject');
     });
 
-    it('is ready when the dataset and its subject are there', () => {
-        expect(readinessOf(member, [dataset], [artefactType]).reason).toBeNull();
+    it('names the member whose table staged no rows', () => {
+        expect(reasonOf({ ...member, staged_count: 0 })).toBe('no staged rows');
+    });
+
+    it('is ready when the dataset, its type, its subject and its rows are there', () => {
+        expect(reasonOf(member)).toBeNull();
     });
 });

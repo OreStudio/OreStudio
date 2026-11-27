@@ -1,0 +1,287 @@
+/* The librarian layout of the coverage prototype.
+ *
+ * The Qt Data Librarian was a master-detail screen: a navigation tree on the
+ * left, a dense table in the middle, and the selected row's card beside it.
+ * This file styles that shape for the coverage variant; the shell, the cards
+ * and the badges still come from management.css. */
+
+.lib {
+    display: grid;
+    grid-template-columns: 232px minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.lib-pane {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.lib-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.lib-head h2 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+}
+
+.lib-head .dim {
+    font-size: 12px;
+}
+
+.lib-body {
+    padding: 8px;
+}
+
+.lib-tree {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.lib-tree .grp {
+    padding: 10px 8px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+
+.lib-tree .grp .note {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--ink-faint);
+}
+
+.lib-tree .node {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2px 8px;
+    width: 100%;
+    padding: 7px 8px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.lib-tree .node:hover {
+    background: var(--panel-2);
+}
+
+.lib-tree .node.on {
+    border-color: var(--line-strong);
+    background: var(--panel-2);
+}
+
+.lib-tree .node .key {
+    grid-column: 1;
+    grid-row: 1;
+    font-family: var(--mono);
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lib-tree .node .sub {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    font-size: 11px;
+    color: var(--ink-dim);
+}
+
+.lib-tree .node .count {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+}
+
+.lib-tools {
+    display: flex;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.lib-tools input,
+.lib-tools select {
+    padding: 6px 8px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--panel-2);
+    color: var(--ink);
+    font: inherit;
+    font-size: 12px;
+}
+
+.lib-tools input {
+    flex: 1;
+    min-width: 0;
+}
+
+.lib-table {
+    max-height: 720px;
+    overflow: auto;
+}
+
+.lib-table .rows th {
+    position: sticky;
+    top: 0;
+    background: var(--panel);
+    z-index: 1;
+}
+
+.lib-table .rows td,
+.lib-table .rows th {
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+/* The dataset column takes what is left, so a long code never pushes the state
+ * badge out of the pane. */
+.lib-table .rows {
+    table-layout: fixed;
+}
+
+.lib-table .rows th:nth-child(1) {
+    width: auto;
+}
+
+.lib-table .rows th:nth-child(2),
+.lib-table .rows th:nth-child(3) {
+    width: 76px;
+    text-align: right;
+}
+
+.lib-table .rows th:nth-child(2) {
+    width: 84px;
+}
+
+.lib-table .rows th:nth-child(4) {
+    width: 108px;
+}
+
+.lib-table .rows td:nth-child(1) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lib-table .rows td:nth-child(1) .key {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lib-table .rows tr.on td {
+    background: var(--accent-dim);
+}
+
+.lib-empty {
+    padding: 24px 14px;
+    color: var(--ink-faint);
+    font-size: 13px;
+}
+
+.acc {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.acc-head {
+    padding: 14px;
+    border-bottom: 1px solid var(--line-soft);
+}
+
+.acc-head .code {
+    font-family: var(--mono);
+    font-size: 13px;
+    word-break: break-all;
+}
+
+.acc-head .name {
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--ink-dim);
+}
+
+.acc-head .where {
+    margin-top: 8px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.acc-kv {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 8px 10px;
+    margin: 0;
+    padding: 14px;
+    font-size: 12px;
+}
+
+.acc-kv dt {
+    color: var(--ink-faint);
+}
+
+.acc-kv dd {
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.acc-kv dd.plain {
+    font-family: inherit;
+    word-break: normal;
+}
+
+.acc-say {
+    margin: 0 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--panel-2);
+    font-size: 12px;
+    color: var(--ink-dim);
+}
+
+.acc-acts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 14px;
+}
+
+.acc-gap {
+    margin: 0 14px 14px;
+    font-size: 11px;
+    color: var(--ink-faint);
+}

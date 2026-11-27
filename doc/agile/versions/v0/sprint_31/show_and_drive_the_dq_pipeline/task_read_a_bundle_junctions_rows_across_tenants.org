@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: 276F573C-8822-46FB-AC41-531847E07AA5
+:END:
+#+title: Task: Read a bundle's member rows across tenants
+#+description: The generated read of the dataset_bundle_members junction states an app-level tenant_id predicate, so a tenant session answers no members for a world or platform bundle, whose rows live in the system tenant. The codegen junction meta-model does not read :tenant_read_scope:, so the read cannot be widened from the model.
+#+type: task
+#+level: s1
+#+filetags: :dq:sql:codegen:sprint_31:v0:show_and_drive_the_dq_pipeline:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A tenant session that reads =dq.v1.dataset_bundle_members.list= answers the
+members of its own bundles and of the shared ones. Today it answers nothing for
+a =world= or =platform= bundle, whose membership rows sit in the system tenant,
+so a coverage screen reading that collection draws "this bundle carries no
+dataset" for every shared bundle it holds.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-26                               |
+
+* Acceptance
+
+- A tenant context reads the members of a system-tenant bundle through
+  =dataset_bundle_member_repository::read_latest= and through the count.
+- A test seeds a membership row as the system tenant and asserts a different
+  tenant's context reads it back, so an app-level predicate cannot return
+  unnoticed.
+- The =dq.v1.dataset_bundle_members.list= operation answers the same rows for a
+  tenant as the =bundle_roster= operation's member list does.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Found while drawing the coverage screen, on branch
+=feature/draw-the-counts-on-the-coverage-screen=. The screen no longer reads the
+collection: it draws the members from =dq.v1.ops.bundle_roster=, which resolves
+them through =ores_dq_bundle_datasets_list_fn= and is not affected. The defect
+is left for the collection itself, because the next consumer of it is a screen
+that changes membership and needs the same rows.
+
+The cause, measured on 2026-11-26 at =af61a1b942=:
+=dataset_bundle_member_repository::read_latest(offset, limit)= and
+=get_total_member_count= add =where tenant_id == ctx.tenant_id()=, while the
+=bundles= and =datasets= repositories state no such predicate and let the row
+level security policy decide. The policy
+=dataset_bundle_members_read_policy= already admits the own and the system
+tenant, so as the runtime user with the tenant setting applied the table answers
+180 system-tenant rows for the acme tenant.
+
+The predicate is generated from =read_tenant_filtered=, which the generator
+derives from =:tenant_read_scope:= on the model. The junction meta-model does
+not read that property: setting it on the =* Repository= drawer and on the
+=* Flags= drawer of =ores.dq.dataset_bundle_member_junction.org= leaves the
+generated repository unchanged. So the fix is in the generator: a junction
+model must honour =:tenant_read_scope:= the way a domain entity does, and
+=ores.dq.dataset_bundle_member_junction.org= then declares =shared=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

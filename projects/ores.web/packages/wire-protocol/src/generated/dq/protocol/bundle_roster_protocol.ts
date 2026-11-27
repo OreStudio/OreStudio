@@ -30,6 +30,14 @@ export interface BundleRosterRequest {
      * @brief The bundle whose members to read, or empty for the roster alone.
      */
     bundle_code: string;
+    /**
+     * @brief The dataset whose bundle to answer, or empty.
+     *
+     * A dataset's own page knows the dataset and not the bundle that carries it, so
+     * the roster resolves the bundle from the dataset when the caller names one. A
+     * bundle named as well takes precedence over it.
+     */
+    dataset_code: string;
 }
 
 /**
@@ -45,7 +53,7 @@ export interface BundleRosterMember {
      */
     dataset_code: string;
     /**
-     * @brief The dataset's name, or a note that no dataset row was found.
+     * @brief The dataset's name, or empty when no dataset row names its code.
      */
     dataset_name: string;
     /**
@@ -57,9 +65,17 @@ export interface BundleRosterMember {
      */
     artefact_table: string;
     /**
-     * @brief The subject a publish writes to, or a note that it names none.
+     * @brief The subject a publish writes to, or empty when it names none.
      */
     target_subject: string;
+    /**
+     * @brief Whether a dataset row names the member's code.
+     */
+    has_dataset: boolean;
+    /**
+     * @brief Whether the dataset's artefact type is one the store holds.
+     */
+    has_artefact_type: boolean;
     /**
      * @brief How many rows the dataset has staged, ready to publish.
      */

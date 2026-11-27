@@ -56,6 +56,14 @@ struct bundle_roster_request {
      * @brief The bundle whose members to read, or empty for the roster alone.
      */
     std::string bundle_code;
+    /**
+     * @brief The dataset whose bundle to answer, or empty.
+     *
+     * A dataset's own page knows the dataset and not the bundle that carries it, so
+     * the roster resolves the bundle from the dataset when the caller names one. A
+     * bundle named as well takes precedence over it.
+     */
+    std::string dataset_code;
 
     friend bool operator==(const bundle_roster_request&, const bundle_roster_request&) = default;
 };
@@ -73,7 +81,7 @@ struct bundle_roster_member {
      */
     std::string dataset_code;
     /**
-     * @brief The dataset's name, or a note that no dataset row was found.
+     * @brief The dataset's name, or empty when no dataset row names its code.
      */
     std::string dataset_name;
     /**
@@ -85,9 +93,17 @@ struct bundle_roster_member {
      */
     std::string artefact_table;
     /**
-     * @brief The subject a publish writes to, or a note that it names none.
+     * @brief The subject a publish writes to, or empty when it names none.
      */
     std::string target_subject;
+    /**
+     * @brief Whether a dataset row names the member's code.
+     */
+    bool has_dataset = false;
+    /**
+     * @brief Whether the dataset's artefact type is one the store holds.
+     */
+    bool has_artefact_type = false;
     /**
      * @brief How many rows the dataset has staged, ready to publish.
      */
@@ -167,6 +183,7 @@ struct bundle_roster_response {
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<bundle_roster_request>) {
     return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"bundle_code", &bundle_roster_request::bundle_code},
+        ::ores::utility::codec::field{"dataset_code", &bundle_roster_request::dataset_code},
     };
 }
 
@@ -186,6 +203,9 @@ struct bundle_roster_response {
         ::ores::utility::codec::field{"artefact_type", &bundle_roster_member::artefact_type},
         ::ores::utility::codec::field{"artefact_table", &bundle_roster_member::artefact_table},
         ::ores::utility::codec::field{"target_subject", &bundle_roster_member::target_subject},
+        ::ores::utility::codec::field{"has_dataset", &bundle_roster_member::has_dataset},
+        ::ores::utility::codec::field{"has_artefact_type",
+                                      &bundle_roster_member::has_artefact_type},
         ::ores::utility::codec::field{"staged_count", &bundle_roster_member::staged_count},
         ::ores::utility::codec::field{"is_publishable", &bundle_roster_member::is_publishable},
         ::ores::utility::codec::field{"optional", &bundle_roster_member::optional},

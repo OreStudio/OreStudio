@@ -2,12 +2,12 @@
 :ID: B5770B99-21AB-467D-824D-64D383CA573B
 :END:
 #+title: Task: Draw the counts the roster serves on the coverage screen
-#+description: api/dq.ts reads the bundle roster, and the coverage screen draws the staged count in place of the dash it states today, naming the gap only where the figure is still absent.
+#+description: api/dq.ts reads the bundle roster, and the coverage screen is rebuilt to the arrangement signed off on 2026-11-26: the bundles by level in a tree beside a dense table of datasets, with the staged count drawn in place of the dash and the gap named only where the figure is still absent.
 #+type: task
 #+level: s1
 #+filetags: :dq:web:coverage:sprint_31:v0:show_and_drive_the_dq_pipeline:
 #+owner: marco
-#+branch:
+#+branch: feature/draw-the-counts-on-the-coverage-screen
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,22 +26,47 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | The screen draws the roster whole: the bundles by level and the members with the rows each has staged. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Run the gate and raise the PR.         |
 | Last touched | 2026-11-25                               |
 
 * Acceptance
 
--
+- The screen takes the arrangement signed off on 2026-11-26, which the prototype
+  draws: the bundles grouped by level in a tree on the left, the chosen bundle's
+  datasets in a dense table on the right, a text filter and a state filter over
+  that table, and no card beside it. A row opens the dataset's own page, which is
+  [[id:F8B44A0B-844E-424D-8C12-162C4C500B4C][its own task]].
+- The coverage screen reads the bundle roster and no other DQ collection, so a
+  person sees the bundles by level and the members of the bundle in view from
+  one operation.
+- The staged column draws the number of rows the roster counts for each member,
+  and the published column states its absence with a dash and not a zero.
+- The readiness of a member is one of the four reasons or "metadata complete",
+  and the reason is stated for a member whose artefact table staged no rows as
+  well as for one that no dataset row names.
+- The screen does not depend on the tenant holding the rows: a world or platform
+  bundle is read where it lies, in the system tenant.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Read the roster on the screen: once with no bundle, for the bundles and the
+   one to open on, and once with that bundle's code, for its members and counts.
+2. Draw the staged column from the member's own =staged_count= and keep the dash
+   for the published count, which the provenance still owes.
+3. State the readiness from the facts the roster already carries, and add the
+   two it did not: whether a dataset row names the member's code and whether its
+   artefact type is one the store holds. The store's discovery function already
+   computed both; the operation did not state them, so it was serving the screen
+   a sentence about a missing row instead of a fact about it.
+4. Drop the four collection reads the screen used to make. The junction they
+   read answers no rows for a shared bundle, because its generated read states a
+   tenant predicate that the row level security policy does not need; that is
+   [[id:276F573C-8822-46FB-AC41-531847E07AA5][its own task]] and not a reason to
+   keep four requests where one answers.
 
 * Measurements
 
@@ -55,9 +80,49 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| DQ collections the screen reads | 1 (the roster) | =grep -c "api/v1/dq" src/api/dq.ts= | this task's tree |
+| Members the roster answered for the =world= bundle | 40 | =curl .../bundle_roster?bundle_code=world= | this task's tree |
+| Time the roster answered in | 40 ms | =curl -w '%{time_total}'= | this task's tree |
+| Rows staged for =geo.ip2country= | 512186 | =curl .../bundle_roster?bundle_code=world= | this task's tree |
+| DQ core suite | 134 test cases, 1278 assertions | =ores.dq.core.tests= | this task's tree |
+| Local checks | 20 run, 20 passed | =./compass.sh check= | this task's tree |
 
 * Notes
+
+- *The arrangement changed after the first build.* The first screen was drawn as
+  three stacked cards. The design that was signed off drew tables, and the area
+  replaces the Qt Data Librarian, so the arrangement was reopened and signed off
+  again on 2026-11-26 as a tree and a table with the dataset on its own page. This
+  task carries that rework; the prototype records both arrangements.
+- *The roster crashed the DQ service, and the screen said nothing.* The service
+  held the registration context by reference, and registration hands it a
+  temporary, so the reference dangled the moment registration returned. Every
+  request to =dq.v1.ops.bundle_roster= then read a freed implementation and the
+  process died with =SIGSEGV= inside =context::impl=, which the gateway saw as a
+  connection drop and the screen as "Cannot reach the server". The handler holds
+  the context by value now, as every generated handler does, and the state is
+  recorded in the code where the member is declared.
+- *The junction read is not the roster's peer.* =dataset_bundle_members.list=
+  answers no members for a world or platform bundle, because its generated read
+  states a tenant predicate and the membership rows live in the system tenant.
+  The row level security policy admits them, so the predicate is the whole
+  cause. It is [[id:276F573C-8822-46FB-AC41-531847E07AA5][its own task]].
+- *A permission mismatch on the area.* The area and its card asked for any one of
+  four reads; the roster asks for one, =dq::datasets:read=. Both now ask for that
+  one, so a person who holds only one of the others no longer sees an area whose
+  only screen refuses them.
+- *The menu has no Data quality entry in the standards page.* It does now; see
+  the Menu structure page's Data quality area.
+- *Four reads sent together do not all arrive.* On the provisioned environment
+  the screen stayed on Loading and the browser reported "Cannot reach the
+  server" for two reads the DQ service never logged. The service answered the
+  two bundle reads and never saw the datasets or artefact-types requests, so the
+  fault is between the browser and the service and not in either. Unauthenticated
+  concurrency and keep-alive reuse both pass, so it needs an authenticated read
+  to show itself. The reads are serialised as a mitigation with the reason in
+  the code; the gateway's HTTP session layer is where the cause lives and its
+  log is full of "Session error ... end of stream" for this client across the
+  whole session, before this work as well as after it.
 
 * Test Scenarios
 
@@ -82,4 +147,31 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Notes on the standard
+
+- *The list pages in the browser.* RS-LIST-04 asks a list to page, search and
+  order on the server. The roster answers the whole roster in one request and the
+  tree needs every bundle to draw its levels, so the table pages the bundle in
+  view in the browser; the roster has no filter or paging of its own, and adding
+  one before a second screen needs it would be speculative. Recorded in the
+  Record screen standard's conformance table.
+- *The state filter offers only what the roster can answer.* "Not fully
+  published" needs the published count, so it is not offered: an option that
+  matched every row would be a lie.
+
 * Result
+
+The screen is the arrangement signed off on 2026-11-26. The bundles of every level
+sit in a tree on the left, each with its dataset count; the chosen bundle's
+datasets fill a dense table on the right with a text filter and a state filter
+over them; and a row opens the dataset's own page, which is
+[[id:F8B44A0B-844E-424D-8C12-162C4C500B4C][its own task]].
+
+The staged column draws the count the roster serves. The published column keeps
+its dash and the page names that absence, because the provenance read is still to
+build. The state column draws the reason a dataset cannot publish, and the row
+that is ready says so.
+
+Read once and drawn twice: the roster is asked for the bundles, which names the
+bundle to open on, and again for that bundle's members, because the staged count
+costs one count per member in the service.

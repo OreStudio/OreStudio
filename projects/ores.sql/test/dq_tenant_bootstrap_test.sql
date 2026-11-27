@@ -196,7 +196,7 @@ select is(
     'a tenant reads the artefact types where the system tenant holds them');
 
 select is(
-    (select count(*) from ores_dq_bundle_datasets_list_fn('world') where not has_artefacts),
+    (select count(*) from ores_dq_bundle_datasets_list_fn('world') where not has_dataset),
     0::bigint,
     'every member of a bundle resolves for a tenant that holds no dataset row');
 

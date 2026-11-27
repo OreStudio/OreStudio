@@ -123,7 +123,7 @@ describe('the dataset page', () => {
             'iso.currencies',
             [
                 {
-                    published_at: '2026-11-27T15:49:00Z',
+                    published_at: '2026-11-27 15:49:00.000Z',
                     published_by: 'tenant_admin',
                     mode: 'upsert',
                     target_table: 'dq_currencies_artefact_tbl',
@@ -138,7 +138,7 @@ describe('the dataset page', () => {
         );
 
         expect(html).toContain('tenant_admin');
-        expect(html).toContain('published with warnings');
+        expect(html).toContain('Published with warnings');
         expect(html).toContain('2 row(s) were skipped');
     });
 

@@ -534,10 +534,12 @@ publish_service::list_bundle_members(const std::string& bundle_code) {
 
 std::vector<messaging::dataset_publication>
 publish_service::list_dataset_publications(const std::string& dataset_code) {
-    const auto sql = "SELECT published_at, published_by, mode, target_table, records_inserted, "
-                     "records_updated, records_skipped, records_deleted, outcome, messages::text "
-                     "FROM ores_dq_dataset_publications_tbl "
-                     "WHERE dataset_code = $1 ORDER BY published_at DESC";
+    const auto sql =
+        "SELECT to_char(published_at at time zone 'UTC', 'YYYY-MM-DD HH24:MI:SS.MS\"Z\"'), "
+        "published_by, mode, target_table, records_inserted, "
+        "records_updated, records_skipped, records_deleted, outcome, messages::text "
+        "FROM ores_dq_dataset_publications_tbl "
+        "WHERE dataset_code = $1 ORDER BY published_at DESC";
     const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         sql,

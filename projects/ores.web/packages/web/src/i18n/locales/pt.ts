@@ -2086,7 +2086,7 @@ const pt: SourceCatalogue = {
             missing: 'Em falta',
             lostOrMissing: 'Perdidos ou em falta',
             errors: 'Erros, {range}',
-            warnings: 'Publicado com avisos',
+            warnings: 'Avisos, {range}',
             release: 'Versão mais recente',
             behind: {
                 one: '{count} serviço numa versão mais antiga',
@@ -8566,9 +8566,9 @@ const pt: SourceCatalogue = {
             runOutcome: 'Resultado',
             publicationsNone: 'Nada publicou este conjunto de dados ainda.',
             outcome: {
-                published: 'publicado',
-                warnings: 'publicado com avisos',
-                failed: 'falhou',
+                published: 'Publicado',
+                warnings: 'Publicado com avisos',
+                failed: 'Falhou',
             },
             lastPublished: 'Última publicação',
             lastPublishedGap: 'Nada publicou este conjunto de dados ainda.',

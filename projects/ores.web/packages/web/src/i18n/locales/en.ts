@@ -2073,7 +2073,7 @@ export const en: SourceCatalogue = {
             missing: 'Missing',
             lostOrMissing: 'Lost or missing',
             errors: 'Errors, {range}',
-            warnings: 'Published with warnings',
+            warnings: 'Warnings, {range}',
             release: 'Newest release',
             behind: {
                 one: '{count} service on an older release',
@@ -8504,9 +8504,9 @@ export const en: SourceCatalogue = {
             runOutcome: 'Outcome',
             publicationsNone: 'Nothing has published this dataset yet.',
             outcome: {
-                published: 'published',
-                warnings: 'published with warnings',
-                failed: 'failed',
+                published: 'Published',
+                warnings: 'Published with warnings',
+                failed: 'Failed',
             },
             lastPublished: 'Last published',
             lastPublishedGap: 'Nothing has published this dataset yet.',

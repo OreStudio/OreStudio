@@ -2095,7 +2095,7 @@ const fr: SourceCatalogue = {
             missing: 'Absents',
             lostOrMissing: 'Perdus ou absents',
             errors: 'Erreurs, {range}',
-            warnings: 'Publié avec des avertissements',
+            warnings: 'Avertissements, {range}',
             release: 'Version la plus récente',
             behind: {
                 one: '{count} service sur une version plus ancienne',
@@ -8634,9 +8634,9 @@ const fr: SourceCatalogue = {
             runOutcome: 'Résultat',
             publicationsNone: 'Rien n’a encore publié ce jeu de données.',
             outcome: {
-                published: 'publié',
-                warnings: 'publié avec des avertissements',
-                failed: 'échec',
+                published: 'Publié',
+                warnings: 'Publié avec des avertissements',
+                failed: 'Échec',
             },
             lastPublished: 'Dernière publication',
             lastPublishedGap: 'Rien n’a encore publié ce jeu de données.',

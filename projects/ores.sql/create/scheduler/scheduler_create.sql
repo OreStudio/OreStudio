@@ -30,6 +30,9 @@
 \ir ./scheduler_retention_policies_notify_trigger_create.sql
 \ir ./scheduler_retained_stores_create.sql
 \ir ./scheduler_retained_stores_notify_trigger_create.sql
+\ir ./scheduler_retained_store_samples_create.sql
+\ir ./scheduler_retained_store_samples_notify_trigger_create.sql
 \ir ./scheduler_retention_sweep_create.sql
+\ir ./scheduler_store_sampler_create.sql
 \ir ./scheduler_store_bounds_view_create.sql
 \ir ./scheduler_publish_from_dq_create.sql

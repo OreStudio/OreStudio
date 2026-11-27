@@ -21,12 +21,15 @@
 /**
  * Job Definitions Artefact Population Script
  *
- * Stages the one job the platform declares for housekeeping: the sweep that
- * applies the retention policies. A policy names a table and not a job, so the
- * two datasets stand apart and this one declares no dependency.
+ * Stages the two jobs the platform declares for housekeeping: the sweep that
+ * applies the retention policies, and the sampler that measures the stores. A
+ * policy names a table and not a job, so the datasets stand apart and this one
+ * declares no dependency.
  *
  * The sweep is fired once a day. Each policy states its own cadence, and the
- * sweep applies the ones that are due, so the schedule here is the tick.
+ * sweep applies the ones that are due, so the schedule here is the tick. The
+ * sampler runs every hour, which is the finest cadence the screen's plot needs
+ * and the coarsest that still shows a store growing within a day.
  */
 
 \echo '--- Job Definitions Artefacts ---'
@@ -64,6 +67,14 @@ values
      'Apply the retention policies that are due',
      'DO $$ begin perform ores_scheduler_apply_retention_policies_fn(); end $$;',
      '0 3 * * *',
+     'execute_sql',
+     '{}'::jsonb,
+     true),
+    (ores_utility_system_tenant_id_fn(), :'v_dataset_id',
+     'ores.scheduler.store_sampler',
+     'Measure the stores the database can see, so their growth can be plotted',
+     'DO $$ begin perform ores_scheduler_sample_retained_stores_fn(); end $$;',
+     '15 * * * *',
      'execute_sql',
      '{}'::jsonb,
      true),

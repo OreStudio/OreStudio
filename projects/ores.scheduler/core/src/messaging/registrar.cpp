@@ -26,6 +26,7 @@
 #include "ores.scheduler.core/messaging/job_instance_handler.hpp"
 #include "ores.scheduler.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.scheduler.core/messaging/retained_store_registrar.hpp"
+#include "ores.scheduler.core/messaging/retained_store_sample_registrar.hpp"
 #include "ores.scheduler.core/messaging/retention_policy_registrar.hpp"
 #include "ores.scheduler.core/messaging/scheduler_status_handler.hpp"
 #include "ores.scheduler.core/service/publish_subject_plan.hpp"
@@ -72,6 +73,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // reason: without this call its subjects have no responder, so the table
     // would be readable only by SQL.
     for (auto& sub : register_retained_store_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+
+    // The samples are generated the same way: the series a screen plots is read
+    // over the wire, not by SQL.
+    for (auto& sub : register_retained_store_sample_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
 
     // The two operational views are computed, so their handlers are

@@ -19,11 +19,14 @@
  */
 
 \ir ./scheduler_store_bounds_view_drop.sql
+\ir ./scheduler_store_sampler_drop.sql
 \ir ./scheduler_job_instances_drop.sql
 \ir ./scheduler_job_definitions_notify_trigger_drop.sql
 \ir ./scheduler_job_definitions_drop.sql
 \ir ./scheduler_retention_sweep_drop.sql
 \ir ./scheduler_retention_policies_notify_trigger_drop.sql
 \ir ./scheduler_retention_policies_drop.sql
+\ir ./scheduler_retained_store_samples_notify_trigger_drop.sql
+\ir ./scheduler_retained_store_samples_drop.sql
 \ir ./scheduler_retained_stores_notify_trigger_drop.sql
 \ir ./scheduler_retained_stores_drop.sql

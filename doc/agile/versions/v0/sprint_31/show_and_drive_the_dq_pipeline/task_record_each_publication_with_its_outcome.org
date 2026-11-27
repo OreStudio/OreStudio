@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :dq:sql:publishing:sprint_31:v0:show_and_drive_the_dq_pipeline:
 #+owner: marco
-#+branch:
+#+branch: feature/record-each-publication-with-its-outcome
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -29,7 +29,7 @@ published, whether that run worked, and why it did not.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

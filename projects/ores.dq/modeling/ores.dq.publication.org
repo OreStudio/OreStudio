@@ -63,10 +63,12 @@ The dataset that was published.
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
+:list_by: true
 :END:
 
 The dataset's code at the time of publication, recorded so the row still reads
-after the dataset is renamed or removed.
+after the dataset is renamed or removed. A dataset's own page reads its runs by
+this code, because the id it holds is not the id the run recorded.
 
 ** mode
 :PROPERTIES:
@@ -129,6 +131,41 @@ Records the publication removed.
 
 Who asked for the publication.
 
+** outcome
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:default:  'published'
+:END:
+
+What the run did, in one word a screen can draw: =published=, when every row it
+touched was written; =published_with_warnings=, when the run wrote its rows and
+chose to skip some; =failed=, when it wrote nothing. A failed run is recorded
+because a log that holds only the successes answers "when was this last
+published?" with an older run that did write something, which is a different
+question from the one a person is asking.
+
+The word is stored and not derived from the counts, because a run that skipped a
+row and a run that failed before touching any have the same counts.
+
+** messages
+:PROPERTIES:
+:type:     jsonb
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Serialised JSON array of what the run said, each an object with a =severity= of
+=warning= or =error= and a =text=. Empty for a run that said nothing.
+
+#+begin_src cpp :name generator
+std::string("[]")
+#+end_src
+
+The messages live beside the row rather than in a table of their own because they
+belong to one run and are read with it. A run that failed states the error the
+target service raised; a run that warns states what it chose not to write.
+
 ** published_at
 :PROPERTIES:
 :type:     timestamp with time zone
@@ -169,6 +206,7 @@ When the publication was recorded. This is the column the log is read by.
 | "records_skipped" >= 0                            |
 | "records_deleted" >= 0                            |
 | "published_by" <> ''                              |
+| "outcome" in ('published', 'published_with_warnings', 'failed') |
 
 * C++
 

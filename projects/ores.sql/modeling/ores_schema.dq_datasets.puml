@@ -158,6 +158,8 @@ package "dq_datasets" #E3F2FD {
         * records_skipped : bigint
         * records_deleted : bigint
         * published_by : text
+        * outcome : text
+        * messages : jsonb
         * published_at : timestamptz
     }
 

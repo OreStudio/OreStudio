@@ -21,6 +21,7 @@
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
+#include "ores.dq.api/messaging/record_publication.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
@@ -122,8 +123,11 @@ void publish_from_dq_handler::handle(ores::nats::delivery delivery) {
     ORES_LOG_SEV(lg(), info) << "publish_from_dq: fn=" << fn_name << " dataset=" << cmd.dataset_id
                              << " mode=" << cmd.mode << " step=" << wf->step_id;
 
+    // Bound before the attempt, so a run that fails is recorded under the tenant
+    // it was to write for.
+    auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, wf->tenant_id);
+
     try {
-        auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, wf->tenant_id);
 
         const auto sql = std::format(
             "SELECT action, record_count FROM {}($1::uuid, $2::uuid, $3::text, $4::jsonb)",
@@ -153,12 +157,45 @@ void publish_from_dq_handler::handle(ores::nats::delivery delivery) {
                                  << " inserted=" << result.records_inserted
                                  << " updated=" << result.records_updated;
 
+        std::vector<ores::dq::messaging::publication_note> notes;
+        auto outcome = std::string("published");
+        if (result.records_skipped > 0) {
+            outcome = "published_with_warnings";
+            notes.push_back(
+                {.severity = "warning",
+                 .text = std::format("{} row(s) were skipped: the target did not take them.",
+                                     result.records_skipped)});
+        }
+        ores::dq::messaging::record_publication(tenant_ctx,
+                                                cmd.dataset_id,
+                                                wf->instance_id,
+                                                cmd.mode,
+                                                static_cast<std::int64_t>(result.records_inserted),
+                                                static_cast<std::int64_t>(result.records_updated),
+                                                static_cast<std::int64_t>(result.records_skipped),
+                                                static_cast<std::int64_t>(result.records_deleted),
+                                                outcome,
+                                                notes,
+                                                lg());
         wf->complete(ores::utility::codec::json::write(result));
         std::move(delivery).commit();
 
     } catch (const std::exception& e) {
         ORES_LOG_SEV(lg(), error) << "publish_from_dq failed: fn=" << fn_name
                                   << " error=" << e.what();
+        ores::dq::messaging::record_publication(
+            tenant_ctx,
+            cmd.dataset_id,
+            wf->instance_id,
+            cmd.mode,
+            0,
+            0,
+            0,
+            0,
+            "failed",
+            std::vector<ores::dq::messaging::publication_note>{
+                ores::dq::messaging::publication_note{.severity = "error", .text = e.what()}},
+            lg());
         wf->fail(e.what());
         // The failure reaches the engine, so the delivery is done with;
         // redelivering would only report the same failure again.

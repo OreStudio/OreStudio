@@ -182,6 +182,39 @@ resolves it in that tenant through the verified token. The two paths do not
 overlap: a token path for what belongs to a tenant, the bootstrap path for what
 belongs to the deployment.
 
+** Who writes a credential before any token exists
+
+The exchange solves the workload's secret zero and leaves the provisioner's in
+plain sight. A value reaches the vault through =vault.v1.ops.write=, the write
+is sealed to the vault's transport key, and the vault records the actor the
+verified token carries. A provisioner holding no token cannot write, and the
+first thing it has to write is the password of the service that issues tokens.
+The circle is the same one the exchange breaks, one step earlier in the boot.
+
+Two arrangements break it, and the boot order chooses between them.
+
+- *The vault writes, from its own keys.* Provisioning runs the vault's binary
+  with a write verb, hands it the values on standard input, and the vault seals
+  each one under the key encryption key it already holds and stores it in the
+  system tenant, owned by the actor the value belongs to. The writer needs no
+  token because it is the store, and no new identity exists to bootstrap. What
+  the audit records is the vault, acting for the deployment, which is true. The
+  costs are a verb on the vault's command line that writes any value, and the
+  values passing through a process that is not the one that generated them.
+- *The gateway writes, as an account a person holds.* Provisioning signs in
+  with the shell account, which the developer already holds, and writes each
+  value through the route a person uses. The audit names that account and the
+  path is the sanctioned one. The cost is the boot order: tokens come from IAM,
+  so IAM must be up before anything is written, which means IAM's own password
+  cannot come from the vault and stays a credential file forever — the exception
+  the vault holds must then be granted to a second process, and the provisioning
+  step needs a person's credential on a machine that runs unattended.
+
+ORE Studio takes the first. The vault is the only process that must exist before
+any other, its keys are already the ones that would seal the value, and the
+alternative turns *the vault cannot hold its own key* into *two services cannot
+hold their own passwords* while adding a person's login to the cold start.
+
 ** What it does not do
 
 The bootstrap key lives as long as the unit's deployment, so the guarantee is

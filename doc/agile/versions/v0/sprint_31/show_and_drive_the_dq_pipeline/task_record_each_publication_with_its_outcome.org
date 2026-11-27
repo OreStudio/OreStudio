@@ -8,7 +8,7 @@
 #+filetags: :dq:sql:publishing:sprint_31:v0:show_and_drive_the_dq_pipeline:
 #+owner: marco
 #+branch: feature/record-each-publication-with-its-outcome
-#+pr:
+#+pr: 5210
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-26
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5210][#5210]] | [dq] Record every publication run and serve it |
 
 * Review
 

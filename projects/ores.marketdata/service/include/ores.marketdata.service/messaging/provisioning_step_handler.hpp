@@ -28,6 +28,8 @@
 #include "ores.iam.api/workflow/provision_tenant_workflow.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.logging/logger.hpp"
+#include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
+#include "ores.marketdata.api/datum/schema.hpp"
 #include "ores.marketdata.api/messaging/curve_publish_operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/feed_protocol.hpp"
 #include "ores.marketdata.api/messaging/fx_forward_operation_protocol.hpp"
@@ -41,6 +43,8 @@
 #include "ores.marketdata.core/messaging/party_surface_blueprints.hpp"
 #include "ores.marketdata.core/messaging/party_surface_hold_back.hpp"
 #include "ores.marketdata.core/repository/feed_repository.hpp"
+#include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
+#include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/route_repository.hpp"
 #include "ores.marketdata.core/repository/subscription_repository.hpp"
@@ -402,8 +406,11 @@ private:
                 const auto party_ctx = context_for_party(service_ctx, party.id);
                 std::string named;
                 for (const auto& feed : party_feeds) {
-                    subscribe_party(
-                        party_ctx, party.id, feed.provider, source_of(feed.provider, feed.source));
+                    subscribe_party(party_ctx,
+                                    party.id,
+                                    feed.provider,
+                                    source_of(feed.provider, feed.source),
+                                    published_asset_classes(feed.provider));
                     named += (named.empty() ? "" : ", ") + feed.provider;
                 }
                 wf.record(party.full_name + ": subscribed to " + named);
@@ -425,6 +432,61 @@ private:
             provision_step_result{.kind = command.kind, .parties = subscribed}));
     }
 
+    /**
+     * @brief The asset classes a publisher's catalogue states, in a stable order.
+     *
+     * A route names the class of data a party takes from a publisher, and what
+     * bounds the choice is the publisher's own catalogue: every instrument it
+     * maps carries the asset class in its oresmd address. Routing every provider
+     * as FX, which is what this step did while FX was the only class it reached,
+     * leaves a party subscribed to an interest rate fixing provider with no route
+     * for it, and the fixings its swaps read never arrive.
+     *
+     * A publisher the catalogue states nothing for is reached as FX: the route
+     * still names a class, and the first tick that arrives says whether it was
+     * the right one.
+     */
+    [[nodiscard]] std::vector<std::string> published_asset_classes(const std::string& provider) {
+        // The catalogue is the installation's, not the tenant's: a party's session
+        // cannot read the mappings, so they are read where they live, as the curve
+        // blueprints are.
+        const auto system = ores::database::service::tenant_context::with_system_tenant(ctx_);
+
+        std::map<std::string, std::string> provider_of;
+        for (const auto& instrument :
+             ores::marketdata::repository::market_data_vendor_instrument_repository{}.read_latest(
+                 system))
+            provider_of.emplace(boost::uuids::to_string(instrument.id), instrument.provider_code);
+
+        std::set<std::string> classes;
+        for (const auto& mapping :
+             ores::marketdata::repository::market_data_mapping_repository{}.read_latest(system)) {
+            const auto owner =
+                provider_of.find(boost::uuids::to_string(mapping.vendor_instrument_id));
+            if (owner == provider_of.end() || owner->second != provider)
+                continue;
+            // The asset class is the address's authority, which every kind of
+            // address states: a quote, a series, an index and a fixing alike. A
+            // fixing is not a quote, so reading the address as one would drop the
+            // interest rate fixings a swapping tenant needs most.
+            const auto scheme = std::string_view("oresmd://");
+            const auto& uri = mapping.oresmd_uri;
+            if (!uri.starts_with(scheme))
+                continue;
+            const auto rest = std::string_view(uri).substr(scheme.size());
+            const auto slash = rest.find('/');
+            const auto authority = std::string(rest.substr(0, slash));
+            if (!ores::marketdata::datum::asset_class_named(authority))
+                continue;
+            classes.insert(authority);
+        }
+
+        std::vector<std::string> out(classes.begin(), classes.end());
+        if (out.empty())
+            out.emplace_back("fx");
+        return out;
+    }
+
     /// Gives one party a subscription to a provider and a route to a source.
     ///
     /// Both rows are marketdata's own, so they are read and written where the
@@ -435,7 +497,8 @@ private:
     static void subscribe_party(const ores::database::context& party_ctx,
                                 const boost::uuids::uuid& party_id,
                                 const std::string& provider,
-                                const boost::uuids::uuid& source_id) {
+                                const boost::uuids::uuid& source_id,
+                                const std::vector<std::string>& asset_classes) {
         const auto party_text = boost::uuids::to_string(party_id);
         boost::uuids::random_generator uuid_gen;
         constexpr std::string_view commentary =
@@ -469,16 +532,23 @@ private:
                                          provider + "' was not saved: " + saved.result.message);
         }
 
+        // A route a publisher's catalogue supports for an asset class is written
+        // per class, so a party takes everything its vendor publishes and not only
+        // the FX its routes used to name.
         const auto routes = ores::marketdata::repository::route_repository{}.read_latest(party_ctx);
-        const bool has_route = std::ranges::any_of(routes, [&](const auto& r) {
-            return r.party_id == party_id && r.publisher_code == provider;
-        });
-        if (!has_route) {
+        for (const auto& asset_class : asset_classes) {
+            const bool has_route = std::ranges::any_of(routes, [&](const auto& r) {
+                return r.party_id == party_id && r.publisher_code == provider &&
+                       r.asset_class == asset_class;
+            });
+            if (has_route)
+                continue;
+
             ores::marketdata::messaging::put_route_request put;
             put.change.write.id = uuid_gen();
             put.change.write.party_id = party_id;
             put.change.write.publisher_code = provider;
-            put.change.write.asset_class = "fx";
+            put.change.write.asset_class = asset_class;
             put.change.write.feed_id = source_id;
             put.change.precondition = any;
             put.intent.reason_code = "system.new_record";
@@ -486,6 +556,7 @@ private:
             const auto saved = ores::marketdata::service::route_service{party_ctx}.put_route(put);
             if (saved.result.outcome != ores::utility::domain::outcome::ok)
                 throw std::runtime_error("The route of party " + party_text + " to '" + provider +
+                                         "' for '" + asset_class +
                                          "' was not saved: " + saved.result.message);
         }
     }

@@ -13,11 +13,9 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-A smokehouse run now prices two of its three trades. The forward prices at
-80,815.55 GBP, and the option prices at zero, which is correct: its premium is
-its value on the valuation date, and ORE's NPV nets the two.
-
-The swap records no pricing at all:
+A smokehouse run prices two of its three trades. The forward prices at 80,815.55
+GBP; the option prices at zero, which is correct, since its premium is its value
+on the valuation date. The swap records no pricing:
 
 #+begin_example
 2nd leg: OvernightIndexedCouponPricer: missing GBP-SONIAON Actual/365 (Fixed)
@@ -26,26 +24,49 @@ fixing for fixing date November 24th, 2026.
 
 * Why
 
-The swap's floating leg reads an overnight index fixing for the day before the
-valuation date, and the run's =fixings.txt= carries none. The tenant has never
-been subscribed to the provider that publishes them: its profile names
-=bloomberg=, =ice=, =lseg= and the derived volatility source, and the fixings
-come from =simulated-fixings=.
+The run carries no index fixing, and there are two reasons, each on its own side
+of the line.
 
-Two things are needed, and the second is why this was recorded rather than just
-fixed:
+The first was the routes. A subscription step wrote one route per provider with
+the asset class stated as a constant =fx=, so a party subscribed to
+=simulated-fixings= reached the FX fixings and not the interest rate ones, which
+are the ones an overnight coupon reads. The step now reads what each provider's
+catalogue states: the asset class is the authority of every address the provider
+maps, so a provider that serves interest rates gets an =ir= route as well as an
+=fx= one. That change is in and the routes are right.
 
-1. The profile gives the party the =simulated-fixings= provider.
-2. The subscription step writes a route per provider with the asset class =fx=,
-   stated once in code. A fixing is an =ir= datum as well, and the system's own
-   routes for this provider name both =fx= and =ir=. So a party subscribed to the
-   fixings provider through the profile reaches the FX fixings and not the
-   interest rate ones, which are the ones an overnight swap coupon reads.
+The second is upstream of the run. No fixing series reaches the tenant at all,
+and the fixing source says why:
 
-The route's asset class therefore has to stop being a constant. A provider
-publishes what it publishes, and the party's routes should name the classes it
-actually serves, rather than every provider being routed as FX.
+#+begin_example
+The simulated-fixings fixing series of party <id> quote against EUR and NZD at
+once, so no one base cancels; it is left out.
+#+end_example
 
+A fixing series is derived from the party's spot series, and the inference of
+which currency a fixing quotes against cancels one base against the other. When
+the series in scope carry several bases, as a party routed to every vendor's
+spots does, nothing cancels and every fixing is dropped. So a party holding a
+rich spot book gets no fixings, and every overnight coupon in the run is refused.
+
+That is the defect to fix next, and it is a data-model question rather than a
+configuration one: either the fixing is keyed by the pair it belongs to rather
+than inferred from the party's whole spot book, or the inference is narrowed to
+the series the trade's index names.
+
+* References
+
+- Fixed on this branch: the market data export carries a party's FX spots and
+  volatility surfaces with every run; the conventions file names calendars the
+  way ORE reads them; and the routes name the asset classes each provider
+  publishes rather than =fx= alone.
+- The run's own record: =ores_reporting_report_error_events_tbl=. The fixing
+  source's line is in =publish/log/ores.marketdata.service.0.log=.
+
+* See also
+
+- =projects/ores.seeder/datasets/smokehouse/= is the tenant whose run surfaced
+  this.
 * References
 
 - Fixed on this branch: the market data export carries a party's FX spots and

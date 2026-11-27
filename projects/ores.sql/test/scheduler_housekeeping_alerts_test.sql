@@ -79,6 +79,16 @@ from ores_iam_roles_tbl r
 where r.name = 'SuperAdmin'
   and r.valid_to = ores_utility_infinity_timestamp_fn();
 
+-- The people the pass tells, by the rule the pass itself uses: the holders of the
+-- write a bound needs, read from the same function the alerts call. A freshly
+-- created installation holds none until a session makes one, and an installation
+-- that has provisioned a tenant holds that tenant's administrator too, so the
+-- count is read rather than assumed.
+create temp table t_people on commit drop as
+select coalesce(cardinality(
+    ores_scheduler_permission_holders_fn(ores_utility_system_tenant_id_fn(),
+                                         'scheduler::retention_policies:write')), 0) as people;
+
 create temp table t_actor on commit drop as
 select coalesce(
     (select username from ores_iam_accounts_tbl
@@ -156,14 +166,17 @@ select is(
     0::bigint,
     'only a person is told, never a service account');
 
+-- Every holder of the write a bound needs is told, so an installation that has
+-- provisioned a tenant tells its administrator too: the count is the notices
+-- times the people, not four.
 select is(
     (select count(*)
      from ores_inbox_notification_recipients_tbl r
      where r.notification_id in (select id from t_raised)
        and r.valid_to = ores_utility_infinity_timestamp_fn()
        and r.cleared_at is null),
-    4::bigint,
-    'each notice is open for one person, which is what the inbox counts');
+    (select count(*) from t_raised) * (select people from t_people),
+    'each notice is open for each person who can act, which is what the inbox counts');
 
 select is(
     (select sum(raised)::bigint from ores_scheduler_raise_housekeeping_alerts_fn()),
@@ -231,8 +244,8 @@ where code = 'delivery_counts_30d'
 select is(
     (select resolved from ores_scheduler_raise_housekeeping_alerts_fn()
      where case_name = 'store'),
-    1::bigint,
-    'a store that comes back under a bound has its notice cleared');
+    (select people from t_people)::bigint,
+    'a store that comes back under a bound has its notice cleared for everybody');
 
 select is(
     (select count(distinct n.id)

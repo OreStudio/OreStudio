@@ -89,3 +89,24 @@ ORE-1.8.17.0-x64-linux.tar.gz.
 # is staged, the bundle is republished into the running tenant in seven seconds,
 # and the report is triggered again. Re-provisioning the tenant for every
 # document change would have cost three and a half minutes a round.
+
+# ---------------------------------------------------------------------------
+# The report run after the FX spot fix, 2026-11-27T00:01Z
+
+The export carried no FX at all: an FX instrument holds the currencies it buys
+and sells and no market address, so no trade names its own spot, and the export
+writes only the series a run's trades name. The export now carries a party's FX
+spots and volatility surfaces with every run, as it already carried the quotes a
+curve is built from.
+
+  before: market_data.txt held 0 FX quotes; run failed with
+          "FXTriangulation: no conversion from 'EUR' to 'GBP' ... quotes ()"
+  after:  market_data.txt holds FX/RATE/EUR/GBP and the pair's FX_OPTION quotes,
+          the run completes, and 1 of the 3 trades prices:
+
+            FxForward  NPV 80,815.55 GBP   (notional 7,966,164.03)
+
+The option records no pricing because ORE drops the FX convention whose
+AdvanceCalendar is "TARGET,UnitedKingdom.Settlement" and then cannot find it.
+The swap records none because the drawn convention indexes GBP-LIBOR-12M and no
+IBOR curve or forwarding entry exists.

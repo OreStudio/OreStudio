@@ -166,22 +166,27 @@ compute publish-package ORE 1.8.17.0 x64-linux --wrapper-version 1.0.0 \
     --http-base-url http://localhost:$ORES_HTTP_PORT
 #+end_src
 
-On 2026-11-26 the run assembled everything and the engine refused the market
-with three errors, each naming a gap in the reporting layer and not in this
-tenant:
+The first run assembled everything and refused the market: the export carried no
+FX spot at all, because an FX instrument holds currencies and no market address,
+so no trade names the spot it converts at. The export now carries a party's FX
+spots and volatility surfaces with every run, as it already carried the quotes a
+curve is built from, and the market holds =FX/RATE/EUR/GBP= and the pair's
+volatility quotes. The forward then prices — the run completes and records an NPV
+of 80,815.55 GBP against it — and the other two trades record none:
 
-1. =FXTriangulation: no conversion from 'EUR' to 'GBP' possible … quotes ()=
-   — the assembled market data carries no FX spot, though the party holds 650
-   dollar spot observations and the today's market names both dollar legs.
-2. =fx vol curve building failed: Convention 'EUR-GBP-FX' not found= — the FX
-   conventions the tenant holds are named =EUR-GBP-FXOPTION=.
-3. =did not find object 'GBP-LIBOR-12M' of type ibor index= — the curve
+1. =fx vol curve building failed: Convention 'EUR-GBP-FX' not found= — the
+   conventions file carries the entry, but its =AdvanceCalendar= is
+   =TARGET,UnitedKingdom.Settlement=, and ORE cannot convert the country suffix
+   to a calendar, so it drops the convention.
+2. =did not find object 'GBP-LIBOR-12M' of type ibor index= — the curve
    configuration models overnight curves and volatility surfaces and names no
-   IBOR index, so no LIBOR-based swap can price.
+   IBOR curve, so no LIBOR-based swap can price.
 
-The capture =the-report-market-exports-no-fx-spot= holds the evidence for all
-three. Until they are closed the tenant's trades price nothing, and the check
-that watches them has nothing to read.
+The capture =the-report-market-names-what-ore-cannot-resolve= holds the evidence
+for both.
+Until they are closed the option and
+the swap price nothing, and a check that watches all three trades has nothing to
+read for them.
 
 * See also
 

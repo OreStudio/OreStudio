@@ -113,7 +113,7 @@ void print_policy(std::ostream& out, const ores::scheduler::domain::retention_po
         << "    store:   " << p.target << std::endl
         << "    period:  " << p.retention_days << " days" << std::endl
         << "    action:  " << p.action << std::endl
-        << "    cadence: " << p.cadence << std::endl;
+        << "    cadence: " << p.cadence_hours << " hours" << std::endl;
     if (!p.description.empty())
         out << "    about:   " << p.description << std::endl;
 }
@@ -136,9 +136,9 @@ bool report_result(std::ostream& out,
 /**
  * @brief The policy a person named, or nothing when the name matches none.
  *
- * The table is code keyed and carries no tenant, so the policy is found by its
- * own key rather than through a scope: a policy bounds a store of the whole
- * installation, and every caller that may read one may read them all.
+ * The table is code keyed and held by the system tenant, so the policy is found
+ * by its own key rather than through a scope: a policy bounds a store of the
+ * whole installation, and every caller the read answers may change one.
  */
 std::optional<ores::scheduler::domain::retention_policy>
 find_policy_by_code(std::ostream& out, nats_client& session, const std::string& code) {
@@ -178,7 +178,8 @@ bool put_policy(std::ostream& out,
     req.change.write.target = changed.target;
     req.change.write.action = changed.action;
     req.change.write.retention_days = changed.retention_days;
-    req.change.write.cadence = changed.cadence;
+    req.change.write.store_code = changed.store_code;
+    req.change.write.cadence_hours = changed.cadence_hours;
     req.change.write.enabled = changed.enabled;
     req.change.write.description = changed.description;
     req.change.precondition.kind = ores::utility::domain::precondition_kind::must_match_version;
@@ -816,9 +817,9 @@ void scheduler_commands::process_housekeeping_runs(std::ostream& out,
 
     list_retention_runs_request req;
     req.limit = *limit;
-    if (parsed->flag_set("policy")) {
+    if (const auto& policy = parsed->flag("policy"); !policy.empty()) {
         retention_runs_filter filter;
-        filter.policy_code = parsed->flag("policy");
+        filter.policy_code = policy;
         req.filter = filter;
     }
 

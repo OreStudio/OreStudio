@@ -171,7 +171,8 @@ public:
                                         const std::vector<std::string>& args);
 
     /**
-     * @brief fail-report <report_instance_id> <tenant_id> <correlation_id> <error_message>
+     * @brief fail-report <phase_code> <report_instance_id> <tenant_id> <correlation_id>
+     * <error_message>
      */
     static void process_fail_report(std::ostream& out,
                                     ores::nats::service::nats_client& session,

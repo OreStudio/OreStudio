@@ -144,7 +144,8 @@ constexpr int compute_outcome_success = 1;
 
 void report_execution_handler::mark_instance_failed(const std::string& tenant_id,
                                                     const std::string& instance_id,
-                                                    const std::string& error_message) {
+                                                    const std::string& error_message,
+                                                    domain::run_phase phase) {
     try {
         // A failed run holds no token, whether or not this instance already
         // recorded its failure.
@@ -171,7 +172,7 @@ void report_execution_handler::mark_instance_failed(const std::string& tenant_id
             // wrong rather than two. This branch runs once, for the first
             // writer, so the run's error is written once.
             service::report_error_recorder recorder(tenant_ctx);
-            const auto failure = recorder.record_run_failure(instance_id, error_message);
+            const auto failure = recorder.record_run_failure(instance_id, error_message, phase);
             if (!failure.empty())
                 ORES_LOG_SEV(lg(), error) << failure;
             ORES_LOG_SEV(lg(), info)
@@ -272,7 +273,8 @@ void report_execution_handler::resolve_market_readiness(ores::nats::delivery del
                              << req.report_instance_id << " definition=" << req.definition_id;
 
     const auto fail = [&](const std::string& why) {
-        mark_instance_failed(req.tenant_id, req.report_instance_id, why);
+        mark_instance_failed(
+            req.tenant_id, req.report_instance_id, why, domain::run_phase::preprocess);
         wf->fail(why);
         std::move(delivery).commit();
     };
@@ -501,7 +503,8 @@ void report_execution_handler::gather_trades(ores::nats::delivery delivery) {
         const auto& book_ids = req.book_ids;
         if (book_ids.empty()) {
             const auto err = "gather_trades: the readiness step named no book to gather from.";
-            mark_instance_failed(req.tenant_id, req.report_instance_id, err);
+            mark_instance_failed(
+                req.tenant_id, req.report_instance_id, err, domain::run_phase::preprocess);
             wf->fail(err);
             std::move(delivery).commit();
             return;
@@ -535,7 +538,8 @@ void report_execution_handler::gather_trades(ores::nats::delivery delivery) {
             const auto failure =
                 "export_trades_to_storage failed: " +
                 (err.empty() ? (exp_resp ? exp_resp->message : "(no response)") : err);
-            mark_instance_failed(req.tenant_id, req.report_instance_id, failure);
+            mark_instance_failed(
+                req.tenant_id, req.report_instance_id, failure, domain::run_phase::preprocess);
             wf->fail(failure);
             std::move(delivery).commit();
             return;
@@ -563,7 +567,8 @@ void report_execution_handler::gather_trades(ores::nats::delivery delivery) {
         std::move(delivery).commit();
     } catch (const std::exception& e) {
         ORES_LOG_SEV(lg(), error) << "gather_trades failed: " << e.what();
-        mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
+        mark_instance_failed(
+            req.tenant_id, req.report_instance_id, e.what(), domain::run_phase::preprocess);
         wf->fail(e.what());
         std::move(delivery).commit();
     }
@@ -601,7 +606,8 @@ void report_execution_handler::gather_market_data(ores::nats::delivery delivery)
             tenant_ctx, req.definition_id);
         if (!config) {
             const auto err = "risk_report_config not found for definition " + req.definition_id;
-            mark_instance_failed(req.tenant_id, req.report_instance_id, err);
+            mark_instance_failed(
+                req.tenant_id, req.report_instance_id, err, domain::run_phase::preprocess);
             wf->fail(err);
             std::move(delivery).commit();
             return;
@@ -632,7 +638,8 @@ void report_execution_handler::gather_market_data(ores::nats::delivery delivery)
                     "resolve_market_data_requirements failed: " +
                     (resolution_error.empty() ? (res_resp ? res_resp->message : "(no response)") :
                                                 resolution_error);
-                mark_instance_failed(req.tenant_id, req.report_instance_id, failure);
+                mark_instance_failed(
+                    req.tenant_id, req.report_instance_id, failure, domain::run_phase::preprocess);
                 wf->fail(failure);
                 std::move(delivery).commit();
                 return;
@@ -664,7 +671,8 @@ void report_execution_handler::gather_market_data(ores::nats::delivery delivery)
             const auto failure =
                 "export_market_data_to_storage failed: " +
                 (err.empty() ? (md_resp ? md_resp->message : "(no response)") : err);
-            mark_instance_failed(req.tenant_id, req.report_instance_id, failure);
+            mark_instance_failed(
+                req.tenant_id, req.report_instance_id, failure, domain::run_phase::preprocess);
             wf->fail(failure);
             std::move(delivery).commit();
             return;
@@ -693,7 +701,8 @@ void report_execution_handler::gather_market_data(ores::nats::delivery delivery)
         std::move(delivery).commit();
     } catch (const std::exception& e) {
         ORES_LOG_SEV(lg(), error) << "gather_market_data failed: " << e.what();
-        mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
+        mark_instance_failed(
+            req.tenant_id, req.report_instance_id, e.what(), domain::run_phase::preprocess);
         wf->fail(e.what());
         std::move(delivery).commit();
     }
@@ -774,7 +783,8 @@ void report_execution_handler::assemble_bundle(ores::nats::delivery delivery) {
         std::move(delivery).commit();
     } catch (const std::exception& e) {
         ORES_LOG_SEV(lg(), error) << "assemble_bundle failed: " << e.what();
-        mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
+        mark_instance_failed(
+            req.tenant_id, req.report_instance_id, e.what(), domain::run_phase::preprocess);
         wf->fail(e.what());
         std::move(delivery).commit();
     }
@@ -912,9 +922,12 @@ void report_execution_handler::collect_results(ores::nats::delivery delivery) {
                              << req.report_instance_id << " batch=" << req.batch_id;
 
     // One way out of this step, so a run that cannot collect its results is
-    // recorded as failed rather than left looking like one still working.
-    const auto refuse = [&](const std::string& failure) {
-        mark_instance_failed(req.tenant_id, req.report_instance_id, failure);
+    // recorded as failed rather than left looking like one still working. The
+    // step is postprocessing, and the one failure it states that is not its own
+    // is the engine's, which the caller names.
+    const auto refuse = [&](const std::string& failure,
+                            domain::run_phase phase = domain::run_phase::postprocess) {
+        mark_instance_failed(req.tenant_id, req.report_instance_id, failure, phase);
         wf->fail(failure);
         std::move(delivery).commit();
     };
@@ -969,7 +982,10 @@ void report_execution_handler::collect_results(ores::nats::delivery delivery) {
                     // rather than one sentence.
                     const auto recorded = record_run_logs(
                         req.tenant_id, req.report_instance_id, {boost::uuids::to_string(one.id)});
-                    refuse(service::run_failure_message(one.outcome, one.error_message, recorded));
+                    // The compute job's own verdict is the engine's failure, and
+                    // this step only reads it.
+                    refuse(service::run_failure_message(one.outcome, one.error_message, recorded),
+                           domain::run_phase::engine);
                     return;
                 }
                 if (output_uri.empty())
@@ -1028,7 +1044,8 @@ void report_execution_handler::collect_results(ores::nats::delivery delivery) {
         std::move(delivery).commit();
     } catch (const std::exception& e) {
         ORES_LOG_SEV(lg(), error) << "collect_compute_results failed: " << e.what();
-        mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
+        mark_instance_failed(
+            req.tenant_id, req.report_instance_id, e.what(), domain::run_phase::postprocess);
         wf->fail(e.what());
         std::move(delivery).commit();
     }
@@ -1108,8 +1125,11 @@ void report_execution_handler::post_process_results(ores::nats::delivery deliver
     ORES_LOG_SEV(lg(), info) << "post_process_results starting | instance="
                              << req.report_instance_id << " batch=" << req.batch_id;
 
-    const auto refuse = [&](const std::string& failure) {
-        mark_instance_failed(req.tenant_id, req.report_instance_id, failure);
+    // As in the collection of the results, the step's own failures are
+    // postprocessing and the engine's own verdict is the engine's.
+    const auto refuse = [&](const std::string& failure,
+                            domain::run_phase phase = domain::run_phase::postprocess) {
+        mark_instance_failed(req.tenant_id, req.report_instance_id, failure, phase);
         wf->fail(failure);
         std::move(delivery).commit();
     };
@@ -1167,7 +1187,9 @@ void report_execution_handler::post_process_results(ores::nats::delivery deliver
                     // otherwise record the node's transcript in place of them.
                     const auto recorded = record_run_logs(
                         req.tenant_id, req.report_instance_id, {boost::uuids::to_string(one.id)});
-                    refuse(service::run_failure_message(one.outcome, one.error_message, recorded));
+                    // The compute job's own verdict is the engine's failure.
+                    refuse(service::run_failure_message(one.outcome, one.error_message, recorded),
+                           domain::run_phase::engine);
                     return;
                 }
                 result_ids.push_back(boost::uuids::to_string(one.id));
@@ -1347,7 +1369,8 @@ void report_execution_handler::post_process_results(ores::nats::delivery deliver
         std::move(delivery).commit();
     } catch (const std::exception& e) {
         ORES_LOG_SEV(lg(), error) << "post_process_results failed: " << e.what();
-        mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
+        mark_instance_failed(
+            req.tenant_id, req.report_instance_id, e.what(), domain::run_phase::postprocess);
         wf->fail(e.what());
         std::move(delivery).commit();
     }
@@ -1453,11 +1476,24 @@ void report_execution_handler::fail(ores::nats::delivery delivery) {
     }
     const auto& req = *parsed;
 
+    // The step that sent the compensation states its phase, and a phase no
+    // step is called is a sender whose vocabulary this process does not hold:
+    // the run is left for the compensation that states one rather than written
+    // under a phase that was guessed here.
+    const auto phase = domain::phase_of_code(req.phase_code);
+    if (!phase) {
+        ORES_LOG_SEV(lg(), error) << "fail (compensation) refused | instance="
+                                  << req.report_instance_id << " phase=" << req.phase_code;
+        wf->fail("fail_report states a phase no run phase is called: " + req.phase_code);
+        std::move(delivery).commit();
+        return;
+    }
+
     ORES_LOG_SEV(lg(), info) << "fail (compensation) | instance=" << req.report_instance_id
-                             << " error=" << req.error_message;
+                             << " phase=" << req.phase_code << " error=" << req.error_message;
 
     try {
-        mark_instance_failed(req.tenant_id, req.report_instance_id, req.error_message);
+        mark_instance_failed(req.tenant_id, req.report_instance_id, req.error_message, *phase);
 
         fail_report_result result;
         result.success = true;

@@ -22,6 +22,7 @@
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <optional>
 #include <stdexcept>
@@ -268,6 +269,116 @@ TEST_CASE("packaging names the report definition the run belongs to", "[workflow
     CHECK(cmd->definition_id == "definition");
     CHECK(cmd->bundle_id == "bundle");
     CHECK(cmd->fixings_storage_key == "fixings");
+}
+
+namespace {
+
+/**
+ * @brief One result per step that hands a result on, so every command is built.
+ *
+ * The compensation of a step is built from the command that step was sent, so
+ * the chain is walked the way the engine walks it. The results are the shapes
+ * the steps consume and nothing more: no engine runs, and no command is
+ * dispatched.
+ */
+std::vector<svc::workflow_step_result> results_along_the_chain() {
+    msg::resolve_market_readiness_result readiness;
+    readiness.success = true;
+    readiness.book_ids = {"book-a"};
+    msg::gather_trades_result trades;
+    trades.storage_key = "trades";
+    msg::gather_market_data_result market_data;
+    market_data.storage_key = "market";
+    market_data.fixings_storage_key = "fixings";
+    msg::assemble_bundle_result bundle;
+    bundle.bundle_id = "bundle";
+    msg::prepare_ore_package_result package;
+    package.success = true;
+    package.tarball_uris = {"input.tar.gz"};
+    msg::submit_compute_result submitted;
+    submitted.success = true;
+    submitted.batch_id = "batch";
+
+    return {
+        {.name = "resolve_market_readiness",
+         .response_json = ores::utility::codec::json::write(readiness)},
+        {.name = "gather_trades", .response_json = ores::utility::codec::json::write(trades)},
+        {.name = "gather_market_data",
+         .response_json = ores::utility::codec::json::write(market_data)},
+        {.name = "assemble_bundle", .response_json = ores::utility::codec::json::write(bundle)},
+        {.name = "prepare_ore_package",
+         .response_json = ores::utility::codec::json::write(package)},
+        {.name = "submit_compute", .response_json = ores::utility::codec::json::write(submitted)}};
+}
+
+/**
+ * @brief What a step's compensation states, read from the message it writes.
+ */
+msg::fail_report_request compensation_of(const svc::workflow_step_def& step,
+                                         const std::string& command,
+                                         const std::string& failure) {
+    REQUIRE(step.build_compensation);
+    const auto json = step.build_compensation(command, "", failure);
+    const auto req = ores::utility::codec::json::read_expected<msg::fail_report_request>(json);
+    REQUIRE(req.has_value());
+    return *req;
+}
+
+}
+
+TEST_CASE("every step fails the run in the phase the step belongs to", "[workflow][reporting]") {
+    const auto json = run_request("execute", "", "execute");
+    const auto steps = steps_for(json);
+    const auto prev = results_along_the_chain();
+
+    // The phase each step belongs to, written out here rather than read from the
+    // code under test, so a phase renamed on both sides still fails the test.
+    const std::vector<std::pair<std::string, std::string>> production{
+        {"resolve_market_readiness", "preprocess"},
+        {"gather_trades", "preprocess"},
+        {"gather_market_data", "preprocess"},
+        {"assemble_bundle", "preprocess"},
+        {"prepare_ore_package", "preprocess"},
+        {"submit_compute", "preprocess"},
+        {"collect_compute_results", "postprocess"},
+        {"post_process_results", "postprocess"},
+        {"finalise", "postprocess"}};
+
+    REQUIRE(steps.size() == production.size());
+    for (std::size_t i = 0; i < steps.size(); ++i) {
+        CHECK(steps[i].name == production[i].first);
+        const auto command = steps[i].build_command(json, prev);
+        const auto req = compensation_of(steps[i], command, "the step failed");
+        CHECK(req.phase_code == production[i].second);
+        // The reason the run states is the failure of the step it was given, and
+        // the run it names is the run's own.
+        CHECK(req.error_message == "the step failed");
+        CHECK(req.report_instance_id == "instance");
+    }
+}
+
+TEST_CASE("a run that ignores its results fails in the phases it does have",
+          "[workflow][reporting]") {
+    const auto json = run_request("execute", "", "ignore");
+    const auto steps = steps_for(json);
+    const auto prev = results_along_the_chain();
+    const auto ignore =
+        std::ranges::find(steps, "ignore_compute_results", &svc::workflow_step_def::name);
+    REQUIRE(ignore != steps.end());
+
+    const auto command = ignore->build_command(json, prev);
+    const auto req = compensation_of(*ignore, command, "the step failed");
+    CHECK(req.phase_code == "postprocess");
+}
+
+TEST_CASE("a run that substitutes its input fails in preprocessing", "[workflow][reporting]") {
+    const auto json = run_request("substitute", "prepared/input.tar.gz", "execute");
+    const auto steps = steps_for(json);
+    REQUIRE(steps.front().name == "resolve_prepared_input");
+
+    const auto command = steps.front().build_command(json, {});
+    const auto req = compensation_of(steps.front(), command, "the step failed");
+    CHECK(req.phase_code == "preprocess");
 }
 
 TEST_CASE("a configuration nobody implements builds no chain", "[workflow][reporting]") {

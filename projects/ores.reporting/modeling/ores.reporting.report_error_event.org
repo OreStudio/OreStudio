@@ -63,6 +63,28 @@ it; the subject is the particular thing, and it can be narrower than the scope.
 An =Analytics= error that names a =tradeId= is about that trade and not about
 the analytic as a whole, and its subject says so.
 
+=phase_code= is a third question, and it is not the scope either. The phase is
+where in the run the error came from: =preprocess=, the run's own work before
+the engine is handed anything; =engine=, the engine's log; or =postprocess=,
+the reading and loading of what the engine produced. The scope is the engine's
+own words about what the error is about; the phase is the platform's word about
+which part of the run was working when it failed. A run that fails in
+preprocessing has no scope to copy from an engine that never saw it, and states
+=Report= with =preprocess=; a row that names a trade states =engine=, because
+only the engine names trades. Keeping the two apart is what makes a phase worth
+stating: an error a step refused is the run's own failure, and an error the
+engine logged is a failure of the valuation, and a reader who cannot tell them
+apart reads the second as the first.
+
+The three phases are the platform's own closed set, as the severity is, so they
+are checked in the column rather than drawn from a table as the scope is. The
+scope is a vocabulary the engine grows: a new group in the engine's log is a row
+to seed, and no platform code changes to read it. The phase is not that. It is
+three words of the platform's own, written by the platform's own code, which
+names one of the three at every call that writes an error. A check refuses a
+value no phase states, exactly as a foreign key to a seeded table would, without
+a permission code, a screen and a service for three rows nobody edits.
+
 A run that fails before the engine sees it, because a workflow step did not
 complete, produces a row too, with scope =Report=. That is why the table is one
 table rather than two: a reader opening a report wants its errors in one place.
@@ -131,6 +153,29 @@ can invent.
 
 #+begin_src cpp :name generator
 std::string("Report")
+#+end_src
+
+** phase_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:filterable: true
+:END:
+
+Which part of the run produced the error: =preprocess=, =engine= or
+=postprocess=. It is the platform's own word and not the engine's, so it stands
+beside =scope_code= rather than inside it: the engine states what an error is
+about, and the platform states where it was when the error happened. The column
+is =phase_code= rather than =phase= because it holds a code drawn from a stated
+vocabulary, as =scope_code= does. It is filterable, so a screen opens the errors
+of one phase and reads no others.
+
+A synthetic row states =preprocess=, which is the phase the =Report= scope it
+also states belongs to.
+
+#+begin_src cpp :name generator
+std::string("preprocess")
 #+end_src
 
 ** severity
@@ -296,6 +341,7 @@ collection, written by the recorder.
 |------------|
 | ("subject" is null) = ("subject_id" is null) |
 | "severity" in ('error', 'warning', 'info') |
+| "phase_code" in ('preprocess', 'engine', 'postprocess') |
 | ("subject" is not null) or ("subject_version" is null and "subject_as_of" is null) |
 
 The first is the invariant that matters to a reader: a row names a subject in
@@ -304,6 +350,10 @@ was current at belong to the subject rather than stand alone, so a screen that l
 its subject either finds it or is told the row is about the run. That a row
 naming no subject is a row about the run is what the scope says, and the writer
 that reads the engine's log is where the two are kept in step.
+
+The third check is the phase's vocabulary: three words, and no others. A writer
+that names a fourth has a phase the platform does not have, and the row is
+refused where it is written rather than stored under a word no reader places.
 
 ** Indexes
 
@@ -372,10 +422,48 @@ The count of a run's problems, so a screen that draws a run pays one row for
 its problems rather than one row per error. The aggregation happens in the
 store, and the error rows themselves never leave it.
 
+** report_error_phase_count
+
+One phase of one run's problems, counted apart by severity. A phase the run
+recorded nothing in has no entry: a reader draws the three phases it knows and
+a run that states two of them is a run that got no further than two.
+
+*** phase_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+    /**
+     * @brief The phase the problems were recorded in: preprocess, engine or
+     * postprocess.
+     */
+#+end_src
+
+*** errors
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+    /** @brief How many of the phase's problems are errors. */
+#+end_src
+
+*** warnings
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+    /** @brief How many are warnings. */
+#+end_src
+
 ** report_error_count
 
-One run's problems, counted apart by severity. The severity is a closed text
-column, so the split needs no vocabulary read.
+One run's problems, counted apart by severity and by phase. The severity and the
+phase are both closed text columns, so neither split needs a vocabulary read.
 
 *** report_instance_id
 :PROPERTIES:
@@ -404,6 +492,21 @@ column, so the split needs no vocabulary read.
 
 #+begin_src cpp :name comment
     /** @brief How many are warnings. */
+#+end_src
+
+*** by_phase
+:PROPERTIES:
+:cpp_type: std::vector<report_error_phase_count>
+:END:
+
+#+begin_src cpp :name comment
+    /**
+     * @brief The same problems, split by the phase that recorded them, and no
+     * entry for a phase the run recorded nothing in.
+     *
+     * The totals above count the same rows, so the phases always add up to
+     * them: a reader that draws the split draws the run's own count.
+     */
 #+end_src
 
 ** get_report_error_counts_request
@@ -497,6 +600,7 @@ column, so the split needs no vocabulary read.
 |-----------------+-----------------|
 | report_instance_id | Report Instance |
 | scope_code      | Scope           |
+| phase_code      | Phase           |
 | severity        | Severity        |
 | subject         | Subject         |
 | subject_id      | Subject Id      |
@@ -522,6 +626,7 @@ column, so the split needs no vocabulary read.
 | field         | label       | type      | is_key | is_required | placeholder          |
 |---------------+-------------+-----------+--------+-------------+----------------------|
 | scope_code    | Scope       | line_edit |        | true        | Error scope          |
+| phase_code    | Phase       | line_edit |        | true        | preprocess, engine, postprocess |
 | severity      | Severity    | line_edit |        | true        | error or warning     |
 | subject       | Subject     | line_edit |        |             | trade, analytic, ... |
 | subject_id    | Subject Id  | line_edit |        |             | Identifier of the subject |
@@ -534,6 +639,7 @@ column, so the split needs no vocabulary read.
 |------------------+------------------+-----------------+-----------+-------|
 | ReportInstanceId | report_instance_id | Report Instance | uuid   | 200   |
 | ScopeCode        | scope_code       | Scope           | string | 140   |
+| PhaseCode        | phase_code       | Phase           | string | 140   |
 | Severity         | severity         | Severity        | string | 100   |
 | Subject          | subject          | Subject         | string | 140   |
 | SubjectId        | subject_id       | Subject Id      | string | 250   |
@@ -551,11 +657,12 @@ statement instead, and the rows never leave it.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
     /**
-     * @brief Counts the errors and the warnings of each run named.
+     * @brief Counts the errors and the warnings of each run named, and again
+     * per phase of the run.
      *
-     * A run that recorded no problem has no entry. The rows of other parties
-     * are not the caller's to read: the policy on the table decides that, not
-     * this method.
+     * A run that recorded no problem has no entry, and neither has a phase the
+     * run recorded nothing in. The rows of other parties are not the caller's
+     * to read: the policy on the table decides that, not this method.
      */
     std::vector<messaging::report_error_count>
     read_counts_by_report_instance_ids(const context& ctx,
@@ -564,6 +671,7 @@ statement instead, and the rows never leave it.
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
 #include <boost/lexical_cast.hpp>
+#include <map>
 #+end_src
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
@@ -591,26 +699,41 @@ report_error_event_repository::read_counts_by_report_instance_ids(
     const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx,
         "SELECT report_instance_id::text,"
+        "       phase_code,"
         "       count(*) FILTER (WHERE severity = 'error')::text,"
         "       count(*) FILTER (WHERE severity = 'warning')::text"
         " FROM ores_reporting_report_error_events_tbl"
         " WHERE tenant_id = $1::uuid"
         "   AND report_instance_id = ANY($2::uuid[])"
-        " GROUP BY report_instance_id",
+        " GROUP BY report_instance_id, phase_code"
+        " ORDER BY report_instance_id, phase_code",
         {ctx.tenant_id().to_string(), id_array},
         lg(),
         "Counting the problems of each run");
 
+    // The store answers one row per phase and the caller asked for one per run,
+    // so a run's phases are folded into its own row as they arrive. The order
+    // the statement states keeps a run's phases in one stretch, which is what
+    // makes the fold a lookup rather than a search.
     std::vector<messaging::report_error_count> counts;
-    counts.reserve(rows.size());
+    std::map<boost::uuids::uuid, std::size_t> row_of_run;
     for (const auto& row : rows) {
-        if (row.size() < 3 || !row[0] || !row[1] || !row[2])
+        if (row.size() < 4 || !row[0] || !row[1] || !row[2] || !row[3])
             continue;
-        messaging::report_error_count count;
-        count.report_instance_id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
-        count.errors = std::stoll(*row[1]);
-        count.warnings = std::stoll(*row[2]);
-        counts.push_back(std::move(count));
+        const auto run_id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
+        const auto [position, is_new] = row_of_run.try_emplace(run_id, counts.size());
+        if (is_new) {
+            messaging::report_error_count count;
+            count.report_instance_id = run_id;
+            counts.push_back(std::move(count));
+        }
+        const auto errors = std::stoll(*row[2]);
+        const auto warnings = std::stoll(*row[3]);
+        auto& count = counts[position->second];
+        count.errors += errors;
+        count.warnings += warnings;
+        count.by_phase.push_back(
+            {.phase_code = *row[1], .errors = errors, .warnings = warnings});
     }
     return counts;
 }
@@ -622,7 +745,8 @@ report_error_event_repository::read_counts_by_report_instance_ids(
 
 #+begin_src cpp :name declaration :implements 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
     /**
-     * @brief The problems of each named run, counted apart by severity.
+     * @brief The problems of each named run, counted apart by severity and
+     * again by phase.
      *
      * A run that recorded no problem has no entry, which is what the screen
      * draws as no problems rather than as a row of zeroes.

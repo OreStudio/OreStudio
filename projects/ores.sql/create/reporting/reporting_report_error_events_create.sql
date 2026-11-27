@@ -74,6 +74,28 @@
  * An Analytics error that names a tradeId is about that trade and not about
  * the analytic as a whole, and its subject says so.
  *
+ * phase_code is a third question, and it is not the scope either. The phase is
+ * where in the run the error came from: preprocess, the run's own work before
+ * the engine is handed anything; engine, the engine's log; or postprocess,
+ * the reading and loading of what the engine produced. The scope is the engine's
+ * own words about what the error is about; the phase is the platform's word about
+ * which part of the run was working when it failed. A run that fails in
+ * preprocessing has no scope to copy from an engine that never saw it, and states
+ * Report with preprocess; a row that names a trade states engine, because
+ * only the engine names trades. Keeping the two apart is what makes a phase worth
+ * stating: an error a step refused is the run's own failure, and an error the
+ * engine logged is a failure of the valuation, and a reader who cannot tell them
+ * apart reads the second as the first.
+ *
+ * The three phases are the platform's own closed set, as the severity is, so they
+ * are checked in the column rather than drawn from a table as the scope is. The
+ * scope is a vocabulary the engine grows: a new group in the engine's log is a row
+ * to seed, and no platform code changes to read it. The phase is not that. It is
+ * three words of the platform's own, written by the platform's own code, which
+ * names one of the three at every call that writes an error. A check refuses a
+ * value no phase states, exactly as a foreign key to a seeded table would, without
+ * a permission code, a screen and a service for three rows nobody edits.
+ *
  * A run that fails before the engine sees it, because a workflow step did not
  * complete, produces a row too, with scope Report. That is why the table is one
  * table rather than two: a reader opening a report wants its errors in one place.
@@ -85,6 +107,7 @@ create table if not exists "ores_reporting_report_error_events_tbl" (
     "report_instance_id" uuid not null,
     "party_id" uuid not null,
     "scope_code" text not null default 'Report',
+    "phase_code" text not null,
     "severity" text not null default 'error',
     "message" text not null,
     "subject" text null,
@@ -100,6 +123,7 @@ create table if not exists "ores_reporting_report_error_events_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn()),
     check (("subject" is null) = ("subject_id" is null)),
     check ("severity" in ('error', 'warning', 'info')),
+    check ("phase_code" in ('preprocess', 'engine', 'postprocess')),
     check (("subject" is not null) or ("subject_version" is null and "subject_as_of" is null))
 );
 

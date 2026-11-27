@@ -58,9 +58,11 @@ struct report_error_event_lookup {
 
 struct report_error_events_filter {
     std::optional<boost::uuids::uuid> report_instance_id;
+    std::optional<std::string> phase_code;
     std::optional<std::string> severity;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> report_instance_id_one_of;
+    std::optional<std::vector<std::string>> phase_code_one_of;
     std::optional<std::vector<std::string>> severity_one_of;
 
     friend bool operator==(const report_error_events_filter&,
@@ -187,6 +189,21 @@ struct list_by_report_instance_id_report_error_events_response {
                const list_by_report_instance_id_report_error_events_response&) = default;
 };
 
+struct report_error_phase_count {
+    /**
+     * @brief The phase the problems were recorded in: preprocess, engine or
+     * postprocess.
+     */
+    std::string phase_code;
+    /** @brief How many of the phase's problems are errors. */
+    std::int64_t errors = 0;
+    /** @brief How many are warnings. */
+    std::int64_t warnings = 0;
+
+    friend bool operator==(const report_error_phase_count&,
+                           const report_error_phase_count&) = default;
+};
+
 struct report_error_count {
     /** @brief The run the counts are of. */
     boost::uuids::uuid report_instance_id;
@@ -194,6 +211,14 @@ struct report_error_count {
     std::int64_t errors = 0;
     /** @brief How many are warnings. */
     std::int64_t warnings = 0;
+    /**
+     * @brief The same problems, split by the phase that recorded them, and no
+     * entry for a phase the run recorded nothing in.
+     *
+     * The totals above count the same rows, so the phases always add up to
+     * them: a reader that draws the split draws the run's own count.
+     */
+    std::vector<report_error_phase_count> by_phase;
 
     friend bool operator==(const report_error_count&, const report_error_count&) = default;
 };
@@ -291,10 +316,12 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_error_ev
     return ::ores::utility::codec::field_list{
         utility::codec::field{"report_instance_id",
                               &report_error_events_filter::report_instance_id},
+        utility::codec::field{"phase_code", &report_error_events_filter::phase_code},
         utility::codec::field{"severity", &report_error_events_filter::severity},
         utility::codec::field{"id_one_of", &report_error_events_filter::id_one_of},
         utility::codec::field{"report_instance_id_one_of",
                               &report_error_events_filter::report_instance_id_one_of},
+        utility::codec::field{"phase_code_one_of", &report_error_events_filter::phase_code_one_of},
         utility::codec::field{"severity_one_of", &report_error_events_filter::severity_one_of},
     };
 }
@@ -459,6 +486,22 @@ wire_fields(std::type_identity<list_by_report_instance_id_report_error_events_re
 }
 
 /**
+ * @brief The members of report_error_phase_count, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<report_error_phase_count>) {
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"phase_code", &report_error_phase_count::phase_code},
+        utility::codec::field{"errors", &report_error_phase_count::errors},
+        utility::codec::field{"warnings", &report_error_phase_count::warnings},
+    };
+}
+
+/**
  * @brief The members of report_error_count, named as the wire names them and in the order
  * the type declares them.
  *
@@ -471,6 +514,7 @@ wire_fields(std::type_identity<list_by_report_instance_id_report_error_events_re
         utility::codec::field{"report_instance_id", &report_error_count::report_instance_id},
         utility::codec::field{"errors", &report_error_count::errors},
         utility::codec::field{"warnings", &report_error_count::warnings},
+        utility::codec::field{"by_phase", &report_error_count::by_phase},
     };
 }
 
@@ -666,6 +710,16 @@ struct ORES_REPORTING_API_EXPORT wire_traits<
         const ores::reporting::messaging::list_by_report_instance_id_report_error_events_response&
             v);
     static ores::reporting::messaging::list_by_report_instance_id_report_error_events_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT wire_traits<ores::reporting::messaging::report_error_phase_count> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::reporting::messaging::report_error_phase_count& v);
+    static ores::reporting::messaging::report_error_phase_count read_json(std::string_view text);
+    static std::string write_msgpack(const ores::reporting::messaging::report_error_phase_count& v);
+    static ores::reporting::messaging::report_error_phase_count
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

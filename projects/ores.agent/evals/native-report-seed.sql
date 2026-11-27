@@ -132,8 +132,9 @@ where current_setting('ores_agent.seeded_partial_run') <> ''
   and m.valid_to = ores_utility_infinity_timestamp_fn();
 
 insert into ores_reporting_report_error_events_tbl
-    (id, tenant_id, report_instance_id, party_id, scope_code, severity, message, event_time)
-select gen_random_uuid(), tenant_id, id, party_id, 'Report', 'error',
+    (id, tenant_id, report_instance_id, party_id, scope_code, phase_code, severity, message,
+     event_time)
+select gen_random_uuid(), tenant_id, id, party_id, 'Report', 'preprocess', 'error',
        'Synthetic error for the disposable agent integration test', completed_at
 from ores_reporting_report_instances_tbl
 where id = nullif(current_setting('ores_agent.seeded_partial_run'), '')::uuid

@@ -46,6 +46,7 @@ generate_synthetic_report_error_event(utility::generation::generation_context& c
     r.report_instance_id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();
     r.scope_code = std::string("Report");
+    r.phase_code = std::string("preprocess");
     r.severity = std::string("warning");
     r.message = std::string(faker::word::noun());
     r.detail = std::string("{}");

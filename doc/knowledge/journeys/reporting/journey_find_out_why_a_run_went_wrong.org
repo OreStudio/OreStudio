@@ -63,21 +63,24 @@ because one error rarely tells the story on its own.
    names who asked for it. The screen shows the collection time once, in the
    header, and the rows share it.
 2. *Read the shape of the run before reading a row.* The summary counts the
-   errors by severity and by scope. Severities are exactly =error= and
+   errors by severity, by scope and by phase. Severities are exactly =error= and
    =warning=. Scopes are exactly =Trade=, =Analytics=, =Curve=, =Configuration=
-   and =Report=. The counts are the first diagnosis, because the same report
+   and =Report=. Phases are exactly =preprocess=, =engine= and =postprocess=. The counts are the first diagnosis, because the same report
    produced two shapes. A clean run of it recorded eleven rows: eight
    =Analytics= errors and three =Configuration= warnings. The run whose market
    data was removed recorded twenty: one =Curve= error, sixteen =Trade= errors
    across eight trades and two analytics, two =Analytics= errors and one
    =Analytics= warning. The summary tells the person which shape they are
    looking at, and so which question to ask.
-3. *Read a row.* Every row states a =severity=, a =scope_code=, a =message= and
-   a =subject= with a =subject_id=. The message is the engine's own words,
-   unaltered; the screen shows it as it is and does not translate it. The scope
-   is the engine's own group name, and it says what kind of thing the error is
-   about. The subject is the particular thing, and it names that thing in full
-   or names none. A row never names half a subject: a subject without an id, or
+3. *Read a row.* Every row states a =severity=, a =scope_code=, a =phase_code=,
+   a =message= and a =subject= with a =subject_id=. The message is the engine's
+   own words, unaltered; the screen shows it as it is and does not translate it.
+   The scope is the engine's own group name, and it says what kind of thing the
+   error is about. The phase is the platform's own word for the part of the run
+   that was working: the preprocessing of the run, the engine, or the
+   postprocessing of its results. The two are separate questions, and a row a
+   step refused reads differently from a row a valuation got wrong. The subject
+   is the particular thing, and it names that thing in full or names none. A row never names half a subject: a subject without an id, or
    an id without a subject, is not a row the model admits.
 4. *Place the row by its subject.* The subject is a discriminator and a value
    because the ids are of different kinds. A trade's id is a UUID. A curve's id
@@ -124,8 +127,11 @@ because one error rarely tells the story on its own.
    error because it names no trade.
 9. *Read the Report scope.* Some failures happen before the engine sees the run.
    The model states a scope of =Report= for exactly that, because a run can fail
-   for a reason no engine saw. A =Report= row names no subject: the row names
-   the run itself. The screen shows it at the top of the list, stated as an error
+   for a reason no engine saw. Such a row states the phase =preprocess= beside
+   its scope, which is what tells it from a run-level row a step of the
+   postprocessing wrote: the reason is the platform's in both cases, and the
+   part of the run that failed is not. A =Report= row names no subject: the row
+   names the run itself. The screen shows it at the top of the list, stated as an error
    about the run, and never as a row about an unnamed trade.
 10. *Understand what the rows can and cannot say.* The rows place a failure;
     they do not explain it. The curve row says the curve would not build on a
@@ -174,7 +180,7 @@ whose only rows are =Report= scope rows with no subject.
 #+ATTR_HTML: :class hug-leading
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
-| =report_error_event= | One error: =severity=, =scope_code=, =message=, =subject=, =subject_id=, =detail=, =event_time= and the run it belongs to | [[id:080B3871-8BAA-4AAA-A98F-3E79F4B83BAA][ores.reporting.report_error_event]] |
+| =report_error_event= | One error: =severity=, =scope_code=, =phase_code=, =message=, =subject=, =subject_id=, =detail=, =event_time= and the run it belongs to | [[id:080B3871-8BAA-4AAA-A98F-3E79F4B83BAA][ores.reporting.report_error_event]] |
 | =report_error_scope= | The scope vocabulary the row's =scope_code= comes from, with the engine's own code for each | [[id:FF774B04-12E6-4BDF-B94C-222095651C4F][ores.reporting.report_error_scope]] |
 | =report_instance= | The run the errors belong to: its name, its state, its =completed_at= and its definition | [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] |
 | =report_definition= | The report whose run produced the errors, so a reader knows what was being computed | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] |
@@ -183,7 +189,9 @@ whose only rows are =Report= scope rows with no subject.
 The error is the row. Its =report_instance_id= is the run, and a run's errors
 are the rows that name it: they are read as a group, never one error as the
 answer. The scope is a lookup on =scope_code=, so the screen reads the scope
-vocabulary once and labels every row from it. The subject is not a lookup and
+vocabulary once and labels every row from it. The phase is not a lookup: its
+three words are the platform's own and the column checks them, so the screen
+labels the phase from its own three names. The subject is not a lookup and
 not a foreign key: it is a discriminator and a value, and the screen keeps the
 pair together.
 

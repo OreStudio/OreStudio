@@ -19,7 +19,7 @@
  */
 
 /**
- * What bounds each store, and whether it is bounded now.
+ * What bounds each store, whether it is bounded now, and how large it is.
  *
  * The screen reads this view rather than joining three tables itself, and that
  * is the point: whether a store is bounded is a fact about the installation, not
@@ -28,6 +28,11 @@
  * delete, so those bound their store today. An object prefix waits on the
  * storage lifecycle and a job's folder on the node's own release, and until
  * either exists the store is not bounded, however clear its policy reads.
+ *
+ * The size and the moment it was measured come from the latest sample, and a
+ * store with no sample reports nothing rather than zero: the sampler measures the
+ * stores the database can see, and an object prefix or a folder on a host is
+ * measured by the component that owns it.
  */
 
 create or replace view ores_scheduler_store_bounds_vw as
@@ -62,7 +67,10 @@ select
     l."outcome" as "last_outcome",
     l."ran_at" as "last_run",
     l."removed" as "last_removed",
-    l."detail" as "last_detail"
+    l."detail" as "last_detail",
+    m."size_bytes",
+    m."measure_count",
+    m."sampled_at"
 from "ores_scheduler_retained_stores_tbl" s
 left join "ores_scheduler_retention_policies_tbl" p
        on p."tenant_id" = s."tenant_id"
@@ -76,4 +84,12 @@ left join lateral (
     order by r."ran_at" desc
     limit 1
 ) l on true
+left join lateral (
+    select sm."size_bytes", sm."measure_count", sm."sampled_at"
+    from "ores_scheduler_retained_store_samples_tbl" sm
+    where sm."tenant_id" = s."tenant_id"
+      and sm."store_code" = s."code"
+    order by sm."sampled_at" desc
+    limit 1
+) m on true
 where s."valid_to" = ores_utility_infinity_timestamp_fn();

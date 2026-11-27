@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 6D0F3A51-8C2E-4B77-9A15-3E7F2B8D4C90
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.scheduler.retained_store_sample
+#+description: Codegen entity model for the scheduler =retained_store_samples= hypertable: one measurement of one store's size at one instant, keyed to the store the catalogue names.
+#+type: ores.codegen.entity
+#+component: scheduler
+#+filetags: :model:entity:scheduler:
+#+entity_singular: retained_store_sample
+#+entity_plural: retained_store_samples
+#+entity_title: Retained Store Sample
+#+brief: One measurement of one store's size at one instant; a TimescaleDB hypertable partitioned by sampled_at.
+#+created: 2026-11-27
+#+updated: 2026-11-27
+
+A store's size is a series, not an adjective. The sampler measures each store it
+can reach and writes one row here per store per interval, so a screen can say what
+a store holds now and which way it has been going.
+
+The measurement is keyed by the store's code, not by its target, so the series
+survives a table being replaced. The catalogue is what says which code a target
+belongs to, and a store the sampler cannot reach — an object prefix or a folder on
+a host — simply has no rows: an absent series is the honest answer, and better
+than a zero.
+
+The model states =:current_state:= and carries no audit columns: a sample is a
+fact about an instant, so the bi-temporal pair and the actor add nothing to it.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     scheduler
+:has_tenant_id: true
+:profile:       readonly-timeseries
+:subcomponent:  api
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:            uuid
+:cpp_type:        boost::uuids::uuid
+:primary_key:     true
+:skip_uuid_check: true
+:END:
+
+Surrogate key, so the partition column can sit in the primary key beside it.
+
+** sampled_at
+:PROPERTIES:
+:type:        timestamp with time zone
+:cpp_type:    std::chrono::system_clock::time_point
+:primary_key: true
+:nullable:    false
+:END:
+
+When the measurement was taken.
+
+** store_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The catalogue store measured, as =retained_stores.code= names it.
+
+#+begin_src cpp :name generator
+std::string("marketdata.delivery_counts")
+#+end_src
+
+** size_bytes
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+What the store held, in bytes, when it was measured.
+
+** measure_count
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+How many things it held: rows, objects or files, counted the way the catalogue
+says its size is measured. The count is the store's own estimate where the store
+keeps one, and zero where it does not.
+
+* C++
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: sample
+:entity_plural_short:   samples
+:entity_singular_words: retained store sample
+:entity_plural_words:   retained store samples
+:tenant_read_scope:     shared
+:END:
+
+The samples describe the installation's own stores, not one tenant's slice of
+them, so the read states no tenant filter and the row-level-security policy is
+what decides. Mutations stay tenant-scoped.
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <cstdint>
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rss
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:                     ores_scheduler_retained_store_samples_tbl
+:current_state:                 true
+:hypertable:                    true
+:hypertable_partition_column:   sampled_at
+:hypertable_chunk_interval:     1 day
+:hypertable_retention_interval: 180 days
+:no_audit_columns:              true
+:suppress_nk_index:             true
+:rls_tenant_isolation:          true
+:rls_own_or_system_tenant_rows: true
+:END:
+
+The retention keeps half a year, which is twice the twelve weeks the screen
+plots: a plot needs the points behind it, and a series that drops its own history
+would make every store look flat.

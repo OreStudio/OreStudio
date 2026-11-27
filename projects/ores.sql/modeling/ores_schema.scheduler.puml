@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: scheduler
-Tables: 5
+Tables: 6
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -118,6 +118,33 @@ package "scheduler" #F1F8E9 {
     Execution history for scheduler jobs.
     Designed for TimescaleDB hypertable; degrades gracefully to a plain table.
     Partitioned by triggered_at.
+    end note
+
+    entity ores_scheduler_retained_store_samples_tbl  #F7E5FF {
+        * id : uuid <<PK>>
+        * sampled_at : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * store_code : text
+        * size_bytes : bigint
+        * measure_count : bigint
+    }
+
+    note right of ores_scheduler_retained_store_samples_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Retained Store Sample Table
+    A store's size is a series, not an adjective. The sampler measures each store it
+    can reach and writes one row here per store per interval, so a screen can say what
+    a store holds now and which way it has been going.
+    The measurement is keyed by the store's code, not by its target, so the series
+    survives a table being replaced. The catalogue is what says which code a target
+    belongs to, and a store the sampler cannot reach — an object prefix or a folder on
+    a host — simply has no rows: an absent series is the honest answer, and better
+    than a zero.
+    The model states :current_state: and carries no audit columns: a sample is a
+    fact about an instant, so the bi-temporal pair and the actor add nothing to it.
     end note
 
     entity ores_scheduler_retained_stores_tbl <<temporal>> #C6F0D8 {

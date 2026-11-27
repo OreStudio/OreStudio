@@ -28,9 +28,9 @@ A run knows, before the engine sees it, which trades its market can answer: the 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | Market data states the cause of a gap, then trading lists the scope's trades. |
+| Now          | The three grains are recorded, an incomplete trade leaves the run before the export, and a run with nothing complete fails in preprocessing. The branch is committed and its gates are green; no PR is raised yet. |
 | Waiting on   | Nothing.                               |
-| Next         | The readiness tables, the decision and the workflow step. |
+| Next         | Raise the PR, review it, and close the task. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
@@ -53,9 +53,10 @@ A run knows, before the engine sees it, which trades its market can answer: the 
   coverage repository keeps those apart and a new market data op carries the
   cause, so the record says =no_series= or =no_point= rather than "unanswered".
 - Readiness is three records, at the three grains the design page states: the
-  counts on the run, one row per trade, and one row per address. The counts go
-  on =report_instance=, which the step already loads to mark the run running;
-  the two detail grains are new tables.
+  counts on the run, one row per trade, and one row per address. The counts went
+  to a narrow table of their own rather than onto =report_instance=, because the
+  run entity is read by every screen of a run and a widening it does not need
+  would reach all of them.
 - The decision is a pure function of the per-trade requirements and the
   coverage answer, so the rule is tested without a database, a NATS client or a
   workflow.
@@ -74,9 +75,42 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Build, whole tree | succeeded | =compass build= | =0b396c3c5a= |
+| Readiness decision cases | 8 cases, 39 assertions | =ores.reporting.core.tests "[market_readiness]"= | =0b396c3c5a= |
+| Reporting core suite | 291 cases, 1684 assertions | =ores.reporting.core.tests= | =0b396c3c5a= |
+| Reporting api suite | 1308 cases, 5072 assertions | =ores.reporting.api.tests= | =0b396c3c5a= |
+| Reporting service suite | 11 cases, 28 assertions | =ores.reporting.service.tests= | =0b396c3c5a= |
+| Shell reporting suite | 602 cases, 1658 assertions | =ores.shell.reporting.tests= | =0b396c3c5a= |
+| Market data core suite | 483 cases, 56653 assertions | =ores.marketdata.core.tests= | =0b396c3c5a= |
+| Trading core suite | 323 cases, 2046 assertions | =ores.trading.core.tests= | =0b396c3c5a= |
+| Coverage read states both causes | 6 assertions | =ores.marketdata.core.tests "[coverage]"= | =0b396c3c5a= |
+| Export writes only the trades it was asked for | 7 assertions | =ores.trading.core.tests "an_export_names_only_the_trades_it_was_asked_for"= | =0b396c3c5a= |
+| Schema suite | 111 files, 1074 tests, PASS | =projects/ores.sql/test/run_tests.sh= | =0b396c3c5a= |
+| New check diagnostics | 0 | =compass-ng check --ratchet origin/main= | =0b396c3c5a= |
+| Format gate | passed | =compass check --only format= | =0b396c3c5a= |
 
 * Notes
+
+- =market_series_handler.hpp= is generated from =ores.marketdata.market_series.org=,
+  so the export's own loop is edited in the model and not in the header. Editing
+  the header alone survives until the next =compass codegen regenerate=, which
+  restores it.
+- The coverage read is stricter than the export's inclusion rule on purpose. A
+  series with no point at the date answers the export, which writes its history
+  alone, and does not answer a run, which would value a trade off nothing.
+- The rigging the codegen leaves to the author is three things, and the ratchet
+  names all three: =rls_tenant_isolation= and =rls_party_isolation= under the
+  model's =* SQL= flags, the permission codes the handlers check, and the
+  history-provider registrars. A flag placed in the top-level =* Flags= section
+  instead of the =* SQL= one generates nothing and says nothing.
+- The run's readiness table first carried =report_definition_id= and the
+  codegen's wide-type check refused it at sixteen fields. The run already names
+  its definition and the record is one per run, so the column went.
+- The trade grain states whether a trade is complete and how many of its
+  addresses went unanswered. The addresses and their causes are the address
+  grain; joining the two through the trade's own requirements, which trading
+  stores per trade, names each gap without writing the cause twice.
+
 
 * Test Scenarios
 
@@ -102,3 +136,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A run decides what it may value before it writes anything.
+
+- =resolve_market_readiness= is the first step of a run that executes its
+  pre-processing. It resolves the scope's books, asks trading which trades they
+  hold and what each names, asks market data which addresses it answers at the
+  run's date, records the answer, and fails in preprocessing when no trade is
+  complete.
+- The coverage read names the series that answers an address and states
+  =no_series= or =no_point= when none does, so a party buying data knows which
+  one it is missing. The export keeps its own looser rule and the two are
+  documented apart.
+- Readiness is recorded at three grains: =report_run_market_readinesses= holds
+  the counts and the as-of, =report_trade_market_readinesses= the complete flag
+  and the gap count, and =report_address_market_readinesses= the series and the
+  cause. All three carry tenant and party policies.
+- =gather_trades= writes the trades the readiness step named, so an incomplete
+  trade reaches neither storage nor the engine. The export takes the trades to
+  write for that reason.
+- The decision is =decide_market_readiness=, a pure function of the per-trade
+  requirements and the coverage answer, with eight cases: a complete trade, an
+  absent series, a series with no point, a trade that names nothing, one address
+  two trades name, a trade named twice, and the two refusals of a message that
+  does not match what was asked.
+
+What the tree says: build green, the eight decision cases and the five
+component suites green, the schema suite at 111 files and 1074 tests,
+=compass-ng= at no new diagnostics, and the format gate clean. Every number is
+in the measurements above with its commit.
+
+Two things this task does not do. It records the addresses of an incomplete
+trade at the address grain rather than repeating them per trade, so a report
+that names a trade's gaps joins the run's record to the trade's requirements in
+trading. And the phase a failure was produced in is still unstated: that is
+[[id:E6B29704-7BEF-4C2A-B95F-32623AF49200][State the phase of every error a run records]].

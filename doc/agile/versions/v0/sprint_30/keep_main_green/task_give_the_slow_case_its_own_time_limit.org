@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-27
 #+updated: 2026-11-27
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Stop the clang debug leg failing on a case that is slow under valgrind rather th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-27                               |
 
 * Acceptance
@@ -39,9 +39,8 @@ Stop the clang debug leg failing on a case that is slow under valgrind rather th
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Read the case's tags when its watchdog starts, and give a case tagged =slow=
+ten times the limit. Tag the case the clang debug leg timed out on.
 
 * Measurements
 
@@ -55,7 +54,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Case that exceeded the limit in the 27 November debug run | =a_read_over_the_ceiling_states_the_sequence_of_the_last_quote_it_sent=, 60 s limit | =grep -a "TEST TIMEOUT"= on job 140354729853 | e742346e65 |
+| Same case under valgrind with a 6 second base limit | 7 assertions passed in 30 s, because the tag raised the limit to 60 s | =ORES_TEST_TIMEOUT_SECONDS=6 valgrind ... ./ores.http.marketdata.tests "a_read_over_the_ceiling..."= | HEAD |
 
 * Notes
 
@@ -83,3 +83,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+A case tagged =slow= now runs with ten times the limit, and every other case
+keeps sixty seconds. The case the clang debug leg timed out on carries the tag.
+
+The cause was cost, not a hang: the case sends a whole page of quotes plus
+five through the board and reads it twice, which takes 0.57 s natively and
+thirty seconds under valgrind. The watchdog's sixty second limit was written
+for a native run.
+
+Verified locally: with a six second base limit the case still passes under
+valgrind, in thirty seconds, which it cannot do unless the tag raised its
+limit; and the limit still kills a case that is not tagged.

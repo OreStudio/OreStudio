@@ -8,7 +8,7 @@
 #+filetags: :keep_main_green:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/unpack-the-windows-release-with-python
-#+pr:
+#+pr: 5189
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-27
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5189][#5189]] | [ci] Name PowerShell where Windows keeps it |
 
 * Review
 

@@ -532,6 +532,38 @@ publish_service::list_bundle_members(const std::string& bundle_code) {
     return members;
 }
 
+std::vector<messaging::dataset_publication>
+publish_service::list_dataset_publications(const std::string& dataset_code) {
+    const auto sql = "SELECT published_at, published_by, mode, target_table, records_inserted, "
+                     "records_updated, records_skipped, records_deleted, outcome, messages::text "
+                     "FROM ores_dq_dataset_publications_tbl "
+                     "WHERE dataset_code = $1 ORDER BY published_at DESC";
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx_,
+        sql,
+        {dataset_code},
+        lg(),
+        std::format("Reading the publications of dataset {}", dataset_code));
+
+    std::vector<messaging::dataset_publication> runs;
+    runs.reserve(rows.size());
+    for (const auto& row : rows) {
+        messaging::dataset_publication run;
+        run.published_at = text_of(row, 0);
+        run.published_by = text_of(row, 1);
+        run.mode = text_of(row, 2);
+        run.target_table = text_of(row, 3);
+        run.records_inserted = number_of(row, 4);
+        run.records_updated = number_of(row, 5);
+        run.records_skipped = number_of(row, 6);
+        run.records_deleted = number_of(row, 7);
+        run.outcome = text_of(row, 8);
+        run.messages = text_of(row, 9);
+        runs.push_back(std::move(run));
+    }
+    return runs;
+}
+
 std::optional<std::string> publish_service::bundle_of_dataset(const std::string& dataset_code) {
     // No tenant predicate on purpose: a world or platform bundle's membership
     // rows sit in the system tenant, and the read policy admits them. A dataset

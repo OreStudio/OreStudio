@@ -1,0 +1,225 @@
+:PROPERTIES:
+:ID: 69919F87-F372-4263-B64A-531AD34F26E3
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.dq.dataset_publications
+#+description: Codegen operation model for the dq dataset publications verb, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: dq
+#+subcomponent: api
+#+entity_singular: dataset_publications
+#+namespace: ores::dq::messaging
+#+brief: Reports the runs that published one dataset, with what each wrote and what it said.
+#+filetags: :model:operation:dq:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+The dataset publications verb: one request that names a dataset, and one reply
+that carries every run that published it, newest first.
+
+It is an operation rather than an entity verb because the answer is read by a
+dataset's own page and by nothing else: the log is append-only, it is read by
+code, and the list the entity generates states no filters. The handler that
+serves it stays hand-written beside this model.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** dataset_publications_request
+:PROPERTIES:
+:subject:  dq.v1.ops.dataset_publications
+:response: dataset_publications_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the runs that published one dataset.
+ */
+#+end_src
+
+*** dataset_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The dataset whose runs to read.
+ */
+#+end_src
+
+** dataset_publication
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One run that published a dataset.
+ */
+#+end_src
+
+*** published_at
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When the run finished, as the store records it.
+ */
+#+end_src
+
+*** published_by
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The person who asked for the run.
+ */
+#+end_src
+
+*** mode
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How the run wrote its rows: upsert, insert_only or replace_all.
+ */
+#+end_src
+
+*** target_table
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The table the run wrote into.
+ */
+#+end_src
+
+*** records_inserted
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many rows the run inserted.
+ */
+#+end_src
+
+*** records_updated
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many rows the run updated.
+ */
+#+end_src
+
+*** records_skipped
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many rows the run chose not to write.
+ */
+#+end_src
+
+*** records_deleted
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many rows the run deleted.
+ */
+#+end_src
+
+*** outcome
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the run did: published, published_with_warnings or failed.
+ */
+#+end_src
+
+*** messages
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the run said, as the JSON array the log holds.
+ */
+#+end_src
+
+** dataset_publications_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reports the runs, or why they could not be read.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the runs were read.
+ */
+#+end_src
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the runs could not be read, when they could not.
+ */
+#+end_src
+
+*** publications
+:PROPERTIES:
+:cpp_type: std::vector<dataset_publication>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The runs, newest first.
+ */
+#+end_src

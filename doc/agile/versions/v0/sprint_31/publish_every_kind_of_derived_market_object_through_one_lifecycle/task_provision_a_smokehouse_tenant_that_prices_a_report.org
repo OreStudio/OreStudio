@@ -135,7 +135,7 @@ The option's zero is correct: its premium equals its value on the valuation date
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5212][#5212]] | [marketdata] Provision a smokehouse tenant that prices a report |
 
 * Review
 

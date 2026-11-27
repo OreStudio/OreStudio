@@ -38,7 +38,7 @@
 
 begin;
 
-select plan(15);
+select plan(16);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
 
@@ -77,13 +77,13 @@ select coalesce(
     'system') as username;
 
 insert into ores_dq_retention_policies_artefact_tbl (
-    dataset_id, tenant_id, code, version, target_kind, target, action,
+    dataset_id, tenant_id, code, version, store_code, target_kind, target, action,
     retention_days, cadence_hours, enabled, description)
-select d.id, ores_utility_system_tenant_id_fn(), v.code, 0, 'chunked_table',
+select d.id, ores_utility_system_tenant_id_fn(), v.code, 0, v.store_code, 'chunked_table',
     'public.ores_scheduler_retention_runs_tbl', 'drop_chunks', v.days, 24, true, v.description
 from t_policies d, (values
-    ('test_store_a_90d', 90, 'A store kept for a quarter'),
-    ('test_store_b_30d', 30, 'A store kept for a month')) v(code, days, description);
+    ('test_store_a_90d', 'test.store_a', 90, 'A store kept for a quarter'),
+    ('test_store_b_30d', 'test.store_b', 30, 'A store kept for a month')) v(code, store_code, days, description);
 
 insert into ores_dq_job_definitions_artefact_tbl (
     dataset_id, tenant_id, job_name, description, command,
@@ -106,10 +106,10 @@ select results_eq(
 -- A person changes a period. The store holds a new version, which is what the
 -- policy screen does.
 insert into ores_scheduler_retention_policies_tbl (
-    code, tenant_id, version, target_kind, target, action, retention_days,
+    code, tenant_id, version, store_code, target_kind, target, action, retention_days,
     cadence_hours, enabled, description,
     modified_by, performed_by, change_reason_code, change_commentary)
-select r.code, r.tenant_id, r.version, r.target_kind, r.target, r.action, 365,
+select r.code, r.tenant_id, r.version, r.store_code, r.target_kind, r.target, r.action, 365,
     r.cadence_hours, r.enabled, r.description,
     (select username from t_actor), (select username from t_actor),
     'system.admin_reset', ''
@@ -153,6 +153,28 @@ select results_eq(
           (select id from t_policies), ores_utility_system_tenant_id_fn(), 'upsert')$$,
     $$values ('skipped'::text, 2::bigint)$$,
     'a repeat publish writes nothing');
+
+-- A second policy for a store that already holds one. The defaults come from the
+-- catalogue, and a person may have tuned the store's policy already; a second
+-- policy under another code would apply an older period beside theirs.
+insert into ores_dq_retention_policies_artefact_tbl (
+    dataset_id, tenant_id, code, version, store_code, target_kind, target, action,
+    retention_days, cadence_hours, enabled, description)
+select d.id, ores_utility_system_tenant_id_fn(), 'test_store_a_120d', 0, 'test.store_a',
+    'chunked_table', 'public.ores_scheduler_retention_runs_tbl', 'drop_chunks', 120, 24,
+    true, 'A second policy for the store the first already bounds'
+from t_policies d;
+
+select results_eq(
+    $$select action, record_count
+      from ores_scheduler_publish_retention_policies_from_dq_fn(
+          (select id from t_policies), ores_utility_system_tenant_id_fn(), 'upsert')$$,
+    $$values ('skipped'::text, 3::bigint)$$,
+    'a second policy for a store that already holds one is not created');
+
+delete from ores_dq_retention_policies_artefact_tbl
+where dataset_id = (select id from t_policies)
+  and code = 'test_store_a_120d';
 
 update ores_dq_retention_policies_artefact_tbl
 set action = 'delete_rows'

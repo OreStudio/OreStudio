@@ -56,6 +56,7 @@ struct retention_policy_entity {
     int version = 0;
     std::string target_kind;
     std::string target;
+    std::string store_code;
     std::string action;
     int retention_days = 0;
     int cadence_hours = 0;
@@ -79,6 +80,7 @@ struct retention_policy_entity {
                query_builder::bind("version", &e::version) |
                query_builder::bind("target_kind", &e::target_kind) |
                query_builder::bind("target", &e::target) |
+               query_builder::bind("store_code", &e::store_code) |
                query_builder::bind("action", &e::action) |
                query_builder::bind("retention_days", &e::retention_days) |
                query_builder::bind("cadence_hours", &e::cadence_hours) |

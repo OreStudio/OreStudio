@@ -210,6 +210,7 @@ declare
     v_enabled boolean;
     v_exists boolean;
     v_unchanged boolean;
+    v_store_taken boolean;
     v_new_version integer;
     r record;
 begin
@@ -242,8 +243,8 @@ begin
     end if;
 
     for r in
-        select dq.code, dq.target_kind, dq.target, dq.action, dq.retention_days,
-               dq.cadence_hours, dq.enabled, dq.description
+        select dq.code, dq.store_code, dq.target_kind, dq.target, dq.action,
+               dq.retention_days, dq.cadence_hours, dq.enabled, dq.description
         from ores_dq_retention_policies_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
           and dq.tenant_id = ores_utility_system_tenant_id_fn()
@@ -271,8 +272,10 @@ begin
             where existing.tenant_id = p_target_tenant_id
               and existing.code = r.code
               and existing.valid_to = ores_utility_infinity_timestamp_fn()
-              and (existing.target_kind, existing.target, existing.action, existing.description)
-                  is not distinct from (r.target_kind, r.target, r.action, r.description)
+              and (existing.store_code, existing.target_kind, existing.target,
+                   existing.action, existing.description)
+                  is not distinct from (r.store_code, r.target_kind, r.target,
+                                       r.action, r.description)
         ) into v_unchanged;
 
         if v_unchanged then
@@ -285,12 +288,29 @@ begin
             continue;
         end if;
 
+        -- One policy per store. The defaults come from the catalogue, and a
+        -- person may have tuned the store's policy already: a second policy
+        -- under another code would apply an older period beside theirs, so a
+        -- store that already has one is left as it is.
+        select exists (
+            select 1 from ores_scheduler_retention_policies_tbl existing
+            where existing.tenant_id = p_target_tenant_id
+              and existing.store_code = r.store_code
+              and existing.code <> r.code
+              and existing.valid_to = ores_utility_infinity_timestamp_fn()
+        ) into v_store_taken;
+
+        if v_store_taken then
+            v_skipped := v_skipped + 1;
+            continue;
+        end if;
+
         insert into ores_scheduler_retention_policies_tbl (
-            code, tenant_id, version, target_kind, target, action, retention_days,
-            cadence_hours, enabled, description,
+            code, tenant_id, version, store_code, target_kind, target, action,
+            retention_days, cadence_hours, enabled, description,
             modified_by, performed_by, change_reason_code, change_commentary
         ) values (
-            r.code, p_target_tenant_id, 0, r.target_kind, r.target, r.action,
+            r.code, p_target_tenant_id, 0, r.store_code, r.target_kind, r.target, r.action,
             coalesce(v_period, r.retention_days),
             coalesce(v_cadence_hours, r.cadence_hours),
             coalesce(v_enabled, r.enabled),
@@ -322,11 +342,13 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 
 comment on function ores_scheduler_publish_retention_policies_from_dq_fn(uuid, uuid, text, jsonb) is
 'Publishes the retention policies a dataset stages into the target tenant. The
- target, the action and the description are the contract and are reconciled; the
- period, the cadence and the enabled state are the installation''s and are carried
- from the latest row it held, even where the publish closed it first, as
- replace_all does. A policy with the same contract is skipped, so a repeat publish
- adds no version.';
+ store, the target, the action and the description are the contract and are
+ reconciled; the period, the cadence and the enabled state are the installation''s
+ and are carried from the latest row it held, even where the publish closed it
+ first, as replace_all does. A policy with the same contract is skipped, so a
+ repeat publish adds no version, and a store that already holds a policy under
+ another code is left alone: one policy per store is what keeps a changed default
+ from applying an older period beside a person''s choice.';
 
 -- =============================================================================
 -- Retained Stores

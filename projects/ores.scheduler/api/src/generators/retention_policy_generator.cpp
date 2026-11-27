@@ -49,6 +49,7 @@ generate_synthetic_retention_policy(utility::generation::generation_context& ctx
     r.code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.target_kind = std::string("chunked_table");
     r.target = std::string("ores_reporting_report_cashflows_tbl");
+    r.store_code = std::string("refdata.calendar_dates");
     r.action = std::string("drop_chunks");
     r.retention_days = faker::number::integer(7, 365);
     r.cadence_hours = faker::number::integer(1, 168);

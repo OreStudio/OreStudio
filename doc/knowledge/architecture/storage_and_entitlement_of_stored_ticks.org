@@ -53,7 +53,7 @@ the party's subject. The delivery meter counts each delivery for the party
 The target applies the rule of this page to the live path: the ingest publishes
 each tick once, on its feed's subject, and the route and the subscription are
 checked where a watch starts. The meter keeps its counts for each route. See
-[[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][Publication and entitlement of live ticks]].
+[[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][Delivery and entitlement of live ticks]].
 
 ** What it saves
 

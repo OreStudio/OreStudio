@@ -414,7 +414,7 @@ broker strangle, the butterfly is the market strangle solved against the slice
 Strikes are solved against the generated forward of step 4, which keeps
 constraint 3 of the [[#constraints][constraint table]].  The clean quotes are
 then observed by synthetic contributors, as
-[[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]]
+[[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][Synthetic contributor observations of a latent surface]]
 describes, so a tenant receives what a broker feed carries rather than the
 surface itself.
 
@@ -453,7 +453,7 @@ the spot -- small, and not the same as saying the choice of curve does not matte
 The vendor publishes no curve, and this does not loosen the consistency the
 constraint table asks for.  A party bootstraps its own curve from the clean pillar
 quotes, and "the clean pillar quotes and their bootstrap give the true curve"
-([[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]]), so
+([[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][Synthetic contributor observations of a latent surface]]), so
 a party recovers the vendor's curve to the fit of its own bootstrap.  A surface
 struck against the vendor's curve and re-read against a party's forward set differ
 by that fit, which a test states as a tolerance rather than a design claims as an

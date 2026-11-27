@@ -107,7 +107,7 @@ describe('the dataset page', () => {
 
         expect(html).toContain('Not served yet');
         expect(html).toContain('Last published');
-        expect(html).toContain('the run log has no writer');
+        expect(html).toContain('Nothing has published this dataset yet.');
     });
 
     it('draws the publications tab, which says nothing has published yet', () => {

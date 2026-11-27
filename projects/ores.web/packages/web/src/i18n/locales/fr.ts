@@ -279,7 +279,7 @@ const fr: SourceCatalogue = {
                 held: 'En attente de vous',
                 applying: 'En cours',
                 applied: 'Faite',
-                failed: 'N’a pas pu être faite',
+                failed: 'Échec',
             },
         },
         autoApproval: {
@@ -2095,7 +2095,7 @@ const fr: SourceCatalogue = {
             missing: 'Absents',
             lostOrMissing: 'Perdus ou absents',
             errors: 'Erreurs, {range}',
-            warnings: 'Avertissements, {range}',
+            warnings: 'Publié avec des avertissements',
             release: 'Version la plus récente',
             behind: {
                 one: '{count} service sur une version plus ancienne',
@@ -5405,7 +5405,7 @@ const fr: SourceCatalogue = {
                 tenor: 'Ténor',
                 discountsOff: 'Actualise sur',
                 neverPublished: 'jamais publiée',
-                published: 'Publiée',
+                published: 'Publié',
                 stateHeader: 'État',
                 empty: 'Aucune devise ne tient de courbe de taux.',
                 state: {
@@ -8630,6 +8630,7 @@ const fr: SourceCatalogue = {
             runInserted: 'Insérés',
             runUpdated: 'Mis à jour',
             runSkipped: 'Ignorés',
+            runDeleted: 'Supprimés',
             runOutcome: 'Résultat',
             publicationsNone: 'Rien n’a encore publié ce jeu de données.',
             outcome: {
@@ -8638,8 +8639,7 @@ const fr: SourceCatalogue = {
                 failed: 'échec',
             },
             lastPublished: 'Dernière publication',
-            lastPublishedGap:
-                'Pas encore servi : le journal des exécutions n’a pas de script d’écriture, donc rien n’enregistre quand ce jeu de données a été publié pour la dernière fois.',
+            lastPublishedGap: 'Rien n’a encore publié ce jeu de données.',
             publicationsTitle: 'Publications',
             publicationsLead:
                 'Une ligne pour chaque publication de ce jeu de données, avec ce que l’exécution a écrit et ce qu’elle a dit.',

@@ -63,7 +63,6 @@ The dataset that was published.
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:list_by: true
 :END:
 
 The dataset's code at the time of publication, recorded so the row still reads

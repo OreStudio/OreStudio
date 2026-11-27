@@ -304,12 +304,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // dataset's own page needs and the generated list states no filter for.
     // =========================================================================
 
-    auto publogh = std::make_shared<publication_log_handler>(nats, ctx, verifier);
+    auto publog = std::make_shared<publication_log_handler>(nats, ctx, verifier);
 
     subs.push_back(nats.queue_subscribe(
-        dataset_publications_request::nats_subject,
-        queue_group,
-        [publogh](ores::nats::message msg) { publogh->dataset_publications(std::move(msg)); }));
+        dataset_publications_request::nats_subject, queue_group, [publog](ores::nats::message msg) {
+            publog->dataset_publications(std::move(msg));
+        }));
 
     // =========================================================================
     // Coding scheme authority types and coding schemes are on the standard

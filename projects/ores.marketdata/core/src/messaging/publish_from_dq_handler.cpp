@@ -183,8 +183,7 @@ void publish_from_dq_handler::handle(ores::nats::delivery delivery) {
             outcome = "published_with_warnings";
             notes.push_back(
                 {.severity = "warning",
-                 .text = std::format("{} row(s) were skipped: the target did not take them.",
-                                     result.records_skipped)});
+                 .text = std::format("{} row(s) were skipped.", result.records_skipped)});
         }
         ores::dq::messaging::record_publication(tenant_ctx,
                                                 cmd.dataset_id,

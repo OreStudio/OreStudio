@@ -281,7 +281,7 @@ const pt: SourceCatalogue = {
                 held: 'À sua espera',
                 applying: 'A ser feita',
                 applied: 'Feita',
-                failed: 'Não pôde ser feita',
+                failed: 'Falhou',
             },
         },
         autoApproval: {
@@ -2086,7 +2086,7 @@ const pt: SourceCatalogue = {
             missing: 'Em falta',
             lostOrMissing: 'Perdidos ou em falta',
             errors: 'Erros, {range}',
-            warnings: 'Avisos, {range}',
+            warnings: 'Publicado com avisos',
             release: 'Versão mais recente',
             behind: {
                 one: '{count} serviço numa versão mais antiga',
@@ -5367,7 +5367,7 @@ const pt: SourceCatalogue = {
                 tenor: 'Prazo',
                 discountsOff: 'Desconta sobre',
                 neverPublished: 'nunca publicada',
-                published: 'Publicada',
+                published: 'Publicado',
                 stateHeader: 'Estado',
                 empty: 'Nenhuma moeda tem uma curva de taxa.',
                 state: {
@@ -8562,6 +8562,7 @@ const pt: SourceCatalogue = {
             runInserted: 'Inseridos',
             runUpdated: 'Atualizados',
             runSkipped: 'Ignorados',
+            runDeleted: 'Eliminados',
             runOutcome: 'Resultado',
             publicationsNone: 'Nada publicou este conjunto de dados ainda.',
             outcome: {
@@ -8570,8 +8571,7 @@ const pt: SourceCatalogue = {
                 failed: 'falhou',
             },
             lastPublished: 'Última publicação',
-            lastPublishedGap:
-                'Ainda não servido: o registo de execuções não tem escritor, por isso nada regista quando este conjunto de dados foi publicado pela última vez.',
+            lastPublishedGap: 'Nada publicou este conjunto de dados ainda.',
             publicationsTitle: 'Publicações',
             publicationsLead:
                 'Uma linha por cada publicação deste conjunto de dados, com o que a execução escreveu e o que disse.',

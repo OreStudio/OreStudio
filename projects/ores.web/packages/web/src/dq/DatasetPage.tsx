@@ -278,6 +278,9 @@ function Publications({
                         <th className="px-4 py-2 text-right font-medium">
                             {t('dq.dataset.runSkipped')}
                         </th>
+                        <th className="px-4 py-2 text-right font-medium">
+                            {t('dq.dataset.runDeleted')}
+                        </th>
                         <th className="px-4 py-2 font-medium">{t('dq.dataset.runOutcome')}</th>
                     </tr>
                 </thead>
@@ -298,6 +301,9 @@ function Publications({
                             </td>
                             <td className="px-4 py-2 text-right font-mono text-xs">
                                 {run.records_skipped.toLocaleString()}
+                            </td>
+                            <td className="px-4 py-2 text-right font-mono text-xs">
+                                {run.records_deleted.toLocaleString()}
                             </td>
                             <td className="px-4 py-2">
                                 <Tag

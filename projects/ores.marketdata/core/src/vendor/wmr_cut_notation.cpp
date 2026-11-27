@@ -58,10 +58,10 @@ std::expected<datum::market_index, notation_error> fixing_of(const std::string& 
 std::expected<std::string, notation_error>
 cut_item_of(const std::string& cut, const std::string& base, const std::string& quote) {
     using detail::fail;
-    const auto index =
-        datum::market_index::make(datum::index_family::fx, base,
-                                  std::vector<datum::market_index::field_text>{
-                                      {"source", cut}, {"ccy", quote}});
+    const auto index = datum::market_index::make(
+        datum::index_family::fx,
+        base,
+        std::vector<datum::market_index::field_text>{{"source", cut}, {"ccy", quote}});
     if (!index)
         return fail(notation_error::kind::malformed,
                     "'" + cut + " " + base + quote + "' names no fixing: " + index.error());

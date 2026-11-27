@@ -128,10 +128,8 @@ inline std::vector<generator_offer> fixing_offers(const std::vector<feed_start_t
             return;
         if (!offered.insert(item).second)
             return;
-        const auto target = adapter_target_of(adapter_id,
-                                              provider_code,
-                                              vendor::index_fixing{.item = item},
-                                              faults);
+        const auto target = adapter_target_of(
+            adapter_id, provider_code, vendor::index_fixing{.item = item}, faults);
         if (!target)
             return;
         auto make = [&build, target = *target, item, kind, level_codes, when, held = inputs.held] {
@@ -248,7 +246,8 @@ system_generator_offers(const feed_kind_registry& registry,
     if (fixings != nullptr) {
         const auto served = fixing_items_of(ctx, provider_code);
         if (!served.empty())
-            out = fixing_offers(targets, build, adapter_id, provider_code, *fixings, served, faults);
+            out =
+                fixing_offers(targets, build, adapter_id, provider_code, *fixings, served, faults);
     }
     for (const auto& target : targets) {
         const auto& candidate = target.row.candidate;

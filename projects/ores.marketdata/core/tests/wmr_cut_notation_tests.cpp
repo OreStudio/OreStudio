@@ -27,11 +27,11 @@ namespace {
 namespace vendor = ores::marketdata::vendor;
 namespace msg = ores::marketdata::messaging;
 
-const std::string cut_aud_jpy_nyc(
-    "oresmd://fx/AUD?type=fixing&index=fx&source=WMR1000NYC&ccy=JPY");
+const std::string cut_aud_jpy_nyc("oresmd://fx/AUD?type=fixing&index=fx&source=WMR1000NYC&ccy=JPY");
 
 msg::vendor_id cut_id_of(std::string external) {
-    return msg::vendor_id{.id_scheme = "wmr_cut", .external_id = std::move(external), .field = "value"};
+    return msg::vendor_id{
+        .id_scheme = "wmr_cut", .external_id = std::move(external), .field = "value"};
 }
 
 }
@@ -44,7 +44,8 @@ TEST_CASE("the_wmr_notation_is_registered", "[vendor_notation][wmr]") {
 
 TEST_CASE("a_cut_fixing_is_written_as_its_cut_and_pair", "[vendor_notation][wmr]") {
     const vendor::wmr_cut_notation sut;
-    const auto written = sut.write(vendor::quote_description{vendor::index_fixing{cut_aud_jpy_nyc}});
+    const auto written =
+        sut.write(vendor::quote_description{vendor::index_fixing{cut_aud_jpy_nyc}});
     REQUIRE(written.has_value());
     CHECK(*written == cut_id_of("WMR1000NYC AUDJPY"));
     const auto read = sut.read(*written);

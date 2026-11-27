@@ -31,7 +31,8 @@ const std::string setting_libor_3m("oresmd://ir/USD?type=fixing&index=ibor&name=
 const std::string setting_saron("oresmd://ir/CHF?type=fixing&index=ibor&name=SARON");
 
 msg::vendor_id setting_id_of(std::string external) {
-    return msg::vendor_id{.id_scheme = "setting", .external_id = std::move(external), .field = "value"};
+    return msg::vendor_id{
+        .id_scheme = "setting", .external_id = std::move(external), .field = "value"};
 }
 
 }
@@ -49,7 +50,8 @@ TEST_CASE("a_rate_publisher_is_registered_for_each_administrator",
 TEST_CASE("a_setting_is_written_as_its_currency_name_and_tenor",
           "[vendor_notation][fixing_setting]") {
     const vendor::fixing_setting_notation sut{"iba"};
-    const auto written = sut.write(vendor::quote_description{vendor::index_fixing{setting_libor_3m}});
+    const auto written =
+        sut.write(vendor::quote_description{vendor::index_fixing{setting_libor_3m}});
     REQUIRE(written.has_value());
     CHECK(*written == setting_id_of("USD LIBOR 3M"));
     const auto read = sut.read(*written);
@@ -57,8 +59,7 @@ TEST_CASE("a_setting_is_written_as_its_currency_name_and_tenor",
     CHECK(*read == vendor::quote_description{vendor::index_fixing{setting_libor_3m}});
 }
 
-TEST_CASE("a_setting_without_a_tenor_is_written_without_one",
-          "[vendor_notation][fixing_setting]") {
+TEST_CASE("a_setting_without_a_tenor_is_written_without_one", "[vendor_notation][fixing_setting]") {
     const vendor::fixing_setting_notation sut{"snb"};
     const auto written = sut.write(vendor::quote_description{vendor::index_fixing{setting_saron}});
     REQUIRE(written.has_value());

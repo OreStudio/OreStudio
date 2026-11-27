@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.vault.client/client/credential_bootstrap.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.security/crypto/key_file.hpp"
 #include "ores.security/crypto/sealed_box.hpp"
@@ -25,10 +24,11 @@
 #include "ores.testing/scoped_environment_override.hpp"
 #include "ores.vault.api/messaging/custody_context.hpp"
 #include "ores.vault.api/messaging/secret_operations_protocol.hpp"
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_string.hpp>
+#include "ores.vault.client/client/credential_bootstrap.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <filesystem>
 #include <fstream>
 #include <span>
@@ -94,8 +94,8 @@ struct vault_stub {
         if (subject == messaging::challenge_request::nats_subject) {
             const auto request = codec.decode<messaging::challenge_request>(as_bytes(body));
             if (!request || request->consumer != consumer_name || !refusal.empty()) {
-                return encode(messaging::challenge_response{
-                    .success = false, .message = "no such consumer"});
+                return encode(
+                    messaging::challenge_response{.success = false, .message = "no such consumer"});
             }
             ++challenges_issued;
             return encode(messaging::challenge_response{
@@ -110,22 +110,21 @@ struct vault_stub {
         if (subject == messaging::credential_request::nats_subject) {
             const auto request = codec.decode<messaging::credential_request>(as_bytes(body));
             if (!request) {
-                return encode(messaging::credential_response{
-                    .success = false, .message = "unreadable request"});
+                return encode(messaging::credential_response{.success = false,
+                                                             .message = "unreadable request"});
             }
             ++credentials_asked;
-            answer_text = sealed_box::open(transport.private_key,
-                                           request->sealed_answer,
-                                           messaging::custody_context::credential(
-                                               request->consumer, request->challenge_id,
-                                               request->name));
+            answer_text =
+                sealed_box::open(transport.private_key,
+                                 request->sealed_answer,
+                                 messaging::custody_context::credential(
+                                     request->consumer, request->challenge_id, request->name));
             answer_opened = answer_text == nonce;
             if (request->name != secret_name) {
                 return encode(messaging::credential_response{
                     .success = false, .message = "This secret belongs to another consumer"});
             }
-            const auto& recipient = value_sealed_to_another_workload ? another_workload
-                                                                     : workload;
+            const auto& recipient = value_sealed_to_another_workload ? another_workload : workload;
             return encode(messaging::credential_response{
                 .success = true,
                 .name = std::string(secret_name),
@@ -167,8 +166,8 @@ TEST_CASE("a workload that does not hold the key answers nothing", "[client]") {
     auto credentials = vault.workload_credentials();
     credentials.private_key = vault.another_workload.private_key;
 
-    REQUIRE_THROWS_AS(
-        resolve_credential(send, credentials, std::string(secret_name)), std::runtime_error);
+    REQUIRE_THROWS_AS(resolve_credential(send, credentials, std::string(secret_name)),
+                      std::runtime_error);
     REQUIRE_FALSE(vault.answer_opened);
 }
 
@@ -197,8 +196,9 @@ TEST_CASE("a value sealed to another workload does not open", "[client]") {
 }
 
 TEST_CASE("the credentials of a unit come from the directory the platform names", "[client]") {
-    const auto directory = ores::testing::project_root::resolve("tmp") /
-                           ("vault_client_credentials_" + boost::uuids::to_string(boost::uuids::random_generator()()));
+    const auto directory =
+        ores::testing::project_root::resolve("tmp") /
+        ("vault_client_credentials_" + boost::uuids::to_string(boost::uuids::random_generator()()));
     std::filesystem::create_directories(directory);
     const auto keys = sealed_box::generate();
     const auto transport = sealed_box::generate();

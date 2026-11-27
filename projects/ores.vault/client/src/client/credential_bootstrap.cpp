@@ -52,9 +52,8 @@ inline static std::string_view logger_name = "ores.vault.client.client.credentia
 }
 
 /// What the exchange carries: a subject and the bytes it writes to it.
-[[nodiscard]] std::string over(const request_fn& send,
-                               const std::string_view subject,
-                               const std::vector<std::byte>& body) {
+[[nodiscard]] std::string
+over(const request_fn& send, const std::string_view subject, const std::vector<std::byte>& body) {
     return send(subject, as_text(body));
 }
 
@@ -88,10 +87,10 @@ std::string resolve_credential(const request_fn& send,
                                const std::string& name) {
     const auto& codec = ores::nats::default_wire_codec();
 
-    const auto challenge_answered = over(send,
-                                         messaging::challenge_request::nats_subject,
-                                         codec.encode(messaging::challenge_request{
-                                             .consumer = credentials.consumer}));
+    const auto challenge_answered =
+        over(send,
+             messaging::challenge_request::nats_subject,
+             codec.encode(messaging::challenge_request{.consumer = credentials.consumer}));
     const auto challenge =
         codec.decode<messaging::challenge_response>(std::as_bytes(std::span(challenge_answered)));
     if (!challenge)
@@ -112,13 +111,13 @@ std::string resolve_credential(const request_fn& send,
         messaging::custody_context::credential(
             credentials.consumer, challenge->challenge_id, name));
 
-    const auto credential_answered = over(send,
-                                          messaging::credential_request::nats_subject,
-                                          codec.encode(messaging::credential_request{
-                                              .consumer = credentials.consumer,
-                                              .challenge_id = challenge->challenge_id,
-                                              .name = name,
-                                              .sealed_answer = sealed_answer}));
+    const auto credential_answered =
+        over(send,
+             messaging::credential_request::nats_subject,
+             codec.encode(messaging::credential_request{.consumer = credentials.consumer,
+                                                        .challenge_id = challenge->challenge_id,
+                                                        .name = name,
+                                                        .sealed_answer = sealed_answer}));
     const auto credential =
         codec.decode<messaging::credential_response>(std::as_bytes(std::span(credential_answered)));
     if (!credential)
@@ -129,8 +128,7 @@ std::string resolve_credential(const request_fn& send,
     const auto value = security::crypto::sealed_box::open(
         credentials.private_key,
         credential->sealed_value,
-        messaging::custody_context::delivery(
-            credentials.consumer, name, credential->key_version));
+        messaging::custody_context::delivery(credentials.consumer, name, credential->key_version));
 
     ORES_LOG_SEV(lg(), info) << "Resolved " << name << " for " << credentials.consumer
                              << " at version " << credential->key_version;

@@ -77,10 +77,10 @@ inline constexpr std::string_view transport_key_credential = "vault-transport.pu
  * @throws std::runtime_error If the platform names no credential directory, or
  * a file is absent, or either key is not the length the cipher accepts.
  */
-[[nodiscard]] ORES_VAULT_CLIENT_EXPORT bootstrap_credentials read_credentials(
-    std::string consumer,
-    std::string_view private_key_name = private_key_credential,
-    std::string_view transport_key_name = transport_key_credential);
+[[nodiscard]] ORES_VAULT_CLIENT_EXPORT bootstrap_credentials
+read_credentials(std::string consumer,
+                 std::string_view private_key_name = private_key_credential,
+                 std::string_view transport_key_name = transport_key_credential);
 
 /**
  * @brief One request and its answer, as the exchange sees them.
@@ -113,10 +113,8 @@ using request_fn = std::function<std::string(std::string_view subject, std::stri
  * @throws std::runtime_error If the vault refuses, or answers something this
  * unit's key does not open.
  */
-[[nodiscard]] ORES_VAULT_CLIENT_EXPORT std::string
-resolve_credential(const request_fn& send,
-                   const bootstrap_credentials& credentials,
-                   const std::string& name);
+[[nodiscard]] ORES_VAULT_CLIENT_EXPORT std::string resolve_credential(
+    const request_fn& send, const bootstrap_credentials& credentials, const std::string& name);
 
 /**
  * @brief Resolves one of this workload's own secrets over the bus.

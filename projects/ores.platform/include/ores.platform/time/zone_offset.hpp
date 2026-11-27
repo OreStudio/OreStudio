@@ -50,9 +50,8 @@ namespace ores::platform::time {
  *       that transition's type. Zone files list transitions decades ahead, so
  *       this matters only to dates no clock in this system reaches.
  */
-ORES_PLATFORM_EXPORT std::optional<std::chrono::seconds> zone_offset_at(
-    std::string_view iana_zone,
-    std::chrono::system_clock::time_point instant);
+ORES_PLATFORM_EXPORT std::optional<std::chrono::seconds>
+zone_offset_at(std::string_view iana_zone, std::chrono::system_clock::time_point instant);
 
 }
 

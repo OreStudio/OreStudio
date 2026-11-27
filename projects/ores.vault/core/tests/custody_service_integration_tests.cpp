@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.security/crypto/sealed_box.hpp"
 #include "ores.security/crypto/secret_sealer.hpp"
@@ -78,9 +79,13 @@ key_material keys_with(const std::vector<int>& versions, int current) {
     return keys;
 }
 
+/// The account a consumer runs as, which is the value a secret's owner names.
+const std::string consumer_actor = "vault.test.consumer@system.ores";
+
 /// Registers the consumer that may resolve the secret, with a key of its own.
 sealed_box::key_pair register_consumer(const ores::database::context& ctx,
-                                       const std::string& subject) {
+                                       const std::string& subject,
+                                       const std::string& actor = consumer_actor) {
     const auto pair = sealed_box::generate();
 
     ores::vault::domain::consumer consumer;
@@ -90,6 +95,7 @@ sealed_box::key_pair register_consumer(const ores::database::context& ctx,
     consumer.name = subject;
     consumer.public_key = base64_converter::convert(pair.public_key);
     consumer.is_enabled = true;
+    consumer.actor = actor;
     consumer.description = "the consumer under test";
 
     consumer_repository repo;
@@ -225,4 +231,177 @@ TEST_CASE("a_rotation_re_wraps_a_value_and_leaves_it_readable", "[vault][custody
     CHECK(sealed_box::open(consumer.private_key,
                            resolved.sealed_value,
                            subject + "|" + secret_name + "|2") == plaintext);
+}
+
+TEST_CASE("an_introduced_consumer_receives_its_own_secret", "[vault][custody][integration]") {
+    using ores::vault::security::challenge_registry;
+    using ores::vault::messaging::custody_context;
+    auto lg(ores::logging::make_logger(test_suite));
+
+    scoped_database_helper h;
+    const auto& ctx = h.context();
+    const auto system = ores::database::service::tenant_context::with_system_tenant(ctx);
+    const auto keys = keys_with({1}, 1);
+    const auto consumer = unique_subject();
+    const auto pair = register_consumer(system, consumer);
+
+    custody_service custody(system, keys);
+    REQUIRE(custody
+                .write(consumer,
+                       secret_name,
+                       consumer_actor,
+                       seal_for_the_vault(keys, secret_name, consumer_actor))
+                .success);
+
+    challenge_registry challenges;
+    const auto issued = custody.issue_challenge(challenges, consumer);
+    REQUIRE(issued.success);
+    CHECK_FALSE(issued.challenge_id.empty());
+
+    // The consumer opens the nonce with its own key and answers with it.
+    const auto nonce = sealed_box::open(pair.private_key,
+                                        issued.sealed_value,
+                                        custody_context::challenge(consumer, issued.challenge_id));
+    const auto answer =
+        sealed_box::seal(keys.transport_public_key,
+                         nonce,
+                         custody_context::credential(consumer, issued.challenge_id, secret_name));
+
+    const auto introduced =
+        custody.redeem_credential(challenges, consumer, issued.challenge_id, secret_name, answer);
+    ORES_LOG_SEV(lg, info) << "Introduction answered: " << introduced.message;
+    REQUIRE(introduced.success);
+    CHECK(introduced.key_version == 1);
+
+    const auto value =
+        sealed_box::open(pair.private_key,
+                         introduced.sealed_value,
+                         custody_context::delivery(consumer, secret_name, introduced.key_version));
+    CHECK(value == plaintext);
+}
+
+TEST_CASE("an_answer_is_good_once", "[vault][custody][integration]") {
+    using ores::vault::security::challenge_registry;
+    using ores::vault::messaging::custody_context;
+    scoped_database_helper h;
+    const auto& ctx = h.context();
+    const auto system = ores::database::service::tenant_context::with_system_tenant(ctx);
+    const auto keys = keys_with({1}, 1);
+    const auto consumer = unique_subject();
+    const auto pair = register_consumer(system, consumer);
+
+    custody_service custody(system, keys);
+    REQUIRE(custody
+                .write(consumer,
+                       secret_name,
+                       consumer_actor,
+                       seal_for_the_vault(keys, secret_name, consumer_actor))
+                .success);
+
+    challenge_registry challenges;
+    const auto issued = custody.issue_challenge(challenges, consumer);
+    REQUIRE(issued.success);
+    const auto nonce = sealed_box::open(pair.private_key,
+                                        issued.sealed_value,
+                                        custody_context::challenge(consumer, issued.challenge_id));
+    const auto answer =
+        sealed_box::seal(keys.transport_public_key,
+                         nonce,
+                         custody_context::credential(consumer, issued.challenge_id, secret_name));
+
+    REQUIRE(
+        custody.redeem_credential(challenges, consumer, issued.challenge_id, secret_name, answer)
+            .success);
+
+    // The same answer a second time finds no challenge to redeem.
+    const auto replayed =
+        custody.redeem_credential(challenges, consumer, issued.challenge_id, secret_name, answer);
+    CHECK_FALSE(replayed.success);
+    CHECK(replayed.sealed_value.empty());
+}
+
+TEST_CASE("a_consumer_cannot_redeem_another_consumers_secret", "[vault][custody][integration]") {
+    using ores::vault::security::challenge_registry;
+    using ores::vault::messaging::custody_context;
+    scoped_database_helper h;
+    const auto& ctx = h.context();
+    const auto system = ores::database::service::tenant_context::with_system_tenant(ctx);
+    const auto keys = keys_with({1}, 1);
+    const auto other = unique_subject();
+
+    // The consumer runs as an account the secret's owner does not name.
+    const auto pair = register_consumer(system, other, "someone.else@system.ores");
+
+    custody_service custody(system, keys);
+    REQUIRE(custody
+                .write(other,
+                       secret_name,
+                       consumer_actor,
+                       seal_for_the_vault(keys, secret_name, consumer_actor))
+                .success);
+
+    challenge_registry challenges;
+    const auto issued = custody.issue_challenge(challenges, other);
+    REQUIRE(issued.success);
+
+    const auto nonce = sealed_box::open(pair.private_key,
+                                        issued.sealed_value,
+                                        custody_context::challenge(other, issued.challenge_id));
+    const auto answer =
+        sealed_box::seal(keys.transport_public_key,
+                         nonce,
+                         custody_context::credential(other, issued.challenge_id, secret_name));
+
+    const auto refused =
+        custody.redeem_credential(challenges, other, issued.challenge_id, secret_name, answer);
+    CHECK_FALSE(refused.success);
+    CHECK(refused.sealed_value.empty());
+}
+
+TEST_CASE("a_challenge_answered_by_another_consumer_is_refused", "[vault][custody][integration]") {
+    using ores::vault::security::challenge_registry;
+    using ores::vault::messaging::custody_context;
+
+    scoped_database_helper h;
+    const auto& ctx = h.context();
+    const auto system = ores::database::service::tenant_context::with_system_tenant(ctx);
+    const auto keys = keys_with({1}, 1);
+    const auto asked = unique_subject();
+    const auto other = unique_subject();
+    const auto asked_pair = register_consumer(system, asked);
+    register_consumer(system, other);
+
+    custody_service custody(system, keys);
+    REQUIRE(custody
+                .write(asked,
+                       secret_name,
+                       consumer_actor,
+                       seal_for_the_vault(keys, secret_name, consumer_actor))
+                .success);
+
+    challenge_registry challenges;
+    const auto issued = custody.issue_challenge(challenges, asked);
+    REQUIRE(issued.success);
+
+    // The other consumer holds the nonce, because the challenge is no secret to
+    // the process that could read this test's memory, but the challenge was not
+    // issued to it.
+    const auto nonce = sealed_box::open(asked_pair.private_key,
+                                        issued.sealed_value,
+                                        custody_context::challenge(asked, issued.challenge_id));
+    const auto answer =
+        sealed_box::seal(keys.transport_public_key,
+                         nonce,
+                         custody_context::credential(other, issued.challenge_id, secret_name));
+
+    const auto refused =
+        custody.redeem_credential(challenges, other, issued.challenge_id, secret_name, answer);
+    CHECK_FALSE(refused.success);
+    CHECK(refused.sealed_value.empty());
+
+    // And the challenge it named is spent, so the consumer it was issued to
+    // must ask again.
+    const auto spent =
+        custody.redeem_credential(challenges, asked, issued.challenge_id, secret_name, answer);
+    CHECK_FALSE(spent.success);
 }

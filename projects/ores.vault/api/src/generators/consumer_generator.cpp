@@ -49,6 +49,7 @@ domain::consumer generate_synthetic_consumer(utility::generation::generation_con
     r.name = std::string("ores.http") + "-" + std::to_string(idx);
     r.public_key = std::string("tw+/9+zJr9z55w001kE3JIKMVsxyInWcHcPlyHtFmyBG=");
     r.is_enabled = true;
+    r.actor = std::string("vault@system.ores");
     r.description = std::string("The gateway");
     r.modified_by = modified_by;
     r.performed_by = modified_by;

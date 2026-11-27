@@ -53,6 +53,7 @@ struct consumer_write {
     std::string name;
     std::string public_key;
     bool is_enabled{};
+    std::string actor;
     std::string description;
 
     friend bool operator==(const consumer_write&, const consumer_write&) = default;
@@ -377,6 +378,7 @@ inline constexpr std::string_view deleted = "vault.v1.events.consumers.deleted";
         utility::codec::field{"name", &consumer_write::name},
         utility::codec::field{"public_key", &consumer_write::public_key},
         utility::codec::field{"is_enabled", &consumer_write::is_enabled},
+        utility::codec::field{"actor", &consumer_write::actor},
         utility::codec::field{"description", &consumer_write::description},
     };
 }

@@ -46,11 +46,14 @@ files, because a store cannot be the source of the key that opens it.
 
 ** The established pattern
 
-The secret-zero problem is named in the platform documentation and solved the
-same way across the industry. The store cannot verify a workload's password,
-because a password is a shared secret; it can verify either the platform's word
-for the workload or the workload's possession of a key the platform issued. The
-first is *platform integration*: a cloud instance presents the identity document
+The secret-zero problem is named in the platform documentation and
+solved the same way across the industry:
+[[id:4D069D1A-EADA-407B-89B4-92F2375C0836][Secure Introduction]] is the
+pattern under that name, with its two families and the sources that state
+them. The store cannot verify a workload's password, because a password is a
+shared secret; it can verify either the platform's word for the workload or
+the workload's possession of a key the platform issued. The first is
+*platform integration*: a cloud instance presents the identity document
 its platform publishes, or a pod presents the token its platform projects, and
 the store asks the platform whether the document is genuine (HashiCorp, 2026).
 The second is the *trusted orchestrator*: something already authenticated to the
@@ -181,11 +184,12 @@ its own material is not in its own store.
 The challenge is issued to whoever asks for it, since a caller that has no
 credential cannot be identified before it answers one. It is therefore bounded
 rather than trusted: a challenge is good once, for a short time, and it is
-useless to anyone who cannot open it. The request that answers it names the
-consumer, the nonce and the secret it asks for, and the vault opens the request
-with all three authenticated, so a nonce issued for one consumer cannot be
-redirected to another and a nonce issued for one secret cannot be spent on a
-second.
+useless to anyone who cannot open it, and the vault holds no more than a fixed
+number of them at once, so asking for challenges cannot be used to fill its
+memory. The request that answers it names the consumer, the nonce and the secret
+it asks for, and the vault opens the request with all three authenticated, so a
+nonce issued for one consumer cannot be redirected to another and a nonce
+issued for one secret cannot be spent on a second.
 
 * Patterns used
 

@@ -129,6 +129,48 @@ export interface VaultPublicKeyResponse {
 }
 
 /**
+ * @brief Issues the nonce a workload answers to prove which consumer it is.
+ *
+ * The caller holds no token yet: obtaining one is what the exchange makes
+ * possible. The request therefore names the consumer, and the answer is sealed
+ * to that consumer's registered key, so only the holder of the private half can
+ * open it. A caller that names another consumer learns nothing.
+ */
+export interface ChallengeRequest {
+    consumer: string;
+}
+
+export interface ChallengeResponse {
+    success: boolean;
+    message: string;
+    challenge_id: string;
+    nonce: string;
+}
+
+/**
+ * @brief Answers a challenge and asks for the consumer's own secret.
+ *
+ * The answer is the nonce the challenge carried, sealed to the vault's
+ * transport key under a context that names the consumer, the challenge and the
+ * secret, so the vault knows which consumer proved itself and which secret the
+ * proof was spent on. A challenge is good once.
+ */
+export interface CredentialRequest {
+    consumer: string;
+    challenge_id: string;
+    name: string;
+    sealed_answer: string;
+}
+
+export interface CredentialResponse {
+    success: boolean;
+    message: string;
+    name: string;
+    key_version: number;
+    sealed_value: string;
+}
+
+/**
  * @brief Registers the caller's own public key, so that a resolve can seal to it.
  *
  * The row is about the caller and nobody else: the name is the subject the
@@ -152,6 +194,8 @@ export const subjects = {
     remove_secret_request: 'vault.v1.ops.delete',
     rotate_secrets_request: 'vault.v1.ops.rotate',
     vault_public_key_request: 'vault.v1.ops.public_key',
+    challenge_request: 'vault.v1.ops.challenge',
+    credential_request: 'vault.v1.ops.credential',
     register_consumer_request: 'vault.v1.ops.register_consumer',
 } as const;
 /**
@@ -166,5 +210,7 @@ export const requiresSession = {
     remove_secret_request: true,
     rotate_secrets_request: true,
     vault_public_key_request: true,
+    challenge_request: true,
+    credential_request: true,
     register_consumer_request: true,
 } as const;

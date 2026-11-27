@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-consumers add <name> <public_key> <is_enabled> <description> <reason> <commentary>
+consumers add <name> <public_key> <is_enabled> <actor> <description> <reason> <commentary>
 #+end_example
 
 It is addressed at =vault.v1.consumers.put=.
 
 #+name: consumers-add
 #+begin_src ores-shell :tangle consumers-add.ores :exports none
-consumers add __none__ __none__ false __none__ system.new_record generated_script
+consumers add __none__ __none__ false __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-consumers set <id> <name> <public_key> <is_enabled> <description> <reason> <commentary> [--version <n>]
+consumers set <id> <name> <public_key> <is_enabled> <actor> <description> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =vault.v1.consumers.put=.
 
 #+name: consumers-set
 #+begin_src ores-shell :tangle consumers-set.ores :exports none
-consumers set 00000000-0000-0000-0000-000000000000 __none__ __none__ false __none__ system.new_record generated_script
+consumers set 00000000-0000-0000-0000-000000000000 __none__ __none__ false __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-consumers put-many --count <n> <id> <name> <public_key> <is_enabled> <description> <reason> <commentary>
+consumers put-many --count <n> <id> <name> <public_key> <is_enabled> <actor> <description> <reason> <commentary>
 #+end_example
 
 It is addressed at =vault.v1.consumers.put_many=.
 
 #+name: consumers-put-many
 #+begin_src ores-shell :tangle consumers-put-many.ores :exports none
-consumers put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ false __none__ system.new_record generated_script
+consumers put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ false __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

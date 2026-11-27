@@ -22,6 +22,7 @@
 
 #include "ores.database/domain/context_fwd.hpp"
 #include "ores.vault.core/export.hpp"
+#include "ores.vault.core/security/challenge_registry.hpp"
 #include "ores.vault.core/security/credential_source.hpp"
 #include <cstdint>
 #include <string>
@@ -56,6 +57,9 @@ struct ORES_VAULT_CORE_EXPORT custody_result {
 
     /// What a rotate answers: how many rows were re-wrapped.
     std::int32_t rotated = 0;
+
+    /// What a challenge answers: the challenge the credential must name.
+    std::string challenge_id;
 
     /// The instant the stored version was written, for a describe.
     std::chrono::system_clock::time_point written_at;
@@ -136,6 +140,37 @@ public:
      */
     custody_result rotate(const std::string& subject);
 
+    /**
+     * @brief Issues the nonce a consumer answers to prove itself before any token.
+     *
+     * The context must be scoped to the system tenant, where the deployment's
+     * own consumers and secrets live. The nonce is sealed to the consumer's
+     * registered key, so only the holder of the private half can open it.
+     *
+     * @param registry The process's issued challenges.
+     * @param consumer The consumer's name, which is the subject its token carries.
+     */
+    custody_result issue_challenge(security::challenge_registry& registry,
+                                   const std::string& consumer);
+
+    /**
+     * @brief Redeems a challenge and answers the consumer's own secret.
+     *
+     * The answer is opened with the vault's transport key under a context that
+     * names the consumer, the challenge and the secret, and its nonce must be the
+     * one the challenge was issued with. The challenge is retired either way.
+     *
+     * @param registry The process's issued challenges.
+     * @param consumer The consumer the challenge was issued to.
+     * @param challenge_id The challenge being answered.
+     * @param name The secret the consumer asks for, which it must own.
+     * @param sealed_answer The nonce and the request, sealed to the vault's key.
+     */
+    custody_result redeem_credential(security::challenge_registry& registry,
+                                     const std::string& consumer,
+                                     const std::string& challenge_id,
+                                     const std::string& name,
+                                     const std::string& sealed_answer);
 
 private:
     /// Appends one row to the record of uses.

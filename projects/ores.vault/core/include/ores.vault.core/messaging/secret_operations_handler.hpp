@@ -21,6 +21,7 @@
 #define ORES_VAULT_CORE_MESSAGING_SECRET_OPERATIONS_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -28,6 +29,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.vault.api/messaging/secret_operations_protocol.hpp"
+#include "ores.vault.core/security/challenge_registry.hpp"
 #include "ores.vault.core/security/credential_source.hpp"
 #include "ores.vault.core/service/custody_service.hpp"
 #include <expected>
@@ -324,7 +326,90 @@ public:
                                       .key_version = outcome.key_version});
     }
 
+    /**
+     * @brief Serves vault.v1.ops.challenge.
+     *
+     * The caller holds no token: this is the exchange that makes one possible.
+     * It is answered in the system tenant, where the deployment's own consumers
+     * live, and it asks for nothing but a consumer the vault knows.
+     */
+    void challenge(ores::nats::message msg) {
+        auto original = msg;
+        try {
+            challenge_impl(std::move(msg));
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(custody_handler_lg(), error)
+                << original.subject << " failed: " << e.what();
+            error_reply(nats_, original, ores::service::error_code::bad_request);
+        }
+    }
+
+    void challenge_impl(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(custody_handler_lg(), msg);
+        auto request = decode<challenge_request>(msg);
+        if (!request) {
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+
+        service::custody_service custody(system_context(), *keys_);
+        const auto outcome = custody.issue_challenge(challenges_, request->consumer);
+        reply(nats_,
+              msg,
+              challenge_response{.success = outcome.success,
+                                 .message = outcome.message,
+                                 .challenge_id = outcome.challenge_id,
+                                 .nonce = outcome.sealed_value});
+    }
+
+    /**
+     * @brief Serves vault.v1.ops.credential.
+     *
+     * The answer must open the challenge the vault issued to that consumer, and
+     * the secret it asks for must be one the consumer owns. It is the same
+     * exchange a token buys, narrower: the caller may read its own entry and no
+     * other.
+     */
+    void credential(ores::nats::message msg) {
+        auto original = msg;
+        try {
+            credential_impl(std::move(msg));
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(custody_handler_lg(), error)
+                << original.subject << " failed: " << e.what();
+            error_reply(nats_, original, ores::service::error_code::bad_request);
+        }
+    }
+
+    void credential_impl(ores::nats::message msg) {
+        [[maybe_unused]] const auto correlation_id = log_handler_entry(custody_handler_lg(), msg);
+        auto request = decode<credential_request>(msg);
+        if (!request) {
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+
+        service::custody_service custody(system_context(), *keys_);
+        const auto outcome = custody.redeem_credential(challenges_,
+                                                       request->consumer,
+                                                       request->challenge_id,
+                                                       request->name,
+                                                       request->sealed_answer);
+        reply(nats_,
+              msg,
+              credential_response{.success = outcome.success,
+                                  .message = outcome.message,
+                                  .name = outcome.name,
+                                  .key_version = outcome.key_version,
+                                  .sealed_value = outcome.sealed_value});
+    }
+
 private:
+    /// The deployment's own tenant, where its consumers and their secrets live.
+    [[nodiscard]] ores::database::context system_context() const {
+        return ores::database::service::tenant_context::with_system_tenant(ctx_);
+    }
+
     /// What a guarded request yields: the scoped context and the verified
     /// subject, which is the consumer the vault names.
     struct guarded_request {
@@ -396,6 +481,7 @@ private:
     // Held by value: the context the caller registered with dies with that call,
     // so a reference to it would dangle by the time a request arrives.
     ores::database::context ctx_;
+    security::challenge_registry challenges_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
     std::shared_ptr<const security::key_material> keys_;
 };

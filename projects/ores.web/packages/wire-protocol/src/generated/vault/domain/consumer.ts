@@ -37,6 +37,7 @@ export interface Consumer {
     name: string;
     public_key: string;
     is_enabled: boolean;
+    actor: string;
     description: string;
     modified_by: string;
     performed_by: string;

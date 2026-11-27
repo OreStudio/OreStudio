@@ -48,6 +48,7 @@ domain::consumer consumer_mapper::map(const consumer_entity& v) {
     r.name = v.name;
     r.public_key = v.public_key;
     r.is_enabled = v.is_enabled;
+    r.actor = v.actor;
     r.description = v.description.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -69,6 +70,7 @@ consumer_entity consumer_mapper::map(const domain::consumer& v) {
     r.name = v.name;
     r.public_key = v.public_key;
     r.is_enabled = v.is_enabled;
+    r.actor = v.actor;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

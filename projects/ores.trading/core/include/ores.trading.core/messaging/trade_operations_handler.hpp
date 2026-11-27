@@ -43,6 +43,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <optional>
+#include <set>
 #include <string>
 
 namespace ores::trading::messaging {
@@ -384,12 +385,24 @@ public:
         resolve_market_data_requirements_response resp;
         try {
             if (auto req = decode<resolve_market_data_requirements_request>(msg)) {
-                resp.requirements = repository::market_reference_repository{}.read(
+                const auto per_trade = repository::market_reference_repository{}.read_by_trade(
                     *ctx_expected, req->trade_ids, req->as_of);
+                /*
+                 * The union is stated from the per-trade answer, so the two cannot disagree
+                 * about which addresses the set needs.
+                 */
+                std::set<std::string> union_addresses;
+                for (const auto& trade : per_trade) {
+                    for (const auto& uri : trade.oresmd_uris)
+                        union_addresses.insert(uri);
+                    resp.trade_requirements.push_back(
+                        {.trade_id = trade.trade_id, .oresmd_uris = trade.oresmd_uris});
+                }
+                resp.requirements.assign(union_addresses.begin(), union_addresses.end());
                 resp.success = true;
                 resp.message = "Resolved " + std::to_string(resp.requirements.size()) +
-                               " requirement(s) from " + std::to_string(req->trade_ids.size()) +
-                               " trade(s).";
+                               " requirement(s) from " +
+                               std::to_string(resp.trade_requirements.size()) + " trade(s).";
             } else {
                 resp.message = "Invalid resolve_market_data_requirements_request.";
             }
@@ -611,7 +624,8 @@ public:
             payload.success = true;
             constexpr std::uint32_t page_size = 1000;
             for (std::uint32_t offset = 0;; offset += page_size) {
-                auto page = svc.export_books(req->book_ids, offset, page_size, payload.instruments);
+                auto page = svc.export_books(
+                    req->book_ids, offset, page_size, payload.instruments, req->trade_ids);
                 const auto n = page.size();
                 payload.items.insert(payload.items.end(),
                                      std::make_move_iterator(page.begin()),
@@ -641,6 +655,49 @@ public:
                 << "export_trades_to_storage: exported " << trade_count << " trades, "
                 << blob.size() << " bytes (pre-compression) to " << req->storage_bucket << "/"
                 << req->storage_key;
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(trade_operations_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.message = e.what();
+        }
+        reply(nats_, msg, resp);
+    }
+
+    /**
+     * @brief Serves trading.v1.ops.list_book_trade_ids.
+     *
+     * A run asks which trades its scope holds before it exports any, because it
+     * decides which of them its market can answer and exports only those. The
+     * ids alone are the answer, so that the decision costs no blob.
+     */
+    void list_book_trade_ids(ores::nats::message msg) {
+        using ores::service::messaging::decode;
+        using ores::service::messaging::error_reply;
+        using ores::service::messaging::reply;
+        using namespace ores::logging;
+
+        ORES_LOG_SEV(trade_operations_handler_lg(), debug) << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        if (!ores::service::messaging::has_permission(*ctx_expected, "trading::trades:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        list_book_trade_ids_response resp;
+        try {
+            auto req = decode<list_book_trade_ids_request>(msg);
+            if (!req || req->book_ids.empty()) {
+                resp.message = "Invalid request or empty book_ids.";
+                reply(nats_, msg, resp);
+                return;
+            }
+            service::trade_export_service svc(*ctx_expected);
+            resp.trade_ids = svc.trade_ids_of_books(req->book_ids);
+            resp.success = true;
+            resp.message = "The books hold " + std::to_string(resp.trade_ids.size()) + " trade(s).";
         } catch (const std::exception& e) {
             ORES_LOG_SEV(trade_operations_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();

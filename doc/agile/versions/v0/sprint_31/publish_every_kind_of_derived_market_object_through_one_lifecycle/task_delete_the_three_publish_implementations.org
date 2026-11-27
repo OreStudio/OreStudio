@@ -2,17 +2,17 @@
 :ID: 88CDEB14-2F43-407C-847F-0D85C96C74C4
 :END:
 #+title: Task: Delete the three publish implementations
-#+description: Remove the three copies of the lifecycle and the subject no caller serves.
+#+description: Remove the three copies of the lifecycle so that the raise, the decide, the apply and the notice exist once.
 #+type: task
 #+level: s1
 #+filetags: :publish_every_kind_of_derived_market_object_through_one_lifecycle:sprint_31:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/delete-the-three-publish-implementations
+#+pr: 5140
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
-#+updated: 2026-11-24
+#+updated: 2026-11-26
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,24 +26,50 @@ The lifecycle exists once. The three per-kind publish services are gone, and no 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-24                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
 
 * Acceptance
 
 - curve_publish_gate, fx_forward_publish_service and fx_vol_surface_publish_service are deleted, and nothing that remains calls them.
-- The get_series_slice subject is either served by the market data service or deleted from the protocol and the codec.
-- A gate fails when a declared subject has no handler, so a dead subject cannot return.
+- The other two rows this task started with are now their own tasks, because neither is a deletion in market data: [[id:4ED5A5FE-7BBF-4378-AEFD-C22004F14D39][Serve or retire the series slice subject]] crosses the protocol, the BFF and the gateway, and [[id:12B71000-B339-4807-815B-5FD290383EA3][Fail the gate on a declared subject with no handler]] changes the check tooling.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The three files held two things each: the kind's implementation of the
+interface, and the per-kind publish facade the operations called. The second is
+what the story removes, so the files are replaced by one file per kind that
+holds only the kind plus its reads.
+
+The approval kind codes and the publish status words move to
+publication_kind_codes.hpp, which has no dependencies and is what the handlers
+read. =raise_permission_of= moves into the lifecycle, because it asks the same
+question the raise asks. The two reader classes are named for what they do:
+=fx_forward_published_reader= and =fx_vol_surface_published_reader=.
+
+The handlers answer the request themselves now: the raise, or the apply of an
+approved request, through the two acts, with the response mapped where the
+message shape is known. The provisioning step does the same, and its two set
+raises become calls to =raise_publication=. Its forward path lets a store error
+reach the retry wrapper instead of reading it as a skip, so a busy store is
+retried rather than reported against the set.
+
+The tests keep their cases and change their doors. The old exported functions
+are gone, so the suite gains =tests/curve_publish_steps.hpp=: the same six steps
+(resolve, verdict, raise, raise a set, record, live as-of) built on the two acts.
+The curve's regression is therefore still the curve's behaviour, stated through
+the one implementation, and the cases themselves are untouched.
+
+Two acceptance rows are not this task's work, and the pattern was already
+visible in the tree: =get_series_slice= is declared, generated and called by
+both the BFF and the gateway, so retiring it is a protocol change across three
+components and serving it is a new handler; and the gate that fails a declared
+subject with no handler is a change to the check tooling, not to market data.
+Each is scaffolded as its own task, and the reason is recorded in the Result.
 
 * Measurements
 
@@ -57,7 +83,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Files deleted | 6 (3 headers, 3 sources), with 7 exported functions | =git diff --stat origin/main...HEAD= | =64e0083c5a= |
+| Lines removed against added | 690 removed, 893 added | the same command | =64e0083c5a= |
+| Local checks, non-heavy | 9 of 9 | =compass check --exclude-heavy= | =64e0083c5a= |
+| Build and database | build clean, database recreated | =compass check= | =64e0083c5a= |
+| ctest suites | 105 of 108 | =compass check= (ctest step) | =64e0083c5a= |
+| Ticks smoke | 982 ticks per adapter, 0 rejected | =compass check --only ticks-smoke --only step-consumers= | =64e0083c5a= |
+| The three failing suites | pass alone on a fresh database, measured on the previous branch | =compass test run -- -R "ores.inbox.core.tests|ores.refdata.core.tests|ores.workflow.core.tests" -j 1= | =b0cb3c5446= |
 
 * Notes
 
@@ -76,7 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5140][#5140]] | [marketdata] Delete the three publish implementations |
 
 * Review
 
@@ -85,3 +117,50 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The three files are gone. Each kind now lives in one file named for what it
+implements -- curve_publication_kind.cpp, fx_forward_publication_kind.cpp,
+fx_vol_surface_publication_kind.cpp -- and holds the kind plus its own reads,
+because the reads were never a publish implementation and the story only
+removes the acts.
+
+What moved rather than disappeared: the approval kind codes and the publish
+status words to publication_kind_codes.hpp, raise_permission_of into the
+lifecycle, and blocking_failure_of into the surface's own header. The two
+readers are named for what they do, fx_forward_published_reader and
+fx_vol_surface_published_reader.
+
+The handlers answer their own requests now: the raise, or the apply of an
+approved request, through the two acts, with the response mapped where the
+message shape is known. The provisioning step does the same, and its two set
+raises call raise_publication.
+
+The suite kept every case and changed its door. tests/curve_publish_steps.hpp
+states the six steps the old exported functions gave it -- resolve, verdict,
+raise, raise a set, record, live as-of -- on top of the two acts, so the curve's
+regression is still the curve's behaviour and the cases are untouched.
+
+The gate: build clean, database recreated, non-heavy checks 9 of 9, ticks-smoke
+and step-consumers pass -- so the handlers this task rewired and the
+provisioning step that raises sets still run end to end.
+ores.marketdata.service.tests passes, which is where the refactored cases run,
+and ores.reporting.core.tests passes too. ctest reports 105 of 108: the three
+that fail are ores.inbox.core.tests, ores.refdata.core.tests and
+ores.workflow.core.tests, the pooler and shared-tenant race the previous
+branches also hit. Re-running them needs the fleet the gate has already
+stopped, so this task leans on the experiment recorded on task B153E922: on a
+fresh database, serially, all three pass.
+
+Two rows of the original acceptance became tasks instead of code, and the
+reason is in each: get_series_slice is declared, generated and called by both
+the BFF and the gateway; and the gate that fails a declared subject with no
+handler belongs to the check tooling, not to market data.
+
+*Correction (2026-11-26):* this task's description said the subject had no
+caller, its Result said the service subscribed nothing, and the Plan above says
+that serving it would be a new handler. All three are false.
+=registrar::register_handlers=, which the service runs at start-up, subscribes
+=marketdata.v1.ops.get_series_slice= to =series_slice_handler=, which has
+answered since sprint 27, and the environment answers a request on it today.
+The claim came from the journey page that said the subject was unserved; it is
+corrected there, on task 4ED5A5FE, and on the analysis that repeated it.

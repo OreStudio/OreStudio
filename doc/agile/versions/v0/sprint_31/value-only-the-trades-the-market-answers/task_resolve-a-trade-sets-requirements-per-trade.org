@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 90951C94-E994-400F-A7D1-F2E1FDF68FC9
+:END:
+#+title: Task: Resolve a trade set's requirements per trade
+#+description: The trading operation that answers what a trade set needs returns the addresses of each trade rather than one flat set, so a caller can say which trade needs what.
+#+type: task
+#+level: s1
+#+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
+#+owner: marco
+#+branch: feature/resolve-a-trade-sets-requirements-per-trade
+#+pr: 5173
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-26
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A caller that asks what a trade set needs learns, for each trade, the addresses its instruments name, and the run's export still gathers the union of them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                   |
+| Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
+| Now          | Done. The operation answers each trade beside the set, and the union is derived from it. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing on this task. |
+| Last touched | 2026-11-26                             |
+
+* Acceptance
+
+- The resolution answers the addresses of each trade, keyed by trade id, and the distinct union for a caller that only needs the set.
+- A trade whose instrument rows hold no address comes back with no addresses rather than an error, and the caller can tell it apart from a trade whose addresses the market lacks.
+- A test pins the per trade answer against the trades of a small set.
+
+* Plan
+
+The resolution is already per trade: =ores_trading_market_references_fn= returns
+=trade_id=, the address and the source. What collapses it is the read above the
+function, which asks for =distinct oresmd_uri= because every caller so far wanted
+the union, and the message, which has one list for the whole set.
+
+1. *The message carries both answers.* =resolve_market_data_requirements_response=
+   gains =trade_requirements=: one entry per trade the request names, in the order
+   it names them, each with its own distinct addresses. A trade named twice
+   answers once. A trade whose rows hold no address keeps its entry with no
+   addresses, which is what tells "this trade names nothing" apart from "this
+   trade was not in the set" — the second is absent from the answer, the first is
+   present and empty.
+2. *The union is derived, not read twice.* The repository reads the per-trade rows
+   once and the operation states the union from them, so the two answers cannot
+   disagree about which addresses the set needs. The union stays in the response
+   because a caller that only gathers market data wants the set and not the map.
+3. *The fold is a plain function.* Grouping rows into a trade's addresses, seeding
+   an entry for every trade asked about, is a function over rows, so a test states
+   it without a database: two addresses on one trade, a trade with none, the same
+   address on two trades, and a trade named twice.
+4. *The SQL function does not change.* It already answers per trade and the pgTAP
+   test already pins its rows; only the read above it changes.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The full tree | builds, every target | =./compass.sh build= | c345b0f1e2 |
+| The trading suite | 321 cases, 2033 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.trading.core.tests= | c345b0f1e2 |
+| The trading protocol suite | 5688 cases, 21442 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.trading.api.tests= | c345b0f1e2 |
+| The per-trade rows the answer is built from | 5 assertions, pass | =./projects/ores.sql/test/run_tests.sh test/trading_market_references_test.sql= | c345b0f1e2 |
+| The requirements service suite | 15 cases, 45 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.trading.service.tests= | c345b0f1e2 |
+| The ORE projection, which reads the same protocol | 607 cases, 521281 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.ore.core.tests= | c345b0f1e2 |
+| The ported gates | no finding new since =origin/main= | =compass-ng check --ratchet origin/main= | c345b0f1e2 |
+| The changed C++ | clang-formatted | =./compass.sh check --only format= | c345b0f1e2 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5173][#5173]] | [trading] Answer what each trade needs, not only what the set needs |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The union-only read and its query are dead once the handler reads per trade | =market_reference_repository.cpp= | Fixed | Both are gone; one statement serves the answer. |
+| 2 | The fold matches rows to the request by raw text, so a trade stated in another spelling answers present-and-empty | =market_reference_repository.cpp= | Fixed | Identifiers are matched by value, and a case pins upper case and a braced form. |
+| 3 | A trade the caller cannot read answers present-and-empty, which the docs called "a trade that names nothing" | =market_reference_repository.hpp= | Fixed | The doc states the two absences and why the store cannot tell them apart to a caller who may not see the row. |
+| 4 | The union is documented as "in address order" but is now byte order | =trade_operations.org= | Fixed | The doc says ascending byte order. |
+| 5 | The repository returned a wire message and included the API header | =market_reference_repository.hpp= | Fixed | It returns its own =trade_requirement=, and the handler maps it at the boundary. |
+| 6 | The response's =trade_requirements= comment re-told the three-state essay across four files | =trade_operations.org= | Fixed | The field states its order and the two absences in four lines. |
+| 7 | The handler's message counted requested ids, including duplicates, while the answer dedupes | =trade_operations_handler.hpp= | Fixed | It counts the trades it answered. |
+| 8 | A comment narrated the replaced union read | =market_reference_repository.cpp= | Fixed | The comment states what the read is, not what it replaced. |
+| 9 | The SQL ordered rows the fold re-sorts | =market_reference_repository.cpp= | Fixed | The order is the fold's to state, and the query states none. |
+| 10 | Nothing tests the SQL join or the handler's answer end to end; only the fold is pinned | tests | Kept | The SQL rows are pinned by pgTAP and the join by the new spelling case; a database test of the read is the gap the PR states. |
+| 11 | The answer is a keyed sequence rather than a map, and a request that names a trade twice collapses | =trade_requirements= | Kept | Order is what the report reads, a duplicate id is one trade, and a caller that wants a map builds one in a line. |
+| 12 | Acceptance 2's third state is the market's to answer, so no field pins it | task record | Kept | Recorded as such: the answer says what a trade names, the market says what it holds, and conflating them would make trading speak for the market. |
+
+* Result
+
+The operation answers what each trade needs beside what the set needs. A caller
+that has to say which trade lost its valuation now reads a trade's own addresses
+instead of inferring them from the union, and the caller that only gathers market
+data reads the same answer's union, which is now derived from the per-trade answer
+rather than read beside it.
+
+The three states a caller must tell apart are told apart by presence and emptiness
+rather than by a flag: a trade the request did not name is absent from the answer,
+a trade that names nothing is present with no addresses, and a trade that names
+addresses the market lacks is present with addresses the market's own answer does
+not hold — the last a fact about the market and not about this answer.
+
+The SQL function did not change. It has answered per trade since it was written and
+the pgTAP test already pins the row of a floating leg, the absence of one for a
+fixed leg, and the fact that a trade outside the set states nothing; what changed
+is the read above it and the message it fills.

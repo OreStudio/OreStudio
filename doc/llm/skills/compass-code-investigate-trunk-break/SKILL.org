@@ -1,0 +1,158 @@
+:PROPERTIES:
+:ID: 4A37D224-EB5F-41FD-8483-826B4D01A297
+:END:
+#+title: Code Investigate Trunk Break
+#+description: Attribute a break on main to the commit, pull request and environment that caused it, and decide whether to fix it here or hand it back to its owner.
+#+type: skill
+#+level: s1
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :llm:skill:skills:claude_code:investigation:blame:fleet:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+#+begin_export markdown
+---
+name: compass-code-investigate-trunk-break
+description: Attribute a break on main to the commit, pull request and environment that caused it, and decide whether to fix it here or hand it back to its owner.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+A gate is red for a reason that is not in your diff, or a behaviour broke on
+main and you need to know whose it is before you decide what to do about it.
+
+* How to use this skill
+
+The commands are in [[id:477E9949-CFA4-44D8-A021-D7463BEC4C0D][How do I blame a break on main?]]. This skill holds
+the judgement: the disposition, and the shape of the report.
+
+1. /Separate the break from the environment./ Re-run the failing check alone,
+   then each failing suite alone. A failure that comes back alone is a break;
+   one that goes green alone is a race and leaves the investigation. Done when
+   every red is classified as one or the other.
+
+2. /Attribute it./ When the red is a checker finding that names a path, a line
+   and a rule, let =compass-ng blame= do it in one command: it bisects main's
+   merges, then prints the commit, the pull request, the Story and Task titles,
+   the environment and the fix that rule asks for. It also says whether the
+   finding is already on main, sits on a branch main does not hold yet, or could
+   not be traced, which is the first thing the disposition needs. For a break no
+   checker names, work the recipe by hand: the commit that changed the
+   behaviour, the trailers that name the work, the fleet row that names the
+   environment, and the task record that says what its own gate measured. Done
+   when the report's owner table is full and the commit chain is complete.
+
+   #+begin_src sh :results verbatim
+   compass-ng blame <path>:<line>:<codec>/<rule>
+   #+end_src
+
+   Read its answer before trusting it: "already on main" makes the break the
+   owner's, while "from commits main does not hold yet" makes it the branch's,
+   and a trace that names no commit is a finding nobody has attributed yet —
+   which this skill answers with a capture, not a report.
+
+3. /Explain it./ State the rule that was broken, the path that breaks it, and
+   the observation. Keep the reproduction verbatim. Done when a reader who
+   knows the subsystem can predict the failure and run the reproduction.
+
+4. /Decide the disposition/ with the rule below. Done when the report names one
+   and its reason cites the rule.
+
+5. /Deliver it./ Fixing inline means the fix goes on your branch, the
+   reproduction becomes the regression, and the commit body and the task's
+   =* Result= say the break was not yours. Handing back means the report goes on
+   the owner's task and the user is told which environment holds it. Done when
+   the report sits where its reader will find it.
+
+* The report
+
+Four sections, in this order. No section is optional, and a section with
+nothing in it says so.
+
+#+begin_example
+# Blame: <what failed, in one line>
+
+## Owner
+| Field        | Value |
+|--------------+-------|
+| Environment  | <the commit's Environment trailer, or the one blame names> |
+| Agent        | <the commit's Co-Authored-By> |
+| Person       | <the commit's author> |
+| Work         | <Story-ID> / <Task-ID>, with their titles |
+| Pull request | #<n>, and its title |
+
+## Related commits
+| Commit | What it did |
+|--------+-------------|
+| <sha>  | <the rule it changed, in one line> |
+
+## Technical description
+<The rule that was broken.>
+<The code path that breaks it.>
+<The observation, with the command that produced it and its output verbatim.>
+
+## Disposition
+<Fix inline. | Hand it back to <environment>.> Because <the reason, citing the rule>.
+<What happens next: the change and the check it needs, or where the report goes.>
+#+end_example
+
+* The disposition rule
+
+The owner is an environment, not a person: the environment holds the branch,
+the task and the session that made the change, and =compass fleet= is where it
+is read.
+
+- /Fix inline/ when three things hold: the change sits inside your diff's blast
+  radius (an include, a declaration, a default, a line your branch already
+  edits), the break blocks your gate, and no live branch of another environment
+  touches the file.
+- /Hand it back/ when the change touches schema, behaviour or a contract, or
+  when a live branch of another environment owns the file.
+- When both read true, hand it back. The owner holds the context, and an inline
+  patch over another environment's design hides the break from the person who
+  has to fix its cause.
+- A break nobody can attribute yet is not this skill's answer: it is a
+  [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] filed before the session ends, so the next gate does not
+  rediscover it.
+
+* Recipes
+
+- [[id:477E9949-CFA4-44D8-A021-D7463BEC4C0D][How do I blame a break on main?]] — the commands: classify, attribute,
+  prove.
+- [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][How do I commit to git using ORE Studio conventions?]] — the trailers the
+  owner is read from, and the ones your own fix must carry.
+- [[id:4B8BB864-AEA3-4720-9BB3-DCF4397000D2][How do I rebase my branch on main?]] — bring the branch up to date before
+  judging the gate, since a stale branch measures a tree nobody has.
+
+* Reference
+
+- [[id:2D8FB072-D55F-4C46-8610-2602BF56DA8D][A broken schema looks like a broken fleet]] — why a fleet fault must be
+  ruled out before a failure is read as a regression.
+- [[id:AC2F681D-5041-4514-9A9E-C04CBF07F2C5][Start the fleet before running the tests]] — the same mistake from the other
+  side: a connection failure is not a behaviour change.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.
+#+END_SRC

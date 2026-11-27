@@ -19,17 +19,27 @@
  */
 #include "ores.testing/test_timeout_listener.hpp"
 #include "ores.platform/environment/environment.hpp"
+#include <cstdio>
 #include <cstdlib>
-#include <iostream>
+#include <string>
+
 
 namespace ores::testing {
 
 using namespace ores::logging;
 
+
 void test_timeout_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
     using ores::platform::environment::environment;
     timeout_ = std::chrono::seconds(environment::get_int_value_or_default(
         "ORES_TEST_TIMEOUT_SECONDS", static_cast<int>(timeout_.count())));
+
+    // A case tagged slow reads a whole page or walks a whole corpus, so an
+    // instrumented run multiplies a time a native run already spends. The
+    // limit still exists, ten times further away, so a hang there is still
+    // named and no other case waits longer.
+    if (testInfo.tagsAsString().find("[slow]") != std::string::npos)
+        timeout_ *= 10;
 
     current_test_name_ = testInfo.name;
     test_start_time_ = std::chrono::steady_clock::now();
@@ -84,17 +94,23 @@ void test_timeout_listener::watchdog_thread_func() {
 
         auto elapsed = std::chrono::steady_clock::now() - test_start_time_;
         if (elapsed > timeout_) {
-            // Log to both Boost.Log and stderr to ensure visibility
             ORES_LOG_SEV(lg(), error) << "TEST TIMEOUT: " << current_test_name_ << " exceeded "
                                       << timeout_.count() << " seconds limit!";
 
-            std::cerr << "\n\n"
-                      << "========================================\n"
-                      << "TEST TIMEOUT FAILURE\n"
-                      << "========================================\n"
-                      << "Test: " << current_test_name_ << "\n"
-                      << "Timeout: " << timeout_.count() << " seconds\n"
-                      << "========================================\n\n";
+            // A memcheck run reads the streams through a pipe, and a failed
+            // suite's output is not always what the run shows. C stdio puts
+            // the test name in the output whatever buffering the C++ streams
+            // chose.
+            const auto banner = "\n\n========================================\n"
+                                "TEST TIMEOUT FAILURE\n"
+                                "========================================\n"
+                                "Test: " +
+                                current_test_name_ +
+                                "\nTime limit: " + std::to_string(timeout_.count()) +
+                                " seconds\n"
+                                "========================================\n\n";
+            std::fwrite(banner.data(), 1, banner.size(), stderr);
+            std::fflush(stderr);
 
             // _Exit, not exit: the watchdog must not unwind a test that is
             // still running. Holding the lock is harmless, since nothing

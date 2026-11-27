@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: B3D95E17-6C48-4A02-8F7B-1D5E93C706A8
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.reporting.report_address_market_readiness
+#+description: Codegen entity model for the reporting =report_address_market_readiness= table. Which oresmd addresses a run needed, and which of them its market answered.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:marketdata:
+#+brief: Which oresmd addresses a run needed, and which of them its market answered.
+#+entity_singular: report_address_market_readiness
+#+entity_plural: report_address_market_readinesses
+#+entity_title: Report Address Market Readiness
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+One row per oresmd address the run needs, written before the engine sees any
+work, whether or not the market answers it.
+
+This is the grain that answers why the market is short. A party that has to buy
+the data needs to know whether it is missing a series or missing a point in one
+it holds, and those are different purchases, so the row names the series that
+answers the address when there is one and the cause when there is not.
+
+An address several trades name is one row, because the question is about the
+address and not about the trade that asked for it.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:subcomponent:  api
+:profile:       readonly-timeseries
+:END:
+
+* C++
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: address_readiness
+:entity_plural_short:   address_readinesses
+:entity_singular_words: address readiness
+:entity_plural_words:   address readinesses
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate UUID identifying this readiness row.
+
+** party_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:END:
+
+The party that owns the run.
+
+** report_instance_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:filterable:   true
+:END:
+
+The run this row states the readiness of.
+
+** oresmd_uri
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:filterable:   true
+:END:
+
+The address the run needed, as the trading component resolved it.
+
+** series_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     std::optional<boost::uuids::uuid>
+:nullable:     true
+:END:
+
+The series that answers the address, absent when nothing holds it. It is
+written as the commit points out the series, not the address alone, because a
+provider may hold two series under one address and only one of them is the one
+the run read.
+
+** gap_cause
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:END:
+
+Why the market did not answer the address, empty when it did. The codes are
+=no_series=, when nothing holds the address, and =no_point=, when a series
+holds it but carries no point at or before the run's as-of. A cause no read can
+state is not invented here; the list grows when a read can state more.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:           ores_reporting_report_address_market_readinesses_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation:  true
+:END:
+
+A run is its party's own, so a tenant reads only its own rows and a party only the addresses it read.

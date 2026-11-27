@@ -75,6 +75,9 @@ struct ir_curve_generation_config_entity {
     bool enabled = false;
     bool auto_start = false;
     std::string price_source = "fixed";
+    std::string rate_source = "process";
+    double derived_spread_basis_points = 0.0;
+    std::optional<std::string> derived_spread_source;
     std::optional<std::string> description;
     std::string fixed_leg_payment_frequency_code = "Annual";
     std::string source_name;
@@ -110,6 +113,9 @@ struct ir_curve_generation_config_entity {
                query_builder::bind("enabled", &e::enabled) |
                query_builder::bind("auto_start", &e::auto_start) |
                query_builder::bind("price_source", &e::price_source) |
+               query_builder::bind("rate_source", &e::rate_source) |
+               query_builder::bind("derived_spread_basis_points", &e::derived_spread_basis_points) |
+               query_builder::bind("derived_spread_source", &e::derived_spread_source) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("fixed_leg_payment_frequency_code",
                                    &e::fixed_leg_payment_frequency_code) |

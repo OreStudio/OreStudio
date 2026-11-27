@@ -59,6 +59,9 @@ generate_synthetic_fx_forward_publish(utility::generation::generation_context& c
     r.method_code = std::string("covered_interest_parity");
     r.published_by = std::string("");
     r.published_at = std::nullopt;
+    r.superseded_at = std::nullopt;
+    r.superseded_by_request_id = std::nullopt;
+    r.superseded_as_of = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

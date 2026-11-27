@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: 12B71000-B339-4807-815B-5FD290383EA3
+:END:
+#+title: Task: Fail the gate on a declared subject with no handler
+#+description: A declared NATS operation subject with no registered handler is invisible until a caller tries it and times out. Add a repo-owned gate check that fails when a declared subject has no handler, with a test that proves it fails on one. The registrar cannot be called to find that out: it opens a JetStream stream and claims it per process.
+#+type: task
+#+level: s1
+#+filetags: :publish_every_kind_of_derived_market_object_through_one_lifecycle:sprint_31:v0:
+#+owner: marco
+#+branch: feature/fail-the-gate-on-a-declared-subject-with-no-handler
+#+pr: 5159
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-26
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A declared operation subject with no registered handler fails the gate, so a
+dead subject cannot be declared and advertised while nobody answers it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- A repo-owned check fails when a protocol model declares a subject that no handler registers, and names the subject and the file.
+- The check runs in the local gate for a change to a protocol model, a handler or the service that subscribes.
+- A test proves the check fails on a declared subject with no handler and passes when the handler is registered.
+- The check asks the bus rather than the registrar, which cannot be run outside a service process: it creates a JetStream stream, claims it in a process-static set, binds a durable consumer and prunes the stream's other consumers. Task 4ED5A5FE wrote a unit test that called the registrar and withdrew it for that reason.
+
+* Plan
+
+A subject is dead when a model declares it as a request and nothing
+subscribes it, and the tree cannot say which. Half the subscriptions are
+generated per entity family, the step-command and history families declare
+theirs through tables rather than literals, and the registrar that subscribes
+the rest opens a JetStream stream, claims it once per process and binds a
+durable consumer, so a test that calls it provisions infrastructure. Task
+4ED5A5FE wrote exactly such a test and withdrew it.
+
+So the check asks the bus. =build/scripts/check_subject_coverage.py= reads every
+=:subject:= the models declare, keeps the ones whose message also declares a
+=:response:=, and publishes an empty request to each with no credentials. Any
+answer is a responder, including the refusal an unauthenticated request earns,
+because this check asks whether anything is subscribed rather than whether the
+caller is allowed through. =No responders are available= is the finding, and it
+names the subject, the message and the model file.
+
+Three rules came out of the tree:
+
+- A subject whose message declares no =:response:= is published rather than
+  requested. 86 of them exist, so demanding a responder would fail on a healthy
+  tree.
+- ={component}.v1.history.get= is the one templated subject: the generator
+  names it per entity family, so it is counted and skipped rather than guessed.
+- A subject that is unserved and outside this task's component is recorded in
+  =build/scripts/subject_coverage_exceptions.json= with the reason it stays and
+  the artefact that owns the fix. An exception whose subject answers is itself a
+  failure, so the file cannot outlive the defect it records.
+
+The check runs in the heavy phase after =ticks-smoke=, where the fleet is up,
+as =step-consumers= and =answer-shapes= do, and it fails rather than skips when
+it cannot reach the bus.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Subjects the models declare | 306: 219 requests, 86 published, 1 templated | =python3 build/scripts/check_subject_coverage.py=, transcript in =evidence/subject_coverage.txt= | =55ac68bb54= |
+| Requests answered on the running fleet, before the fix | 216 of 219 by the classifier as first written; of those, 31 never replied and the classifier counted them as served | the same command, transcript in =evidence/subject_coverage.txt= | =55ac68bb54= |
+| The three unserved subjects | =begin_bundle_import=, =stage_bundle_family=, =commit_bundle_import=, each called by the ore service's run configuration import | =grep -rn bundle_import projects/ores.ore/service/src/messaging/= | =55ac68bb54= |
+| The check's own cases | 8 pass | =python3 -m pytest build/scripts/tests/test_subject_coverage.py -q= | =55ac68bb54= |
+| The build-script suite | 183 pass | the gate's =build-script-tests= | =cd13f5fdf7= |
+| Local checks, non-heavy | 12 of 12 | =compass check --exclude-heavy= | =cd13f5fdf7= |
+| The new check in the gate | pass, 84.5s | =compass check --only subject-coverage= | =55ac68bb54= |
+| The check after the fix, and after it was made fail-closed | 188 of 219 answered; the three bundle import subjects answer; 31 iam subjects never reply and are excepted against capture 2737CE30 | =python3 build/scripts/check_subject_coverage.py=, transcript in =evidence/subject_coverage.txt= | =cd13f5fdf7= |
+| The refdata core suite | 567 cases pass on a recreated database | =ctest -R ores.refdata.core.tests -j 1= | =cd13f5fdf7= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5159][#5159]] | [tooling,refdata] Fail the gate on a subject nobody answers, and serve the three it found |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The gate now fails on a declared subject that nothing answers. The check reads
+the models rather than the source, because the source cannot tell a served
+subject from an unserved one, and it asks the bus rather than the registrar,
+because the registrar cannot be run outside a service process.
+
+It found four things on the tree it was written against. One was a rule the
+check needed: =marketdata.v1.ops.market_tick= is published, not requested, which
+is why the check only holds subjects whose message declares a =:response:=.
+The other three are real: =begin_bundle_import=, =stage_bundle_family= and
+=commit_bundle_import= are declared with responses, generated into the protocol,
+and called by the ore service's run configuration import, and no refdata
+registrar subscribes them. They are recorded in the exceptions file against capture FE34DD26,
+which already held the defect and now holds the blame report, because serving
+them is refdata's work and not this task's.
+
+The three are served now. The fix went in on this branch rather than waiting
+for a refdata owner, because no environment was working on refdata:
+=bundle_import_operations_handler= runs the session, the permission and the wire
+for the three operations, =register_bundle_import_operations_handlers= is called
+by the umbrella refdata registrar, and =messaging_bundle_import_operations_tests.cpp=
+asks each subject over real NATS and requires an answer. The exceptions file is
+empty, and the three answer.
+
+Making the check fail-closed then found a second class of dead subject: 31 iam
+requests reach a handler that returns without replying, so a caller waits until
+it times out — the same symptom as no subscriber, one layer down. The check as
+first written counted those as served, which is why the first run reported 219
+of 219; that return was the defect. They are excepted against capture 2737CE30,
+because repairing iam's handlers is iam's work.
+
+What the check cannot see: a subject that answers is served by *something*, not
+necessarily by the handler its model names. It also says nothing about the 86
+published subjects, whose consumers are a different question.

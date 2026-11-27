@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-829 tables in 22 groups.
+846 tables in 23 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -44,6 +44,8 @@ entity "iam" as iam {
   ores_iam_agent_keys_tbl
   ores_iam_agent_token_issues_tbl
   ores_iam_auth_events_tbl
+  ores_iam_external_identities_tbl
+  ores_iam_identity_providers_tbl
   ores_iam_login_info_tbl
   ores_iam_permissions_tbl
   ores_iam_role_grant_request_roles_tbl
@@ -64,7 +66,7 @@ entity "iam" as iam {
 }
 note bottom of iam
 Identity & Access Management
-30 tables — ores_schema.iam.puml
+32 tables — ores_schema.iam.puml
 end note
 
 entity "assets" as assets {
@@ -97,6 +99,7 @@ entity "refdata" as refdata {
   ores_refdata_business_centres_tbl
   ores_refdata_business_day_convention_types_tbl
   ores_refdata_business_processes_tbl
+  ores_refdata_business_unit_product_types_tbl
   ores_refdata_business_unit_types_tbl
   ores_refdata_business_units_tbl
   ores_refdata_calendar_dates_tbl
@@ -258,6 +261,7 @@ entity "refdata" as refdata {
   ores_refdata_party_id_schemes_tbl
   ores_refdata_party_identifiers_tbl
   ores_refdata_party_product_type_deal_classes_tbl
+  ores_refdata_party_product_types_tbl
   ores_refdata_party_relationships_tbl
   ores_refdata_party_roles_tbl
   ores_refdata_party_statuses_tbl
@@ -303,7 +307,7 @@ entity "refdata" as refdata {
 }
 note bottom of refdata
 Reference Data
-222 tables — ores_schema.refdata.puml
+224 tables — ores_schema.refdata.puml
 end note
 
 entity "dq_staging" as dq_staging {
@@ -321,6 +325,7 @@ entity "dq_staging" as dq_staging {
   ores_dq_bma_basis_swap_conventions_artefact_tbl
   ores_dq_bond_future_volatility_configs_artefact_tbl
   ores_dq_bond_yield_conventions_artefact_tbl
+  ores_dq_book_product_types_artefact_tbl
   ores_dq_books_artefact_tbl
   ores_dq_business_centres_artefact_tbl
   ores_dq_business_processes_artefact_tbl
@@ -435,6 +440,7 @@ entity "dq_staging" as dq_staging {
   ores_dq_ip2country_artefact_tbl
   ores_dq_ir_curve_generation_configs_artefact_tbl
   ores_dq_ir_curve_template_entries_artefact_tbl
+  ores_dq_job_definitions_artefact_tbl
   ores_dq_legal_entities_artefact_tbl
   ores_dq_lei_bic_artefact_tbl
   ores_dq_lei_entities_artefact_tbl
@@ -465,6 +471,8 @@ entity "dq_staging" as dq_staging {
   ores_dq_report_configurations_artefact_tbl
   ores_dq_report_definitions_artefact_tbl
   ores_dq_reporting_regimes_artefact_tbl
+  ores_dq_retained_stores_artefact_tbl
+  ores_dq_retention_policies_artefact_tbl
   ores_dq_risk_report_configs_artefact_tbl
   ores_dq_script_calibration_strikes_artefact_tbl
   ores_dq_script_calibrations_artefact_tbl
@@ -497,7 +505,7 @@ entity "dq_staging" as dq_staging {
 }
 note bottom of dq_staging
 Data Staging
-187 tables — ores_schema.dq_staging.puml
+191 tables — ores_schema.dq_staging.puml
 end note
 
 entity "dq_datasets" as dq_datasets {
@@ -761,12 +769,14 @@ end note
 entity "scheduler" as scheduler {
   ores_scheduler_job_definitions_tbl
   ores_scheduler_job_instances_tbl
+  ores_scheduler_retained_store_samples_tbl
+  ores_scheduler_retained_stores_tbl
   ores_scheduler_retention_policies_tbl
   ores_scheduler_retention_runs_tbl
 }
 note bottom of scheduler
 Job Scheduler
-4 tables — ores_schema.scheduler.puml
+6 tables — ores_schema.scheduler.puml
 end note
 
 entity "reporting" as reporting {
@@ -792,6 +802,7 @@ entity "reporting" as reporting {
   ores_reporting_engine_settings_groups_tbl
   ores_reporting_engine_settings_tbl
   ores_reporting_file_types_tbl
+  ores_reporting_report_address_market_readinesses_tbl
   ores_reporting_report_cashflows_tbl
   ores_reporting_report_configurations_tbl
   ores_reporting_report_definitions_tbl
@@ -801,7 +812,10 @@ entity "reporting" as reporting {
   ores_reporting_report_instance_kinds_tbl
   ores_reporting_report_instances_tbl
   ores_reporting_report_metrics_tbl
+  ores_reporting_report_run_market_readinesses_tbl
   ores_reporting_report_text_values_tbl
+  ores_reporting_report_trade_market_gaps_tbl
+  ores_reporting_report_trade_market_readinesses_tbl
   ores_reporting_report_trigger_events_tbl
   ores_reporting_report_trigger_types_tbl
   ores_reporting_report_type_configuration_types_tbl
@@ -812,7 +826,7 @@ entity "reporting" as reporting {
 }
 note bottom of reporting
 Reporting & Analytics
-39 tables — ores_schema.reporting.puml
+43 tables — ores_schema.reporting.puml
 end note
 
 entity "compute" as compute {
@@ -1011,6 +1025,16 @@ entity "inbox" as inbox {
 note bottom of inbox
 Inbox — Approval Requests and Notifications
 18 tables — ores_schema.inbox.puml
+end note
+
+entity "vault" as vault {
+  ores_vault_consumers_tbl
+  ores_vault_secret_uses_tbl
+  ores_vault_secrets_tbl
+}
+note bottom of vault
+Vault — Secret Custody
+3 tables — ores_schema.vault.puml
 end note
 
 

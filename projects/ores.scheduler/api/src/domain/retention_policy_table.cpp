@@ -33,13 +33,13 @@ std::string convert_to_table(const std::vector<retention_policy>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Code" << "Kind" << "Target" << "Action" << "Period (days)"
-          << "Cadence" << "Enabled" << "Version" << "Modified By" << fort::endr;
+    table << fort::header << "Code" << "Store" << "Kind" << "Target" << "Action" << "Period (days)"
+          << "Cadence (hours)" << "Enabled" << "Version" << "Modified By" << fort::endr;
 
     for ([[maybe_unused]] const auto& rp : v) {
-        table << rp.code << rp.target_kind << rp.target << rp.action << rp.retention_days
-              << rp.cadence << (rp.enabled ? "true" : "false") << rp.version << rp.modified_by
-              << fort::endr;
+        table << rp.code << rp.store_code << rp.target_kind << rp.target << rp.action
+              << rp.retention_days << rp.cadence_hours << (rp.enabled ? "true" : "false")
+              << rp.version << rp.modified_by << fort::endr;
     }
     return table.to_string();
 }

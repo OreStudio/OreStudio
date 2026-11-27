@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: F8B44A0B-844E-424D-8C12-162C4C500B4C
+:END:
+#+title: Task: Open a dataset on a page of its own
+#+description: A row of the coverage list opens the dataset's record page: its details, when it was last published, and every publish with its outcome and what the run said.
+#+type: task
+#+level: s1
+#+filetags: :dq:web:coverage:sprint_31:v0:show_and_drive_the_dq_pipeline:
+#+owner: marco
+#+branch: feature/draw-the-counts-on-the-coverage-screen
+#+pr: 5188
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A row of the coverage list opens the dataset's own page at
+=/data-quality/datasets/:code=: the record page the
+[[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] shapes. It
+states where the dataset's rows are staged, what a publish dispatches to, both
+counts, when it was last published and by whom, and the reason it cannot publish
+with the owner of that reason. Its Publications tab lists every publish of the
+dataset with its outcome and what the run said.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-27                               |
+
+* Acceptance
+
+- A row of the list opens =/data-quality/datasets/:code=, and the breadcrumb runs
+  Home, Data quality, Reference data coverage, then the dataset code.
+- The Details tab states name, code, bundle and level, artefact type and table,
+  target subject, staged, published, optional, last published with who, and the
+  readiness with its owner.
+- The Publications tab lists the publishes of that dataset with the outcome and
+  the messages, and says which half is not served while the run log has no writer.
+- A dataset that no bundle carries answers a page that says so, and not an error.
+- The two web suites cover the list's states and the page's tabs.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+Signed off on 2026-11-26 with the prototype, which draws both screens.
+
+Two figures the page draws are not served yet, and their tasks are:
+
+- The published count, from the provenance a publish writes:
+  [[id:16FD5B35-83E7-4F85-9578-8AD20D33667E][Count the rows a dataset published]].
+- The Publications tab, from a run log that has no writer and no outcome:
+  [[id:7DCAF97F-EF6C-447F-BC1B-561DE85B3F49][Record each publication with its
+  outcome and what it said]].
+
+The tab is drawn and states the absence, because a tab that says "none yet" would
+claim nothing was published.
+
+The History tab is not in this task: the dataset's versions are served already
+(=dq.v1.datasets_versions.list=), and drawing them is a screen of its own.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5188][#5188]] | [web,dq] Show the coverage screens and open a dataset on its own page |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The two screens shipped in PR #5188, with the review's findings answered in the
+same PR: the state filter offers only what the roster answers, the second read
+states its wait and its failure, each level says where its rows live, the page
+states the last publication as unserved beside the published count, and the
+read-only access mark is drawn.
+
+The page is at =/data-quality/datasets/:code=, reached from a row of the coverage
+list and reachable from a saved address: the page names the dataset and the
+server resolves the bundle that carries it, so it does not need the list to have
+been read first.
+
+The Details tab draws from the roster the coverage list already reads, and states
+every field the acceptance names. The Publications tab states why it holds
+nothing yet, and names both halves: the log has no writer, and no column holds an
+outcome or a message.
+
+Not drawn, on purpose: the History tab. The dataset's versions are served already,
+and drawing them is a screen of its own rather than a tab this task adds.

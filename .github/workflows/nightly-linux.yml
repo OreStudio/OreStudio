@@ -345,9 +345,9 @@ jobs:
           name: memcheck-logs-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
           if-no-files-found: ignore
           retention-days: 7
-          path: |
-            build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/Testing/Temporary/MemoryChecker.*.log
-            build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/Testing/Temporary/LastTest.log
+          # Every log CTest keeps, not a named few: a suite that a watchdog
+          # kills reports through whichever file CTest chose to write.
+          path: build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/Testing/Temporary/*.log
 
       - name: Stage the release images
         # Only the release build is published: the debug build is several

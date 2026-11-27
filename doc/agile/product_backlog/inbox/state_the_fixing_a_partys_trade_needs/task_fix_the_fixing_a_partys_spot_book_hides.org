@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: DD7F623E-7CB3-4C6A-AB99-6C722D14A241
+:END:
+#+title: Task: Fix the fixing a party's spot book hides
+#+description: A fixing series is inferred from the party's spot series by cancelling one base against the other, so a party routed to several vendors' spots carries several bases, nothing cancels, and every fixing is dropped. Narrow the inference to the series the index names.
+#+type: task
+#+level: s1
+#+filetags: :state_the_fixing_a_partys_trade_needs:inbox:product_backlog:
+#+owner: marco
++#+branch:
++#+pr:
++#+blocked_on:
++#+blocked_since:
++#+created: 2026-11-27
++#+updated: 2026-11-27
++#+environment: bright_faraday
++#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:695BF078-277C-46B4-8F49-CEFFDD9E2752][State the fixing a party's trade needs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A party routed to more than one vendor's spots holds the fixing of every pair it
+trades. The index decides which fixing exists, not the shape of the party's spot
+book.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:695BF078-277C-46B4-8F49-CEFFDD9E2752][State the fixing a party's trade needs]] |
+| Now          | Not yet started. The cause is read and the symptom is reproduced. |
+| Waiting on   | Nothing.                               |
+| Next         | Reproduce on the current tree, then key the inference by the index. |
+| Last touched | 2026-11-27                               |
+
+* Acceptance
+
+- A party with spot series from several vendors holds the fixing of every pair the
+  run's indices name.
+- A fixing that cannot be derived says so as a fact about the index, not about the
+  party's book: the log names the index and the series it lacked.
+- A test reproduces the several-base case and passes after the fix.
+- The measured difference is on this page: fixings before and after, for one
+  provisioned tenant.
+
+* Plan
+
+1. *Reproduce.* Route one party to two vendors' spots and to the fixing
+   administrator, run the derivation, and read the count of fixing series,
+   observations and fixings. The smokehouse tenant shows the symptom: three
+   subscribing vendors, one fixing administrator, and no fixing at all.
+2. *Read the cause.* =fixing_sources.cpp= infers the base of a fixing series from
+   the party's whole spot book: it groups the spot series by base and cancels a
+   pair only when one base remains. A party with EUR and NZD legs cancels nothing,
+   and every fixing is left out.
+3. *Key by the index.* The index names the pair. Derive the fixing from that
+   pair's own spot series, and leave the rest of the book out of the question.
+   Where the run holds no series for the pair, say so against the index.
+4. *Test.* A party with three vendors' spots for one pair holds its fixing; a party
+   with two pairs holds both.
+5. *Measure.* One provisioned tenant before and after.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Fixing series, observations and fixings on a provisioned smokehouse tenant | 0, 0, 0 | three counts over the fixing tables for the tenant | =eb7fd32aa7= |
+| Log lines stating the cause | one per tick, "quote against EUR and NZD at once, so no one base cancels; it is left out" | =ores.marketdata.service= log | =eb7fd32aa7= |
+
+The commit is on the smokehouse branch, not main. The symptom was measured there;
+the cause is read on main, where the same inference runs per administrator source.
+
+* Notes
+
+- The capture =the-report-market-names-what-ore-cannot-resolve= on the smokehouse
+  branch records the symptom and the reasoning, with the log line.
+- The bug is older than the fixing publishers. What changed is the source that
+  states the fixing: it is now one source per administrator, so the inference runs
+  once per administrator and a party routed to several administrators asks the
+  same question several times.
+- A trade with a single EUR or a single NZD leg would cancel and derive. The
+  smokehouse swap's SONIA coupon has no FX leg at all, which is why the two tasks
+  are separate: one asks who states the index, the other asks how a fixing is
+  derived once someone does.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

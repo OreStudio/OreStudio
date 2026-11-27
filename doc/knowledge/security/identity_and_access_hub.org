@@ -119,6 +119,26 @@ backstop is shaped as it is once the application-level model above is
 clear. An agent changing a query that crosses a tenant boundary should
 have read this page first.
 
+** What holds a secret that must be recoverable
+
+The sections above decide who may do what. They do not answer where a value
+lives when ORE must present it to somebody else and cannot keep only a hash of
+it: a provider's client secret, a database role's password, a signing key.
+
+[[id:F9F1A2BA-94C2-4DAA-8689-F0871AA56801][Secret Custody in the Vault]] —
+where such a value is kept, why the custody is a component of its own, and where
+the boundary with IAM runs. Read it after the role model, because it takes the
+permission codes for granted and adds only the place.
+
+[[id:4F28F755-7DA1-4EDD-9983-256622B6088A][Sealed Delivery of a Secret to Its
+Consumer]] — how the value reaches the service that needs it without a plaintext
+crossing the bus. Read it with the page above, because custody without delivery
+would still leave the value in a message.
+
+[[id:DBF20EC5-63BB-4DE5-957C-5322DE0E487F][Secrets Register]] — every value the
+workspace holds today and the phase that moves it. Read it when the question is
+"where does this one go" rather than "how does this work".
+
 ** What a person does with it
 
 [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — everything above says what

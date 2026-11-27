@@ -28,6 +28,7 @@
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include "ores.scheduler.core/export.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <optional>
 #include <ostream>
@@ -45,17 +46,20 @@ using db_timestamp = ores::database::repository::db_timestamp;
  * whose type the layer has no codec for keeps its text, and the mapper converts
  * it.
  */
+// compass:except(wide_types/over_ceiling) expires=2027-05-18 approver=marco reason=the row is the policy with its target and its period and cadence and its state beside the audit tail and the tenant that holds it
 struct retention_policy_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_scheduler_retention_policies_tbl";
 
     std::string code;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
     int version = 0;
     std::string target_kind;
     std::string target;
+    std::string store_code;
     std::string action;
     int retention_days = 0;
-    std::string cadence;
+    int cadence_hours = 0;
     bool enabled = true;
     std::string description;
     std::string modified_by;
@@ -72,12 +76,14 @@ struct retention_policy_entity {
         using e = retention_policy_entity;
         namespace query_builder = ores::database::query_builder;
         return query_builder::columns<e>() | query_builder::key("code", &e::code) |
+               query_builder::bind("tenant_id", &e::tenant_id) |
                query_builder::bind("version", &e::version) |
                query_builder::bind("target_kind", &e::target_kind) |
                query_builder::bind("target", &e::target) |
+               query_builder::bind("store_code", &e::store_code) |
                query_builder::bind("action", &e::action) |
                query_builder::bind("retention_days", &e::retention_days) |
-               query_builder::bind("cadence", &e::cadence) |
+               query_builder::bind("cadence_hours", &e::cadence_hours) |
                query_builder::bind("enabled", &e::enabled) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |

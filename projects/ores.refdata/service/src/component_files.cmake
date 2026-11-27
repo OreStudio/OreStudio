@@ -47,6 +47,7 @@ set(files
     "messaging/business_day_convention_type_event_registrar.cpp"
     "messaging/business_process_event_registrar.cpp"
     "messaging/business_unit_event_registrar.cpp"
+    "messaging/business_unit_product_type_event_registrar.cpp"
     "messaging/business_unit_type_event_registrar.cpp"
     "messaging/calendar_event_event_registrar.cpp"
     "messaging/calendar_event_registrar.cpp"
@@ -206,6 +207,7 @@ set(files
     "messaging/party_id_scheme_event_registrar.cpp"
     "messaging/party_identifier_event_registrar.cpp"
     "messaging/party_product_type_deal_class_event_registrar.cpp"
+    "messaging/party_product_type_event_registrar.cpp"
     "messaging/party_relationship_event_registrar.cpp"
     "messaging/party_role_event_registrar.cpp"
     "messaging/party_status_event_registrar.cpp"
@@ -215,6 +217,7 @@ set(files
     "messaging/portfolio_event_registrar.cpp"
     "messaging/portfolio_right_event_registrar.cpp"
     "messaging/producer_kind_event_registrar.cpp"
+    "messaging/product_approval_registrar.cpp"
     "messaging/product_family_code_event_registrar.cpp"
     "messaging/provisioning_step_registrar.cpp"
     "messaging/purpose_type_event_registrar.cpp"
@@ -251,6 +254,7 @@ set(files
     "messaging/zero_inflation_index_convention_event_registrar.cpp"
     "service/book_proposal.cpp"
     "service/counterparty_proposal.cpp"
+    "service/product_approval.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -285,6 +289,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/business_day_convention_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/business_process_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/business_unit_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/business_unit_product_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/business_unit_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/calendar_event_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/calendar_event_registrar.hpp"
@@ -446,6 +451,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/party_id_scheme_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/party_identifier_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/party_product_type_deal_class_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/party_product_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/party_relationship_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/party_role_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/party_status_event_registrar.hpp"
@@ -455,6 +461,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/portfolio_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/portfolio_right_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/producer_kind_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/product_approval_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/product_approval_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/product_family_code_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/provisioning_step_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/messaging/provisioning_step_registrar.hpp"
@@ -493,5 +501,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/ores.refdata.service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/service/book_proposal.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/service/counterparty_proposal.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/service/product_approval.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.service/service/proposal_support.hpp"
 )

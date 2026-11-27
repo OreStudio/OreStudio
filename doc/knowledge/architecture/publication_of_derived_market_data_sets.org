@@ -156,19 +156,20 @@ market data share one database.
 
 ** Where the kinds stand
 
-The lifecycle is one implementation in the target state and three in the tree.
-=curve_publish_gate.cpp=, =fx_forward_publish_service.cpp= and
-=fx_vol_surface_publish_service.cpp= each carry their own raise, apply,
-supersession and notice, and each copy has fallen behind the others in a
-different place.
+The acts are one implementation, in =publication_lifecycle.cpp=, and each kind
+reaches it through the interface it implements in its own file:
+=curve_publication_kind.cpp=, =fx_forward_publication_kind.cpp= and
+=fx_vol_surface_publication_kind.cpp= hold the words and the reads a kind owns,
+and a handler or a step answers a publish request through =answer_publication=.
+What is still per kind on this page is the acts a kind does not have.
 
 | Capability | IR curve | FX forward set | FX volatility surface |
 |------------+----------+----------------+-----------------------|
 | Compute into a candidate | yes | yes | yes |
 | Publish under an approval | yes | yes | yes |
-| Supersede the set it replaces | yes | no | yes |
+| Supersede the set it replaces | yes | yes | yes |
 | Withdraw a published set | yes | no | no |
-| Publish notice | yes | no | yes |
+| Publish notice | yes | yes | yes |
 | Withdrawal notice | yes | no | no |
 | List the party's sets | yes | no | no |
 | Publish on a schedule | yes | no | no |

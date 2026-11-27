@@ -158,7 +158,7 @@ TEST_CASE("business_unit_commands_process_add_requires_a_session", "[commands]")
     std::ostringstream out;
 
     command_feedback::reset();
-    business_unit_commands::process_add(out, session, business_unit_tokens(8));
+    business_unit_commands::process_add(out, session, business_unit_tokens(9));
 
     ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -192,7 +192,7 @@ TEST_CASE("business_unit_commands_process_set_requires_a_session", "[commands]")
     std::ostringstream out;
 
     command_feedback::reset();
-    business_unit_commands::process_set(out, session, business_unit_tokens(8));
+    business_unit_commands::process_set(out, session, business_unit_tokens(9));
 
     ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -226,7 +226,7 @@ TEST_CASE("business_unit_commands_process_put_many_requires_a_session", "[comman
     std::ostringstream out;
 
     command_feedback::reset();
-    business_unit_commands::process_put_many(out, session, business_unit_tokens(8));
+    business_unit_commands::process_put_many(out, session, business_unit_tokens(9));
 
     ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);

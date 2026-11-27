@@ -21,8 +21,11 @@
 -- =============================================================================
 -- Row-Level Security Policies for Scheduler Tables
 -- =============================================================================
--- Scheduler jobs are party-scoped: each job belongs to exactly one party within
--- a tenant. RLS enforces both tenant and party isolation.
+-- A job may name a party, and then a session sees it only while it acts for one
+-- of the parties it can see. A job that names no party is the tenant's own --
+-- the platform's jobs name none, and neither does a job a service registers for
+-- a whole tenant -- so the tenant that holds it reads it, and the tenant
+-- isolation policy above keeps every other tenant out.
 
 -- -----------------------------------------------------------------------------
 -- Job Definitions
@@ -48,7 +51,8 @@ with check (
     OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 );
 
--- Party isolation: strict enforcement — no party context means no rows visible.
+-- Party isolation: a party's job is read by a session acting for that party or
+-- a party that contains it, and a job naming no party is read by its tenant.
 -- FOR SELECT only: the trigger validates party_id FK on INSERT/UPDATE, so
 -- WITH CHECK is not needed and would block bulk operations.
 -- Exception: the system service context bypasses party isolation for cross-tenant
@@ -61,7 +65,8 @@ create policy job_definitions_party_isolation_policy
 on ores_scheduler_job_definitions_tbl
 as restrictive
 for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
+    party_id is null
+    OR party_id = ANY(ores_iam_visible_party_ids_fn())
     OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn()
 );
 

@@ -49,5 +49,6 @@ select r.id,
        r.detail
   from ores_scheduler_retention_runs_tbl r
   left join ores_scheduler_retention_policies_tbl p
-         on p.code = r.policy_code
+         on p.tenant_id = r.tenant_id
+        and p.code = r.policy_code
         and p.valid_to = ores_utility_infinity_timestamp_fn();

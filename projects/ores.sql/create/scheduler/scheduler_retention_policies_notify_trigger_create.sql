@@ -37,6 +37,7 @@ begin
         change_action := 'deleted';
         changed_code := OLD.code;
         changed_version := OLD.version;
+        changed_tenant_id := OLD.tenant_id::text;
     elsif TG_OP = 'UPDATE' then
         -- A versioned table's update is the internal close of the current
         -- row; the insert that follows it carries the change. Announcing
@@ -53,6 +54,7 @@ begin
         end if;
         changed_version := NEW.version;
         changed_code := NEW.code;
+        changed_tenant_id := NEW.tenant_id::text;
     end if;
 
     changed_key := jsonb_build_object('code', changed_code);

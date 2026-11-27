@@ -143,6 +143,25 @@ export type {
     WireTenantPage,
 } from './tenants.js';
 export { readPartiesPage } from './party-page.js';
+export {
+    STORE_SAMPLES_LIMIT,
+    readStoreBounds,
+    readStoreSamples,
+    saveStoreBound,
+    storeBoundResultSchema,
+    storeBoundSchema,
+    storeBoundWriteSchema,
+    storeBoundsViewSchema,
+    storeSampleSchema,
+    storeSamplesViewSchema,
+} from './housekeeping.js';
+export type {
+    StoreBoundChange,
+    StoreBoundResult,
+    StoreBoundWrite,
+    StoreBoundsView,
+    StoreSamplesView,
+} from './housekeeping.js';
 export { readGridUsage } from './grid-usage.js';
 export {
     batchPageSchema,

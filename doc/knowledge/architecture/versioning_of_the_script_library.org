@@ -178,4 +178,5 @@ version a trade names.
 
 - [[id:CF5A2387-58E8-45A3-8B5B-24FF1F1464B9][Scripted Trades: An Architectural Overview]] — the structure note for the subsystem.
 - [[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by publication level]] — the level, the bundle and the write mechanism of the dataset.
+- [[id:B0BC735F-7E05-4882-A216-C250B26B0091][Precedence among the levels of reference data]] — completes: why a tenant's script of a world name is the statement its bookings use.
 - [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][From an entity model to a published row]] — the artefact table and the publish function.

@@ -2308,3 +2308,27 @@ tangled into the runnable script library
 * Fx Vol Views
 
 - [[id:A60F892C-EDA9-5E74-A4B4-42FBDCDB0B66][How do I run the fx_vol_views commands from the shell?]]
+
+* External Identities
+
+- [[id:3448A460-E502-5FDD-A05C-772D9366A798][How do I run the external_identities commands from the shell?]]
+
+* Identity Providers
+
+- [[id:5C687895-E089-51BC-975E-0992CFF7A49A][How do I run the identity_providers commands from the shell?]]
+
+* Consumers
+
+- [[id:00389673-E20D-5ED1-AE28-F50415DB7B36][How do I run the consumers commands from the shell?]]
+
+* Secrets
+
+- [[id:C8965EA9-55DD-5F85-B9FA-D88DB0506D82][How do I run the secrets commands from the shell?]]
+
+* Business Unit Product Types
+
+- [[id:FD40055F-BF8B-5E56-A180-15603C417F0A][How do I run the business_unit_product_types commands from the shell?]]
+
+* Party Product Types
+
+- [[id:F680F489-C42B-5094-B35B-0F9A77D7B6B3][How do I run the party_product_types commands from the shell?]]

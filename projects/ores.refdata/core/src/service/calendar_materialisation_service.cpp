@@ -170,6 +170,17 @@ calendar_materialisation_service::regenerate(const std::string& calendar_code,
         throw std::runtime_error("No such calendar: " + calendar_code);
     const auto& cal = calendars.front();
 
+    // The days are held at the level that owns the calendar: a calendar of the
+    // installation's in the system tenant, and a tenant's own calendar in its
+    // tenant. Only the owning session builds them. A tenant that reads a shared
+    // calendar reads the installation's copy, which the installation builds.
+    if (cal.tenant_id != ctx_.tenant_id()) {
+        ORES_LOG_SEV(lg(), debug)
+            << "Calendar " << calendar_code
+            << " belongs to the installation, so its days are read and not built here.";
+        return 0;
+    }
+
     ores::variability::service::system_settings_service settings(ctx_);
     settings.refresh();
     const auto start_offset = read_int_setting(
@@ -199,7 +210,11 @@ calendar_materialisation_service::regenerate(const std::string& calendar_code,
         const auto range_end = year_end(std::chrono::year{horizon_year});
 
         repository::calendar_exception_repository exc_repo;
-        auto exceptions = exc_repo.read_latest_by_calendar_code(ctx_, c.code, 0, 100000);
+        // The stored days are the installation's answer to the calendar, so only
+        // the installation's exceptions shape them. A party's own exceptions are
+        // applied over the stored days when the party reads them, and they are
+        // never written into the one copy.
+        auto exceptions = exc_repo.read_for_party(ctx_, c.code, std::nullopt);
 
         std::vector<domain::calendar_date> rows;
 
@@ -275,7 +290,8 @@ calendar_materialisation_service::regenerate(const std::string& calendar_code,
         repository::calendar_date_repository(ctx_).read_latest_by_calendar(calendar_code);
     std::set<std::chrono::year_month_day> existing_dates;
     for (const auto& e : existing)
-        existing_dates.insert(e.date);
+        if (e.tenant_id == ctx_.tenant_id().to_string())
+            existing_dates.insert(e.date);
 
     std::vector<domain::calendar_date> to_write;
     for (auto& row : rows) {
@@ -314,6 +330,51 @@ calendar_materialisation_service::regenerate_all(std::optional<std::chrono::year
         }
     }
     return total;
+}
+
+calendar_materialisation_service::purge_result
+calendar_materialisation_service::purge_shared_copies(std::optional<std::string> calendar_code) {
+    ORES_LOG_SEV(lg(), debug) << "Purging the tenant's copies of the installation's days."
+                              << " calendar_code: " << (calendar_code ? *calendar_code : "all");
+
+    const auto own = ctx_.tenant_id();
+    repository::calendar_repository calendars;
+    std::set<std::string> owned;
+    std::set<std::string> shared;
+    for (const auto& c : calendars.read_latest(ctx_)) {
+        if (c.tenant_id == own)
+            owned.insert(c.code);
+        else
+            shared.insert(c.code);
+    }
+    for (const auto& code : owned)
+        shared.erase(code);
+
+    if (calendar_code) {
+        if (owned.contains(*calendar_code))
+            return {};
+        if (!shared.contains(*calendar_code))
+            throw std::runtime_error("No such calendar: " + *calendar_code);
+        shared = {*calendar_code};
+    }
+
+    purge_result out;
+    repository::calendar_date_repository days(ctx_);
+    const auto own_id = own.to_string();
+    for (const auto& code : shared) {
+        std::size_t removed = 0;
+        for (const auto& d : days.read_latest_by_calendar(code))
+            if (d.tenant_id == own_id)
+                ++removed;
+        if (removed == 0)
+            continue;
+        ORES_LOG_SEV(lg(), info) << "Purging " << removed << " day(s) of " << code
+                                 << " that the installation holds.";
+        days.remove_by_calendar(code);
+        out.rows_removed += removed;
+        ++out.calendars_purged;
+    }
+    return out;
 }
 
 std::size_t

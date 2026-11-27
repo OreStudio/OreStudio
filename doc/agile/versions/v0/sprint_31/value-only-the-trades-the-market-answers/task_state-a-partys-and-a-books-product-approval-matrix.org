@@ -1,0 +1,157 @@
+:PROPERTIES:
+:ID: 9EC5A975-0FD7-44F4-9C70-7921E0F7AD3D
+:END:
+#+title: Task: State what a party may trade and what a book may carry
+#+description: A party level approval matrix states the product types a party may trade, a book level matrix states the types that book may carry, and a book's matrix is refused unless it is a subset of its party's.
+#+type: task
+#+level: s1
+#+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
+#+owner: marco
+#+branch: feature/value-only-the-trades-the-market-answers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Two matrices state the products a party may trade and the products one of its books may carry, and a book's set can neither exceed nor escape its party's.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- A party level matrix names the product types the party may trade.
+- A book level matrix names the product types that book may carry, and a write that names a type outside the party's matrix is refused.
+- A query answers the types one book may carry, resolved from both matrices.
+
+* Plan
+
+The book's set already exists: =ores_refdata_book_product_types_tbl= with the
+=books.restricts_product_types= flag, and the booking path already reads it. The
+task therefore adds the party's set and the rule that binds the two, rather than
+a matrix from nothing.
+
+1. *The party's set mirrors the book's.* A =party_product_types= junction and a
+   =parties.restricts_product_types= flag, both generated from a junction model
+   modelled on the book's. The flag carries the distinction the book's carries:
+   no rows means every type when it is false and none when it is true. Without
+   the flag every existing party would stop being able to book, which is a
+   migration rather than a model.
+2. *The rule is enforced where the sets meet, not in a caller.* Three triggers
+   hold it: a book may not name a type its party does not permit, a party may
+   not drop a type one of its books carries, and a party may not start
+   restricting while a book carries a type outside the set it would state. A
+   caller that skips the service cannot break the rule, and the booking path
+   needs no change because the book's set can no longer exceed the party's.
+3. *The resolution is SQL, and it does not read the catalogue.* Two functions
+   resolve a party's set and a book's set. A null answer means every type the
+   catalogue states, and an empty array means none, because the catalogue
+   belongs to the trading component and the reference data must not read it.
+4. *The codegen carries the stack.* The junction model generates the table, its
+   notify trigger, its RLS policy, the C++ domain, repository, service, handler
+   and protocol, and the wire protocol. The permission seeds are hand-written,
+   as they are for every table.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The new pgTAP test | 14 of 14 assertions pass | =test/run_tests.sh test/refdata_party_product_types_test.sql= | =ce74f344b8= |
+| The whole pgTAP suite | 1,021 assertions in 109 files, all pass | =test/run_tests.sh= | =ce74f344b8= |
+| The refdata api suite | 25,898 assertions in 7,098 cases, all pass | =publish/bin/ores.refdata.api.tests= | =ce74f344b8= |
+| The refdata core suite | 6,247 assertions in 563 cases, all pass | =publish/bin/ores.refdata.core.tests= | =ce74f344b8= |
+| The refdata build | 370 edges, no error | =ninja ores.refdata.api.tests ores.refdata.core.tests -j 3= | =ce74f344b8= |
+| The suite before the services started | 5 failures, all connection refused on the pooler port | the same core suite, services stopped | =ce74f344b8= |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The party states the product types it permits, and a book can neither exceed
+that set nor escape it.
+
+What exists:
+
+- =ores_refdata_party_product_types_tbl=, generated from
+  [[id:84B5E325-ACE1-4B2A-B7CF-032DDD7D1366][ores.refdata.party_product_type]], with its notify trigger, its RLS
+  policy, its history and its events. The party row gains
+  =restricts_product_types=, on the same two-state rule as the book's.
+- The whole C++ stack for the junction, and the wire protocol, which the codegen
+  writes from the model: domain, codec, table, generator, repository, service,
+  handler, protocol, history provider, and the shell commands and recipes.
+- Two resolutions, in =refdata_product_approvals_create.sql=:
+  =ores_refdata_party_allowed_product_types_fn= and
+  =ores_refdata_book_allowed_product_types_fn=. A null answer means every type
+  the catalogue states; an empty array means none; a party or book the caller
+  cannot see resolves to none.
+- The subset rule in three triggers: a book may not name a type its party does
+  not permit, a party may not drop a type a book of the party carries, and a
+  party may not start restricting while a book carries a type it would not
+  permit.
+- The permission seeds, =refdata::party_product_types:{read,write,delete}=, and
+  the Trading role's read of the set its books narrow.
+- A pgTAP test, =refdata_party_product_types_test.sql=, over the two resolutions
+  and all three refusals.
+
+What the change does not do:
+
+- The booking path is unchanged, deliberately: it already reads the book's set,
+  and the book's set can no longer exceed the party's, so the refusal reaches it
+  without a line of code.
+- A book whose party is changed after the book states its set is not
+  re-checked; the rule holds on the writes it covers, and moving a book between
+  parties is not one of them. The check belongs with whatever writes that move.
+- No provision seeds a matrix. A party with the flag false permits everything,
+  so nothing existing changes, and a demo that wants a narrow party states one.
+- The web screen for either set is not built. The protocol and the shell
+  commands exist; the screen belongs to the screens work.
+- =refdata_party_functions_create.sql= carries column lists of its own and does
+  not name the new flag. Nothing writes a party through those functions, so the
+  omission cannot lose the flag, and the functions answer the questions they
+  were written for.

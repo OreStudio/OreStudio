@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: BE55D937-7CC4-4A50-B730-C6C1FEA50D08
+:END:
+#+title: Task: Sample the size of every store
+#+description: A store's size is a series, not an adjective. The installation measures each store it can reach, keeps the measurements keyed to the store, and reads back the latest size and the history the screen plots.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping:retention:samples:measurement:sprint_31:housekeeping_bound_every_store_the_system_keeps:v0:
+#+owner: marco
+#+branch:
+#+pr: 5190
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A store's size is a series, not an adjective. The installation measures every
+store it can reach, keeps each measurement keyed to the store, and reads back the
+latest size and the history a screen plots, so "how large is it and which way is
+it going" has an answer with points behind it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-27                               |
+
+* Acceptance
+
+- A measurement is an entity of its own, keyed to the store's code and not to its target, so the series survives a table being replaced
+- The samples are a TimescaleDB hypertable with a retention of its own, so the series does not grow without bound either
+- A sampler measures every store the database can see and writes one sample per store per run
+- A store the sampler cannot reach, such as an object prefix or a folder on a host, is left unmeasured rather than recorded as empty
+- The bounds view states the latest size, the count and the moment it was measured, and reports nothing for a store no sample measured
+- A scheduler job runs the sampler hourly, as platform data
+
+* Plan
+
+- Model the sample as a hypertable keyed by store code and partitioned by the
+  moment of measurement, with a retention of its own: the series needs history to
+  plot, and a series that grows without bound would be the disease it measures.
+- Measure where the store lives. The database measures its own relations; an
+  object prefix and a folder on a compute host are measured by the components
+  that own them, so the sampler visits only the two shapes a relation has and
+  leaves the rest unmeasured.
+- Read the size from the store's own estimate rather than a scan: the household's
+  own measurement must not add a cost the household cannot afford.
+- Extend the bounds view with the latest sample, so the screen reads one view
+  rather than three tables.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5190][#5190]] | [scheduler] Sample the size of every store |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The installation measures what it can see and keeps the measurements as a series.
+`ores_scheduler_retained_store_samples_tbl` is a hypertable keyed to the store's
+code and partitioned by the moment of measurement, with half a year of history:
+twice the twelve weeks the screen plots, because a series that drops its own past
+makes every store look flat.
+
+`ores_scheduler_sample_retained_stores_fn()` measures every store whose target is
+a relation the database holds, six of the ten in the seeded catalogue. The two
+object prefixes and the two directories are left unmeasured rather than recorded
+as empty: an empty store and an unmeasured one are different facts, and the
+screen says so. The row count is the store's own estimate, because counting every
+store exactly on every run is a cost the measurement should not add.
+
+The bounds view now states the latest size, the count and when it was measured, so
+a screen reads one view for the list. A scheduler job runs the sampler hourly, as
+platform data, beside the sweep.
+
+Two things to remember. A generated service for an entity with a compound name
+needs the collection short names stated in the model: without them the template
+emits an empty name and the build fails on `response.=` and `for (const auto& e
+:)`. And a hypertable's key cannot carry the tenant without widening every
+chunk index, so the new table joins the recorded exception rather than inventing
+a new one.

@@ -147,6 +147,7 @@ domain::business_unit business_unit_to_domain(const messaging::business_unit_wri
     v.business_centre_code = write.business_centre_code;
     v.unit_type_id = write.unit_type_id;
     v.status = write.status;
+    v.restricts_product_types = write.restricts_product_types;
     return v;
 }
 

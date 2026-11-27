@@ -709,6 +709,9 @@ begin
                 a.auto_start,
                 a.description,
                 a.price_source,
+                a.rate_source,
+                a.derived_spread_basis_points,
+                a.derived_spread_source,
                 a.provider_code
             from ores_dq_ir_curve_generation_configs_artefact_tbl a
             where a.dataset_id = p_dataset_id
@@ -736,7 +739,8 @@ begin
                 ticks_per_hour, enabled,
                 auto_start, description,
                 fixed_leg_payment_frequency_code, source_name,
-                price_source,
+                price_source, rate_source,
+                derived_spread_basis_points, derived_spread_source,
                 asset_class_code,
                 modified_by, performed_by, change_reason_code, change_commentary
             )
@@ -772,6 +776,9 @@ begin
                     coalesce(r.provider_code, lower(replace(v_config_name, ' ', ''))),
                     r.index_family, r.currency_code, r.tenor),
                 r.price_source,
+                r.rate_source,
+                r.derived_spread_basis_points,
+                r.derived_spread_source,
                 'interest_rates',
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name

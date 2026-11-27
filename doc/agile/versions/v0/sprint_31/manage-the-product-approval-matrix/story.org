@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: F77263EF-6F2D-4129-BA60-CA6C2F2D6153
+:END:
+#+title: Story: Manage the product approval matrix
+#+description: A person states the product types a party permits and the narrower set a book carries, through journeys, a prototype and a screen that follow the screen pipeline.
+#+type: story
+#+level: s2
+#+filetags: :ui:ux:web:refdata:trading:approvals:sprint_31:v0:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A risk or reference data administrator reads and changes the product approval matrix from the web, at the party and at the book. The set a party permits and the set a book narrows are legible together, an attempt to widen a book past its party is refused in the person's own words, and the screen draws what the standard already draws rather than a shape of its own.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
+| Now           | The journeys are signed off. The prototype is the next step, and it answers to them. |
+| Waiting on    | [[id:9EC5A975-0FD7-44F4-9C70-7921E0F7AD3D][State what a party may trade and what a book may carry]], which is DONE: the sets and the rule exist, and this story gives them a surface. |
+| Next          | [[id:D590E027-6A2C-4CA6-B32E-71F9901E4259][Prototype the approval matrix screens]]. |
+| Last touched  | 2026-11-25                               |
+
+* Acceptance
+
+- The journeys state how a person reads and changes the party's set and the book's set, and each step is judged against the record screen standard before any prototype exists.
+- A prototype draws every state of both screens, with the query string as its state and the rule identifiers it follows cited.
+- The screens are built from the shared parts, in English, French and Portuguese, with a harness check for every rule the build relies on.
+- A scenario over a fresh database passes by the owner's own run, and the sheet carries their verdict.
+- An attempt to widen a book past its party is refused on the screen, and the refusal names the party's set.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D7E5631A-B742-4723-ADEF-EEB93D659C6E][Scaffold story: Manage the product approval matrix]] | DONE | 2026-11-25 | 2026-11-25 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:57F2778B-57BA-485D-90C5-5511C6346BF0][Extract and judge the approval matrix journeys]] | DONE | 2026-11-25 | 2026-11-25 | The person's journeys over the party's set and the book's set, each step judged against the record screen standard before any prototype exists. |
+| [[id:D590E027-6A2C-4CA6-B32E-71F9901E4259][Prototype the approval matrix screens]] | BACKLOG | | | A prototype under doc/prototypes/ draws every state of the party's set and the book's set, with the query string as its state, the rule identifiers it follows, and what is fake stated. |
+| [[id:178ECB01-6FAE-4832-B3A3-F95302AB504D][Build the approval matrix screens]] | BACKLOG | | | The live screens draw what the prototype draws, through the shared parts, in three languages, with a harness check for every rule the build relies on. |
+| [[id:2DD69165-9831-417A-A95F-849887B46DEB][Test the approval matrix screens and sign them off]] | BACKLOG | | | A scenario over a freshly recreated database drives both screens end to end, and the owner's own run of it carries the verdict that closes the topic. |
+
+* Decisions
+
+Settled on 2026-11-25, when the story was formed.
+
+1. *The arc is the screen pipeline.* The four steps are the four tasks, in the
+   order of [[id:61C6B0A5-03A5-4424-8EA3-EE7E587629FD][Take a topic through the screen pipeline]]: extract and judge
+   the journeys, prototype, build, test and sign off. Each step ends in a
+   document the owner signs off before the next begins.
+2. *This is not a reference data topic.* The topics of
+   [[id:C0D1A833-3E57-489A-A4D3-8C44266D3D6D][The screen pipeline topics]] are the Qt entities the web has yet to
+   carry. The approval matrix is new: its sets and the rule between them
+   arrived with [[id:F77263EF-6F2D-4129-BA60-CA6C2F2D6153][this story]]'s
+   predecessor, so it takes the pipeline's steps without a row in that table.
+3. *Two subjects, one reading.* The party's set is the maximum and the book's
+   set narrows it, so the journeys must let a person see both at once or move
+   between them without losing the comparison. Whether that is a tab of the
+   party, a panel of the book, or a screen of its own is the journeys' to
+   decide, and the prototype's job is to show the decision.
+4. *The refusal is the screen's to state.* The database already refuses a book
+   outside its party, with the party's set in the message. The screen must not
+   let the attempt leave the page in the first place, and must read the
+   database's refusal when it arrives.
+
+* Decided at the sign off
+
+The owner signed the journey off on 2026-11-25. What that settles:
+
+1. *The journey is accepted as written.* One journey over the party's tab and
+   the book's panel, with the nine steps and the judgement table it carries.
+2. *The four placements stay open for the prototype.* Where the set lives, how
+   the two sets read together, what a party that states nothing looks like, and
+   where a refusal stands are the prototype's to draw and the owner's to
+   refuse or accept.
+3. *Two gaps are the server's and not the screens'.* No operation answers the
+   set a book may carry, and a refused write does not carry the party's set in
+   its words. Both are captures in the product backlog, and the build task
+   reads them rather than working around them.
+
+* Out of scope
+
+- The model and the rule. They are
+  [[id:9EC5A975-0FD7-44F4-9C70-7921E0F7AD3D][State what a party may trade and what a book may carry]], which is
+  DONE.
+- Granting a person the right to change a set: the permissions exist, and an
+  entitlement workflow is not this story.
+- What the generator does with the sets, which is
+  [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]].
+- The Qt screens. The web is the only surface this story builds.

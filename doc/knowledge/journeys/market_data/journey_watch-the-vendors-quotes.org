@@ -136,7 +136,7 @@ Switching the layout, narrowing by class or text and pausing are done on the
 screen and need no operation. The asset class of a row is the code the asset
 class catalogue maps its oresmd namespace onto (=ir= to =interest_rates=), and the
 filter lists the asset class codes table (=refdata.v1.asset_class_codes.list=). The live subject and the two operations are in
-[[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][Publication and entitlement of live ticks]].
+[[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][Delivery and entitlement of live ticks]].
 
 * What is missing
 
@@ -161,7 +161,7 @@ filter lists the asset class codes table (=refdata.v1.asset_class_codes.list=). 
 
 * Related knowledge
 
-- [[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][Publication and entitlement of live ticks]] — the subject, the watch rule and the system tenant.
+- [[id:4DB1ED0C-4BEA-4164-9129-5731AE559AE9][Delivery and entitlement of live ticks]] — the subject, the watch rule and the system tenant.
 - [[id:1F609D0D-5C72-4A21-B988-6957F18D426F][The market tick]] — the fields of a row.
 - [[id:B746D4F2-F1B5-4563-A6E4-D36BDF8E6BBE][Display, non-display and derived market data rights]] — why a screen needs the display right.
 

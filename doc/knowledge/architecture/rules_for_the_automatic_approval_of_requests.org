@@ -59,3 +59,4 @@ While a tenant's mode is =auto_approved=, or a provisioning grant is held, every
 - [[id:F8559BFA-9FF8-4F6D-8D70-780ECE9C5737][Automatic approval during provisioning]]
 - [[id:8B0D92BD-7D15-45B7-80EA-07D111F73EB3][The Acme approval model]]
 - [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]]
+- [[id:B0BC735F-7E05-4882-A216-C250B26B0091][Precedence among the levels of reference data]] — completes: the shape a tenant's own statement takes when it sits beside the installation's.

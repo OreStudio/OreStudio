@@ -70,7 +70,8 @@ Response refuse_agent_request(std::string message) {
     return r;
 }
 
-bool is_active(const domain::agent_grant& grant, std::chrono::system_clock::time_point now) {
+bool agent_grant_is_active(const domain::agent_grant& grant,
+                           std::chrono::system_clock::time_point now) {
     return grant.revoked_at == std::chrono::system_clock::time_point{} && now < grant.not_after;
 }
 
@@ -209,7 +210,7 @@ messaging::create_agent_grant_response agent_grant_operations_service::create_ag
          grants.list_grants_by_grantor_account_id(boost::uuids::to_string(*grantor), 0, 1000))
         if (g.party_id == *party && g.agent_name == request.agent_name)
             existing = g;
-    if (existing && is_active(*existing, now))
+    if (existing && agent_grant_is_active(*existing, now))
         return refuse_agent_request<response>(
             "The agent " + request.agent_name +
             " already has an active grant: make it another key, or revoke it "
@@ -272,7 +273,7 @@ messaging::create_agent_key_response agent_grant_operations_service::create_agen
     if (!grant || !caller || grant->grantor_account_id != *caller)
         return refuse_agent_request<response>("You have no agent grant with the id " +
                                               request.grant_id + ".");
-    if (!is_active(*grant, std::chrono::system_clock::now()))
+    if (!agent_grant_is_active(*grant, std::chrono::system_clock::now()))
         return refuse_agent_request<response>("The grant has ended; make a new grant.");
 
     boost::uuids::uuid key_id;
@@ -576,7 +577,7 @@ messaging::exchange_agent_key_response agent_grant_operations_service::exchange_
     const auto grant_text = boost::uuids::to_string(grant->id);
     const auto party_text = boost::uuids::to_string(grant->party_id);
     const auto account_text = boost::uuids::to_string(grant->grantor_account_id);
-    if (!is_active(*grant, now))
+    if (!agent_grant_is_active(*grant, now))
         return refuse_key(tenant_text,
                           party_text,
                           grant_text,
@@ -710,7 +711,7 @@ agent_grant_operations_service::issue_agent_replay_token(
     const auto now = std::chrono::system_clock::now();
     const auto grant_id = parse_uuid(held->grant_id);
     const auto grant = grant_id ? agent_grant_service(tctx).find_grant(*grant_id) : std::nullopt;
-    if (!grant || !is_active(*grant, now))
+    if (!grant || !agent_grant_is_active(*grant, now))
         return refuse_agent_request<response>("The agent's grant has ended.");
     const auto account_text = boost::uuids::to_string(grant->grantor_account_id);
     const auto accounts = repository::account_repository().read_latest(tctx, account_text);

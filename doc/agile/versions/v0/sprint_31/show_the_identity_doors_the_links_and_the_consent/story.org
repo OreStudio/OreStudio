@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 9636A24B-639F-4088-8A6D-F84CA7A974B9
+:END:
+#+title: Story: Show the identity doors, the links and the consent
+#+description: The sign-in screen offers the providers beside the password, a first sign-in says what the deployment will give, a person sees and removes what is linked to their account, every session says how it was signed in, and a client is approved on a consent screen that states what it asks for.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:identity:iam:sprint_31:v0:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The sign-in screen offers the providers the deployment enables beside the
+password, and a person who chooses one knows what will happen before they leave
+ORE Studio. A first sign-in says what the registration policy will give them,
+and says so plainly when their account must wait for an approval.
+
+A person then sees what is linked to their account and removes it if they wish.
+Every session and every sign-in says how it happened, so a person can tell their
+own sign-in from an agent's and can see one they do not recognise. A client that
+asks for access to ORE shows a consent screen that states what it asks for.
+
+The screens tell the story the platform now makes true: a person can arrive
+without a password, and can leave without losing their way back in.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
+| Now           | In the sprint, with nothing started.   |
+| Waiting on    | The decisions of [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Sign a person up and in through an external identity provider]]. |
+| Next          | Decide the shape of the identity screens, once the sign-in decision is made. |
+| Last touched  | 2026-11-25                               |
+
+* Acceptance
+
+- The sign-in screen offers each provider the deployment enables, and none it
+  does not, without a build change.
+- A first sign-in states what the policy will give the person, including the
+  state where an approval is pending, before the provider is chosen.
+- Every refusal reaches the screen with the reason it happened, in the person's
+  language, and never as a raw code.
+- Security shows each link with its provider, the address the provider stated
+  and the date, links another after the password is proven, and removes one,
+  refusing when it is the last way in.
+- The session list and the sign-in history name how each session was signed in,
+  and an agent's sessions stay shown apart from its person's.
+- A client is approved or refused on a consent screen that states the client,
+  the person, the party, the permissions and the term, and approving creates the
+  grant the person can see and revoke.
+- The screens are pinned by tests, and every string is translated.
+- The gates cover the new code.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:209F8B16-4033-4579-8B6A-ECF4CF08E259][Decide the shape of the identity screens]] | BACKLOG | | | Prototype the provider doors, the sign-up result, the linked identities and the consent screen, then choose one with evidence from a person using it. |
+| [[id:FCABDB8D-E9AE-46DF-8865-4B022053474F][Open the sign-in page onto the providers]] | BACKLOG | | | The sign-in screen offers each provider the deployment enables beside the password, and every refusal comes back to the screen with a reason a person can read. |
+| [[id:CCC8B3CA-7FD8-46A6-BA16-9A61816ED59B][Show and manage what is linked]] | BACKLOG | | | A person sees which provider accounts are linked to theirs, links another after proving their password, and removes one, with the refusal shown when it would be the last way in. |
+| [[id:D9F130E5-51B0-415C-9E99-36F566D2E944][Say how each session was signed in]] | BACKLOG | | | Every place that shows a session or a sign-in says how it happened: the password, a named provider, or an agent's key. |
+| [[id:55F16CAC-7529-4E35-89F9-475D392ADB51][Approve a client on a consent screen]] | BACKLOG | | | A client that asks for access to ORE shows the person what it asks for, and approving or refusing returns the client to where it was going. |
+
+* Decisions
+
+- *Prototype before building* (2026-11-25). The identity screens are a design
+  question before they are an implementation one: a person meets ORE here
+  before they trust it with anything, and the platform has no precedent for a
+  door that leaves the application. The first task prototypes variants and
+  chooses one with a person using it.
+- *The consent screen is part of this story* (2026-11-25). The consent a client
+  shows is the only screen an agent's person meets at the moment an agent gains
+  power, so it is designed with the doors and not left to the client.
+
+* Out of scope
+
+- The gateway, the models and the flows behind the screens; see
+  [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Sign a person up and in through
+  an external identity provider]].
+- The provider's own screens, which ORE does not draw.
+- A second factor at ORE itself.

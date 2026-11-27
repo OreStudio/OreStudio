@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 4C1F8A62-7D3E-4B95-9A08-2E6B5C0D71F4
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.reporting.report_run_market_readiness
+#+description: Codegen entity model for the reporting =report_run_market_readiness= table. How much of a run's population its market answered, at the run's as-of.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:marketdata:
+#+brief: How much of a run's population its market answered, at the run's as-of.
+#+entity_singular: report_run_market_readiness
+#+entity_plural: report_run_market_readinesses
+#+entity_title: Report Run Market Readiness
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+One row per run, written before the engine sees any work.
+
+A run resolves each trade's market data requirements before it submits
+anything, and leaves out every trade whose requirements its market does not
+answer. The counts here are that partition: every trade the scope holds is
+valued, failed or excluded, so =booked_count= is =complete_count= plus the
+number the run left out. The counts are stored rather than counted from the
+detail rows at read time, because a reader of a finished run asks how much of
+the book survived, and that answer must not depend on how much detail the run
+kept.
+
+The as-of is the date the points were read at, stated on the record because
+two runs of one book on different dates can differ and neither is the other's
+error.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:subcomponent:  api
+:profile:       readonly-timeseries
+:END:
+
+* C++
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: run_readiness
+:entity_plural_short:   run_readinesses
+:entity_singular_words: run readiness
+:entity_plural_words:   run readinesses
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate UUID identifying this readiness record.
+
+** party_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:END:
+
+The party that owns the run.
+
+** report_instance_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:filterable:   true
+:END:
+
+The run this record states the readiness of. One run has one record.
+
+** as_of
+:PROPERTIES:
+:type:         timestamp with time zone
+:cpp_type:     std::chrono::system_clock::time_point
+:END:
+
+The date the run read its points at. A trade is complete against this date and
+not against another.
+
+** booked_count
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+How many trades the run's scope holds, before any of them was excluded.
+
+** complete_count
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+How many the market answered in full, which are the ones the run submitted.
+
+** excluded_count
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+How many the run left out. The run does not store it as a subtraction, so the
+table refuses a row whose counts do not add up rather than storing a record a
+reader would take for a partition that holds.
+
+* SQL
+
+** Checks
+
+| expression                                              |
+|---------------------------------------------------------|
+| "booked_count" = "complete_count" + "excluded_count"    |
+| "booked_count" >= 0                                     |
+| "complete_count" >= 0                                   |
+| "excluded_count" >= 0                                   |
+
+** Flags
+:PROPERTIES:
+:tablename:           ores_reporting_report_run_market_readinesses_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation:  true
+:END:
+
+A run is its party's own, so a tenant reads only its own rows and a party only what it priced.

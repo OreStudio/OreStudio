@@ -36,6 +36,14 @@
  * ir_curve_template_entry rows, the same one-config-many-children shape
  * fx_spot_generation_config uses for its gmm_component rows. Scoped to a
  * tenant and a party.
+ *
+ * A config may instead derive its rate from the currency's overnight curve,
+ * for a term index no publisher quotes: rate_source says which shape it
+ * takes, and a spread index states the spread and who states it. The fixing
+ * generator reads the rule on the config and computes the rate from the curve
+ * itself: the compounded overnight forward over the term, or the overnight rate
+ * plus the stated spread. A derived config states no index rate on the run's
+ * board, because it runs no curve of its own.
  */
 
 create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
@@ -53,6 +61,9 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     "enabled" boolean not null,
     "auto_start" boolean not null,
     "price_source" text not null,
+    "rate_source" text not null,
+    "derived_spread_basis_points" double precision not null,
+    "derived_spread_source" text null,
     "description" text null,
     "fixed_leg_payment_frequency_code" text not null,
     "source_name" text not null,
@@ -82,7 +93,13 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     check ("source_name" <> ''),
     check ("source_name" like 'synthetic.%'),
     check ("ticks_per_hour" > 0),
-    check ("price_source" in ('fixed', 'fixing'))
+    check ("price_source" in ('fixed', 'fixing')),
+    check ("rate_source" in ('process', 'compounded_overnight', 'overnight_plus_spread')),
+    check ("rate_source" = 'process' or "tenor" <> ''),
+    check ("rate_source" <> 'overnight_plus_spread' or "derived_spread_source" is not null),
+    check ("rate_source" <> 'overnight_plus_spread' or "derived_spread_basis_points" <> 0),
+    check ("rate_source" <> 'process' or "derived_spread_basis_points" = 0),
+    check ("rate_source" <> 'process' or "derived_spread_source" is null)
 );
 
 -- Composite natural key: unique combination for active records

@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 4123A768-9AB8-403F-BE35-83BDC50C6BCF
+:END:
+#+title: Task: Set out the architecture of federated identity
+#+description: Zettelkasten knowledge notes, with UML diagrams, on how ORE Studio relies on an external identity provider and acts as one for its own clients.
+#+type: task
+#+level: s1
+#+filetags: :sign_a_person_up_and_in_through_an_external_identity_provider:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Sign a person up and in through an external identity provider]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Write the architecture as knowledge notes before the code: how ORE Studio relies on an external identity provider, from the door a person chooses, through the provider's own consent, the validated ID token, the link to their ORE account and the registration the deployment's policy grants, to the session that names its method; and how the same layer acts as an authorization server for a client of ORE's API. Each note holds one idea, follows the zettelkasten house style, draws as UML what it describes as a structure or a process, and links into Identity and Access and Delegated Access for LLM Agents rather than repeating them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Sign a person up and in through an external identity provider]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- A structure note lists the atomic notes, each one idea, and the knowledge index links it.
+- The notes cover ORE as a relying party, the identity link and why it is not an email address, the registration a first sign-in goes through, the session that names its method, and ORE as an authorization server for clients.
+- Each note that describes a lifecycle, an interaction or a structure carries a PlantUML diagram rendered to PNG, with a caption.
+- The notes name the alternatives they reject and why, and cite the standards rather than restating them.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

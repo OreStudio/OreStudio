@@ -52,6 +52,7 @@ domain::business_unit business_unit_mapper::map(const business_unit_entity& v) {
     r.business_centre_code = v.business_centre_code.value_or("");
     r.unit_type_id = v.unit_type_id;
     r.status = v.status;
+    r.restricts_product_types = v.restricts_product_types;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -77,6 +78,7 @@ business_unit_entity business_unit_mapper::map(const domain::business_unit& v) {
         v.business_centre_code.empty() ? std::nullopt : std::optional(v.business_centre_code);
     r.unit_type_id = v.unit_type_id;
     r.status = v.status;
+    r.restricts_product_types = v.restricts_product_types;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

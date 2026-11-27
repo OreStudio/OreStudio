@@ -172,6 +172,7 @@
 \ir ./dq_business_units_artefact_create.sql
 \ir ./dq_portfolios_artefact_create.sql
 \ir ./dq_books_artefact_create.sql
+\ir ./dq_book_product_types_artefact_create.sql
 
 -- Generated staff account artefact tables (e.g. Acme Corporation)
 \ir ./dq_accounts_artefact_create.sql
@@ -321,3 +322,6 @@
 \ir ./dq_todays_market_configurations_artefact_create.sql
 \ir ./dq_todays_market_configuration_bindings_artefact_create.sql
 \ir ./dq_report_configurations_artefact_create.sql
+\ir ./dq_job_definitions_artefact_create.sql
+\ir ./dq_retention_policies_artefact_create.sql
+\ir ./dq_retained_stores_artefact_create.sql

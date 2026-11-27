@@ -85,23 +85,16 @@ read_fx_schedules(const ores::database::context& db_ctx) {
 
 }
 
-fixing_offer_inputs read_fixing_offer_inputs(const ores::database::context& db_ctx,
-                                             ores::nats::service::nats_client& svc_nats) {
-    fixing_offer_inputs out;
-    try {
-        out.fx = read_fx_schedules(db_ctx);
-    } catch (const std::exception& e) {
-        ORES_LOG_SEV(fixing_inputs_lg(), ores::logging::warn)
-            << "The FX fixing schedules are not read, so no FX fixing is offered: " << e.what();
-    }
-
+ores::synthetic::feed::fixing_held_reader
+make_held_days_reader(const ores::database::context& db_ctx,
+                      ores::nats::service::nats_client& svc_nats) {
     struct system_party_cache final {
         std::mutex mu;
         std::optional<boost::uuids::uuid> id;
     };
     auto party = std::make_shared<system_party_cache>();
-    out.held = [db_ctx, &svc_nats, party](const std::string& item, std::chrono::year_month_day to)
-        -> std::expected<std::set<std::chrono::year_month_day>, std::string> {
+    return [db_ctx, &svc_nats, party](const std::string& item, std::chrono::year_month_day to)
+               -> std::expected<std::set<std::chrono::year_month_day>, std::string> {
         boost::uuids::uuid party_id;
         {
             std::lock_guard lock(party->mu);
@@ -133,6 +126,18 @@ fixing_offer_inputs read_fixing_offer_inputs(const ores::database::context& db_c
         }
         return std::set<std::chrono::year_month_day>(window->dates.begin(), window->dates.end());
     };
+}
+
+fixing_offer_inputs read_fixing_offer_inputs(const ores::database::context& db_ctx,
+                                             ores::nats::service::nats_client& svc_nats) {
+    fixing_offer_inputs out;
+    try {
+        out.fx = read_fx_schedules(db_ctx);
+    } catch (const std::exception& e) {
+        ORES_LOG_SEV(fixing_inputs_lg(), ores::logging::warn)
+            << "The FX fixing schedules are not read, so no FX fixing is offered: " << e.what();
+    }
+    out.held = make_held_days_reader(db_ctx, svc_nats);
     return out;
 }
 

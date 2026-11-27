@@ -568,7 +568,7 @@ def gather_counts(ctx):
 # --- subcommands ------------------------------------------------------------
 
 def cmd_start(ctx, args):
-    log_path = Path(f"/tmp/ores_{ctx.label}_services_start.log")
+    log_path = ctx.root / "tmp" / f"ores_{ctx.label}_services_start.log"
     print(f"📝 Progress log: {log_path} (tail -f to follow)")
     with _tee_to_file(log_path):
         rc = _cmd_start(ctx, args)

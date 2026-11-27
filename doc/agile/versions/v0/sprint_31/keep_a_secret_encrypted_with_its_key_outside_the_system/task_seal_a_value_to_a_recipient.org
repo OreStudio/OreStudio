@@ -1,0 +1,164 @@
+:PROPERTIES:
+:ID: F4010BC4-C7AA-4641-BCCA-4436BD6CBEE1
+:END:
+#+title: Task: Seal a value to a recipient, and open it again
+#+description: The sealed box: key agreement, derivation and authenticated encryption in ores.security, with a test that only the holder of the private key opens what was sealed to its public half.
+#+type: task
+#+level: s1
+#+filetags: :keep_a_secret_encrypted_with_its_key_outside_the_system:sprint_31:v0:
+#+owner: marco
+#+branch: feature/seal-a-value-to-a-recipient
+#+pr: 5151
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the kernel the second primitive the vault needs: a value sealed to a
+recipient's public key, which only that recipient's private key opens. The two
+sides share no secret beforehand, so the vault can seal to a consumer it has
+never spoken to, and the consumer opens the answer without a channel to agree a
+key on. The class carries the key agreement, the derivation and the
+authenticated encryption, and it sits beside the symmetric sealer in the same
+facet. It links no database, no bus and no credential. Its tests prove the round
+trip and refuse a wrong key, a changed byte and a ciphertext sealed to somebody
+else.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-26                               |
+
+* Acceptance
+
+- A value sealed to a public key opens with the matching private key and with no other.
+- The two sides share no secret beforehand: the derived key, the nonce and the tag are all the ciphertext needs.
+- A changed byte, a wrong private key and a ciphertext sealed to another recipient each fail to open, and the primitive links no database and no bus.
+
+* Plan
+
+One class of four static functions: =generate= makes a key pair,
+=public_key_of= derives the public half from the private one, =seal= takes the
+recipient's public key and a plaintext, and =open= takes a private key and a
+sealed value. Nothing is held between calls, because the vault holds its own
+private half and seals to many public halves, and a class that held one key
+would suit only half of that.
+
+The value is one Base64 string. Its layout is the contract with any future
+implementation: the sender's 32-byte public key, a 12-byte nonce, a 16-byte tag,
+and the ciphertext. The agreement is X25519, the derivation is HKDF-SHA256 over
+the shared secret with both public keys as the salt and a fixed information
+string, and the cipher is AES-256-GCM with the same pair of public keys as
+additional data. The salt and the additional data are the same value, which is
+what makes the sender's key both part of the derivation and part of the
+authentication.
+
+The tests were written first and failed at the link on the four symbols, which
+shows they reach the new code. The shared secret and the derived key are wiped
+with =OPENSSL_cleanse= when they leave scope, so neither outlives the call.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Test cases the primitive adds | 8 | =ores.security.tests "[crypto]"= → 54 assertions in 22 test cases | 50f433b607 |
+| Test cases in the security suite | 82 | =ores.security.tests= → 237 assertions in 82 test cases | 50f433b607 |
+| Light gate | 9/9 | =./compass.sh check --exclude-heavy= | 50f433b607 |
+| Header of a sealed value | 60 bytes | the layout in the header, rendered by the tests | 50f433b607 |
+
+* Notes
+
+** The layout, and why each field is where it is
+
+| Field | Length | Why it leads |
+|-------+--------+--------------|
+| The sender's public key | 32 | The recipient needs it before it can agree a key, and it arrives with the value so that nothing is agreed beforehand |
+| The nonce | 12 | Fresh for every seal, so the same plaintext never produces the same value |
+| The tag | 16 | Read from the live context after the final block |
+| The ciphertext | the rest | The only part whose length follows the plaintext |
+
+The nonce and the tag are bound to the sender's key because both are inside the
+region the tag authenticates: the additional data is the sender's public key
+followed by the recipient's, so a value re-headed with another sender's key
+fails to authenticate, and one re-headed with another recipient's key never
+derives the same key.
+
+** What the suite caught
+
+Two mistakes, neither in the cipher. The first was in the test's own tamper
+helper: it took a position counted in Base64 characters and applied it to the
+decoded bytes, so flipping "the last byte" landed past the end of the buffer and
+changed nothing. The helper now counts in decoded bytes and the failing check
+became the regression it was meant to be. The second was a pair of test names
+repeated from the symmetric sealer's file, which Catch2 refuses at run time
+rather than at compile time; both are now named for the box.
+
+** The three traps that are the same as the sealer's
+
+- Every OpenSSL call answers a status and none throws, so each step is checked
+  and each failing step throws with the step's name in it.
+- The tag is only readable while the context is alive.
+- =EVP_DecryptUpdate= answers 1 on a bad tag, so only =EVP_DecryptFinal_ex=
+  detects tampering.
+
+** What this does not prove
+
+The tests prove the box against itself, as the sealer's do: no second
+implementation of this layout exists in the checkout to open ORE's values with.
+The layout and the derivation above are the contract such an implementation
+would follow.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5151][#5151]] | [security] Seal a value to a recipient, and open it with its key |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=ores::security::crypto::sealed_box= seals a plaintext to a recipient's X25519
+public key and opens it under the private half, with the sender's public half
+carried in the value. Eight test cases prove the round trip, that two seals of
+one plaintext differ, and that a wrong recipient, a changed body, a changed
+header and a truncated value each fail to open rather than answering something.
+
+The vault can now seal an answer to a caller it has never spoken to, and a caller
+can seal a request to a service without holding its key. The model of the secret
+and of the consumer's key is the next task.

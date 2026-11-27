@@ -188,7 +188,7 @@ driver span, never a zero, so a feed cannot mistake "not driven" for "drawn zero
   variance per expiry segment, a hyperbolic tangent of an Ornstein-Uhlenbeck skew and a
   logistic of a second OU for curvature, every process reverting to where it started, so
   each emitted surface is inside the bounds that keep it free of static arbitrage
-  ([[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]]).
+  ([[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][Synthetic contributor observations of a latent surface]]).
 
 The measures are deliberately split, as the approach note sets out: the states are
 real-world, the surfaces are a risk-neutral parameterisation, and the guarantee is
@@ -389,7 +389,7 @@ tick, so a curve's move does not yet reach the surface's quotes
   what a surface does with it.
 - [[id:25C467BE-07A3-432C-8CB8-6B194E748570][Shared Brownian factors give every synthetic series a signed correlation]] -- the
   noise, and the correlation it buys.
-- [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]] -- the
+- [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][Synthetic contributor observations of a latent surface]] -- the
   vendor and contributor split on top of this shape.
 - [[id:F135B9AF-902F-46C5-847C-0820D8C92D28][One scheduler draws every feed's gaps]] -- the arrivals this loop implements.
 - [[id:7A6E2C55-3F1B-4E8D-9C7A-2B5E8D4F1A63][Market Arrival Regime]] and

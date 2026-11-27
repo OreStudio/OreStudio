@@ -1,0 +1,186 @@
+:PROPERTIES:
+:ID: 0D2294A4-873A-47FE-908A-60BC21F7AAA9
+:END:
+#+title: Story: Sign a person up and in through an external identity provider
+#+description: A person signs up to ORE Studio with a Google account, or another provider, and signs in with it afterwards; the link to their ORE account is theirs to see and remove, and the deployment's registration policy decides what they get. The same identity layer is ORE's OAuth 2.1 authorization server, so a client of ORE's API signs in the same way.
+#+type: story
+#+level: s2
+#+filetags: :oauth:oidc:identity:iam:http:mcp:sprint_31:v0:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+#+predecessor: AD45EAE5-2FC9-4BCA-BD6B-437054135BF7
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Continued from: [[id:AD45EAE5-2FC9-4BCA-BD6B-437054135BF7][Sign an MCP client in through OAuth]].
+
+* Goal
+
+A person who has never used ORE Studio opens the sign-in screen, chooses
+Continue with Google, approves ORE at Google, and arrives in ORE Studio with an
+account the deployment's registration policy allows: in its tenant, with its
+party and role, or on the screen that says the account waits for an approval. A
+person who already has an account links the provider account to it and signs in
+the same way afterwards.
+
+The same identity layer makes ORE an OAuth 2.1 authorization server for its own
+API, so a client such as Claude Desktop signs a person in through ORE's own
+pages, and its consent creates the agent grant an API key creates. OAuth reaches
+ORE Studio as a platform capability, and MCP is its first client rather than its
+reason.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
+| Now           | The provider and the link are modelled and built. |
+| Waiting on    | Nothing.                               |
+| Next          | Serve the external sign-in and carry the session. |
+| Last touched  | 2026-11-25                               |
+
+* Acceptance
+
+- A person with a Google account and no ORE account signs up from the sign-in
+  screen, through Google's own consent, and lands with an account the
+  deployment's registration policy grants, or on the state it asks for while an
+  approval is pending.
+- A person who already has an account links a provider account after proving
+  their password, and then signs in with the provider alone. An unverified or
+  mismatched address never links a provider account to an existing account.
+- The link belongs to the person: they see it, they remove it, and removal never
+  leaves them without a way in.
+- Every session records how it was signed in, the password, a named provider or
+  an agent's key, in the session and in the authentication record.
+- The provider is data. A tenant enables it, names the address domains it serves
+  and holds its client registration, and no code names Google.
+- ORE serves OAuth 2.1 for its own API. The authorize endpoint signs a person in
+  by the same flow, and the consent creates an agent grant, so an MCP client
+  needs no second identity system.
+- The flow is OpenID Connect authorization code with PKCE, state and nonce, and
+  the ID token is validated against the provider's published keys.
+- The gates and the suites prove the flow against a provider the fleet runs,
+  with no Google credentials and no network, and a recorded manual sign-in
+  proves it against Google itself.
+- The gates cover the new code.
+
+* Starting point
+
+Measured on this tree on 2026-11-25, because the plan must not assume a
+foundation that is not there. *ORE Studio has no OAuth and no OpenID Connect of
+any kind.*
+
+What exists, and is what this story builds on:
+
+- =POST /api/session= signs a person in with a password and sets a browser
+  session cookie. =GET= and =DELETE /api/session= read and end it, and
+  =POST /api/session/party= chooses the party the session works for.
+- =POST /api/v1/iam/ops/signup= registers a person under the deployment's
+  registration policy.
+- Agent grants and keys are created by a person in ores.web. The gateway turns a
+  key into a session through an in-memory cache of its own
+  (=agent_key_exchange=), and an MCP call carries that key.
+- Sessions, sign-ins and authentication events are stored, and the screens show
+  them.
+- =ores.security= carries a JWT layer over jwt-cpp and OpenSSL. It mints and
+  verifies tokens, its RS256 signer and verifier constructors are written and
+  tested, and the gateway holds a session as JWT claims behind a verifier. The
+  token mechanics a provider's ID token needs are therefore here; what is
+  missing is the key a third party publishes and the protocol that asks for it.
+- NATS carries its own JWKS and JWT for service-to-service authentication
+  (=ores.nats/service/jwks=), which is unrelated to a person's sign-in and is
+  not a foundation this story can reuse.
+
+What does not exist anywhere in the tree:
+
+- No OAuth 2.0 or OpenID Connect endpoint: no =/authorize=, no =/token=, no
+  metadata document, and no =.well-known= path at all.
+- No OAuth or OpenID Connect implementation in vcpkg either. The ports hold the
+  parts, jwt-cpp, openssl, boost-json, libsodium and cppcodec, and no protocol;
+  =cpprestsdk=, the only port tagged =oauth2=, has been removed from vcpkg.
+- No provider registry and no identity link: no table, no column and no setting
+  that names a third party.
+- No client registry. A grant is created by a person inside ORE and its key is a
+  bearer credential the person copies; no client ever asks ORE for access, so
+  there is no request to consent to.
+- No published key set for another party to verify a token against, and no key
+  set fetched from anyone: the gateway verifies with the one key ORE configures.
+  There is no refresh token and no consent record a client holds.
+
+Every piece is therefore built here. The decision task chooses what the pieces
+are and, in particular, whether the authorization server rests on the grant ORE
+already holds, which is created, audited and revoked today, rather than on a
+second consent record beside it.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C98E2E5B-22B5-469D-8520-51726E1DF8D0][Decide how an external identity signs a person up and in]] | DONE | 2026-11-25 | 2026-11-25 | Decide, before any code, how ORE Studio lets a person sign up and sign in with an external identity provider, and how the same identity layer answers a client of ORE's API. |
+| [[id:4123A768-9AB8-403F-BE35-83BDC50C6BCF][Set out the architecture of federated identity]] | BACKLOG | | | Zettelkasten knowledge notes, with UML diagrams, on how ORE Studio relies on an external identity provider and acts as one for its own clients. |
+| [[id:7D34ECD1-E5F9-4C1F-9B6E-A4CE2BAC88E9][Model the provider and the identity link]] | DONE | 2026-11-25 | 2026-11-25 | Two IAM tables, as codegen entities: a provider a tenant enables, and a person's link to a provider account. |
+| [[id:BBA652AC-F595-40F4-9820-D2F3DC6E7168][Serve the external sign-in and carry the session]] | BACKLOG | | | ores.http serves the OpenID Connect authorization code flow, and a browser that chooses a provider comes back with an ORE session. |
+| [[id:7ACCDE42-93DB-482D-9062-9CA6E7AFC886][Link a provider only to its owner]] | BACKLOG | | | A person links a provider account after proving their ORE account, a matching address links nothing silently, and a link can be removed without losing the last way in. |
+| [[id:9105FD2D-5DDD-482A-BD96-1E1885208ECA][Register the first sign-in through the policy]] | BACKLOG | | | A provider account ORE has never seen registers through the deployment's registration policy: accepted, waiting for approval, or refused, and the callback is idempotent. |
+| [[id:213D3539-9792-4C49-86A9-62B41A907992][Sign a client in through ORE's authorization server]] | BACKLOG | | | ORE serves OAuth 2.1 for its own API, by itself or through a server it runs in its fleet, with PKCE S256, rotating refresh tokens and MCP as its first client. |
+| [[id:F0098AC4-46BA-4F10-97AA-DACD382D93CB][Prove the flow against Google and a test provider]] | BACKLOG | | | The gate and the suites sign in through a provider the fleet runs, and a recorded manual sign-in to Google shows the real thing, with the recipe a person follows to create the client. |
+
+* Decisions
+
+- *OAuth at the level of ORE Studio, not of MCP* (2026-11-25, product owner).
+  ORE becomes a relying party to external providers and an OAuth 2.1
+  authorization server for its own API at once, so a person signs up and in with
+  a provider account and a client of ORE's API signs in through ORE's own pages.
+  The agent grant a consent creates is the grant a key creates. This takes over
+  [[id:AD45EAE5-2FC9-4BCA-BD6B-437054135BF7][Sign an MCP client in through
+  OAuth]], whose one task moved here widened.
+- *The flow is proven without Google's credentials* (2026-11-25, product owner).
+  The gate and the suites sign in through a provider the fleet runs. A real
+  Google sign-in is recorded once by hand, with the recipe a person follows to
+  create the client, because a build cannot depend on a Google project.
+- *The screens are a story of their own* (2026-11-25, product owner). The doors,
+  the links, the session method and the consent screen are planned and built in
+  [[id:9636A24B-639F-4088-8A6D-F84CA7A974B9][Show the identity doors, the
+  links and the consent]], which begins once the decisions here are made.
+- *The provider's identity is not the person's address* (2026-11-25). A person
+  is identified to ORE by the provider's issuer and subject, and the address is
+  evidence of nothing on its own.
+- *The gateway serves the flow and IAM keeps the identity* (2026-11-25, product
+  owner). The gateway answers the browser-facing routes because it holds the
+  session cookie, the HTTP hardening and the MCP endpoint, and no ores.http
+  target has a database. IAM holds the provider a tenant enables, the link, the
+  registration, the session and the authentication event. The protocol is
+  OpenID Connect authorization code with PKCE, state and nonce, and the ID token
+  is validated by =kid= with jwt-cpp against the provider's published keys. See
+  [[id:C98E2E5B-22B5-469D-8520-51726E1DF8D0][Decide how an external identity
+  signs a person up and in]].
+- *A client secret is named, never stored* (2026-11-25, product owner). The
+  provider row carries the name of an environment variable or a configuration
+  key, and the deployment sets the value. Nothing in ORE reads a secret back
+  today, and a secret in a table needs a key at rest that is itself
+  configuration.
+- *Nothing links by address* (2026-11-25, product owner). A provider account
+  never attaches to an existing ORE account because the two addresses match.
+  Linking is an act from a signed-in session, after the password is proven, on a
+  verified address. A first sign-in registers through the policy that already
+  decides a password sign-up. A workspace administrator can mint any address in
+  their domain, and a wrong link is a takeover that lasts.
+- *The client authorization server waits* (2026-11-25, product owner). The agent
+  key remains the path an MCP client uses. When a client needs OAuth, ORE serves
+  the protocol itself rather than running an identity provider beside it,
+  because consent belongs where the grant, the audit and the six eyes already
+  are. No vcpkg port implements OAuth or OpenID Connect, so the choice was
+  between writing the protocol and delegating it.
+
+* Out of scope
+
+- The screens; see [[id:9636A24B-639F-4088-8A6D-F84CA7A974B9][Show the identity
+  doors, the links and the consent]].
+- SAML, and any provider that does not speak OpenID Connect.
+- Anything beyond identity: ORE does not read a person's mail, calendar or
+  files, and asks for no scope that does.
+- A second factor at ORE itself. Until ORE has one, a provider enforces what its
+  own policy enforces.

@@ -83,6 +83,7 @@ const fr: SourceCatalogue = {
             tenants: 'Locataires',
             operations: 'Opérations',
             reporting: 'Rapports',
+            dataquality: 'Qualité des données',
             development: 'Développement',
             api: 'API',
             parties: 'Parties',
@@ -549,6 +550,13 @@ const fr: SourceCatalogue = {
 
     'notification.inbox.approval_expiring':
         "Une demande de {kind} est due avant le {deadline} et personne n'y a répondu.",
+
+    'notification.scheduler.store_unbounded':
+        'Le magasin {store} n’est borné par rien qui s’exécute. Rien n’en supprime, et l’écran d’entretien des données en donne la raison.',
+    'notification.scheduler.store_sweep_failed':
+        'Le dernier passage sur le magasin {store} a échoué, donc le magasin n’est pas borné tant qu’un passage ne réussit pas.',
+    'notification.scheduler.sweep_skipped':
+        'Un passage a laissé {count} politiques non appliquées, donc les magasins qu’elles bornent grandissent encore. L’écran d’entretien des données indique lesquelles.',
 
     'notification.marketdata.curve_published':
         "La courbe {curve} de {party} est en vigueur depuis {published_at}, publiée par {publisher} à la date d'arrêté {as_of}. Elle remplace l'ensemble arrêté au {previous_as_of}, ou rien lorsqu'il s'agit du premier.",
@@ -1830,6 +1838,155 @@ const fr: SourceCatalogue = {
             changedNotice:
                 'L’opération a changé après la création de cette demande : version {tradeVersion} maintenant, contre {requestTradeVersion} à son arrivée. La ligne n’est pas verrouillée, et une décision sur la version que vous avez lue est la décision enregistrée.',
         },
+        housekeeping: {
+            title: 'Entretien des données',
+            description:
+                'Chaque magasin que cette installation conserve, la limite qui le régit et sa taille.',
+            footnote:
+                'La taille et le nombre viennent du dernier relevé. Un magasin que rien ne mesure apparaît comme non mesuré, car une taille inconnue n’est pas une taille nulle.',
+            summary: {
+                stores: 'Magasins',
+                bounded: 'Bornés',
+                unbounded: 'Non bornés',
+                unboundedNote: 'Le travail restant',
+                size: 'Taille totale',
+                unmeasured: 'Non mesurés',
+            },
+            filter: {
+                all: 'Tous les magasins',
+                unbounded: 'Non bornés seulement ({count})',
+            },
+            order: {
+                label: 'Ordre',
+                attention: 'Non bornés d’abord',
+                size: 'Les plus gros d’abord',
+                name: 'Par nom',
+            },
+            emptyUnbounded:
+                'Chaque magasin a une limite. Rien sur cette installation ne grandit sans limite.',
+            emptyAll:
+                'Le catalogue ne contient aucun magasin. Il arrive avec les données de plateforme qu’une version publie.',
+            columns: {
+                store: 'Magasin',
+                bound: 'Limite',
+                boundBy: 'Borné par',
+                size: 'Taille',
+                lastRun: 'Dernier passage',
+            },
+            targetKinds: {
+                chunkedTable: 'Table découpée en blocs',
+                table: 'Table',
+                objectPrefix: 'Préfixe d’objets',
+                directory: 'Répertoire',
+            },
+            verdict: {
+                bounded: 'Borné',
+                keyed: 'Borné par sa clé',
+                unbounded: 'Non borné',
+            },
+            reason: {
+                off: 'la politique est désactivée',
+                notApplied: 'le balayage ne sait pas appliquer son action',
+                failed: 'le dernier passage a échoué',
+                noPolicy: 'aucune politique ne le nomme',
+                notBoundable: 'aucune période ne peut le borner',
+            },
+            row: {
+                noAction: 'Aucune action',
+                noPolicy: 'aucune politique',
+                notMeasured: 'non mesuré',
+                neverSwept: 'jamais balayé',
+                removed: '{count} supprimés',
+            },
+            actions: {
+                drop_chunks: 'Supprimer les blocs au-delà de la période',
+                delete_rows: 'Supprimer les lignes au-delà de la période',
+                expire_prefix: 'Expirer les objets au-delà de la période',
+                release_directory: 'Libérer le répertoire au-delà de la période',
+            },
+            outcomes: {
+                applied: 'appliqué',
+                skipped: 'ignoré',
+                failed: 'échoué',
+            },
+            units: {
+                relationRows: 'lignes',
+                objects: 'objets',
+                files: 'fichiers',
+                unknown: 'éléments',
+            },
+            period: '{days} jours',
+            cadence: 'tous les {hours} h',
+            measure: '{count} {unit}',
+            store: {
+                title: 'Magasin',
+                description: 'Un magasin, la limite qui le régit et sa taille.',
+                record: 'Le magasin',
+                notFound: 'Cette installation ne conserve aucun magasin nommé {code}.',
+                back: 'Retour à l’entretien des données',
+                fields: {
+                    code: 'Code',
+                    owner: 'Écrit par',
+                    targetKind: 'Type de cible',
+                    target: 'Cible',
+                    timeColumn: 'Colonne de temps',
+                    measures: 'Mesuré par',
+                    none: 'Non précisé',
+                },
+            },
+            size: {
+                title: 'Taille',
+                noSample:
+                    'Rien ne mesure encore ce magasin, donc sa taille et sa croissance sont inconnues. Le composant qui l’écrit est celui qui peut le mesurer.',
+                latest: 'Taille actuelle',
+                count: 'Contenu',
+                measuredAt: 'Mesuré',
+                onePoint: 'Un seul relevé pour l’instant. Un second donne une courbe.',
+                plot: 'Les relevés du magasin, du plus ancien au plus récent. La ligne montre la forme ; les chiffres ci-dessus donnent la taille.',
+                trend: 'de {from} à {to} sur {days} jours',
+                perWeek: '{rate} par semaine, {direction}',
+                rising: 'en hausse',
+                falling: 'en baisse',
+            },
+            bound: {
+                title: 'La limite',
+                create: 'Donner une limite',
+                change: 'Changer la limite',
+                lastRun: 'Dernier passage',
+                absent: 'aucune politique',
+                on: 's’applique',
+                off: 'désactivée',
+                noAction:
+                    'Aucune période ne peut borner ce magasin : il n’y a rien à changer ici. Il demande une action que le catalogue ne déclare pas.',
+                readOnly:
+                    'Votre rôle ne peut pas changer une limite. L’administrateur système change les limites de ces magasins.',
+                lead: 'La cible et l’action appartiennent à la plateforme. Une personne décide si la limite s’applique, pour combien de temps et à quelle fréquence.',
+                leadCreate:
+                    'Aucune politique ne borne ce magasin. La période et la fréquence ci-dessous sont celles que le catalogue fournit.',
+                periodInvalid: 'Indiquez un nombre entier de jours, supérieur à zéro.',
+                cadenceInvalid: 'Indiquez un nombre entier d’heures, supérieur à zéro.',
+                saved: 'La limite a changé. Le balayage l’applique à son prochain passage.',
+                save: 'Enregistrer la limite',
+                saving: 'Enregistrement...',
+                failure: 'La limite n’a pas changé : {message}',
+                fields: {
+                    action: 'Action',
+                    period: 'Conserver pendant',
+                    cadence: 'Appliquer au plus',
+                    policy: 'Politique',
+                    state: 'État',
+                    reason: 'Raison de la conservation',
+                },
+            },
+            gaps: {
+                runsTitle: 'Chaque balayage qui a touché ce magasin',
+                runsBody:
+                    'Le registre des passages enregistre chaque balayage par politique, et aucune lecture ne le sert encore. La page indique le dernier passage, d’après la lecture de l’entretien.',
+                remoteTitle: 'Les magasins qu’un composant possède',
+                remoteBody:
+                    'Un préfixe d’objets et un répertoire sur un hôte de calcul sont mesurés par le composant qui les écrit, et aucun ne rapporte encore de taille. Ces magasins apparaissent comme non mesurés.',
+            },
+        },
         feeds: {
             title: 'Flux de données de marché',
             description:
@@ -1963,6 +2120,9 @@ const fr: SourceCatalogue = {
                 'Chaque service attendu par le registre, confronté aux instances qui se signalent.',
             grid: 'Grille de calcul',
             gridBody: 'Les nœuds, le travail en cours et ce qui est terminé.',
+            housekeeping: 'Entretien des données',
+            housekeepingBody:
+                'Chaque magasin que l’installation conserve, ce qui le borne et sa taille.',
             bus: 'Bus de messages',
             busBody: 'Les compteurs rapportés par le serveur NATS et ses flux.',
             logs: 'Journaux de télémétrie',
@@ -5193,11 +5353,11 @@ const fr: SourceCatalogue = {
                 },
             },
             invertedFrom: 'l’inverse du fixing {value}',
-            title: 'Calibrage',
+            title: 'Calibrage des flux',
             lead: "Comment chaque flux d'une classe d'actifs prend son niveau de départ et sa volatilité des fixings publics.",
             systemOnly:
-                'La calibration est un contrôle système. Seul un administrateur système peut l’ouvrir.',
-            tabs: 'Vues de la calibration',
+                'Le calibrage des flux est un contrôle système. Seul un administrateur système peut l’ouvrir.',
+            tabs: 'Vues du calibrage des flux',
             tab: {
                 feeds: 'Flux',
                 run: 'Calibration en cours',
@@ -5712,15 +5872,49 @@ const fr: SourceCatalogue = {
                 party: 'Partie',
             },
         },
+        fixingObservations: {
+            title: 'Observations de fixings',
+            lead: "Ce que les sources ont publié : chaque série FX et IR détenue par la plateforme, le jour qu'elle atteint, et celles qui ne portent aucune valeur.",
+            systemView:
+                "Ceci est la vue système des observations. Elle expose ce que les sources ont publié et n'offre aucune autorisation ; un jour que la plateforme n'a jamais constaté est saisi par une partie, dans son propre gestionnaire de fixings.",
+            filters: {
+                assetClass: "Classe d'actif",
+                everyClass: 'Toutes les classes',
+                currency: 'Devise',
+                everyCurrency: 'Toutes les devises',
+                source: 'Source',
+                everySource: 'Toutes les sources',
+            },
+            columns: {
+                series: 'Série',
+                assetClass: 'Classe',
+                underlying: 'Sous-jacent',
+                source: 'Source',
+                provider: 'Fournisseur',
+                latestValue: 'Dernière valeur',
+                latestDay: 'Dernier jour',
+                days: 'Jours',
+                open: 'Ouvrir',
+            },
+            noDay: 'Aucun jour',
+            emptyCount: '{count} des {total} séries ne portent aucun jour.',
+            none: 'Le stockage ne détient aucune série de fixings FX ou IR.',
+            legendNoDay:
+                "Une série que la plateforme détient et n'a jamais constatée : c'est une ligne, et son compte est zéro.",
+            legendEnded:
+                "Une série qui s'est arrêtée garde son dernier jour et son compte, car un fixing est un fait sur une date.",
+        },
         fixingSeries: {
             title: 'Série de fixings',
-            lead: 'Les fixings stockés d’un instrument, la série à laquelle ils appartiennent et les flux qui les ont apportés.',
+            lead: 'Tous les fixings que le stock détient pour cet instrument, jour par jour, et les flux qui les ont apportés.',
+            chart: 'Les fixings de {item}',
             noUri: 'Ouvrez cette page depuis un lien oresmd pour qu’elle sache quel instrument afficher.',
             notStored: 'Le stock ne détient rien pour {uri}.',
             noValues: 'Aucun fixing n’est encore stocké pour cet instrument.',
             provenance: 'Flux qui apportent cet instrument',
             noFeeds: 'Aucun flux ne nomme cet instrument.',
             back: 'Retour aux données de marché',
+            backToObservations: 'Retour aux observations de fixings',
             columns: {
                 provider: 'Publisher',
                 first: 'Premier fixing',
@@ -6560,7 +6754,7 @@ const fr: SourceCatalogue = {
                 subscriptions: 'Souscriptions',
                 subscriptionsBody:
                     'Les fournisseurs qu’une partie prend, avec les droits qu’elle détient, et le flux qui sert chacun.',
-                synthetic: 'Synthétique',
+                synthetic: 'Marché simulé',
                 syntheticBody:
                     'Les flux que la plateforme génère : ce qui tourne par fournisseur, et chaque flux à démarrer et à arrêter.',
                 evolutionBody:
@@ -7016,7 +7210,7 @@ const fr: SourceCatalogue = {
                 "Le flux s'arrête s'il tourne. Son mélange est supprimé d'abord, puis le flux. L'historique de chacun reste.",
         },
         synthetic: {
-            title: 'Synthétique',
+            title: 'Marché simulé',
             lead: "Les données de marché que la plateforme génère au lieu de les recevoir : ce qui tourne par fournisseur, et les flux d'un fournisseur.",
             tabs: {
                 dashboard: 'Tableau de bord',
@@ -7116,12 +7310,27 @@ const fr: SourceCatalogue = {
             add: 'Nouvelle courbe de taux',
             addTitle: 'Nouvelle courbe de taux',
             priceSource: 'Taux de départ issu de',
+            rateSource: 'Taux issu de',
+            derivedSpread: 'Marge sur le taux au jour le jour',
+            derivedSpreadSource: 'Qui fixe la marge',
             tenorNeeded: 'Un indice à terme exige une durée, comme 3M ou 6M.',
             tenorNotAdmitted:
                 'Cette famille est un indice au jour le jour : une courbe de cette famille ne prend pas de durée.',
             tenorOnlyDated:
                 'Cette famille est un indice au jour le jour ; sa seule durée datée est {tenor}.',
             help: {
+                rate_source: {
+                    process:
+                        'Son propre moteur de courbe produit le taux, comme toute courbe cotée.',
+                    compounded_overnight:
+                        'Le taux au jour le jour capitalisé sur la période. SOFR 1M et IBR 3M sont ainsi établis.',
+                    overnight_plus_spread:
+                        'Le taux au jour le jour plus la marge ci-dessous. EYTIBOR 3M et WIBOR 6M sont ainsi établis.',
+                },
+                derived_spread_basis_points:
+                    "Points de base ajoutés au taux au jour le jour. Seul un taux à marge l'utilise.",
+                derived_spread_source:
+                    'Qui fixe la marge : le publieur, la convention de marché, ou la décision qui l’a fixée. Une marge sans source est un nombre invérifiable.',
                 tenor: "La durée d'un indice à terme, comme 3M ou 6M. Laissez vide pour un indice au jour le jour. FOMC désigne la variante datée des réunions pour SOFR.",
                 role: {
                     self_discounting: 'Une courbe qui sert aux deux usages.',
@@ -8377,6 +8586,99 @@ const fr: SourceCatalogue = {
             aLaterCut: 'une coupure ultérieure du même type et périmètre',
             comparisonGap:
                 'Comparer un run de cette coupure avec un autre est le travail du parcours d’audit, qui lit les résultats des deux runs. Cet onglet nomme les runs et ouvre celui qu’une personne choisit.',
+        },
+    },
+    dq: {
+        area: {
+            title: 'Qualité des données',
+            lead: 'Si ce tenant détient les données de référence que ses valorisations lisent, et où chaque jeu de données est publié.',
+        },
+        dataset: {
+            tabs: {
+                details: 'Détails',
+                publications: 'Publications',
+            },
+            title: 'Jeu de données',
+            level: 'Niveau {level}',
+            name: 'Nom',
+            code: 'Code',
+            bundle: 'Ensemble',
+            artefactType: 'Type d’artefact',
+            artefactTable: 'Table d’artefact',
+            artefactTableHint: 'Où les lignes sont mises en attente',
+            targetSubject: 'Sujet cible',
+            targetSubjectHint: 'Le sujet du bus vers lequel une publication est envoyée',
+            staged: 'En attente',
+            stagedHint: 'Lignes dans la table d’artefact',
+            published: 'Publié',
+            notServed:
+                'Pas encore servi : aucune opération ne compte les lignes publiées par un jeu de données.',
+            optional: 'Facultatif',
+            optionalHint: 'Ne se publie que lorsqu’un appelant le demande',
+            readiness: 'Aptitude',
+            ready: 'Prêt',
+            readyHint: 'Tous les faits nécessaires à une publication sont présents',
+            notCarried: 'Aucun ensemble ne porte {code}.',
+            lastPublished: 'Dernière publication',
+            lastPublishedGap:
+                'Pas encore servi : le journal des exécutions n’a pas de script d’écriture, donc rien n’enregistre quand ce jeu de données a été publié pour la dernière fois.',
+            publicationsTitle: 'Publications',
+            publicationsLead:
+                'Une ligne pour chaque publication de ce jeu de données, avec ce que l’exécution a écrit et ce qu’elle a dit.',
+            publicationsGap:
+                'Le journal des exécutions n’a pas de script d’écriture : rien sur le chemin de publication n’enregistre de ligne, et aucune colonne ne porte de résultat ni de message, donc une exécution en échec n’a nulle part où dire pourquoi. Cet onglet ne dessine rien tant que le journal ne peut pas dire les deux.',
+        },
+        coverage: {
+            title: 'Couverture des données de référence',
+            lead: 'Les ensembles qu’un tenant publie, les jeux de données que chacun porte, et la raison pour laquelle un jeu de données ne peut pas être publié.',
+            bundlesTitle: 'Ensembles par niveau',
+            bundlesLead:
+                'Le niveau décide quel tenant détient les lignes. Les données de plateforme et de monde se lisent là où elles sont, dans le tenant système.',
+            membersTitle: 'Jeux de données de l’ensemble',
+            membersLead:
+                'Chaque jeu de données, l’emplacement de ses lignes en attente, et la raison pour laquelle il ne peut pas être publié.',
+            reasonsTitle: 'Pourquoi un jeu de données ne peut pas être publié',
+            reasonsLead:
+                'Chaque raison a un responsable, afin que la personne qui peut la corriger sache que c’est à elle.',
+            noBundles:
+                'Cette base ne contient encore aucun ensemble. Une recréation les sème ; une base neuve ressemble à ceci avant la première publication.',
+            noMembers: 'Cet ensemble ne porte aucun jeu de données.',
+            noLevel: 'Aucun niveau indiqué',
+            notServed:
+                'Pas encore servi : aucune opération ne compte les lignes publiées par un jeu de données.',
+            dataset: 'Jeu de données',
+            datasets: 'Jeux de données',
+            artefactType: 'Type d’artefact',
+            staged: 'En attente',
+            published: 'Publié',
+            readiness: 'Aptitude',
+            metadataComplete: 'Métadonnées complètes',
+            bundleLead: '{code} · {count} jeux de données · niveau {level}',
+            filterText: 'Filtrer par jeu de données ou type d’artefact',
+            filterState: 'Filtrer par état',
+            noMatch: 'Aucun jeu de données ne correspond à ce filtre.',
+            stateTitle: 'État',
+            levelNote: {
+                platform: 'Une copie, dans le tenant système, lue là où elle se trouve.',
+                world: 'Une copie, dans le tenant système, lue là où elle se trouve.',
+                tenant: 'Écrit dans le tenant qui l’a demandé.',
+            },
+            state: {
+                all: 'Tous les états',
+                'not-ready': 'Pas prêt',
+                ready: 'Prêt à publier',
+            },
+            gap: 'Le compte publié n’est pas encore servi : la lecture de provenance reste à construire. L’écran dessine un tiret à sa place, car un zéro dirait que l’exécution n’a rien écrit.',
+            reason: {
+                noDataset: 'Aucune ligne de jeu de données',
+                noArtefactType: 'Aucun type d’artefact',
+                noTargetSubject: 'Aucun sujet cible',
+                noStagedRows: 'Aucune ligne en attente',
+            },
+            owner: {
+                dq: 'La qualité des données le corrige',
+                importer: 'L’importateur le corrige',
+            },
         },
     },
     reporting: {

@@ -24,9 +24,15 @@
 #include "ores.scheduler.core/messaging/job_definition_history_provider_registrar.hpp"
 #include "ores.scheduler.core/messaging/job_definition_registrar.hpp"
 #include "ores.scheduler.core/messaging/job_instance_handler.hpp"
+#include "ores.scheduler.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.scheduler.core/messaging/retained_store_registrar.hpp"
+#include "ores.scheduler.core/messaging/retained_store_sample_registrar.hpp"
 #include "ores.scheduler.core/messaging/retention_policy_registrar.hpp"
 #include "ores.scheduler.core/messaging/retention_run_registrar.hpp"
 #include "ores.scheduler.core/messaging/scheduler_status_handler.hpp"
+#include "ores.scheduler.core/messaging/store_bounds_handler.hpp"
+#include "ores.scheduler.core/service/publish_subject_plan.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include <memory>
 #include <optional>
 #include <string_view>
@@ -65,6 +71,17 @@ registrar::register_handlers(ores::nats::service::client& nats,
     for (auto& sub : register_retention_policy_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
 
+    // The catalogue of stores is generated the same way, and for the same
+    // reason: without this call its subjects have no responder, so the table
+    // would be readable only by SQL.
+    for (auto& sub : register_retained_store_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+
+    // The samples are generated the same way: the series a screen plots is read
+    // over the wire, not by SQL.
+    for (auto& sub : register_retained_store_sample_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+
     // What housekeeping last did, in the shape a screen reads it: the ledger
     // joined to the policy each row names, so a run shows the period and the
     // state the policy has now.
@@ -85,6 +102,35 @@ registrar::register_handlers(ores::nats::service::client& nats,
             nats.queue_subscribe(get_scheduler_status_request::nats_subject,
                                  queue_group,
                                  [ssh](ores::nats::message msg) { ssh->status(std::move(msg)); }));
+
+        // The housekeeping screen reads the bounds and a store's series. Both are
+        // computed from the catalogue, the policies and the samples, so they are
+        // hand-written beside the operation model that declares their subjects.
+        auto sbh = std::make_shared<store_bounds_handler>(nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            list_store_bounds_request::nats_subject, queue_group, [sbh](ores::nats::message msg) {
+                sbh->list(std::move(msg));
+            }));
+        subs.push_back(nats.queue_subscribe(
+            list_store_samples_request::nats_subject, queue_group, [sbh](ores::nats::message msg) {
+                sbh->samples(std::move(msg));
+            }));
+    }
+
+    // The housekeeping data arrives as datasets, which the workflow engine
+    // dispatches as step commands. One handler serves both subjects, and the
+    // subject it receives names the function it calls.
+    {
+        auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
+        ores::service::messaging::step_routes routes;
+        routes.on(service::publish_job_definitions_from_dq_subject,
+                  [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
+        routes.on(service::publish_retention_policies_from_dq_subject,
+                  [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
+        routes.on(service::publish_retained_stores_from_dq_subject,
+                  [pdq](ores::nats::delivery delivery) { pdq->handle(std::move(delivery)); });
+        subs.push_back(
+            ores::service::messaging::serve_step_commands(nats, "ores.scheduler.service", routes));
     }
 
     // Job definition history comes from the generic history provider.

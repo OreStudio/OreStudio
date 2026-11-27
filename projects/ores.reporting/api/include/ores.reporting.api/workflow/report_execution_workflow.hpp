@@ -189,23 +189,60 @@ template <typename Command>
                             .error_message = std::string(error_message)});
 }
 
-[[nodiscard]] inline workflow_step_def make_gather_trades() {
+/**
+ * @brief The step that decides what the run may value, and comes before anything is written.
+ */
+[[nodiscard]] inline workflow_step_def make_resolve_market_readiness() {
     using namespace ores::reporting::messaging;
     workflow_step_def s;
-    s.name = "gather_trades";
-    s.description = "Fetch trades matching the report's book scope.";
-    s.command_subject = std::string(gather_trades_request::nats_subject);
+    s.name = "resolve_market_readiness";
+    s.description = "Decide which trades the market can answer, and record the cause for the rest.";
+    s.command_subject = std::string(resolve_market_readiness_request::nats_subject);
     s.timeout = data_step_timeout;
     s.compensation_subject = std::string(fail_report_request::nats_subject);
 
     s.build_command = [](const std::string& request_json,
                          const workflow_step_results&) -> std::string {
+        const auto req = require_run_request(request_json, "resolve_market_readiness");
+        return ores::utility::codec::json::write(
+            resolve_market_readiness_request{.report_instance_id = req.report_instance_id,
+                                             .definition_id = req.definition_id,
+                                             .tenant_id = req.tenant_id,
+                                             .correlation_id = req.correlation_id});
+    };
+
+    s.build_compensation = [](const std::string& cmd_json,
+                              const std::string&,
+                              const std::string& failure) -> std::string {
+        return fail_report_from<resolve_market_readiness_request>(cmd_json, failure);
+    };
+
+    return s;
+}
+
+[[nodiscard]] inline workflow_step_def make_gather_trades() {
+    using namespace ores::reporting::messaging;
+    workflow_step_def s;
+    s.name = "gather_trades";
+    s.description = "Fetch the trades the market answered, from the report's book scope.";
+    s.command_subject = std::string(gather_trades_request::nats_subject);
+    s.timeout = data_step_timeout;
+    s.compensation_subject = std::string(fail_report_request::nats_subject);
+    // What the run writes is what the readiness step decided, so this step reads it.
+    s.consumes = {"resolve_market_readiness"};
+
+    s.build_command = [](const std::string& request_json,
+                         const workflow_step_results& prev) -> std::string {
         const auto req = require_run_request(request_json, "gather_trades");
+        const auto readiness = require_step_result<resolve_market_readiness_result>(
+            prev, "resolve_market_readiness", "gather_trades");
         return ores::utility::codec::json::write(
             gather_trades_request{.report_instance_id = req.report_instance_id,
                                   .definition_id = req.definition_id,
                                   .tenant_id = req.tenant_id,
-                                  .correlation_id = req.correlation_id});
+                                  .correlation_id = req.correlation_id,
+                                  .book_ids = readiness.book_ids,
+                                  .trade_ids = readiness.trade_ids});
     };
 
     s.build_compensation = [](const std::string& cmd_json,
@@ -549,11 +586,13 @@ template <typename Command>
  *
  * The chain is a pure function of the run configuration carried in the start
  * message, because the engine rebuilds it on every dispatch and on recovery.
- * A run that executes every phase is: gather_trades, gather_market_data,
- * assemble_bundle, prepare_ore_package, submit_compute, collect_compute_results,
- * post_process_results, finalise. A package instance runs the first four and
+ * A run that executes every phase is: resolve_market_readiness, gather_trades,
+ * gather_market_data, assemble_bundle, prepare_ore_package, submit_compute,
+ * collect_compute_results, post_process_results, finalise. The first step
+ * decides which of the scope's trades the market can answer, so everything after
+ * it gathers what it decided. A package instance runs the first five and
  * finalise, and never reaches the grid. A run that substitutes pre-processing
- * replaces the first four with resolve_prepared_input; one that ignores results
+ * replaces those five with resolve_prepared_input; one that ignores results
  * replaces collect_compute_results and post_process_results with
  * ignore_compute_results.
  *
@@ -588,6 +627,7 @@ register_report_execution_workflow(ores::workflow::service::workflow_registry& r
             steps.push_back(detail::make_resolve_prepared_input());
         } else if (req.pre_processing == pre_processing_execute) {
             input_step = "prepare_ore_package";
+            steps.push_back(detail::make_resolve_market_readiness());
             steps.push_back(detail::make_gather_trades());
             steps.push_back(detail::make_gather_market_data());
             steps.push_back(detail::make_assemble_bundle());

@@ -34,6 +34,17 @@
  * the UI (calendar detail screens, the holiday-aware date picker) and
  * ORE Studio's own tenor/schedule date-math -- so the answer is
  * consistent and never requires a live rule evaluation.
+ *
+ * The days are derived from the installation's calendar templates and
+ * exceptions, so they are held once, in the system tenant, and every tenant reads
+ * that one copy. The table therefore states :rls_own_or_system_tenant_rows: and
+ * its repository states :system_tenant_visible:, so a read takes the
+ * installation's rows beside the caller's own. A party holds no day of its own:
+ * it holds the exceptions that move the day, and the materialisation reads those
+ * beside the installation's when it answers for the party. The copy is the
+ * read-where-the-row-lies shape of
+ * [[id:B0BC735F-7E05-4882-A216-C250B26B0091][Precedence among the levels of
+ * reference data]].
  */
 
 create table if not exists "ores_refdata_calendar_dates_tbl" (
@@ -166,10 +177,16 @@ do instead
   where tenant_id = old.tenant_id
   and calendar_code = old.calendar_code
   and date = old.date
+  -- A tenant reads the shared rows of the system tenant, so old can be one.
+  -- The rule runs with the owner's rights, which row-level security does not
+  -- bind, so the rule states the own-tenant limit itself.
+  and tenant_id = ores_iam_current_tenant_id_fn()
   and valid_to = ores_utility_infinity_timestamp_fn();
 
 -- =============================================================================
 -- Row-level security: tenant isolation for Calendar Date
+-- Every session reads its own rows and the system tenant's rows; writes
+-- stay the current tenant's.
 -- =============================================================================
 alter table "ores_refdata_calendar_dates_tbl" enable row level security;
 
@@ -183,4 +200,18 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- The read admits the system tenant's rows beside the caller's; the policy
+-- above still binds every write to the caller's own rows, because a single
+-- for-all policy that admitted them would let a tenant change or remove a
+-- shared row. See doc/knowledge/security/data_read_across_tenants.org.
+drop policy if exists calendar_dates_tbl_shared_reference_read_policy
+    on "ores_refdata_calendar_dates_tbl";
+
+create policy calendar_dates_tbl_shared_reference_read_policy
+on "ores_refdata_calendar_dates_tbl"
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
 );

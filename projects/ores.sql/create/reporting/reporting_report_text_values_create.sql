@@ -82,7 +82,9 @@ begin
       and valid_to = ores_utility_infinity_timestamp_fn()
       and valid_from < current_timestamp;
 
-    new.valid_from := current_timestamp;
+    -- The store stamps valid_from through the column default: a hypertable
+    -- routes the row before this trigger runs, and rewriting the partitioning
+    -- column would put the row out of the chunk it was routed to.
     new.valid_to   := ores_utility_infinity_timestamp_fn();
     return new;
 end;

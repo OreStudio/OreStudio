@@ -423,7 +423,7 @@ describe('the calibration policy', () => {
             '/market-data/calibration/fx/policy',
             calibration({ policyWritable: false }),
         );
-        expect(html).toContain('Calibration is a system control');
+        expect(html).toContain('Feed calibration is a system control');
         expect(html).not.toContain('Save the policy');
     });
 

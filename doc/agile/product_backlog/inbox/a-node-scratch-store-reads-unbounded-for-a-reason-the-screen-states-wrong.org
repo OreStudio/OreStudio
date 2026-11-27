@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 98E9BA55-7744-4A71-9230-E9E8D15CC579
+:END:
+#+title: A node-scratch store reads unbounded for a reason the screen states wrong
+#+description: The screen says the sweep cannot perform a folder release, but a node does release a job's folder once its output is uploaded; what is unbounded is the folder a failed job leaves, and the wording should say that.
+#+type: capture
+#+level: cross
+#+filetags: :housekeeping:scheduler:ui:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The housekeeping screen states, of a compute node's scratch, that the sweep
+cannot perform its action. That is true of the sweep and false of the store: the
+wrapper releases a job's folder once its output is uploaded
+(=release_job_folder= in =ores.compute.wrapper=), so the folder of every
+successful job goes. What accumulates is the folder of a job that failed before
+its upload, which the wrapper keeps on purpose because it is then the only
+evidence of what went wrong.
+
+The verdict is right and the sentence is wrong. The store is unbounded because
+nothing removes the failed folders, not because the sweep would perform the
+release if only it could. Two reasons are being read as one: =expire_prefix=
+waits on an object-store lifecycle that does not exist, and =release_directory=
+is a mechanism the node already runs.
+
+* Why
+
+A person reading the reason decides what to fix. Told the sweep cannot reach a
+host's disk, they wait for the sweep to learn; told a failed job's folder stays,
+they know the fix is a rule for those folders, which is a different task with a
+different owner. The screen is the installation's statement of why a store grows,
+so a reason that names the wrong cause is worse than no reason.
+
+* References
+
+- =projects/ores.compute/wrapper/src/app/job_scratch.cpp= — the release, and the
+  comment that a failed job's folder is kept.
+- =projects/ores.sql/create/scheduler/scheduler_store_bounds_view_create.sql= —
+  the mechanism and =bounded_now= the screen reads.
+- The web's =operations/housekeeping.ts= — where the reason becomes a sentence.
+
+* See also
+
+- [[id:2914A129-36F6-4AD5-940F-2B4D500B5D24][Give object storage a
+  lifecycle]] — the task that owns the other reason, the object prefix.

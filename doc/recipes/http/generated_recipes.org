@@ -38,6 +38,10 @@ The hand-written recipes that predate the facet are catalogued separately in
 
 - [[id:DC5484A1-587E-5912-9DCB-2052FA14739E][How do I call the agent_grant_operations endpoints over HTTP?]]
 
+* Artefact Types
+
+- [[id:91845E51-131E-5C5A-89A3-1261457C1A17][How do I call the artefact_types endpoints over HTTP?]]
+
 * Auth Event Operations
 
 - [[id:73A40B85-A485-5673-BB44-944926EAB983][How do I call the auth_event_operations endpoints over HTTP?]]
@@ -117,6 +121,18 @@ The hand-written recipes that predate the facet are catalogued separately in
 * Currency Pairs
 
 - [[id:8467498E-2E7C-5967-AE2F-7172B74B3E30][How do I call the currency_pairs endpoints over HTTP?]]
+
+* Dataset Bundle Members
+
+- [[id:CC9EBC52-9E51-59B8-AFD5-526B2DD40E08][How do I call the dataset_bundle_members endpoints over HTTP?]]
+
+* Dataset Bundles
+
+- [[id:30419F02-F572-5155-ACF9-B2781E00F441][How do I call the dataset_bundles endpoints over HTTP?]]
+
+* Datasets
+
+- [[id:17AD150A-5304-51D9-BB08-B8B15D7112A9][How do I call the datasets endpoints over HTTP?]]
 
 * Geo Operations
 

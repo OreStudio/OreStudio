@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Housekeeping prototype — Operations</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no service, no build step.
+  Variant A is the accepted shape; B and C are kept as the alternatives it was
+  weighed against, and a policy is edited inside A's panel.
+  Everything on the page is a fixture: sizes, growth, run outcomes and audit
+  lines are invented to show the shape of the screen. Nothing reads or writes
+  the platform.
+
+  Housekeeping, from
+  doc/knowledge/journeys/operations/journey_change_what_is_kept.org and the
+  housekeeping cluster in doc/knowledge/architecture/.
+
+  Three structural variants, switchable with ?variant=A|B|C:
+    A  one table of every store, with the selected store's policy and runs
+       in a detail panel below it;
+    B  cards grouped by where the store lives, each sized against the largest;
+    C  the stores list on the left and the policy editor on the right.
+
+  Five states, switchable with ?state=fresh|skipped|failed|disabled|empty.
+  The runs log is a tab in every variant, and ?view=runs opens it directly.
+  A store can also be selected with ?store=<store-id> and the runs log
+  filtered with ?runsfor=<store-id>.
+
+  The save bars in variant C state the change, the next sweep and the audit
+  line, then report that the save is a mock. No write path exists here.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-state" id="proto-state"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

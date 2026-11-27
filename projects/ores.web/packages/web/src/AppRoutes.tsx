@@ -67,6 +67,8 @@ import { GridAppVersionPage } from './operations/GridAppVersionPage.js';
 import { GridJobPage } from './operations/GridJobPage.js';
 import { GridPage } from './operations/GridPage.js';
 import { LogsPage } from './operations/LogsPage.js';
+import { HousekeepingPage } from './operations/HousekeepingPage.js';
+import { HousekeepingStorePage } from './operations/HousekeepingStorePage.js';
 import {
     AuthorisationQueuePage,
     AuthorisationRequestPage,
@@ -74,6 +76,7 @@ import {
 import { ServicesPage } from './operations/ServicesPage.js';
 import { ConnectivityPage } from './marketdata/ConnectivityPage.js';
 import { IdentityShapePage, IdentityShapesPage } from './marketdata/IdentityShapesPage.js';
+import { FixingObservationsPage } from './marketdata/FixingObservationsPage.js';
 import { FixingSeriesPage } from './marketdata/FixingSeriesPage.js';
 import { MarketDataFeedsPage } from './operations/MarketDataFeedsPage.js';
 import { PublicRatesPage } from './marketdata/PublicRatesPage.js';
@@ -106,6 +109,9 @@ import { ClassificationListPage } from './refdata/ClassificationListPage.js';
 import { ClassificationRowPage } from './refdata/ClassificationRowPage.js';
 import { ClassificationsPage } from './refdata/ClassificationsPage.js';
 import { RefdataPage } from './refdata/RefdataPage.js';
+import { DqArea } from './dq/DqArea.js';
+import { CoveragePage } from './dq/CoveragePage.js';
+import { DatasetPage } from './dq/DatasetPage.js';
 import { CurrenciesPage, CurrencyImportPage, CurrencyPage } from './refdata/currencies.js';
 import { BookTradePage } from './trading/BookTradePage.js';
 import { BlotterPage } from './trading/BlotterPage.js';
@@ -656,6 +662,18 @@ export function AppRoutes({
                 )}
             />
             <Route
+                path={PATHS.fixingObservations}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <FixingObservationsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
                 path={PATHS.fixingSeries}
                 element={signedIn(
                     gate.version,
@@ -819,6 +837,30 @@ export function AppRoutes({
                     shell,
                     () => (
                         <BusPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.housekeeping}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <HousekeepingPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.housekeeping}/:code`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <HousekeepingStorePage />
                     ),
                     'workspace',
                 )}
@@ -1451,6 +1493,42 @@ export function AppRoutes({
                     shell,
                     (view) => (
                         <RefdataPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.dataQuality}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <DqArea />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.dataQualityCoverage}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <CoveragePage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.dataQualityDatasets}/:code`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <DatasetPage />
                     ),
                     'workspace',
                 )}

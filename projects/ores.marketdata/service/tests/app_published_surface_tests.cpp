@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.marketdata.service/app/fx_vol_surface_publish_service.hpp"
+#include "ores.marketdata.service/app/fx_vol_surface_publication_kind.hpp"
 #include "ores.marketdata.service/app/staleness_policy.hpp"
 #include "ores.testing/uuid_of.hpp"
 #include "published_surface_fixture.hpp"
@@ -57,15 +57,17 @@ TEST_CASE("a_set_that_names_a_surface_twice_is_refused_in_words", published_surf
             std::chrono::year{2026}, std::chrono::month{11}, std::chrono::day{9}}}};
     const surface_fixture f(published_at);
     REQUIRE(f.party.has_value());
-    const auto subject = ores::marketdata::service::app::surface_publish_subject{
-        .blueprint_id = ores::testing::uuid_of(f.blueprint_id()), .as_of = published_at};
-
     // The store would refuse the repeat at the natural key, in words a caller
     // cannot read, so the set is refused before anything is written.
     try {
         // The raise is discarded on purpose: this set must throw.
-        (void)ores::marketdata::service::app::raise_surface_publish_set(
-            *f.party, *f.party->party_id(), {subject, subject}, "A set that repeats itself");
+        (void)ores::marketdata::service::app::raise_publication(
+            *f.party,
+            ores::marketdata::service::app::derived_kind::fx_vol_surface,
+            {{.subject_key = f.blueprint_id(), .as_of = published_at},
+             {.subject_key = f.blueprint_id(), .as_of = published_at}},
+            "A set that repeats itself",
+            *f.party->party_id());
         FAIL("A set that names one surface twice was raised.");
     } catch (const std::invalid_argument& e) {
         const auto message = std::string(e.what());
@@ -155,7 +157,8 @@ TEST_CASE("a_slice_for_one_expiry_holds_the_numbers_that_row_of_the_grid_holds",
     q.as_of = f.published_at();
     q.expiry = "1W";
     const auto slice =
-        ores::marketdata::service::app::fx_vol_surface_publish_service::read_published(*f.party, q);
+        ores::marketdata::service::app::fx_vol_surface_published_reader::read_published(*f.party,
+                                                                                        q);
 
     INFO("message: " << slice.message);
     REQUIRE(slice.success);
@@ -184,7 +187,8 @@ TEST_CASE("a_slice_for_one_strike_holds_the_numbers_that_column_holds", publishe
     q.as_of = f.published_at();
     q.strike = "ATM";
     const auto slice =
-        ores::marketdata::service::app::fx_vol_surface_publish_service::read_published(*f.party, q);
+        ores::marketdata::service::app::fx_vol_surface_published_reader::read_published(*f.party,
+                                                                                        q);
 
     INFO("message: " << slice.message);
     REQUIRE(slice.success);
@@ -211,7 +215,8 @@ TEST_CASE("a_slice_the_surface_does_not_hold_is_refused_in_words", published_sur
     q.as_of = f.published_at();
     q.expiry = "2Y";
     const auto resp =
-        ores::marketdata::service::app::fx_vol_surface_publish_service::read_published(*f.party, q);
+        ores::marketdata::service::app::fx_vol_surface_published_reader::read_published(*f.party,
+                                                                                        q);
 
     CHECK(resp.success == false);
     CHECK(resp.message.find("no expiry") != std::string::npos);

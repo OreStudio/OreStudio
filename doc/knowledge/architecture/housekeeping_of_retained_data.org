@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :housekeeping:retention:storage:scheduler:architecture:
 #+created: 2026-11-24
-#+updated: 2026-11-24
+#+updated: 2026-11-27
 
 * Summary
 
@@ -33,9 +33,28 @@ installing anything where it does not.
 
 A retention policy names its target, the action to take on it, the retention
 period or threshold past which the action applies, the cadence at which it is
-considered, whether it is enabled, and the fallback to take where the engine will
+applied, whether it is enabled, and the fallback to take where the engine will
 not act. The policy is stored as data: a period changes without a schema rebuild,
 and one screen shows every policy beside the size of what it governs.
+
+** What the platform states and what the installation decides
+
+The configuration arrives as two datasets published into the system tenant, beside
+the platform's other data: one stages the jobs the scheduler fires, the other the
+retention policies. A publish reconciles what the platform states. For a job that
+is its command, the payload it carries and what it is for; for a policy, the
+target, the action and the reason the store is kept. The rest is the
+installation's, and a publish leaves it alone: when a job fires, whether it is
+enabled, and a policy's period, cadence and enabled state are written when the
+row first arrives and carried from the most recent row the installation held,
+even where the publish closed that row first.
+
+The split follows the question that decides every dataset. The platform declares
+the job in order to function, so a release that changes what the sweep runs
+reaches an installation that is already running. The installation decides how
+much of its own data it keeps, so no republish overrules that decision. The
+dataset carries the defaults a new installation starts with, which is why the
+first publish writes every field and the second writes none.
 
 ** The actions
 
@@ -67,25 +86,36 @@ all but a few hundred were dated after the sweep that dropped them.
 
 The chunk is therefore cut on the instant the rows were written, which is the
 one time every row of a run shares and the time past which the run itself is
-stale. Two schema consequences follow. A hypertable checks its partitioning
-column for null before any row-level trigger runs, so a bitemporal table
-partitioned on its write time needs a default for that column, because the
-insert trigger is what otherwise sets it. And a unique index on a hypertable
-must carry the partitioning column, so a natural key index over such a table is
-declared with the column rather than generated from the keys alone.
+stale. Three consequences follow. A hypertable checks its partitioning column
+for null before any row-level trigger runs, so a bitemporal table partitioned on
+its write time needs a default for that column, because the insert trigger is
+what otherwise sets it. A unique index on a hypertable must carry the
+partitioning column, so a natural key index over such a table is declared with
+the column rather than generated from the keys alone. And the column is the
+store's, not the writer's: a hypertable routes a row by the partitioning column
+before any trigger runs, so a trigger cannot move the row afterwards, and a
+write that stated a value the trigger then rewrote would either fail the range
+check of the chunk the row landed in or leave it in the wrong chunk. The
+generated entity therefore leaves that column out of its insert, the default
+stamps it, and the trigger no longer rewrites it.
 
 ** One executor
 
-A single scheduled job reads the policies and performs their actions. It takes
-its cadence from the configured setting that the platform's other sweeps use
-([[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]]). One executor serves
+A single scheduled job applies every policy that is due. The job's schedule sets
+the tick, and therefore the finest cadence the installation can express; each
+policy states the hours between two applications of itself, and the sweep applies
+a policy only once that period has passed since the last time it applied it
+([[id:DFC57D4F-9AB2-4428-BDEC-BF44D106A75D][Scheduler]]). The period is the
+policy's, because the stores differ in how quickly they accumulate what the policy
+removes, and one tick serves them all. One executor serves
 every class: the classes differ in what they hold and in when their contents stop
 being useful, not in how a sweep runs. The established example is
 [[id:F06175E8-CA73-4A21-BEC5-898D0A388E17][Approval request expiry]], whose
 sweep a service registers at runtime from a system setting.
 
-Each firing is recorded as a scheduler job instance, and the housekeeping jobs
-appear in the scheduler's screens beside every other job.
+Each firing is recorded as a scheduler job instance, and each application of a
+policy is recorded in the run ledger beside the policy it applied. The housekeeping
+jobs appear in the scheduler's screens beside every other job.
 
 ** The fallback path
 
@@ -122,13 +152,45 @@ a period is a property of the policy now, and the ledger records only what the
 run was given. A policy turned off keeps its history, and reads as off beside
 the runs it made while it was on.
 
-Tuning is a write to a policy, not to the job. A policy is a row of the
-installation rather than of a tenant, so an operator holding the write
-permission changes a period, or turns a policy off, and the sweep applies the
-change at its next firing. The job's own cadence
-belongs to the installation's schedule rather than to a policy, which is why the
-two cadences are stated apart: the policy's is the period its author had in
-mind, and the job's is when the sweep actually runs.
+Tuning is a write to a policy, not to the job. A policy is a row of the system
+tenant, so an operator holding the write permission changes a period, or turns a
+policy off, and the sweep applies the change at its next firing. The two
+cadences are stated apart: the policy's is the hours between two applications of
+itself, and the job's is how often the sweep looks, which bounds the finest
+cadence the installation can express.
+
+** Telling a person without asking
+
+A policy is data, so a store can be kept for ever without anybody editing a
+schema, and nothing in a sweep complains about it: the sweep visits policies, and
+a store no policy names is a row it never reads. The absence therefore has to be
+said rather than discovered, and the installation says it through the inbox
+([[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]]).
+
+One scheduled pass reads the bounds view and the run ledger and raises a notice
+per store that nothing effective bounds. The pass is the definer's, because it
+reads the stores of every tenant and writes each one's inbox; the audience is the
+permission the catalogue's own write requires, resolved in the tenant that holds
+the store, and only a person is told: a service account holds the component's
+wildcard and no person signs in as it.
+
+Three kinds, one per case the screen distinguishes. A store nothing bounds reads
+as one notice, and a store whose last sweep failed reads as another, because a
+failure is an incident a person acts on and a missing policy is a decision nobody
+made. A sweep that leaves policies unapplied is one notice for the sweep, not one
+per policy: the ledger's =ran_at= is the transaction's instant, so every policy
+one sweep applied shares it, and that instant is what the notice groups by.
+
+The pass also clears. A store that comes back under a bound has the notice it
+raised cleared for every person it was raised for, so the count of open
+housekeeping notices follows the count of unbounded stores rather than the number
+of times anybody looked. That is what makes the number worth reading: it is the
+work left, and it reaches zero when the installation does.
+
+The notice names the store and links to its page, and carries no size, no rate
+and no period. A notice that repeated those numbers would be a second statement
+of them, drifting from the page that reads them; the person who has to act needs
+the plot and the policy, and both are behind the link.
 
 ** The parts
 
@@ -149,6 +211,7 @@ Source: =housekeeping_sweep_structure.puml=, rendered with
 - [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — completes: it owns the key contract whose prefixes the lifecycle rule expires.
 - [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a package]] — answers: it establishes the content-addressed key that makes a duplicated cache detectable and removable.
 - [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — completes: it owns how a job's work is produced, and this page treats what the job leaves on the node.
+- [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] — answers: it owns what a notification is and who it reaches; this page owns which housekeeping cases are raised and why they carry no numbers.
 
 * Sources
 

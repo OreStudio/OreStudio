@@ -30,8 +30,10 @@ set(files
     "datum_ore_key_codec_tests.cpp"
     "datum_oresmd_uri_codec_tests.cpp"
     "demand_interval_eventing_integration_tests.cpp"
+    "derived_notation_tests.cpp"
     "feed_eventing_integration_tests.cpp"
     "feed_scope_eventing_integration_tests.cpp"
+    "fixing_setting_notation_tests.cpp"
     "fx_forward_publish_eventing_integration_tests.cpp"
     "fx_forward_publish_point_eventing_integration_tests.cpp"
     "fx_forward_publish_spot_eventing_integration_tests.cpp"
@@ -100,4 +102,5 @@ set(files
     "tradeweb_notation_tests.cpp"
     "vendor_notation_catalogue_tests.cpp"
     "vendor_notation_corpus_tests.cpp"
+    "wmr_cut_notation_tests.cpp"
 )

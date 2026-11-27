@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 3F924DE9-3BB0-4951-8D75-46AB0A6A65C7
+:END:
+#+title: The retention sweep applies only a chunk drop
+#+description: The retention policy states three actions and three target shapes, but ores_scheduler_apply_retention_policies_fn implements drop_chunks on a chunked table alone and records every other policy as skipped; so the object store lifecycle and any delete-rows policy cannot work until the sweep implements them.
+#+type: capture
+#+level: cross
+#+filetags: :housekeeping:retention:defect:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

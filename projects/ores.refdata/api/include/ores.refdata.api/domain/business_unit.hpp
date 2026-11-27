@@ -108,6 +108,17 @@ struct business_unit final {
     std::string status;
 
     /**
+     * @brief Whether this desk states the product types it permits. False means the desk permits
+     * every product type its party permits, which is what a desk that has never been restricted
+     * does; true means the desk's product types junction holds the permitted set, and an empty
+     * junction is then a desk that permits nothing.
+     *
+     * The desk is the middle level of the approval chain: its set is a subset of its party's, and
+     * each of its books narrows the desk's set in turn.
+     */
+    bool restricts_product_types = false;
+
+    /**
      * @brief Username of the person who last modified this business unit.
      */
     std::string modified_by;

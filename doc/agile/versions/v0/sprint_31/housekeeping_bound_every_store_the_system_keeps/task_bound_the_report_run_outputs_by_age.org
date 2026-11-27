@@ -117,6 +117,31 @@ task and name that file in the Command column.
   so re-running the populate against a live database fails on these rows as it
   already does on the job definitions.
 
+* Follow-up
+
+The write path, not the trigger, was the gap, and another environment found it
+by running =ores.reporting.core.tests=: three of 283 cases failed on a chunk
+check constraint, reported 2026-11-25 and fixed in the same area by
+=solid_dirac= the same day.
+
+=report_metric_entity= defaulted =valid_from= to =db_timestamp::max()=, so the
+insert stated 9999-12-31. The hypertable routed the row to that instant before
+the insert trigger ran, the trigger then stamped =current_timestamp=, and the
+chunk refused the change. Every row of every run output table would have landed
+in the far-future chunk, which is worse than the failure: the failure is what
+kept it out of production.
+
+The note above records that a probe row cannot be moved between chunks, and the
+tests wrote their probes with the trigger disabled. That technique hid the
+cause, because it removed the only step that disagreed with the routing.
+
+The fix makes the column the store's. The model states
+=:store_stamps_valid_from: true=, the generated entity binds the column with
+=query_builder::store_fills=, which keeps it in reads and leaves it out of the
+insert, and the insert trigger stops rewriting it. The column default stamps
+the write instant before the row is routed. =ores.reporting.core.tests= passes
+283 of 283, =ores.database.tests= 87 of 87, and the pgTAP suite 1022 tests.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

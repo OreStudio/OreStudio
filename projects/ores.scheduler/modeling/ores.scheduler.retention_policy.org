@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ID: 2C7E4B19-8D6A-4F53-9B21-5E8A7C3D1F60
 :ores.cpp.wire-codec.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.scheduler.retention_policy
 #+description: Codegen entity model for the scheduler =retention_policies= table. One store the platform keeps, the action that bounds it, and the period past which the action applies.
@@ -19,16 +20,24 @@ taken, and the period past which the action applies. The target is named by
 shape rather than by a particular table, so the policy survives a table being
 replaced.
 
+A policy is a row of the installation, held by the system tenant: the
+classification that governs published rows makes the platform the author of the
+stores it bounds, and one copy in the system tenant is what keeps two
+installations' policies from disagreeing. The column is not null for that
+reason: a policy with no tenant has no owner to be published to.
+
 A policy is data, not a schema constant, so a period changes without a rebuild.
-The scheduler fires one sweep which reads the enabled policies and applies them,
-including where the storage engine runs no retention job of its own.
+The scheduler fires one sweep, which applies the enabled policies that are due,
+including where the storage engine runs no retention job of its own. A policy is
+due once its cadence has passed since the sweep last applied it, so the sweep's
+own schedule sets the finest cadence the installation can express.
 
 * Flags
 :PROPERTIES:
 :schema:        public
 :product:       ores
 :component:     scheduler
-:system_tenant_validation: true
+:has_tenant_id: true
 :END:
 
 * Columns
@@ -51,8 +60,8 @@ Examples: 'report_cashflows_365d', 'compute_node_caches_30d'.
 :nullable: false
 :END:
 
-The shape of what the policy bounds: a chunked table, an ordinary table or an
-object store key prefix.
+The shape of what the policy bounds: a chunked table, an ordinary table, an
+object store key prefix, or a directory on a compute host.
 
 #+begin_src cpp :name generator
 std::string("chunked_table")
@@ -71,6 +80,25 @@ The table name or key prefix the policy bounds.
 std::string("ores_reporting_report_cashflows_tbl")
 #+end_src
 
+** store_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The catalogue store this policy bounds, as =retained_stores.code= names it.
+
+A policy is created from the default the catalogue states, and this is what says
+which store it came from. It is also what keeps one policy per store: the publish
+that creates the defaults writes a policy only where no current policy already
+names the store, so changing a default never leaves a second policy applying an
+older period beside the first.
+
+#+begin_src cpp :name generator
+std::string("refdata.calendar_dates")
+#+end_src
+
 ** action
 :PROPERTIES:
 :type:     text
@@ -79,7 +107,7 @@ std::string("ores_reporting_report_cashflows_tbl")
 :END:
 
 What the sweep does to the target past the period: drop its chunks, delete its
-rows, or expire its objects.
+rows, expire its objects, or release a directory its node no longer needs.
 
 #+begin_src cpp :name generator
 std::string("drop_chunks")
@@ -98,17 +126,20 @@ The period, in days, after which the action applies to the target.
 faker::number::integer(7, 365)
 #+end_src
 
-** cadence
+** cadence_hours
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:     integer
+:cpp_type: int
 :nullable: false
 :END:
 
-The cron expression for this policy's sweep.
+The hours between two applications of this policy. The sweep fires on the
+scheduler's job schedule and applies a policy only once this period has passed
+since it last applied it, so a store whose contents stop being useful over a
+month is not swept every day.
 
 #+begin_src cpp :name generator
-std::string("0 3 * * *")
+faker::number::integer(1, 168)
 #+end_src
 
 ** enabled
@@ -143,23 +174,27 @@ std::string(faker::lorem::sentence())
 ** Flags
 :PROPERTIES:
 :tablename: ores_scheduler_retention_policies_tbl
+:rls_tenant_isolation:          true
+:rls_own_or_system_tenant_rows: true
 :END:
 
 ** Checks
 
 | expression |
 |------------|
-| "target_kind" in ('chunked_table', 'table', 'object_prefix') |
-| "action" in ('drop_chunks', 'delete_rows', 'expire_prefix') |
+| "target_kind" in ('chunked_table', 'table', 'object_prefix', 'directory') |
+| "action" in ('drop_chunks', 'delete_rows', 'expire_prefix', 'release_directory') |
 | "retention_days" > 0 |
-| "cadence" <> '' |
+| "cadence_hours" > 0 |
 | "target" <> '' |
+| "store_code" <> '' |
 
 * C++
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
+:subcomponent:        api
+:wide_type_exception: // compass:except(wide_types/over_ceiling) expires=2027-05-18 approver=marco reason=the row is the policy with its target and its period and cadence and its state beside the audit tail and the tenant that holds it
 :END:
 
 ** Repository
@@ -192,11 +227,12 @@ std::string(faker::lorem::sentence())
 | column         | header         |
 |----------------+----------------|
 | code           | Code           |
+| store_code     | Store          |
 | target_kind    | Kind           |
 | target         | Target         |
 | action         | Action         |
 | retention_days | Period (days)  |
-| cadence        | Cadence        |
+| cadence_hours  | Cadence (hours) |
 | enabled        | Enabled        |
 | version        | Version        |
 | modified_by    | Modified By    |
@@ -216,11 +252,12 @@ std::string(faker::lorem::sentence())
 | field          | label         | type      | is_key | is_required | placeholder            |
 |----------------+---------------+-----------+--------+-------------+------------------------|
 | code           | Code          | line_edit | true   | true        | Enter policy code      |
+| store_code     | Store         | line_edit |        | true        | Enter the catalogue store code |
 | target_kind    | Kind          | combo_box |        | true        | Select a kind          |
 | target         | Target        | line_edit |        | true        | Enter a table or prefix |
 | action         | Action        | combo_box |        | true        | Select an action       |
 | retention_days | Period (days) | spin_box  |        | true        | Enter the period       |
-| cadence        | Cadence       | line_edit |        | true        | Enter a cron expression |
+| cadence_hours  | Cadence (hours) | spin_box  |        | true        | Enter the hours between sweeps |
 | enabled        | Enabled       | check_box |        | false       |                        |
 | description    | Description   | text_edit |        |             | Enter the reason       |
 
@@ -229,11 +266,12 @@ std::string(faker::lorem::sentence())
 | enum_name    | field          | header        | type      | width |
 |--------------+----------------+---------------+-----------+-------|
 | Code         | code           | Code          | string    | 200   |
+| StoreCode    | store_code     | Store         | string    | 220   |
 | TargetKind   | target_kind    | Kind          | string    | 140   |
 | Target       | target         | Target        | string    | 300   |
 | Action       | action         | Action        | string    | 140   |
 | RetentionDays| retention_days | Period (days) | int       | 110   |
-| Cadence      | cadence        | Cadence       | string    | 120   |
+| CadenceHours | cadence_hours  | Cadence (hours) | int     | 120   |
 | Enabled      | enabled        | Enabled       | boolean   | 80    |
 | Version      | version        | Version       | int       | 80    |
 | ModifiedBy   | modified_by    | Modified By   | string    | 120   |

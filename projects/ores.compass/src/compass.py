@@ -7943,6 +7943,27 @@ def cmd_image(argv):
     return 2
 
 
+def _login_arguments(username_arg: str, password_arg: str, env: dict,
+                    process_env, no_login: bool) -> list:
+    """The shell's login flags, from the arguments, .env and the environment.
+
+    The password is never read from .env: it is a person's credential, and the
+    demo account's is the same in every checkout. A developer who wants the
+    default exports ORES_SHELL_LOGIN_PASSWORD, or types it at the shell's own
+    prompt. The username stays in .env because it is not a secret.
+    """
+    if no_login:
+        return []
+    flags = []
+    username = username_arg or env.get("ORES_SHELL_LOGIN_USERNAME", "")
+    if username:
+        flags += ["--login-username", username]
+    password = password_arg or process_env.get("ORES_SHELL_LOGIN_PASSWORD", "")
+    if password:
+        flags += ["--login-password", password]
+    return flags
+
+
 def cmd_shell(argv):
     """compass shell — Shell pillar: run ores.shell with .env defaults.
 
@@ -7966,12 +7987,12 @@ def cmd_shell(argv):
                          "from .env)")
     ap.add_argument("-p", "--password", default="",
                     help="Login password (default: ORES_SHELL_LOGIN_PASSWORD "
-                         "from .env or the process environment)")
+                         "from the process environment; it is not in .env)")
     ap.add_argument("--no-login", dest="no_login", action="store_true",
-                    help="Start logged out, ignoring the login defaults from "
-                         ".env. A scripted session that signs in itself needs "
-                         "this: a bootstrap refuses to run while a session is "
-                         "already open.")
+                    help="Start logged out, ignoring the login defaults. A "
+                         "scripted session that signs in itself needs this: a "
+                         "bootstrap refuses to run while a session is already "
+                         "open.")
     ap.add_argument("--preset", default="",
                     help="CMake preset locating the binary (default: "
                          "ORES_PRESET from .env)")
@@ -8021,16 +8042,8 @@ def cmd_shell(argv):
         if env.get(key):
             cmd += [flag, env[key]]
 
-    username = "" if args.no_login else (
-        args.username or env.get("ORES_SHELL_LOGIN_USERNAME", ""))
-    password = "" if args.no_login else (
-        args.password or
-        os.environ.get("ORES_SHELL_LOGIN_PASSWORD", "") or
-        env.get("ORES_SHELL_LOGIN_PASSWORD", ""))
-    if username:
-        cmd += ["--login-username", username]
-    if password:
-        cmd += ["--login-password", password]
+    cmd += _login_arguments(args.username, args.password, env, os.environ,
+                            args.no_login)
 
     if args.log_enabled:
         cmd.append("--log-enabled")
@@ -8082,7 +8095,7 @@ def cmd_shell(argv):
         return subprocess.run(cmd, cwd=PROJECT_ROOT, env=child_env).returncode
 
     label = env.get("ORES_CHECKOUT_LABEL", "local1")
-    log_path = Path(f"/tmp/ores_{label}_shell.log")
+    log_path = _build_log_dir() / f"ores_{label}_shell.log"
     print(f"📝 Progress log: {log_path} (tail -f to follow)")
     with open(log_path, "w") as log:
         return _run_logged(cmd, PROJECT_ROOT, log, env=child_env)

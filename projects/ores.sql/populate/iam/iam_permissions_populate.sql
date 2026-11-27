@@ -387,6 +387,18 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_product_types:write',                 'State the product types a book allows');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::book_product_types:delete',                'Restore a book to allowing every product type');
 
+    -- Party product types: the product types a party permits its books to
+    -- trade, which every book of the party narrows rather than extends.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_product_types:read',                 'View the product types a party permits');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_product_types:write',                'State the product types a party permits');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::party_product_types:delete',               'Restore a party to permitting every product type');
+
+    -- Business unit product types: the middle level of the approval chain,
+    -- which narrows its party's set and is narrowed by its books.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_unit_product_types:read',          'View the product types a desk permits');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_unit_product_types:write',         'State the product types a desk permits');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_unit_product_types:delete',        'Restore a desk to permitting every product type its party permits');
+
     -- Business day convention types permissions
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_day_convention_types:read',       'View business day convention types');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::business_day_convention_types:write',      'Create and modify business day convention types');
@@ -1215,8 +1227,12 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::job_definitions:read',   'View scheduled jobs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::job_definitions:write',  'Schedule and update jobs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::job_definitions:delete', 'Unschedule jobs');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::retention_policies:read',   'View the retention policies housekeeping applies');
-    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::retention_policies:write',  'Set a retention period, cadence or the state of a policy');
+    -- The retention policy entity's own codes. The handler and the screen have
+    -- asked for them since the story built them, and a code no seed holds is one
+    -- only a wildcard can grant, so the housekeeping editor was reachable by the
+    -- platform's superuser and by nobody else by accident.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::retention_policies:read',  'View how long a store is kept');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::retention_policies:write', 'Change how long a store is kept');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::retention_policies:delete', 'Remove a retention policy');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::retention_runs:read',       'View what each housekeeping sweep removed');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::*', 'Full access to all scheduler operations');
@@ -1261,6 +1277,18 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_cashflows:read', 'View the cashflows a run produced');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_cashflows:write', 'Write report cashflows');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_cashflows:delete', 'Delete report cashflows');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_run_market_readinesses:read', 'View how much of a run''s population the market answered');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_run_market_readinesses:write', 'Write a run''s market readiness');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_run_market_readinesses:delete', 'Delete a run''s market readiness');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_trade_market_readinesses:read', 'View whether a run''s market answered each of its trades');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_trade_market_readinesses:write', 'Write the readiness of a run''s trades');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_trade_market_readinesses:delete', 'Delete the readiness of a run''s trades');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_address_market_readinesses:read', 'View which addresses a run needed and which the market answered');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_address_market_readinesses:write', 'Write the readiness of a run''s addresses');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_address_market_readinesses:delete', 'Delete the readiness of a run''s addresses');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_trade_market_gaps:read', 'View the addresses an incomplete trade named that the market did not answer');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_trade_market_gaps:write', 'Write the gaps of a run''s trades');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_trade_market_gaps:delete', 'Delete the gaps of a run''s trades');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::run_results:read', 'View the figures of a run as the result screen shows them');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_errors:read', 'View report errors');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_errors:write', 'Create and modify report errors');
@@ -2312,6 +2340,17 @@ BEGIN
     -- Decides the approval part none, which exempts an act from approval, so it
     -- is held by nobody: a request naming only that part is never raised.
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'installation::approvals:none', 'Decide the part that exempts an act from approval; held by nobody');
+    -- The vault's own operations. The service role holds the wildcard, and the
+    -- handlers check the concrete codes beneath it.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::*', 'Full access to all vault operations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::secrets:read', 'Read and list secrets');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::secrets:write', 'Write and rotate secrets');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::secrets:resolve', 'Resolve a secret sealed to the caller');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::secrets:delete', 'Delete secrets');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::consumers:read', 'Read and list consumers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::consumers:write', 'Register and update consumers');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'vault::consumers:delete', 'Delete consumers');
+
 END $$;
 
 

@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: BB0570CB-7C89-4079-AE37-39EB300F2252
+:END:
+#+title: Task: Scope the calendar exceptions to a party
+#+description: A holiday is a party's fact, not a tenant's: an HK party closes on days a UK party does not, and both sit in one installation. Give an exception a party scope, so the installation publishes the calendars and their rules once and each party adds the days it closes.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: feature/scope-the-calendar-exceptions-to-a-party
+#+pr: 5139
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An exception belongs to a party or to the installation. The installation
+publishes the calendars and their rules once, and each party adds the days it
+closes: an HK party closes on days a UK party does not, in one installation and
+one tenant.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- An exception carries the party it belongs to, and an installation-level
+  exception carries none
+- A party reads the installation's exceptions beside its own, and no other
+  party's
+- A party's exception changes the days that party materialises, in both
+  directions: it closes a day the rules open and opens one they close
+- The calendar screens name the party an exception belongs to
+
+The end-to-end test of two parties on the same date is not here. Until the
+overlay lands ([[id:A898881E-B0A8-4E23-B717-DB7681AB2B18][Hold the calendar dates
+once, in the system tenant]]) the dates store holds one set per tenant and names
+no party, so two parties in one tenant still collide there and no assertion about
+them can hold. The overlay is what makes the difference observable, and its test
+is the one that proves it: a party's exception changes that party's days and
+leaves another's alone.
+
+* Analysis
+
+Decided on
+[[id:A54B0989-BFCB-45C6-80B7-279BF9843E78][Decide whether calendar dates are
+stored or computed]] after the question of who owns a holiday was put plainly:
+a holiday is a party's fact. Two parties in one installation trade on different
+dates -- Hong Kong's calendar is not the United Kingdom's -- so an exception
+counts for a party and not for a tenant, and the tree holds two levels: the
+installation's, and a party's.
+
+What exists today. =ores_refdata_calendar_exceptions_tbl= is tenant-scoped, and
+the materialisation reads the caller's exceptions beside the system tenant's,
+=where (tenant_id = caller or tenant_id = system)=. A tenant can therefore close
+a day for every party it holds, which is the wrong granularity: the row cannot
+say which of two parties it belongs to.
+
+What the change is:
+- A nullable =party_id= on the exception, null meaning the installation. The
+  table's RLS keeps the tenant scope it has and adds the party scope, admitting
+  the installation's rows and the party's own, as the scheduler's job-definition
+  policy does for a nullable party.
+- The materialisation takes the party it materialises for, so the days it writes
+  apply the installation's exceptions and that party's, and no other party's.
+- The screens that list an exception name its party, and the party is part of
+  what the screen filters on.
+
+The dates store is settled apart from this
+([[id:A898881E-B0A8-4E23-B717-DB7681AB2B18][Hold the calendar dates once, in the
+system tenant]]): the installation keeps one baseline of rule-derived days, and a
+party's exceptions are applied over it at read. That task depends on this one
+stating the party, because the overlay is per party.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5139][#5139]] | [refdata] Scope the calendar exceptions to a party |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+An exception now names the party it belongs to, or names none, which is the
+installation's. The row carries a nullable =party_id=, generated through the
+domain, the entity, the protocol and the web protocol, and the exceptions a
+party reads are the installation's and its own.
+
+The read that states this is a custom repository method rather than the generated
+finder, because the finder reads by tenant and a holiday is not a tenant's fact:
+=read_for_party= takes the party and admits =party_id is null or party_id = the
+party=. The materialisation calls it with the session's party, so a party session
+materialises the installation's baseline with that party's closures and
+openings, and a session with no party materialises the baseline alone.
+
+Row-level security gains the party: a restrictive policy admits the rows that
+carry no party, the rows of a party the session can see, and everything to the
+system tenant. It narrows the generated tenant policies instead of widening them,
+so a party's rows stay that party's business inside the installation.
+
+Verified on a rebuilt database at fingerprint =6131c6d4de7f7354=: the table
+carries its party column and three policies, =ores.refdata.core= passes 6247
+assertions in 563 cases, and the pgTAP suite passes 109 files and 1022 tests.
+
+What this task does not do: the dates store still holds one set per tenant and
+names no party. Two parties in one tenant therefore still collide there. That is
+the overlay's task, and it is the one that can assert the two parties differ.

@@ -124,4 +124,5 @@ it: the surface screens do not exist yet
 - [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve point provenance]] — the lineage a manual point's annex extends.
 - [[id:478EFA03-AB47-4286-A3CE-583C7438632D][Adjust a curve or surface by hand]] — the journey the rule serves.
 - [[id:86158AAD-423A-421A-8BE2-CC5123109297][As-of resolution of published market data sets]] — the read that applies the preference.
+- [[id:B0BC735F-7E05-4882-A216-C250B26B0091][Precedence among the levels of reference data]] — completes: the same precedence between statements made at different levels of the store.
 - [[id:186B44DD-51EA-45AA-971E-0C2D4D21A6DD][Publication of derived market data sets]] — the act that publishes a corrected set.

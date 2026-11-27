@@ -347,6 +347,22 @@ ORES_HTTP_NATS_EXPORT void require_deployment_read(const ores::http::domain::htt
                                                    std::string_view what);
 
 /**
+ * @brief Refuse a caller who does not hold @p permission.
+ *
+ * A route that asks a service as the gateway rather than as the caller acts on
+ * the gateway's own permissions, so the person's permission has to be checked
+ * here. The codes come from IAM as the caller, read again at each call so a
+ * grant taken away stops the next request, and
+ * =ores::security::authorization::grants= decides them.
+ *
+ * @throws refusal naming @p what and @p permission when the caller lacks it.
+ */
+ORES_HTTP_NATS_EXPORT void require_permission(const ores::http::domain::http_request& req,
+                                              ores::nats::service::nats_client& session,
+                                              std::string_view permission,
+                                              std::string_view what);
+
+/**
  * @brief The response a failure that is not a refusal states, its detail logged.
  */
 [[nodiscard]] ORES_HTTP_NATS_EXPORT ores::http::domain::http_response

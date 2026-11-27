@@ -1,0 +1,209 @@
+:PROPERTIES:
+:ID: 4D069D1A-EADA-407B-89B4-92F2375C0836
+:END:
+#+title: Secure Introduction
+#+description: A workload proves which identity it is by possession of a key the platform issued, before any token exists, so the store can answer its first secret.
+#+type: service_architecture_pattern
+#+level: cross
+#+filetags: :pattern:identity:secrets:bootstrap:attestation:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+#+pattern_group: identity
+#+startup: inlineimages
+
+This page defines the [[id:68FAC606-569C-4B9B-932B-3B3A0181AC8B][service architecture pattern]]
+Secure Introduction in the [[id:EA249899-6611-407F-A43A-B37019EBD1A7][pattern language]].
+The pattern gives a workload a way to prove which identity it is before any
+token exists, so that a secret store can answer the one secret that lets the
+workload obtain tokens. It answers the problem the field calls *secret zero*: the
+credential a workload needs first is the one it cannot be given by the system
+that would also issue its tokens. ORE Studio applies it so a service can resolve
+its database password at start and sign in to IAM with it.
+
+* Also known as
+
+- /Secret zero/, in HashiCorp's validated design for Vault, which names the
+  problem this pattern answers (HashiCorp, 2026).
+- /Secure introduction/, the same documentation's name for the exchange.
+- /Platform integration/ and /trusted orchestrator/, the two families of
+  attestation the documentation distinguishes.
+- /Node attestation/ and /workload attestation/, the SPIFFE and SPIRE names for
+  the two halves of the platform-integration family (The SPIFFE authors, 2026).
+- /Bootstrap credential/, in the language of infrastructure provisioning, for
+  the material the platform delivers first.
+
+* Context
+
+Services fetch their credentials from a store rather than from a file, and the
+store authenticates every caller by a token the issuer mints. The issuer mints a
+token for a service only when the service presents an account and a password
+from its database. The store holds that password, and the store is reached with
+a token.
+
+* Problem
+
+How does a workload obtain the first secret that lets it ask for tokens, when
+the store that holds it authenticates callers by a token?
+
+* Forces
+
+- The store must refuse an unauthenticated read: a store that answers anyone is
+  not a store.
+- A bootstrap secret shared between workloads is replayable by any holder, and
+  a file that carries it is the state the workload is trying to leave.
+- The platform that launches the workload knows which workload it launched, and
+  can give it material no other workload receives.
+- Whatever the workload receives must be usable before the issuer can be
+  reached, must not be usable by an observer of the exchange, and must survive a
+  restart without being reissued.
+- The exchange must give the workload its own secret and no other.
+
+* Solution
+
+The store trusts the platform's word for a workload, or trusts an authenticated
+launcher's delivery of material to it, and the workload proves that trust holds
+by using what it was given. The first form is *platform integration*: the store
+verifies an identity the platform publishes for the workload. The second is the
+*trusted orchestrator*: a launcher already authenticated to the store injects
+one-of-a-kind material as it starts the workload, and the workload redeems it
+once (HashiCorp, 2026). SPIFFE and SPIRE generalise the first into a
+specification, where a node attests and then each workload is attested before it
+receives a short-lived document (The SPIFFE authors, 2026).
+
+Three parts make the pattern work in either form: material unique to the
+workload, an exchange that is good once, and an answer sealed to the material
+the workload proved.
+
+#+attr_html: :width 100%
+#+caption: Secure Introduction: the platform delivers a key pair unique to the unit, the store holds the public half, and the workload proves possession through a challenge before it asks for its secret.
+[[proj:doc/knowledge/service_architecture_patterns/pattern_secure_introduction_structure.png]]
+
+Source: =[[./pattern_secure_introduction_structure.puml][pattern_secure_introduction_structure.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_secure_introduction_structure.puml=.
+
+The workload passes through four states on the way from unidentified to
+authenticated, and the pattern's whole point is the state in the middle: it is
+identified without having presented any credential the issuer minted.
+
+#+attr_html: :width 100%
+#+caption: Secure Introduction: the workload is unidentified, challenged, proven against the key it holds, provisioned with its own secret, and only then authenticated.
+[[proj:doc/knowledge/service_architecture_patterns/pattern_secure_introduction_states.png]]
+
+Source: =[[./pattern_secure_introduction_states.puml][pattern_secure_introduction_states.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_secure_introduction_states.puml=.
+
+What the store checks is the pattern's mechanism, and the order of the checks is
+what makes a refusal cheap and an answer safe: the consumer first, then the
+freshness of the challenge, then whether the consumer owns what it asks for.
+
+#+attr_html: :width 70%
+#+caption: Secure Introduction: the store refuses an unknown consumer, a stale or foreign challenge, and a secret the consumer does not own, before it seals the answer to the key that proved itself.
+[[proj:doc/knowledge/service_architecture_patterns/pattern_secure_introduction_checks.png]]
+
+Source: =[[./pattern_secure_introduction_checks.puml][pattern_secure_introduction_checks.puml]]=. Regenerate with
+=plantuml -tpng doc/knowledge/service_architecture_patterns/pattern_secure_introduction_checks.puml=.
+
+The exchange as ORE Studio performs it, with the operations, the sealing and the
+tenant it answers in, is stated in
+[[id:5FADF948-4520-41D3-B4F0-BE4873C06AF0][Secure Introduction of a Workload to
+the Vault]], which is this pattern's one use here.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A consumer the store does not hold, a challenge that is stale, spent or issued to another consumer, and a secret the consumer does not own are each refused as that one case, and each refusal is recorded. |
+| Timeouts | The challenge has a short life, so a workload that cannot finish the exchange asks again. The store's answer is a request with a timeout like any other. |
+| Retries | The exchange is safe to repeat from the start: a spent challenge is refused and a new one is drawn. The workload retries with back-off while the store is unreachable. |
+| Idempotency | A challenge is redeemed at most once and retired on redemption, so no replay of the answer succeeds. A repeated exchange costs one challenge and yields one secret. |
+| Observability | Each refusal names its case in the store's record, and the delivery records the consumer and the secret. A workload that cannot be introduced never reaches its token, so its absence is visible. |
+
+* Pitfalls
+
+- *A challenge the store will not bound.* The challenge is issued to whoever
+  asks, because a caller with no credential cannot be identified first. Unbounded,
+  it is a resource an attacker spends and a nonce an attacker replays; bound to
+  one use, a short life and a cap on how many the store holds at once, and sealed
+  to the registered key, it costs an attacker nothing it can use.
+- *A bootstrap key that lives forever.* The material the platform delivers is a
+  deployment credential, not a session credential. Its theft is bounded only by
+  re-registration and restart, so it belongs to the same rotation as the
+  workload's transport credentials.
+- *A platform identity that every process on a host can claim.* A node-level
+  attestation identifies the node; unless the store then attests the workload on
+  it, any process there can claim the node's identity. The delivered material
+  must be per workload, not per host, which is why the SPIFFE design attests
+  twice.
+- *Answering more than the caller's own secret.* The name a caller may read must
+  come from the identity it proved, never from the request, or the bootstrap
+  path becomes a read of every secret in the store.
+
+* Security
+
+The pattern crosses one trust boundary and creates another. The platform is
+trusted to deliver material to the workload it launched, and the store is trusted
+to hold every consumer's public key and every secret. A leaked bootstrap key
+costs the store the secrets of that consumer and no others, because the
+exchange answers only the consumer's own entry; a forged message costs nothing,
+because the challenge and the answer are both sealed and both authenticated.
+
+The cost that does not go away is the store's own: it becomes a component on the
+path of every cold start, and a copy of its tables discloses every registered
+public key. The private halves stay with the workloads, so a copy of the store
+discloses nothing that can open an answer.
+
+* Resulting context
+
+- Benefits :: A workload's first credential no longer travels as a shared secret
+  in a file, and every later credential is short-lived. The store authenticates
+  a caller by something it can verify rather than by a password it must trust.
+- Liabilities :: Each workload carries material that must be provisioned,
+  registered and rotated, and the store must be reachable before the workloads
+  that depend on it. The pattern introduces a second authentication path into the
+  store, which every reader of the store's contract must know about.
+
+* In ORE Studio
+
+- The platform is systemd. It delivers each unit's key pair as a credential, and
+  the deployment registers the public half in =vault_consumer=.
+- The store is =ores.vault=, and the exchange is its
+  =vault.v1.ops.challenge= and =vault.v1.ops.credential=. The secret a service
+  resolves is its database password, held in the system tenant because it
+  protects a database role the deployment owns.
+- The token issuer is =ores.iam=, and the path from the resolved secret to a
+  token is [[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]].
+- The use, with the protocol's terms, its limits and the alternatives ORE Studio
+  rejects, is [[id:5FADF948-4520-41D3-B4F0-BE4873C06AF0][Secure Introduction of a
+  Workload to the Vault]].
+
+* Related patterns
+
+- [[id:4B5B6195-F542-4A88-B5B3-9A4561554406][Client Credentials]] — used by:
+  the token path begins once this pattern has delivered the secret.
+- [[id:4E0D934A-21D4-4609-8B7C-29F6D9A6A52D][Access Token]] — used by: the
+  token the workload obtains after its introduction.
+- [[id:96460BBE-D7BF-4538-B620-AC5FD9F0C9FE][Token Exchange]] — an alternative
+  for an identity a call already carries, where this pattern is for a workload
+  that carries none.
+- [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] — the transport of
+  the challenge and the answer.
+
+* Sources
+
+- HashiCorp (2026). /Authentication for applications/. Vault Validated Designs.
+  [[https://developer.hashicorp.com/validated-designs/vault/administration-guide/authentication-for-applications][developer.hashicorp.com]]
+  — names the secret-zero problem, and defines the platform-integration and
+  trusted-orchestrator solutions.
+- The SPIFFE authors (2026). /SPIFFE Concepts/. SPIFFE documentation.
+  [[https://spiffe.io/docs/latest/spiffe-about/spiffe-concepts/][spiffe.io]] —
+  the Workload API, node and workload attestation, and the SVID a workload proves
+  itself with.
+- HashiCorp (2026). /Response Wrapping/. Vault documentation.
+  [[https://developer.hashicorp.com/vault/docs/concepts/response-wrapping][developer.hashicorp.com]]
+  — the one-use credential an orchestrator injects.
+
+* See also
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] — the structure note that orders this pattern language, and where to read this page in it.
+- [[id:F9F1A2BA-94C2-4DAA-8689-F0871AA56801][Secret Custody in the Vault]] — the component whose first credential this pattern provides.

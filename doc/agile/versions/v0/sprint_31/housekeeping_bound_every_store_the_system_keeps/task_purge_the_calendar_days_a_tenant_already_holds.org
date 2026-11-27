@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: EFBFDD7E-D423-4F5E-A89E-894A1D4F286A
+:END:
+#+title: Task: Purge the calendar days a tenant already holds
+#+description: A tenant provisioned before the days moved keeps its own copy and the read prefers it; purge it, and give the installation a rebuild command.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: feature/purge-the-calendar-days-a-tenant-already-holds
+#+pr: 5148
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An installation that predates the shared copy loses the copies it already
+holds, so every tenant reads the installation's days, and an operator can
+rebuild that copy with a command rather than by restarting the service.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-26                               |
+
+* Acceptance
+
+- A tenant's rows for a calendar the installation owns are closed or removed,
+  in one run per tenant, so the read resolves to the installation's copy
+- An operator command rebuilds the installation's copy on demand
+- The command is idempotent: a second run extends the copy and rewrites nothing
+- A test shows a tenant reading the installation's days after the purge, with no
+  row of its own under the calendar
+
+* Analysis
+
+[[id:A898881E-B0A8-4E23-B717-DB7681AB2B18][Hold the calendar dates once, in the
+system tenant]] stopped new copies from being written and made the read resolve
+the party's exceptions over the installation's days. It did not remove the rows
+a tenant had already been given: each tenant provisioned before the change holds
+its own days for every shared calendar, and `calendar_day_service` prefers the
+caller's row for a date, so those rows would mask the installation's later days
+rather than merely waste space.
+
+The purge is a per-tenant act, because only a session inside a tenant may close
+that tenant's rows: the table's delete policy is the own-tenant one. An operator
+runs it once per tenant, or the recompute path runs it for the tenant that
+triggers it.
+
+* Plan
+
+The rebuild command already exists: =POST /api/refdata/calendars/{code}/rebuild=
+extends a calendar's days, and since the days moved to the owning level a
+system-tenant session builds the installation's copy while a tenant's rebuild of
+a shared calendar writes nothing. That item of the acceptance is therefore met
+by the surface that was already there, and this task adds the purge beside it.
+
+The purge is a command of its own, in the message model the materialisation
+already uses (=ores.refdata.calendar_materialisation_messages=): a request that
+names one calendar or none, and a response that reports the rows removed and the
+calendars they came from. The service lists the calendars the caller can read,
+keeps the ones it does not own, counts the caller's live rows for each, and calls
+the repository's batch close. A calendar the caller owns is skipped, because its
+days are the tenant's own. The handler takes the caller's context, so the table's
+delete policy confines the command to the caller's tenant.
+
+An HTTP route exposes it beside the rebuild, =POST
+/api/refdata/calendars/dates/purge=, and the route inventory is regenerated.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The purge test | 9 assertions pass | =ores.refdata.core.tests "purge_removes_the_tenant_copies_of_the_installation_days"= | working tree |
+| The affected service tests | 28 cases, 3078 assertions | =ores.refdata.core.tests "[calendar_materialisation],[calendar_day],[tenor_resolution]"= | working tree |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5148][#5148]] | [refdata] Purge a tenant's copies of the days the installation owns |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A tenant can remove the copies of the installation's days that it was given
+before the days moved, and the installation's own copy is left alone.
+
+The command is =refdata.v1.ops.purge_calendar_date_copies=, with an HTTP route at
+=POST /api/refdata/calendars/dates/purge= that takes an optional calendar code.
+It reports the rows removed and the calendars they came from, skips a calendar
+the caller owns, and is idempotent: a second run removes nothing. The caller's
+context is the one the handler uses, so the delete policy keeps the command in
+the caller's tenant.
+
+The rebuild command the acceptance asked for already existed, as =POST
+/api/refdata/calendars/{code}/rebuild=, and the owning-level rule makes it build
+the installation's copy when the session is the system tenant's. It is stated in
+the plan rather than added again.
+
+Proved by a new case, =purge_removes_the_tenant_copies_of_the_installation_days=:
+it builds an installation calendar, writes a stale tenant row that contradicts
+it, shows the party read preferring the stale row, purges it, shows the
+installation's answer returning with its own holiday untouched, and shows the
+second purge removing nothing. The calendar, materialisation and tenor
+resolution cases pass beside it (28 cases, 3078 assertions).

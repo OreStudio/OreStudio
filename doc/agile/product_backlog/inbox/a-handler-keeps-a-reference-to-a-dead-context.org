@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 743BA702-F3CE-4AAF-B8DC-07139FBF1B12
+:END:
+#+title: A handler keeps a reference to a dead context
+#+description: The registration seam moves the database context into its own frame and returns, so every handler that holds the reference it was handed reads freed memory; the scheduler crashed on its first housekeeping read because of it.
+#+type: capture
+#+level: cross
+#+filetags: :service:nats:lifecycle:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Every service registers its handlers through the same seam, and the seam hands
+each handler a database context that is gone by the time the first request
+arrives. `run_domain_service` binds the context into its registration closure,
+moves it into the call it makes, and returns: the lambda parameter that holds it
+is destroyed at the end of that call, while every handler the registration built
+kept a `const context&` to it. The handlers then read freed stack memory on
+every request.
+
+* Why
+
+It is invisible until something overwrites that memory, and then it is a
+segfault in the middle of a request. The scheduler proved it on 2026-11-27: its
+two hand-written housekeeping reads crashed the service with SIGSEGV inside
+`ores::database::context::impl`'s copy constructor, on the first request each,
+while its generated reads answered normally. The generated handlers survive by
+luck — the bytes of the dead `shared_ptr` were still there — and no test covers
+the seam, because every unit test builds the context in the same frame as the
+handler.
+
+The fix has two halves and the second one is the real one. A hand-written
+handler can own its context, which the housekeeping handler now does: it copies
+the context at construction for a shared-pointer increment. The seam itself
+should pass the context by value, so that a handler which keeps what it is
+handed keeps something alive, and the reference-to-dead-frame shape stops being
+available at all. That change touches every component's registrar signature and
+is a story, not a patch.
+
+* References
+
+- `projects/ores.service/include/ores.service/service/domain_service_runner_impl.hpp`
+  — the closure and the move that ends the context's life.
+- `projects/ores.scheduler/core/src/messaging/store_bounds_handler.cpp` — the
+  handler that owns a copy and the reason it states.
+- The core dumps of `ores.scheduler.service` on 2026-11-27 16:04–16:07: six
+  SIGSEGVs, all in `context::impl`'s copy constructor, reached from
+  `store_bounds_handler::list` and `::samples`.
+
+* See also
+
+- [[id:1F74AC5C-33D2-420A-9C4E-5AC2D074BFFA][Serve the housekeeping screen its
+  data]] — the read whose first real call found it.

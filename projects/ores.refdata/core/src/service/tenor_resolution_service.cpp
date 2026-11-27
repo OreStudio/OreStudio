@@ -28,6 +28,7 @@
 #include "ores.refdata.core/repository/tenor_convention_resolution_repository.hpp"
 #include "ores.refdata.core/repository/tenor_repository.hpp"
 #include "ores.refdata.core/repository/tenor_schedule_repository.hpp"
+#include "ores.refdata.core/service/calendar_day_service.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <algorithm>
 #include <bitset>
@@ -60,7 +61,6 @@ using ores::analytics::quant::domain::tenor_resolution_request;
 using ores::analytics::quant::domain::tenor_resolution_result;
 using ores::analytics::quant::domain::tenor_rule;
 using ores::analytics::quant::service::tenor_resolution_engine;
-using ores::refdata::repository::calendar_date_repository;
 using ores::refdata::repository::calendar_event_repository;
 using ores::refdata::repository::tenor_convention_repository;
 using ores::refdata::repository::tenor_convention_resolution_repository;
@@ -175,8 +175,7 @@ ores::utility::domain::result calendar_not_materialised(const std::string& calen
 /// calendar has no materialised dates.
 std::optional<business_day_calendar_set> load_calendar(const tenor_resolution_service::context& ctx,
                                                        const std::string& calendar_code) {
-    calendar_date_repository dates{ctx};
-    const auto days = dates.read_latest_by_calendar(calendar_code);
+    const auto days = calendar_day_service{ctx}.days(calendar_code);
     if (days.empty())
         return std::nullopt;
     return build_calendar_set(days);

@@ -406,6 +406,7 @@
 ** Select prefixes
 
 - ores_iam_
+- ores_marketdata_
 - ores_dq_
 - ores_trading_
 - ores_variability_
@@ -705,7 +706,7 @@ daily returns as long as the expiry itself, so a ten-year quote needs ten years 
 
 * ores.compute.wrapper
 :PROPERTIES:
-:description: Compute grid worker nodes. {host_id} = stable UUID derived from hostname:replica_index; {work_dir} = ../run/wrappers/node_N; all replicas share the same certificate (ores.compute.wrapper.crt).
+:description: Compute grid worker nodes. {host_id} = stable UUID derived from hostname:replica_index; {work_dir} = ../run/wrappers/node_N, the node's own scratch; the package cache is ../run/packages, one directory per host shared by every replica; all replicas share the same certificate (ores.compute.wrapper.crt).
 :display_name: Compute Wrapper
 :summary:     Runs work units from the compute grid on one node and reports their results and logs.
 :account_var: compute_wrapper_user
@@ -719,4 +720,30 @@ daily returns as long as the expiry itself, so a ten-year quote needs ten years 
 - --host-id {host_id}
 - --tenant-id {tenant_id}
 - --work-dir {work_dir}
+- --package-dir ../run/packages
 - --http-base-url http://localhost:{http_port}
+
+* ores.vault.service
+:PROPERTIES:
+:psql_var:    vault_service
+:env_key:     VAULT_SERVICE
+:iam_role:    VaultService
+:description: Vault
+:display_name: Vault Service
+:summary:     Keeps the secrets ORE must present to another party, sealed under a key that lives outside the database, and seals each answer to the consumer that asked.
+:email:       vault_service@system.ores
+:replicas:    1
+:enabled:     true
+:depends_on:  ores.iam.service
+:END:
+
+Answers the five secret operations. It owns the vault tables and reads no other
+component's: the tenant and the subject arrive in the request context, and the
+permission in the token.
+
+It cannot start without its two keys, which the deployment places as systemd
+credentials; a unit that has none refuses to register and fails its start.
+
+** DML prefixes
+
+- ores_vault_

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 2ECC4A0C-EAA9-4461-BFE6-6650E394BB69
+:END:
+#+title: Memory: A new source can break a neighbour in the unity build
+#+description: The unity build chunks sources together, so adding one can break a header that relied on a neighbour's include, and can expose duplicate file-local names in two chunks.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+Adding a source file to a target can break a file that already compiled: the unity build chunks sources together, so a header that used a type it only forward-declared compiled because a neighbour in its chunk included the full definition first. A reshuffle moves that neighbour, and the header stops compiling.
+
+*Why:* Adding two IAM entities reshuffled the ores.iam.core unity chunks and exposed service_session_service.hpp, which holds ores::database::context by value while including only the forward declaration. It had compiled for months by luck, and the failure named a file the change never touched. The same reshuffle exposed duplicate file-local names in three chunks (is_active in two IAM services, sofr and publish_one in the marketdata suites), which the unity-collisions gate then refused.
+
+*How to apply:* After adding or moving sources, build before anything else, and treat a failure in a file you did not touch as yours. Fix it at the cause: include the header the declaration needs rather than relying on a neighbour, and give a duplicated file-local name one meaning or rename it. Do not extend cmake/unity_exclusions.cmake, which only shrinks.

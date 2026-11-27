@@ -1,0 +1,6 @@
+# =by-business-unit-id=
+#
+# GENERATED from doc/recipes/shell/business_unit_product_types/business_unit_product_type.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+business_unit_product_types by-business-unit-id 00000000-0000-0000-0000-000000000000 --limit 1

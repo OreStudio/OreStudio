@@ -1890,4 +1890,73 @@ wire_traits<ores::marketdata::messaging::store_market_state_response>::read_msgp
     return object::read_msgpack<ores::marketdata::messaging::store_market_state_response>(data);
 }
 
+std::string wire_traits<ores::marketdata::messaging::requirement_answer>::write_json(
+    const ores::marketdata::messaging::requirement_answer& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::requirement_answer
+wire_traits<ores::marketdata::messaging::requirement_answer>::read_json(std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::requirement_answer>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::requirement_answer>::write_msgpack(
+    const ores::marketdata::messaging::requirement_answer& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::requirement_answer
+wire_traits<ores::marketdata::messaging::requirement_answer>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::requirement_answer>(data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::get_requirement_coverage_request>::write_json(
+    const ores::marketdata::messaging::get_requirement_coverage_request& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::get_requirement_coverage_request
+wire_traits<ores::marketdata::messaging::get_requirement_coverage_request>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::get_requirement_coverage_request>(text);
+}
+
+std::string
+wire_traits<ores::marketdata::messaging::get_requirement_coverage_request>::write_msgpack(
+    const ores::marketdata::messaging::get_requirement_coverage_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::get_requirement_coverage_request
+wire_traits<ores::marketdata::messaging::get_requirement_coverage_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::get_requirement_coverage_request>(
+        data);
+}
+
+std::string wire_traits<ores::marketdata::messaging::get_requirement_coverage_response>::write_json(
+    const ores::marketdata::messaging::get_requirement_coverage_response& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::get_requirement_coverage_response
+wire_traits<ores::marketdata::messaging::get_requirement_coverage_response>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::get_requirement_coverage_response>(text);
+}
+
+std::string
+wire_traits<ores::marketdata::messaging::get_requirement_coverage_response>::write_msgpack(
+    const ores::marketdata::messaging::get_requirement_coverage_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::get_requirement_coverage_response
+wire_traits<ores::marketdata::messaging::get_requirement_coverage_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::get_requirement_coverage_response>(
+        data);
+}
+
 }

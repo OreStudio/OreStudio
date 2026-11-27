@@ -40,6 +40,7 @@
 #include "ores.http/routes/analytics/analytics_routes.hpp"
 #include "ores.http/routes/assets/assets_routes.hpp"
 #include "ores.http/routes/compute/compute_routes.hpp"
+#include "ores.http/routes/dq/dq_routes.hpp"
 #include "ores.http/routes/iam/agent_key_exchange.hpp"
 #include "ores.http/routes/iam/auth_session_routes.hpp"
 #include "ores.http/routes/iam/bootstrap_screen_routes.hpp"
@@ -51,6 +52,7 @@
 #include "ores.http/routes/reporting/reporting_routes.hpp"
 #include "ores.http/routes/synthetic/synthetic_routes.hpp"
 #include "ores.http/routes/trading/trading_routes.hpp"
+#include "ores.http/routes/vault/vault_routes.hpp"
 #include "ores.http/routes/workflow/workflow_routes.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
@@ -188,11 +190,20 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     ores::http::routes::iam::iam_routes::register_routes(router, registry, service_nats);
 
+    // The vault's two routes are hand-written because neither forwards a body
+    // unchanged: a write seals in this process, and a reveal opens what the
+    // vault sealed to this process. The keys are the unit's credentials, and a
+    // gateway without them fails here rather than serving a route that cannot
+    // answer.
+    ores::http::routes::vault::vault_routes::register_routes(
+        router, registry, service_nats, ores::http::routes::vault::vault_routes::load_keys());
+
     routes::variability_routes variability(ctx, system_flags, sessions);
     variability.register_routes(router, registry);
 
     ores::http::routes::assets::assets_routes::register_routes(router, registry, service_nats);
 
+    ores::http::routes::dq::dq_routes::register_routes(router, registry, service_nats);
     ores::http::routes::refdata::refdata_routes::register_routes(router, registry, service_nats);
 
     ores::http::routes::history_routes::register_routes(router, registry, service_nats);

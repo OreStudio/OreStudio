@@ -55,6 +55,13 @@ const ARRIVAL_MODES = ['periodic'] as const;
 
 const PRICE_SOURCES = ['fixed'];
 
+/*
+ * How the curve states its index's rate. A curve that runs its own engine is
+ * the shape every existing feed has; the other two state a term index no
+ * publisher quotes from the currency's overnight curve.
+ */
+const RATE_SOURCES = ['process', 'compounded_overnight', 'overnight_plus_spread'] as const;
+
 /**
  * The curve's own fields, in the words of the Qt IR curve editor: the
  * currency, the index name, the role, the fixed leg frequency and how often
@@ -180,6 +187,27 @@ const IR_FIELDS: readonly FieldSpec[] = [
         help: 'marketdata.irFeeds.help.price_source',
     },
     {
+        field: 'rate_source',
+        history: 'Rate Source',
+        kind: { kind: 'choice', options: RATE_SOURCES },
+        labelKey: 'marketdata.irFeeds.rateSource',
+        help: 'marketdata.irFeeds.help.rate_source',
+    },
+    {
+        field: 'derived_spread_basis_points',
+        history: 'Spread',
+        kind: { kind: 'decimal' },
+        labelKey: 'marketdata.irFeeds.derivedSpread',
+        help: 'marketdata.irFeeds.help.derived_spread_basis_points',
+    },
+    {
+        field: 'derived_spread_source',
+        history: 'Spread Source',
+        kind: { kind: 'text', max: 200 },
+        labelKey: 'marketdata.irFeeds.derivedSpreadSource',
+        help: 'marketdata.irFeeds.help.derived_spread_source',
+    },
+    {
         field: 'enabled',
         history: 'Enabled',
         kind: { kind: 'bool' },
@@ -216,6 +244,9 @@ const IR_WRITE_FIELDS = [
     'decay',
     'sensitivity',
     'price_source',
+    'rate_source',
+    'derived_spread_basis_points',
+    'derived_spread_source',
     'description',
     'fixed_leg_payment_frequency_code',
     'source_name',
@@ -240,6 +271,9 @@ const NEW_IR_FEED: FieldValues = {
     process_type: 'VASICEK',
     ticks_per_hour: '3600',
     price_source: 'fixed',
+    rate_source: 'process',
+    derived_spread_basis_points: '0',
+    derived_spread_source: '',
     description: '',
     enabled: 'false',
     auto_start: 'false',

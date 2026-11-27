@@ -38,6 +38,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import vault_credentials
 import uuid
 from pathlib import Path
 
@@ -203,6 +204,32 @@ def _substitute_args(args_template, def_row, keys_dir, log_level="info",
     return tmpl
 
 
+# Services that cannot start without a key. The key is a systemd credential, so
+# the unit reads it from CREDENTIALS_DIRECTORY and the environment file never
+# holds it; the file itself is generated once per checkout by
+# vault_credentials.ensure().
+SERVICE_CREDENTIALS = {
+    # Every retained key version, because a row records the one that sealed it,
+    # and the version file that says which one a write uses.
+    "ores.vault.service": ["vault.kek.*", "vault.transport.key"],
+    "ores.http.server": ["gateway.transport.key"],
+}
+
+
+def _credential_lines(service_name, checkout_root):
+    """The LoadCredential= lines a service's unit needs, one per key file.
+
+    A pattern stands for every file it matches, because a rotation adds a key
+    version and the unit has to see the ones already there.
+    """
+    keys_dir = Path(checkout_root) / "build" / "keys"
+    lines = ""
+    for pattern in SERVICE_CREDENTIALS.get(service_name, []):
+        for path in sorted(keys_dir.glob(pattern)):
+            lines += f"LoadCredential={path.name}:{path}\n"
+    return lines
+
+
 def render_singleton_unit(def_row, deps_on, checkout_root, env_name, target_name,
                           log_level="info", log_to_file=False):
     """A plain (non-replicated) service, one concrete unit per
@@ -239,6 +266,8 @@ def render_singleton_unit(def_row, deps_on, checkout_root, env_name, target_name
             f'export ORES_IAM_SERVICE_JWT_PRIVATE_KEY="$(cat "{jwt_key_file}")"; '
         )
 
+    credential_lines = _credential_lines(def_row["service_name"], checkout_root)
+
     shell_cmd = (f'{jwt_key_reexport}cd "{bin_dir}" && '
                  f'exec "./{def_row["binary_name"]}" {args}')
 
@@ -257,7 +286,7 @@ Type=notify
 {START_TIMEOUT}
 NotifyAccess=all
 EnvironmentFile={env_file}
-ExecStart=/bin/sh -c '{shell_cmd}'
+{credential_lines}ExecStart=/bin/sh -c '{shell_cmd}'
 Restart=always
 RestartSec=2
 {FLEET_MEMORY_LIMITS}
@@ -568,6 +597,10 @@ def cmd_generate(project_root: Path, env: dict, args) -> int:
     services = load_service_registry(project_root)
     defs = fetch_service_definitions(services)
     deps = fetch_dependencies(services)
+
+    # A unit names its keys before it can start, so they are provisioned here,
+    # once, and left alone when they already exist.
+    vault_credentials.ensure(project_root, announce=print)
 
     out_dir = project_root / "systemd/units"
     out_dir.mkdir(parents=True, exist_ok=True)

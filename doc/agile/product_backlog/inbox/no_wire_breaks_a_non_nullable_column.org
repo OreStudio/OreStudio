@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 898FA449-28A1-498B-80A6-CB69544ED614
+:END:
+#+title: A non-nullable wire-omitted column breaks the generated mapper
+#+description: Marking a non-nullable column :no_wire: makes the generated mapper emit .value() on a plain std::string, so the core library does not compile; the templates assume every wire-omitted column is optional.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:bug:secrets:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Marking a column that is =NOT NULL= as =:no_wire:= breaks the build. The
+generated mapper writes =r.field = v.field.value();= for every wire-omitted
+column, so a =text= column that is not =:nullable:= produces
+
+#+begin_src cpp
+error: no member named 'value' in 'std::basic_string<char>'
+#+end_src
+
+on the core library, because the domain struct carries a plain =std::string=.
+
+* Why
+
+=:no_wire:= exists to keep a secret column off the generated wire surfaces while
+the process still holds the value, and every column that uses it today is
+nullable, so the templates never met a non-nullable one. A secret that always
+has a value — a sealed value is never absent — cannot use the knob at all, and
+the column leaks into the read surfaces instead. The fix is in
+=cpp_domain_type_mapper.cpp.mustache= (and the history field mapper): emit the
+plain assignment when the column is not nullable.
+
+Found while reviewing #5153: marking =ores.vault.secret.sealed_value= as
+=:no_wire:= removed it from the codec and then failed to compile.
+
+* References
+
+- =projects/ores.codegen/library/templates/cpp_domain_type_mapper.cpp.mustache=
+  lines 325–330.
+- =projects/ores.iam/modeling/ores.iam.account_credential.org= — the only
+  existing =:no_wire:= usage, and it is nullable.
+
+* See also
+
+- [[id:FB84131B-BAC5-4E4B-BA4E-0ED8F0D24609][ores.vault.secret]] — the entity
+  whose sealed value wants the knob.

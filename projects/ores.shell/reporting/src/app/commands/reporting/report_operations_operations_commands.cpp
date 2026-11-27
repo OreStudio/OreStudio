@@ -130,11 +130,20 @@ void report_operations_operations_commands::register_commands(cli::Menu& root_me
         "unschedule-report-definitions <ids>");
 
     menu->Insert(
+        "resolve-market-readiness",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_resolve_market_readiness(std::ref(out), std::ref(session), std::move(args));
+        },
+        "resolve-market-readiness <report_instance_id> <definition_id> <tenant_id> "
+        "<correlation_id>");
+
+    menu->Insert(
         "gather-trades",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_gather_trades(std::ref(out), std::ref(session), std::move(args));
         },
-        "gather-trades <report_instance_id> <definition_id> <tenant_id> <correlation_id>");
+        "gather-trades <report_instance_id> <definition_id> <tenant_id> <correlation_id> "
+        "<book_ids> <trade_ids>");
 
     menu->Insert(
         "gather-market-data",
@@ -568,17 +577,17 @@ void report_operations_operations_commands::process_unschedule_report_definition
         << std::endl;
 }
 
-void report_operations_operations_commands::process_gather_trades(
+void report_operations_operations_commands::process_resolve_market_readiness(
     std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
-    ORES_LOG_SEV(lg(), debug) << "Initiating gather-trades request.";
+    ORES_LOG_SEV(lg(), debug) << "Initiating resolve-market-readiness request.";
 
-    using request_type = ores::reporting::messaging::gather_trades_request;
+    using request_type = ores::reporting::messaging::resolve_market_readiness_request;
 
     // Whether the command presents a token is the protocol's own statement, so
     // a message that establishes the session is never asked for one.
     if constexpr (request_type::requires_session) {
         if (!session.is_logged_in()) {
-            fail(out) << "You must be logged in to run gather-trades." << std::endl;
+            fail(out) << "You must be logged in to run resolve-market-readiness." << std::endl;
             return;
         }
     }
@@ -604,6 +613,65 @@ void report_operations_operations_commands::process_gather_trades(
         req.definition_id = parsed->positionals[next++];
         req.tenant_id = parsed->positionals[next++];
         req.correlation_id = parsed->positionals[next++];
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    std::optional<ores::reporting::messaging::resolve_market_readiness_result> result;
+    if constexpr (request_type::requires_session) {
+        result = do_auth_request<ores::reporting::messaging::resolve_market_readiness_result>(
+            out, session, std::string(req.nats_subject), req);
+    } else {
+        result = do_request<ores::reporting::messaging::resolve_market_readiness_result>(
+            out, session, std::string(req.nats_subject), req);
+    }
+    if (!result)
+        return;
+
+    out << ores::utility::codec::wire_traits<std::remove_cvref_t<decltype(*result)>>::write_json(
+               *result)
+        << std::endl;
+}
+
+void report_operations_operations_commands::process_gather_trades(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    ORES_LOG_SEV(lg(), debug) << "Initiating gather-trades request.";
+
+    using request_type = ores::reporting::messaging::gather_trades_request;
+
+    // Whether the command presents a token is the protocol's own statement, so
+    // a message that establishes the session is never asked for one.
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run gather-trades." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    constexpr std::size_t positional_count = 6;
+    if (parsed->positionals.size() != positional_count) {
+        fail(out) << "Expected " << positional_count << " arguments, got "
+                  << parsed->positionals.size() << "." << std::endl;
+        return;
+    }
+
+    request_type req;
+    std::size_t next = 0;
+    try {
+        req.report_instance_id = parsed->positionals[next++];
+        req.definition_id = parsed->positionals[next++];
+        req.tenant_id = parsed->positionals[next++];
+        req.correlation_id = parsed->positionals[next++];
+        req.book_ids = report_operations_split_list_token(parsed->positionals[next++]);
+        req.trade_ids = report_operations_split_list_token(parsed->positionals[next++]);
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;

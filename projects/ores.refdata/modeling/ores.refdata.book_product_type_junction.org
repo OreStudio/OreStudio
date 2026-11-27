@@ -1,6 +1,7 @@
 :PROPERTIES:
 :ores.cpp.wire-codec.enabled: true
 :ID: 04919c94-bcca-47a5-914e-73aef24d28c7
+:ores.sql.schema.junction_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.book_product_type
 #+description: Codegen junction model for book_product_types: the product types a book allows, when the book states them at all.

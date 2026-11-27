@@ -23,7 +23,9 @@
 #include "ores.compute.api/messaging/telemetry_protocol.hpp"
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.compute.wrapper/app/claim_loop.hpp"
+#include "ores.compute.wrapper/app/job_scratch.hpp"
 #include "ores.compute.wrapper/app/log_publisher.hpp"
+#include "ores.compute.wrapper/app/package_cache.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.ore.core/log/engine_log.hpp"
@@ -644,12 +646,16 @@ void upload_output_files(auto& lg,
 }
 
 /**
- * @brief Make sure the engine package for an app version is unpacked in the cache.
+ * @brief Make sure the engine package is unpacked in the cache.
  *
  * The wrappers on one host share the cache directory. A lock file per package
  * lets one wrapper download while the others wait, so a host fetches each
  * package once and not once per wrapper. A failed transfer is tried again,
  * because a burst of downloads from many hosts can cut one short.
+ *
+ * The archive is the transport and the unpacked tree is the cache, so the
+ * archive is removed once the tree is in place: keeping it would double what a
+ * package costs a host for nothing.
  */
 void ensure_package(const fs::path& pkg_cache_dir,
                     const compute::messaging::work_assignment_event& evt,
@@ -659,8 +665,11 @@ void ensure_package(const fs::path& pkg_cache_dir,
         return;
 
     fs::create_directories(pkg_cache_dir.parent_path());
-    const fs::path lock_path = pkg_cache_dir.parent_path() / (evt.app_version_id + ".lock");
-    { std::ofstream create_lock(lock_path, std::ios::app); }
+    const auto cache_key = pkg_cache_dir.filename().string();
+    const fs::path lock_path = pkg_cache_dir.parent_path() / (cache_key + ".lock");
+    {
+        std::ofstream create_lock(lock_path, std::ios::app);
+    }
     boost::interprocess::file_lock file_lock(lock_path.string().c_str());
     boost::interprocess::scoped_lock<boost::interprocess::file_lock> guard(file_lock);
 
@@ -669,7 +678,7 @@ void ensure_package(const fs::path& pkg_cache_dir,
         return;
 
     constexpr int max_attempts = 4;
-    const fs::path pkg_archive = pkg_cache_dir.parent_path() / (evt.app_version_id + ".tar.gz");
+    const fs::path pkg_archive = pkg_cache_dir.parent_path() / (cache_key + ".tar.gz");
     for (int attempt = 1;; ++attempt) {
         ORES_LOG_SEV(lg, debug) << "Downloading package: " << evt.app_version_id << " (attempt "
                                 << attempt << " of " << max_attempts << ")";
@@ -689,6 +698,8 @@ void ensure_package(const fs::path& pkg_cache_dir,
 
     const auto actual_sha256 = ores::utility::crypto::sha256::hex_digest_of_file(pkg_archive);
     if (actual_sha256 != evt.package_sha256) {
+        std::error_code discarded;
+        fs::remove(pkg_archive, discarded);
         throw std::runtime_error("Package SHA256 mismatch for " + evt.app_version_id +
                                  ": expected " + evt.package_sha256 + ", got " + actual_sha256 +
                                  " -- refusing to run a corrupted or tampered package");
@@ -698,13 +709,11 @@ void ensure_package(const fs::path& pkg_cache_dir,
     // manifest.json exists only in a finished package. A wrapper that checks for
     // it without the lock, or after a crash during the unpack, never sees half a
     // package.
-    const fs::path unpack_dir = pkg_cache_dir.string() + ".tmp";
-    std::error_code ignored;
-    fs::remove_all(unpack_dir, ignored);
-    fs::create_directories(unpack_dir);
-    ores::storage::filesystem::archiver::extract(pkg_archive, unpack_dir);
-    fs::remove_all(pkg_cache_dir, ignored);
-    fs::rename(unpack_dir, pkg_cache_dir);
+    // The tree is unpacked beside its final name and renamed into place, and the
+    // archive goes once the tree is there: it is the transport, not the cache.
+    unpack_package(pkg_cache_dir, pkg_archive);
+    ORES_LOG_SEV(lg, info) << "Cached package " << cache_key << " at " << pkg_cache_dir.string()
+                           << "; the archive is not kept.";
 }
 
 /**
@@ -767,7 +776,7 @@ void process_assignment(ores::nats::service::client& nats,
         const fs::path package_root = cfg.package_dir.empty() ?
                                           fs::path(cfg.work_dir) / "packages" :
                                           fs::path(cfg.package_dir);
-        const fs::path pkg_cache_dir = package_root / evt.app_version_id;
+        const fs::path pkg_cache_dir = package_cache_dir(package_root, evt);
         ensure_package(pkg_cache_dir, evt, cfg.http_base_url, lg);
 
         const auto mf = read_manifest(pkg_cache_dir);
@@ -999,6 +1008,20 @@ void process_assignment(ores::nats::service::client& nats,
                   error_message,
                   duration_ms,
                   lg);
+
+    // The folder is scratch. A succeeded run's output is in the result's own
+    // location and its log is in the log store by now, so the copy on this node
+    // buys nothing and would stay for ever. A run that failed keeps its folder,
+    // because on this node that folder is the only account of why it stopped.
+    if (outcome == 1) {
+        const fs::path job_folder = fs::path(cfg.work_dir) / "jobs" / evt.result_id;
+        if (const auto released = release_job_folder(job_folder))
+            ORES_LOG_SEV(lg, info) << "Released the folder of job " << evt.result_id << ", "
+                                   << *released << " byte(s), once its output was uploaded.";
+        else
+            ORES_LOG_SEV(lg, warn) << "Could not release the folder of job " << evt.result_id
+                                   << ": it stays on this node.";
+    }
 }
 
 } // namespace

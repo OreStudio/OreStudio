@@ -91,6 +91,7 @@
  *       select distinct 'fixir', c.currency_code, c.index_family, c.tenor, '', '', '', ''
  *       from ores_dq_ir_curve_generation_configs_artefact_tbl c
  *       where c.provider_code is not null
+ *         and c.rate_source = 'process'
  *       union all
  *       select distinct 'fixfx', s.base_currency_code, s.quote_currency_code,
  *              k.fixing_source_code, '', '', '', ''

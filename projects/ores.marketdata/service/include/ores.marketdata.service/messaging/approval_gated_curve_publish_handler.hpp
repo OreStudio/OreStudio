@@ -24,8 +24,9 @@
 #include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/messaging/curve_publish_operations_protocol.hpp"
 #include "ores.marketdata.service/app/curve_notices.hpp"
-#include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
+#include "ores.marketdata.service/app/publication_kind_codes.hpp"
+#include "ores.marketdata.service/app/publication_lifecycle.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -151,75 +152,40 @@ public:
                        publish_curve_response& resp) {
         using namespace ores::marketdata::service::app;
 
-        if (req.approval_request_id.empty()) {
-            const auto subject =
-                resolve_publish_subject(req_ctx, req.bootstrap_config_id, req.as_of);
-            const auto raised = raise_publish_request(req_ctx, subject, req.reason);
-            const auto id = boost::uuids::to_string(raised.id);
-            resp.approval_request_id = id;
-            resp.state_code = raised.state_code;
-            if (raised.state_code != "approved") {
+        const auto answered = answer_publication(req_ctx,
+                                                 derived_kind::curve,
+                                                 req.bootstrap_config_id,
+                                                 req.as_of,
+                                                 req.approval_request_id,
+                                                 req.reason);
+        resp.approval_request_id = answered.request_id;
+        resp.state_code = answered.state_code;
+        switch (answered.outcome) {
+            case publication_outcome::published:
+                resp.success = true;
+                resp.status = service::app::publish_status_published;
+                resp.published_at = answered.published_at;
+                resp.published_by = answered.published_by;
+                break;
+            case publication_outcome::raised:
                 resp.success = false;
                 resp.status = service::app::publish_status_raised;
-                resp.message = "Raised. The publish waits on the decision.";
+                resp.message = answered.message;
                 ORES_LOG_SEV(curve_publish_handler_lg(), info)
-                    << "Raised publish request " << id << " for curve " << req.bootstrap_config_id
-                    << " as of " << req.as_of;
-                return;
-            }
-            ORES_LOG_SEV(curve_publish_handler_lg(), info)
-                << "Request " << id << " needs no approval, so the raise is the publish";
-            apply(req_ctx, id, subject, resp);
-            return;
+                    << "Raised publish request " << answered.request_id << " for curve "
+                    << req.bootstrap_config_id << " as of " << req.as_of;
+                break;
+            case publication_outcome::deferred:
+                resp.status = service::app::publish_status_deferred;
+                resp.message = "Deferred. " + answered.message;
+                ORES_LOG_SEV(curve_publish_handler_lg(), info)
+                    << "Deferred curve " << req.bootstrap_config_id << ": " << answered.message;
+                break;
+            case publication_outcome::refused:
+                resp.status = service::app::publish_status_refused;
+                resp.message = answered.message;
+                break;
         }
-
-        const auto attempted = resolve_publish_subject(req_ctx, req.bootstrap_config_id, req.as_of);
-        resp.approval_request_id = req.approval_request_id;
-        apply(req_ctx, req.approval_request_id, attempted, resp);
-    }
-
-private:
-    /**
-     * @brief Applies the approved request, or says why it may not.
-     *
-     * The set moves before the record is stamped, so a failure to write the
-     * observations leaves the request unused rather than spent.
-     */
-    static void apply(const ores::database::context& req_ctx,
-                      const std::string& request_id,
-                      const service::app::publish_subject& attempted,
-                      publish_curve_response& resp) {
-        using namespace ores::marketdata::service::app;
-
-        const auto verdict = verdict_on_publish(req_ctx, request_id, attempted);
-        resp.state_code = verdict.state_code;
-        if (!verdict.approved) {
-            resp.status = service::app::publish_status_refused;
-            resp.message = verdict.message;
-            return;
-        }
-
-        // A deferred build writes nothing and stamps nothing, so the request is not
-        // spent on a curve whose inputs have not arrived: the next firing applies it.
-        const auto built = curve_republish_service::republish(
-            req_ctx, attempted.bootstrap_config_id, attempted.as_of);
-        if (!built) {
-            resp.status = service::app::publish_status_deferred;
-            resp.message = "Deferred. " + built.error().reason;
-            ORES_LOG_SEV(curve_publish_handler_lg(), info)
-                << "Deferred curve " << attempted.bootstrap_config_id << ": "
-                << built.error().reason;
-            return;
-        }
-
-        const auto published = record_publication(
-            req_ctx,
-            *verdict.record,
-            req_ctx.actor().empty() ? req_ctx.service_account() : req_ctx.actor());
-        resp.success = true;
-        resp.status = service::app::publish_status_published;
-        resp.published_at = published.published_at;
-        resp.published_by = published.published_by;
     }
 
     ores::nats::service::client& nats_;

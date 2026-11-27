@@ -1,0 +1,283 @@
+:PROPERTIES:
+:ID: F6FA7F9C-4AD0-4EF7-9DD8-C863EE09CC09
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.iam.external_identity
+#+description: Codegen entity model for the IAM external_identities table: the link from an ORE account to the provider account that signs it in.
+#+type: ores.codegen.entity
+#+component: iam
+#+filetags: :model:entity:iam:identity:
+#+entity_singular: external_identity
+#+entity_plural: external_identities
+#+entity_title: External Identity
+#+brief: A link from an ORE account to a provider account.
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+The link from an ORE account to one account at one identity provider, and the
+record that the person proved it. The provider names the person by an issuer and
+a subject; the subject is opaque, stable at the provider, and the only thing ORE
+trusts to identify that provider account.
+
+The address the provider stated at the moment of linking is kept beside the
+subject, with whether the provider said it was verified. It is evidence of what
+the person linked, not an identity: nothing in ORE looks a person up by it, and
+no link is ever made because two addresses match. A person's address at a
+provider can change after the link, so the column records a fact at a time and
+is never treated as the current truth.
+
+Two invariants decide the shape. The pair (issuer, subject) names one provider
+account, and with the tenant it is the natural key, so the same provider account
+links to one ORE account in a tenant. And a link belongs to an account: an
+account may hold several links, one per provider, and keeps at least one way in
+at all times, which its own operations enforce.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: iam
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:            uuid
+:cpp_type:        boost::uuids::uuid
+:primary_key:     true
+:skip_uuid_check: true
+:END:
+
+The link's surrogate key, which the screen carries when a person removes a link.
+Nothing else addresses a link by it.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** issuer
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:END:
+
+The issuer identifier of the provider, as the ID token stated it, such as
+=https://accounts.google.com=. It is kept on the link as well as on the provider
+so that the identity of a provider account survives an edit to the provider's
+own issuer.
+
+#+begin_src cpp :name generator
+std::string("https://accounts.google.com")
+#+end_src
+
+** subject
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:END:
+
+The provider's own identifier for the person, the ID token's =sub= claim. It is
+opaque, it is stable at the provider, and it is the only thing that identifies
+the provider account. Google scopes it to the client that asked, so the same
+person at two tenants of one deployment holds two different subjects.
+
+#+begin_src cpp :name generator
+std::string("113456789012345678901")
+#+end_src
+
+** account_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+The ORE account the provider account signs in. The link is the account's, and
+removing it changes nothing else about the account.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** identity_provider_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:END:
+
+The provider the link was made through. It is what the door looks the link up by
+once the flow names a provider, and it is what the screen shows as the provider's
+name.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** email
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The address the provider stated at the moment of linking. Kept as evidence of
+what the person linked: it is never used to find an account, and it is never
+refreshed silently.
+
+#+begin_src cpp :name generator
+std::string(faker::internet::email())
+#+end_src
+
+** email_verified
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  false
+:END:
+
+Whether the provider stated that the address was verified at that moment. A link
+is only made on a verified address, so this is true for every row the door
+writes; it is kept because the answer was a condition of the link, and the
+record should say what was true then.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** linked_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: false
+:END:
+
+When the person linked the provider account, either by registering through it or
+by proving their ORE account first. The screen shows it, because a person
+recognises a link by when they made it.
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::now()
+#+end_src
+
+** last_used_at
+:PROPERTIES:
+:type:     timestamp with time zone
+:cpp_type: std::chrono::system_clock::time_point
+:nullable: true
+:default_value: {}
+:END:
+
+When the link last signed the person in, empty until it first does. It tells a
+person which of their links they actually use, and it tells an administrator
+which links no longer serve anyone.
+
+#+begin_src cpp :name generator
+std::chrono::system_clock::time_point{}
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_iam_external_identities_tbl
+:rls_tenant_isolation: true
+:END:
+
+* Foreign keys
+
+** account_id
+:PROPERTIES:
+:table:         ores_iam_accounts_tbl
+:target_column: id
+:parent_entity: account
+:error_message: Invalid account_id: %. No active account found with this id.
+:list_by:       true
+:END:
+
+** identity_provider_id
+:PROPERTIES:
+:table:         ores_iam_identity_providers_tbl
+:target_column: id
+:parent_entity: identity_provider
+:error_message: Invalid identity_provider_id: %. No active identity provider found with this id.
+:list_by:       true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: link
+:entity_plural_short:   links
+:entity_singular_words: external identity
+:entity_plural_words:   external identities
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ei
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| email       | Address     |
+| linked_at   | Linked      |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:collection_name: links
+:key_field:       email
+:END:
+
+A link is shown under the person it belongs to and addressed by nothing a
+person types; the address it was made on is what a person recognises.
+
+*** Detail fields
+
+| field  | label   | widget    | type      | is_key | is_required | placeholder    |
+|--------+---------+-----------+-----------+--------+-------------+----------------|
+| email  | Address | emailEdit | line_edit | true   |             | Enter an email |
+| issuer | Issuer  | issuerEdit | line_edit |        |             |                |
+
+*** Columns
+
+| enum_name  | field        | header  | type      | width |
+|------------+--------------+---------+-----------+-------|
+| Email      | email        | Address | string    | 320   |
+| Issuer     | issuer       | Issuer  | string    | 320   |
+| LinkedAt   | linked_at    | Linked  | timestamp | 150   |
+| LastUsedAt | last_used_at | Used    | timestamp | 150   |
+
+** Paste blocks
+
+* See also
+
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] — component group overview.
+- [[id:0F5AC0A8-6284-4068-B8FF-E37034E46337][ores.iam.identity_provider]] — the provider the link signs in through.
+- [[id:C98E2E5B-22B5-469D-8520-51726E1DF8D0][Decide how an external identity signs a person up and in]] — why nothing links by address.

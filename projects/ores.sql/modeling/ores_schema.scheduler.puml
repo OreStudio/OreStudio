@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: scheduler
-Tables: 4
+Tables: 6
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -82,13 +82,13 @@ package "scheduler" #F1F8E9 {
     carries version, the four audit columns and the valid_from/valid_to pair
     with the GIST exclusion and the delete rule, so the model takes the ordinary
     audited shape and needs no shape flag.
-    tenant_id is the tenant the job belongs to, and the platform's own jobs belong
-    to the system tenant. A job is never tenantless: the MQ statistics scrape, the
-    compute stale-result reaper and the housekeeping sweep are the system tenant's
-    rows, which is what makes them visible to it through the same read a tenant uses
-    for its own, and invisible to a tenant that has no business seeing the
-    installation's schedule. The model binds uuid-identified-lookup for its UUID
-    surrogate key, its tenant scope and its standard presentation tier.
+    tenant_id is not null. A job is a row of a tenant: the platform declares the
+    jobs it needs in order to function as rows of the system tenant, which is what
+    the classification that governs published rows says a platform row is. The
+    message queue scrape, the curve republish, the compute stale-result reaper and
+    the housekeeping sweep are such rows: one copy, held by the installation and
+    fired by the one scheduler. The model binds uuid-identified-lookup for its
+    UUID surrogate key, its tenant scope and its standard presentation tier.
     job_name is the natural key and is unique within its tenant; id is the
     surrogate. Uniqueness is what the component's upsert path relies on: a job that
     arrives under an existing name updates that row in place instead of adding a
@@ -120,15 +120,93 @@ package "scheduler" #F1F8E9 {
     Partitioned by triggered_at.
     end note
 
+    entity ores_scheduler_retained_store_samples_tbl  #F7E5FF {
+        * id : uuid <<PK>>
+        * sampled_at : timestamptz <<PK>>
+        --
+        * tenant_id : uuid <<FK>>
+        * store_code : text
+        * size_bytes : bigint
+        * measure_count : bigint
+    }
+
+    note right of ores_scheduler_retained_store_samples_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Retained Store Sample Table
+    A store's size is a series, not an adjective. The sampler measures each store it
+    can reach and writes one row here per store per interval, so a screen can say what
+    a store holds now and which way it has been going.
+    The measurement is keyed by the store's code, not by its target, so the series
+    survives a table being replaced. The catalogue is what says which code a target
+    belongs to, and a store the sampler cannot reach — an object prefix or a folder on
+    a host — simply has no rows: an absent series is the honest answer, and better
+    than a zero.
+    The model states :current_state: and carries no audit columns: a sample is a
+    fact about an instant, so the bi-temporal pair and the actor add nothing to it.
+    end note
+
+    entity ores_scheduler_retained_stores_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * display_name : text
+        * description : text
+        * owner_component : text
+        * scope : text
+        * target_kind : text
+        * target : text
+          time_column : text
+        * measure_kind : text
+        * bound_kind : text
+          default_action : text
+          default_retention_days : integer
+        * default_cadence_hours : integer
+          default_reason : text
+        * modified_by : text
+        * performed_by : text
+        * acting_agent : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_scheduler_retained_stores_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Retained Store Table
+    Every store the installation keeps is a row here, before anything else knows
+    about it. The row is what lets a person read "Calendar dates" instead of
+    ores_refdata_calendar_dates_tbl, and what lets the sweep, the screen and the
+    alerts agree on the set of stores without any of them carrying a list of tables.
+    The catalogue is not a policy: it states what the store is and the bound it ships
+    with, and a policy states what is applied now. That is why a store exists here
+    whether or not a policy names it, and why the bound is one of three kinds rather
+    than always an action and a period. A store bounded by its content keying needs
+    no policy, and a store whose bound cannot be expressed as an age — the calendar
+    days behind the horizon — states that it has none rather than carrying a default
+    that would delete what pricing still needs.
+    The rows describe the installation's own stores, so the platform authors them and
+    the system tenant holds them: the classification that governs published rows
+    makes the platform the author here, as it does for the policies those rows
+    describe. The column is not null for that reason.
+    end note
+
     entity ores_scheduler_retention_policies_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
         --
         * version : integer
         * target_kind : text
         * target : text
+        * store_code : text
         * action : text
         * retention_days : integer
-        * cadence : text
+        * cadence_hours : integer
         * enabled : boolean
         * description : text
         * modified_by : text
@@ -149,12 +227,20 @@ package "scheduler" #F1F8E9 {
     taken, and the period past which the action applies. The target is named by
     shape rather than by a particular table, so the policy survives a table being
     replaced.
+    A policy is a row of the installation, held by the system tenant: the
+    classification that governs published rows makes the platform the author of the
+    stores it bounds, and one copy in the system tenant is what keeps two
+    installations' policies from disagreeing. The column is not null for that
+    reason: a policy with no tenant has no owner to be published to.
     A policy is data, not a schema constant, so a period changes without a rebuild.
-    The scheduler fires one sweep which reads the enabled policies and applies them,
-    including where the storage engine runs no retention job of its own.
+    The scheduler fires one sweep, which applies the enabled policies that are due,
+    including where the storage engine runs no retention job of its own. A policy is
+    due once its cadence has passed since the sweep last applied it, so the sweep's
+    own schedule sets the finest cadence the installation can express.
     end note
 
     entity ores_scheduler_retention_runs_tbl  #F7E5FF {
+        * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
         --
         * policy_code : text

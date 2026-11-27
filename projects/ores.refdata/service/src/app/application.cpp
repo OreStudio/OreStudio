@@ -31,6 +31,7 @@
 #include "ores.refdata.service/config/options.hpp"
 #include "ores.refdata.service/messaging/book_proposal_registrar.hpp"
 #include "ores.refdata.service/messaging/event_registrar.hpp"
+#include "ores.refdata.service/messaging/product_approval_registrar.hpp"
 #include "ores.refdata.service/messaging/provisioning_step_handler.hpp"
 #include "ores.refdata.service/messaging/provisioning_step_registrar.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
@@ -138,6 +139,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             auto provisioning =
                 ores::refdata::messaging::provisioning_step_registrar::register_handlers(n, c);
             for (auto& sub : provisioning)
+                subs.push_back(std::move(sub));
+            // The chain a book's approval sits in is a table function, so the
+            // operation that reads it is served here rather than with the
+            // entity handlers.
+            auto approvals =
+                ores::refdata::messaging::product_approval_registrar::register_handlers(n, c, v);
+            for (auto& sub : approvals)
                 subs.push_back(std::move(sub));
             // The proposal operations raise approval requests, so they are
             // registered here and not with the entity handlers.

@@ -1,0 +1,165 @@
+:PROPERTIES:
+:ID: 7D34ECD1-E5F9-4C1F-9B6E-A4CE2BAC88E9
+:END:
+#+title: Task: Model the provider and the identity link
+#+description: Two IAM tables, as codegen entities: a provider a tenant enables, and a person's link to a provider account.
+#+type: task
+#+level: s1
+#+filetags: :sign_a_person_up_and_in_through_an_external_identity_provider:sprint_31:v0:
+#+owner: marco
+#+branch: feature/model-the-provider-and-the-identity-link
+#+pr: 5135
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Sign a person up and in through an external identity provider]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Model the two facts federated sign-in needs, in IAM, as codegen entities like every other table: a provider a tenant enables, carrying its issuer, its client, the address domains it may serve and whether the door offers it; and a person's link to a provider account, carrying the account, the issuer and the subject, the address the provider stated and when it was linked. Include the operations the door, the screens and the gate read: the providers a host offers before a session exists, a person's links after one, and the removal of one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Sign a person up and in through an external identity provider]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- A tenant enables a provider as data, and no code names Google or any other provider.
+- A link is keyed by the issuer and the subject, so a provider account links to one ORE account only.
+- The reads the door needs answer without a session, because the door is where a person without one arrives.
+- The schema, the domain types, the protocol, the eventing and the TypeScript
+  twins are generated from the models, and the generated suites pass.
+- The door's own routes are hand-written in the flow task, because they answer
+  before a session exists and must not require a read permission a person who is
+  signing in does not yet hold.
+
+* Plan
+
+Two codegen entities, both on the =uuid-identified-lookup= profile, which
+gives each a surrogate key, the tenant scope, the audit and bi-temporal tail and
+the tenant isolation policy without repeating any of it in the model.
+
+=ores.iam.identity_provider= keys on =code=, so a tenant enables a provider once
+and by a name the routes can carry. =ores.iam.external_identity= keys on the
+pair =(issuer, subject)=, which is what a provider account is: the subject is
+Google's =sub=, opaque and stable, and with the tenant it stops one provider
+account from reaching two ORE accounts. Both name their tables in the SQL Flags
+and turn on =:rls_tenant_isolation:=, which is what makes the row visible only
+inside its tenant; that flag has to be set beside the profile, because the
+profile does not imply it.
+
+The link carries =account_id= and =identity_provider_id= as foreign keys, which
+the generator validates in the insert trigger against the live tenant's rows,
+the way every other IAM table of this shape does. No SQL =references= is
+generated, and none is wanted: the tables are bi-temporal, so the referent is
+the live row and the trigger is where that is checked.
+
+Neither model turns on the HTTP route facet. The routes a person signs in
+through answer before a session exists and must not ask for a read permission,
+so the flow task writes them by hand as =auth_optional=; and a generated CRUD
+route would add permission codes that nothing seeds, on top of the 102 the
+backlog already tracks. The entities' reads reach the screens after this, through
+the routes that task declares.
+
+The work: write the two models, regenerate, build, and run the suites the
+generator produced.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Files the two models generate | 121, of which 88 name the two entities | =compass generate --skip-stale --scope projects/ores.iam/modeling/ores.iam.identity_provider.org --scope projects/ores.iam/modeling/ores.iam.external_identity.org= | 564d0cc561, on this branch's tree |
+| New sources in the IAM api library | 8 domain, 2 protocol codecs, 2 generators | =git status --short= counting =projects/ores.iam/api/src= | 564d0cc561, on this branch's tree |
+| Tables created | 2, each with its notify trigger, RLS policy and unique natural-key index | =projects/ores.sql/create/iam/iam_identity_providers_create.sql= and =iam_external_identities_create.sql= | 564d0cc561, on this branch's tree |
+| Suites the generator added | 4 codec round trips, 2 eventing integration, 2 shell command | =projects/ores.iam/api/tests=, =core/tests= and =ores.shell/iam/tests= | 564d0cc561, on this branch's tree |
+| Suites that ran and passed | =ores.iam.api.tests= 5.47s and =ores.shell.iam.tests= 0.51s | =compass test run -- -R "ores.iam.api.tests|ores.shell.iam.tests"= | 564d0cc561, on this branch's tree |
+
+* Notes
+
+** The scaffold writes a key section the loader does not read
+
+=compass add entity_org= writes the surrogate key under a =* Primary key=
+heading, and =org_loader.py= reads the entity's key from =* Columns=, where the
+form is a =**= sub-heading flagged =:primary_key: true=. The first regeneration
+therefore refused the file the scaffold had just written, with =Missing primary
+key=. This is capture [[id:2BD2E2E4-2F11-4622-B2C4-93F43EB79277][The entity_org
+scaffold writes a Primary key section the entity loader does not read]], met
+again here; both models moved their keys into =* Columns= before they would
+generate.
+
+** A new file can break a neighbour in the unity build
+
+The first build failed on =service_session_service.hpp=, a hand-written header
+that holds =ores::database::context ctx_= by value while including only the
+forward declaration, and compiled until now because the unity chunk reached the
+full definition through a neighbour first. Adding sources reshuffled the chunks
+and exposed it. The header now includes =ores.database/domain/context.hpp=, which
+is what it always needed.
+
+** The core eventing suites need the database this checkout describes
+
+They write to the live tables, and the environment's database is a day older than
+the tree, so they wait for the =db= step of the heavy gate. The api and shell
+suites need no database and pass.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5135][#5135]] | [iam] Model the identity provider and the link that signs a person in |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Both entities generate, build, and pass the suites that need no database.
+
+=ores.iam.identity_provider= and =ores.iam.external_identity= each carry a
+surrogate key, the tenant scope, the audit and bi-temporal tail and tenant row
+level security, with unique indexes on =(tenant_id, code)= and
+=(tenant_id, issuer, subject)=. The link validates its account and its provider
+against the live tenant's rows in its insert trigger. The generated estate covers
+the SQL, the domain type, the codec, the table IO, the protocol and its codec, the
+NATS handler and registrars, the eventing, the shell commands and their recipes,
+the ER diagrams and the TypeScript twins.
+
+=ores.iam.api.tests= and =ores.shell.iam.tests= pass. The two eventing
+integration suites wait for a database built from this tree, which is the heavy
+gate's =db= step.
+
+No HTTP route is generated, on purpose: the door's routes answer before a session
+exists, so the flow task writes them.

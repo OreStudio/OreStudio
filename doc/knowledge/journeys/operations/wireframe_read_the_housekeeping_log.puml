@@ -1,0 +1,54 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - SYSTEM ADMINISTRATION: OPERATIONS</b>
+  --
+  <b>HOUSEKEEPING</b>  |  Stores | <b>Runs</b>
+  --
+  {
+    ^Last day^ | ^Any policy^ | ^Any outcome^ | target
+  }
+  --
+  {#
+    Ran at | Policy | Target | Outcome | Removed | Detail
+    17:15 | report_cashflows_90d | ..._cashflows_tbl | applied | 0 | nothing older than 90 days
+    17:15 | report_metrics_90d | ..._metrics_tbl | applied | 0 | nothing older than 90 days
+    17:15 | report_text_values_90d | ..._text_values_tbl | applied | 0 | nothing older than 90 days
+    17:15 | delivery_counts_30d | ..._delivery_counts_tbl | <color:#b00020>skipped</color> | 0 | the sweep applies only a chunk drop today
+    03:00 | report_cashflows_90d | ..._cashflows_tbl | <color:#b00020>failed</color> | 0 | permission denied for table
+  }
+  --
+  <b>SELECTED RUN 17:15 skipped</b>
+  --
+  {
+    The policy is enabled and the store is not being bounded:
+    the sweep performs a chunk drop and this policy asks for a row delete.
+    [ Read the sweep's lines ]  [ Open the policy ]
+  }
+  --
+  Showing 1-5 of 5 runs -- a zero that is not a failure says so
+}
+
+@enduml

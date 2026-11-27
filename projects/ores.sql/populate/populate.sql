@@ -320,6 +320,7 @@ select ores_utility_allow_version_replace_fn();
 \echo ''
 \echo '--- Market Data: Simulated Fixings (read from the staged currency pairs) ---'
 \ir marketdata/marketdata_vendor_fixing_instruments_populate.sql
+\ir marketdata/marketdata_fixing_publishers_instruments_populate.sql
 
 -- =============================================================================
 -- FSM Layer (must precede Trading — activity types reference FSM transitions)
@@ -355,14 +356,26 @@ select ores_utility_allow_version_replace_fn();
 
 \echo ''
 \echo '--- Compute Layer ---'
-\ir compute/compute_populate.sql
 \ir compute/compute_platforms_seed.sql
 \ir compute/compute_ore_app_seed.sql
 
--- The scheduler's own job definition. The compute seed above writes compute's
--- job; this one writes the message queue metrics scrape, and both are named in
--- the scheduler's job definition model.
-\ir scheduler/scheduler_populate.sql
+-- Housekeeping as platform data. The datasets register first, because the
+-- artefact rows name the dataset they belong to, and both publish into the
+-- system tenant as members of system_core.
+\echo ''
+\echo '--- Housekeeping Datasets ---'
+\ir scheduler/scheduler_job_definitions_dataset_populate.sql
+\ir scheduler/scheduler_retention_policies_dataset_populate.sql
+\ir scheduler/scheduler_retained_stores_dataset_populate.sql
+\ir scheduler/scheduler_job_definitions_artefact_populate.sql
+-- The catalogue stages first: the policies the installation ships with are
+-- derived from the default bounds it states, so one statement of a default
+-- serves both.
+\ir scheduler/scheduler_retained_stores_artefact_populate.sql
+\ir scheduler/scheduler_retention_policies_artefact_populate.sql
+-- The notices housekeeping raises are the scheduler's own kinds, seeded beside
+-- the stores they are about.
+\ir scheduler/scheduler_notification_kinds_populate.sql
 
 -- =============================================================================
 -- Analytics Layer
@@ -385,6 +398,14 @@ select ores_utility_allow_version_replace_fn();
 \echo ''
 \echo '--- Publishing the platform and world levels ---'
 \ir dq/dq_bootstrap_publish_populate.sql
+
+-- The Derived provider publishes the term indices the platform states, so its
+-- fixing addresses are installed once the dataset publish above has written
+-- the collection that names it.
+\echo ''
+\echo '--- Derived Fixing Instruments ---'
+\ir synthetic/synthetic_ir_curve_derived_fixing_instruments_populate.sql
+
 
 -- The tenor convention resolutions name tenor schedules, and a schedule row
 -- exists only once the world publish above has written it.

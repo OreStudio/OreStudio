@@ -18,25 +18,35 @@
  *
  */
 #include "curve_publish_fixture.hpp"
+#include "curve_publish_steps.hpp"
 #include "ores.database/query_builder/execute.hpp"
+#include "ores.database/repository/unit_of_work.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
+#include "ores.inbox.api/generators/approval_request_generator.hpp"
 #include "ores.inbox.api/messaging/notification_operations_protocol.hpp"
+#include "ores.inbox.core/repository/approval_kind_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_repository.hpp"
+#include "ores.inbox.core/repository/approval_request_state_repository.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
 #include "ores.logging/logger.hpp"
+#include "ores.marketdata.api/generators/fx_forward_publish_generator.hpp"
+#include "ores.marketdata.core/repository/fx_forward_publish_repository.hpp"
 #include "ores.marketdata.service/app/curve_notices.hpp"
-#include "ores.marketdata.service/app/curve_publish_gate.hpp"
 #include "ores.marketdata.service/app/curve_republish_service.hpp"
 #include "ores.marketdata.service/app/curve_withdrawal.hpp"
+#include "ores.marketdata.service/app/publication_kind.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <string>
 #include <vector>
 
@@ -57,8 +67,8 @@ using namespace ores::logging;
 using ores::inbox::service::approval_lifecycle;
 using ores::inbox::service::notification_center;
 using ores::marketdata::service::app::announce_withdrawal;
-using ores::marketdata::service::app::record_publication;
-using ores::marketdata::service::app::verdict_on_publish;
+using ores::marketdata::service::tests::record_publication;
+using ores::marketdata::service::tests::verdict_on_publish;
 using ores::marketdata::service::tests::curve_fixture;
 using ores::marketdata::service::tests::seed_person;
 
@@ -183,8 +193,7 @@ TEST_CASE("a_publish_sends_one_notice_that_names_the_subject_and_the_act", "[cur
     const auto decider = seed_person(f.h);
     const reader_account reader(f);
 
-    const auto raised = ores::marketdata::service::app::raise_publish_request(
-        maker.ctx, f.subject(), "Today's bootstrapped curve");
+    const auto raised = raise_publish_request(maker.ctx, f.subject(), "Today's bootstrapped curve");
     const auto id = boost::uuids::to_string(raised.id);
     REQUIRE(approval_lifecycle(*f.party)
                 .decide(id, raised.version, "approve", decider.account.id, "")
@@ -237,8 +246,7 @@ TEST_CASE("a_withdrawal_sends_its_own_notice_with_the_reason", "[curve_notices]"
     const auto decider = seed_person(f.h);
     const reader_account reader(f);
 
-    const auto raised = ores::marketdata::service::app::raise_publish_request(
-        maker.ctx, f.subject(), "Today's bootstrapped curve");
+    const auto raised = raise_publish_request(maker.ctx, f.subject(), "Today's bootstrapped curve");
     const auto id = boost::uuids::to_string(raised.id);
     REQUIRE(approval_lifecycle(*f.party)
                 .decide(id, raised.version, "approve", decider.account.id, "")
@@ -280,8 +288,7 @@ TEST_CASE("a_refused_publish_sends_nothing", "[curve_notices]") {
     const auto decider = seed_person(f.h);
     const reader_account reader(f);
 
-    const auto raised = ores::marketdata::service::app::raise_publish_request(
-        maker.ctx, f.subject(), "A curve nobody checked");
+    const auto raised = raise_publish_request(maker.ctx, f.subject(), "A curve nobody checked");
     const auto id = boost::uuids::to_string(raised.id);
     REQUIRE(approval_lifecycle(*f.party)
                 .decide(id, raised.version, "refuse", decider.account.id, "The fit is wrong")
@@ -295,4 +302,145 @@ TEST_CASE("a_refused_publish_sends_nothing", "[curve_notices]") {
     CHECK(notices_of(f, reader.account()).empty());
     CHECK(f.output_point_count() == 0);
     CHECK_FALSE(f.published().has_value());
+}
+
+namespace {
+
+/**
+ * @brief An approved request row for a forward set to hang on.
+ *
+ * A forward publish names its request, and the store refuses a request id it
+ * does not hold, so each row under test needs one. The kind and the state are
+ * the store's own, read rather than invented.
+ */
+boost::uuids::uuid seed_forward_request(curve_fixture& f,
+                                        const ores::database::context& system_ctx) {
+    auto generation = ores::testing::make_generation_context(f.h);
+    auto asker = ores::iam::generators::generate_synthetic_account(generation);
+    asker.account_type = "service";
+    asker.change_reason_code = "system.test";
+    ores::iam::repository::account_repository{}.write(f.h.context(), asker);
+
+    auto request = ores::inbox::generators::generate_synthetic_approval_request(generation);
+    request.change_reason_code = "system.test";
+    request.requested_by = asker.id;
+    const auto kinds = ores::inbox::repository::approval_kind_repository{}.read_latest(system_ctx);
+    REQUIRE_FALSE(kinds.empty());
+    request.kind_code = kinds.front().code;
+    const auto states =
+        ores::inbox::repository::approval_request_state_repository{}.read_latest(system_ctx);
+    REQUIRE_FALSE(states.empty());
+    request.state_code = states.front().code;
+    ores::inbox::repository::approval_request_repository{}.write(f.h.context(), request);
+    return request.id;
+}
+
+}
+
+TEST_CASE("a_second_forward_publish_supersedes_the_first_and_tells_its_reader", "[curve_notices]") {
+    using ores::marketdata::service::app::fx_forward_publication_kind;
+    using ores::marketdata::service::app::publication_facts;
+
+    curve_fixture f;
+    const reader_account reader(f);
+    const auto system_ctx =
+        f.h.context().with_tenant(ores::utility::uuid::tenant_id::system(), f.h.db_user());
+    auto generation = ores::testing::make_generation_context(f.h);
+    const auto pair = std::string("EUR/USD");
+    const auto first_as_of =
+        std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now()) -
+        std::chrono::hours{24};
+    const auto second_as_of = first_as_of + std::chrono::hours{24};
+    const auto published_at =
+        std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
+    // The store checks every account a row names, so the publisher is the
+    // reader's own account: a name the store does not hold is refused at the
+    // write, not at the read.
+    const auto publisher = reader.account().username;
+    // The notice names the account that acted, and the store refuses a name it
+    // does not hold, so the apply runs as the reader's account in the party's
+    // own context: the same party the fixture publishes under, with an actor.
+    const auto publishing =
+        f.h.context().with_party(f.h.tenant_id(), f.party_id, {f.party_id}, publisher);
+
+    // The set in use, as the first apply left it, and the candidate the second
+    // request authorises.
+    auto first = ores::marketdata::generators::generate_synthetic_fx_forward_publish(generation);
+    first.request_id = seed_forward_request(f, system_ctx);
+    first.party_id = f.party_id;
+    first.pair_code = pair;
+    first.as_of = first_as_of;
+    first.published_at = first_as_of;
+    first.published_by = publisher;
+    first.modified_by = publisher;
+    first.performed_by = publisher;
+    first.change_reason_code = "system.test";
+
+    auto second = ores::marketdata::generators::generate_synthetic_fx_forward_publish(generation);
+    second.request_id = seed_forward_request(f, system_ctx);
+    second.party_id = f.party_id;
+    second.pair_code = pair;
+    second.as_of = second_as_of;
+    second.modified_by = publisher;
+    second.performed_by = publisher;
+    second.change_reason_code = "system.test";
+
+    ores::marketdata::repository::fx_forward_publish_repository repo;
+    repo.write(publishing, first);
+    repo.write(publishing, second);
+
+    publication_facts facts;
+    facts.subject.kind = ores::marketdata::service::app::derived_kind::fx_forward;
+    facts.subject.party_id = f.party_id;
+    facts.subject.subject_key = pair;
+    facts.subject.as_of = second_as_of;
+    facts.publish_id = second.id;
+    facts.request_id = second.request_id;
+    facts.version = second.version;
+    facts.published_at = published_at;
+    facts.published_by = publisher;
+    {
+        ores::database::repository::unit_of_work uow(publishing);
+        const auto& tx = uow.ctx();
+        facts = fx_forward_publication_kind().publish(tx, facts);
+        fx_forward_publication_kind().announce_published(tx, facts);
+        uow.commit();
+    }
+
+    // The pair carries one set in use, and the set that left use names the one
+    // that took its place.
+    const auto ended = repo.read_latest(*f.party, boost::uuids::to_string(first.id));
+    REQUIRE_FALSE(ended.empty());
+    CHECK(ended.front().superseded_at == published_at);
+    CHECK(ended.front().superseded_by_request_id == second.request_id);
+    CHECK(ended.front().superseded_as_of == second_as_of);
+    CHECK(facts.replaced_as_of == first_as_of);
+
+    // The successor is the live set of the pair, and it superseded nothing else.
+    const auto live = repo.read_published_for_pair(*f.party, f.party_id, pair);
+    const auto in_use =
+        std::ranges::find_if(live, [](const auto& s) { return !s.superseded_at.has_value(); });
+    REQUIRE(in_use != live.end());
+    CHECK(in_use->id == second.id);
+
+    // The reader is told once, in the words the kind states.
+    const auto notices = notices_of(f, reader.account());
+    const auto found = std::ranges::find_if(
+        notices, [](const auto& n) { return n.kind_code == "marketdata.fx_forward_published"; });
+    REQUIRE(found != notices.end());
+    CHECK(found->message_key == "notification.marketdata.fx_forward_published");
+    REQUIRE(argument_of(*found, "pair") != nullptr);
+    CHECK(*argument_of(*found, "pair") == pair);
+    REQUIRE(argument_of(*found, "request") != nullptr);
+    CHECK(*argument_of(*found, "request") == boost::uuids::to_string(second.request_id));
+    REQUIRE(argument_of(*found, "publisher") != nullptr);
+    CHECK(*argument_of(*found, "publisher") == publisher);
+    REQUIRE(argument_of(*found, "previous_as_of") != nullptr);
+    CHECK_FALSE(argument_of(*found, "previous_as_of")->empty());
+    // The forward set has no record page yet, so the notice names the set and
+    // carries no link rather than a link that opens nothing.
+    CHECK(found->link_route.empty());
+    // The notice names the subject and the act, never the values.
+    CHECK(argument_of(*found, "forward_points") == nullptr);
+    CHECK(argument_of(*found, "spot_rate") == nullptr);
 }

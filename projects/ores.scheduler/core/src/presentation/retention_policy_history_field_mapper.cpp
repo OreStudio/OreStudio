@@ -40,9 +40,10 @@ render_retention_policy_fields(const domain::retention_policy& v) {
     fields.push_back({.name = "Code", .value = v.code});
     fields.push_back({.name = "Target Kind", .value = v.target_kind});
     fields.push_back({.name = "Target", .value = v.target});
+    fields.push_back({.name = "Store Code", .value = v.store_code});
     fields.push_back({.name = "Action", .value = v.action});
     fields.push_back({.name = "Retention Days", .value = std::to_string(v.retention_days)});
-    fields.push_back({.name = "Cadence", .value = v.cadence});
+    fields.push_back({.name = "Cadence Hours", .value = std::to_string(v.cadence_hours)});
     fields.push_back({.name = "Enabled", .value = v.enabled ? "true" : "false"});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;

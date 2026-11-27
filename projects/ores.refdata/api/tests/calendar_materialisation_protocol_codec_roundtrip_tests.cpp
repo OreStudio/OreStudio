@@ -38,3 +38,15 @@ TEST_CASE("ores::refdata::messaging::regenerate_calendar_dates_response",
     ores::testing::check_wire_roundtrip<
         ores::refdata::messaging::regenerate_calendar_dates_response>();
 }
+
+TEST_CASE("ores::refdata::messaging::purge_calendar_date_copies_request",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::refdata::messaging::purge_calendar_date_copies_request>();
+}
+
+TEST_CASE("ores::refdata::messaging::purge_calendar_date_copies_response",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::refdata::messaging::purge_calendar_date_copies_response>();
+}

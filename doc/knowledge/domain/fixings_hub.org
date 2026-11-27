@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :domain:structure_note:fixing:
 #+created: 2026-11-22
-#+updated: 2026-11-22
+#+updated: 2026-11-26
 
 * Summary
 
@@ -55,6 +55,8 @@ Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
     the standard sources and the cut each serves.
 15. [[id:F24FA489-790A-4065-B8E1-DCC141595356][Synthetic generation of fixings]] —
     the synthetic data generation of fixings.
+16. [[id:5D2A8C41-6E3B-47F0-9A28-1C4B7E9D3F62][The fixing screens and what each one is for]] —
+    the four surfaces, the question each answers, and who asks it.
 
 ** Neighbouring notes
 

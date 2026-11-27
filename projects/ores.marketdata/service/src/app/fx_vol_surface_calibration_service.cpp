@@ -34,8 +34,10 @@
 #include "ores.marketdata.core/service/observation_lineage_service.hpp"
 #include "ores.marketdata.core/service/series_shape_writer.hpp"
 #include "ores.marketdata.service/app/catalogue_page.hpp"
-#include "ores.marketdata.service/app/fx_forward_publish_service.hpp"
+#include "ores.marketdata.service/app/fx_forward_publication_kind.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_plan.hpp"
+#include "ores.marketdata.service/app/publication_kind_codes.hpp"
+#include "ores.marketdata.service/app/publication_lifecycle.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
 #include "ores.refdata.core/repository/fx_option_convention_repository.hpp"
 #include "ores.refdata.core/repository/fx_vol_surface_blueprint_repository.hpp"
@@ -132,7 +134,7 @@ surface_forward_set
 read_forwards(const context& ctx, const surface_calibration_recipe& recipe, time_point as_of) {
     const auto pair =
         recipe.blueprint.base_currency_code + "/" + recipe.blueprint.quote_currency_code;
-    const auto set = fx_forward_publish_service::read(ctx, {.pair_code = pair, .as_of = as_of});
+    const auto set = fx_forward_published_reader::read(ctx, {.pair_code = pair, .as_of = as_of});
     if (!set.success)
         throw std::invalid_argument("The forwards of " + pair + ": " + set.message +
                                     " A surface reads its forwards from a published set, which "

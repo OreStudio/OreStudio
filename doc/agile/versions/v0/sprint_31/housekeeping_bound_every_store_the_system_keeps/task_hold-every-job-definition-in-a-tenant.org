@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: 851EB73C-B0A5-4DEA-B5E7-AADC26727066
+:END:
+#+title: Task: Hold every job definition in a tenant
+#+description: The scheduler's job definition table permits a null tenant, and every job a service writes over the wire lands with a null one, because the write message states no tenant. Hold each job in a tenant: the platform's jobs in the system tenant, a tenant's jobs in that tenant.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: feature/hold-every-job-definition-in-a-tenant
+#+pr: 5134
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The scheduler holds every job in a tenant. The jobs the platform declares in
+order to function are rows of the system tenant, and a job a service creates for
+a tenant is a row of that tenant, so a job, its instances and the events about
+them all name who they act for.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- =tenant_id= is not null on the job definition table, and its primary key, its
+  uniqueness indexes and its triggers state the tenant
+- No job definition is written with a null tenant
+- The scheduler fires a job with the tenant that holds it, and writes the
+  instance with that tenant
+- The jobs the platform declares are rows of the system tenant, from the dataset
+  that publishes them
+- The pgTAP suite, which publishes the housekeeping jobs, still passes
+
+The write naming the tenant it writes for is not part of this task: a job a
+service creates for another tenant needs the tenant in the message, and that
+choice is its own task, [[id:DCF056D9-BC7B-449A-A3A0-D6E3036C4DB4][State the
+tenant a job is written for]].
+
+* Analysis
+
+Found while delivering
+[[id:A71D89B6-2A44-4826-BF30-25E6E3AF631E][Deliver housekeeping as platform data]],
+which publishes the sweep job into the system tenant and cannot settle where a
+job belongs without settling this.
+
+The table was built for a null tenant, and the write path never states one.
+=job_definition_write= carries no tenant, and =job_definition_to_domain= leaves
+it unset, so every job a service writes over the wire lands null. The jobs the
+populate scripts seed land null for the same reason: the seed states =NULL=
+where the column would take a tenant. Three shapes follow from that: the
+uniqueness index is =nulls not distinct=, the version lookup compares the pair
+as =(tenant_id = NEW.tenant_id or (tenant_id is null and NEW.tenant_id is
+null))=, and the insert trigger validates the tenant only when it is set.
+
+What a null tenant costs. Row-level security binds a row to a tenant, so a
+null-tenant row belongs to no one: a tenant cannot read the job that runs for
+it, and the job's instances carry no tenant either. The housekeeping story
+requires the sweep and the policies to appear in each tenant's screens as work
+the installation runs, which is a question about who owns the row.
+
+Why it is more than a column change. A tenant that is not null belongs in the
+key, so the key a request names becomes the pair, and every read, write and
+delete resolves it. The write must state the tenant, which the request envelope
+does not carry today: a service writes with its own session's tenant, and the
+reporting and inbox services create jobs for other tenants. Both already hold
+the tenant they write for, so the decision is where to state it: on the write,
+which every caller then fills, or on the request, which lets a caller act for
+one tenant at a time.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+The scheduler's own test suite and the reporting and inbox services each write
+job definitions, so the change reaches all three.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5134][#5134]] | [scheduler] Hold every job definition in a tenant |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Every job definition now belongs to a tenant. The column is not null, and the
+table's primary key, its uniqueness index and its triggers state it: the
+uniqueness index no longer carries =nulls not distinct=, the version lookup
+compares the pair, and the insert trigger validates the tenant on every row.
+
+The platform's four jobs are rows of the system tenant, published by the job
+definitions dataset. The jobs a service registers at runtime are written by that
+service's session, so they land in the session's tenant, which for a service
+account is the installation's.
+
+The domain, the entity and the protocol carry a =tenant_id= that is not
+optional, so a caller can no longer express a job without an owner. The scheduler
+fires each job with the tenant that holds it and writes the instance with that
+tenant.
+
+Verified on a rebuilt database at fingerprint =7aff998b8db0da18=: eight job
+definitions, none with a null tenant, the platform's four in the system tenant;
+=ores.scheduler.core= 137 assertions in 33 cases, =ores.inbox.core= 452 in 86,
+=ores.reporting.core= 1645 in 283, and the pgTAP suite 109 files and 1022 tests,
+all passing.

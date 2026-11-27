@@ -57,6 +57,12 @@ The system party subscribes to each fixing publisher and routes to its source,
 as it does for the public publishers, so the demand of the system party names
 every fixing item; see [[id:083D4B54-549B-4D56-AE89-430A8A4277FF][Demand drives what an adapter publishes]].
 
+LIBOR is the one publisher whose settings the market retired. The administrator
+ceased to publish them between 2021 and 2023, and the teaching material still
+uses them, so =iba= publishes them as if the settings continued. A reader of the
+store therefore meets LIBOR fixings that no longer exist in the market. That is
+the intent of the run and not stale data, and the publisher's own row states it.
+
 ** The fixing generator
 
 A fixing generator is a new generator kind beside FX spot, IR curve and FX

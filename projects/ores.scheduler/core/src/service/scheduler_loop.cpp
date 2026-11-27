@@ -105,7 +105,7 @@ boost::asio::awaitable<void> scheduler_loop::fire_job(const domain::job_definiti
 
     const auto now = std::chrono::system_clock::now();
     domain::job_instance inst;
-    inst.tenant_id = std::optional(job.tenant_id.to_uuid());
+    inst.tenant_id = job.tenant_id.to_uuid();
     inst.party_id = job.party_id;
     inst.job_definition_id = job.id;
     inst.action_type = job.action_type;

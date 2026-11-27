@@ -49,6 +49,7 @@ domain::calendar_exception calendar_exception_mapper::map(const calendar_excepti
     r.id = v.id;
     r.calendar_code = v.calendar_code;
     r.exception_date = v.exception_date;
+    r.party_id = v.party_id;
     r.is_business_day = v.is_business_day;
     r.description = v.description;
     r.modified_by = v.modified_by;
@@ -70,6 +71,7 @@ calendar_exception_entity calendar_exception_mapper::map(const domain::calendar_
     r.version = v.version;
     r.calendar_code = v.calendar_code;
     r.exception_date = v.exception_date;
+    r.party_id = v.party_id;
     r.is_business_day = v.is_business_day;
     r.description = v.description;
     r.modified_by = v.modified_by;

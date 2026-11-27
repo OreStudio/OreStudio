@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: E3BDD9C9-FD55-43E0-8CEB-A8BEFA98F28F
+:END:
+#+title: The fixing notations repeat the canonicalisation and the publisher lists
+#+description: Three notations copy the same read-write-compare block and the same scheme and field prelude, and the publisher codes are typed twice in C++ and six times in the SQL seed.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:fixing:tech_debt:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Three vendor notations carry the same two blocks: the read-write-compare
+canonicalisation of a fixing address, and the scheme and field prelude that every
+read opens with. Beside them, the publisher codes are typed twice in
+=provider_notation.cpp= — once as a static instance and once in the candidate
+list — and six times in the fixing publishers' SQL seed.
+
+* Why
+
+Adding a publisher is eight edits, and the compiler refuses the tests when a
+unity build merges two notations that share a helper name. Both costs come from
+the same shape, and both disappear when the canonicalisation and the prelude live
+in =notation_support.hpp= and the instances are one table of ={code, notation}=.
+
+* References
+
+- =projects/ores.marketdata/core/src/vendor/notation_support.hpp=
+- =projects/ores.marketdata/core/src/vendor/provider_notation.cpp=
+
+* See also
+
+-

@@ -49,13 +49,13 @@ namespace ores::scheduler::domain {
  * with the GIST exclusion and the delete rule, so the model takes the ordinary
  * audited shape and needs no shape flag.
  *
- * tenant_id is the tenant the job belongs to, and the platform's own jobs belong
- * to the system tenant. A job is never tenantless: the MQ statistics scrape, the
- * compute stale-result reaper and the housekeeping sweep are the system tenant's
- * rows, which is what makes them visible to it through the same read a tenant uses
- * for its own, and invisible to a tenant that has no business seeing the
- * installation's schedule. The model binds uuid-identified-lookup for its UUID
- * surrogate key, its tenant scope and its standard presentation tier.
+ * tenant_id is not null. A job is a row of a tenant: the platform declares the
+ * jobs it needs in order to function as rows of the system tenant, which is what
+ * the classification that governs published rows says a platform row is. The
+ * message queue scrape, the curve republish, the compute stale-result reaper and
+ * the housekeeping sweep are such rows: one copy, held by the installation and
+ * fired by the one scheduler. The model binds uuid-identified-lookup for its
+ * UUID surrogate key, its tenant scope and its standard presentation tier.
  *
  * job_name is the natural key and is unique within its tenant; id is the
  * surrogate. Uniqueness is what the component's upsert path relies on: a job that
@@ -83,16 +83,17 @@ struct job_definition final {
     boost::uuids::uuid id;
 
     /**
-     * @brief Unique name for the job within its tenant. The scheduler seed writes
-     * ores.mq.metrics_scrape and the compute seed writes compute.v1.reap.stale_results; both are
-     * the system tenant's jobs, so they sit beside that tenant's own rows and neither collides with
-     * a tenant's job of the same name.
+     * @brief Unique name for the job within its tenant. The job definitions dataset stages
+     * ores.mq.metrics_scrape, ores.marketdata.curve_republish, ores.scheduler.housekeeping_sweep
+     * and compute.v1.reap.stale_results; all four are system jobs, so all four are held by the
+     * system tenant and none collides with a tenant's own job of the same name.
      */
     std::string job_name;
 
     /**
-     * @brief Optional party scope for this job. NULL when the job answers for the whole tenant
-     * rather than for one party of it.
+     * @brief Optional party scope for this job. NULL for a tenant-scoped job and for a system job:
+     * a job that names no party is the tenant's own, so the tenant that holds it reads it, while a
+     * job that names one is read only by a session acting for a party it can see.
      */
     std::optional<boost::uuids::uuid> party_id;
 

@@ -450,6 +450,108 @@ publish_service::list_publishable_datasets(const std::vector<boost::uuids::uuid>
     return result;
 }
 
+namespace {
+
+/** One column of a row as text, or an empty string when the row lacks it. */
+std::string text_of(const std::vector<std::optional<std::string>>& row, std::size_t at) {
+    if (at >= row.size() || !row[at])
+        return {};
+    return *row[at];
+}
+
+/** One column of a row as a number, or zero when the row lacks it. */
+std::int64_t number_of(const std::vector<std::optional<std::string>>& row, std::size_t at) {
+    const auto text = text_of(row, at);
+    if (text.empty())
+        return 0;
+    return std::stoll(text);
+}
+
+/** One column of a row as a flag, or false when the row lacks it. */
+bool flag_of(const std::vector<std::optional<std::string>>& row, std::size_t at) {
+    const auto text = text_of(row, at);
+    return text == "t" || text == "true";
+}
+
+} // namespace
+
+std::vector<messaging::bundle_roster_bundle> publish_service::list_bundle_roster() {
+    const auto sql = "SELECT bundle_code, bundle_name, description, level, dataset_count "
+                     "FROM ores_dq_bundles_list_fn()";
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx_, sql, {}, lg(), "Reading the bundle roster");
+
+    std::vector<messaging::bundle_roster_bundle> bundles;
+    bundles.reserve(rows.size());
+    for (const auto& row : rows) {
+        messaging::bundle_roster_bundle bundle;
+        bundle.code = text_of(row, 0);
+        bundle.name = text_of(row, 1);
+        bundle.description = text_of(row, 2);
+        bundle.level = text_of(row, 3);
+        bundle.dataset_count = number_of(row, 4);
+        bundles.push_back(std::move(bundle));
+    }
+
+    ORES_LOG_SEV(lg(), debug) << "Read " << bundles.size() << " bundles for the roster";
+    return bundles;
+}
+
+std::vector<messaging::bundle_roster_member>
+publish_service::list_bundle_members(const std::string& bundle_code) {
+    const auto sql = "SELECT display_order, dataset_code, dataset_name, artefact_type, "
+                     "artefact_table, target_subject, has_dataset, has_artefact_type, "
+                     "staged_count, is_publishable, optional "
+                     "FROM ores_dq_bundle_datasets_list_fn($1)";
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx_,
+        sql,
+        {bundle_code},
+        lg(),
+        std::format("Reading the members of bundle {}", bundle_code));
+
+    std::vector<messaging::bundle_roster_member> members;
+    members.reserve(rows.size());
+    for (const auto& row : rows) {
+        messaging::bundle_roster_member member;
+        member.display_order = static_cast<int>(number_of(row, 0));
+        member.dataset_code = text_of(row, 1);
+        member.dataset_name = text_of(row, 2);
+        member.artefact_type = text_of(row, 3);
+        member.artefact_table = text_of(row, 4);
+        member.target_subject = text_of(row, 5);
+        member.has_dataset = flag_of(row, 6);
+        member.has_artefact_type = flag_of(row, 7);
+        member.staged_count = number_of(row, 8);
+        member.is_publishable = flag_of(row, 9);
+        member.optional = flag_of(row, 10);
+        members.push_back(std::move(member));
+    }
+
+    ORES_LOG_SEV(lg(), debug) << "Read " << members.size() << " members of bundle " << bundle_code;
+    return members;
+}
+
+std::optional<std::string> publish_service::bundle_of_dataset(const std::string& dataset_code) {
+    // No tenant predicate on purpose: a world or platform bundle's membership
+    // rows sit in the system tenant, and the read policy admits them. A dataset
+    // may be carried by several bundles; the answer names the lowest code, so the
+    // page states which bundle it read rather than drawing a different one each
+    // time.
+    const auto sql = "SELECT bundle_code FROM ores_dq_dataset_bundle_members_tbl "
+                     "WHERE dataset_code = $1 AND valid_to = ores_utility_infinity_timestamp_fn() "
+                     "ORDER BY bundle_code LIMIT 1";
+    auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx_,
+        sql,
+        {dataset_code},
+        lg(),
+        std::format("Reading the bundle that carries dataset {}", dataset_code));
+    if (rows.empty() || rows.front().empty() || !rows.front().front().has_value())
+        return std::nullopt;
+    return *rows.front().front();
+}
+
 std::optional<std::string> publish_service::bundle_level(const std::string& bundle_code) {
     const auto sql = "SELECT level FROM ores_dq_dataset_bundles_tbl "
                      "WHERE code = $1 AND valid_to = ores_utility_infinity_timestamp_fn()";
@@ -480,7 +582,7 @@ publish_service::list_bundle_publishable_datasets(const std::string& bundle_code
     // a silently smaller publish reports success, and the caller has no way to
     // learn that part of the bundle never ran.
     const auto missing_sql = "SELECT dataset_code FROM ores_dq_bundle_datasets_list_fn($1) "
-                             "WHERE NOT has_artefacts ORDER BY display_order";
+                             "WHERE NOT has_dataset ORDER BY display_order";
     auto missing_rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         missing_sql,

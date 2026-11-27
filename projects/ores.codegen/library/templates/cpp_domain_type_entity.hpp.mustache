@@ -36,6 +36,9 @@ using db_timestamp = ores::database::repository::db_timestamp;
  * whose type the layer has no codec for keeps its text, and the mapper converts
  * it.
  */
+{{#wide_type_exception}}
+{{{wide_type_exception}}}
+{{/wide_type_exception}}
 struct {{entity_singular}}_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "{{sql.tablename}}";
@@ -202,7 +205,12 @@ struct {{entity_singular}}_entity {
             | query_builder::bind("change_commentary", &e::change_commentary)
 {{/has_audit_columns}}
 {{^current_state}}
+{{#sql.store_stamps_valid_from}}
+            | query_builder::store_fills("valid_from", &e::valid_from)
+{{/sql.store_stamps_valid_from}}
+{{^sql.store_stamps_valid_from}}
             | query_builder::bind("valid_from", &e::valid_from)
+{{/sql.store_stamps_valid_from}}
             | query_builder::bind("valid_to", &e::valid_to)
 {{/current_state}}
             ;

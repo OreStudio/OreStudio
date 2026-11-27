@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: B8D54044-0A65-4121-8BBE-3C03BDF405B3
+:END:
+#+title: The retired fixing publisher still seeds 82 instruments
+#+description: The instruments of simulated-fixings are still written by the seed and the vendor catalogue tool, and the notation that writes them is still registered, after the publisher row was deleted.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:fixing:tech_debt:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The branch that states each fixing under its administrator deleted the
+=simulated-fixings= provider, its source, its subscription and its routes. Three
+things of that publisher survive:
+
+- =marketdata_vendor_fixing_instruments_populate.sql= still writes 82 vendor
+  instruments in the degenerate =oresmd= notation under the deleted provider,
+  a publisher no row holds;
+- =tools/vendor_catalogue= still writes that block, so regenerating restores it;
+- =simulated_fixing_notation= is still registered, and the instruments and
+  mappings of the next task are read from those 82 rows, so the seed of the new
+  publishers depends on the retired one.
+
+The ids the new publishers get are also built by regular-expression surgery on
+the item address rather than through the notation that is meant to own the
+spelling, so nothing fails when the two disagree: the simulator simply offers
+fewer fixings.
+
+* Why
+
+A seed that names a publisher the catalogue has retired is a lie a reader of the
+catalogue can see. And an id spelling that no test ties to the notation it
+claims to follow is a silent failure mode: the fixing stops being stated and no
+check says so.
+
+The fix is to write the fixing items as a list of their own, with the
+administrator each belongs to, and to delete the =oresmd= block, the notation
+and the tool's writer with it. A test then reads every seeded id through the
+publisher's notation and fails when one does not read back.
+
+* References
+
+- =projects/ores.sql/populate/marketdata/marketdata_vendor_fixing_instruments_populate.sql=
+- =projects/ores.marketdata/core/src/vendor/simulated_fixing_notation.cpp=
+- =tools/vendor_catalogue/main.cpp=
+
+* See also
+
+-

@@ -1,28 +1,123 @@
 :PROPERTIES:
 :ID: FE34DD26-2F96-4A3E-8EA8-A743E5A86CD6
 :END:
-#+title: No service subscribes to refdata.v1.ops.begin_bundle_import,…
-#+description: No service subscribes to refdata.v1.ops.begin_bundle_import, stage_bundle_family or commit_bundle_import. bundle_import_operations_service exists in ores.refdata.core, but no messaging handler registers it, and git history shows it was never wired, as conventions_import_operations_service either. The ore service's run configuration import calls these subjects for the run's conventions file, so 'ore import-run' on any directory with a conventions file fails with 'conventions.xml: Exception calling refdata.v1.ops.begin_bundle_import: NATS request timed out'. Observed live on 2026-11-02 against a recreated database with Acme provisioned. The import-run recipe was last tested on 2026-10-05, before the bundle import existed.
+#+title: The bundle import subjects are served
+#+description: Served on 2026-11-26. Until then no service subscribed refdata.v1.ops.begin_bundle_import, stage_bundle_family or commit_bundle_import: bundle_import_operations_service existed in ores.refdata.core and no messaging handler registered it, so 'ore import-run' on a directory with a conventions file failed with 'Exception calling refdata.v1.ops.begin_bundle_import: NATS request timed out', observed live on 2026-11-02. The page keeps the blame for why it went unnoticed, and the shape of the fix.
 #+type: capture
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-11-02
-#+updated: 2026-11-02
+#+updated: 2026-11-26
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 
-(One paragraph: the idea.)
+** Served
+
+The three subjects answer as of this branch. =bundle_import_operations_handler=
+runs the session, the permission (=refdata::bundle_imports:write=) and the wire,
+and the umbrella refdata registrar calls
+=register_bundle_import_operations_handlers= beside the calendar materialisation
+one. =messaging_bundle_import_operations_tests.cpp= asks each subject over real
+NATS and requires an answer, and the gate check now reports 219 of 219 declared
+requests answered with no exceptions. The blame below is kept because it says
+why two months passed without a caller noticing.
+
+*Blame: refdata declares three bundle-import subjects that nothing subscribes.*
+
+** Owner
+
+| Field        | Value |
+|--------------+-------|
+| Environment  | not stated. The commits that introduced the subjects carry no =Environment= trailer, and the story that carried the work, [[id:60EDB576-96B3-433A-9CDA-9FA70CEE20ED][Conventions import and export redesign]], records that the sprint-28 pull requests were merged "with no task to record them". |
+| Agent        | not stated: no =Co-Authored-By= on either commit. |
+| Person       | Marco Craveiro |
+| Work         | no =Story-ID= or =Task-ID= trailer. The nearest story is the redesign above; its own text asks the next owner to write the tasks. |
+| Pull request | [[https://github.com/OreStudio/OreStudio/pull/3485][#3485]], "[refdata,ore] Rename the import staging to bundle import" |
+
+** Related commits
+
+| Commit | What it did |
+|--------+-------------|
+| =5b100371e5= | Renamed the hand-written =conventions_import_operations_service= to =bundle_import_operations_service=, added =bundle_import_operations_service.{hpp,cpp}= to ores.refdata, and moved the ORE run configuration save path onto the renamed request types. The subjects were declared here and the service that answers them was written here; neither was wired to a subscriber. |
+| =d89218a4ae= | Renamed the import staging models to bundle import, which is where the three subjects took their current names. |
+| =37057f958f= | Regenerated every refdata facet for the bundle import staging, including the protocol and the codec that carry the three subjects. |
+| =7589bf9a1b=, =63f7f3a975= | Turned the wire codec on for the seven operation models and regenerated them, so the subjects became reachable on the wire while still having no subscriber. |
+| =14db7cb980= | Moved ORE's document parameters from ores.reporting into ores.ore, touching the caller of the three subjects. |
+| =21e32f3728= | Captured the defect, 2026-11-02, with the live observation below. |
+
+** Technical description
+
+The rule: a model that declares a =:subject:= with a =:response:= states a
+request, and a request that no registrar subscribes leaves its caller waiting
+until the request times out. The bus answers =No responders are available= and
+the caller reports a timeout, which is what the user sees.
+
+The path: =projects/ores.refdata/modeling/ores.refdata.bundle_import_operations.org=
+declares =refdata.v1.ops.begin_bundle_import=, =refdata.v1.ops.stage_bundle_family=
+and =refdata.v1.ops.commit_bundle_import=, each with its response type. The
+service that would answer them exists at
+=projects/ores.refdata/core/src/service/bundle_import_operations_service.cpp=
+and is exercised by =projects/ores.refdata/core/tests/bundle_import_commit_tests.cpp=,
+which calls the class directly. Nothing registers the class: grep for
+=bundle_import_operations_service= across the tree returns its own header,
+its own source and that test, and no registrar. =refdata.core/messaging/bundle_import_registrar.cpp=
+subscribes the generated entity verbs (=list=, =get=, =get_many=, =put=, …) and
+not the three operations. The caller is
+=projects/ores.ore/service/src/messaging/run_configuration_operations.cpp=, which
+sends =begin_bundle_import_request= and then =commit_bundle_import_request= for
+the run's conventions file.
+
+The observation, from the gate check on the running fleet (the transcript
+sits beside the task that added the check, at
+=doc/agile/versions/v0/sprint_31/publish_every_kind_of_derived_market_object_through_one_lifecycle/evidence/subject_coverage.txt=):
+
+#+begin_example
+$ python3 build/scripts/check_subject_coverage.py
+FAIL refdata.v1.ops.begin_bundle_import: declared by begin_bundle_import_request
+  in projects/ores.refdata/modeling/ores.refdata.bundle_import_operations.org,
+  and nothing subscribes it.
+FAIL refdata.v1.ops.stage_bundle_family: …
+FAIL refdata.v1.ops.commit_bundle_import: …
+#+end_example
+
+The live failure was observed on 2026-11-02: =ore import-run= on a directory
+with a conventions file fails with
+=conventions.xml: Exception calling refdata.v1.ops.begin_bundle_import: NATS request timed out=.
+
+** Disposition
+
+*Hand it back.* The fix touches refdata's behaviour on the wire — a registrar,
+a session, a permission — which is outside a gate check's blast radius, and the
+environment that introduced it cannot be named from the record, so there is no
+owner to hand it to by name. It goes to the refdata component, and this capture
+is where it waits.
+
+What the fix is: a registrar in =ores.refdata.core= that subscribes the three
+subjects to =bundle_import_operations_service=, with the same session and
+permission handling its sibling registrars use, and a NATS-level test that asks
+the three subjects over the bus rather than calling the class. The gate check
+stops excusing them the moment they answer — =subject_coverage_exceptions.json=
+fails on an exception whose subject answers — so the fix and its removal from
+that file are one change.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+The subjects were declared, generated, codec'd and called, and the only
+component that could answer them was never wired. Nothing detected it because
+the unit tests call the service class directly and the recipe that exercises the
+import path was last run before the bundle import existed. The gate check that
+found it, =build/scripts/check_subject_coverage.py=, is the durable form of this
+capture's observation.
 
 * References
 
--
+- =projects/ores.refdata/modeling/ores.refdata.bundle_import_operations.org= — the three subjects.
+- =projects/ores.refdata/core/src/service/bundle_import_operations_service.cpp= — the service that answers them, unregistered.
+- =projects/ores.ore/service/src/messaging/run_configuration_operations.cpp= — the caller.
+- =build/scripts/check_subject_coverage.py= — the gate check, and =subject_coverage_exceptions.json=, which excuses these three until they answer.
 
 * See also
 
--
+- [[id:60EDB576-96B3-433A-9CDA-9FA70CEE20ED][Conventions import and export redesign]] — the story that carried the work with no task.

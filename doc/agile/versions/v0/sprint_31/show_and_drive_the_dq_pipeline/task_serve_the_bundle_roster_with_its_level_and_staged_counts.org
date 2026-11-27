@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: 4940C4D1-CB24-4257-9C3A-BDD0C85CFA8E
+:END:
+#+title: Task: Serve the bundle roster with its level and staged counts
+#+description: The bundle roster answers over the bus with the level each bundle publishes at and the staged count per member, so the coverage screen's staged column becomes a number and the publish screen can order its work.
+#+type: task
+#+level: s1
+#+filetags: :dq:server:coverage:sprint_31:v0:show_and_drive_the_dq_pipeline:
+#+owner: marco
+#+branch: feature/serve-the-bundle-roster-with-its-level-and-staged-counts
+#+pr: 5141
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The roster answers over the bus with the two facts the coverage screen cannot
+read today: the level each bundle publishes at, and how many rows each member
+has staged. Without them a person can see which bundles exist and cannot tell
+where they write or whether there is anything to publish.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- =ores_dq_bundles_list_fn= returns the level each bundle publishes at, so the
+  roster groups by level without a second read.
+- The roster states how many rows each member has staged, taken from the
+  member's own artefact table, without a call per dataset from the client.
+- One operation on the DQ bus answers the roster, with the level and the counts
+  in one reply, and its own roundtrip and handler tests.
+
+* Plan
+
+1. Extend =ores_dq_bundles_list_fn= with =level=, read from
+   =ores_dq_dataset_bundles_tbl=, and =ores_dq_bundle_datasets_list_fn= with
+   =staged_count=, counted from the member's artefact table by dynamic SQL.
+2. Declare the operation as a codegen operation model beside
+   =ores.dq.publish_bundle=: a request naming the bundle and a response carrying
+   the bundle, its level and each member with its artefact type, target subject,
+   staged count and publishability.
+3. Serve it from a hand-written handler beside the publish handler, registered
+   on its own subject.
+4. Test the SQL directly, the protocol with a roundtrip, and the handler with
+   the level and counts it returns.
+
+The staged count is the part to settle first: counting each member's artefact
+table costs one scan per dataset, and the coverage screen would ask for it on
+every row of the roster. The design note already flagged this as the open
+question for the build.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Cost of a bundle's members with their counts | 42 ms for 40 members, 542331 staged rows | =psql -c "\timing on" -c "select sum(staged_count) from ores_dq_bundle_datasets_list_fn('world')"= | 727082af84 |
+| Largest single member | 512186 rows | =select max(staged_count) from ores_dq_bundle_datasets_list_fn('world')= | 727082af84 |
+| Roster with levels | 20 bundles over 3 levels | =select level, count(*) from ores_dq_bundles_list_fn() group by level= | 727082af84 |
+
+* Result
+
+Done. One operation answers the roster, and the coverage screen can draw the
+two facts it was dashing.
+
+- =ores_dq_bundles_list_fn= returns the level each bundle publishes at.
+- =ores_dq_bundle_datasets_list_fn= returns the artefact table and the staged
+  count for each member, counted from that table for that dataset.
+- =ores.dq.bundle_roster= declares the operation: a request naming a bundle or
+  none, and a reply carrying every bundle with its level and dataset count and,
+  for the bundle named, its members with their counts.
+- A request naming no bundle answers the roster alone, because the counts cost
+  one count per member. The model says so, and the handler holds to it.
+- The handler asks for =dq::datasets:read= and refuses a caller holding only the
+  write with an error reply rather than a roster that claims to have failed.
+
+Four handler cases and the generated roundtrip cover it: every bundle named
+with its level, the members in the bundle's own order with the counts the SQL
+returns, a bundle that does not exist answering no members, and the refusal.
+The DQ api and core suites pass, 134 core cases among them.
+
+Two things the data said and the model did not are in the Notes: the artefact
+table name carries no product prefix, and a type may name a family of tables
+that the count sums.
+
+What this does not do is draw the counts: =api/dq.ts= has no roster read and the
+coverage screen still dashes the staged column. That is tracked as its own task
+so the screen change lands with a read behind it.
+
+* Notes
+
+- *Two things the data said that the model did not.* The artefact type names its
+  table without the product prefix every create script adds, so the count has to
+  name =ores_||artefact_table= or the relation is not found. And an artefact type
+  may name a family of tables, comma separated, as the scripts do with eight of
+  them; a row is staged if it sits in any of them, so the count sums the family.
+  Both were found by running the function, not by reading the model.
+- *The count is exact and scoped to the bundle named*, as agreed on 2026-11-25:
+  one count per member of that bundle, never for the whole roster. The world
+  bundle answers in 42 ms with 512186 rows in one of its members, which is the
+  cost the design note worried about and it is affordable at this scope.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5141][#5141]] | [dq] Answer the bundle roster with its levels and staged counts |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |

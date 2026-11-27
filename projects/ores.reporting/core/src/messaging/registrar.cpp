@@ -77,6 +77,7 @@
 #include "ores.reporting.core/messaging/file_type_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/file_type_registrar.hpp"
 #include "ores.reporting.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.reporting.core/messaging/report_address_market_readiness_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/report_cashflow_registrar.hpp"
 #include "ores.reporting.core/messaging/report_configuration_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/report_configuration_registrar.hpp"
@@ -96,9 +97,12 @@
 #include "ores.reporting.core/messaging/report_instance_trigger_handler.hpp"
 #include "ores.reporting.core/messaging/report_metric_registrar.hpp"
 #include "ores.reporting.core/messaging/report_run_health_handler.hpp"
+#include "ores.reporting.core/messaging/report_run_market_readiness_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/report_run_pricing_handler.hpp"
 #include "ores.reporting.core/messaging/report_scheduling_handler.hpp"
 #include "ores.reporting.core/messaging/report_text_value_registrar.hpp"
+#include "ores.reporting.core/messaging/report_trade_market_gap_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/report_trade_market_readiness_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/report_trigger_type_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/report_type_handler.hpp"
 #include "ores.reporting.core/messaging/report_type_history_provider_registrar.hpp"
@@ -683,6 +687,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
         nats, ctx, svc_nats, instance_states, std::move(http_base_url));
     ores::service::messaging::step_routes execution_routes{"execution"};
     execution_routes
+        .on(resolve_market_readiness_request::nats_subject,
+            [reh](ores::nats::delivery delivery) {
+                reh->resolve_market_readiness(std::move(delivery));
+            })
         .on(gather_trades_request::nats_subject,
             [reh](ores::nats::delivery delivery) { reh->gather_trades(std::move(delivery)); })
         .on(gather_market_data_request::nats_subject,
@@ -822,11 +830,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_engine_settings_group_setting_history_provider(hist_registry);
         register_engine_settings_history_provider(hist_registry);
         register_file_type_history_provider(hist_registry);
+        register_report_address_market_readiness_history_provider(hist_registry);
         register_report_configuration_history_provider(hist_registry);
         register_report_definition_history_provider(hist_registry);
         register_report_error_scope_history_provider(hist_registry);
         register_report_instance_history_provider(hist_registry);
         register_report_instance_kind_history_provider(hist_registry);
+        register_report_run_market_readiness_history_provider(hist_registry);
+        register_report_trade_market_readiness_history_provider(hist_registry);
+        register_report_trade_market_gap_history_provider(hist_registry);
         register_report_trigger_type_history_provider(hist_registry);
         register_report_type_history_provider(hist_registry);
         register_cut_approval_detail_history_provider(hist_registry);

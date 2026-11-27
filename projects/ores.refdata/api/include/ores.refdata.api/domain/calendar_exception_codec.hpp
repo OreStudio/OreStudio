@@ -52,6 +52,7 @@ namespace ores::refdata::domain {
         utility::codec::field{"id", &calendar_exception::id},
         utility::codec::field{"calendar_code", &calendar_exception::calendar_code},
         utility::codec::field{"exception_date", &calendar_exception::exception_date},
+        utility::codec::field{"party_id", &calendar_exception::party_id},
         utility::codec::field{"is_business_day", &calendar_exception::is_business_day},
         utility::codec::field{"description", &calendar_exception::description},
         utility::codec::field{"modified_by", &calendar_exception::modified_by},

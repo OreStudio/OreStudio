@@ -25,6 +25,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -64,16 +65,43 @@ ORES_SYNTHETIC_CORE_EXPORT std::size_t routed_code_count(std::string_view asset_
 expected_candidates(domain::trade_generation_scope scope);
 
 /**
- * @brief States the population on the market data the party expects, and what each trade type
- * did.
+ * @brief States the population on the market data the party expects, within the
+ * approval of the book each trade lands in, and what each trade type did.
  *
  * The candidates are the expected ones. Each trade type the config books is tried alone; a type
  * whose planner refuses it plans no trade and keeps the refusal as its reason, and the slots
  * cycle over the types that remain, so a book keeps its size. A config none of whose types has a
  * candidate plans no trade.
+ *
+ * A book states the products it permits, so the population is planned once per book: the config's
+ * types are narrowed to those the book's matrix holds, and the book's trades are drawn from the
+ * remainder. A book that permits none of the config's types books nothing, because a population
+ * that widened the matrix to fill a book would be choosing outside it. The plan is then checked
+ * against the approvals, and a trade of a product its book does not permit is refused rather than
+ * left for the booking to refuse.
+ *
+ * @param approvals one entry per book of the scope, as the approval chain resolves it; a book the
+ *        list does not name is refused, because an unread approval is not an open one
  */
 [[nodiscard]] ORES_SYNTHETIC_CORE_EXPORT domain::trade_population_plan
-plan_on_expected_market_data(const domain::trade_generation_scope& scope);
+plan_on_expected_market_data(const domain::trade_generation_scope& scope,
+                             std::span<const domain::book_approval> approvals);
+
+/**
+ * @brief Fails when a planned trade names a product the book it lands in does not permit.
+ *
+ * =plan_on_expected_market_data= runs this before it answers, and it is stated
+ * apart from the planner because the two readings of the matrix must agree: the
+ * one the write path enforces and the one the planner chose within. A caller that
+ * holds a plan of its own — a resumed run, a cached plan, a test — checks it the
+ * same way rather than discovering the drift at a booking.
+ *
+ * @throws trade_population_error naming the book, the product, and the products
+ *         that book permits
+ */
+ORES_SYNTHETIC_CORE_EXPORT void
+refuse_products_the_books_do_not_permit(const domain::trade_population_plan& plan,
+                                        std::span<const domain::book_approval> approvals);
 
 /**
  * @brief Names the trade type code the bond family states for a plain bond.

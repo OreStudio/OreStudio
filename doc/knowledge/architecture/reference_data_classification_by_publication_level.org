@@ -299,6 +299,7 @@ published.
   artefact, the dataset, the publish function and the steps that add one.
 - [[id:0EAAEDFD-7954-4649-A463-9EE377B023F7][Data read across tenants]] — completes: the shared-reference read and the
   checklist for a new shared table.
+- [[id:B0BC735F-7E05-4882-A216-C250B26B0091][Precedence among the levels of reference data]] — completes: what a narrower level states when one key of the datum must differ, and the read that resolves the two.
 - [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][Data classification by owner count]] — completes: the atomicity a bundle gives,
   and the sets that are packages instead.
 - [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data quality]] — completes: the

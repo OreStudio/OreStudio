@@ -538,6 +538,13 @@ struct export_trades_to_storage_request {
      * @brief The target key, such as reporting/runs/{instance_id}/trades.msgpack.
      */
     std::string storage_key;
+    /**
+     * @brief The trades to write, or every trade of the books when empty.
+     *
+     * A run decides which trades its market can answer before it exports any and
+     * writes only those, because an incomplete trade never reaches the engine.
+     */
+    std::vector<std::string> trade_ids;
 
     friend bool operator==(const export_trades_to_storage_request&,
                            const export_trades_to_storage_request&) = default;
@@ -575,6 +582,20 @@ struct export_trades_to_storage_response {
 
     friend bool operator==(const export_trades_to_storage_response&,
                            const export_trades_to_storage_response&) = default;
+};
+
+/**
+ * @brief The addresses one trade needs.
+ */
+struct trade_requirement {
+    std::string trade_id;
+    /**
+     * @brief The distinct addresses this trade needs, in ascending byte order; empty
+     * when its instrument rows hold none, or when the caller cannot read them.
+     */
+    std::vector<std::string> oresmd_uris;
+
+    friend bool operator==(const trade_requirement&, const trade_requirement&) = default;
 };
 
 /**
@@ -618,12 +639,76 @@ struct resolve_market_data_requirements_response {
     bool success = false;
     std::string message;
     /**
-     * @brief The distinct addresses the trades need, in address order.
+     * @brief The distinct addresses the trades need, in ascending byte order.
+     *
+     * The union of the per-trade answer, for the caller that gathers market data and
+     * has no use for which trade asked for what.
      */
     std::vector<std::string> requirements;
+    /**
+     * @brief What each trade the request named needs, one entry per trade, in the
+     * order the request named them.
+     *
+     * A trade the request names twice answers once. A trade that names nothing keeps
+     * its entry with no addresses; one the caller cannot read answers the same way,
+     * because the store tells a caller who may not see a row nothing about why.
+     */
+    std::vector<trade_requirement> trade_requirements;
 
     friend bool operator==(const resolve_market_data_requirements_response&,
                            const resolve_market_data_requirements_response&) = default;
+};
+
+/**
+ * @brief Asks which trades a set of books holds.
+ *
+ * A run decides which trades its market can answer before it exports any, so it
+ * needs the set itself rather than the trades' contents. Asking for the ids
+ * alone keeps that decision off the export, which writes a blob the run has not
+ * earned yet.
+ */
+struct list_book_trade_ids_request {
+    using response_type = struct list_book_trade_ids_response;
+    static constexpr std::string_view nats_subject = "trading.v1.ops.list_book_trade_ids";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief The books whose trades to name.
+     */
+    std::vector<std::string> book_ids;
+
+    friend bool operator==(const list_book_trade_ids_request&,
+                           const list_book_trade_ids_request&) = default;
+};
+
+/**
+ * @brief The trades the books hold.
+ */
+struct list_book_trade_ids_response {
+    /**
+     * @brief Whether the read ran.
+     */
+    bool success = false;
+    /**
+     * @brief Why the read failed, when it did.
+     */
+    std::string message;
+    /**
+     * @brief The trade ids, in ascending order so two reads of one set read alike.
+     *
+     * A book that holds no trade contributes nothing, and a set of books with no
+     * trades between them answers with none rather than with an error: an empty
+     * scope is the definition's problem, which the run states when it gathers.
+     */
+    std::vector<std::string> trade_ids;
+
+    friend bool operator==(const list_book_trade_ids_response&,
+                           const list_book_trade_ids_response&) = default;
 };
 
 /**
@@ -877,6 +962,7 @@ struct resolve_market_data_requirements_response {
                                       &export_trades_to_storage_request::storage_bucket},
         ::ores::utility::codec::field{"storage_key",
                                       &export_trades_to_storage_request::storage_key},
+        ::ores::utility::codec::field{"trade_ids", &export_trades_to_storage_request::trade_ids},
     };
 }
 
@@ -898,6 +984,21 @@ struct resolve_market_data_requirements_response {
                                       &export_trades_to_storage_response::storage_key},
         ::ores::utility::codec::field{"trade_versions",
                                       &export_trades_to_storage_response::trade_versions},
+    };
+}
+
+/**
+ * @brief The members of trade_requirement, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<trade_requirement>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"trade_id", &trade_requirement::trade_id},
+        ::ores::utility::codec::field{"oresmd_uris", &trade_requirement::oresmd_uris},
     };
 }
 
@@ -935,6 +1036,38 @@ wire_fields(std::type_identity<resolve_market_data_requirements_response>) {
                                       &resolve_market_data_requirements_response::message},
         ::ores::utility::codec::field{"requirements",
                                       &resolve_market_data_requirements_response::requirements},
+        ::ores::utility::codec::field{
+            "trade_requirements", &resolve_market_data_requirements_response::trade_requirements},
+    };
+}
+
+/**
+ * @brief The members of list_book_trade_ids_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_book_trade_ids_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"book_ids", &list_book_trade_ids_request::book_ids},
+    };
+}
+
+/**
+ * @brief The members of list_book_trade_ids_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_book_trade_ids_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &list_book_trade_ids_response::success},
+        ::ores::utility::codec::field{"message", &list_book_trade_ids_response::message},
+        ::ores::utility::codec::field{"trade_ids", &list_book_trade_ids_response::trade_ids},
     };
 }
 
@@ -1109,6 +1242,16 @@ struct ORES_TRADING_API_EXPORT
     read_msgpack(std::span<const std::byte> data);
 };
 template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::trade_requirement> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::trade_requirement& v);
+    static ores::trading::messaging::trade_requirement read_json(std::string_view text);
+    static std::string write_msgpack(const ores::trading::messaging::trade_requirement& v);
+    static ores::trading::messaging::trade_requirement
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
 struct ORES_TRADING_API_EXPORT
     wire_traits<ores::trading::messaging::resolve_market_data_requirements_request> {
     static constexpr bool is_generated = true;
@@ -1134,6 +1277,28 @@ struct ORES_TRADING_API_EXPORT
     static std::string
     write_msgpack(const ores::trading::messaging::resolve_market_data_requirements_response& v);
     static ores::trading::messaging::resolve_market_data_requirements_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::list_book_trade_ids_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::list_book_trade_ids_request& v);
+    static ores::trading::messaging::list_book_trade_ids_request read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_book_trade_ids_request& v);
+    static ores::trading::messaging::list_book_trade_ids_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_TRADING_API_EXPORT wire_traits<ores::trading::messaging::list_book_trade_ids_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::trading::messaging::list_book_trade_ids_response& v);
+    static ores::trading::messaging::list_book_trade_ids_response read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::trading::messaging::list_book_trade_ids_response& v);
+    static ores::trading::messaging::list_book_trade_ids_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

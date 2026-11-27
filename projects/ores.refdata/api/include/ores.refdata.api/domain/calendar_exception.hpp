@@ -38,7 +38,19 @@ namespace ores::refdata::domain {
  * @brief A one-off holiday/business-day override for a single calendar day.
  *
  * One row per one-off override for a single
- * [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]] day. Mirrors
+ * [[id:C09DF2B2-0E14-4742-8BAC-5D5842069580][calendar]] day, held by the party it
+ * belongs to, or by the installation when it belongs to everyone.
+ *
+ * A holiday is a party's fact. A party in Hong Kong closes on days a party in the
+ * United Kingdom opens, and both sit in one installation, so the row states the
+ * party it belongs to: party_id names the party, and a row that names none is the
+ * installation's. Two levels and no third: an exception is the installation's or a
+ * party's, never a tenant's, because a tenant's closure would close the day for
+ * every party it holds. The overlay is the shape
+ * [[id:B0BC735F-7E05-4882-A216-C250B26B0091][Precedence among the levels of
+ * reference data]] states: the installation states the day for every party, and a
+ * party states only the day it moves.
+ * Mirrors
  * ores::analytics::quant::domain::calendar_exception plus the usual
  * refdata plumbing. Applies uniformly to *any* calendar -- transcribed
  * or user-authored, based or base-less: a based calendar's full override
@@ -82,9 +94,23 @@ struct calendar_exception final {
     /**
      * @brief The specific calendar date this exception applies to.
      *
-     * One exception per (calendar, date) pair.
+     * One exception per (calendar, date) at each level: the installation states the day for every
+     * party, and a party may state a different answer for the same day.
      */
     std::chrono::year_month_day exception_date;
+
+    /**
+     * @brief The party whose calendar this exception belongs to. NULL for the installation's own
+     * exceptions, which every party reads.
+     *
+     * The column is part of the natural key, because the level is part of what an exception says:
+     * the installation and a party may both answer for one day, and two parties may answer
+     * differently. The key of a row is therefore (calendar, date, party), and the composite index
+     * the generator emits enforces it for a party's rows. A null party is distinct from every other
+     * null in that index, so the installation's rows carry their own unique index instead, declared
+     * in ** Indexes below.
+     */
+    std::optional<boost::uuids::uuid> party_id;
 
     /**
      * @brief Whether exception_date is overridden to a business day.

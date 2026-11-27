@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fixing observations — what the platform states</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<div class="proto-bar">
+  <span><b>Prototype</b> · throwaway · mock data, no server</span>
+  <a href="../fixings.org">the design note</a>
+  <a href="../index.org">market data prototypes</a>
+  <a href="../public-rates/">Public rates</a>
+</div>
+
+<header class="page">
+  <div class="crumbs"><a href="#">Market data</a> / Fixing observations</div>
+  <div class="title-row">
+    <h1>Fixing observations</h1>
+    <span class="lead">what the sources published: every FX and IR series the platform holds, across every source, and the day each one reaches</span>
+    <span class="actions">
+      <a class="act" href="?state=empty">Only the empty</a>
+      <button class="act" id="refresh">Refresh</button>
+    </span>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <div class="card-head">
+      <h2>Series</h2>
+      <p id="sub"></p>
+      <span class="filters" id="filters"></span>
+      <input id="find" placeholder="Find a pair, an index, a source">
+    </div>
+    <table class="list" id="series">
+      <thead><tr>
+        <th>Series</th><th>Class</th><th>Underlying</th><th>Source</th><th>Provider</th>
+        <th>Latest value</th><th>Latest day</th><th class="num">Days</th><th class="acts"></th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="card-body legend" id="legend"></div>
+  </section>
+
+  <section class="card" id="series-page" hidden>
+    <div class="card-head">
+      <h2 id="sp-title"></h2><p id="sp-sub"></p>
+      <span class="filters"><a class="act" href="?">Back to the list</a></span>
+    </div>
+    <div class="card-body" id="sp-body"></div>
+  </section>
+</main>
+
+<script src="prototype.js"></script>
+</body>
+</html>

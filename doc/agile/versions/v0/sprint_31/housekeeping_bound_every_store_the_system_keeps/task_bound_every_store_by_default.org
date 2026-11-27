@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: 6802E7DF-9851-41A8-B1CB-6E0E678D389C
+:END:
+#+title: Task: Bound every store by default
+#+description: The store catalogue declares a default retention policy for every store that can take one, and provisioning creates it, so no installation ships a store whose size grows without a bound. A store is unbounded only when somebody removed the default, which the screen then reads as the alarm it is.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping:retention:catalogue:defaults:sprint_31:housekeeping_bound_every_store_the_system_keeps:v0:
+#+owner: marco
+#+branch: feature/bound-every-store-by-default
+#+pr: 5180
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An installation ships with every store it keeps already bounded. The store
+catalogue states a default retention policy for each store that can take one — a
+quarter for report output, a month for delivery counters, a week for job inputs, a
+day for scratch — and provisioning creates the policy, so nobody has to notice
+the absence before the store starts growing. A store without a policy then means
+one of two things, and both are worth a person's attention: the store's bound
+cannot be expressed as an age, or somebody removed the default.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-26                               |
+
+* Acceptance
+
+- The store catalogue states, for each store, whether it carries a policy and the default period and action when it does
+- Provisioning creates the policy for every store that states one, in the tenant that owns the store, and a second provision leaves exactly one policy per store
+- The default period follows the kind of data: run output a quarter, counters a month, job inputs a week, scratch a day
+- The policy rows are delivered as platform data like the sweep itself, so a default changes without a schema rebuild
+- A store whose bound cannot be expressed as an age (the calendar dates) states that, rather than carrying a default that does nothing
+
+* Plan
+
+- The catalogue states the default; the shipped policies are derived from it, so
+  one statement of a period serves both and the two cannot drift. The policy
+  dataset's artefact rows become a =select= over the catalogue's artefact rows
+  rather than a hand-written list, and the catalogue stages first so the rows
+  exist when the derivation runs.
+- A policy needs to name the store it came from, so =retention_policy= gains
+  =store_code=. That is also what makes one policy per store checkable: the
+  publish creates a policy only where no current policy already names the store,
+  so a changed default never applies an older period beside a person's choice.
+- The policy's own vocabulary had to grow to match the catalogue. It refused
+  =release_directory= and a =directory= target, which is exactly what the node
+  scratch default asks for; the checks and the model now state both.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Policies created from the catalogue | 8 of 10 stores | =select code, store_code from ores_scheduler_retention_policies_tbl= | feature branch |
+| Stores with no policy | 2: the package cache (keying) and the calendar dates (none) | the same read against the catalogue | feature branch |
+| Scheduler pgTAP suites | 24 of 24 passed | =./test/run_tests.sh test/scheduler_publish_*_test.sql= | feature branch |
+| Scheduler C++ suites | 3 of 3 passed | =./compass.sh test run -- -R scheduler= | feature branch |
+| Local checks, non-heavy | 13 of 13 passed | =./compass.sh check --exclude-heavy= | feature branch |
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5180][#5180]] | [scheduler] Bound every store by default |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+An installation ships with every store the catalogue can bound already bound.
+Eight policies are derived from the ten catalogue rows: the two stores that take
+none are the package cache, bounded by its content keying, and the calendar
+dates, whose bound is a range rather than an age.
+
+The derivation is one statement: the policy artefact rows are a select over the
+catalogue's artefact rows, where the bound is a policy. A new store therefore
+arrives with its policy, a default changes in one place, and the policy code
+names the store and the period so an operator reads it without a join.
+
+Two things were found by doing it. The policy needed to name its store, or a
+second default for the same store could apply an older period beside the first;
+=store_code= is the fix, and the publish now skips a store that already holds a
+policy under another code. And the policy's own checks refused the node scratch
+default, because =release_directory= and a =directory= target were not in its
+vocabulary even though the sweep's task names them: the catalogue found a gap in
+the model it was meant to serve.

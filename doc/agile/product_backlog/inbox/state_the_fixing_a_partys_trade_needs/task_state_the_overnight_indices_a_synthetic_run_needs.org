@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 7D79E648-0905-4FA7-81E5-42FC781A7DCB
+:END:
+#+title: Task: State the overnight indices a synthetic run needs
+#+description: Every fixing administrator now has a simulated source except the overnight indices whose administrator also has a public adapter, and that adapter is not installed. Decide who states ESTR, SONIA and SOFR in a synthetic run, and prove it with a provisioned tenant.
+#+type: task
++#+level: s1
++#+filetags: :state_the_fixing_a_partys_trade_needs:inbox:product_backlog:
++#+owner: marco
++#+branch:
++#+pr:
++#+blocked_on:
++#+blocked_since:
++#+created: 2026-11-27
++#+updated: 2026-11-27
++#+environment: bright_faraday
++#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:695BF078-277C-46B4-8F49-CEFFDD9E2752][State the fixing a party's trade needs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A synthetic run states the fixing of every overnight index a trade floats on, in
+the administrator's own notation, so a swap's overnight coupon prices without a
+live adapter.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:695BF078-277C-46B4-8F49-CEFFDD9E2752][State the fixing a party's trade needs]] |
+| Now          | Not yet started. The gap is measured on main. |
+| Waiting on   | Nothing.                               |
+| Next         | Decide: the simulator states them, or the public adapters are built. |
+| Last touched | 2026-11-27                               |
+
+* Acceptance
+
+- A provisioned synthetic tenant holds the fixings of ESTR, SONIA and SOFR, each
+  under its administrator and in that administrator's notation.
+- No item has two producers in the run, and the source a party reaches is the one
+  its route picks.
+- The overnight coupon of a swap prices from its index's fixing.
+- The decision is written on the story, so a reader knows why the simulator states
+  an index that a real administrator also publishes.
+
+* Plan
+
+1. *Inventory.* Seventeen fixing administrators have a simulated source on
+   =synthetic-local=. The indices whose administrator also has a public adapter
+   are left to it: =ecb= for ESTR, =boe= for SONIA, =nyfed= for SOFR. The release
+   installs three adapters, frankfurter, synthetic and derived, so none of those
+   three is served.
+2. *Decide.* The recommendation is that the simulator states them, on a source of
+   the same publisher, because the adapters are separate work and the simulator
+   already states the other administrators. The sample's public feed stays in the
+   catalogue and is the one a live installation switches to.
+3. *Add the rows.* One source per publisher on =synthetic-local=, the vendor
+   instruments in the administrator's notation, and the mappings to the items that
+   are already mapped.
+4. *One producer.* Prove the one-producer rule holds for each item: either the
+   public feed or the simulated source is the producer a route reaches, and never
+   both.
+5. *Prove.* A provisioned tenant holds the three fixings, and a swap prices.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Fixing administrators with a simulated source | 17 | =git grep -c "'-a'" origin/main -- projects/ores.sql/populate/marketdata/marketdata_fixing_publishers_catalogue_populate.sql= | =1fd8150a69= |
+| Adapter modules the release installs | 3: frankfurter, synthetic, derived | =git grep -n "The release defines three" origin/main -- projects/ores.sql/populate/marketdata= | =1fd8150a69= |
+| Simulated sources for ESTR, SONIA or SOFR | 0 | =git grep -nE "SONIA\|SOFR" origin/main -- projects/ores.sql/populate/marketdata/marketdata_fixing_publishers_catalogue_populate.sql= | =1fd8150a69= |
+
+* Notes
+
+- The public feeds already exist and are the truth of who administers the item:
+  =boe-sonia= on =boe-database=, =nyfed-sofr= on =nyfed-markets=. A synthetic
+  installation needs the same items with a simulated producer, not a second
+  identity.
+- ESTR is the euro short-term rate, which the ECB publishes. The ECB's adapter in
+  the release is Frankfurter, and Frankfurter serves the FX reference rates alone.
+- SONIA is the one this platform's own smokehouse tenant needs: its overnight swap
+  floats on it.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

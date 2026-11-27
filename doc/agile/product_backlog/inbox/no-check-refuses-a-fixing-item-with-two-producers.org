@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 96BA455F-2DC2-4AA9-81B9-D79D0A4C88EB
+:END:
+#+title: No check refuses a fixing item with two producers
+#+description: The one-producer rule of the architecture is enforced by a silent filter and by the absence of rows, so a second producer of an item would be offered twice and nothing would fail.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:fixing:tech_debt:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The architecture says a fixing item has one producer at a time: the source the
+system party routes the item's publisher to. Nothing enforces it. The simulator
+offers a source the items its provider's instruments map, and an item mapped by
+two providers is offered twice, quietly. The thirteen overnight indices that a
+public adapter already serves were removed by deleting their rows, not by a rule
+that refuses a second producer.
+
+* Why
+
+The rule is the difference between a store that states one number per fixing and
+one that states two, and a reader cannot tell which is official. The failure is
+silent: both publishes succeed and the series table shows two series for one
+item.
+
+The fix is a check where the catalogue is written, not where the fixings are
+offered: refuse a mapping that would give an item a second producer while a route
+for its publisher exists. The pgTAP suite already holds checks of this shape, and
+the catalogue seed is where a duplicate row would be written.
+
+* References
+
+- =doc/knowledge/architecture/synthetic_generation_of_fixings.org=, "One producer per item".
+- =projects/ores.synthetic/service/src/simulator_offers.hpp=, the silent filter.
+
+* See also
+
+-

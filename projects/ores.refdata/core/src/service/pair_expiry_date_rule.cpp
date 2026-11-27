@@ -20,9 +20,9 @@
 #include "ores.refdata.core/service/pair_expiry_date_rule.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.core/mapping/quant_codes.hpp"
-#include "ores.refdata.core/repository/calendar_date_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_calendar_repository.hpp"
 #include "ores.refdata.core/repository/currency_pair_convention_repository.hpp"
+#include "ores.refdata.core/service/calendar_day_service.hpp"
 #include <algorithm>
 #include <bitset>
 #include <chrono>
@@ -99,10 +99,9 @@ read_pair_expiry_date_rule(const ores::database::context& ctx, const std::string
     std::vector<std::vector<domain::calendar_date>> calendars;
     std::string codes;
     refdata_repo::currency_pair_convention_calendar_repository links{ctx};
-    refdata_repo::calendar_date_repository dates{ctx};
     for (const auto& link : own_or_shared(ctx, links.read_latest_by_pair(pair_code))) {
         codes += (codes.empty() ? "" : ",") + link.calendar_code;
-        calendars.push_back(dates.read_latest_by_calendar(link.calendar_code));
+        calendars.push_back(calendar_day_service{ctx}.days(link.calendar_code));
         if (calendars.back().empty())
             return std::unexpected("Calendar " + link.calendar_code + " of " + pair_code +
                                    " has no materialised dates.");

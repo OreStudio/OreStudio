@@ -46,7 +46,9 @@
  *
  * published_at and published_by are the publication record, empty while the
  * request waits and written in one act when the approved set is published.
- * request_id is the natural key, so a request authorises one publish.
+ * request_id is the natural key, so a request authorises one publish. The apply
+ * ends every live set of the pair in the same act, so the pair has one set in use
+ * and the sets it replaced say which one took their place.
  */
 
 create table if not exists "ores_marketdata_fx_forward_publishes_tbl" (
@@ -66,6 +68,9 @@ create table if not exists "ores_marketdata_fx_forward_publishes_tbl" (
     "method_code" text not null,
     "published_by" text not null,
     "published_at" timestamp with time zone null,
+    "superseded_at" timestamp with time zone null,
+    "superseded_by_request_id" uuid null,
+    "superseded_as_of" timestamp with time zone null,
     "modified_by" text not null,
     "performed_by" text not null,
     "acting_agent" text not null default '',
@@ -83,6 +88,9 @@ create table if not exists "ores_marketdata_fx_forward_publishes_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn()),
     check (("published_at" is null) = ("published_by" = '')),
     check ("as_of" > '1970-01-01 00:00:00+00'::timestamp with time zone),
+    check (("superseded_at" is null) = ("superseded_by_request_id" is null)),
+    check (("superseded_at" is null) = ("superseded_as_of" is null)),
+    check ("superseded_at" is null or "published_at" is not null),
     check ("spot_rate" > 0),
     check ("pair_code" <> '')
 );

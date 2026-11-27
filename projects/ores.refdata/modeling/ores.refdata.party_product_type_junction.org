@@ -1,0 +1,151 @@
+:PROPERTIES:
+:ores.cpp.wire-codec.enabled: true
+:ID: 84B5E325-ACE1-4B2A-B7CF-032DDD7D1366
+:END:
+#+title: ores.refdata.party_product_type
+#+description: Codegen junction model for party_product_types: the product types a party may trade, when the party states them at all.
+#+type: ores.codegen.junction
+#+component: refdata
+#+filetags: :model:junction:refdata:trading:
+#+name: party_product_types
+#+name_singular: party_product_type
+#+name_title: Party Product Type
+#+name_singular_words: permitted product type
+#+brief: A product type a party may trade, when the party states its permitted set.
+#+product: ores
+#+schema: public
+#+has_tenant_id: true
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+The product types a party permits its books to trade.
+
+The party's set is the maximum, and each of its books may narrow it:
+
+- =ores_refdata_parties_tbl.restricts_product_types= is false, which is every
+  party a tenant creates without saying otherwise: the party permits every
+  product type the catalogue states, now and later, and this junction holds no
+  rows for it.
+- The flag is true: this junction holds the permitted set, and a party with no
+  rows here permits nothing. An empty set is a decision, not a gap, and a
+  tenant that permits nothing books nothing.
+- A book's own set, =ores_refdata_book_product_types_tbl=, is a subset of this
+  one whenever this one is stated. The rule is enforced on the write, so a book
+  can neither exceed its party's set nor escape it.
+
+The two states are different facts and must not be collapsed, for the same
+reason the book's flag must not be: the absence of rows permits everything when
+the flag is false and permits nothing when it is true.
+
+The product type is named by the code the catalogue states, the same soft
+reference the book's junction uses, because the catalogue belongs to the
+trading component and this junction to refdata: a foreign key would point the
+reference data at the trades.
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:history: true
+:events: true
+:history_read_permission: refdata::parties:read
+:END:
+
+* Left
+:PROPERTIES:
+:column:        party_id
+:column_short:  party
+:column_title:  Party
+:type:          uuid
+:cpp_type:      boost::uuids::uuid
+:index_comment: Index for looking up the product types a party permits
+:list_by:       true
+:END:
+
+ID of the party, or 00000000-0000-0000-0000-000000000000 for a party that does
+not exist.
+
+References ores_refdata_parties_tbl.id (soft FK).
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* Right
+:PROPERTIES:
+:column:        product_type_code
+:column_short:  product_type
+:column_title:  Product Type
+:type:          text
+:cpp_type:      std::string
+:index_comment: Index for finding the parties that permit a product type
+:list_by:       true
+:END:
+
+Code of the product type the party permits.
+
+References ores_trading_product_types_tbl.code (soft FK, because the catalogue
+belongs to the trading component).
+
+#+begin_src cpp :name generator
+std::string("Swap")
+#+end_src
+
+* Columns
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_party_product_types_tbl
+:rls_tenant_isolation: true
+:END:
+
+* Foreign keys
+
+** party_id
+:PROPERTIES:
+:table:         ores_refdata_parties_tbl
+:error_message: Invalid party_id: %. No active party found with this id.
+:END:
+
+ID of the party; must exist in ores_refdata_parties_tbl.
+
+* Repository
+:PROPERTIES:
+:name_singular_short: party_product_type
+:name_short:          party_product_types
+:name_singular_words: permitted product type
+:name_words:          permitted product types
+:order_column:        product_type_code
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ppt
+:END:
+
+** Table display
+
+| column            | header       |
+|-------------------+--------------|
+| product_type_code | Product Type |
+
+* See also
+
+- [[id:04919c94-bcca-47a5-914e-73aef24d28c7][ores.refdata.book_product_type]] — completes: the book's set, which
+  narrows this one.
+- [[id:028e8ae7-ca0a-431a-bfea-978751b6700a][ores.refdata.party_product_type_deal_class]] — distinguishes: the deal
+  class a party works a type as, which is a classification and not a permission.

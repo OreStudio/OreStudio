@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: DE1FA71A-1FCA-473F-A0D4-8E810067C18A
+:END:
+#+title: A policy cannot bound a store by date range, so the calendar dates stay unbounded
+#+description: A retention policy bounds by age. The calendar days behind the horizon are not old, they are out of range, so no default policy can delete them and no installation can bound that store by declaring one.
+#+type: capture
+#+level: cross
+#+filetags: :housekeeping:retention:calendar_dates:policy:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

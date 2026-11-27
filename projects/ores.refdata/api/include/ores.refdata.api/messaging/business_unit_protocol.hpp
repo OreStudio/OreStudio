@@ -57,6 +57,7 @@ struct business_unit_write {
     std::string business_centre_code;
     std::optional<boost::uuids::uuid> unit_type_id;
     std::string status;
+    bool restricts_product_types{};
 
     friend bool operator==(const business_unit_write&, const business_unit_write&) = default;
 };
@@ -422,6 +423,8 @@ inline constexpr std::string_view deleted = "refdata.v1.events.business_units.de
         utility::codec::field{"business_centre_code", &business_unit_write::business_centre_code},
         utility::codec::field{"unit_type_id", &business_unit_write::unit_type_id},
         utility::codec::field{"status", &business_unit_write::status},
+        utility::codec::field{"restricts_product_types",
+                              &business_unit_write::restricts_product_types},
     };
 }
 

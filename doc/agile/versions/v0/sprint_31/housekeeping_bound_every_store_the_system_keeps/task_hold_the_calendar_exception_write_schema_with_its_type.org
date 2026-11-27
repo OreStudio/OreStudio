@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: 1BB81CE0-B782-46EA-BB7A-9927C7A85EA4
+:END:
+#+title: Task: Hold the calendar exception's write schema with its type
+#+description: The party scope regenerated the write type and left the BFF schema behind, so the web build failed; hold the two together and run the gate.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: feature/hold-the-calendar-exception-write-schema-with-its-type
+#+pr: 5149
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The generated write type of a record and the hand-written schema that validates
+it at the BFF boundary agree, so the web build of =main= passes again, and the
+next model change that regenerates a write type is gated by the web check.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Fixed; the web check passes.           |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the pull request.                |
+| Last touched | 2026-11-26                               |
+
+* Acceptance
+
+- The BFF write schema for calendar exceptions names every member of the
+  generated write type, so the type assertion holds
+- The full web check passes: install, typecheck, format and tests
+- The break is shown to exist without the fix, with the compiler's own message
+
+* Analysis
+
+[[id:A898881E-B0A8-4E23-B717-DB7681AB2B18][Hold the calendar dates once, in
+the system tenant]] gave the exception its party, and the generator added
+=party_id= to =CalendarExceptionWrite=. The hand-written schema in
+=packages/bff/src/records.ts= was left as it was, and it is tied to the wire
+type by =satisfies z.ZodType<CalendarExceptionWrite>=, so =tsc --build= stopped:
+=TS1360, Property 'party_id' is missing=.
+
+The break reached =main= with merge 64020779f1. It was not caught because the
+branch's gates were chosen by hand — the format and codegen checks — and the
+classifier was not asked. The generated =calendar_exception_protocol.ts= is a
+change under =projects/ores.web=, which classifies as =web=, whose check runs
+the typecheck that fails.
+
+The field is nullable on the wire, and the screen may omit it, so the schema
+takes it as =z.uuid().nullable().default(null)=: the output type stays the
+wire's, and a write that names no party still validates as the installation's.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The web check with the fix | passed in 157.8 s | =compass.sh check --only web= | working tree |
+| The typecheck without the fix | TS1360, party_id missing | =npm run typecheck= in =projects/ores.web= | 2f0c8056b4 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5149][#5149]] | [web] Hold the calendar exception's write schema with its type |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The BFF's calendar-exception schema names =party_id= again, so the generated
+write type and the boundary schema agree and the web build of =main= is green.
+
+The fix is one line: =party_id: z.uuid().nullable().default(null)=, which keeps
+the wire's output type and lets a write that names no party through as the
+installation's row. It was proved in both directions: =npm run typecheck= fails
+with =TS1360, Property 'party_id' is missing= on =main=, and the full web check
+passes with the line — install, typecheck, format and tests, in 157.8 seconds.
+
+The gate was there and was not asked: a model change that regenerates a
+TypeScript file is a =web= change to the classifier, and the branch ran only the
+checks it had chosen by hand. The capture that follows records the structural
+gap: nothing checks the 23 =satisfies= schemas short of a full web build.

@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: A00ACCD0-E242-4AFE-9850-9208B0F92FCD
+:END:
+#+title: Task: Fix the Windows compass install
+#+description: Task for: Keep main green
+#+type: task
+#+level: s1
+#+filetags: :keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/fix-the-windows-compass-install
+#+pr: 5158
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let the Windows nightlies unpack the pinned compass release, so they compile, test and submit to CDash again instead of dying at setup.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-26                               |
+
+* Acceptance
+
+- Both Windows legs reach the build; the install step unpacks the zip with PowerShell.
+- The step refuses loudly when the release holds no compass.exe.
+
+* Plan
+
+Replace the archive tool with PowerShell's =Expand-Archive=, which every
+Windows runner carries, and stop the step when the archive holds no
+=compass.exe= rather than leaving the shim and the PATH entry pointing at a
+directory without it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Windows nightlies that reached the build | 0, from 24 November | =gh run list --workflow nightly-windows.yml=, then the failing step of each run | be9ba4dd31 |
+| Failing step on 26 November | =Install the pinned compass release=, exit 2: =tar: This does not look like a tar archive= | =gh run view --job 139799836486 --log-failed= | be9ba4dd31 |
+| Failing step on 25 November | =Install the pinned compass release=, exit 127: no =unzip= | =gh run view --job 139104028820 --log-failed= | be9ba4dd31 |
+| Step script syntax | =bash -n= clean; PowerShell receives one well-formed =-Command= | =bash -n= on the step body, and a stub run of the expansion line | be9ba4dd31 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5158][#5158]] | [ci] Unpack the Windows compass release with PowerShell |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+The install step unpacks the pinned release with PowerShell, and the two
+failed attempts are gone: =unzip=, which Windows does not carry, and =tar=,
+which Git Bash shadows with GNU tar, which cannot read a zip.
+
+- =Expand-Archive= expands the archive into =compass-ng= under =RUNNER_TEMP=.
+- The step fails when the expanded tree holds no =compass.exe=, naming the
+  archive, instead of writing a shim and a PATH entry for a directory that
+  holds no binary.
+
+Verified locally: the workflow parses as YAML, the step body passes =bash -n=,
+the expansion line hands PowerShell one well-formed =-Command= argument, and
+=compass-ng check --ratchet= reports no new diagnostics on this branch.
+
+Not verified locally: the step itself, which needs a Windows runner. Tonight's
+nightly is the check.

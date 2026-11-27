@@ -49,6 +49,16 @@ TEMPORAL_004 ores_iam_permissions_tbl
 TEMPORAL_005 ores_iam_permissions_tbl
 
 # =============================================================================
+# Delivery counts - the party scopes the tenant
+# A count is one row per party, provider, feed, item and hour. A party belongs
+# to exactly one tenant, so two tenants cannot collide on this key, and the
+# column is carried for row level security and for the reads that filter by it.
+# Putting it in the key would add width to every index for a value the key
+# already implies.
+# =============================================================================
+TENANT_002 ores_marketdata_delivery_counts_tbl
+
+# =============================================================================
 # Artefact/staging tables - tenant_id not in PK by design
 # These are temporary import tables where dataset_id is the primary identifier.
 # tenant_id is carried for data flow to target tables, not for uniqueness.
@@ -157,6 +167,7 @@ TENANT_002 ores_iam_agent_held_writes_tbl
 TENANT_002 ores_telemetry_logs_tbl
 TENANT_002 ores_compute_grid_samples_tbl
 TENANT_002 ores_compute_node_samples_tbl
+TENANT_002 ores_scheduler_retained_store_samples_tbl
 TENANT_002 ores_compute_work_ledger_tbl
 TENANT_002 ores_compute_work_tenants_tbl
 TENANT_002 ores_compute_work_totals_tbl

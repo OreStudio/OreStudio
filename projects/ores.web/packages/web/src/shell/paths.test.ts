@@ -20,6 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { AREA_PAGE } from './cards.js';
 import { MOVED, PATHS, personPath, reportPath, rescuePath, rolePath } from './paths.js';
 
 /**
@@ -30,10 +31,12 @@ const CURRENT = new Set<string>(Object.values(PATHS));
 
 describe('the addresses of the screens', () => {
     it('sit under their area', () => {
+        // The areas are read from the registry, so adding an area does not need
+        // a second list here to agree with it.
+        const areas = new Set<string>(Object.values(AREA_PAGE));
         for (const [name, path] of Object.entries(PATHS)) {
-            expect(path, name).toMatch(
-                /^\/(refdata|organisation|operations|market-data|reporting|trading)(\/|$)/,
-            );
+            const under = [...areas].some((area) => path === area || path.startsWith(`${area}/`));
+            expect(under, `${name}: ${path}`).toBe(true);
         }
         expect(PATHS.parties).toBe('/refdata/parties');
         expect(PATHS.rescue).toBe('/organisation/rescue');
@@ -42,6 +45,8 @@ describe('the addresses of the screens', () => {
         expect(PATHS.reports).toBe('/reporting/reports');
         expect(PATHS.trading).toBe('/trading');
         expect(PATHS.trades).toBe('/trading/trades');
+        expect(PATHS.dataQuality).toBe('/data-quality');
+        expect(PATHS.dataQualityCoverage).toBe('/data-quality/coverage');
     });
 
     it('are named by one helper when they take a key', () => {

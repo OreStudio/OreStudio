@@ -335,4 +335,5 @@ does not exist today.
 - =ores_refdata_publish_conventions_from_dq_fn= — the 24-kind function, its array and its insert-only guard
 - =ores_refdata_publish_currency_pair_conventions_from_dq_fn= — the one function that replaces the row it finds
 - =ores_iam_provision_tenant_fn= — the one-time copy of the tenor conventions
+- [[id:B0BC735F-7E05-4882-A216-C250B26B0091][Precedence among the levels of reference data]] — completes: why the copy the journey reads does not follow the system tenant's later rows.
 - =bundles publish <code> --party-id <id> --wait= — the shell spelling of =dq.v1.ops.publish_bundle=

@@ -55,6 +55,7 @@ export const PATHS = {
     signIns: '/operations/sign-ins',
     agentGrants: '/operations/agent-grants',
     marketDataFeeds: '/operations/market-data-feeds',
+    housekeeping: '/operations/housekeeping',
     authorisationQueue: '/operations/authorisation-queue',
     synthetic: '/market-data/synthetic',
     publishedCurves: '/market-data/published-curves',
@@ -64,6 +65,7 @@ export const PATHS = {
     connectivity: '/market-data/connectivity',
     identityShapes: '/market-data/identity-shapes',
     fixingSeries: '/market-data/fixings',
+    fixingObservations: '/market-data/fixing-observations',
     instruments: '/market-data/instruments',
     rateLadder: '/market-data/rate-ladder',
     fxMontage: '/market-data/fx-montage',
@@ -86,7 +88,15 @@ export const PATHS = {
     sensitivityTemplates: '/reporting/sensitivity-templates',
     cuts: '/reporting/cuts',
     cutTypes: '/refdata/cut-types',
+    dataQuality: '/data-quality',
+    dataQualityCoverage: '/data-quality/coverage',
+    dataQualityDatasets: '/data-quality/datasets',
 } as const;
+
+/** The address of one dataset's page, under the coverage area. */
+export function datasetPath(code: string): string {
+    return `${PATHS.dataQualityDatasets}/${encodeURIComponent(code)}`;
+}
 
 /** The address of one asset class's calibration list. */
 export function calibrationPath(assetClass: string): string {
@@ -202,6 +212,11 @@ export function structurePath(reference: string): string {
 /** The page of one authorisation request: the deal and the decision it awaits. */
 export function authorisationRequestPath(requestId: string): string {
     return `${PATHS.authorisationQueue}/${encodeURIComponent(requestId)}`;
+}
+
+/** The page of one store the installation keeps, named by its catalogue code. */
+export function housekeepingStorePath(code: string): string {
+    return `${PATHS.housekeeping}/${encodeURIComponent(code)}`;
 }
 
 /** The page of one trade. */
@@ -331,3 +346,17 @@ export const MOVED: readonly (readonly [from: string, to: string])[] = [
     ['/audit', PATHS.signIns],
     ['/reporting/:name', `${PATHS.reports}/:name`],
 ];
+
+/**
+ * The fixing series page of one item, named by its oresmd URI.
+ *
+ * The page titles itself with the name the list gave the item, so a reader who
+ * arrives from a list keeps the name they clicked; the name is carried in the
+ * address because the page cannot derive it from the URI.
+ */
+export function fixingSeriesPath(uri: string, label?: string): string {
+    const address = `${PATHS.fixingSeries}?uri=${encodeURIComponent(uri)}`;
+    return label === undefined || label === ''
+        ? address
+        : `${address}&label=${encodeURIComponent(label)}`;
+}

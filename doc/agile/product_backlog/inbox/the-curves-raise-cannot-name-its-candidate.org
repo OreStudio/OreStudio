@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D4945061-7E98-4E52-8EFA-C00D59EB700A
+:END:
+#+title: The curve's raise answers none of the page's candidate checks
+#+description: The raise page refuses a subject of another party, a missing candidate, a failed blocking check, a second open request and a candidate older than the live set. The surface answers all five and the forward answers those its raise can judge, because both have a candidate before the raise. The curve has none: its bootstrap runs at the apply and a request whose inputs have not arrived is deferred, so a decider approves no version and the request names nothing checkable. Closing this moves the curve's compute before its raise, which changes the deferred path, or relaxes the page to say that a kind with no candidate answers no candidate checks.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:publish:approval:gap:backlog:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

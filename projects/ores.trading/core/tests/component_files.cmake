@@ -87,6 +87,7 @@ set(files
     "lifecycle_event_eventing_integration_tests.cpp"
     "long_short_type_eventing_integration_tests.cpp"
     "main.cpp"
+    "market_reference_tests.cpp"
     "message_codec_tests.cpp"
     "messaging_export_portfolio_codec_tests.cpp"
     "moment_type_eventing_integration_tests.cpp"

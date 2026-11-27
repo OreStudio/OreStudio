@@ -25,7 +25,7 @@ DENIAL_MESSAGE = (
     "Never pipe or redirect a compass command (no `|`, no `>`, no "
     "`2>&1`) -- run it bare. Compass build/deploy commands print their "
     "own well-known log-file path (e.g. \"\U0001F4DD Build output: "
-    "/tmp/<label>_<target>_build.log (tail -f to follow)\"). To watch "
+    "tmp/<label>_<target>_build.log (tail -f to follow)\"). To watch "
     "progress, tail THAT reported file as a separate, standalone "
     "command (e.g. `tail -f <path>`) -- never by piping the compass "
     "invocation itself. See CLAUDE.md.\n"

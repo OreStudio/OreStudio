@@ -28,7 +28,15 @@
 \ir ./scheduler_job_instances_create.sql
 \ir ./scheduler_retention_policies_create.sql
 \ir ./scheduler_retention_policies_notify_trigger_create.sql
+\ir ./scheduler_retained_stores_create.sql
+\ir ./scheduler_retained_stores_notify_trigger_create.sql
+\ir ./scheduler_retained_store_samples_create.sql
+\ir ./scheduler_retained_store_samples_notify_trigger_create.sql
 \ir ./scheduler_retention_sweep_create.sql
--- The view the housekeeping screens read. It joins the ledger to the policies, so
--- it loads after both.
+\ir ./scheduler_store_sampler_create.sql
+\ir ./scheduler_store_bounds_view_create.sql
+\ir ./scheduler_publish_from_dq_create.sql
+
+-- The view the housekeeping screens read for what each sweep removed. It joins
+-- the ledger to the policies, so it loads after both.
 \ir ./scheduler_retention_runs_create.sql

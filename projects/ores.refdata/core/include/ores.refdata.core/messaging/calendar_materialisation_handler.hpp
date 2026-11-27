@@ -42,6 +42,11 @@ public:
 
     void regenerate(ores::nats::message msg);
 
+    /**
+     * @brief Removes the caller's copies of the days the installation owns.
+     */
+    void purge(ores::nats::message msg);
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

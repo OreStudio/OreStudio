@@ -25,6 +25,7 @@
 #ifndef ORES_SCHEDULER_API_DOMAIN_RETENTION_POLICY_HPP
 #define ORES_SCHEDULER_API_DOMAIN_RETENTION_POLICY_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
 #include <string_view>
@@ -39,15 +40,28 @@ namespace ores::scheduler::domain {
  * shape rather than by a particular table, so the policy survives a table being
  * replaced.
  *
+ * A policy is a row of the installation, held by the system tenant: the
+ * classification that governs published rows makes the platform the author of the
+ * stores it bounds, and one copy in the system tenant is what keeps two
+ * installations' policies from disagreeing. The column is not null for that
+ * reason: a policy with no tenant has no owner to be published to.
+ *
  * A policy is data, not a schema constant, so a period changes without a rebuild.
- * The scheduler fires one sweep which reads the enabled policies and applies them,
- * including where the storage engine runs no retention job of its own.
+ * The scheduler fires one sweep, which applies the enabled policies that are due,
+ * including where the storage engine runs no retention job of its own. A policy is
+ * due once its cadence has passed since the sweep last applied it, so the sweep's
+ * own schedule sets the finest cadence the installation can express.
  */
 struct retention_policy final {
     /**
      * @brief Version number for optimistic locking and change tracking.
      */
     int version = 0;
+
+    /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
      * @brief Unique code for the policy.
@@ -57,8 +71,8 @@ struct retention_policy final {
     std::string code;
 
     /**
-     * @brief The shape of what the policy bounds: a chunked table, an ordinary table or an object
-     * store key prefix.
+     * @brief The shape of what the policy bounds: a chunked table, an ordinary table, an object
+     * store key prefix, or a directory on a compute host.
      */
     std::string target_kind;
 
@@ -68,8 +82,18 @@ struct retention_policy final {
     std::string target;
 
     /**
+     * @brief The catalogue store this policy bounds, as retained_stores.code names it.
+     *
+     * A policy is created from the default the catalogue states, and this is what says which store
+     * it came from. It is also what keeps one policy per store: the publish that creates the
+     * defaults writes a policy only where no current policy already names the store, so changing a
+     * default never leaves a second policy applying an older period beside the first.
+     */
+    std::string store_code;
+
+    /**
      * @brief What the sweep does to the target past the period: drop its chunks, delete its rows,
-     * or expire its objects.
+     * expire its objects, or release a directory its node no longer needs.
      */
     std::string action;
 
@@ -79,9 +103,11 @@ struct retention_policy final {
     int retention_days = 0;
 
     /**
-     * @brief The cron expression for this policy's sweep.
+     * @brief The hours between two applications of this policy. The sweep fires on the scheduler's
+     * job schedule and applies a policy only once this period has passed since it last applied it,
+     * so a store whose contents stop being useful over a month is not swept every day.
      */
-    std::string cadence;
+    int cadence_hours = 0;
 
     /**
      * @brief Whether the sweep applies this policy.

@@ -26,6 +26,7 @@
 #include "ores.dq.api/domain/dataset_dependency.hpp"
 #include "ores.dq.api/domain/publication_mode.hpp"
 #include "ores.dq.api/domain/publication_result.hpp"
+#include "ores.dq.api/messaging/bundle_roster_protocol.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/artefact_type_repository.hpp"
 #include "ores.dq.core/repository/dataset_dependency_repository.hpp"
@@ -159,6 +160,44 @@ public:
      * @return The level the bundle states, or nothing when no such bundle exists.
      */
     std::optional<std::string> bundle_level(const std::string& bundle_code);
+
+    /**
+     * @brief Reads the roster: every bundle, the level it publishes at and the
+     * number of datasets it carries.
+     *
+     * The staged count is not in this answer. It costs one count per member's
+     * artefact table, so it is taken only for a bundle a caller names.
+     *
+     * @return The bundles, ordered by code.
+     */
+    std::vector<messaging::bundle_roster_bundle> list_bundle_roster();
+
+    /**
+     * @brief Reads one bundle's members, each with the number of rows its
+     * artefact table has staged.
+     *
+     * A member whose artefact type names a family of tables states the sum of
+     * what all of them hold, because a row is staged if it is in any of them.
+     *
+     * @param bundle_code The bundle to read (e.g., 'world').
+     * @return The members, in the bundle's own order; empty for a bundle that
+     *         carries none.
+     */
+    std::vector<messaging::bundle_roster_member>
+    list_bundle_members(const std::string& bundle_code);
+
+    /**
+     * @brief Reads the bundle that carries a dataset.
+     *
+     * A dataset's own page knows the dataset and not the bundle, so the roster
+     * resolves it here. Membership rows of a shared bundle live in the system
+     * tenant, so the read states no tenant predicate and the policy decides, as
+     * the roster's own functions do.
+     *
+     * @param dataset_code The dataset to look up (e.g., 'iso.countries').
+     * @return The bundle's code, or nothing when no bundle carries the dataset.
+     */
+    std::optional<std::string> bundle_of_dataset(const std::string& dataset_code);
 
     /**
      * @brief Resolves a list of dataset IDs into ordered, publishable entries.

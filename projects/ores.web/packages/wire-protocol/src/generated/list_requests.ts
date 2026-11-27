@@ -876,6 +876,54 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [],
         rows: ['events'],
     },
+    'iam.v1.external_identities.list': {
+        asOf: true,
+        filter: [
+            'account_id',
+            'identity_provider_id',
+            'id_one_of',
+            'account_id_one_of',
+            'identity_provider_id_one_of',
+        ],
+        rows: ['links'],
+    },
+    'iam.v1.external_identities.list_by_account_id': {
+        asOf: false,
+        filter: [
+            'account_id',
+            'identity_provider_id',
+            'id_one_of',
+            'account_id_one_of',
+            'identity_provider_id_one_of',
+        ],
+        rows: ['links'],
+    },
+    'iam.v1.external_identities.list_by_identity_provider_id': {
+        asOf: false,
+        filter: [
+            'account_id',
+            'identity_provider_id',
+            'id_one_of',
+            'account_id_one_of',
+            'identity_provider_id_one_of',
+        ],
+        rows: ['links'],
+    },
+    'iam.v1.external_identities_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'iam.v1.identity_providers.list': {
+        asOf: true,
+        filter: ['id_one_of', 'search'],
+        rows: ['providers'],
+    },
+    'iam.v1.identity_providers_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'iam.v1.login_info.list': {
         asOf: false,
         filter: ['account_id_one_of'],
@@ -1690,6 +1738,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [],
         rows: ['adapters'],
     },
+    'marketdata.v1.ops.list_fixing_series_summaries': {
+        asOf: false,
+        filter: [],
+        rows: ['series'],
+    },
     'marketdata.v1.ops.list_instruments': {
         asOf: false,
         filter: [],
@@ -2224,6 +2277,36 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
+    },
+    'refdata.v1.business_unit_product_types.list': {
+        asOf: false,
+        filter: [
+            'business_unit_id',
+            'product_type_code',
+            'business_unit_id_one_of',
+            'product_type_code_one_of',
+        ],
+        rows: ['business_unit_product_types'],
+    },
+    'refdata.v1.business_unit_product_types.list_by_business_unit_id': {
+        asOf: false,
+        filter: [
+            'business_unit_id',
+            'product_type_code',
+            'business_unit_id_one_of',
+            'product_type_code_one_of',
+        ],
+        rows: ['business_unit_product_types'],
+    },
+    'refdata.v1.business_unit_product_types.list_by_product_type_code': {
+        asOf: false,
+        filter: [
+            'business_unit_id',
+            'product_type_code',
+            'business_unit_id_one_of',
+            'product_type_code_one_of',
+        ],
+        rows: ['business_unit_product_types'],
     },
     'refdata.v1.business_unit_types.list': {
         asOf: true,
@@ -4027,6 +4110,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'refdata.v1.party_product_types.list': {
+        asOf: false,
+        filter: ['party_id', 'product_type_code', 'party_id_one_of', 'product_type_code_one_of'],
+        rows: ['party_product_types'],
+    },
+    'refdata.v1.party_product_types.list_by_party_id': {
+        asOf: false,
+        filter: ['party_id', 'product_type_code', 'party_id_one_of', 'product_type_code_one_of'],
+        rows: ['party_product_types'],
+    },
+    'refdata.v1.party_product_types.list_by_product_type_code': {
+        asOf: false,
+        filter: ['party_id', 'product_type_code', 'party_id_one_of', 'product_type_code_one_of'],
+        rows: ['party_product_types'],
+    },
     'refdata.v1.party_relationships.list': {
         asOf: true,
         filter: [],
@@ -5035,6 +5133,22 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [],
         rows: ['rows'],
     },
+    'reporting.v1.report_address_market_readinesses.list': {
+        asOf: true,
+        filter: [
+            'report_instance_id',
+            'oresmd_uri',
+            'id_one_of',
+            'report_instance_id_one_of',
+            'oresmd_uri_one_of',
+        ],
+        rows: ['address_readinesses'],
+    },
+    'reporting.v1.report_address_market_readinesses_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'reporting.v1.report_cashflows.list': {
         asOf: true,
         filter: [
@@ -5203,6 +5317,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         ],
         rows: ['metrics'],
     },
+    'reporting.v1.report_run_market_readinesses.list': {
+        asOf: true,
+        filter: ['report_instance_id', 'id_one_of', 'report_instance_id_one_of'],
+        rows: ['run_readinesses'],
+    },
+    'reporting.v1.report_run_market_readinesses_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'reporting.v1.report_text_values.list': {
         asOf: true,
         filter: [
@@ -5217,6 +5341,40 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
             'name_one_of',
         ],
         rows: ['values'],
+    },
+    'reporting.v1.report_trade_market_gaps.list': {
+        asOf: true,
+        filter: [
+            'report_instance_id',
+            'trade_id',
+            'oresmd_uri',
+            'id_one_of',
+            'report_instance_id_one_of',
+            'trade_id_one_of',
+            'oresmd_uri_one_of',
+        ],
+        rows: ['trade_gaps'],
+    },
+    'reporting.v1.report_trade_market_gaps_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'reporting.v1.report_trade_market_readinesses.list': {
+        asOf: true,
+        filter: [
+            'report_instance_id',
+            'trade_id',
+            'id_one_of',
+            'report_instance_id_one_of',
+            'trade_id_one_of',
+        ],
+        rows: ['trade_readinesses'],
+    },
+    'reporting.v1.report_trade_market_readinesses_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
     },
     'reporting.v1.report_trigger_types.list': {
         asOf: true,
@@ -5281,6 +5439,21 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'scheduler.v1.retained_store_samples.list': {
+        asOf: false,
+        filter: [],
+        rows: ['samples'],
+    },
+    'scheduler.v1.retained_stores.list': {
+        asOf: true,
+        filter: ['code_one_of'],
+        rows: ['stores'],
+    },
+    'scheduler.v1.retained_stores_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'scheduler.v1.retention_policies.list': {
         asOf: true,
         filter: ['code_one_of'],
@@ -5295,6 +5468,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         asOf: false,
         filter: ['policy_code', 'outcome', 'id_one_of', 'policy_code_one_of', 'outcome_one_of'],
         rows: ['runs'],
+    },
+    'scheduler.v1.store_bounds.list': {
+        asOf: false,
+        filter: [],
+        rows: ['stores'],
+    },
+    'scheduler.v1.store_samples.list': {
+        asOf: false,
+        filter: [],
+        rows: ['samples'],
     },
     'storage.v1.objects.list': {
         asOf: false,
@@ -6893,6 +7076,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
     },
+    'trading.v1.ops.list_book_trade_ids': {
+        asOf: false,
+        filter: [],
+        rows: ['trade_ids'],
+    },
     'trading.v1.ops.list_products': {
         asOf: false,
         filter: [],
@@ -7558,6 +7746,31 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         rows: ['settings'],
     },
     'variability.v1.system_settings_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'vault.v1.consumers.list': {
+        asOf: true,
+        filter: ['id_one_of', 'search'],
+        rows: ['consumers'],
+    },
+    'vault.v1.consumers_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
+    'vault.v1.secret_uses.list': {
+        asOf: false,
+        filter: ['id_one_of'],
+        rows: ['secret_uses'],
+    },
+    'vault.v1.secrets.list': {
+        asOf: true,
+        filter: ['id_one_of', 'search'],
+        rows: ['secrets'],
+    },
+    'vault.v1.secrets_versions.list': {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],

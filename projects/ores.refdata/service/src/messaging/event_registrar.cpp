@@ -29,6 +29,7 @@
 #include "ores.refdata.service/messaging/legal_entity_event_registrar.hpp"
 #include "ores.refdata.service/messaging/local_jurisdiction_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_product_type_deal_class_event_registrar.hpp"
+#include "ores.refdata.service/messaging/party_product_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/party_relationship_event_registrar.hpp"
 #include "ores.refdata.service/messaging/person_role_event_registrar.hpp"
 #include "ores.refdata.service/messaging/regulatory_corporate_sector_event_registrar.hpp"
@@ -55,6 +56,7 @@
 #include "ores.refdata.service/messaging/business_centre_event_registrar.hpp"
 #include "ores.refdata.service/messaging/business_day_convention_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/business_unit_event_registrar.hpp"
+#include "ores.refdata.service/messaging/business_unit_product_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/business_unit_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/calendar_event_event_registrar.hpp"
 #include "ores.refdata.service/messaging/calendar_event_registrar.hpp"
@@ -282,6 +284,9 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_book_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_book_change_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_book_product_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_business_unit_product_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_party_product_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_book_purpose_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_book_status_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_fixing_source_kind_event_mapping(event_source, event_bus, nats));

@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: 7B4089F8-EE63-4056-9B67-A750CC0A99F4
+:END:
+#+title: Task: Write the decision: what a run may value, and what it reports
+#+description: The page that fixes a run's three attribution phases, the three grains of its market readiness, the six causes of a gap, and the partition of the population that follows from excluding an incomplete trade.
+#+type: task
+#+level: s1
+#+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
+#+owner: marco
+#+branch: feature/value-only-the-trades-the-market-answers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One page states the model the story builds for a run's failures: the phases a run
+passes through, what each phase can refuse and how it says so, the three grains of
+a run's market readiness, the six causes a gap can state, and the partition of the
+population that follows from excluding an incomplete trade before the engine.
+
+The page is the reference the later tasks read, so a builder of the readiness
+record and a builder of the error phase do not have to re-derive either. The two
+product approval matrices are decided in the story's =* Decisions= and belong to
+the task that models them; this page takes the run, not the population.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- The three attribution phases are named, with the pipeline phases each covers and what each refuses.
+- Each grain of the readiness record states what it answers and who reads it.
+- The six causes a run can state for a gap are named, each one a fact an existing read holds.
+- The phase is stated beside the engine's scope, with the reason the scope stays the engine's.
+- The partition of the population is stated, so an engine error means a trade whose market data was complete.
+- The page states what the attribution does not establish, so a later reader does not take it for more than a classification.
+
+* Plan
+
+The page was written against the pages that already own its parts, so that it
+extends them rather than restating them: the pipeline's six phases, the
+requirement and its resolution, the error event and its engine scope, and the
+chain from a fixing to a report. It states the three attribution phases on top of
+those six, the six causes a gap can name, the three grains of the readiness
+record, and the partition the exclusion rule produces. The lifecycle it describes
+is drawn as a state diagram beside the page and rendered with PlantUML. The page
+is wired into the reading order of the Report Processing structure note, and it
+names the page it contradicts rather than editing a list it does not own.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Page publishes as one file, no failures | 1 file, 0 failures, 1 image copied | =compass site page doc/knowledge/architecture/error_attribution_in_a_report_run.org= | the commit that adds it |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+[[id:DFC5F290-B8B6-4DEC-970C-D93C98FD39F8][Error Attribution in a Report Run]] states the model.
+
+What it establishes:
+
+- Three attribution phases — preprocessing, engine and postprocessing — each
+  mapped onto the pipeline's six phases, with what each refuses in its own
+  vocabulary.
+- A trade's completeness, the six causes a gap can name, and the three grains at
+  which a run records readiness: by address, by trade and by run.
+- The exclusion rule and the partition it produces, so that an engine error is an
+  error on a trade whose market data was complete.
+- The reason a run with nothing complete fails in preprocessing rather than
+  reporting an empty valuation.
+- The separation of the phase from the engine's scope, and what the attribution
+  does not establish.
+
+The lifecycle is drawn in =report_run_trade_states.puml= and rendered to PNG, and
+the page is listed in the reading order of [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]].
+[[id:08C54927-C7BD-48B7-BF7B-13DC3702FF68][Report pre-processing]] still states that no resolution exists and that
+the export writes every series the tenant holds; both are delivered, so the new
+page names the contradiction rather than editing a list it does not own, and the
+correction of that page is left to the task that owns it.
+
+=compass site page= publishes the page with no failure and copies its one image.

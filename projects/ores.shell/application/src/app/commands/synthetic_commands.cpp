@@ -106,11 +106,11 @@ std::optional<std::pair<std::string, std::string>> parse_target(
     if (positionals.size() != 2) {
         fail(out) << "Usage: synthetic " << verb
                   << " folder <folder-id|\"folder name\"> | feed <feed-id|ore-key|source-name>"
-                  << std::endl;
+                  << " | node <node-name>" << std::endl;
         return std::nullopt;
     }
-    if (positionals[0] != "folder" && positionals[0] != "feed") {
-        fail(out) << "Unknown target '" << positionals[0] << "'; expected folder or feed."
+    if (positionals[0] != "folder" && positionals[0] != "feed" && positionals[0] != "node") {
+        fail(out) << "Unknown target '" << positionals[0] << "'; expected folder, feed or node."
                   << std::endl;
         return std::nullopt;
     }
@@ -1116,15 +1116,18 @@ void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& se
                            [&session](std::ostream& out, std::vector<std::string> args) {
                                process_start(std::ref(out), std::ref(session), args);
                            },
-                           "Start feeds under a folder or an individual feed",
-                           {"folder <folder-id|folder-name> | feed <feed-id|ore-key|source-name>"});
+                           "Start feeds under a folder, an individual feed or a feed node",
+                           {"folder <folder-id|folder-name> | feed <feed-id|ore-key|source-name>"
+                            " | node <node-name>"});
 
     synthetic_menu->Insert("stop",
                            [&session](std::ostream& out, std::vector<std::string> args) {
                                process_stop(std::ref(out), std::ref(session), args);
                            },
-                           "Stop feeds under a folder or an individual feed",
-                           {"folder <folder-id|folder-name> | feed <feed-id|ore-key|source-name>"});
+                           "Stop feeds under a folder, an individual feed or a feed node, and "
+                           "what the node starves",
+                           {"folder <folder-id|folder-name> | feed <feed-id|ore-key|source-name>"
+                            " | node <node-name> [--reason-code <code>] [--commentary <text>]"});
 
     synthetic_menu->Insert("generate-trades",
                            [&session](std::ostream& out, std::vector<std::string> args) {
@@ -1450,6 +1453,8 @@ void synthetic_commands::process_start(std::ostream& out,
         return;
     if (target->first == "folder")
         start_folder(out, session, target->second);
+    else if (target->first == "node")
+        start_node(out, session, target->second);
     else
         start_feed(out, session, target->second);
 }
@@ -1503,7 +1508,9 @@ bool synthetic_commands::start_feed(std::ostream& out,
 void synthetic_commands::process_stop(std::ostream& out,
                                       nats_client& session,
                                       const std::vector<std::string>& args) {
-    auto parsed = parse_args(args, {});
+    auto parsed = parse_args(args,
+                             {{.name = "reason-code", .requires_value = true, .default_value = ""},
+                              {.name = "commentary", .requires_value = true, .default_value = ""}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -1518,6 +1525,13 @@ void synthetic_commands::process_stop(std::ostream& out,
         return;
     if (target->first == "folder")
         stop_folder(out, session, target->second);
+    else if (target->first == "node")
+        stop_node(out,
+                  session,
+                  target->second,
+                  parsed->flag("reason-code").empty() ? "common.other" :
+                                                        parsed->flag("reason-code"),
+                  parsed->flag("commentary"));
     else
         stop_feed(out, session, target->second);
 }
@@ -1564,6 +1578,43 @@ bool synthetic_commands::stop_feed(std::ostream& out,
         return false;
     }
     out << "✓ Stopped feed " << feed_id << "." << std::endl;
+    return true;
+}
+
+bool synthetic_commands::start_node(std::ostream& out,
+                                    nats_client& session,
+                                    const std::string& token) {
+    synthetic::messaging::start_feed_node_request req{.node_name = token};
+    ORES_LOG_SEV(lg(), info) << "Starting feed node " << token << ".";
+    auto result = do_auth_request<synthetic::messaging::start_feed_node_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return false;
+    if (!result->success) {
+        fail(out) << "Start failed: " << result->message << std::endl;
+        return false;
+    }
+    out << "✓ Started node " << token << "." << std::endl;
+    return true;
+}
+
+bool synthetic_commands::stop_node(std::ostream& out,
+                                   nats_client& session,
+                                   const std::string& token,
+                                   const std::string& reason_code,
+                                   const std::string& commentary) {
+    synthetic::messaging::stop_feed_node_request req{
+        .node_name = token, .reason_code = reason_code, .commentary = commentary};
+    ORES_LOG_SEV(lg(), info) << "Stopping feed node " << token << ".";
+    auto result = do_auth_request<synthetic::messaging::stop_feed_node_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return false;
+    if (!result->success) {
+        fail(out) << "Stop failed: " << result->message << std::endl;
+        return false;
+    }
+    out << "✓ Stopped node " << token << "." << std::endl;
     return true;
 }
 

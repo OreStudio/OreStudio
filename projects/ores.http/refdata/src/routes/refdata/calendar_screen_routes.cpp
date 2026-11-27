@@ -68,6 +68,17 @@ struct rebuild_body final {
     return ::ores::utility::codec::field_list{field{"endYear", &rebuild_body::endYear}};
 }
 
+/// Which of a tenant's copies to remove: one calendar, or every one the
+/// installation owns.
+struct purge_body final {
+    std::optional<std::string> calendarCode;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<purge_body>) {
+    using ores::utility::codec::field;
+    return ::ores::utility::codec::field_list{field{"calendarCode", &purge_body::calendarCode}};
+}
+
 }
 
 bool is_calendar_year(int year) {
@@ -148,6 +159,29 @@ void calendar_screen_routes::register_routes(
                             break;
                     }
                     return http_response::json("{\"days\":" + days + "]}");
+                });
+            }));
+
+    add(router->post("/api/refdata/calendars/dates/purge")
+            .catalogue(
+                "web_post_refdata_calendars_dates_purge", "reference-data", "calendars", true)
+            .body<calendar_screen::purge_body>()
+            .summary("Remove this tenant's copies of the days the installation owns")
+            .description("The installation's copy is read instead; a calendar the tenant owns "
+                         "keeps its days. A second run removes nothing.")
+            .handler([&session](const http_request& req) -> boost::asio::awaitable<http_response> {
+                co_return guarded<messaging::purge_calendar_date_copies_request>([&] {
+                    messaging::purge_calendar_date_copies_request msg;
+                    const auto body = rr::read_body<calendar_screen::purge_body>(req.body);
+                    if (!body)
+                        rr::invalid("The body names the calendar to purge, or no calendar at all.");
+                    msg.calendar_code = body->calendarCode;
+                    const auto reply = forwarding::forward(req, session, msg);
+                    if (!reply.success)
+                        operation_failed(reply.message);
+                    return http_response::json(
+                        "{\"removed\":" + std::to_string(reply.rows_removed) +
+                        ",\"calendars\":" + std::to_string(reply.calendars_purged) + "}");
                 });
             }));
 

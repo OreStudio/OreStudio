@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: A2713EC6-D7F8-4BDC-96B4-C0FCF9FF1EAA
+:END:
+#+title: Task: Apply every action a policy states
+#+description: The policy model names three actions and the sweep performs one: drop_chunks. A policy asking for a row delete or an object expiry is recorded as skipped, so a store reads as bounded while nothing bounds it. Implement the other two, prove the row delete on the delivery counts and the chunk drop on ticks, and state which actions the sweep performs in the read a screen uses.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: feature/apply-every-action-a-policy-states
+#+pr: 5181
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The sweep applies every action the policy model states, and a policy that names one it cannot apply is refused when it is written rather than reported as skipped after the fact.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-26                               |
+
+* Acceptance
+
+- A policy naming an ordinary table and a row delete removes the rows past its period, proved on the delivery counts
+- A policy naming an object-store prefix expires the objects past its period
+- A policy naming an action the sweep cannot apply is refused by the write, so no screen has to warn about it
+- The delivery counts and ticks carry policies, and the runs ledger records what each freed
+
+* Plan
+* Plan
+
+** What blocks it, and what the two actions need
+
+The sweep performs =drop_chunks= on a chunked table and records every other
+policy as =skipped= with "the sweep applies only a chunk drop today"
+(=projects/ores.sql/create/scheduler/scheduler_retention_sweep_create.sql=).
+The model states three actions, so two are inert.
+
+- *A row delete needs a time column.* Deleting the rows past a period means
+  comparing a column to the cutoff, and the policy does not name one. The
+  policy grows a column for it, which is a model change: the entity, the SQL,
+  the protocol and the web types are generated from
+  =ores.scheduler.retention_policy=. The alternative — a table of known
+  (table, column) pairs in the sweep — puts the same fact in code where nobody
+  reads it, and makes a new store a deployment.
+- *An object expiry needs the object store's own API.* The storage service
+  holds the objects, so the sweep asks it to expire a prefix rather than
+  reaching past it. The target is the bucket and prefix the policy names, and
+  the number the run records is the bytes the service says it removed.
+- *The write must refuse what the sweep cannot do.* Reporting a skipped policy
+  after the fact is how a store reads as bounded while nothing bounds it. The
+  validation belongs on the policy write: an action outside the set the sweep
+  performs is refused when it is stated, not discovered at 03:00.
+
+** Then the policies themselves**
+
+With the actions working, the two stores the validation found are declared:
+the delivery counts (an ordinary table, about 27,000 rows an hour) and ticks (a
+chunked table whose chunks are already cut on the write instant). The policies
+are rows of the system tenant, delivered as platform data like the report
+outputs' three.
+
+** Verification**
+
+- pgTAP: a delete-rows policy removes the old rows and keeps the recent ones;
+  a drop-chunks policy on ticks removes a chunk; an unsupported action is
+  refused by the write.
+- The sweep's own run on a recreated database, read from the runs ledger.
+- The delivery counts stop growing past their period in a measured run.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5181][#5181]] | [scheduler] Apply the actions a database can perform, and say who owns the rest |
+| [[https://github.com/OreStudio/OreStudio/pull/5164][#5164]] | [agile] Scaffold the task that applies every action a policy states |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The sweep applies both actions a database can perform, and it now reads the
+catalogue for the store behind each policy: the shape, the target and the column
+a delete compares are stated once, and a policy that has drifted from its store
+is reported rather than acted on. A row delete compares the catalogue's column,
+checked against the table first, so a store whose column is gone is reported
+instead of deleted from by a guess.
+
+The other two actions are not the sweep's to perform. An object prefix lives in
+the object store and a job's folder on a node's disk, and SQL reaches neither. The
+sweep records them skipped with the owning mechanism named in the detail, and it
+no longer pretends to have bounded the store. The bounds view is what a screen
+reads: it states, per store, which mechanism bounds it and whether that mechanism
+applies today, so a policy that names an unbuilt mechanism reads as unbounded
+rather than as bounded on paper.
+
+Two findings came out of the work. The sweep had never run as the service user,
+only as an administrator, so its rights had never been tested: it deletes from
+tables other components own and calls a TimescaleDB function it was not granted.
+It is now a definer function, with the targets taken from platform data and the
+column checked, which is the smaller right of the two available. And the ledger
+has to be read per tenant, or one tenant's run suppresses another's policy.

@@ -51,14 +51,17 @@ const SERIES: FixingSeries = {
     ],
 };
 
-function render(uri: string): string {
+function render(uri: string, label?: string): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['fixing-series', uri], SERIES);
+    const at = `/market-data/fixings?uri=${encodeURIComponent(uri)}`;
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
                 <MemoryRouter
-                    initialEntries={[`/market-data/fixings?uri=${encodeURIComponent(uri)}`]}
+                    initialEntries={[
+                        label === undefined ? at : `${at}&label=${encodeURIComponent(label)}`,
+                    ]}
                 >
                     <FixingSeriesPage />
                 </MemoryRouter>
@@ -71,11 +74,26 @@ describe('the fixing series screen', () => {
     it('draws the stored values and the feed that carried them', () => {
         const html = render(URI);
 
-        expect(html).toContain('Fixing series');
         expect(html).toContain('European Central Bank');
         expect(html).toContain('2026-10-30');
         expect(html).toContain('1.1500'.slice(0, 4));
         expect(html).toContain('ecb-frankfurter');
         expect(html).toContain('Frankfurter');
+    });
+
+    it('keeps the name the list gave the item, in the trail and the header', () => {
+        const html = render(URI, 'EUR/USD');
+
+        expect(html).toContain('EUR/USD');
+        expect(html).toContain('Fixing observations');
+        expect(html).toContain('Back to fixing observations');
+        expect(html).toContain('The fixings of EUR/USD');
+    });
+
+    it('names the item by its address when the address carried no name', () => {
+        const html = render(URI);
+
+        expect(html).toContain('>oresmd://fx/EUR?type=fixing');
+        expect(html).not.toContain('Back to market data');
     });
 });

@@ -1,0 +1,56 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Secure Introduction: who trusts whom
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+left to right direction
+
+package "platform" {
+  [systemd, or an orchestrator] as launch
+}
+
+package "workload" {
+  [a consumer,\nbefore any token] as wl
+}
+
+package "store" {
+  [secret store] as vault
+  database "registered public keys" as registry
+}
+
+package "issuer" {
+  [token issuer] as idp
+}
+
+launch --> wl : delivers a key pair
+launch ..> vault : the attestation it trusts
+vault --> registry : looks the key up by name
+wl <--> vault : challenge, answer,\nand the sealed secret
+wl --> idp : obtains a token
+
+legend bottom left
+  /Platform integration/: the store verifies the platform's
+  claim for the workload, as SPIFFE's node attestation does.
+  /Trusted orchestrator/: an already-authenticated launcher
+  injects one-of-a-kind material it can redeem once.
+end legend
+
+@enduml

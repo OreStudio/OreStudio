@@ -52,9 +52,10 @@ struct retention_policy_write {
     std::string code;
     std::string target_kind;
     std::string target;
+    std::string store_code;
     std::string action;
     int retention_days{};
-    std::string cadence;
+    int cadence_hours{};
     bool enabled{};
     std::string description;
 
@@ -389,9 +390,10 @@ inline constexpr std::string_view deleted = "scheduler.v1.events.retention_polic
         utility::codec::field{"code", &retention_policy_write::code},
         utility::codec::field{"target_kind", &retention_policy_write::target_kind},
         utility::codec::field{"target", &retention_policy_write::target},
+        utility::codec::field{"store_code", &retention_policy_write::store_code},
         utility::codec::field{"action", &retention_policy_write::action},
         utility::codec::field{"retention_days", &retention_policy_write::retention_days},
-        utility::codec::field{"cadence", &retention_policy_write::cadence},
+        utility::codec::field{"cadence_hours", &retention_policy_write::cadence_hours},
         utility::codec::field{"enabled", &retention_policy_write::enabled},
         utility::codec::field{"description", &retention_policy_write::description},
     };

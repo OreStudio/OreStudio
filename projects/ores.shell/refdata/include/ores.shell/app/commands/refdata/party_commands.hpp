@@ -88,7 +88,7 @@ public:
     /**
      * @brief add <short_code> <full_name> <codename> <transliterated_name> <party_category>
      * <party_type> <parent_party_id> <business_center_code> <status> <image_id>
-     * <is_registration_default> <reason> <commentary>
+     * <is_registration_default> <restricts_product_types> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -97,7 +97,7 @@ public:
     /**
      * @brief set <id> <short_code> <full_name> <codename> <transliterated_name> <party_category>
      * <party_type> <parent_party_id> <business_center_code> <status> <image_id>
-     * <is_registration_default> <reason> <commentary> [--version <n>]
+     * <is_registration_default> <restricts_product_types> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -106,7 +106,7 @@ public:
     /**
      * @brief put-many --count <n> <id> <short_code> <full_name> <codename> <transliterated_name>
      * <party_category> <party_type> <parent_party_id> <business_center_code> <status> <image_id>
-     * <is_registration_default> <reason> <commentary>
+     * <is_registration_default> <restricts_product_types> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

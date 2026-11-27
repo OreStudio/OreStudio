@@ -1,18 +1,18 @@
 :PROPERTIES:
 :ID: DC6F4D69-5E3E-4562-9503-88C74329FF1E
 :END:
-#+title: Task: Show the FX and IR fixings on a fixings screen
+#+title: Task: Show the FX and IR fixing observations on a screen
 #+description: A system-level Fixings screen lets the super administrator view every FX and IR observation across every source, read only.
 #+type: task
 #+level: s1
 #+filetags: :derive_term_indices_from_their_overnight_curves:ir:curves:sprint_31:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/show-the-fx-and-ir-fixings-on-a-fixings-screen
+#+pr: 5179
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
-#+updated: 2026-11-22
+#+updated: 2026-11-26
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,18 +20,23 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The web UI has a Quotes screen, a Fixing series page that shows one item opened by its URI, and a Public rates screen that shows only the official publishers. Nothing lists the fixings. Add a system-level Fixings screen beside Quotes, for the super administrator, that lists the FX and IR fixing observations across every source: the index or pair, the source (TR20H, ECB, a curve's index), the publisher or generator, the latest value and its date, and how many days the series holds. A row opens the Fixing series page. The screen shows observations, which are system-level facts, and holds no authorisation; a party's fixings manager, which adopts observations for the party's trades, is a separate piece of work. See [[id:FA5C96A3-1F8E-4F9B-8973-40D92055D7DD][System-level fixing observations and party-level fixings]].
+The web UI has a Quotes screen, a Fixing series page that shows one item opened by its URI, and a Public rates screen that shows only the official publishers. Nothing lists the fixings. Add a system-level Fixings screen beside Quotes, for the super administrator, that lists the FX and IR fixing observations across every source: the index or pair, the source (TR20H, ECB, a curve's index), the publisher or generator, the latest value and its date, and how many days the series holds. A row opens the Fixing series page. It shows the fixings the platform
+states and no way to change them: a series that ends because its curve
+feed stopped is shown ending, not filled, because the system states what
+it observed. A party that needs the missing day enters it by hand, with
+an explanation, in the fixings manager that captures it: see
+[[file:doc/agile/product_backlog/inbox/the_party_fixings_manager_enters_a_fixing_the_plat.org][The party fixings manager enters a fixing the platform never stated]]. The screen shows observations, which are system-level facts, and holds no authorisation; a party's fixings manager, which adopts observations for the party's trades, is a separate piece of work. See [[id:FA5C96A3-1F8E-4F9B-8973-40D92055D7DD][System-level fixing observations and party-level fixings]].
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
-| Now          | Not yet started.                       |
+| Now          | The operation, the aggregate read and the C++ route are built; the journey and prototype await sign-off. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-22                               |
+| Next         | Step 4: the screen, after the prototype's sign-off. |
+| Last touched | 2026-11-26                               |
 
 * Acceptance
 
@@ -42,9 +47,57 @@ The web UI has a Quotes screen, a Fixing series page that shows one item opened 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+*The screen is called Fixing observations, and it is the system view, not the fixings manager.* It states what the
+sources published and offers no act; the party's fixings manager is another
+screen, where a party requires, adopts, overrides and authorises the fixings its
+trades use. The four fixing surfaces and the question each answers are set out in
+[[id:5D2A8C41-6E3B-47F0-9A28-1C4B7E9D3F62][The fixing screens and what each one is for]].
+
+Two consequences for this task:
+
+- The list takes =/market-data/fixing-observations=, and the fixing series page a
+  row opens keeps =/market-data/fixings?uri=, so the two names and the two
+  addresses do not collide.
+- Nothing on the screen offers to fill a missing day, to authorise a value, or
+  to override one. A series that ended is shown ending.
+
+The screen lists every FX and IR fixing series the store holds, one row each:
+the index or pair, the source, the publisher, the latest value and its date,
+and how many days the series holds. No existing operation answers that.
+=GET /api/marketdata/fixing-series?uri=...= answers one series and builds its
+answer from =list_market_series=, =list_market_fixings= and the catalogue
+lists, which over every series would read hundreds of thousands of fixing rows.
+So the summary is computed in SQL by the market data service, and the screen
+reads it.
+
+1. *The summary operation.* =ores.marketdata.fixing_read_operations= already
+   holds the reads of the durable fixings, so the summary joins it rather than
+   opening a model of its own: =fixing_series_summary= (the series id, its
+   address, its asset class and display label, the source and provider, the
+   latest value and date, and the day count),
+   =list_fixing_series_summaries_request= with the asset-class, currency and
+   source filters, and its response. =compass generate= writes the protocol,
+   the codec, the TypeScript wire type and the round-trip test.
+2. *The query and its handler.* One statement over the series and its fixings,
+   the series left-joined so a series that holds no fixing keeps its row with a
+   count of zero. The handler sits beside =party_demand_handler.hpp=, runs in
+   the system tenant because the screen is system-level, asks the
+   =market_fixings:read= permission the fixing reads use, and is subscribed
+   beside the other market data operations.
+3. *The route on both servers.* A route on the C++ =ores.http= server and the
+   matching one on the TypeScript BFF, because the web app is served by both:
+   =GET /api/marketdata/fixings= with the three filters, each side with its own
+   test.
+4. *The screen.* A =FixingsPage= beside the Fixing series page it opens, a
+   table of the summaries with the three filters, and a row that opens
+   =FixingSeriesPage= by the series' address. A series with no day reads
+   *empty* rather than disappearing. No edit, approve or override control: the
+   system states what it observed, and a party's fixings manager is another
+   task's work.
+5. *Prove it.* A test of the handler's query, the route tests on both servers,
+   the screen's test, then a fresh provision with the screen showing the
+   simulated, ECB, BOC, IMF and TCMB series and the counts the fixing series
+   hold.
 
 * Measurements
 
@@ -77,7 +130,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5179][#5179]] | [web] Show the fixing observations the platform states |
 
 * Review
 

@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: CCC8B3CA-7FD8-46A6-BA16-9A61816ED59B
+:END:
+#+title: Task: Show and manage what is linked
+#+description: A person sees which provider accounts are linked to theirs, links another after proving their password, and removes one, with the refusal shown when it would be the last way in.
+#+type: task
+#+level: s1
+#+filetags: :show_the_identity_doors_the_links_and_the_consent:sprint_31:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9636A24B-639F-4088-8A6D-F84CA7A974B9][Show the identity doors, the links and the consent]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person sees, in Security, which provider accounts are linked to theirs — the provider, the address it stated and when it was linked — links another after proving their password, and removes one. When removal would leave the account with no way in, the screen says so and refuses, and the person is told what to do instead.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9636A24B-639F-4088-8A6D-F84CA7A974B9][Show the identity doors, the links and the consent]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- Security lists each link with its provider, the address the provider stated and the date it was linked.
+- Linking from the screen proves the ORE account with its password and shows the refusal when the provider account already belongs to someone else.
+- Removing a link asks for confirmation, and a link that is the last way in is refused with what the person must do first.
+- The screens are pinned by tests, and the strings are translated.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

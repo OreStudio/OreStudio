@@ -63,6 +63,10 @@ accounting ledger.
 - *Access control* → [[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book access and permissions]] (allowed-currency
   constraints, the fine-grained permission model, periodic access
   review).
+- *Product approval* → [[id:193B547F-EF40-4138-85F8-5AB8B5610DB4][Product approval matrix]] (the product types a
+  legal entity, a desk and a book each permit, each level equal to or
+  narrower than the one above, and why the portfolio tree is not a level
+  of it).
 - *Funding process* → [[id:B0902FF2-138F-4234-A473-1371549CE219][Funding process]] (flattening net overnight cash
   per currency through a designated Funding Book).
 - *Wash books* → [[id:9E364BEF-12EE-42F8-902C-B1E68A3095B8][Wash books and risk routing]] (risk-neutral books

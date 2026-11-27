@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 025784A4-67B0-4E4E-8D3D-05E1979BD6D9
+:END:
+#+title: Generate the BFF write schemas from the wire types
+#+description: A model change adds a field to a write type and leaves the BFF schema behind; only a full web build proves the two agree.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

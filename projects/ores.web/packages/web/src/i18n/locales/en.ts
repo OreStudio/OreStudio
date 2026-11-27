@@ -89,6 +89,7 @@ export const en: SourceCatalogue = {
             tenants: 'Tenants',
             operations: 'Operations',
             reporting: 'Reporting',
+            dataquality: 'Data quality',
             development: 'Development',
             api: 'API',
             parties: 'Parties',
@@ -551,6 +552,13 @@ export const en: SourceCatalogue = {
 
     'notification.inbox.approval_expiring':
         'A request for {kind} is due by {deadline} and nobody has answered it.',
+
+    'notification.scheduler.store_unbounded':
+        'The store {store} is not bounded by anything that runs. Nothing removes from it, and the housekeeping screen states why.',
+    'notification.scheduler.store_sweep_failed':
+        'The last sweep of the store {store} failed, so the store is unbounded until one succeeds.',
+    'notification.scheduler.sweep_skipped':
+        'A sweep left {count} policies unapplied, so the stores they bound are still growing. The housekeeping screen states which.',
 
     'notification.marketdata.curve_published':
         'The curve {curve} of {party} is live from {published_at}, published by {publisher} as of {as_of}. It replaces the set as of {previous_as_of}, or nothing when it is the first.',
@@ -1808,6 +1816,155 @@ export const en: SourceCatalogue = {
             changedNotice:
                 'The deal moved after this request was raised: version {tradeVersion} now, against {requestTradeVersion} when it arrived. The row is not locked, and a decision on the version you have read is the decision recorded.',
         },
+        housekeeping: {
+            title: 'Housekeeping',
+            description:
+                'Every store this installation keeps, the bound that governs it, and how large it is.',
+            footnote:
+                'The size and the count are the latest measurement. A store nothing has measured reads as not measured, because an unknown size is not an empty one.',
+            summary: {
+                stores: 'Stores',
+                bounded: 'Bounded',
+                unbounded: 'Unbounded',
+                unboundedNote: 'The work left',
+                size: 'Total size',
+                unmeasured: 'Not measured',
+            },
+            filter: {
+                all: 'All stores',
+                unbounded: 'Unbounded only ({count})',
+            },
+            order: {
+                label: 'Order',
+                attention: 'Unbounded first',
+                size: 'Largest first',
+                name: 'By name',
+            },
+            emptyUnbounded:
+                'Every store has a bound. Nothing on this installation grows without one.',
+            emptyAll:
+                'The catalogue holds no store. It arrives with the platform data a release publishes.',
+            columns: {
+                store: 'Store',
+                bound: 'Bound',
+                boundBy: 'Bound by',
+                size: 'Size',
+                lastRun: 'Last sweep',
+            },
+            targetKinds: {
+                chunkedTable: 'Chunked table',
+                table: 'Table',
+                objectPrefix: 'Object prefix',
+                directory: 'Directory',
+            },
+            verdict: {
+                bounded: 'Bounded',
+                keyed: 'Bounded by keying',
+                unbounded: 'Unbounded',
+            },
+            reason: {
+                off: 'the policy is off',
+                notApplied: 'the sweep cannot perform its action',
+                failed: 'the last sweep failed',
+                noPolicy: 'no policy names it',
+                notBoundable: 'no period can bound it',
+            },
+            row: {
+                noAction: 'No action',
+                noPolicy: 'no policy',
+                notMeasured: 'not measured',
+                neverSwept: 'never swept',
+                removed: '{count} removed',
+            },
+            actions: {
+                drop_chunks: 'Drop the chunks past the period',
+                delete_rows: 'Delete the rows past the period',
+                expire_prefix: 'Expire the objects past the period',
+                release_directory: 'Release the folder past the period',
+            },
+            outcomes: {
+                applied: 'applied',
+                skipped: 'skipped',
+                failed: 'failed',
+            },
+            units: {
+                relationRows: 'rows',
+                objects: 'objects',
+                files: 'files',
+                unknown: 'items',
+            },
+            period: '{days} days',
+            cadence: 'every {hours} h',
+            measure: '{count} {unit}',
+            store: {
+                title: 'Store',
+                description: 'One store, the bound that governs it, and how large it is.',
+                record: 'The store',
+                notFound: 'This installation keeps no store called {code}.',
+                back: 'Back to housekeeping',
+                fields: {
+                    code: 'Code',
+                    owner: 'Written by',
+                    targetKind: 'Target kind',
+                    target: 'Target',
+                    timeColumn: 'Time column',
+                    measures: 'Measured by',
+                    none: 'Not stated',
+                },
+            },
+            size: {
+                title: 'Size',
+                noSample:
+                    'Nothing measures this store yet, so its size and its growth are unknown. The component that writes it is the one that can measure it.',
+                latest: 'Size now',
+                count: 'Contents',
+                measuredAt: 'Measured',
+                onePoint: 'One measurement so far. A second one makes a plot.',
+                plot: 'The store’s measurements, oldest first. The line shows the shape; the figures above state the size.',
+                trend: '{from} to {to} over {days} days',
+                perWeek: '{rate} a week, {direction}',
+                rising: 'rising',
+                falling: 'falling',
+            },
+            bound: {
+                title: 'The bound',
+                create: 'Give it a bound',
+                change: 'Change the bound',
+                lastRun: 'Last sweep',
+                absent: 'no policy',
+                on: 'applies',
+                off: 'off',
+                noAction:
+                    'No period can bound this store, so there is nothing here to change. It needs an action the catalogue does not state.',
+                readOnly:
+                    'Your role cannot change a bound. The system administrator changes the bounds of these stores.',
+                lead: 'The target and the action are the platform’s. A person decides whether the bound applies, for how long and how often.',
+                leadCreate:
+                    'No policy bounds this store. The period and the cadence below are the ones the catalogue ships with.',
+                periodInvalid: 'State a whole number of days, more than zero.',
+                cadenceInvalid: 'State a whole number of hours, more than zero.',
+                saved: 'The bound changed. The sweep applies it on its next run.',
+                save: 'Save the bound',
+                saving: 'Saving...',
+                failure: 'The bound did not change: {message}',
+                fields: {
+                    action: 'Action',
+                    period: 'Keep for',
+                    cadence: 'Apply at most',
+                    policy: 'Policy',
+                    state: 'State',
+                    reason: 'Why it is kept',
+                },
+            },
+            gaps: {
+                runsTitle: 'Every sweep that touched this store',
+                runsBody:
+                    'The runs ledger records each sweep against each policy, and no read serves it yet. What the page states is the last run, from the housekeeping read.',
+                remoteTitle: 'The stores a component owns',
+                remoteBody:
+                    'An object prefix and a folder on a compute host are measured by the component that writes them, and neither reports a size yet. Those stores read as not measured.',
+            },
+        },
         feeds: {
             title: 'Market data feeds',
             description:
@@ -1940,6 +2097,9 @@ export const en: SourceCatalogue = {
             servicesBody: 'Every service the registry expects, met by the instances that report.',
             grid: 'Compute grid',
             gridBody: 'The nodes, the work they are doing, and what they have finished.',
+            housekeeping: 'Housekeeping',
+            housekeepingBody:
+                'Every store the installation keeps, what bounds it, and how large it is.',
             bus: 'Message bus',
             busBody: 'The counters the NATS server and its streams report.',
             logs: 'Telemetry logs',
@@ -5121,10 +5281,11 @@ export const en: SourceCatalogue = {
                 },
             },
             invertedFrom: 'one over the fixing {value}',
-            title: 'Calibration',
+            title: 'Feed calibration',
             lead: 'How every feed of an asset class takes its starting level and volatility from public fixings.',
-            systemOnly: 'Calibration is a system control. Only a system administrator may open it.',
-            tabs: 'Calibration views',
+            systemOnly:
+                'Feed calibration is a system control. Only a system administrator may open it.',
+            tabs: 'Feed calibration views',
             tab: {
                 feeds: 'Feeds',
                 run: 'Calibration run',
@@ -5631,15 +5792,49 @@ export const en: SourceCatalogue = {
                 party: 'Party',
             },
         },
+        fixingObservations: {
+            title: 'Fixing observations',
+            lead: 'What the sources published: every FX and IR series the platform holds, the day each one reaches, and the ones that hold no value.',
+            systemView:
+                'This is the system view of the observations. It states what the sources published and offers no authorisation; a day the platform never stated is entered by a party, in its own fixings manager.',
+            filters: {
+                assetClass: 'Asset class',
+                everyClass: 'Every class',
+                currency: 'Currency',
+                everyCurrency: 'Every currency',
+                source: 'Source',
+                everySource: 'Every source',
+            },
+            columns: {
+                series: 'Series',
+                assetClass: 'Class',
+                underlying: 'Underlying',
+                source: 'Source',
+                provider: 'Provider',
+                latestValue: 'Latest value',
+                latestDay: 'Latest day',
+                days: 'Days',
+                open: 'Open',
+            },
+            noDay: 'No day',
+            emptyCount: '{count} of {total} series hold no day.',
+            none: 'The store holds no FX or IR fixing series.',
+            legendNoDay:
+                'A series the platform holds and never stated: it is a row, and its count is zero.',
+            legendEnded:
+                'A series that ended keeps its latest day and its count, because a fixing is a fact about a date.',
+        },
         fixingSeries: {
             title: 'Fixing series',
-            lead: 'The stored fixings of one item, the series they belong to, and the feeds that carried them.',
+            lead: 'Every fixing the store holds for this item, day by day, and the feeds that carried them.',
+            chart: 'The fixings of {item}',
             noUri: 'Open this page from an oresmd link, so it knows which item to show.',
             notStored: 'The store holds nothing for {uri}.',
             noValues: 'No fixing is stored for this item yet.',
             provenance: 'Feeds that carry this item',
             noFeeds: 'No feed names this item.',
             back: 'Back to market data',
+            backToObservations: 'Back to fixing observations',
             columns: {
                 provider: 'Publisher',
                 first: 'First fixing',
@@ -6472,7 +6667,7 @@ export const en: SourceCatalogue = {
                 subscriptions: 'Subscriptions',
                 subscriptionsBody:
                     'The providers a party takes, with the rights it holds, and the source that serves each one.',
-                synthetic: 'Synthetic',
+                synthetic: 'Simulated market',
                 syntheticBody:
                     'The feeds the platform generates: what runs by provider, and every feed to start and stop.',
                 evolutionBody:
@@ -6481,7 +6676,7 @@ export const en: SourceCatalogue = {
         },
         arrivals: {
             title: 'Tick arrivals',
-            lead: 'How this feed’s ticks arrive, and how hard it follows the market. The market itself is set on the Synthetic screen’s Market tab.',
+            lead: 'How this feed’s ticks arrive, and how hard it follows the market. The market itself is set on the Simulated market screen’s Market tab.',
             model: 'Tick arrival model',
             'model.periodic': 'Periodic — equal gaps',
             'model.poisson': 'Poisson — exponential gaps',
@@ -6496,7 +6691,7 @@ export const en: SourceCatalogue = {
             runningLaw: 'Running now: {law}',
             decayHelp:
                 'Hawkes only: how fast a burst fades, per second of market time. A burst fades faster in a busy market.',
-            market: 'Market now: {state}. It is read here and set on the Synthetic screen’s Market tab.',
+            market: 'Market now: {state}. It is read here and set on the Simulated market screen’s Market tab.',
             marketUnknown: 'the market state is not readable right now',
             unsaved: 'Unsaved changes',
             runningNote: 'The feed is running on its old law.',
@@ -6912,15 +7107,15 @@ export const en: SourceCatalogue = {
                 version: 'Version',
                 calibrationConfigured: 'Named by the config',
                 restartToApply: 'The config names a newer calibration. Restart the feed to run it.',
-                openCalibration: 'Open on the calibration page',
+                openCalibration: 'Open on the feed calibration page',
                 notRunning: 'The feed is not running. The cards show what its config names.',
             },
             removeWarning:
                 'The feed stops if it runs. Its mixture is deleted first, then the feed. The history of each stays.',
         },
         synthetic: {
-            title: 'Synthetic',
-            lead: 'The market data the platform generates rather than receives: what runs by provider, and the feeds of one provider.',
+            title: 'Simulated market',
+            lead: 'The market the platform generates rather than receives: what runs by provider, and the feeds of one provider.',
             tabs: { dashboard: 'Dashboard', provider: 'Provider', regime: 'Market' },
             state: { serving: 'Serving', running: 'Running', stopped: 'Stopped' },
             dashboard: {
@@ -7015,10 +7210,24 @@ export const en: SourceCatalogue = {
             add: 'New IR curve',
             addTitle: 'New IR curve',
             priceSource: 'Starting rate from',
+            rateSource: 'Rate from',
+            derivedSpread: 'Spread over the overnight rate',
+            derivedSpreadSource: 'Who states the spread',
             tenorNeeded: 'A term index needs a tenor, such as 3M or 6M.',
             tenorNotAdmitted: 'This family is an overnight index, so a curve of it takes no tenor.',
             tenorOnlyDated: 'This family is an overnight index; its one dated tenor is {tenor}.',
             help: {
+                rate_source: {
+                    process: 'Its own curve engine makes the rate, as every priced curve does.',
+                    compounded_overnight:
+                        'The overnight rate compounded over the tenor. SOFR 1M and IBR 3M are stated this way.',
+                    overnight_plus_spread:
+                        'The overnight rate plus the spread below. EYTIBOR 3M and WIBOR 6M are stated this way.',
+                },
+                derived_spread_basis_points:
+                    'Basis points added to the overnight rate. Only a spread rate uses it.',
+                derived_spread_source:
+                    'Who states the spread: the publisher, the market convention, or the decision that set it. A spread with no source is a number nobody can check.',
                 tenor: 'The tenor of a term index, such as 3M or 6M. Leave it empty for an overnight index. FOMC marks the meeting-dated variant of SOFR.',
                 role: {
                     self_discounting: 'One curve serving both uses.',
@@ -8248,6 +8457,96 @@ export const en: SourceCatalogue = {
             aLaterCut: 'a later cut of the same kind and scope',
             comparisonGap:
                 'Comparing one run of this cut with another is the audit journey’s work, which reads the two runs’ results. This tab names the runs and opens the one a person picks.',
+        },
+    },
+    dq: {
+        area: {
+            title: 'Data quality',
+            lead: 'Whether this tenant holds the reference data its valuations read, and where each dataset is published.',
+        },
+        dataset: {
+            title: 'Dataset',
+            tabs: {
+                details: 'Details',
+                publications: 'Publications',
+            },
+            level: '{level} level',
+            name: 'Name',
+            code: 'Code',
+            bundle: 'Bundle',
+            artefactType: 'Artefact type',
+            artefactTable: 'Artefact table',
+            artefactTableHint: 'Where the rows are staged',
+            targetSubject: 'Target subject',
+            targetSubjectHint: 'The bus subject a publish dispatches to',
+            staged: 'Staged',
+            stagedHint: 'Rows in the artefact table',
+            published: 'Published',
+            notServed: 'Not served yet: no operation counts the rows a dataset published.',
+            optional: 'Optional',
+            optionalHint: 'Publishes only when a caller opts in',
+            readiness: 'Readiness',
+            ready: 'Ready',
+            readyHint: 'Every fact a publish needs is present',
+            notCarried: 'No bundle carries {code}.',
+            lastPublished: 'Last published',
+            lastPublishedGap:
+                'Not served yet: the run log has no writer, so nothing records when this dataset was last published.',
+            publicationsTitle: 'Publications',
+            publicationsLead:
+                'One row for each publish of this dataset, with what the run wrote and what it said.',
+            publicationsGap:
+                'The run log has no writer, so nothing on the publish path records a row, and no column holds an outcome or a message, so a failed run has nowhere to say why. This tab draws nothing until the log can say both.',
+        },
+        coverage: {
+            title: 'Reference data coverage',
+            lead: 'The bundles a tenant publishes, the datasets each bundle carries, and the reason a dataset cannot publish.',
+            bundlesTitle: 'Bundles by level',
+            bundlesLead:
+                'The level decides which tenant holds the rows. Platform and world data is read where it lies, in the system tenant.',
+            membersTitle: 'Datasets in the bundle',
+            membersLead: 'Each dataset, where its rows are staged, and why it cannot publish.',
+            reasonsTitle: 'Why a dataset cannot publish',
+            reasonsLead:
+                'Each reason has an owner, so the person who can fix it knows it is theirs.',
+            noBundles:
+                'This database holds no bundle yet. A recreate seeds them; a fresh database looks like this before the first publish.',
+            noMembers: 'This bundle carries no dataset.',
+            noLevel: 'No level stated',
+            notServed: 'Not served yet',
+            dataset: 'Dataset',
+            datasets: 'Datasets',
+            artefactType: 'Artefact type',
+            staged: 'Staged',
+            published: 'Published',
+            readiness: 'Readiness',
+            metadataComplete: 'Metadata complete',
+            bundleLead: '{code} · {count} datasets · {level} level',
+            filterText: 'Filter by dataset or artefact type',
+            filterState: 'Filter by state',
+            noMatch: 'No dataset matches this filter.',
+            stateTitle: 'State',
+            levelNote: {
+                platform: 'One copy, in the system tenant, read where it lies.',
+                world: 'One copy, in the system tenant, read where it lies.',
+                tenant: 'Written into the tenant that asked.',
+            },
+            state: {
+                all: 'Every state',
+                'not-ready': 'Not ready',
+                ready: 'Ready to publish',
+            },
+            gap: 'The published count is not served yet: the provenance read is still to build. The screen draws a dash in its place, because a zero would say the run wrote nothing.',
+            reason: {
+                noDataset: 'No dataset row',
+                noArtefactType: 'No artefact type',
+                noTargetSubject: 'No target subject',
+                noStagedRows: 'No staged rows',
+            },
+            owner: {
+                dq: 'Data quality fixes it',
+                importer: 'The importer fixes it',
+            },
         },
     },
     reporting: {

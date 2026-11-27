@@ -17,6 +17,7 @@
 #include "ores.shell/app/commands/refdata/business_day_convention_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/business_process_commands.hpp"
 #include "ores.shell/app/commands/refdata/business_unit_commands.hpp"
+#include "ores.shell/app/commands/refdata/business_unit_product_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/business_unit_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/calendar_commands.hpp"
 #include "ores.shell/app/commands/refdata/calendar_date_commands.hpp"
@@ -174,6 +175,7 @@
 #include "ores.shell/app/commands/refdata/party_currency_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_id_scheme_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_identifier_commands.hpp"
+#include "ores.shell/app/commands/refdata/party_product_type_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_product_type_deal_class_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_relationship_commands.hpp"
 #include "ores.shell/app/commands/refdata/party_role_commands.hpp"
@@ -256,6 +258,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     fixing_source_commands::register_commands(root_menu, session);
     cut_code_commands::register_commands(root_menu, session);
     business_centre_commands::register_commands(root_menu, session);
+    business_unit_product_type_commands::register_commands(root_menu, session);
     business_day_convention_type_commands::register_commands(root_menu, session);
     business_process_commands::register_commands(root_menu, session);
     business_unit_commands::register_commands(root_menu, session);
@@ -401,6 +404,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     party_id_scheme_commands::register_commands(root_menu, session);
     party_identifier_commands::register_commands(root_menu, session);
     party_relationship_commands::register_commands(root_menu, session);
+    party_product_type_commands::register_commands(root_menu, session);
     party_product_type_deal_class_commands::register_commands(root_menu, session);
     party_role_commands::register_commands(root_menu, session);
     party_status_commands::register_commands(root_menu, session);

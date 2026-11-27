@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 5F0B4C1D-7A2E-4B93-8C61-2D9E4A7F3B18
+:END:
+#+title: Task: Finish the words in the pages the fixings work left behind
+#+description: The fixings pages and the provider pages still say publish where a producer quotes or fixes, and the fixings page's own title is carried by eighteen references in three different spellings. Finish the sweep where the fixings work is done.
+#+type: task
+#+level: s1
+#+filetags: :split_the_publisher_from_the_producer:inbox:product_backlog:
+#+owner: marco
++#+branch:
++#+pr:
++#+blocked_on:
++#+blocked_since:
++#+created: 2026-11-27
++#+updated: 2026-11-27
++#+environment: bright_faraday
++#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:142FDA27-36E6-4C0D-95F2-6FAE223FC5E3][Split the publisher of a market data value from its producer]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every living market data page uses one word for each act. A producer quotes a
+price or fixes a benchmark, the ingest records and delivers, and we publish a set.
+The broker's publish of a message stays where it names the mechanism.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:142FDA27-36E6-4C0D-95F2-6FAE223FC5E3][Split the publisher of a market data value from its producer]] |
+| Now          | Not yet started. The remaining pages are inventoried below. |
+| Waiting on   | Nothing. It was deferred so the fixings pages stay in one worktree. |
+| Next         | Decide the fixings page's title, then sweep. |
+| Last touched | 2026-11-27                               |
+
+* Acceptance
+
+- No living market data page uses publish for the producer's act, except where the
+  sentence names the broker's own mechanism.
+- The fixings page's title and its eighteen references agree on one spelling, and
+  the title itself no longer repeats publish.
+- The pages render, every id resolves, and the doc ratchet reports no new
+  diagnostic.
+
+* Plan
+
+1. *Inventory.* The page titles and body lines are in the Notes below, with the
+   count of references for each title.
+2. *Decide the fixings title.* A public body fixes a benchmark; an adapter quotes
+   what it fetched. The candidate is =Public sources fix daily benchmarks through
+   a supplier session=. The phrase "public sources" collides with the free-data
+   sense the page itself owns, so the decision is part of the step.
+3. *Sweep the bodies.* The fixings generation page, the provider pages, and the
+   naming scheme. Most naming scheme uses are the tick subject and the market
+   board: those are the broker's and the board's words, so reword only where the
+   sentence is about the producer's act.
+4. *Render and gate.*
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Titles that use publish for the producer's act | 1: =public_source_fixings.org= | =grep -rn "#+title:.*publish" doc/knowledge --include=*.org= | =e453cbf79f= |
+| References to that page, in three different spellings | 18 | =grep -rn "F4BBEF34-D84C-4AE6-A3AA-DC47C3EE06EE\]\[" doc/knowledge= | =e453cbf79f= |
+| Body occurrences in the fixings generation page | 9 | =grep -cE "\bpublish(es|ed)?\b" doc/knowledge/architecture/synthetic_generation_of_fixings.org= | =e453cbf79f= |
+
+* Notes
+
+The pages still to sweep, measured at =e453cbf79f=:
+
+- =synthetic_generation_of_fixings.org=, nine lines, and the file the fixings
+  work changed last. This is why the sweep stopped.
+- =public_source_fixings.org=, one title and five lines, with eighteen references.
+- =synthetic_feed_naming_scheme.org=, fourteen lines, mostly the tick subject and
+  the market board.
+- =market_data_adapter_contract.org=, five lines, of which =core NATS publish= in
+  the message table names the mechanism and stays.
+- =market_data_provider_ice.org= two lines, =market_data_provider_tradeweb.org=
+  three, =fx_volatility_surface.org= three, =market_data_mapping.org= one.
+- The link text at =a_data_model_for_fixings.org= carries the fixings page's old
+  title.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

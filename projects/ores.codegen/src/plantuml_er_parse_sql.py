@@ -55,6 +55,7 @@ COMPONENT_PREFIXES = {
     'ores_analytics_': {'name': 'analytics', 'description': 'Analytics & Pricing Configuration', 'schema': 'public', 'color': '#E8F5E9', 'order': 20},
     'ores_synthetic_': {'name': 'synthetic', 'description': 'Synthetic Data Generation', 'schema': 'public', 'color': '#F9FBE7', 'order': 22},
     'ores_inbox_': {'name': 'inbox', 'description': 'Inbox — Approval Requests and Notifications', 'schema': 'public', 'color': '#FCE4EC', 'order': 23},
+    'ores_vault_': {'name': 'vault', 'description': 'Vault — Secret Custody', 'schema': 'public', 'color': '#F3E8FD', 'order': 24},
     'ores_utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 15},
     'ores_seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 16},
     'ores_database_': {'name': 'database', 'description': 'Database Infrastructure', 'schema': 'public', 'color': '#EFEBE9', 'order': 17},
@@ -717,7 +718,7 @@ class SQLParser:
 
         # Check tenant_id is in primary key
         pk_cols = {c['name'] for c in pk.get('columns', [])}
-        if 'tenant_id' not in pk_cols:
+        if 'tenant_id' not in pk_cols and not self._pk_is_one_surrogate_uuid(pk):
             self._add_warning(file_path, line_num, 'TENANT_002',
                               f"Table '{name}' missing 'tenant_id' in primary key",
                               entity_name=name)
@@ -728,6 +729,18 @@ class SQLParser:
                 self._add_warning(file_path, line_num, 'TENANT_003',
                                   f"Table '{name}' missing 'tenant_id WITH =' in EXCLUDE constraint",
                                   entity_name=name)
+
+    @staticmethod
+    def _pk_is_one_surrogate_uuid(pk: dict) -> bool:
+        """Whether the key is one surrogate uuid and nothing else.
+
+        Such a key is generated, so it is unique across every tenant: adding the
+        tenant to it cannot change what the table holds. TENANT_002 exists to
+        stop a natural key that two tenants could share, and a surrogate key is
+        not one. A composite key, or a natural key, still needs the tenant.
+        """
+        pk_columns = pk.get('columns', [])
+        return len(pk_columns) == 1 and pk_columns[0].get('type', '') == 'uuid'
 
     def _extract_functions(self, content: str, lines: list, file_path: str) -> None:
         """Extract function definitions from SQL content."""

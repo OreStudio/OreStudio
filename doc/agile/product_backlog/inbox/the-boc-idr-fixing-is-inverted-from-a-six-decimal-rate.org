@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: B6E812A1-94A5-4298-8B3E-CED30AFBF193
+:END:
+#+title: The BOC IDR fixing is inverted from a six-decimal rate
+#+description: The CAD/IDR fixing from BOC holds 27 distinct values across 2,470 days because the rate is stated as CAD per IDR with six decimals and inverted to IDR per CAD, then rounded to whole units.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:fixing:public_sources:data_quality:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The CAD/IDR fixing the Bank of Canada publishes holds 27 distinct values across
+2,470 days. Every one of them is =round(1 000 000 / k)= for an integer @k@
+between 77 and 103: 9709, 9804, 9901, 10000, 10101, … 12658, 12821, 12987. Each
+value is therefore the reciprocal of a six-decimal number, written as a whole
+number.
+
+The item =oresmd://fx/CAD?type=fixing&index=fx&source=BOC&ccy=IDR= asserts IDR
+per CAD, and BOC states the rate the other way round, as CAD per IDR near
+0.000078 — six decimals, which is two significant figures. The value is inverted
+to satisfy the item, and the result is rounded to units, so the series can only
+step between those 27 levels. The same publisher's other pairs keep 900 to 1,730
+distinct values in the same 2,470 days because their rates are above 0.5 and
+inverting costs almost nothing; the ECB's EUR/IDR keeps 2,547 in 2,559 days
+because the ECB states IDR per euro and nothing is inverted.
+
+A fixing line drawn from this series reads as a spiky sawtooth of plateaus and
+jumps. The chart is faithful; the series is the defect.
+
+* Why
+
+A fixing is a published number that contracts settle against. A fixing derived by
+inverting a rate whose published precision cannot carry the inversion is not the
+number the publisher stated, and the error is invisible on a screen that does not
+plot the whole history.
+
+The cost of the fix is small if the item is re-pointed rather than the value
+re-derived. Three candidate directions, in order of preference:
+
+1. File the item in the direction the publisher states it,
+   =oresmd://fx/IDR?type=fixing&index=fx&source=BOC&ccy=CAD=, so the fixing is
+   the published number and no arithmetic intervenes.
+2. Take IDR from a publisher that states IDR per CAD or per euro, which the store
+   already holds correctly.
+3. Keep the item and stop rounding to units. The steps get finer, but the grid
+   remains, because it is inherent to a six-decimal CAD-per-IDR.
+
+Which publisher serves a pair is a routing question, not a code path, so this is
+catalogue work: the item, the mapping and the route. It is independent of the
+work that surfaces it, the fixings screen, and of the publisher-per-administrator
+task.
+
+* References
+
+- Measured on 2026-11-27 at commit =1e1b585e4d=:
+  =select value, count(*) from ores_marketdata_market_fixings_tbl f join
+  ores_marketdata_market_series_tbl s on s.id=f.series_id where
+  s.oresmd_uri='oresmd://fx/CAD?type=fixing&index=fx&source=BOC&ccy=IDR' and
+  f.valid_to=ores_utility_infinity_timestamp_fn() group by 1 order by 1::numeric;=
+  answers 27 rows.
+- The rate a BOC item receives is the rate of the provider's pivot in that
+  currency: =projects/ores.marketdata/official/include/ores.marketdata.official/domain/frankfurter.hpp=.
+- The public fixing path is described in
+  [[file:../../../knowledge/architecture/public_source_fixings.org][Public publishers publish daily fixings through a supplier session]].
+
+* See also
+
+- [[file:../../../knowledge/domain/the_fixing_screens_and_what_each_is_for.org][The fixing screens and what each is for]] — where the defect became visible.

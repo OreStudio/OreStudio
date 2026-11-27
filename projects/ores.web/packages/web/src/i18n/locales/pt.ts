@@ -88,6 +88,7 @@ const pt: SourceCatalogue = {
             tenants: 'Inquilinos',
             operations: 'Operações',
             reporting: 'Relatórios',
+            dataquality: 'Qualidade dos dados',
             development: 'Desenvolvimento',
             api: 'API',
             parties: 'Partes',
@@ -548,6 +549,13 @@ const pt: SourceCatalogue = {
 
     'notification.inbox.approval_expiring':
         'Um pedido de {kind} vence em {deadline} e ninguém respondeu.',
+
+    'notification.scheduler.store_unbounded':
+        'O armazém {store} não é limitado por nada que seja executado. Nada remove dele, e o ecrã de manutenção dos dados indica porquê.',
+    'notification.scheduler.store_sweep_failed':
+        'A última passagem ao armazém {store} falhou, por isso o armazém fica sem limite até uma passagem ter sucesso.',
+    'notification.scheduler.sweep_skipped':
+        'Uma passagem deixou {count} políticas por aplicar, por isso os armazéns que elas limitam continuam a crescer. O ecrã de manutenção dos dados indica quais.',
 
     'notification.marketdata.curve_published':
         'A curva {curve} de {party} esta em vigor desde {published_at}, publicada por {publisher} com data de referencia {as_of}. Substitui o conjunto com data de {previous_as_of}, ou nada quando e o primeiro.',
@@ -1821,6 +1829,155 @@ const pt: SourceCatalogue = {
             changedNotice:
                 'A operação mudou depois de este pedido ter sido criado: versão {tradeVersion} agora, contra {requestTradeVersion} quando chegou. A linha não está bloqueada, e uma decisão sobre a versão que leu é a decisão registada.',
         },
+        housekeeping: {
+            title: 'Manutenção dos dados',
+            description:
+                'Cada armazém que esta instalação conserva, o limite que o governa e o seu tamanho.',
+            footnote:
+                'O tamanho e a contagem vêm da última medição. Um armazém que nada mede aparece como não medido, porque um tamanho desconhecido não é um tamanho vazio.',
+            summary: {
+                stores: 'Armazéns',
+                bounded: 'Limitados',
+                unbounded: 'Sem limite',
+                unboundedNote: 'O trabalho que resta',
+                size: 'Tamanho total',
+                unmeasured: 'Não medidos',
+            },
+            filter: {
+                all: 'Todos os armazéns',
+                unbounded: 'Apenas sem limite ({count})',
+            },
+            order: {
+                label: 'Ordem',
+                attention: 'Sem limite primeiro',
+                size: 'Maiores primeiro',
+                name: 'Por nome',
+            },
+            emptyUnbounded:
+                'Todos os armazéns têm um limite. Nada nesta instalação cresce sem limite.',
+            emptyAll:
+                'O catálogo não contém armazéns. Chega com os dados de plataforma que uma versão publica.',
+            columns: {
+                store: 'Armazém',
+                bound: 'Limite',
+                boundBy: 'Limitado por',
+                size: 'Tamanho',
+                lastRun: 'Última passagem',
+            },
+            targetKinds: {
+                chunkedTable: 'Tabela dividida em blocos',
+                table: 'Tabela',
+                objectPrefix: 'Prefixo de objetos',
+                directory: 'Diretório',
+            },
+            verdict: {
+                bounded: 'Limitado',
+                keyed: 'Limitado pela chave',
+                unbounded: 'Sem limite',
+            },
+            reason: {
+                off: 'a política está desligada',
+                notApplied: 'a varredura não consegue aplicar a sua ação',
+                failed: 'a última passagem falhou',
+                noPolicy: 'nenhuma política o nomeia',
+                notBoundable: 'nenhum período o pode limitar',
+            },
+            row: {
+                noAction: 'Sem ação',
+                noPolicy: 'sem política',
+                notMeasured: 'não medido',
+                neverSwept: 'nunca varrido',
+                removed: '{count} removidos',
+            },
+            actions: {
+                drop_chunks: 'Remover os blocos além do período',
+                delete_rows: 'Apagar as linhas além do período',
+                expire_prefix: 'Expirar os objetos além do período',
+                release_directory: 'Libertar a pasta além do período',
+            },
+            outcomes: {
+                applied: 'aplicado',
+                skipped: 'ignorado',
+                failed: 'falhou',
+            },
+            units: {
+                relationRows: 'linhas',
+                objects: 'objetos',
+                files: 'ficheiros',
+                unknown: 'itens',
+            },
+            period: '{days} dias',
+            cadence: 'a cada {hours} h',
+            measure: '{count} {unit}',
+            store: {
+                title: 'Armazém',
+                description: 'Um armazém, o limite que o governa e o seu tamanho.',
+                record: 'O armazém',
+                notFound: 'Esta instalação não conserva nenhum armazém chamado {code}.',
+                back: 'Voltar à manutenção dos dados',
+                fields: {
+                    code: 'Código',
+                    owner: 'Escrito por',
+                    targetKind: 'Tipo de alvo',
+                    target: 'Alvo',
+                    timeColumn: 'Coluna de tempo',
+                    measures: 'Medido por',
+                    none: 'Não indicado',
+                },
+            },
+            size: {
+                title: 'Tamanho',
+                noSample:
+                    'Nada mede ainda este armazém, por isso o seu tamanho e o seu crescimento são desconhecidos. O componente que o escreve é o que o pode medir.',
+                latest: 'Tamanho atual',
+                count: 'Conteúdo',
+                measuredAt: 'Medido',
+                onePoint: 'Uma medição até agora. Uma segunda desenha uma curva.',
+                plot: 'As medições do armazém, da mais antiga para a mais recente. A linha mostra a forma; os números acima dizem o tamanho.',
+                trend: 'de {from} para {to} em {days} dias',
+                perWeek: '{rate} por semana, {direction}',
+                rising: 'a subir',
+                falling: 'a descer',
+            },
+            bound: {
+                title: 'O limite',
+                create: 'Dar-lhe um limite',
+                change: 'Alterar o limite',
+                lastRun: 'Última passagem',
+                absent: 'sem política',
+                on: 'aplica-se',
+                off: 'desligada',
+                noAction:
+                    'Nenhum período pode limitar este armazém, por isso não há nada para alterar aqui. Precisa de uma ação que o catálogo não declara.',
+                readOnly:
+                    'O seu papel não pode alterar um limite. O administrador do sistema altera os limites destes armazéns.',
+                lead: 'O alvo e a ação são da plataforma. Uma pessoa decide se o limite se aplica, durante quanto tempo e com que frequência.',
+                leadCreate:
+                    'Nenhuma política limita este armazém. O período e a frequência abaixo são os que o catálogo fornece.',
+                periodInvalid: 'Indique um número inteiro de dias, maior do que zero.',
+                cadenceInvalid: 'Indique um número inteiro de horas, maior do que zero.',
+                saved: 'O limite mudou. A varredura aplica-o na próxima passagem.',
+                save: 'Guardar o limite',
+                saving: 'A guardar...',
+                failure: 'O limite não mudou: {message}',
+                fields: {
+                    action: 'Ação',
+                    period: 'Conservar durante',
+                    cadence: 'Aplicar no máximo',
+                    policy: 'Política',
+                    state: 'Estado',
+                    reason: 'Razão da conservação',
+                },
+            },
+            gaps: {
+                runsTitle: 'Cada varredura que tocou este armazém',
+                runsBody:
+                    'O registo das passagens regista cada varredura por política, e nenhuma leitura o serve ainda. A página indica a última passagem, a partir da leitura da manutenção.',
+                remoteTitle: 'Os armazéns de um componente',
+                remoteBody:
+                    'Um prefixo de objetos e uma pasta num anfitrião de cálculo são medidos pelo componente que os escreve, e nenhum reporta ainda um tamanho. Esses armazéns aparecem como não medidos.',
+            },
+        },
         feeds: {
             title: 'Fluxos de dados de mercado',
             description:
@@ -1954,6 +2111,9 @@ const pt: SourceCatalogue = {
                 'Cada serviço que o registo espera, confrontado com as instâncias que se anunciam.',
             grid: 'Grelha de cálculo',
             gridBody: 'Os nós, o trabalho que estão a fazer e o que já terminaram.',
+            housekeeping: 'Manutenção dos dados',
+            housekeepingBody:
+                'Cada armazém que a instalação conserva, o que o limita e o seu tamanho.',
             bus: 'Barramento de mensagens',
             busBody: 'Os contadores que o servidor NATS e os seus fluxos reportam.',
             logs: 'Registos de telemetria',
@@ -5155,11 +5315,11 @@ const pt: SourceCatalogue = {
                 },
             },
             invertedFrom: 'o inverso do fixing {value}',
-            title: 'Calibração',
+            title: 'Calibração de fluxos',
             lead: 'Como cada fluxo de uma classe de ativos toma o seu nível inicial e a sua volatilidade dos fixings públicos.',
             systemOnly:
-                'A calibração é um controlo do sistema. Apenas um administrador do sistema a pode abrir.',
-            tabs: 'Vistas da calibração',
+                'A calibração de fluxos é um controlo do sistema. Apenas um administrador do sistema a pode abrir.',
+            tabs: 'Vistas da calibração de fluxos',
             tab: {
                 feeds: 'Fluxos',
                 run: 'Calibração em curso',
@@ -5671,15 +5831,49 @@ const pt: SourceCatalogue = {
                 party: 'Parte',
             },
         },
+        fixingObservations: {
+            title: 'Observações de fixings',
+            lead: 'O que as fontes publicaram: cada série FX e IR que a plataforma detém, o dia que cada uma alcança, e as que não têm qualquer valor.',
+            systemView:
+                'Esta é a vista de sistema das observações. Mostra o que as fontes publicaram e não oferece autorização; um dia que a plataforma nunca observou é introduzido por uma parte, no seu próprio gestor de fixings.',
+            filters: {
+                assetClass: 'Classe de activo',
+                everyClass: 'Todas as classes',
+                currency: 'Moeda',
+                everyCurrency: 'Todas as moedas',
+                source: 'Fonte',
+                everySource: 'Todas as fontes',
+            },
+            columns: {
+                series: 'Série',
+                assetClass: 'Classe',
+                underlying: 'Subjacente',
+                source: 'Fonte',
+                provider: 'Fornecedor',
+                latestValue: 'Último valor',
+                latestDay: 'Último dia',
+                days: 'Dias',
+                open: 'Abrir',
+            },
+            noDay: 'Sem dia',
+            emptyCount: '{count} de {total} séries não têm qualquer dia.',
+            none: 'O armazenamento não detém qualquer série de fixings FX ou IR.',
+            legendNoDay:
+                'Uma série que a plataforma detém e nunca observou: é uma linha, e a contagem é zero.',
+            legendEnded:
+                'Uma série que terminou mantém o último dia e a contagem, porque um fixing é um facto sobre uma data.',
+        },
         fixingSeries: {
             title: 'Série de fixings',
-            lead: 'Os fixings guardados de um instrumento, a série a que pertencem e os feeds que os trouxeram.',
+            lead: 'Todos os fixings que o armazém detém para este instrumento, dia a dia, e os feeds que os trouxeram.',
+            chart: 'Os fixings de {item}',
             noUri: 'Abra esta página a partir de uma ligação oresmd para saber que instrumento mostrar.',
             notStored: 'O armazém não detém nada para {uri}.',
             noValues: 'Ainda não há fixing guardado para este instrumento.',
             provenance: 'Feeds que trazem este instrumento',
             noFeeds: 'Nenhum feed nomeia este instrumento.',
             back: 'Voltar aos dados de mercado',
+            backToObservations: 'Voltar às observações de fixings',
             columns: {
                 provider: 'Publisher',
                 first: 'Primeiro fixing',
@@ -6516,7 +6710,7 @@ const pt: SourceCatalogue = {
                 subscriptions: 'Subscrições',
                 subscriptionsBody:
                     'Os fornecedores que uma parte recebe, com os direitos que detém, e o fluxo que serve cada um.',
-                synthetic: 'Sintético',
+                synthetic: 'Mercado simulado',
                 syntheticBody:
                     'Os feeds que a plataforma gera: o que corre por fornecedor, e cada feed para iniciar e parar.',
                 evolutionBody:
@@ -6966,7 +7160,7 @@ const pt: SourceCatalogue = {
                 'O fluxo para se estiver a correr. A mistura é apagada primeiro, depois o fluxo. O histórico de cada um fica.',
         },
         synthetic: {
-            title: 'Sintético',
+            title: 'Mercado simulado',
             lead: 'Os dados de mercado que a plataforma gera em vez de receber: o que corre por fornecedor, e os feeds de um fornecedor.',
             tabs: { dashboard: 'Painel', provider: 'Fornecedor', regime: 'Mercado' },
             state: { serving: 'A servir', running: 'A correr', stopped: 'Parado' },
@@ -7063,11 +7257,26 @@ const pt: SourceCatalogue = {
             add: 'Nova curva de taxas',
             addTitle: 'Nova curva de taxas',
             priceSource: 'Taxa inicial vinda de',
+            rateSource: 'Taxa vinda de',
+            derivedSpread: 'Spread sobre a taxa overnight',
+            derivedSpreadSource: 'Quem fixa o spread',
             tenorNeeded: 'Um índice a prazo precisa de um prazo, como 3M ou 6M.',
             tenorNotAdmitted: 'Esta família é um índice overnight: uma curva dela não leva prazo.',
             tenorOnlyDated:
                 'Esta família é um índice overnight; o seu único prazo datado é {tenor}.',
             help: {
+                rate_source: {
+                    process:
+                        'O seu próprio motor de curva produz a taxa, como qualquer curva cotada.',
+                    compounded_overnight:
+                        'A taxa overnight capitalizada ao longo do prazo. SOFR 1M e IBR 3M são assim definidos.',
+                    overnight_plus_spread:
+                        'A taxa overnight mais o spread abaixo. EYTIBOR 3M e WIBOR 6M são assim definidos.',
+                },
+                derived_spread_basis_points:
+                    'Pontos base somados à taxa overnight. Só uma taxa com spread o usa.',
+                derived_spread_source:
+                    'Quem fixa o spread: o publicador, a convenção de mercado, ou a decisão que o fixou. Um spread sem fonte é um número que ninguém pode verificar.',
                 tenor: 'O prazo de um índice a prazo, como 3M ou 6M. Deixe vazio para um índice overnight. FOMC marca a variante com datas das reuniões do SOFR.',
                 role: {
                     self_discounting: 'Uma curva que serve os dois usos.',
@@ -8309,6 +8518,99 @@ const pt: SourceCatalogue = {
             aLaterCut: 'um corte posterior do mesmo tipo e âmbito',
             comparisonGap:
                 'Comparar uma execução deste corte com outra é o trabalho do percurso de auditoria, que lê os resultados das duas execuções. Este separador nomeia as execuções e abre aquela que uma pessoa escolhe.',
+        },
+    },
+    dq: {
+        area: {
+            title: 'Qualidade dos dados',
+            lead: 'Se este tenant detém os dados de referência que as suas valorizações leem, e onde cada conjunto de dados é publicado.',
+        },
+        dataset: {
+            tabs: {
+                details: 'Detalhes',
+                publications: 'Publicações',
+            },
+            title: 'Conjunto de dados',
+            level: 'Nível {level}',
+            name: 'Nome',
+            code: 'Código',
+            bundle: 'Conjunto',
+            artefactType: 'Tipo de artefacto',
+            artefactTable: 'Tabela de artefacto',
+            artefactTableHint: 'Onde as linhas são colocadas em espera',
+            targetSubject: 'Assunto alvo',
+            targetSubjectHint: 'O assunto do bus para onde uma publicação é enviada',
+            staged: 'Em espera',
+            stagedHint: 'Linhas na tabela de artefacto',
+            published: 'Publicado',
+            notServed:
+                'Ainda não servido: nenhuma operação conta as linhas publicadas por um conjunto de dados.',
+            optional: 'Opcional',
+            optionalHint: 'Só é publicado quando quem chama o pede',
+            readiness: 'Prontidão',
+            ready: 'Pronto',
+            readyHint: 'Todos os factos de que uma publicação precisa estão presentes',
+            notCarried: 'Nenhum conjunto transporta {code}.',
+            lastPublished: 'Última publicação',
+            lastPublishedGap:
+                'Ainda não servido: o registo de execuções não tem escritor, por isso nada regista quando este conjunto de dados foi publicado pela última vez.',
+            publicationsTitle: 'Publicações',
+            publicationsLead:
+                'Uma linha por cada publicação deste conjunto de dados, com o que a execução escreveu e o que disse.',
+            publicationsGap:
+                'O registo de execuções não tem escritor: nada no caminho de publicação grava uma linha, e nenhuma coluna guarda um resultado ou uma mensagem, por isso uma execução falhada não tem onde dizer porquê. Este separador nada desenha enquanto o registo não puder dizer as duas coisas.',
+        },
+        coverage: {
+            title: 'Cobertura dos dados de referência',
+            lead: 'Os conjuntos que um tenant publica, os conjuntos de dados que cada um transporta, e a razão pela qual um conjunto de dados não pode ser publicado.',
+            bundlesTitle: 'Conjuntos por nível',
+            bundlesLead:
+                'O nível decide qual tenant detém as linhas. Os dados de plataforma e de mundo leem-se onde estão, no tenant de sistema.',
+            membersTitle: 'Conjuntos de dados do conjunto',
+            membersLead:
+                'Cada conjunto de dados, onde as suas linhas estão em preparação, e a razão pela qual não pode ser publicado.',
+            reasonsTitle: 'Porque um conjunto de dados não pode ser publicado',
+            reasonsLead:
+                'Cada razão tem um responsável, para que quem a pode corrigir saiba que é sua.',
+            noBundles:
+                'Esta base de dados ainda não contém nenhum conjunto. Uma recriação semeia-os; uma base nova parece-se com isto antes da primeira publicação.',
+            noMembers: 'Este conjunto não transporta nenhum conjunto de dados.',
+            noLevel: 'Nenhum nível indicado',
+            notServed:
+                'Ainda não servido: nenhuma operação conta as linhas publicadas por um conjunto de dados.',
+            dataset: 'Conjunto de dados',
+            datasets: 'Conjuntos de dados',
+            artefactType: 'Tipo de artefacto',
+            staged: 'Em espera',
+            published: 'Publicado',
+            readiness: 'Prontidão',
+            metadataComplete: 'Metadados completos',
+            bundleLead: '{code} · {count} conjuntos de dados · nível {level}',
+            filterText: 'Filtrar por conjunto de dados ou tipo de artefacto',
+            filterState: 'Filtrar por estado',
+            noMatch: 'Nenhum conjunto de dados corresponde a este filtro.',
+            stateTitle: 'Estado',
+            levelNote: {
+                platform: 'Uma cópia, no tenant de sistema, lida onde se encontra.',
+                world: 'Uma cópia, no tenant de sistema, lida onde se encontra.',
+                tenant: 'Escrito no tenant que o pediu.',
+            },
+            state: {
+                all: 'Todos os estados',
+                'not-ready': 'Não pronto',
+                ready: 'Pronto a publicar',
+            },
+            gap: 'A contagem publicada ainda não é servida: a leitura de proveniência está por construir. O ecrã desenha um traço no seu lugar, porque um zero diria que a execução não escreveu nada.',
+            reason: {
+                noDataset: 'Nenhuma linha de conjunto de dados',
+                noArtefactType: 'Nenhum tipo de artefacto',
+                noTargetSubject: 'Nenhum sujeito alvo',
+                noStagedRows: 'Nenhuma linha em preparação',
+            },
+            owner: {
+                dq: 'A qualidade dos dados corrige-o',
+                importer: 'O importador corrige-o',
+            },
         },
     },
     reporting: {

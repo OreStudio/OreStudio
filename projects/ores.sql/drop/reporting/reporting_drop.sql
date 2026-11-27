@@ -30,6 +30,14 @@
 \ir ./reporting_run_results_drop.sql
 \ir ./reporting_report_cashflows_notify_trigger_drop.sql
 \ir ./reporting_report_cashflows_drop.sql
+\ir ./reporting_report_run_market_readinesses_notify_trigger_drop.sql
+\ir ./reporting_report_run_market_readinesses_drop.sql
+\ir ./reporting_report_trade_market_readinesses_notify_trigger_drop.sql
+\ir ./reporting_report_trade_market_readinesses_drop.sql
+\ir ./reporting_report_address_market_readinesses_notify_trigger_drop.sql
+\ir ./reporting_report_address_market_readinesses_drop.sql
+\ir ./reporting_report_trade_market_gaps_notify_trigger_drop.sql
+\ir ./reporting_report_trade_market_gaps_drop.sql
 \ir ./reporting_report_instances_notify_trigger_drop.sql
 \ir ./reporting_report_instances_fsm_guard_drop.sql
 \ir ./reporting_report_instances_drop.sql

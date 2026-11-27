@@ -290,6 +290,15 @@ values
     (ores_utility_system_tenant_id_fn(), 'script_library', 0, 'Script Library', 'ORE''s payoff scripts with their variants, results, calibrations, schedule coarsenings and inputs, published into the system tenant one script at a time',
      'dq_scripts_artefact_tbl, dq_script_variants_artefact_tbl, dq_script_results_artefact_tbl, dq_script_calibrations_artefact_tbl, dq_script_calibration_strikes_artefact_tbl, dq_script_coarsenings_artefact_tbl, dq_script_inputs_artefact_tbl, dq_script_input_codes_artefact_tbl',
      'trading_scripts_tbl', 'trading.v1.ops.publish_script_library_from_dq', 80,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'job_definitions', 0, 'Job Definitions', 'The jobs the scheduler fires, published into the system tenant',
+     'dq_job_definitions_artefact_tbl', 'scheduler_job_definitions_tbl', 'scheduler.v1.ops.publish_job_definitions_from_dq', 81,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'retention_policies', 0, 'Retention Policies', 'The stores the platform bounds, published into the system tenant',
+     'dq_retention_policies_artefact_tbl', 'scheduler_retention_policies_tbl', 'scheduler.v1.ops.publish_retention_policies_from_dq', 82,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_utility_system_tenant_id_fn(), 'retained_stores', 0, 'Retained Stores', 'The stores the installation keeps, published into the system tenant',
+     'dq_retained_stores_artefact_tbl', 'scheduler_retained_stores_tbl', 'scheduler.v1.ops.publish_retained_stores_from_dq', 83,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

@@ -36,6 +36,7 @@ export interface CalendarException {
     id: string;
     calendar_code: string;
     exception_date: string;
+    party_id: string | null;
     is_business_day: boolean;
     description: string | null;
     modified_by: string;

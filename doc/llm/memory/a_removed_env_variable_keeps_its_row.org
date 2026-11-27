@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 3D9D858C-0885-4A06-9411-0AA9529E5212
+:END:
+#+title: A removed environment variable keeps its row
+#+description: The environment-format check pairs each version row with the Variables rows that name it, so a removal is a removed column, never a deleted row.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+
+Record a removed environment variable by filling its Variables row's removed column with the removing version, and keep the row. Never delete the row.
+
+*Why:* Deleting ORES_SHELL_LOGIN_PASSWORD's row made version 17's 'adds' and version 38's 'removes' name a variable no row matched, and compass-ng failed with two env_format/unknown_variable errors. The local check gate did not see it, because it ratchets against the base and excuses what the diff does not appear to introduce; only the bare compass-ng check, which is what CI runs, reported it, and main went red for three merges.
+
+*How to apply:* Add the new version row naming the variable in the removed column, then set that variable's own removed column to the same version and leave the rest of its row intact. Run compass-ng check bare before merging anything that touches compass/checks/env_format.org, not only compass check.

@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 2DAFF099-4C46-470A-ACA7-D81FCBBFA757
+:END:
+#+title: Story: Attribute a break on main to its owner
+#+description: A gate that goes red because of someone else's change costs an environment a session of guesswork. Give the session one procedure: name the commit, the pull request and the environment that caused the break, prove the mechanism, and say whether the fix belongs inline or with the owner.
+#+type: story
+#+level: s2
+#+filetags: :sprint_31:v0:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A session that meets a break on main names its owner in one pass, proves the
+mechanism, and decides whether the fix belongs inline or with the environment
+that made it.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-11-25                               |
+
+* Acceptance
+
+- A skill states the procedure and the report shape, and a recipe holds the
+  commands that attribute the break and prove it.
+- The owner is an environment, read from the commit's trailers and the fleet,
+  and the disposition says whether to fix inline or hand it back.
+- A session that reads the skill reports the same four parts in the same order
+  whoever writes it.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:5766CDB7-F44E-401F-92DA-9FD0D7DE3276][Add a skill that reports a break and its owner]] | DONE | 2026-11-25 | 2026-11-25 | A skill and its recipe: the commands that attribute a break, and the report shape that names the owner, the commits, the mechanism and the disposition. |
+
+* Decisions
+
+The report's owner is an environment rather than a person. The environment
+holds the branch, the task and the session that made the change, so it is the
+one thing that can act on the report; the person and the agent are named beside
+it because a reader wants to know who to talk to.
+
+=blame= is not a verb of the naming register, and it is also the checker's own
+command, which the conventions forbid naming a skill after. The skill is
+=compass-code-investigate-trunk-break= and the word survives only in the recipe
+title, which names the question rather than the skill.
+
+* Out of scope
+
+-
+
+* Result
+
+One skill, one recipe, and one template fix.
+
+=compass-code-investigate-trunk-break= holds the judgement: five steps, the
+report shape with its four headings, and the rule that decides between fixing
+inline and handing the break back. [[id:477E9949-CFA4-44D8-A021-D7463BEC4C0D][How do I blame a break on main?]]
+holds the commands.
+
+The skill scaffold emitted no =#+description:=, =#+type:= or =#+level:=, so every
+new skill was born outside the contract
+[[id:44D7A328-F69C-4EE9-83A5-74BD3634AD69][compass-skill-review]] checks it against. The template now carries all three
+and the tangle regenerated the mustache.

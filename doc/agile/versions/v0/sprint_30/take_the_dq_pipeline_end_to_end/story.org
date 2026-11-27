@@ -7,30 +7,32 @@
 #+level: s2
 #+filetags: :dq:data:architecture:publishing:web:sprint_30:v0:
 #+created: 2026-11-14
-#+updated: 2026-11-21
+#+updated: 2026-11-25
 #+environment: swift_curie
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+Continued by: [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]].
 
 * Goal
 
 Carry reference data from a blank database to a usable one, deliberately. Today
 a recreate seeds DQ artefacts, nothing publishes them, some tables are seeded
 directly instead, and there is no screen anywhere that shows what is published.
-This story settles the model, implements it, and gives it a place to be seen and
-driven.
+This story settles the model and implements it. The place to see and drive it is
+the successor story.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                                 |
+| State         | DONE                              |
 | Parent sprint | [[id:9F7C5484-E2D1-40E0-B24D-AD1B69A057F5][Sprint 30]] |
-| Now           | Nothing. Every task is done or abandoned, and the DQ design is on main. |
+| Now           | Nothing. The publishing model and its design ship here; the screens continue in Show and drive the DQ pipeline in ores.web. |
 | Waiting on    | Nothing.                               |
-| Next          | Nothing. The build is captured in the inbox. |
-| Last touched  | 2026-11-22                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-11-25                               |
 
 * Acceptance
 
@@ -44,12 +46,6 @@ driven.
 - No dataset is seeded and left unpublished, and no refdata table is populated
   by a second, silent path without that being deliberate.
 - A recreated database can value every trade type the system books.
-- ores.web shows each dataset, its artefacts, whether it is published, and
-  offers the publish action. *Deferred:* the story closes with the design signed
-  off rather than the screens built, because three of the five journeys need
-  operations the server does not yet serve. The build is
-  [[id:E25ACD77-495D-4D8E-832B-69B44C213D18][captured]] and the decision is recorded
-  below.
 
 
 * Approach
@@ -75,8 +71,9 @@ superseded by these six: its scope is now split across settling the levels,
 publishing at bring-up and collapsing the double writers. It is closed as
 abandoned rather than done, because none of its own work survives the split.
 
-The screens task stays last. "Is my reference data complete?" is a question about
-levels, so it can only be designed once 1 and 2 have an answer.
+The screens task was designed last, because "Is my reference data complete?" is a
+question about levels and could only be designed once 1 and 2 had an answer. The
+design is what this story owes; building it left the story at the sprint close.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
@@ -110,11 +107,14 @@ levels, so it can only be designed once 1 and 2 have an answer.
 - The DQ UI belongs in this story rather than beside it. A publishing model with
   no way to see publish state is the reason the gap went unnoticed: a recreate
   looked successful while the catalogues were empty.
-- *The design is the deliverable for the screens task, not the screens.* The
-  five journeys and their signed-off prototypes are what this story owed: the
-  build needs operations the server does not serve, so building now would mean
-  inventing screens against data no call can read. The build is a capture, and
-  the last acceptance bullet above is deferred to it rather than counted as met.
+- *The screens leave this story at the sprint 30 close* (2026-11-25, marco). The
+  five journeys and their signed-off prototypes are done and on main, and the
+  build needs operations the server does not serve, so the story closes with the
+  design delivered and the build carried to
+  [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]], a
+  successor story in sprint 31 that holds the two open tasks. Splitting keeps
+  this record to what it actually delivered; keeping it open would have left a
+  sprint 30 story with work no sprint 30 task covers.
 - The stage-by-stage pipeline page survives rather than being retired. The model
   lives on one page — the classification by publication level — and the pipeline
   page records what a generator owns at each stage of it. That inventory is the

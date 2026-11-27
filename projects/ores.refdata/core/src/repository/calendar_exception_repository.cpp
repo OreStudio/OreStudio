@@ -575,4 +575,31 @@ void calendar_exception_repository::remove(const context& ctx,
 }
 
 
+std::vector<domain::calendar_exception>
+calendar_exception_repository::read_for_party(const context& ctx,
+                                              const std::string& calendar_code,
+                                              std::optional<boost::uuids::uuid> party_id) {
+    ORES_LOG_SEV(lg(), debug) << "Reading calendar exceptions that apply to a party.";
+    static constexpr auto max = db_timestamp::max();
+    const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+
+    auto applies = query_builder::is_null("party_id");
+    if (party_id)
+        applies =
+            applies || query_builder::equals("party_id", query_builder::filter_value(*party_id));
+
+    const auto query =
+        query_builder::read<std::vector<calendar_exception_entity>> |
+        query_builder::where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
+                             "calendar_code"_c == calendar_code && "valid_to"_c == max && applies);
+
+    return query_builder::execute_read_query<calendar_exception_entity, domain::calendar_exception>(
+        ctx,
+        query,
+        [](const auto& entities) { return calendar_exception_mapper::map(entities); },
+        lg(),
+        "Reading calendar exceptions that apply to a party.");
+}
+
 }

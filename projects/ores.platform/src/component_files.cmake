@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "credentials/credential_store.cpp"
     "environment/environment.cpp"
     "environment/real_environment_provider.cpp"
     "filesystem/file.cpp"
@@ -34,6 +35,7 @@ set(files
     "time/relative_time_formatter.cpp"
     "time/time_of_day.cpp"
     "time/time_utils.cpp"
+    "time/zone_offset.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -41,6 +43,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/concurrency/atomic_shared_ptr.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/concurrency/ores.platform.concurrency.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/concurrency/stoppable_thread.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/credentials/credential_store.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/environment/environment.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/environment/environment_provider.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/environment/fake_environment_provider.hpp"
@@ -69,4 +72,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/time/relative_time_formatter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/time/time_of_day.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/time/time_utils.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.platform/time/zone_offset.hpp"
 )

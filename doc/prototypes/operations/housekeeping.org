@@ -1,0 +1,383 @@
+:PROPERTIES:
+:ID: F8EA4677-573F-4A81-A052-B3DA4E7BF8F6
+:END:
+#+title: The housekeeping screen prototype
+#+description: Three shapes for the screen that shows every store the installation keeps, and the states a store can be in when nothing bounds it.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:operations:housekeeping:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+| Item          | Where                                     |
+|---------------+-------------------------------------------|
+| Prototype     | [[file:housekeeping/][the prototype]]     |
+| Gemini review | none                                      |
+| Group         | [[file:index.org][Operations prototypes]]   |
+| Journeys      | [[id:F7C1E75E-9F08-437B-80C0-7D50B945CA52][See what the system keeps]], [[id:C647D403-BFF0-4910-83E4-4EFEBD4F39C4][Change what is kept]], [[id:F6622109-4F52-4DE9-9C06-6B0EAA7C8D2E][Read the housekeeping log]] |
+
+* Summary
+
+Housekeeping is the one administration screen whose subject is absence: what
+nothing deletes. The installation keeps nine stores; a default policy bounds
+seven, the content digest bounds the package cache, and the screen's job is to
+make the bound — or its absence — impossible to miss. Measured on a provisioned
+tenant, the largest store with nothing bounding it was the compute host's own
+scratch — 565 job folders and 1.9 GB — followed by the delivery counts at about
+365 MB a day, while the bounded report outputs were doing exactly what their
+policy said. The prototype argues three shapes for showing that in one place,
+and the states a store is in when the news is bad, including the one that reads
+as bounded and is not: a policy whose action the sweep cannot perform.
+
+Everything here is mock data. The page calls no service, needs no build and no
+session, and every variant opens from one file with a query parameter.
+
+* Detail
+
+** The question
+
+The screen must answer, in the order a person asks it:
+
+1. what is this installation keeping, and how large is each store;
+2. which of those stores has nothing stopping it;
+3. when a store is bounded, what bounds it and when that last took effect;
+4. what housekeeping has actually done, and what it said when it did nothing.
+
+The fourth question is why the runs log is part of this screen and not a
+separate page: the same person asks both, in one sitting, and the answer to
+"why is this still here" is a run's detail line.
+
+** The variants
+
+- *A — one table of every store.* Store, whether anything bounds it, what
+  bounds it, size, growth, and a filter to the stores nothing bounds; the store
+  a person opens gets a page of its own. Carries forward: it
+  is the only shape that holds all twelve rows and their numbers at once, and
+  it is the shape the logs screen already uses, so the person reads it twice a
+  week without learning it twice.
+- *B — cards grouped by where the store lives.* Database tables, chunked
+  tables, the object store, the compute host's own disk. It is better at
+  "what is big" and worse at "what is unbounded", because a card that reads
+  "unbounded" among eight cards is one more card; the group heading is what
+  makes the absence legible, and none of the group headings says bounded.
+- *C — two panes, list beside the policy editor.* The maintenance shape: the
+  store and its size stay in view while the period is changed, and the save bar
+  states the change and the record it will write. This variant is the one the
+  editing journey needs, and it is drawn here rather than in a prototype of its
+  own because a policy is edited from the store it bounds.
+
+** A store is not its target string
+
+The first review of this prototype said the obvious thing: nobody outside the
+database should have to read =ores_refdata_calendar_dates_tbl= to know that the
+store holds the calendars' business days. A row needs a human name and a
+sentence saying what the store is, and the physical target belongs beside them
+as a fact rather than as the title.
+
+Nothing in the tree carries that name today. A retention policy holds a =code=
+(the policy's name, =report_cashflows_90d=), a =target= (the physical table or
+prefix) and a =description= that describes the policy and not the store. Three
+ways to give the screen its names were weighed:
+
+- *Derive the name from the target.* =ores_refdata_calendar_dates_tbl= becomes
+  "Refdata Calendar Dates" by stripping the product and table affixes. It is
+  free and it is wrong twice: no description comes with it, and the targets
+  that are prefixes or directories (=compute/input/=,
+  =publish/run/wrappers=) have nothing to parse.
+- *Use the policy's name.* =report_cashflows_90d= names the policy, and a store
+  may have no policy at all, which is exactly the row that most needs a name.
+- *A store catalogue.* One row per store the installation keeps: its code, its
+  display name, its description, the shape its target has, the target itself,
+  how to measure it, and the component that owns it. A policy then names a
+  store, and "unbounded" becomes a store with no policy rather than a target
+  string that appears in none.
+
+The third is the layering the reference-data pages already state: the physical
+name is the row's identity and the presentation name is metadata the platform
+publishes. It also turns the story's inventory of every dimension that grows
+from a document into data the screen can read, and it gives the size read
+somewhere to hang: a store that says how to measure itself is one the size read
+can answer for.
+
+This prototype draws the first two ways badly on purpose and the third properly:
+the fixtures carry a =label= and a =description=, the target sits beneath the
+label in monospace, and the detail panel states both. When the catalogue exists,
+the label and the description come from it; until then they are the screen's own
+copy, which is a reason to build the catalogue rather than to write twelve names
+into a client.
+
+** The store is an entity, and the screen shows its record
+
+The screen reads a store as a row of a catalogue, not as a target string with
+some numbers beside it. The prototype's detail panel states the record the way
+the entity would: *code*, *name*, *description*, *owner* (the component that
+writes the store), *target kind*, *target*, *time column* (what a row delete
+compares) and *measured by* (what the probe reads: relation rows, objects and
+bytes, files and bytes). The policy is a separate block beneath, because a
+policy is a decision about a store and not a property of one.
+
+A store that is described this way answers the three review comments at once:
+the name and the description are published rather than parsed out of a table
+name, the size and its plot hang off the same row, and the row is what a person
+clicks to open the details.
+
+** The measurement belongs to the store, by a key or by a trigger
+
+The samples are one row per store per cadence: the store it measures, when, and
+what it found. Whether the reference is a real foreign key or a trigger-checked
+one is an implementation choice the prototype does not draw; what it does draw
+is that a sample cannot exist without its store, so the panel can state a
+series as the store's own and the sampler can walk the catalogue to fill it.
+The prototype shows the series as twelve points and says where they come from;
+the numbers are fixtures.
+
+** Latest activity around the store**
+
+A store's panel ends with the activity that names it, newest first, from every
+source that records one: the sampler's measurements, the sweep's runs and their
+outcomes, a person's change to the policy, and the moments a store bounded
+something — a node releasing a job's folder, for instance. One log, because
+"what has happened to this store" has one answer, and reading it here saves the
+trip to the runs screen for the common case. The full log is one click away and
+stays the place a window is asked for.
+
+** Growth is a series, not an adjective
+
+The second review asked for the thing the screen is actually for: each store's
+growth over time, so that it can be plotted. "Growing · +18 MB over 30 days" is
+a sentence; a person cannot see a step, a cliff or a sawtooth in it, and those
+are the shapes that say what happened. The prototype draws a sparkline in every
+row and, on a store's page, a plot with size up the side and time along the
+foot, ticked and gridded, and both are mock.
+
+What a real plot needs is a sample per store per cadence, kept as a series:
+
+- *The row.* One measurement of one store at one instant: the store it belongs
+  to, when it was taken, the size in bytes, and whatever else the store is
+  measured by (rows, chunks, objects, folders). The store's catalogue entry
+  says how it is measured, which is why the catalogue is the thing to build
+  first.
+- *The store.* A Timescale hypertable chunked on the measurement instant, the
+  same shape the grid, node, session and stream samples already use, so the
+  screen reads a series the platform already knows how to keep and to bound.
+  Its own retention policy is then one more row, and the sweep that drops
+  chunks can drop this store's chunks too.
+- *The sampler.* A scheduled job that walks the catalogue and writes one sample
+  per store, on a cadence a person can state; hourly is enough to see a day and
+  cheap enough to keep for a quarter. It is separate from the sweep: the sweep
+  acts on a period, and the sampler only looks.
+- *The read.* A series read by store and window, which is also the size read
+  the screen needs today: the latest point is the "size now" the table shows,
+  and the points before it are the chart.
+
+The plot then answers what no single number can: a store that steps once and
+flattens is a run that happened; one that climbs steadily is a decision nobody
+made; one that sawtooths is a policy that drops and the store that regrows into
+it. This is the analysis the review asked for, and it is the one thing on the
+screen that a person will come back to look at rather than read once.
+
+** Clicking a row opens the store's own page
+
+The screen follows the shape the rest of the application uses: a list page, and
+a page per record. Clicking a row opens the store's page — its name and
+description, its record, its plot, its policy and its log — with a breadcrumb and
+a back action at its head. The list keeps the comparison the person came for;
+the page gives the store the room its record, plot and log need, and a place of
+its own to link to.
+
+The editor opens on the store's page rather than in a variant of its own, with
+the store and its size still in view while the period is changed. A store with
+no policy says so on its page and offers the way to give it one: the create form
+states an action, a period, a cadence, whether it is enabled, and the reason,
+and adding it turns the store to *waiting for its first sweep* on the page and in
+the list.
+
+** What the list shows, and why the plot left it
+
+The list is for triage, not for reading: nine rows and one question, "which of
+these should I look at". A twelve-point plot in every row is a shape a person
+tries to read nine times, and none of the nine gets read. The plot stays on the
+store's page, where there is one store and room to look at it.
+
+A row now states four things, in the order the eye asks them:
+
+- *whether anything bounds it*, in one word and one colour — Bounded, Unbounded,
+  or Bounded by keying, in green, red and green. This is the column the list
+  exists for, and it is the first question because it is the only one with a
+  wrong answer;
+- *the size*, in bytes with its unit, because that is the number the question
+  starts from;
+- *how close it is to a stated limit*, as a bar and a percentage — but only
+  where a limit exists. A store with no budget says "no size budget" rather than
+  drawing an empty bar, which would read as room to spare;
+- *which way it is going*, as an arrow and the rate per week: ↑ +2.5 MB/wk,
+  → flat, or "not measured". The rate is the honest summary of the plot without
+  the plot: a store that stepped once and now sits flat reads →, and one that
+  climbs reads ↑ with how fast.
+
+The size budget is a decision this prototype takes and the product does not have:
+nothing states a cap on a store today, and a cap with no consequence is the same
+decoration the ticks' retention policy was. If the budget is added, something has
+to happen at it — an alert to the administrator, a sweep that acts early, or a
+refusal to keep accepting rows — and that mechanism belongs with the field, not
+after it. The prototype draws the indicator so the shape can be judged; the field
+and its consequence are for the task that adds them.
+
+** An unbounded store is the screen's verdict
+
+The sweep visits policies. A store no policy names is not visited at all: nothing
+deletes from it, nothing reports on it, and it appears in the run log only as an
+absence. So a store with no policy is not "unconfigured"; it is kept for ever,
+and it grows at whatever rate its writers write, until the database or the disk
+is full. The three journeys call that the failure the screen exists to prevent,
+and the list has to say it before it says anything else.
+
+Two things follow, and the prototype does both.
+
+The test is *bounded*, not *has a policy*. A policy that is switched off, that the
+sweep records as skipped, or whose last run failed leaves the store exactly as
+unbounded as no policy at all. The column therefore reads Bounded, Unbounded or
+Bounded by keying, and the reason — no policy, off, skipped, failed — sits beside
+it in the Bounded by cell, where the diagnosis belongs. This is not pedantry: a
+default that asks for a row delete is declared, enabled and recorded skipped on
+every sweep, and its store is unbounded.
+
+The verdict is red. An unbounded store has no reading that is not bad: it is the
+one state on this screen with a wrong answer, and amber would file it beside a
+store that is merely close to a budget.
+
+The cost is stated in bytes. A row says not only that nothing bounds it but what
+that means: *nothing removes it · about 7.4 GB a year*, from the same twelve-week
+series the plot draws. For a store whose size cannot be read the row says the
+worse thing honestly: *size not measured, so growth is invisible*. The plot and
+the alarm are one measurement seen two ways, which is why the samples have to be
+built before either works.
+
+The top of the page states the count — *1 of the 9 stores is unbounded* — with
+the way to filter the list to it. The list is then a work list, and its empty
+state is the goal: *every store has a bound*.
+
+** Bounded by default, and the one store a default cannot cover
+
+An alarm that fires on most of the list is wallpaper, so the count has to reach
+zero and stay there or nobody reads it. The reviewer decided the shape: the store
+catalogue declares a default bound for every store that can take one, and
+provisioning creates the policy, so an installation never ships unbounded. The
+cost is the opposite risk — data deleted on a default nobody read — which is why
+the default is a quarter for run output and a day for scratch, and why a policy
+states the reason it is kept.
+
+The fixture now shows that world. Seven of the nine stores carry a default
+policy, the package cache is bounded by its content digest, and one store is
+unbounded: the calendar dates. That one is the interesting case, because no
+default can cover it: a policy bounds by *age*, and a business day behind the
+horizon is not old, it is out of range. The days are re-derivable from the
+calendar's rules, so the bound they need is a delete by range — every day before
+the horizon start — which the policy model cannot express. The screen says so
+rather than showing a policy that would delete the days pricing still needs.
+
+The empty state changes meaning with this decision. It is no longer a fresh
+installation: it is an installation whose defaults somebody removed, and it reads
+as the alarm it is. The page therefore names the fixture it is showing whenever a
+deep link selects one, and a link to a state opens the list rather than the page
+of a store that the state no longer chooses.
+
+** Telling a person without them opening the screen
+
+The screen is pull. Housekeeping needs push as well, or nobody learns that a
+store is unbounded until it fills a disk. The platform already holds the
+mechanism: =ores.inbox= raises notifications of a stated kind, to an audience by
+permission, with a link to the thing and a message key the screen renders in the
+reader's language ([[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification
+requirements]]). Housekeeping contributes kinds and raises them; it does not
+build a channel of its own.
+
+| Case | Who is told | What the message says |
+|------+-------------+-----------------------|
+| A store is unbounded when the installation is provisioned | The system administrator, or the tenant's, by the store's scope | Which store, that it has no bound, and a link to its page |
+| A sweep records a policy skipped | The owner of the store | The action asked for, the action the sweep performs, and the store it leaves unbounded |
+| A sweep fails | The owner of the store | The store, the action and the server's message |
+| A store passes its size budget | The owner of the store | The size, the budget and the rate |
+
+Two rules keep the messages worth reading. A notification names the store and
+links to it; it never carries the numbers to act on, because a person who has to
+act needs the plot and the policy. And a sweep that skips four policies raises
+one message, not four: the inbox groups by kind and subject.
+
+The audience follows the store, not the person raising it. A store the platform
+owns is the system administrator's problem; a store a tenant's writes are the
+tenant's. That is the same scope the catalogue states for the store, which is why
+the catalogue has to carry it.
+
+** The states a store can be in
+
+| State | What the screen says | Why it matters |
+|-------+----------------------+----------------|
+| fresh | Seven defaults hold, one store is unbounded, and the last sweep freed 0 B because nothing is older than its period | A zero is not a failure, and the screen must not imply one |
+| skipped | The defaults are declared and four cannot be applied, because the sweep performs a chunk drop and nothing else | The dangerous state: it reads as bounded on paper |
+| failed | Unbounded — the last sweep failed; the detail is the server's message | The store is unbounded until somebody reads the message |
+| disabled | Unbounded — the policy is off, so the store is kept for ever | A decision, and it should read as one |
+| empty (=Defaults removed=) | No default holds: somebody removed them, and every store but the package cache is unbounded | The alarm the state exists for |
+
+** What is fake
+
+Everything. The sizes, the growth rates, the seven policies, the runs and the
+person signed in are mock data taken from one environment at one moment: 283 MB
+of calendar dates, 186 MB of report cashflows after 39 runs, 29 MB of delivery
+counts growing at about 27,000 rows an hour, 1.9 GB of host scratch. No request
+leaves the page.
+
+** Where the code lives
+
+- =doc/prototypes/operations/housekeeping/index.html= — the prototype.
+- =doc/prototypes/operations/housekeeping/prototype.css= and =prototype.js=,
+  where the page needs them.
+- The design tokens are copied from =projects/ores.web/packages/web/src/styles.css=,
+  as the other prototypes do.
+
+** The verdict
+
+Signed off on 2026-11-26, at the end of a review that ran as one branch
+(=review/housekeeping-prototype=) rather than as a pull request per comment, so
+the review reads as one history instead of a dozen merges.
+
+Variant A is accepted: one table of every store, and a page of its own for the
+store a person opens. It carries the screen because it holds every
+store and every number at once and because it is the shape the logs screen
+already uses, so the person reads it twice a week without learning it twice.
+
+Variants B and C stay in the page as the alternatives A was weighed against, not
+as shapes to build. Their arguments are recorded above, and C's editor is no
+longer a variant of its own: a policy is changed in A's panel, where the store
+and its size are already in view.
+
+The review settled three things beyond the shape, and each one moved the
+prototype:
+
+- the list carries the verdict of boundedness in red, because a store with no
+  bound that applies grows until the disk is full, and no reading of that is
+  merely a warning;
+- every store ships with a default bound from the catalogue, so unbounded is an
+  exception rather than the normal state, and the count on the screen can reach
+  zero — which is the only way the count is worth reading;
+- housekeeping tells the administrator through the inbox of the tenant that owns
+  the store, because the screen is pull and a disk fills while nobody is looking.
+
+Work the review produced, none of it built:
+
+- [[id:6802E7DF-9851-41A8-B1CB-6E0E678D389C][Bound every store by default]] — the
+  catalogue states the default, provisioning creates it.
+- [[id:53D81AE9-6031-4129-BBCE-52DEED048B9E][Tell the administrator a store is
+  unbounded]] — the notifications, with their audiences and their kinds.
+- [[id:DE1FA71A-1FCA-473F-A0D4-8E810067C18A][A policy cannot bound a store by
+  date range]] — the calendar dates, the one store a default cannot cover.
+
+The screen still cannot be built until three things exist: the store catalogue
+that carries a human name and a description, the samples and the size read that
+the plot stands on, and the retention-run wire type PR #5126 adds for the log.
+The prototype is the argument for building all three.
+
+* See also
+
+- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]] — the group the three journeys belong to.
+- [[id:E92D8CA4-C33F-4AE2-808B-9092B100E9C5][Housekeeping of retained data]] — what a policy is and what the sweep does.

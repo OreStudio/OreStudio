@@ -4,7 +4,7 @@
 :ores.cpp.wire-codec.enabled: true
 :END:
 #+title: ores.marketdata.fixing_read_operations
-#+description: Codegen operation model for reading the durable fixings: the latest on or before a date, a window of days, and a pair composed from them.
+#+description: Codegen operation model for reading the durable fixings: the latest on or before a date, a window of days, a pair composed from them, and the summary a fixings screen lists.
 #+type: ores.codegen.operation
 #+component: marketdata
 #+subcomponent: api
@@ -13,7 +13,7 @@
 #+brief: Reading the durable fixings.
 #+filetags: :model:operation:marketdata:
 #+created: 2026-10-28
-#+updated: 2026-11-16
+#+updated: 2026-11-26
 
 A consumer, the calibration of the synthetic feeds first, asks for a fixing by its
 item and a date, and gets the value with where and when it came from. The item is
@@ -24,6 +24,7 @@ two items. The values stay decimal text, as they are stored.
 
 #+begin_src cpp :name includes
 #include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
@@ -607,6 +608,204 @@ two items. The values stay decimal text, as they are stored.
 #+begin_src cpp :name comment
 /**
  * @brief How many values each of those series holds, in the same order.
+ */
+#+end_src
+
+** fixing_series_summary
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One fixing series as a screen lists it: what it fixes, where the value
+ * came from, and the value it holds now.
+ */
+#+end_src
+
+*** series_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The series' own id, as text.
+ */
+#+end_src
+
+*** oresmd_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The series' address, which the series page it opens reads.
+ */
+#+end_src
+
+*** asset_class
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The address's scheme host, =fx= or =ir=.
+ */
+#+end_src
+
+*** index_label
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the series fixes, in the words a screen shows: a pair such as
+ * =EUR/USD=, or an index such as =USD SOFR 1M=.
+ */
+#+end_src
+
+*** source
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Where the values came from, as the fixings state it: the source of the
+ * observation, or the generator that computed it. Empty for a series that holds
+ * no value.
+ */
+#+end_src
+
+*** provider_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The provider the series belongs to.
+ */
+#+end_src
+
+*** latest_value
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The value of the latest day, as decimal text. Empty for a series that
+ * holds no value.
+ */
+#+end_src
+
+*** latest_date
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::year_month_day>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The latest day the series holds, or nothing for one that holds none.
+ */
+#+end_src
+
+*** days
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many days the series holds, which is zero for one that holds none.
+ */
+#+end_src
+
+** list_fixing_series_summaries_request
+:PROPERTIES:
+:subject:  marketdata.v1.ops.list_fixing_series_summaries
+:response: list_fixing_series_summaries_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for every fixing series the store holds, as a screen lists them.
+ *
+ * The summary is the database's, one aggregate over the series and their
+ * fixings: reading the fixings of every series to count them would carry
+ * hundreds of thousands of rows to a screen that shows a line each.
+ */
+#+end_src
+
+*** asset_class
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The asset class to list, or empty for every one.
+ */
+#+end_src
+
+*** currency
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The currency to list, or empty for every one. An FX series is listed
+ * under either of its currencies.
+ */
+#+end_src
+
+*** source
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The source to list, or empty for every one.
+ */
+#+end_src
+
+** list_fixing_series_summaries_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One summary for every series the filters admit, ordered by address.
+ */
+#+end_src
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the series were read.
+ */
+#+end_src
+
+*** series
+:PROPERTIES:
+:cpp_type: std::vector<fixing_series_summary>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The summaries, ordered by address. A series that holds no value is one
+ * of them, with a count of zero.
  */
 #+end_src
 

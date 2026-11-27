@@ -209,12 +209,27 @@ jobs:
           curl -fsSLO "${base}/${asset}"
           curl -fsSLO "${base}/${asset}.sha256"
           sha256sum -c "${asset}.sha256"
-          # Windows carries no unzip, and every runner carries tar, whose
-          # libarchive backend reads a zip. -C names the directory so the
-          # archive's own top directory stays under it.
+          # Git Bash carries no unzip, its tar is GNU tar, which cannot read a
+          # zip, and its PATH does not reach powershell. Windows states where
+          # it keeps that interpreter, and Python is the second way in, since
+          # every runner has one of the two.
           mkdir -p compass-ng
-          tar -xf "${asset}" -C compass-ng
-          dir=$(dirname "$(find "$RUNNER_TEMP/compass-ng" -type f -name 'compass.exe' | head -1)")
+          powershell="$(cygpath -u "${WINDIR:-C:\\Windows}")/System32/WindowsPowerShell/v1.0/powershell.exe"
+          if [ -x "$powershell" ]; then
+              "$powershell" -NoProfile -NonInteractive -Command \
+                  "Expand-Archive -LiteralPath '$(cygpath -w "${asset}")' -DestinationPath '$(cygpath -w compass-ng)' -Force"
+          elif command -v python > /dev/null 2>&1; then
+              python -m zipfile -e "${asset}" compass-ng
+          else
+              echo "neither powershell nor python expands ${asset}" >&2
+              exit 1
+          fi
+          exe=$(find "$RUNNER_TEMP/compass-ng" -type f -name 'compass.exe' | head -1)
+          if [ -z "$exe" ]; then
+              echo "${asset} holds no compass.exe" >&2
+              exit 1
+          fi
+          dir=$(dirname "$exe")
           printf '@echo off\r\n"%%~dp0compass.exe" %%*\r\n' > "${dir}/compass-ng.cmd"
           cygpath -w "${dir}" >> $GITHUB_PATH
           "${dir}/compass.exe" --version

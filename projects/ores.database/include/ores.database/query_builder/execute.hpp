@@ -107,6 +107,11 @@ const std::string& insert_sql(bool replace) {
         std::string names, values, keys, sets;
         Entity::columns().apply([&](const auto&... b) {
             (([&] {
+                 // A store-filled column is left out, so the table's default
+                 // states it before the row is routed to a chunk. It is still
+                 // read back, so the select list keeps it.
+                 if constexpr (std::remove_cvref_t<decltype(b)>::store_filled)
+                     return;
                  const std::string n(b.name);
                  names += (names.empty() ? "" : ", ") + n;
                  values += values.empty() ? "?" : ", ?";
@@ -133,6 +138,10 @@ std::vector<pq::param> row_params(const Entity& e) {
     std::vector<pq::param> out;
     Entity::columns().apply([&](const auto&... b) {
         (([&] {
+             // The insert statement leaves a store-filled column out, so no
+             // parameter is stated for it.
+             if constexpr (std::remove_cvref_t<decltype(b)>::store_filled)
+                 return;
              if constexpr (std::remove_cvref_t<decltype(b)>::as_text)
                  out.push_back(pq::to_text(e.*(b.member)));
              else

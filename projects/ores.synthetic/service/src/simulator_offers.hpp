@@ -27,6 +27,8 @@
 #include "ores.marketdata.api/datum/market_index.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
 #include "ores.marketdata.api/domain/adapter_subjects.hpp"
+#include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
+#include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
 #include "ores.marketdata.core/vendor/provider_notation.hpp"
 #include "ores.marketdata.core/vendor/simulated_fixing_notation.hpp"
 #include "ores.synthetic.api/feeds/feed_factory.hpp"
@@ -73,6 +75,30 @@ struct fixing_offer_inputs final {
 };
 
 /**
+ * @brief The fixing items @p provider_code states, which its instruments map.
+ *
+ * A fixing is published by the administrator the catalogue says owns it, so the
+ * items a source may state are the ones its provider's vendor instruments map.
+ * An adapter whose provider maps no fixing states none, which is what keeps a
+ * vendor of quotes out of the fixings.
+ */
+inline std::set<std::string> fixing_items_of(const ores::database::context& ctx,
+                                             const std::string& provider_code) {
+    namespace repo = ores::marketdata::repository;
+    std::set<boost::uuids::uuid> instruments;
+    for (const auto& v : repo::market_data_vendor_instrument_repository{}.read_latest(ctx))
+        if (v.provider_code == provider_code)
+            instruments.insert(v.id);
+    std::set<std::string> out;
+    if (instruments.empty())
+        return out;
+    for (const auto& m : repo::market_data_mapping_repository{}.read_latest(ctx))
+        if (instruments.contains(m.vendor_instrument_id))
+            out.insert(m.oresmd_uri);
+    return out;
+}
+
+/**
  * @brief The fixing generators the simulated fixing publisher offers its adapter.
  *
  * One for the index of each curve that states an index rate, which it takes from the curve's
@@ -84,7 +110,9 @@ struct fixing_offer_inputs final {
 inline std::vector<generator_offer> fixing_offers(const std::vector<feed_start_target>& targets,
                                                   const feed::feed_build_context& build,
                                                   const std::string& adapter_id,
+                                                  const std::string& provider_code,
                                                   const fixing_offer_inputs& inputs,
+                                                  const std::set<std::string>& served,
                                                   std::shared_ptr<const feed::fault_state> faults) {
     namespace vendor = ores::marketdata::vendor;
     namespace datum = ores::marketdata::datum;
@@ -96,12 +124,12 @@ inline std::vector<generator_offer> fixing_offers(const std::vector<feed_start_t
                            ores::analytics::quant::domain::market_member_kind kind,
                            std::vector<std::string> level_codes,
                            fixing_time when) {
+        if (!served.contains(item))
+            return;
         if (!offered.insert(item).second)
             return;
-        const auto target = adapter_target_of(adapter_id,
-                                              vendor::simulated_fixings_provider,
-                                              vendor::index_fixing{.item = item},
-                                              faults);
+        const auto target = adapter_target_of(
+            adapter_id, provider_code, vendor::index_fixing{.item = item}, faults);
         if (!target)
             return;
         auto make = [&build, target = *target, item, kind, level_codes, when, held = inputs.held] {
@@ -132,6 +160,10 @@ inline std::vector<generator_offer> fixing_offers(const std::vector<feed_start_t
     for (const auto& target : targets) {
         const auto& candidate = target.row.candidate;
         if (!target.startable() || !target.container_is_system)
+            continue;
+        // A derived index is its own node: the config builds the generator, so this
+        // pass leaves it alone or it would be started twice.
+        if (candidate.derived)
             continue;
         if (candidate.fixing_item)
             offer(*candidate.fixing_item,
@@ -206,11 +238,17 @@ system_generator_offers(const feed_kind_registry& registry,
     std::ranges::sort(targets, [](const auto& a, const auto& b) {
         return a.row.candidate.feed_config_id < b.row.candidate.feed_config_id;
     });
-    if (provider_code == vendor::simulated_fixings_provider)
-        return fixings ? fixing_offers(targets, build, adapter_id, *fixings, faults) :
-                         std::vector<generator_offer>{};
     const feed::feed_adapter adapter_for_build{.id = adapter_id, .provider_code = provider_code};
     std::vector<generator_offer> out;
+
+    // The fixings this provider states are its own, in its own notation, and only
+    // the ones its instruments map: the catalogue decides who fixes what.
+    if (fixings != nullptr) {
+        const auto served = fixing_items_of(ctx, provider_code);
+        if (!served.empty())
+            out =
+                fixing_offers(targets, build, adapter_id, provider_code, *fixings, served, faults);
+    }
     for (const auto& target : targets) {
         const auto& candidate = target.row.candidate;
         if (!target.startable() || !target.container_is_system)
@@ -220,6 +258,34 @@ system_generator_offers(const feed_kind_registry& registry,
         const auto* notation = vendor::notation_of(provider_code);
         if (!notation)
             continue;
+
+        // A derived index states the fixing of an index no publisher quotes, from the curve its
+        // rule names. Its adapter is offered that one address, so the market data service that
+        // demands it is answered; the graph withholds the offer while a stop holds the node or
+        // starves it, which is what stops the fixings when their curve stops.
+        if (candidate.derived) {
+            if (!candidate.fixing_item || fixings == nullptr)
+                continue;
+            const auto written = target_of(vendor::index_fixing{.item = *candidate.fixing_item});
+            if (!written)
+                continue;
+            feed::derived_fixing_feed_build_input in{.source_name = candidate.source_name,
+                                                     .item = *candidate.fixing_item,
+                                                     .target = *written,
+                                                     .rule = *candidate.derived,
+                                                     .held = fixings->held};
+            if (node_halted)
+                in.starved = [halted = node_halted, name = candidate.source_name] {
+                    return halted(name);
+                };
+            out.push_back(generator_offer{
+                .id = written->id,
+                .group = candidate.feed_config_id,
+                .make = [&registry, &build, kind = target.row.kind->kind, in] {
+                    return registry.factory().make(kind, build, feed::feed_build_input{in});
+                }});
+            continue;
+        }
 
         // A surface is offered to the adapter of each contributor's provider, for that
         // contributor's points, whichever collection holds it: the contributors observe one

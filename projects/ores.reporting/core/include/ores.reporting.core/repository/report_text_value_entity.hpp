@@ -98,7 +98,7 @@ struct report_text_value_entity {
                query_builder::bind("name", &e::name) |
                query_builder::bind("value_type", &e::value_type) |
                query_builder::bind("value", &e::value) | query_builder::bind("figure", &e::figure) |
-               query_builder::bind("valid_from", &e::valid_from) |
+               query_builder::store_fills("valid_from", &e::valid_from) |
                query_builder::bind("valid_to", &e::valid_to);
     }
 };

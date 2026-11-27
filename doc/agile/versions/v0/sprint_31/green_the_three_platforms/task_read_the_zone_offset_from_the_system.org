@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 7AD517ED-5743-40A5-B6E8-D50D95ADB669
+:END:
+#+title: Task: Read the zone offset from the system's database
+#+description: libc++ carries no std::chrono time zone database, so locate_zone does not compile on macOS and the fixing feed never builds there.
+#+type: task
+#+level: s1
+#+filetags: :build:synthetic:green_the_three_platforms:sprint_31:v0:
+#+owner: marco
+#+branch: hotfix/osx-time-zone-database
+#+pr: 5125
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B5DD6A6E-A836-4FF8-A07B-01247D5157E8][Green the three platforms at once]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Let the fixing feed reach its cut time on every platform, without relying on a library database that macOS does not ship.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                                |
+| Parent story | [[id:B5DD6A6E-A836-4FF8-A07B-01247D5157E8][Green the three platforms at once]] |
+| Now          | The reader, its cases and the feed's exchange of locate_zone for it are in the working tree. |
+| Waiting on   | The macOS nightly, which builds the path this host cannot. |
+| Next         | Merge, then read what the nightly reports. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- The platform layer reads a zone's offset from the system's zoneinfo database.
+- The reader agrees with the library's own database wherever the library has one.
+- The fixing feed builds and its cases pass without locate_zone.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5125][#5125]] | [synthetic] Read the zone offset from the system's database |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+- =ores.platform= gains =zone_offset_at=, which reads the offset a zone keeps
+  from the TZif file the system's database holds. It reads the 64-bit block,
+  never changes process state, and refuses a name that climbs out of the
+  database. A reader is needed because libc++ ships no std::chrono time zone
+  database, so =locate_zone= does not compile on macOS with any header.
+- The fixing feed asks the library's database where there is one and the
+  system's otherwise, which is a choice the preprocessor makes once.
+- Proved against the library: a throwaway harness compared 52,560 instants
+  across twelve zones and three years, and found no difference. The suite's own
+  case repeats a narrower version of that comparison on every platform whose
+  library has a database, and states the offsets outright where it has none.
+- The four fixing cases pass unchanged, so the arithmetic that reads the offset
+  is the one that was there before.

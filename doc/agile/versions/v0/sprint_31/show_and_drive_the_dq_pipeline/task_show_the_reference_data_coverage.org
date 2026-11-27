@@ -1,0 +1,153 @@
+:PROPERTIES:
+:ID: E25ACD77-495D-4D8E-832B-69B44C213D18
+:END:
+#+title: Task: Show the reference data coverage
+#+description: The coverage screen answers whether the tenant holds what its valuations read: the bundles by level, the members of one bundle, and the reason each cannot publish.
+#+type: task
+#+level: s1
+#+filetags: :show_and_drive_the_dq_pipeline:sprint_31:v0:
+#+owner: marco
+#+branch: feature/build-the-dq-screens
+#+pr:
+#+blocked_on: the staged count and the published count, which no operation serves yet
+#+blocked_since: 2026-11-22
+#+created: 2026-11-22
+#+updated: 2026-11-25
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.web shows each dataset, its artefacts, whether it is published, and offers the publish action, built from the five signed-off prototypes rather than from the Qt screens.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
+| Now          | Nothing. |
+| Waiting on   | The operations the journeys name: the coverage operation, the per-dataset preview, the artefact read and write, and the published-row count. The screen states which figure is absent. |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- The coverage screen draws what [[file:doc/prototypes/dq/reference-data-coverage.org][its design note]] records: the bundles
+  grouped by level, the chosen bundle's members, and the reason each cannot
+  publish with the owner of that reason.
+- A fresh database reads as a sentence and not as a failure.
+- The staged and published figures are numbers once the two operations serve
+  them, and a stated gap until then.
+
+* Plan
+
+1. Serve the four collections the screen reads, as
+   [[id:43B17B69-D1CA-4333-98BF-462AA5ECD8EF][Serve the DQ reads from the C++ server]]
+   does: one web API module against =ores.http=.
+2. Build the area, the menu entry and the card, gated on the four reads.
+3. Draw the three cards the design note argues for, from the shared parts.
+4. Draw the two counts once
+   [[id:4940C4D1-CB24-4257-9C3A-BDD0C85CFA8E][Serve the bundle roster with its level and staged counts]]
+   and [[id:16FD5B35-83E7-4F85-9578-8AD20D33667E][Count the rows a dataset published]]
+   serve them, replacing the dash and the gap note.
+
+Notes
+
+- The prototypes are the design record: =doc/prototypes/dq/=, one folder per
+  screen, each with a design note that states its states and what is fake.
+- The journeys are =doc/knowledge/journeys/dq/=, and each one's * What is
+  missing section names the operation that blocks it.
+- The used-by question in the trace journey needs the reference to be an
+  identifier or the text to be indexed, which is a trading component change and
+  not a DQ screen.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Typecheck of the web package | exit 0 | =npx tsc --build= in =projects/ores.web/packages/web= | 5960983888 |
+| Tests of the areas this screen touches | 150 passed, 10 files | =npx vitest run src/shell src/dq src/i18n src/AppRoutes.test.tsx= | 5960983888 |
+| Route tests the screen joins | 43 passed | =npx vitest run src/AppRoutes.test.tsx= | 5960983888 |
+| Tests of the whole web package | 2684 passed, 219 files | =npx vitest run= in =projects/ores.web/packages/web= | 5960983888 |
+
+* Result
+
+Done. The screen exists and reads only ores.http.
+
+- The DQ area opens at =/data-quality=, with its menu entry, its card and its
+  path, and both are gated on the four reads the screen makes.
+- The coverage screen draws the bundles grouped by the level they publish at,
+  the chosen bundle's members in display order, the reason each member cannot
+  publish, and the owner of that reason.
+- A fresh database reads as a sentence and not as an error, which is the state
+  that started this arc.
+- The staged and published figures are drawn as a dash with the gap stated, and
+  not as a zero: no operation serves either count yet. Readiness answers three of
+  its four reasons, and the fourth is named with its owner rather than dropped.
+- Everything is in three languages, and the copy states what the screen does not
+  know instead of leaving a blank.
+- The screen is written from the shared parts. Nothing is imported from the
+  prototypes, which stay the design record.
+
+The task was the umbrella for all five screens when it started. It narrowed to
+the coverage screen on 2026-11-25, when the story decomposed into four operation
+tasks and four screen tasks; the other four screens are those tasks, not this
+one.
+
+Evidence: =npx tsc --build= exit 0, =npx vitest run= 2684 passed across 219
+files, and =prettier --check= clean, all at =5960983888=; =compass-ng check=
+reports only the two wide-type warnings main already carries.
+
+* Notes
+
+- *The screen draws a dash and states the gap, rather than a zero.* The staged
+  count needs the coverage operation and the published count needs a provenance
+  read, and neither is served. A zero in that column would say the run wrote
+  nothing, which is the failure this arc exists to find, so the screen says what
+  is absent and why. The note is the one place the screen admits a gap, and the
+  task closes it when the operations land.
+- *Readiness answers three of its four reasons today.* No dataset row, no
+  artefact type and no target subject are all readable from the four
+  collections, so =readinessOf= decides them. The fourth, no staged rows, waits
+  on the coverage operation; the reasons card names it with its owner so a
+  reader is not misled into thinking the metadata check is the whole answer.
+- *The area is gated on the four reads it makes*, in the menu entry and in the
+  card, so a person without =dq::datasets:read= and its three siblings is not
+  offered a screen that would answer 403.
+- *The screen is written from the shared parts*, not from the prototype markup:
+  =ScreenFrame=, =PageHeader=, =Notice=, =Tag=, =AreaTrail= and the house table
+  rows. The prototypes stay the design record; nothing is imported from them.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |

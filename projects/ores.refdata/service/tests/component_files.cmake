@@ -22,4 +22,5 @@
 set(files
     "config_parser_tests.cpp"
     "main.cpp"
+    "product_approval_tests.cpp"
 )

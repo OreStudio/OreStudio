@@ -1,0 +1,191 @@
+:PROPERTIES:
+:ID: A71D89B6-2A44-4826-BF30-25E6E3AF631E
+:END:
+#+title: Task: Deliver housekeeping as platform data
+#+description: The sweep job and the retention policies are seeded by populate scripts, which run once when a database is created and cannot be re-run. Deliver them as platform-level DQ datasets in system_core, with the contract reconciling and the operator's decisions inserted once.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: feature/deliver-housekeeping-as-platform-data
+#+pr: 5130
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-25
+#+updated: 2026-11-25
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The housekeeping configuration reaches an installation the way every other
+platform datum does: as a dataset published into the system tenant, so it exists
+in every environment, can be re-published, and appears in the DQ screens beside
+the platform's other data. The installation's own decisions survive a
+republish.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-25                               |
+
+* Acceptance
+
+- The sweep job and the retention policies are artefact types, staged from their own models, with a publish function each
+- Both datasets are members of =system_core=, so provisioning publishes them into the system tenant
+- A publish reconciles the contract and leaves an operator's period, cadence and state alone
+- A republish of unchanged data writes nothing
+- The retention policy table carries the system tenant rather than no tenant at all
+- No populate script seeds a job definition or a retention policy
+- The publish is covered by a pgTAP test
+
+* Analysis
+
+Three kinds of thing travel with this work, and the classification page sorts
+them by the question that decides every dataset: who is the author.
+
+| Thing | Author | Level | What follows |
+|-------+--------+-------+--------------|
+| The sweep job, and the policies' contract | the platform declares it in order to function | platform | published into the system tenant, one copy, never per tenant |
+| The installed period, cadence and state | the operator decides | platform row, operator value | must survive a republish |
+| The run ledger | produced by use | none | never published |
+
+The third row is why the ledger stays out. It also means the ledger needs a
+retention policy of its own: it grows by one row per policy per sweep, which is
+the class of growth this story exists to bound.
+
+Two defects surfaced while weighing this, and both are fixed here because the
+dataset cannot be written correctly over them:
+
+- *The policy table has no tenant.* Platform data is held in the system tenant
+  and read through the shared-reference policy, which is what the job table now
+  does. A policy modelled as a tenant-less lookup, like a change reason, is
+  readable by any caller and publishes nowhere in particular.
+- *Two cadences, neither owned.* The job's cron decides when the sweep fires and
+  the policy's =cadence= column is read by nothing. The sweep becomes the tick
+  and the policy's cadence becomes its own due check, so a store swept monthly
+  is not swept daily and the column means what it says.
+
+-
+
+* Plan
+
+The route is the one =from_an_entity_model_to_a_published_row= states, and
+nothing about it is invented here:
+
+1. Give =ores.scheduler.retention_policy= a system-tenant =tenant_id= and align
+   its reads. This precedes publishing, because a publisher writes platform
+   rows into the system tenant and a tenant-less table has no such place.
+2. Settle the cadence: the job's cron is the tick, and each policy states when
+   it is next due. The sweep applies only the policies that are due.
+3. Opt =ores.scheduler.job_definition= and =ores.scheduler.retention_policy=
+   into the artefact, regenerate the staging tables, and wire their create and
+   drop scripts by hand.
+4. Register the two artefact types, the two datasets and their =system_core=
+   membership. No dependency between them: a policy names a table, not a job.
+5. Write the publish functions. The contract fields upsert; the period, the
+   cadence and the state are written only when the row does not exist, which
+   the contract's =insert_only= mode already provides.
+6. Add the scheduler's =publish_from_dq_handler= and register its subjects.
+7. Delete the populate seeds, and test the publish with pgTAP: a first publish
+   writes the rows, a second writes nothing, and a republish after an operator
+   changes a period leaves it changed.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Policies the sweep considers, with the cadence each states | 3, at 24 hours each | =compass sql -- -c "select code, cadence_hours from ores_scheduler_retention_policies_tbl where valid_to = ores_utility_infinity_timestamp_fn()"= | 66181f05f1 |
+| Policies applied by the first sweep after a database was created | 3 | =compass sql -- -c "select policy_code, outcome from ores_scheduler_apply_retention_policies_fn()"= | 66181f05f1 |
+| Policies applied by the sweep that follows it | 0, so the due check holds | the same call | 66181f05f1 |
+| Policies applied once one ledger row is backdated beyond its cadence | 1, the backdated policy | =update ores_scheduler_retention_runs_tbl set ran_at = ran_at - interval '25 hours' where policy_code = 'report_cashflows_90d'= then the same call | 66181f05f1 |
+| Job definitions a new database holds from the dataset | 4, each in the system tenant at version 1 | =compass sql -- -c "select job_name, tenant_id = ores_utility_system_tenant_id_fn() as system_tenant, version from ores_scheduler_job_definitions_tbl where valid_to = ores_utility_infinity_timestamp_fn()"= | df12de7626 |
+| Retention policies it holds from the dataset | 3, each in the system tenant | the same query on =ores_scheduler_retention_policies_tbl= | df12de7626 |
+| Published jobs the scheduler fired within ten minutes of starting | 3 of the 3 that fall due in that window | =select j.job_name, count(*) from ores_scheduler_job_instances_tbl i join ores_scheduler_job_definitions_tbl j on j.id = i.job_definition_id where i.started_at > now() - interval '10 minutes' group by j.job_name= | df12de7626 |
+| Housekeeping publish suites | 15 assertions across the housekeeping dataset; the whole SQL suite is 109 files and 1022 tests, all passing | =./test/run_tests.sh test/scheduler_publish_housekeeping_test.sql=, then =./test/run_tests.sh= | df12de7626 |
+| Subject plan tests | 9 assertions in 4 cases | =publish/bin/ores.scheduler.core.tests "[publish]"= | df12de7626 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5130][#5130]] | [scheduler] Deliver housekeeping as platform data |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The housekeeping configuration now reaches an installation the way every other
+platform datum does. The jobs the scheduler fires and the retention policies are
+datasets in =system_core=, staged from the models that own them and published
+into the system tenant, so they exist in every environment and can be published
+again. No populate script seeds a job definition or a retention policy.
+
+A policy states its own cadence in hours and the sweep applies only the policies
+that are due, so the job's schedule is the tick and no store is swept more often
+than its author intended. The sweep reads the run ledger for when it last
+applied a policy rather than writing bookkeeping into the policy row, because an
+update to a versioned row opens a version and would read as a change a person
+made.
+
+A publish reconciles the contract and leaves the installation's decisions alone.
+For a job the contract is the command, the payload and the description; for a
+policy it is the target, the action and the reason. The schedule, the state and a
+policy's period and cadence are carried from the most recent row the installation
+held, even where the publish closed that row first.
+
+Two defects were fixed on the way, because the dataset could not be written
+correctly over them: the policy table had no tenant, and the policy's cadence was
+read by nothing.
+
+Verified on a rebuilt database: four published jobs, three published policies, all
+in the system tenant; a first sweep applied the three policies and the sweep after
+it applied none; the housekeeping pgTAP suite passes its 15 assertions and the
+whole suite its 1022; the scheduler fired the published jobs within ten minutes
+of starting.
+
+A defect in the work's own test surfaced later, and is fixed on its own task.
+The pgTAP test wrote =modified_by = 'system'=, which the store accepts only while
+the installation holds no person; on a provisioned database the insert is refused
+at line 106. See
+[[id:A02A55EA-402D-4A03-A083-5C7C7B34D3D5][Fix the housekeeping publish test's
+actor]]. The behaviour under test is unaffected, and no schema or code changed.
+
+Outstanding, and named for the next task: the sweep applies only a chunk drop, so
+the =delete_rows= and =expire_prefix= actions its policies may name still report
+=skipped=; the run ledger has no retention policy of its own, so it grows by one
+row per policy per sweep; and the job definition table still permits a null
+tenant, which is what the new task holds.

@@ -21,9 +21,10 @@ person's in-application delivery, in one transaction, and it refuses a caller
 without inbox::notifications:write. A direct insert would skip all of that.
 
 The raiser is the signed-in account, so --from picks whose session raises it.
-It defaults to the tenant administrator the environment already carries
-(ORES_SHELL_LOGIN_USERNAME and ORES_SHELL_LOGIN_PASSWORD in .env), which holds
-the write permission by its wildcard grant.
+It defaults to the tenant administrator the environment names
+(ORES_SHELL_LOGIN_USERNAME in .env), whose password the developer exports as
+ORES_SHELL_LOGIN_PASSWORD; that account holds the write permission by its
+wildcard grant.
 """
 
 import argparse
@@ -347,13 +348,14 @@ def run(argv, project_root, env_file=None):
         raise SystemExit(
             "error: no --from given, and ORES_SHELL_LOGIN_USERNAME is not set in .env."
         )
-    password = env.get("ORES_SHELL_LOGIN_PASSWORD", "")
-    if not password and sender_address == default_sender:
-        password = os.environ.get("ORES_SHELL_LOGIN_PASSWORD", "")
+    # The password left .env in format version 38: it is a person's credential,
+    # not a deployment's, so the developer raises with one they export.
+    password = os.environ.get("ORES_SHELL_LOGIN_PASSWORD", "")
     if not password:
         raise SystemExit(
-            "error: no password for the raising account. ORES_SHELL_LOGIN_PASSWORD is "
-            "not set in .env (or in the environment)."
+            "error: no password for the raising account, and ORES_SHELL_LOGIN_PASSWORD "
+            "is no longer in .env. Export it, or raise as an account of your own with "
+            "--from."
         )
 
     recipient_id = account_id(env, args.to)

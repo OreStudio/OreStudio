@@ -91,6 +91,11 @@ The surface construction, [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructin
 
 The market data path, [[id:FDD02CA9-1DAD-4162-95AC-C7C5C611DDDC][a public fixing, a curve and a report]], is a chain of it: each hop calls a service and waits for the answer before the next.
 
+The first credential a service resolves is one too, twice over: the vault
+answers a challenge, and then the service answers with it before the vault
+returns the secret ([[id:5FADF948-4520-41D3-B4F0-BE4873C06AF0][Secure
+Introduction of a Workload to the Vault]]).
+
 The default timeout is 30 seconds, set once in =ores.nats/service/timeouts.hpp= for every overload.
 
 - [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — every service operation is a request with an inbox; a refusal is an empty reply with =X-Error=.

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-27
 #+updated: 2026-11-27
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Make a suite that dies on a fatal signal print the stack it died on, so the gcc 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-27                               |
 
 * Acceptance
@@ -40,9 +40,10 @@ Make a suite that dies on a fatal signal print the stack it died on, so the gcc 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Install handlers for the fatal signals once per test process, from the
+listener every suite registers. The handler writes the signal's name and the
+unwound stack to standard error, then restores the default action and raises
+the signal again, so the exit status stays the one the process would have had.
 
 * Measurements
 
@@ -56,7 +57,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Frames written for a suite that took SIGABRT | 64 at most, mangled, from the aborting thread | =./ores.database.tests= sent =kill -ABRT= | HEAD |
+| Exit status after the trace | 134, the status an aborted process carries | same run, =wait= | HEAD |
 
 * Notes
 
@@ -84,3 +86,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+A suite that takes SIGABRT, SIGSEGV, SIGBUS, SIGFPE or SIGILL now writes the
+signal's name and its stack to standard error before it dies, and still dies
+from the signal: the exit status is unchanged, so CTest and the nightlies
+report the failure as they did.
+
+This is what the gcc double free needs. glibc reports a corrupted heap in one
+line and no stack, the abort happens inside =free=, and the run says only which
+suite died. The frames carry mangled names; =c++filt= reads them.
+
+Verified locally: a suite sent SIGABRT writes =TEST FATAL SIGNAL: SIGABRT= and
+sixty-four frames, and exits 134. The handler is installed on the first case
+that starts, so it is in place for every case of every suite that registers the
+listener.
+
+Not verified locally: the handler under a double free, which needs the gcc run
+that reports it. Tonight's nightly prints the stack.

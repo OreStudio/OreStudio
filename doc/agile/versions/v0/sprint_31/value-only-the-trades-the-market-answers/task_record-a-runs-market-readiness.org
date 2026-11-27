@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
-#+updated: 2026-11-26
+#+updated: 2026-11-27
 #+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ A run knows, before the engine sees it, which trades its market can answer: the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | The three grains, the per-trade gaps and the exclusion are built, the review round is applied, and [[https://github.com/OreStudio/OreStudio/pull/5192][#5192]] is open with its gates green. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge [[https://github.com/OreStudio/OreStudio/pull/5192][#5192]] and close the task. |
-| Last touched | 2026-11-26                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-27                               |
 
 * Acceptance
 

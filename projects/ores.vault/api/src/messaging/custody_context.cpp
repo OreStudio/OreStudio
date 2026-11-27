@@ -30,4 +30,15 @@ custody_context::delivery(const std::string& subject, const std::string& name, i
     return subject + "|" + name + "|" + std::to_string(key_version);
 }
 
+std::string custody_context::challenge(const std::string& consumer,
+                                       const std::string& challenge_id) {
+    return "vault.challenge|" + consumer + "|" + challenge_id;
+}
+
+std::string custody_context::credential(const std::string& consumer,
+                                        const std::string& challenge_id,
+                                        const std::string& name) {
+    return "vault.credential|" + consumer + "|" + challenge_id + "|" + name;
+}
+
 }

@@ -37,6 +37,7 @@ export interface ConsumerWrite {
     name: string;
     public_key: string;
     is_enabled: boolean;
+    actor: string;
     description: string;
 }
 

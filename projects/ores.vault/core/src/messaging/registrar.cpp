@@ -57,6 +57,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
     auto handler =
         std::make_shared<secret_operations_handler>(nats, ctx, std::move(verifier), keys);
     subs.push_back(nats.queue_subscribe(
+        challenge_request::nats_subject, custody_queue_group, [handler](ores::nats::message msg) {
+            handler->challenge(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        credential_request::nats_subject, custody_queue_group, [handler](ores::nats::message msg) {
+            handler->credential(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
         vault_public_key_request::nats_subject,
         custody_queue_group,
         [handler](ores::nats::message msg) { handler->public_key(std::move(msg)); }));

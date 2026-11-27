@@ -86,14 +86,14 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <name> <public_key> <is_enabled> <description> <reason> <commentary>
+     * @brief add <name> <public_key> <is_enabled> <actor> <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <name> <public_key> <is_enabled> <description> <reason> <commentary>
+     * @brief set <id> <name> <public_key> <is_enabled> <actor> <description> <reason> <commentary>
      * [--version <n>]
      */
     static void process_set(std::ostream& out,
@@ -101,8 +101,8 @@ public:
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <name> <public_key> <is_enabled> <description> <reason>
-     * <commentary>
+     * @brief put-many --count <n> <id> <name> <public_key> <is_enabled> <actor> <description>
+     * <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

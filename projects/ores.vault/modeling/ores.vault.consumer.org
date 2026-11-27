@@ -101,6 +101,23 @@ without deleting what it asked for.
 true
 #+end_src
 
+** actor
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:searchable: true
+:END:
+
+The account the consumer runs as, in the form the audit columns take, such as
+=powershell@system.ores:9000=. A secret names its owner by this value, so the
+vault compares an owner with a consumer whether the caller proved itself with a
+token or with the key it holds: the token path reads the actor from the context,
+and the bootstrap path reads it from this row.
+
+#+begin_src cpp :name generator
+std::string("vault@system.ores")
+#+end_src
+
 ** description
 :PROPERTIES:
 :type:     text

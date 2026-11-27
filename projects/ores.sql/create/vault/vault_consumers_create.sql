@@ -47,6 +47,7 @@ create table if not exists "ores_vault_consumers_tbl" (
     "name" text not null,
     "public_key" text not null,
     "is_enabled" boolean not null default true,
+    "actor" text not null,
     "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,

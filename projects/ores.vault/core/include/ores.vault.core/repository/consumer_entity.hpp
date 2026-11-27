@@ -59,6 +59,7 @@ struct consumer_entity {
 
     std::string public_key;
     bool is_enabled = false;
+    std::string actor;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;
@@ -78,6 +79,7 @@ struct consumer_entity {
                query_builder::bind("version", &e::version) | query_builder::bind("name", &e::name) |
                query_builder::bind("public_key", &e::public_key) |
                query_builder::bind("is_enabled", &e::is_enabled) |
+               query_builder::bind("actor", &e::actor) |
                query_builder::bind("description", &e::description) |
                query_builder::bind("modified_by", &e::modified_by) |
                query_builder::bind("performed_by", &e::performed_by) |

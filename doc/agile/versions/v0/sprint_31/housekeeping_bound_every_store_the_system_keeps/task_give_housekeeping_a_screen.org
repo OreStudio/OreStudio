@@ -83,7 +83,15 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Scheduler suites | 3 of 3 pass, including 4 cases on the bounds row's mapping | =ctest -R '^ores.scheduler'= | 38626755d3 |
+| Wire cases for the two reads and the write | 8 of 8 pass | =npx vitest run src/housekeeping.test.ts= in =packages/wire-protocol= | 06ec6663a4 |
+| Route cases | 8 of 8 pass | =npx vitest run src/housekeeping.test.ts= in =packages/bff= | 06ec6663a4 |
+| Screen cases | 24 of 24 pass | =npx vitest run src/operations/housekeeping.test.tsx= in =packages/web= | 06ec6663a4 |
+| Web workspaces, whole suites | 1366, 24, 61, 2726 and 234 tests pass | =npm test= at =projects/ores.web= | 714d98da45 |
+| Stores the read answers on a recreated installation | 10, of which 6 bounded | =curl -b <cookie> /api/operations/housekeeping/stores= | 06ec6663a4 |
+| Size of the largest store, from one sampler pass | 296,919,040 bytes and 486,540 rows | =curl ... /stores/refdata.calendar_dates/samples?limit=5= | 06ec6663a4 |
+| The write, on a live installation | 200; the policy moved to version 2 at 45 days with its actor and reason, then back | =curl -X PUT ... /stores/marketdata.delivery_counts/policy= | 06ec6663a4 |
+| Local checks | 7 of 7 pass | =compass check --only web --only lint --only drift-sweep --only component-drift --only cmake-sources --only format= | 714d98da45 |
 
 * Notes
 

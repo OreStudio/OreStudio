@@ -241,6 +241,9 @@ select is(
 
 -- One sweep is one ran_at: the sweep writes now(), the transaction's instant, so
 -- the ledger's rows for one sweep share it.
+create temp table t_sweep_before on commit drop as
+select id from ores_inbox_notifications_tbl;
+
 insert into ores_scheduler_retention_runs_tbl (
     id, tenant_id, policy_code, action, target, ran_at, removed, outcome, detail)
 values
@@ -257,12 +260,18 @@ select is(
     1::bigint,
     'one sweep that leaves two policies unapplied raises one notice');
 
+-- The notice this call raised, not every sweep notice the installation holds:
+-- an installation that already reported a sweep is one this suite must still
+-- pass on.
+create temp table t_sweep_raised on commit drop as
+select id from ores_inbox_notifications_tbl
+where kind_code = 'scheduler.sweep_skipped'
+  and id not in (select id from t_sweep_before);
+
 select is(
     (select a.value
      from ores_inbox_notification_arguments_tbl a
-     join ores_inbox_notifications_tbl n
-       on n.tenant_id = a.tenant_id and n.id = a.notification_id
-     where n.kind_code = 'scheduler.sweep_skipped'
+     where a.notification_id in (select id from t_sweep_raised)
        and a.name = 'count'
        and a.valid_to = ores_utility_infinity_timestamp_fn()),
     '2',
@@ -275,11 +284,17 @@ values
      'drop_chunks', 'public.ores_marketdata_ticks_tbl', '2026-11-28 03:00:00+00',
      0, 'applied', '');
 
+do $$ begin perform ores_scheduler_raise_housekeeping_alerts_fn(); end $$;
+
 select is(
-    (select resolved from ores_scheduler_raise_housekeeping_alerts_fn()
-     where case_name = 'sweep'),
-    1::bigint,
+    (select count(*)
+     from ores_inbox_notification_recipients_tbl
+     where notification_id in (select id from t_sweep_raised)
+       and valid_to = ores_utility_infinity_timestamp_fn()
+       and cleared_at is null),
+    0::bigint,
     'a later sweep with nothing skipped clears the notice');
+
 
 select * from finish();
 rollback;

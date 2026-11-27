@@ -8,7 +8,7 @@
 #+filetags: :derive_term_indices_from_their_overnight_curves:sprint_31:v0:
 #+owner: marco
 #+branch: feature/annotate-a-derived-value-instead-of-naming-a-provider
-#+pr:
+#+pr: 5214
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-27
@@ -156,7 +156,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5214][#5214]] | [marketdata] State the computed term indices under their administrators |
 
 * Review
 

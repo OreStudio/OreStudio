@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :derive_term_indices_from_their_overnight_curves:ir:curves:sprint_31:v0:
 #+owner: marco
-#+branch: feature/show-the-fx-and-ir-fixings-on-a-fixings-screen
-#+pr: 5179
+#+branch: docs/close-the-fixings-screen-task
+#+pr: 5196
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
-#+updated: 2026-11-26
+#+updated: 2026-11-27
 #+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,12 +31,12 @@ an explanation, in the fixings manager that captures it: see
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
-| Now          | The operation, the aggregate read and the C++ route are built; the journey and prototype await sign-off. |
+| Now          | Shipped in =main= through [[https://github.com/OreStudio/OreStudio/pull/5196][#5196]]: the operation, the handler, the route on both servers and the screen. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 4: the screen, after the prototype's sign-off. |
-| Last touched | 2026-11-26                               |
+| Next         | Nothing. The naming the list still owes is captured. |
+| Last touched | 2026-11-27                               |
 
 * Acceptance
 
@@ -111,7 +111,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Commits that carry the screen into =main= | 5: a summary read, its route, a route on the gateway, the screen, the trail | =git log --oneline origin/main -- projects/ores.web/packages/web/src/marketdata/FixingObservationsPage.tsx projects/ores.web/packages/bff/src/fixing-observations.ts projects/ores.http/marketdata/src/routes/marketdata/fixing_series_routes.cpp projects/ores.marketdata/service/src/app/fixing_series_summaries.cpp= | 364007d989 |
+| Tests over the read and the screen | 2 of the handler, 2 of the route, 2 of the gateway route, 4 of the screen | =ores.http.marketdata.tests "[marketdata_views]"= — 196 assertions in 17 cases | 427ae4fcc3 |
 
 * Notes
 
@@ -130,7 +131,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/5179][#5179]] | [web] Show the fixing observations the platform states |
+| [[https://github.com/OreStudio/OreStudio/pull/5196][#5196]] | [marketdata] State each simulated fixing under its administrator — carried the screen into =main=, because it was cut from this task's branch |
+| [[https://github.com/OreStudio/OreStudio/pull/5179][#5179]] | [web] Show the fixing observations the platform states — closed as superseded by #5196 |
 
 * Review
 
@@ -139,3 +141,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The platform has a screen that answers what it states. *Market data › Fixing
+observations* lists one row per FX and IR fixing series the store holds: what it
+fixes, its class, the underlying, the source its values came from, the publisher,
+the value of its latest day, that day and the count of days. A row opens the
+fixing series page by the series' address, and the page's trail runs back through
+the list. A series that holds no day keeps its row and reads *no day* with a
+count of zero, because a series that ended is what an administrator asks about.
+The three filters are in the address, so a view can be sent to a colleague. No
+control on the screen edits, approves or overrides a fixing: the screen states
+observations, and the party's fixings manager is another screen.
+
+The read runs in the database, not over the wire. =fixing_series_summary= joins
+the series to its fixings once, left-joined so an empty series survives, and
+answers the latest value, the latest day and the count. The handler sits in
+=ores.marketdata= behind =market_fixings:read=, in the system tenant, and a
+route each on =ores.http= and on the gateway serve it at
+=/api/marketdata/fixing-observations=.
+
+It was built after its journey and its prototype, not before: the journey
+[[id:2B8F5C71-4A6D-4E39-9B12-6C7D0E3A5F84][See the fixing observations the platform states]]
+and the prototype [[id:7E4C2F58-3B91-42D0-8C6A-9F15E2B7D348][Fixing observations]]
+were signed off on 2026-11-26, and the screen's columns are the prototype's
+columns.
+
+Two pieces of work are left, and neither belongs to this task's acceptance.
+The list prints the publisher's *code* where the series page beside it prints the
+publisher's name, and it states the benchmark only inside the address; that is
+captured as
+[[file:doc/agile/product_backlog/inbox/the-fixings-list-states-the-publisher-by-code.org][The fixings list states the publisher by code, not by name]].
+The gate's own instrument for a screen, the browser harness and the sign-off
+sheet of [[id:BB919630-E0C1-42A6-965D-109EBE52227A][How do I sign off a screen?]],
+was not run: the screen was walked by hand, which produced the trail and the
+title change, and the sheet is owed to the story that finishes the fixing
+screens.

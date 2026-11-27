@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 63F499C7-D4E0-4A96-AC80-4948AC1DB1D8
+:END:
+#+title: The fixings list states the publisher by code, not by name
+#+description: The list shows the provider code (wmr, iba, mnb) rather than the administrator's name and the benchmark it states, so a reader of seventeen publishers cannot tell which benchmark a row belongs to.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:fixing:ux:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The *Fixing observations* screen states the publisher twice: the *Provider*
+column prints =provider_code= bare, and the *Source* column prints the source's
+code. On the seventeen administrators the catalogue installs, a row reads
+=wmr=, =iba=, =mnb=, =nbp=. The administrator's name, which
+=ores_marketdata_providers_tbl.name= holds, is on no screen. The benchmark a row
+belongs to is worse than hidden: it sits inside the address printed under the
+label, as =oresmd://fx/USD?type=fixing&index=fx&source=WMR1000NYC&ccy=COP=, so
+the reader decodes a query string to learn that the row is the New York 10:00
+cut.
+
+Two changes make the row say what it is:
+
+- *Provider* shows the name from =ores_marketdata_providers_tbl.name=, and the
+  code beside it in small type where the code is the vendor's own notation.
+- A *Stated by* cell joins the publisher's name to the benchmark it states,
+  read from the address: =WM/Reuters FX Benchmarks, New York 10:00= for a WM/R
+  cut, =ICE Benchmark Administration, LIBOR 3M= for a term fixing, whose
+  currency the row already states as its underlying. The cut's words are
+  already in =ores_refdata_cut_codes_tbl=, keyed by the =source= of the FX
+  address through =fixing_source_code=.
+
+* Why
+
+The architecture names an administrator as the publisher of each fixing, and
+the publisher work split the simulated fixings into one publisher per
+administrator. The screen is the surface that shows the split, so a code is the
+one thing a reader cannot use: seventeen two- and three-letter codes name no
+administrator to anyone who has not read the catalogue. The benchmark matters
+for the same reason: a WM/R fixing is stated at a time in a place, and the pair
+alone does not identify it.
+
+The list is also the screen a party's fixings manager will open from, so the
+naming decided here is the naming the manager inherits.
+
+The family is already inconsistent. The fixing series page a row opens names
+its publisher: =fixing_series_routes.cpp= reads the publishers and answers
+=publisher.name= beside the code, so the page a reader reaches by clicking a
+row says *ICE Benchmark Administration* where the row said =iba=. One read
+answers both, and the list is the one that has not asked.
+
+The read carries what the change needs. =fixing_series_summaries.cpp= selects
+=s.provider_code= and already parses the address into a label and a source
+filter, so the same parsing yields the benchmark; =ores_marketdata_providers_tbl=
+is joined on =code= for the name. The protocol field, the TypeScript wire type
+and the column follow from one field each.
+
+* References
+
+- =projects/ores.web/packages/web/src/marketdata/FixingObservationsPage.tsx= —
+  the *Provider* cell prints =series.provider_code=.
+- =projects/ores.marketdata/service/src/app/fixing_series_summaries.cpp= — the
+  query selects =s.provider_code= and parses the address.
+- =projects/ores.http/marketdata/src/routes/marketdata/fixing_series_routes.cpp=
+  — the series page's answer carries =publisher.code= and =publisher.name=,
+  joined from =list_publishers=.
+- =ores_marketdata_providers_tbl.name= — the administrator's name, installed per
+  publisher by =marketdata_fixing_publishers_catalogue_populate.sql=.
+- =ores_refdata_cut_codes_tbl= — the cut code, the words for its cut and the
+  =fixing_source_code= that the FX address carries.
+
+* See also
+
+- [[id:5D2A8C41-6E3B-47F0-9A28-1C4B7E9D3F62][The fixing screens and what each one is for]]
+- [[id:7E4C2F58-3B91-42D0-8C6A-9F15E2B7D348][Fixing observations, prototype]] — the
+  prototype shows the code in the same column, so this capture changes a
+  decision the prototype made rather than restoring one it lost.

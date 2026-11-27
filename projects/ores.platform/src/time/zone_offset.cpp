@@ -51,10 +51,8 @@ struct zone_type final {
 };
 
 std::uint32_t read_be32(const unsigned char* at) {
-    return (static_cast<std::uint32_t>(at[0]) << 24) |
-           (static_cast<std::uint32_t>(at[1]) << 16) |
-           (static_cast<std::uint32_t>(at[2]) << 8) |
-           static_cast<std::uint32_t>(at[3]);
+    return (static_cast<std::uint32_t>(at[0]) << 24) | (static_cast<std::uint32_t>(at[1]) << 16) |
+           (static_cast<std::uint32_t>(at[2]) << 8) | static_cast<std::uint32_t>(at[3]);
 }
 
 std::int64_t read_be64(const unsigned char* at) {
@@ -108,9 +106,8 @@ std::optional<bytes> read_zone_file(std::string_view iana_zone) {
 
 }
 
-std::optional<std::chrono::seconds> zone_offset_at(
-    std::string_view iana_zone,
-    std::chrono::system_clock::time_point instant) {
+std::optional<std::chrono::seconds> zone_offset_at(std::string_view iana_zone,
+                                                   std::chrono::system_clock::time_point instant) {
     const auto data = read_zone_file(iana_zone);
     if (!data)
         return std::nullopt;
@@ -143,8 +140,7 @@ std::optional<std::chrono::seconds> zone_offset_at(
     types.reserve(type_count);
     for (std::size_t i = 0; i < type_count; ++i) {
         const auto* entry = data->data() + types_at + i * 6;
-        types.push_back(zone_type{static_cast<std::int32_t>(read_be32(entry)),
-                                  entry[4] != 0});
+        types.push_back(zone_type{static_cast<std::int32_t>(read_be32(entry)), entry[4] != 0});
     }
 
     const auto transition_at = [&](std::size_t i) -> std::int64_t {
@@ -154,17 +150,16 @@ std::optional<std::chrono::seconds> zone_offset_at(
         return static_cast<std::int64_t>(static_cast<std::int32_t>(read_be32(entry)));
     };
 
-    const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(
-                             instant.time_since_epoch())
-                             .count();
+    const auto seconds =
+        std::chrono::duration_cast<std::chrono::seconds>(instant.time_since_epoch()).count();
 
     /// The type in force is the one the last transition at or before the instant
     /// names. Before the first transition a file describes, the first type that
     /// is not a daylight saving one applies.
     auto chosen = types.front();
     if (time_count == 0 || seconds < transition_at(0)) {
-        const auto standard = std::find_if(types.begin(), types.end(),
-                                           [](const zone_type& t) { return !t.isdst; });
+        const auto standard =
+            std::find_if(types.begin(), types.end(), [](const zone_type& t) { return !t.isdst; });
         if (standard != types.end())
             chosen = *standard;
     } else {

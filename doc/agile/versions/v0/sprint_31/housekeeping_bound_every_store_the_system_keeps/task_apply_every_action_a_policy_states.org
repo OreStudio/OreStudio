@@ -8,7 +8,7 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch: feature/apply-every-action-a-policy-states
-#+pr: 5164
+#+pr: 5181
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-26
@@ -113,6 +113,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5181][#5181]] | [scheduler] Apply the actions a database can perform, and say who owns the rest |
 | [[https://github.com/OreStudio/OreStudio/pull/5164][#5164]] | [agile] Scaffold the task that applies every action a policy states |
 
 * Review

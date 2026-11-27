@@ -28,8 +28,6 @@
  *
  *   USD SOFR 1M      compounded over the overnight curve
  *   COP IBR 3M       compounded over the overnight curve
- *   JPY EYTIBOR 3M   TONA plus a stated spread
- *   KRW GENERIC 3M   KOFR plus a stated spread
  *   PLN WIBOR 6M     POLONIA plus a stated spread
  *
  * A compounded index is the overnight rate both curves already agree on, so it
@@ -39,7 +37,7 @@
  *
  * The rows are staged as artefact rows of the dataset, as every other generated
  * feed is, and the dataset publish writes them into the system tenant's system
- * party under the Derived provider: one collection of its own, holding the five
+ * party under the Derived provider: one collection of its own, holding the three
  * term indices beside the overnight curves they read. A derived index reads a
  * curve, it does not run one, so it has no process of its own; the entity still
  * requires the four columns of a Vasicek shape, and the feed never reads them.
@@ -140,12 +138,6 @@ begin
         ('COP', 'ibr',      '3M', 'compounded_overnight', 0.0, 0.0900,
          null::text,
          'Term IBR at 3M: the compounded overnight IBR of its curve over the term, as the ACCOHK cross-currency legs fix.'),
-        ('JPY', 'eytibor',  '3M', 'overnight_plus_spread', 10.0, 0.0025,
-         'Market convention: EYTIBOR 3M quoted over TONA, at the spread the yen cross-currency legs of ACCOHK are booked at.',
-         'EYTIBOR at 3M: TONA plus its stated spread, as the ACCOHK cross-currency legs fix.'),
-        ('KRW', 'generic',  '3M', 'overnight_plus_spread', 15.0, 0.0280,
-         'Market convention: the generic 3M interbank rate of the won quoted over KOFR.',
-         'The generic KRW term index at 3M: KOFR plus its stated spread, as the ACCOHK cross-currency legs fix.'),
         ('PLN', 'wibor',    '6M', 'overnight_plus_spread', 20.0, 0.0550,
          'Market convention: WIBOR 6M quoted over POLONIA.',
          'WIBOR at 6M: POLONIA plus its stated spread, as the ACCOHK cross-currency legs fix.')

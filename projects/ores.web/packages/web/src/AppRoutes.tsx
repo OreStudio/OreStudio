@@ -74,6 +74,7 @@ import {
 import { ServicesPage } from './operations/ServicesPage.js';
 import { ConnectivityPage } from './marketdata/ConnectivityPage.js';
 import { IdentityShapePage, IdentityShapesPage } from './marketdata/IdentityShapesPage.js';
+import { FixingObservationsPage } from './marketdata/FixingObservationsPage.js';
 import { FixingSeriesPage } from './marketdata/FixingSeriesPage.js';
 import { MarketDataFeedsPage } from './operations/MarketDataFeedsPage.js';
 import { PublicRatesPage } from './marketdata/PublicRatesPage.js';
@@ -654,6 +655,18 @@ export function AppRoutes({
                     shell,
                     () => (
                         <IdentityShapePage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.fixingObservations}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <FixingObservationsPage />
                     ),
                     'workspace',
                 )}

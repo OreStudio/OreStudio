@@ -295,11 +295,13 @@ set(files
     "vendor/bloomberg_notation.cpp"
     "vendor/demo_notation.cpp"
     "vendor/derived_notation.cpp"
+    "vendor/fixing_setting_notation.cpp"
     "vendor/ice_notation.cpp"
     "vendor/lseg_notation.cpp"
     "vendor/provider_notation.cpp"
     "vendor/simulated_fixing_notation.cpp"
     "vendor/tradeweb_notation.cpp"
+    "vendor/wmr_cut_notation.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -634,10 +636,12 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/bloomberg_notation.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/demo_notation.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/derived_notation.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/fixing_setting_notation.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/ice_notation.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/lseg_notation.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/provider_notation.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/quote_description.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/simulated_fixing_notation.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/tradeweb_notation.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.core/vendor/wmr_cut_notation.hpp"
 )

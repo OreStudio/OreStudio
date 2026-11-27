@@ -53,6 +53,7 @@ import { registerScriptedBookingRoutes } from './scripted-booking.js';
 import { registerAdapterRoutes } from './adapters.js';
 import { registerPublicRatesRoutes } from './public-rates.js';
 import { registerConnectivityRoutes } from './connectivity.js';
+import { registerFixingObservationRoutes } from './fixing-observations.js';
 import { registerFixingSeriesRoutes } from './fixing-series.js';
 import { registerSubscriptionRoutes } from './subscriptions.js';
 import { registerOresmdRoutes } from './oresmd.js';
@@ -2718,6 +2719,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
     registerPublicRatesRoutes(server, requireSession);
     registerConnectivityRoutes(server, requireSession);
     registerFixingSeriesRoutes(server, requireSession);
+    registerFixingObservationRoutes(server, requireSession);
     registerOresmdRoutes(server, requireSession);
     registerSeriesRoutes(server, requireSession);
     registerMarketReadRoutes(server, requireSession);

@@ -52,8 +52,6 @@ select md5('derived' || '|' || 'oresmd' || '|' || d.item || '|' || 'value')::uui
 from (values
     ('oresmd://ir/USD?type=fixing&index=ibor&name=SOFR&tenor=1M'),
     ('oresmd://ir/COP?type=fixing&index=ibor&name=IBR&tenor=3M'),
-    ('oresmd://ir/JPY?type=fixing&index=ibor&name=EYTIBOR&tenor=3M'),
-    ('oresmd://ir/KRW?type=fixing&index=ibor&name=GENERIC&tenor=3M'),
     ('oresmd://ir/PLN?type=fixing&index=ibor&name=WIBOR&tenor=6M')
 ) as d(item)
 where not exists (

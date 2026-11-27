@@ -30,6 +30,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
+import { PATHS } from '../shell/paths.js';
 import { Detail, Notice, PageHeader } from '../ui/Primitives.js';
 import { LineChart, SERIES_COLOURS } from './LineChart.js';
 
@@ -40,19 +41,50 @@ export function FixingSeriesPage(): ReactNode {
     const { t } = useTranslation();
     const [params] = useSearchParams();
     const uri = params.get('uri') ?? '';
+    const label = params.get('label') ?? '';
+    /*
+     * The page states the item, not the shape of the page: a reader arrives
+     * from a list that named the item, so the name they clicked is the name the
+     * page and the trail keep. The URI stands in for a name an address did not
+     * carry, because a name invented here would be a different one.
+     */
+    const item = label !== '' ? label : uri;
+    const isFixing = uri.includes('type=fixing');
     const query = useQuery({
         queryKey: ['fixing-series', uri],
         queryFn: () => api.fixingSeries(uri),
         enabled: uri !== '',
     });
-    const trail = <AreaTrail area="marketdata" screen={t('marketdata.fixingSeries.title')} />;
+    const trail =
+        uri === '' ? (
+            <AreaTrail area="marketdata" screen={t('marketdata.fixingSeries.title')} />
+        ) : (
+            <AreaTrail
+                area="marketdata"
+                steps={
+                    isFixing
+                        ? [
+                              {
+                                  label: t('marketdata.fixingObservations.title'),
+                                  to: PATHS.fixingObservations,
+                              },
+                          ]
+                        : []
+                }
+                screen={item}
+            />
+        );
+    const back = isFixing ? PATHS.fixingObservations : '/market-data';
+    const backLabel = isFixing
+        ? t('marketdata.fixingSeries.backToObservations')
+        : t('marketdata.fixingSeries.back');
     const data = query.data;
     return (
         <div className="space-y-6">
             <div>
                 {trail}
                 <PageHeader
-                    title={t('marketdata.fixingSeries.title')}
+                    title={uri === '' ? t('marketdata.fixingSeries.title') : item}
                     description={t('marketdata.fixingSeries.lead')}
                 />
             </div>
@@ -98,9 +130,7 @@ export function FixingSeriesPage(): ReactNode {
                         ) : (
                             <>
                                 <LineChart
-                                    label={t('marketdata.fixingSeries.chart', {
-                                        item: data.publisher?.name ?? data.series.provider_code,
-                                    })}
+                                    label={t('marketdata.fixingSeries.chart', { item })}
                                     xs={(data.values?.rows ?? []).map((row) =>
                                         Date.parse(`${row.date}T12:00:00Z`),
                                     )}
@@ -206,8 +236,8 @@ export function FixingSeriesPage(): ReactNode {
                     </section>
                 </>
             )}
-            <Link to="/market-data" className="text-sm text-accent hover:underline">
-                {t('marketdata.fixingSeries.back')}
+            <Link to={back} className="text-sm text-accent hover:underline">
+                {backLabel}
             </Link>
         </div>
     );

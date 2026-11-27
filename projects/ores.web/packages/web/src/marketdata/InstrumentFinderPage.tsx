@@ -23,7 +23,7 @@ import { Link, useSearchParams } from 'react-router';
 import { api, type MarketInstrument } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
-import { PATHS } from '../shell/paths.js';
+import { PATHS, fixingSeriesPath } from '../shell/paths.js';
 import { useReadParty } from './readScreen.js';
 import { Fact, Field, Input, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
 import { relativeTime } from '../ui/Time.js';
@@ -89,7 +89,7 @@ function destination(instrument: MarketInstrument): string | undefined {
                 ? undefined
                 : `${PATHS.rateLadder}?ccy=${instrument.currency}`;
         case 'fixing':
-            return uri === '' ? undefined : `${PATHS.fixingSeries}?uri=${encodeURIComponent(uri)}`;
+            return uri === '' ? undefined : fixingSeriesPath(uri, instrument.name);
         default:
             return undefined;
     }

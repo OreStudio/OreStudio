@@ -166,18 +166,10 @@ values
      'Hungarian forint overnight index average.',
      true, false, '',
      32, current_user, current_user, 'system.initial_load', 'Initial population of IR curve index families'),
-    (ores_utility_system_tenant_id_fn(), 'eytibor', 0, 'EYTIBOR',
-     'Tokyo interbank offered rate for the yen: a term index quoted over TONA, with no overnight form of its own.',
-     false, true, '',
-     33, current_user, current_user, 'system.initial_load', 'Initial population of IR curve index families'),
     (ores_utility_system_tenant_id_fn(), 'wibor', 0, 'WIBOR',
      'Warsaw interbank offered rate for the zloty: a term index quoted over POLONIA, with no overnight form of its own.',
      false, true, '',
-     34, current_user, current_user, 'system.initial_load', 'Initial population of IR curve index families'),
-    (ores_utility_system_tenant_id_fn(), 'generic', 0, 'GENERIC',
-     'The generic interbank term index of a currency whose own name no publisher states, quoted over that currency''s overnight average.',
-     false, true, '',
-     35, current_user, current_user, 'system.initial_load', 'Initial population of IR curve index families')
+     34, current_user, current_user, 'system.initial_load', 'Initial population of IR curve index families')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

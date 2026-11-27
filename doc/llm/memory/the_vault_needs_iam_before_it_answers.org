@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: B44CE8D1-7A14-4C4A-B15E-7475765CA99C
+:END:
+#+title: The vault needs IAM before it answers
+#+description: The vault fetches its token-verification keys from IAM before it subscribes, so IAM must start first, so neither IAM nor the vault can resolve its own database password from the vault.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :vault:iam:startup:security:memory:feedback:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+
+A service cannot take its database password from the vault unless the vault is
+answering, so the start order is IAM, then the vault, then everything that
+resolves. Two units keep a credential file because of it: the vault, which would
+have to answer its own request, and IAM, which has to exist before the vault
+does.
+
+*Why:* =ores.service='s runner fetches the keys that verify tokens from IAM
+before it registers any subscription, and it retries until IAM answers. The
+vault is one of those services, so it blocks on IAM. Removing the vault's
+=depends_on: ores.iam.service= to let the vault start first therefore stopped the
+whole fleet: the vault came up, waited for JWKS for ever, and the units behind it
+timed out. Measured on 2026-11-27, in environment brave_hopper, mid-way through
+moving the service passwords into the vault.
+
+*How to apply:* Before changing any =depends_on= in
+=projects/modeling/service_registry.org= that involves =ores.vault.service= or
+=ores.iam.service=, check which service fetches JWKS from which. Before giving a
+unit =ORES_VAULT_CONSUMER=, check that the vault can already answer when that
+unit starts; if it cannot, the unit keeps its credential file. The units that
+resolve are ordered after the vault with =After= alone, because the resolver
+falls back rather than failing the start.

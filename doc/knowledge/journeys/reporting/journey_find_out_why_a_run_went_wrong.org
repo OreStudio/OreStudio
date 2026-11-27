@@ -63,9 +63,12 @@ because one error rarely tells the story on its own.
    names who asked for it. The screen shows the collection time once, in the
    header, and the rows share it.
 2. *Read the shape of the run before reading a row.* The summary counts the
-   errors by severity, by scope and by phase. Severities are exactly =error= and
-   =warning=. Scopes are exactly =Trade=, =Analytics=, =Curve=, =Configuration=
-   and =Report=. Phases are exactly =preprocess=, =engine= and =postprocess=. The counts are the first diagnosis, because the same report
+   errors by severity and by scope, and the run the errors belong to states how
+   many of its problems each phase recorded, so the list of runs says where a
+   run's failures came from before a person opens it. Severities are exactly
+   =error= and =warning=. Scopes are exactly =Trade=, =Analytics=, =Curve=,
+   =Configuration= and =Report=. The phases are exactly =preprocess=, =engine=
+   and =postprocess=. The counts are the first diagnosis, because the same report
    produced two shapes. A clean run of it recorded eleven rows: eight
    =Analytics= errors and three =Configuration= warnings. The run whose market
    data was removed recorded twenty: one =Curve= error, sixteen =Trade= errors

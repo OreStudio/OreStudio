@@ -96,9 +96,6 @@ std::optional<query_builder::condition> report_error_event_filter_condition(
     if (filter->report_instance_id)
         r.push_back(query_builder::equals(
             "report_instance_id", query_builder::filter_value(*filter->report_instance_id)));
-    if (filter->phase_code)
-        r.push_back(
-            query_builder::equals("phase_code", query_builder::filter_value(*filter->phase_code)));
     if (filter->severity)
         r.push_back(
             query_builder::equals("severity", query_builder::filter_value(*filter->severity)));
@@ -113,12 +110,6 @@ std::optional<query_builder::condition> report_error_event_filter_condition(
         for (const auto& v : *filter->report_instance_id_one_of)
             values.push_back(query_builder::filter_value(v));
         r.push_back(query_builder::one_of("report_instance_id", std::move(values)));
-    }
-    if (filter->phase_code_one_of) {
-        std::vector<query_builder::value> values;
-        for (const auto& v : *filter->phase_code_one_of)
-            values.push_back(query_builder::filter_value(v));
-        r.push_back(query_builder::one_of("phase_code", std::move(values)));
     }
     if (filter->severity_one_of) {
         std::vector<query_builder::value> values;
@@ -519,8 +510,9 @@ report_error_event_repository::read_counts_by_report_instance_ids(
 
     // The store answers one row per phase and the caller asked for one per run,
     // so a run's phases are folded into its own row as they arrive. The order
-    // the statement states keeps a run's phases in one stretch, which is what
-    // makes the fold a lookup rather than a search.
+    // the statement states is what makes the phases of a run arrive together and
+    // in one order, so the entries of a row read the same way every time; the
+    // index below is what finds the row they belong to.
     std::vector<messaging::report_error_count> counts;
     std::map<boost::uuids::uuid, std::size_t> row_of_run;
     for (const auto& row : rows) {

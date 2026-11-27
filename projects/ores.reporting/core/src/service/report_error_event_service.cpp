@@ -142,13 +142,6 @@ messaging::list_report_error_events_response report_error_event_service::list_re
                    {.field = "report_instance_id_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
-    if (request.filter && request.filter->phase_code_one_of &&
-        request.filter->phase_code_one_of->size() > max_batch_size) {
-        response.result =
-            refuse(outcome_code::filter_too_large,
-                   {.field = "phase_code_one_of", .limit = std::to_string(max_batch_size)});
-        return response;
-    }
     if (request.filter && request.filter->severity_one_of &&
         request.filter->severity_one_of->size() > max_batch_size) {
         response.result =
@@ -183,13 +176,6 @@ report_error_event_service::list_by_report_instance_id_report_error_events(
         response.result =
             refuse(outcome_code::filter_too_large,
                    {.field = "report_instance_id_one_of", .limit = std::to_string(max_batch_size)});
-        return response;
-    }
-    if (request.filter && request.filter->phase_code_one_of &&
-        request.filter->phase_code_one_of->size() > max_batch_size) {
-        response.result =
-            refuse(outcome_code::filter_too_large,
-                   {.field = "phase_code_one_of", .limit = std::to_string(max_batch_size)});
         return response;
     }
     if (request.filter && request.filter->severity_one_of &&

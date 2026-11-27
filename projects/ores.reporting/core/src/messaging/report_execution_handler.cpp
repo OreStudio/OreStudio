@@ -923,8 +923,8 @@ void report_execution_handler::collect_results(ores::nats::delivery delivery) {
 
     // One way out of this step, so a run that cannot collect its results is
     // recorded as failed rather than left looking like one still working. The
-    // step is postprocessing, and the one failure it states that is not its own
-    // is the engine's, which the caller names.
+    // step's own failures are postprocessing, which is what a refusal states
+    // unless it names another, and the engine's own verdict is the one it names.
     const auto refuse = [&](const std::string& failure,
                             domain::run_phase phase = domain::run_phase::postprocess) {
         mark_instance_failed(req.tenant_id, req.report_instance_id, failure, phase);
@@ -1126,7 +1126,7 @@ void report_execution_handler::post_process_results(ores::nats::delivery deliver
                              << req.report_instance_id << " batch=" << req.batch_id;
 
     // As in the collection of the results, the step's own failures are
-    // postprocessing and the engine's own verdict is the engine's.
+    // postprocessing and the engine's own verdict is the one it names.
     const auto refuse = [&](const std::string& failure,
                             domain::run_phase phase = domain::run_phase::postprocess) {
         mark_instance_failed(req.tenant_id, req.report_instance_id, failure, phase);

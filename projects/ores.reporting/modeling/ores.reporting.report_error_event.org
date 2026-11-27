@@ -13,7 +13,7 @@
 #+entity_plural: report_error_events
 #+entity_title: Report Error Event
 #+created: 2026-10-16
-+#+updated: 2026-10-17
++#+updated: 2026-11-27
 
 One error a report run produced, held against the run. A report run is one
 execution of a report definition, and a run whose analytics fail is still a run
@@ -37,13 +37,15 @@ own act, and storing the engine's text as a timestamp here would put two
 different facts in one column. A story that needs the engine's instant adds a
 column for it.
 
-A row says four things: how bad the error is, what it is about, what it said,
-and which subject it names. The first is =severity=. The second is =scope_code=,
-drawn from the engine's own vocabulary, and it is what places the error:
-=Trade= on the trade, =Analytics= on the analytic, =Curve= on the curve, and
-=Report= on the run itself. The third is =message=, the engine's own words.
+A row says five things: how bad the error is, what it is about, which part of
+the run produced it, what it said, and which subject it names. The first is
+=severity=. The second is =scope_code=, drawn from the engine's own vocabulary,
+and it is what places the error: =Trade= on the trade, =Analytics= on the
+analytic, =Curve= on the curve, and =Report= on the run itself. The third is
+=phase_code=, the platform's own word for the part of the run that was working,
+and the fourth is =message=, the engine's own words.
 
-The fourth is =subject= and =subject_id=, a discriminator and a value, holding
+The fifth is =subject= and =subject_id=, a discriminator and a value, holding
 the identifier of the thing the error names: =trade= and a trade id,
 =analytic= and an analytic type, =curve= and a curve id. It is a discriminator
 and a value rather than one column because the ids are of different kinds — a
@@ -160,7 +162,6 @@ std::string("Report")
 :type:     text
 :cpp_type: std::string
 :nullable: false
-:filterable: true
 :END:
 
 Which part of the run produced the error: =preprocess=, =engine= or
@@ -168,8 +169,9 @@ Which part of the run produced the error: =preprocess=, =engine= or
 beside =scope_code= rather than inside it: the engine states what an error is
 about, and the platform states where it was when the error happened. The column
 is =phase_code= rather than =phase= because it holds a code drawn from a stated
-vocabulary, as =scope_code= does. It is filterable, so a screen opens the errors
-of one phase and reads no others.
+vocabulary, as =scope_code= does. It is not a filter of the generated read: a
+screen reads a run's errors and groups them, and a read of one phase would be a
+second way to ask a question the rows already answer.
 
 A synthetic row states =preprocess=, which is the phase the =Report= scope it
 also states belongs to.
@@ -713,8 +715,9 @@ report_error_event_repository::read_counts_by_report_instance_ids(
 
     // The store answers one row per phase and the caller asked for one per run,
     // so a run's phases are folded into its own row as they arrive. The order
-    // the statement states keeps a run's phases in one stretch, which is what
-    // makes the fold a lookup rather than a search.
+    // the statement states is what makes the phases of a run arrive together and
+    // in one order, so the entries of a row read the same way every time; the
+    // index below is what finds the row they belong to.
     std::vector<messaging::report_error_count> counts;
     std::map<boost::uuids::uuid, std::size_t> row_of_run;
     for (const auto& row : rows) {

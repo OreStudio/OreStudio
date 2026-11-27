@@ -58,11 +58,9 @@ struct report_error_event_lookup {
 
 struct report_error_events_filter {
     std::optional<boost::uuids::uuid> report_instance_id;
-    std::optional<std::string> phase_code;
     std::optional<std::string> severity;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> report_instance_id_one_of;
-    std::optional<std::vector<std::string>> phase_code_one_of;
     std::optional<std::vector<std::string>> severity_one_of;
 
     friend bool operator==(const report_error_events_filter&,
@@ -316,12 +314,10 @@ inline constexpr std::string_view deleted = "reporting.v1.events.report_error_ev
     return ::ores::utility::codec::field_list{
         utility::codec::field{"report_instance_id",
                               &report_error_events_filter::report_instance_id},
-        utility::codec::field{"phase_code", &report_error_events_filter::phase_code},
         utility::codec::field{"severity", &report_error_events_filter::severity},
         utility::codec::field{"id_one_of", &report_error_events_filter::id_one_of},
         utility::codec::field{"report_instance_id_one_of",
                               &report_error_events_filter::report_instance_id_one_of},
-        utility::codec::field{"phase_code_one_of", &report_error_events_filter::phase_code_one_of},
         utility::codec::field{"severity_one_of", &report_error_events_filter::severity_one_of},
     };
 }

@@ -136,7 +136,20 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The per-phase split is answered by the store and dropped by both surfaces, so no screen can read it | =report_error_event.org=, =reporting.ts=, =report_routes.cpp= | Fixed | The split travels on the run a screen lists, and the list states the phases under each count. |
+| 2 | The =phase_code= filters are a public read nobody calls | =report_error_event_protocol.hpp=, =report_error_event_repository.cpp= | Fixed | The column is no longer filterable, the filters are gone, and the model states why a read of one phase is a second way to ask what the rows answer. |
+| 3 | The new domain test does not follow the unit test conventions | =domain_run_phase_tests.cpp= | Fixed | The file states its suite and its tags, logs each case and opens with a =@file= block. |
+| 4 | The phase is typed as any string in the browser | =report-runs.ts=, =reporting.ts= | Fixed | =reportPhaseSchema= is a closed enumeration, and both the error row and the run's split use it. |
+| 5 | The journey claims the summary counts by phase, and it does not | =journey_find_out_why_a_run_went_wrong.org= | Fixed | The step states what the summary counts and what the run states per phase. |
+| 6 | The vocabulary is spelled five times: the model check, the DDL, the enum and two walks of it | =run_phase.cpp=, model, DDL | Partly fixed | The two walks are one table now. The check and the DDL stay codegen's one source, and the enum is the C++ side of it; a lookup table would remove the last copy at the price of a screen, a service and a permission code for three rows. |
+| 7 | The two refusal lambdas default to postprocessing, which contradicts the doc that the caller states the phase | =report_execution_handler.cpp= | Kept | The default is the step's own phase by construction, and a refusal of the collecting or loading step is postprocessing. The comment says so now, and the engine's verdict is the one the caller names. |
+| 8 | Eleven identical =fail_report_from= hunks re-edit one fact per step | =report_execution_workflow.hpp= | Kept | The phase belongs to the reporting step that states it. Putting it on =workflow_step_def= would put this component's vocabulary into =ores.workflow=, for every workflow. |
+| 9 | =mark_instance_failed= takes four parameters that travel together | =report_execution_handler.cpp= | Kept | A private method of one class, and the four are its whole account of a failure. A bundle type would be a name for the same four. |
+| 10 | Two test names state a behaviour the compensation does not have | =workflow_report_execution_tests.cpp= | Fixed | They name what they pin: the phase of the step a compensation rolls back, and the phase of the step that refused. |
+| 11 | The fold comment says the ORDER BY makes the fold a lookup | =report_error_event.org= | Fixed | The order is what makes a run's phases arrive together in one order; the index is what finds the row. |
+| 12 | The design page still says a row states four things, and its date did not move | =report_error_event.org= | Fixed | A row states five things, the phase is the third, and the date moved. |
+| 13 | The reporting schema render is older than the column | =ores_schema.reporting.svg= | Fixed | Redrawn with the build's own PlantUML. |
+| 14 | The compensation's phase is unsound for a step that dies without a word | =report_execution_workflow.hpp=, =workflow_engine.cpp= | Kept | The engine compensates only the steps that completed and states no failing step, so the platform cannot know which one it was. The model, the plan, the Result and the PR's limitations say so. |
 
 * Result
 
@@ -154,5 +167,9 @@ store checks them: =preprocess=, =engine= and =postprocess=.
   postprocessing would look in the wrong place for it.
 - The compensation states the phase of the step it rolls back, because the
   engine compensates only the steps that completed and never the failing one.
-- A read answers a run's problems split by phase beside its totals, and the
-  screen shows the phase of every row and searches it.
+- A read answers a run's problems split by phase beside its totals, and both
+  the row and the run the list draws state it: the row states its phase, and
+  the run states how many of its problems each phase recorded.
+- A phase is not a filter of the generated read. A screen reads a run's errors
+  and groups them, and a read of one phase would be a second way to ask what
+  the rows already answer.

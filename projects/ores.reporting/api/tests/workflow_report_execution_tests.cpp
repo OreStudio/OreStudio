@@ -326,7 +326,8 @@ msg::fail_report_request compensation_of(const svc::workflow_step_def& step,
 
 }
 
-TEST_CASE("every step fails the run in the phase the step belongs to", "[workflow][reporting]") {
+TEST_CASE("every step's compensation states the phase of the step it rolls back",
+          "[workflow][reporting]") {
     const auto json = run_request("execute", "", "execute");
     const auto steps = steps_for(json);
     const auto prev = results_along_the_chain();
@@ -357,7 +358,7 @@ TEST_CASE("every step fails the run in the phase the step belongs to", "[workflo
     }
 }
 
-TEST_CASE("a run that ignores its results fails in the phases it does have",
+TEST_CASE("a run that ignores its results states the phase of the step that refused",
           "[workflow][reporting]") {
     const auto json = run_request("execute", "", "ignore");
     const auto steps = steps_for(json);
@@ -371,7 +372,8 @@ TEST_CASE("a run that ignores its results fails in the phases it does have",
     CHECK(req.phase_code == "postprocess");
 }
 
-TEST_CASE("a run that substitutes its input fails in preprocessing", "[workflow][reporting]") {
+TEST_CASE("a run that substitutes its input states preprocessing when it refuses",
+          "[workflow][reporting]") {
     const auto json = run_request("substitute", "prepared/input.tar.gz", "execute");
     const auto steps = steps_for(json);
     REQUIRE(steps.front().name == "resolve_prepared_input");

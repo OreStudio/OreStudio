@@ -24,7 +24,7 @@
  *
  * Report Error Event Table
  *
- * +#+updated: 2026-10-17
+ * +#+updated: 2026-11-27
  *
  * One error a report run produced, held against the run. A report run is one
  * execution of a report definition, and a run whose analytics fail is still a run
@@ -48,13 +48,15 @@
  * different facts in one column. A story that needs the engine's instant adds a
  * column for it.
  *
- * A row says four things: how bad the error is, what it is about, what it said,
- * and which subject it names. The first is severity. The second is scope_code,
- * drawn from the engine's own vocabulary, and it is what places the error:
- * Trade on the trade, Analytics on the analytic, Curve on the curve, and
- * Report on the run itself. The third is message, the engine's own words.
+ * A row says five things: how bad the error is, what it is about, which part of
+ * the run produced it, what it said, and which subject it names. The first is
+ * severity. The second is scope_code, drawn from the engine's own vocabulary,
+ * and it is what places the error: Trade on the trade, Analytics on the
+ * analytic, Curve on the curve, and Report on the run itself. The third is
+ * phase_code, the platform's own word for the part of the run that was working,
+ * and the fourth is message, the engine's own words.
  *
- * The fourth is subject and subject_id, a discriminator and a value, holding
+ * The fifth is subject and subject_id, a discriminator and a value, holding
  * the identifier of the thing the error names: trade and a trade id,
  * analytic and an analytic type, curve and a curve id. It is a discriminator
  * and a value rather than one column because the ids are of different kinds — a

@@ -441,35 +441,42 @@ if(configure_result EQUAL 0 AND build_result EQUAL 0)
         ctest_memcheck(PARALLEL_LEVEL ${nproc} EXCLUDE_LABEL web RETURN_VALUE test_result)
     else()
         ctest_test(PARALLEL_LEVEL ${nproc} RETURN_VALUE test_result)
-        # CDash shows one entry per ctest test, and each suite is one test,
-        # so a failed suite names no case. The suites already write their
-        # Catch2 results, so the script turns each suite's entry in Test.xml
-        # into one entry per case before the submit. The suites still run as
-        # one process each. Without Python the suite entries are submitted.
-        #
-        # One Test.xml with every case is tens of megabytes, and CDash drops
-        # it while processing it. The script therefore also writes one file
-        # per subproject, and the final submit sends those instead.
-        find_program(ores_python NAMES python3 python)
-        file(STRINGS "${CTEST_BINARY_DIRECTORY}/Testing/TAG" testing_tag LIMIT_COUNT 1)
-        set(test_xml "${CTEST_BINARY_DIRECTORY}/Testing/${testing_tag}/Test.xml")
-        set(split_dir "${CTEST_BINARY_DIRECTORY}/Testing/${testing_tag}/subprojects")
-        if(ores_python AND EXISTS "${test_xml}")
-            file(REMOVE_RECURSE "${split_dir}")
-            execute_process(
-                COMMAND ${ores_python}
-                    "${CTEST_SOURCE_DIRECTORY}/build/scripts/expand_catch2_cases.py"
-                    "${test_xml}" --split "${split_dir}"
-                RESULT_VARIABLE expand_result)
-            if(NOT expand_result EQUAL 0)
-                message(WARNING "Could not expand the Catch2 cases in ${test_xml} "
-                    "(exit code: ${expand_result}); CDash shows one entry per suite.")
-            elseif(EXISTS "${split_dir}/files.txt")
-                file(STRINGS "${split_dir}/files.txt" subproject_test_files)
-            endif()
-        else()
-            message(WARNING "No Python or no ${test_xml}; CDash shows one entry per suite.")
+    endif()
+
+    # Every leg splits: CDash shows one entry per ctest test, and each suite is
+    # one test, so a failed suite names no case. The suites already write their
+    # Catch2 results, so the script turns each suite's entry in Test.xml into
+    # one entry per case before the submit, whatever the run wrapped them in.
+    # The suites still run as one process each. Without Python the suite
+    # entries are submitted.
+    #
+    # A memcheck entry carries valgrind's own verdict on the suite, and the
+    # cases carry Catch2's: one case failing under valgrind reports as that
+    # case, while a suite whose cases all pass and whose valgrind log does not
+    # stays one entry, because its cases cannot account for it.
+    #
+    # One Test.xml with every case is tens of megabytes, and CDash drops it
+    # while processing it. The script therefore also writes one file per
+    # subproject, and the final submit sends those instead.
+    find_program(ores_python NAMES python3 python)
+    file(STRINGS "${CTEST_BINARY_DIRECTORY}/Testing/TAG" testing_tag LIMIT_COUNT 1)
+    set(test_xml "${CTEST_BINARY_DIRECTORY}/Testing/${testing_tag}/Test.xml")
+    set(split_dir "${CTEST_BINARY_DIRECTORY}/Testing/${testing_tag}/subprojects")
+    if(ores_python AND EXISTS "${test_xml}")
+        file(REMOVE_RECURSE "${split_dir}")
+        execute_process(
+            COMMAND ${ores_python}
+                "${CTEST_SOURCE_DIRECTORY}/build/scripts/expand_catch2_cases.py"
+                "${test_xml}" --split "${split_dir}"
+            RESULT_VARIABLE expand_result)
+        if(NOT expand_result EQUAL 0)
+            message(WARNING "Could not expand the Catch2 cases in ${test_xml} "
+                "(exit code: ${expand_result}); CDash shows one entry per suite.")
+        elseif(EXISTS "${split_dir}/files.txt")
+            file(STRINGS "${split_dir}/files.txt" subproject_test_files)
         endif()
+    else()
+        message(WARNING "No Python or no ${test_xml}; CDash shows one entry per suite.")
     endif()
     if(NOT test_result EQUAL 0)
         message(WARNING "Tests failed with error code: ${test_result}")

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-27
 #+updated: 2026-11-27
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Give CDash one entry per Catch2 case on the memcheck legs too, so every leg repo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-27                               |
 
 * Acceptance
@@ -39,9 +39,8 @@ Give CDash one entry per Catch2 case on the memcheck legs too, so every leg repo
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Move the expansion step out of the branch that runs =ctest_test=, so it runs
+after either test step, and leave the script's rules alone.
 
 * Measurements
 
@@ -55,7 +54,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Entries the debug leg submits today | 112 suites and 1 not run, against 30,457 cases on the release leg | =my.cdash.org/api/v1/index.php?project=OreStudio&date=2026-11-27= | 71dd9efbe41e |
+| A memcheck-shaped entry through the script | 1 suite expanded into 6 cases, with valgrind in the command line | =expand_catch2_cases.py= on a hand-built Test.xml | HEAD |
+| The same entry with the suite failed and its cases passing | 0 suites expanded, so the suite entry stays | same | HEAD |
 
 * Notes
 
@@ -83,3 +84,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+Every leg now splits its results. The expansion step used to sit inside the
+branch that runs =ctest_test=, so the memcheck legs submitted one entry per
+suite: =linux-clang-debug-ninja= reports 112 entries where =linux-clang-release=
+reports 30,457 cases.
+
+The script needed no change. It reads the suite's command line for the path its
+Catch2 results were written to, and a valgrind command line carries that path
+like any other. Two rules still hold the suite-level entry where the cases
+cannot account for it, which is what a valgrind defect on an otherwise passing
+suite looks like.
+
+Verified locally: a hand-built memcheck entry expands into its six cases, and
+the same entry with the suite failed and every case passing stays one entry.
+The CMake configure is clean.

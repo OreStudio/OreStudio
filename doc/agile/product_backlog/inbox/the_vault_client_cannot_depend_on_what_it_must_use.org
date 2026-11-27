@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: 5E641F0A-5904-4BB4-908E-219BC7EB01DE
+:END:
+#+title: The vault client cannot depend on what it must use
+#+description: ores.vault.client links only the foundation libraries, and its generated CMakeLists has no model page that would let it depend on ores.security and ores.vault.api.
+#+type: capture
+#+level: cross
+#+filetags: :vault:codegen:cmake:product_backlog:inbox:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Give =ores.vault.client= the dependencies its job needs. The consumer's half of
+the introduction exchange builds an answer with the sealed box and opens the
+delivery with =custody_context=, so the client has to link =ores.security= and
+=ores.vault.api= — and its generated =CMakeLists.txt= links neither, because the
+generator takes a subcomponent's links from the component's model and the vault
+declares no client subcomponent page.
+
+* Why
+
+Surfaced on 2026-11-27 while adding the consumer-side helper after the vault
+gained =vault.v1.ops.challenge= and =vault.v1.ops.credential=. The client
+component exists as a code-generated stub with no model page of its own, so there
+is nowhere to state a dependency: =projects/ores.iam/client= has the same shape
+and its links were added to the generated file by hand at some point, which is
+the state the rule against editing generated files exists to prevent.
+
+* References
+
+- =projects/ores.vault/client/src/CMakeLists.txt= — the generated target with no links beyond the foundation.
+- =projects/ores.vault/modeling/component_overview.org= — the component model, which lists parts but no per-part dependencies.
+- =projects/ores.iam/modeling/= — the component whose client carries the hand-added links that a model page should own.
+
+* See also
+
+- [[id:9ED04F4B-C488-4AD6-BD85-5056E9D30135][Take the credentials out of the environment file]] — the task whose next piece waits on this.

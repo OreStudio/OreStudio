@@ -43,6 +43,7 @@
 #include "ores.marketdata.core/messaging/party_surface_blueprints.hpp"
 #include "ores.marketdata.core/messaging/party_surface_hold_back.hpp"
 #include "ores.marketdata.core/repository/feed_repository.hpp"
+#include "ores.marketdata.core/repository/feed_scope_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_mapping_repository.hpp"
 #include "ores.marketdata.core/repository/market_data_vendor_instrument_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
@@ -58,6 +59,7 @@
 #include "ores.marketdata.service/app/publication_kind_codes.hpp"
 #include "ores.marketdata.service/app/publication_lifecycle.hpp"
 #include "ores.marketdata.service/app/published_curve_reader.hpp"
+#include "ores.marketdata.service/app/routed_asset_classes.hpp"
 #include "ores.marketdata.service/messaging/approval_gated_curve_publish_handler.hpp"
 #include "ores.nats/domain/delivery.hpp"
 #include "ores.nats/domain/headers.hpp"
@@ -406,11 +408,12 @@ private:
                 const auto party_ctx = context_for_party(service_ctx, party.id);
                 std::string named;
                 for (const auto& feed : party_feeds) {
+                    const auto feed_id = source_of(feed.provider, feed.source);
                     subscribe_party(party_ctx,
                                     party.id,
                                     feed.provider,
-                                    source_of(feed.provider, feed.source),
-                                    published_asset_classes(feed.provider));
+                                    feed_id,
+                                    routed_asset_classes(feed.provider, feed_id));
                     named += (named.empty() ? "" : ", ") + feed.provider;
                 }
                 wf.record(party.full_name + ": subscribed to " + named);
@@ -433,20 +436,22 @@ private:
     }
 
     /**
-     * @brief The asset classes a publisher's catalogue states, in a stable order.
+     * @brief The asset classes a party is routed to on one feed, in a stable order.
      *
-     * A route names the class of data a party takes from a publisher, and what
-     * bounds the choice is the publisher's own catalogue: every instrument it
-     * maps carries the asset class in its oresmd address. Routing every provider
-     * as FX, which is what this step did while FX was the only class it reached,
-     * leaves a party subscribed to an interest rate fixing provider with no route
-     * for it, and the fixings its swaps read never arrive.
+     * A route names the class of data a party takes from a publisher, and two
+     * things bound the choice. The publisher's catalogue states what it maps, by
+     * the asset class of every oresmd address. The feed states what it carries,
+     * by its scopes, and a feed that fetches FX alone refuses an interest rate
+     * route. So the classes are the catalogue's, kept to those the feed states
+     * when it states any.
      *
-     * A publisher the catalogue states nothing for is reached as FX: the route
-     * still names a class, and the first tick that arrives says whether it was
-     * the right one.
+     * A feed that states no scope serves whatever its publisher maps, which is how
+     * the simulated feeds are installed. A publisher the catalogue states nothing
+     * for is reached as FX: the route still names a class, and the first tick that
+     * arrives says whether it was the right one.
      */
-    [[nodiscard]] std::vector<std::string> published_asset_classes(const std::string& provider) {
+    [[nodiscard]] std::vector<std::string> routed_asset_classes(const std::string& provider,
+                                                                const boost::uuids::uuid& feed_id) {
         // The catalogue is the installation's, not the tenant's: a party's session
         // cannot read the mappings, so they are read where they live, as the curve
         // blueprints are.
@@ -481,10 +486,13 @@ private:
             classes.insert(authority);
         }
 
-        std::vector<std::string> out(classes.begin(), classes.end());
-        if (out.empty())
-            out.emplace_back("fx");
-        return out;
+        std::set<std::string> served;
+        for (const auto& scope :
+             ores::marketdata::repository::feed_scope_repository{}.read_latest(system))
+            if (scope.feed_id == feed_id)
+                served.insert(scope.asset_class);
+
+        return app::routed_asset_classes(classes, served);
     }
 
     /// Gives one party a subscription to a provider and a route to a source.

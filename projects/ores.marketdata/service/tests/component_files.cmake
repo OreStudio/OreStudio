@@ -47,6 +47,7 @@ set(files
     "app_publication_lifecycle_tests.cpp"
     "app_published_curves_tests.cpp"
     "app_published_surface_tests.cpp"
+    "app_routed_asset_classes_tests.cpp"
     "app_staleness_policy_tests.cpp"
     "app_tick_batch_tests.cpp"
     "app_tick_plan_tests.cpp"

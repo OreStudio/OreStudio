@@ -29,6 +29,7 @@
 #include "ores.scheduler.core/messaging/retained_store_sample_registrar.hpp"
 #include "ores.scheduler.core/messaging/retention_policy_registrar.hpp"
 #include "ores.scheduler.core/messaging/scheduler_status_handler.hpp"
+#include "ores.scheduler.core/messaging/store_bounds_handler.hpp"
 #include "ores.scheduler.core/service/publish_subject_plan.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
 #include <memory>
@@ -94,6 +95,19 @@ registrar::register_handlers(ores::nats::service::client& nats,
             nats.queue_subscribe(get_scheduler_status_request::nats_subject,
                                  queue_group,
                                  [ssh](ores::nats::message msg) { ssh->status(std::move(msg)); }));
+
+        // The housekeeping screen reads the bounds and a store's series. Both are
+        // computed from the catalogue, the policies and the samples, so they are
+        // hand-written beside the operation model that declares their subjects.
+        auto sbh = std::make_shared<store_bounds_handler>(nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            list_store_bounds_request::nats_subject, queue_group, [sbh](ores::nats::message msg) {
+                sbh->list(std::move(msg));
+            }));
+        subs.push_back(nats.queue_subscribe(
+            list_store_samples_request::nats_subject, queue_group, [sbh](ores::nats::message msg) {
+                sbh->samples(std::move(msg));
+            }));
     }
 
     // The housekeeping data arrives as datasets, which the workflow engine

@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 1F74AC5C-33D2-420A-9C4E-5AC2D074BFFA
+:END:
+#+title: Task: Serve the housekeeping screen its data
+#+description: The screen reads what bounds each store and one store's series. Both are computed from the catalogue, the policies and the samples, so they are served as two reads beside the operations model rather than composed from entities by the client.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping:retention:api:screen:sprint_31:housekeeping_bound_every_store_the_system_keeps:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The housekeeping screen has one read for the list and one for a store's plot. The
+first states every store, what bounds it, whether it is bounded now and how large
+it is; the second states one store's measurements. Neither is composed from
+entities by the browser: whether a store is bounded is a fact the database states,
+and a client that inferred it would be a second implementation of the same rule.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-27                               |
+
+* Acceptance
+
+- A read states every store in one answer, with its name, description, owner, target, bound kind, action and period
+- The same read states the mechanism that bounds the store and whether it applies today, so a policy naming an unbuilt mechanism reads as unbounded
+- The same read states the latest size, the count and when it was measured, and states nothing for a store nothing has measured
+- A second read states one store's measurements, oldest first, so a plot has its points in order
+- The mapping from a row to the answer is a pure function with its own tests, so the absent values are proved rather than assumed
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Two subjects serve the screen: `scheduler.v1.store_bounds.list` states every store
+with its bound, its mechanism and its size, and `scheduler.v1.store_samples.list`
+states one store's measurements oldest first. Both read the views and tables the
+sweep and the sampler already write, and neither composes anything the database
+can state.
+
+The mapping from a text row to the answer is a free function with its own tests,
+because the query helper hands back text and the absent values carry the meaning:
+a store with no policy has no action and no period, and a store nothing has
+measured has no sample rather than a size of zero. Three tests state a bounded
+store, an unmeasured one and an unbounded one as the view states them, and read
+the answer back.
+
+The read is hand-written rather than generated, because an installation's answer
+to "is this store bounded" is a rule the database holds in one view; a generated
+read per entity would make the browser assemble it and give the rule a second
+implementation.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Stores served | 10, six of them measured | =select count(*) from ores_scheduler_store_bounds_vw= | feature branch |
+| Scheduler suites | 3 of 3 passed | =./compass.sh test run -- -R scheduler= | feature branch |

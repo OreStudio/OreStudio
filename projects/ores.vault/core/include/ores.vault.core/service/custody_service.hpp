@@ -68,7 +68,9 @@ struct ORES_VAULT_CORE_EXPORT custody_result {
  * The service owns the keys and the row context, and every act it performs
  * leaves a row in the use record. It decides no policy: the handler checks the
  * permission, and the tenant and the caller's subject arrive in the context the
- * handler verified.
+ * handler verified. Audit columns take the context's actor, which is the
+ * username the store accepts; a subject is the identity a consumer is named by,
+ * and the store refuses one in an audit column.
  */
 class ORES_VAULT_CORE_EXPORT custody_service {
 public:
@@ -86,12 +88,12 @@ public:
     /**
      * @brief Stores a new version of one secret.
      *
-     * @param actor The verified subject that asked, for the record.
+     * @param subject The verified subject that asked, for the record.
      * @param name The secret's name.
      * @param owner The consumer permitted to resolve it.
      * @param sealed_to_vault The value, sealed to the vault's transport key.
      */
-    custody_result write(const std::string& actor,
+    custody_result write(const std::string& subject,
                          const std::string& name,
                          const std::string& owner,
                          const std::string& sealed_to_vault);
@@ -122,13 +124,17 @@ public:
 
     /**
      * @brief Removes one secret, leaving its record behind.
+     *
+     * @param subject The verified subject that asked, for the record.
      */
-    custody_result remove(const std::string& actor, const std::string& name);
+    custody_result remove(const std::string& subject, const std::string& name);
 
     /**
      * @brief Re-wraps every secret of the tenant under the current key version.
+     *
+     * @param subject The verified subject that asked, for the record.
      */
-    custody_result rotate(const std::string& actor);
+    custody_result rotate(const std::string& subject);
 
 
 private:
@@ -146,7 +152,10 @@ private:
     [[nodiscard]] static std::string
     delivery_context(const std::string& subject, const std::string& name, int key_version);
 
-    const ores::database::context& ctx_;
+    // Held by value: a caller may build a context for one act and pass it
+    // straight in, and a reference to that temporary would dangle by the time
+    // the store runs.
+    ores::database::context ctx_;
     security::key_material keys_;
 };
 

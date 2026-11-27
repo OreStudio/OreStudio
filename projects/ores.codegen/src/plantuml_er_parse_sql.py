@@ -718,7 +718,7 @@ class SQLParser:
 
         # Check tenant_id is in primary key
         pk_cols = {c['name'] for c in pk.get('columns', [])}
-        if 'tenant_id' not in pk_cols:
+        if 'tenant_id' not in pk_cols and not self._pk_is_one_surrogate_uuid(pk):
             self._add_warning(file_path, line_num, 'TENANT_002',
                               f"Table '{name}' missing 'tenant_id' in primary key",
                               entity_name=name)
@@ -729,6 +729,18 @@ class SQLParser:
                 self._add_warning(file_path, line_num, 'TENANT_003',
                                   f"Table '{name}' missing 'tenant_id WITH =' in EXCLUDE constraint",
                                   entity_name=name)
+
+    @staticmethod
+    def _pk_is_one_surrogate_uuid(pk: dict) -> bool:
+        """Whether the key is one surrogate uuid and nothing else.
+
+        Such a key is generated, so it is unique across every tenant: adding the
+        tenant to it cannot change what the table holds. TENANT_002 exists to
+        stop a natural key that two tenants could share, and a surrogate key is
+        not one. A composite key, or a natural key, still needs the tenant.
+        """
+        pk_columns = pk.get('columns', [])
+        return len(pk_columns) == 1 and pk_columns[0].get('type', '') == 'uuid'
 
     def _extract_functions(self, content: str, lines: list, file_path: str) -> None:
         """Extract function definitions from SQL content."""

@@ -97,6 +97,13 @@ sealed_box::key_pair register_consumer(const ores::database::context& ctx,
     return pair;
 }
 
+/// The request context a service acts on: the tenant, and the actor the caller's
+/// verified token names. The audit columns take that actor.
+ores::database::context actor_context(const ores::database::context& ctx,
+                                      const std::string& actor) {
+    return ctx.with_tenant(ctx.tenant_id(), actor);
+}
+
 /// Seals a value the way a caller does: to the vault's transport key, under the
 /// context the vault expects for a write.
 std::string
@@ -117,17 +124,21 @@ TEST_CASE("a_secret_is_written_described_and_resolved", "[vault][custody][integr
     const auto subject = unique_subject();
     const auto consumer = register_consumer(ctx, subject);
 
-    custody_service custody(ctx, keys);
+    const auto request = actor_context(ctx, "vault.test.account");
+    custody_service custody(request, keys);
 
-    const auto written = custody.write(
-        subject, secret_name, subject, seal_for_the_vault(keys, secret_name, subject));
+    // The owner is the actor the context carries, which is the name IAM records
+    // for the consumer's account; the key still comes from the subject's row.
+    const auto owner = request.actor();
+    const auto written =
+        custody.write(subject, secret_name, owner, seal_for_the_vault(keys, secret_name, owner));
     ORES_LOG_SEV(lg, info) << "Write answered: " << written.message;
     REQUIRE(written.success);
     CHECK(written.key_version == 1);
 
     const auto described = custody.describe(secret_name);
     REQUIRE(described.success);
-    CHECK(described.owner == subject);
+    CHECK(described.owner == owner);
     CHECK(described.key_version == 1);
     CHECK(described.sealed_value.empty());
 
@@ -152,12 +163,15 @@ TEST_CASE("a_consumer_that_does_not_own_a_secret_is_refused", "[vault][custody][
     const auto other = unique_subject();
     register_consumer(ctx, other);
 
-    custody_service custody(ctx, keys);
-    REQUIRE(
-        custody.write(subject, secret_name, subject, seal_for_the_vault(keys, secret_name, subject))
-            .success);
+    const auto request = actor_context(ctx, "vault.test.account");
+    custody_service custody(request, keys);
+    const auto owner = request.actor();
+    REQUIRE(custody.write(subject, secret_name, owner, seal_for_the_vault(keys, secret_name, owner))
+                .success);
 
-    const auto refused = custody.resolve(other, secret_name);
+    // A second account, so the refusing context names an actor of its own.
+    custody_service another_account(actor_context(ctx, "another.service.account"), keys);
+    const auto refused = another_account.resolve(other, secret_name);
     CHECK_FALSE(refused.success);
     CHECK(refused.sealed_value.empty());
 
@@ -186,10 +200,11 @@ TEST_CASE("a_rotation_re_wraps_a_value_and_leaves_it_readable", "[vault][custody
     const auto subject = unique_subject();
     const auto consumer = register_consumer(ctx, subject);
 
-    custody_service first(ctx, before);
-    REQUIRE(
-        first.write(subject, secret_name, subject, seal_for_the_vault(before, secret_name, subject))
-            .success);
+    const auto request = actor_context(ctx, "vault.test.account");
+    custody_service first(request, before);
+    const auto owner = request.actor();
+    REQUIRE(first.write(subject, secret_name, owner, seal_for_the_vault(before, secret_name, owner))
+                .success);
 
     // The deployment has added version 2 and named it current; the rotation is
     // what moves the stored rows onto it.
@@ -197,7 +212,7 @@ TEST_CASE("a_rotation_re_wraps_a_value_and_leaves_it_readable", "[vault][custody
     after.transport_private_key = before.transport_private_key;
     after.transport_public_key = before.transport_public_key;
 
-    custody_service rotated(ctx, after);
+    custody_service rotated(request, after);
     const auto rotation = rotated.rotate(subject);
     ORES_LOG_SEV(lg, info) << "Rotation answered: " << rotation.message;
     REQUIRE(rotation.success);

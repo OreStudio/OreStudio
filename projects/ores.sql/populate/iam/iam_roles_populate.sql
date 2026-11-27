@@ -1305,6 +1305,10 @@ BEGIN
     -- The HTTP edge exchanges an LLM agent's key for a token; it is the only
     -- holder of this permission.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'HttpService', 'iam::agent_keys:exchange');
+    -- The edge resolves a secret as itself, because the vault seals to the
+    -- consumer its own token names and the edge is the process holding that
+    -- consumer's key. It checks the person's permission before it asks.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'HttpService', 'vault::secrets:resolve');
 
     -- Compute Wrapper service: worker that processes compute jobs from JetStream
     PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'ComputeWrapperService', 'Compute Wrapper worker service — processes compute grid jobs', false);

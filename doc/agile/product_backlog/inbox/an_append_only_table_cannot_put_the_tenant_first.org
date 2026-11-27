@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: AE865313-3A79-4212-9F1F-0E826E29F7E4
+:END:
+#+title: An append-only table cannot put the tenant first in its primary key
+#+description: A tenant-scoped current-state entity gets 'primary key (id)', so the schema validator warns TENANT_002; only a read-only model draws a tenant-first key.
+#+type: capture
+#+level: cross
+#+filetags: :vault:codegen:sql:product_backlog:inbox:
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Give a tenant-scoped, append-only entity whose key is natural — not a surrogate
+uuid — a way to put =tenant_id= in its primary key. The table template draws
+such a key from =immutable_tenant_key=, and nothing sets that flag, so only a
+=read_only= model reaches a tenant-first key.
+
+The case that surfaced it, =ores.vault.secret_use=, turned out not to need the
+flag: its key is one generated uuid, which is unique across every tenant, and
+TENANT_002 now recognises that shape and stays silent for it. A natural-key
+counter such as =ores_marketdata_delivery_counts_tbl= is the case that remains,
+and so is the composite-key case.
+
+* Why
+
+The SQL template draws a tenant-first key from =immutable_tenant_key=, and
+nothing sets that flag: the only tables that carry =primary key (tenant_id,
+id)= are =read_only= models, so the flag is derived from read-only rather than
+from the question "is this row one tenant's".
+
+The validator's rule was narrowed on 2026-11-26 so that a key of one generated
+uuid is not asked for the tenant: such a key cannot collide across tenants, and
+the rule is about natural keys that can (see =_pk_is_one_surrogate_uuid= in
+=plantuml_er_parse_sql.py=, with its cases beside the other validator tests). A
+natural-key or composite-key append-only table still has no way to state a
+tenant-first key, which is what this capture asks for.
+
+=ores_marketdata_delivery_counts= is the natural-key case that keeps the
+validation job red today; it belongs to its own environment.
+
+* References
+
+- =projects/ores.codegen/library/templates/sql_schema_domain_entity_create.mustache= — the =immutable_tenant_key= branch.
+- =projects/ores.vault/modeling/ores.vault.secret_use.org= — the model that surfaced it.
+- =projects/ores.reporting/modeling/ores.reporting.report_trigger_event.org= — a =read_only= model that does draw a tenant-first key.
+
+* See also
+
+- [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] — the sprint that owns the failing validation job.
+- [[id:A13F9AB5-AF0E-4D04-A5D7-3D6B00762381][The validator does not recognise the nullable-tenant shape]] — the same argument, one shape over: recognise the category rather than silence each table.

@@ -66,7 +66,8 @@ export interface DescribeSecretResponse {
  *
  * The vault chooses the key from the subject in the verified token and never
  * from the request, so a caller cannot ask for a value sealed to somebody
- * else's key. Only the owner of the secret may resolve it.
+ * else's key. Only the owner of the secret, named by the actor the verified
+ * token carries, may resolve it.
  */
 export interface ResolveSecretRequest {
     name: string;

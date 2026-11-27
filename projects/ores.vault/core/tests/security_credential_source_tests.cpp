@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/logger.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.platform/filesystem/scoped_temp_directory.hpp"
 #include "ores.security/crypto/sealed_box.hpp"
 #include "ores.security/crypto/secret_sealer.hpp"
@@ -25,7 +26,6 @@
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
-#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <stdexcept>
@@ -55,6 +55,13 @@ std::vector<unsigned char> make_key(unsigned char seed, std::size_t len) {
     return key;
 }
 
+/// Points the platform store at a directory the test owns, for the length of
+/// one case.
+void state_store(const std::filesystem::path& directory) {
+    ores::platform::environment::environment::set_value(
+        std::string(credential_source::directory_variable), directory.string());
+}
+
 /// Writes version 1 of the key, the version credential and the transport key
 /// into a directory the test owns.
 void provision(const std::filesystem::path& directory,
@@ -72,12 +79,13 @@ TEST_CASE("the_vault_reads_its_two_credentials", "[vault][security]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     scoped_temp_directory directory;
+    state_store(directory.path());
     const auto kek = make_key(0, secret_sealer::KEY_LEN);
     auto transport = make_key(7, sealed_box::KEY_LEN);
     transport = sealed_box::generate().private_key;
     provision(directory.path(), kek, transport);
 
-    const auto keys = credential_source::load_from(directory.path());
+    const auto keys = credential_source::load_from_credentials_directory();
     ORES_LOG_SEV(lg, info) << "Read both credentials, and derived the public half";
 
     CHECK(keys.current_version == 1);
@@ -88,53 +96,63 @@ TEST_CASE("the_vault_reads_its_two_credentials", "[vault][security]") {
 
 TEST_CASE("a_missing_credential_is_refused", "[vault][security]") {
     scoped_temp_directory directory;
+    state_store(directory.path());
     provision(
         directory.path(), make_key(0, secret_sealer::KEY_LEN), sealed_box::generate().private_key);
     std::filesystem::remove(directory.path() / credential_source::transport_credential);
 
-    CHECK_THROWS_AS(credential_source::load_from(directory.path()), std::runtime_error);
+    CHECK_THROWS_AS(credential_source::load_from_credentials_directory(), std::runtime_error);
 }
 
 TEST_CASE("a_retained_second_version_is_read", "[vault][security]") {
     auto lg(ores::logging::make_logger(test_suite));
 
     scoped_temp_directory directory;
+    state_store(directory.path());
     const auto second = make_key(3, secret_sealer::KEY_LEN);
     provision(
         directory.path(), make_key(0, secret_sealer::KEY_LEN), sealed_box::generate().private_key);
     write_credential(
         directory.path() / (std::string(credential_source::kek_credential_prefix) + "2"), second);
+    // A rotation adds the version and moves the stated current one with it.
+    write_credential(directory.path() / credential_source::kek_version_credential, {'2', '\n'});
 
-    const auto keys = credential_source::load_from(directory.path());
-    ORES_LOG_SEV(lg, info) << "Two versions are retained; version 1 is current";
+    const auto keys = credential_source::load_from_credentials_directory();
+    ORES_LOG_SEV(lg, info) << "Two versions are retained; version 2 is current";
 
     CHECK(keys.key_encryption_keys.size() == 2);
-    CHECK(keys.current_version == 1);
+    CHECK(keys.current_version == 2);
+    CHECK(keys.key_of(1) == make_key(0, secret_sealer::KEY_LEN));
     CHECK(keys.key_of(2) == second);
 }
 
 TEST_CASE("a_version_it_states_and_does_not_hold_is_refused", "[vault][security]") {
     scoped_temp_directory directory;
+    state_store(directory.path());
     provision(
         directory.path(), make_key(0, secret_sealer::KEY_LEN), sealed_box::generate().private_key);
     write_credential(directory.path() / credential_source::kek_version_credential, {'2', '\n'});
 
-    CHECK_THROWS_AS(credential_source::load_from(directory.path()), std::runtime_error);
-    CHECK_THROWS_AS(credential_source::load_from(std::filesystem::path("no-such-directory")),
-                    std::runtime_error);
+    CHECK_THROWS_AS(credential_source::load_from_credentials_directory(), std::runtime_error);
+
+    // A directory the deployment does not hold is the same refusal.
+    state_store(std::filesystem::path("no-such-directory"));
+    CHECK_THROWS_AS(credential_source::load_from_credentials_directory(), std::runtime_error);
 }
 
 TEST_CASE("a_credential_of_the_wrong_length_is_refused", "[vault][security]") {
     scoped_temp_directory directory;
+    state_store(directory.path());
     provision(directory.path(),
               make_key(0, secret_sealer::KEY_LEN - 1),
               sealed_box::generate().private_key);
 
-    CHECK_THROWS_AS(credential_source::load_from(directory.path()), std::runtime_error);
+    CHECK_THROWS_AS(credential_source::load_from_credentials_directory(), std::runtime_error);
 }
 
 TEST_CASE("no_credentials_directory_is_refused", "[vault][security]") {
-    unsetenv(std::string(credential_source::directory_variable).c_str());
+    ores::platform::environment::environment::unset_value(
+        std::string(credential_source::directory_variable));
 
     CHECK_THROWS_AS(credential_source::load_from_credentials_directory(), std::runtime_error);
 }

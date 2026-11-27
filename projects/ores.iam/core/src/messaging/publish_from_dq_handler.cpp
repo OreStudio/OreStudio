@@ -147,6 +147,7 @@ void publish_from_dq_handler::handle(ores::nats::delivery delivery) {
                 {.severity = "warning",
                  .text = std::format("{} row(s) were skipped.", result.records_skipped)});
         }
+        wf->complete(ores::utility::codec::json::write(result));
         ores::dq::messaging::record_publication(tenant_ctx,
                                                 cmd.dataset_id,
                                                 wf->instance_id,
@@ -158,7 +159,6 @@ void publish_from_dq_handler::handle(ores::nats::delivery delivery) {
                                                 outcome,
                                                 notes,
                                                 lg());
-        wf->complete(ores::utility::codec::json::write(result));
         std::move(delivery).commit();
 
     } catch (const std::exception& e) {

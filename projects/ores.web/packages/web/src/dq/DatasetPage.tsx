@@ -33,6 +33,7 @@ import { PATHS } from '../shell/paths.js';
 import { Notice, Tag } from '../ui/Primitives.js';
 import type { DatasetPublication } from '@ores/wire-protocol/generated/dq/protocol/dataset_publications_protocol';
 import { useTabs } from '../ui/Tabs.js';
+import { RelativeTime } from '../ui/Time.js';
 import { RecordHeader } from '../refdata/records.js';
 
 /**
@@ -185,7 +186,13 @@ function Details({
         ],
         [
             t('dq.dataset.lastPublished'),
-            last === undefined ? '—' : `${when(last.published_at)} · ${last.published_by}`,
+            last === undefined ? (
+                '—'
+            ) : (
+                <span>
+                    <RelativeTime at={last.published_at} /> · {last.published_by}
+                </span>
+            ),
             last === undefined ? t('dq.dataset.lastPublishedGap') : outcomeLabel(t, last.outcome),
         ],
         [
@@ -290,7 +297,9 @@ function Publications({
                             key={`${run.published_at}-${i}`}
                             className="border-b border-line-subtle last:border-b-0"
                         >
-                            <td className="px-4 py-2">{when(run.published_at)}</td>
+                            <td className="px-4 py-2">
+                                <RelativeTime at={run.published_at} />
+                            </td>
                             <td className="px-4 py-2 font-mono text-xs">{run.published_by}</td>
                             <td className="px-4 py-2 font-mono text-xs">{run.mode}</td>
                             <td className="px-4 py-2 text-right font-mono text-xs">
@@ -346,10 +355,4 @@ function messagesOf(run: DatasetPublication): readonly string[] {
     } catch {
         return [];
     }
-}
-
-/** A timestamp as a person reads it, and the exact value when it is not a time. */
-function when(value: string): string {
-    const at = Date.parse(value);
-    return Number.isNaN(at) ? value : new Date(at).toLocaleString();
 }

@@ -18,9 +18,9 @@
  *
  */
 #include "ores.reporting.core/service/market_readiness.hpp"
-#include <algorithm>
 #include <map>
 #include <set>
+#include <utility>
 
 namespace ores::reporting::service {
 
@@ -45,8 +45,8 @@ std::vector<std::string> distinct_in_order(const std::vector<std::string>& trade
 
 market_readiness decide_market_readiness(const std::vector<std::string>& trade_ids,
                                          const std::vector<trade_requirement>& requirements,
-                                         const std::vector<address_answer>& answers) {
-    std::map<std::string, address_answer> answer_of;
+                                         const std::vector<address_readiness>& answers) {
+    std::map<std::string, address_readiness> answer_of;
     for (const auto& answer : answers)
         answer_of[answer.oresmd_uri] = answer;
 
@@ -74,9 +74,10 @@ market_readiness decide_market_readiness(const std::vector<std::string>& trade_i
                                             "' names the address '" + uri +
                                             "', which the market read did not answer");
             addresses.insert(uri);
-            if (answer->second.cause.empty())
+            if (answer->second.gap_cause.empty())
                 continue;
             ++entry.gap_count;
+            out.gaps.push_back(trade_gap{.trade_id = trade_id, .oresmd_uri = uri});
         }
         entry.complete = entry.gap_count == 0;
         if (entry.complete) {
@@ -88,11 +89,8 @@ market_readiness decide_market_readiness(const std::vector<std::string>& trade_i
     out.excluded = out.booked - out.complete;
 
     out.addresses.reserve(addresses.size());
-    for (const auto& uri : addresses) {
-        const auto& answer = answer_of.at(uri);
-        out.addresses.push_back(address_readiness{
-            .oresmd_uri = uri, .series_id = answer.series_id, .gap_cause = answer.cause});
-    }
+    for (const auto& uri : addresses)
+        out.addresses.push_back(answer_of.at(uri));
     return out;
 }
 

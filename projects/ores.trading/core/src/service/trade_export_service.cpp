@@ -831,44 +831,50 @@ trade_export_service::export_books(const std::vector<std::string>& book_ids,
                                    const std::vector<std::string>& trade_ids) const {
     if (book_ids.empty())
         return {};
-    // The caller either wants the books' trades or a set of them inside those books, so the
-    // filter narrows the booking read rather than replacing it: a trade id outside the books
-    // is not the caller's to export.
-    const auto restrict =
-        trade_ids.empty() ? std::string{} : std::string("AND b.trade_id = ANY($5::uuid[]) ");
-    std::vector<std::string> params{ctx_.tenant_id().to_string(),
-                                    to_uuid_array(book_ids),
-                                    std::to_string(offset),
-                                    std::to_string(limit)};
-    if (!trade_ids.empty())
-        params.push_back(to_uuid_array(trade_ids));
-    const auto page_ids = ores::database::query_builder::execute_parameterized_string_query(
-        ctx_,
-        "SELECT b.trade_id::text FROM ores_trading_trade_bookings_tbl b "
-        "WHERE b.tenant_id = $1::uuid "
-        "AND b.valid_to = ores_utility_infinity_timestamp_fn() "
-        "AND b.book_id = ANY($2::uuid[]) " +
-            restrict + "ORDER BY b.trade_id OFFSET $3::integer LIMIT $4::integer",
-        params,
-        lg(),
-        "Reading the trades booked in a set of books.");
-    return export_trades(page_ids, instruments);
+    return export_trades(booking_trade_ids(book_ids, trade_ids, std::pair{offset, limit}),
+                         instruments);
 }
 
 std::vector<std::string>
 trade_export_service::trade_ids_of_books(const std::vector<std::string>& book_ids) const {
     if (book_ids.empty())
         return {};
+    return booking_trade_ids(book_ids, {}, std::nullopt);
+}
+
+std::vector<std::string> trade_export_service::booking_trade_ids(
+    const std::vector<std::string>& book_ids,
+    const std::vector<std::string>& trade_ids,
+    std::optional<std::pair<std::uint32_t, std::uint32_t>> page) const {
+    // The caller either wants the books' trades or a set of them inside those books, so the
+    // filter narrows the booking read rather than replacing it: a trade id outside the books
+    // is not the caller's to export.
+    const auto paging =
+        page ? "ORDER BY b.trade_id OFFSET $3::integer LIMIT $4::integer" : "ORDER BY b.trade_id";
+    // The filter's placeholder follows the ones the page takes, so an unpaged read that filters
+    // binds its set to the third parameter and not to a fifth that no longer exists.
+    const auto restrict =
+        trade_ids.empty() ? std::string{} :
+                            "AND b.trade_id = ANY($" + std::to_string(page ? 5 : 3) + "::uuid[]) ";
+
+    std::vector<std::string> params{ctx_.tenant_id().to_string(), to_uuid_array(book_ids)};
+    if (page) {
+        params.push_back(std::to_string(page->first));
+        params.push_back(std::to_string(page->second));
+    }
+    if (!trade_ids.empty())
+        params.push_back(to_uuid_array(trade_ids));
+
     return ores::database::query_builder::execute_parameterized_string_query(
         ctx_,
         "SELECT b.trade_id::text FROM ores_trading_trade_bookings_tbl b "
         "WHERE b.tenant_id = $1::uuid "
         "AND b.valid_to = ores_utility_infinity_timestamp_fn() "
-        "AND b.book_id = ANY($2::uuid[]) "
-        "ORDER BY b.trade_id",
-        {ctx_.tenant_id().to_string(), to_uuid_array(book_ids)},
+        "AND b.book_id = ANY($2::uuid[]) " +
+            restrict + paging,
+        params,
         lg(),
-        "Reading the trade ids booked in a set of books.");
+        "Reading the trades booked in a set of books.");
 }
 
 std::vector<trade_export_item>

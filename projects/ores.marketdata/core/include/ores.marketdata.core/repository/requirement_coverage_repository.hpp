@@ -33,15 +33,17 @@ namespace ores::marketdata::repository {
 /**
  * @brief Why the market does not answer an address.
  *
- * The two are different purchases, so the read keeps them apart and a reader
- * that acts on the answer can tell which one it is buying. The vocabulary grows
- * when a read can establish more; a cause no read can state is not invented.
+ * They are different purchases, so the read keeps them apart and a reader that
+ * acts on the answer can tell which one it is buying. The vocabulary grows when
+ * a read can establish more; a cause no read can state is not invented.
  */
 namespace gap_cause {
 /// Nothing holds the address: no series of the party, and no fixing of the system tenant.
 inline constexpr std::string_view no_series = "no_series";
 /// A series holds the address but carries no point at or before the as-of.
 inline constexpr std::string_view no_point = "no_point";
+/// The latest point is older than the age limit a run accepts, so the value is stale.
+inline constexpr std::string_view stale = "stale";
 }
 
 /**
@@ -56,17 +58,21 @@ inline constexpr std::string_view no_point = "no_point";
  * that exists but carries no point at the as-of answers the export, which writes
  * its history alone, and does not answer a run, which would value the trade off
  * nothing.
+ *
+ * It is not looser anywhere. A point older than the age limit is stale, and the
+ * export writes no line for it, so answering an address with a stale point would
+ * pass a trade the engine is then short of.
  */
 struct requirement_coverage final {
     std::string oresmd_uri;
     /// The series that answers the address, absent when the market holds none.
     std::optional<std::string> series_id;
     /// Why the market does not answer the address, empty when it does.
-    std::string cause;
+    std::string gap_cause;
 
     /// Whether the run can value a trade off this address.
     [[nodiscard]] bool answered() const {
-        return cause.empty();
+        return gap_cause.empty();
     }
 
     /// Whether any series holds the address, which is the export's own rule.
@@ -102,7 +108,8 @@ public:
      *
      * @param as_of The business date the points are read at, or nothing for now. The
      *              session's tenant and party come from @p ctx, since a run prices for the
-     *              party it acts for and no other.
+     *              party it acts for and no other. The age limit is the export's own
+     *              default, because the answer must be as strict as the body it stands for.
      */
     [[nodiscard]] std::vector<requirement_coverage>
     read(const context& ctx,

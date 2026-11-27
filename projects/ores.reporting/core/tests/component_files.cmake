@@ -84,6 +84,7 @@ set(files
     "service_cut_take_tests.cpp"
     "service_execution_storage_plan_tests.cpp"
     "service_get_run_health_tests.cpp"
+    "service_market_readiness_recorder_tests.cpp"
     "service_next_fire_tests.cpp"
     "service_publish_subject_plan_tests.cpp"
     "service_record_run_pricing_tests.cpp"

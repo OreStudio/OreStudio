@@ -455,7 +455,7 @@ TEST_CASE("every_generated_trade_type_books_through_the_database", tags) {
     // family whose writer or reader drops a column is named here.
     ores::trading::domain::instrument_batch exported;
     ores::trading::service::trade_export_service(f.ctx).export_books(
-        {boost::uuids::to_string(f.book_id)}, 0, 100000, exported);
+        {boost::uuids::to_string(f.book_id)}, 0, 100000, exported, {});
     std::set<std::string> differing;
     std::string detail;
     for (const auto& [type, request] : booked) {

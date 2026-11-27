@@ -92,9 +92,9 @@ struct report_run_market_readiness final {
     int complete_count = 0;
 
     /**
-     * @brief How many the run left out. The run does not store it as a subtraction, so a record
-     * that disagrees with its own counts is refused at write rather than read as a partition that
-     * holds.
+     * @brief How many the run left out. The run does not store it as a subtraction, so the table
+     * refuses a row whose counts do not add up rather than storing a record a reader would take for
+     * a partition that holds.
      */
     int excluded_count = 0;
 

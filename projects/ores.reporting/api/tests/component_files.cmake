@@ -97,6 +97,8 @@ set(files
     "report_run_market_readiness_protocol_codec_roundtrip_tests.cpp"
     "report_text_value_codec_roundtrip_tests.cpp"
     "report_text_value_protocol_codec_roundtrip_tests.cpp"
+    "report_trade_market_gap_codec_roundtrip_tests.cpp"
+    "report_trade_market_gap_protocol_codec_roundtrip_tests.cpp"
     "report_trade_market_readiness_codec_roundtrip_tests.cpp"
     "report_trade_market_readiness_protocol_codec_roundtrip_tests.cpp"
     "report_trigger_event_codec_roundtrip_tests.cpp"

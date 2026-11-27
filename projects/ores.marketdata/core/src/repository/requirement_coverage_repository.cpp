@@ -19,6 +19,7 @@
  */
 #include "ores.marketdata.core/repository/requirement_coverage_repository.hpp"
 #include "ores.database/query_builder/execute.hpp"
+#include "ores.marketdata.core/service/ore_export_service.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <stdexcept>
@@ -40,6 +41,10 @@ namespace {
  *
  * The system tenant's series are installation reference data, which every party
  * reads, so its rows are counted without asking for a party of their own.
+ *
+ * A point older than the age limit is stale and answers nothing: the export writes
+ * no line for it, so a run that treated it as answered would send the engine a
+ * trade whose datum at the date the body does not carry.
  *
  * The point is read from the series that answers the address, which is why the
  * share of the read that the coverage function performs is joined here rather
@@ -85,7 +90,11 @@ constexpr auto coverage_query =
     " select r.uri,"
     "        p.series_id, sy.series_id,"
     "        (case when p.series_id is not null then p.latest_point"
-    "              else sy.latest_point end) is not null"
+    "              else sy.latest_point end) is not null,"
+    "        (case when p.series_id is not null then p.latest_point"
+    "              else sy.latest_point end)"
+    "            >= coalesce($4::timestamptz, now())"
+    "               - make_interval(days => $5::integer)"
     " from requirements r"
     " left join party p on p.uri = r.uri"
     " left join system_fixing sy on sy.uri = r.uri"
@@ -116,11 +125,14 @@ requirement_coverage_repository::read(const context& ctx,
         // a time is read as it stands.
         (as_of && as_of->size() == 10 && as_of->find('T') == std::string::npos) ?
             std::optional<std::string>(*as_of + "T23:59:59.999999Z") :
-            as_of};
+            as_of,
+        // The limit is the export's own, so the answer is as strict as the body it stands for
+        // and the two cannot drift apart on what counts as stale.
+        std::to_string(service::ore_export_service::default_max_age_days)};
 
     for (const auto& row : ores::database::query_builder::execute_parameterized_multi_column_query(
              ctx, coverage_query, params, lg(), "Reading the market's coverage of requirements")) {
-        if (row.size() < 4 || !row[0])
+        if (row.size() < 5 || !row[0])
             continue;
         requirement_coverage one{.oresmd_uri = *row[0]};
         // The series the party holds answers first; the system's fixing answers when it holds
@@ -130,11 +142,15 @@ requirement_coverage_repository::read(const context& ctx,
         else if (row[2])
             one.series_id = *row[2];
 
-        const auto has_point = row[3] && (*row[3] == "t" || *row[3] == "true");
+        const auto as_bool = [&row](std::size_t column) {
+            return row[column] && (*row[column] == "t" || *row[column] == "true");
+        };
         if (!one.series_id)
-            one.cause = std::string(gap_cause::no_series);
-        else if (!has_point)
-            one.cause = std::string(gap_cause::no_point);
+            one.gap_cause = std::string(gap_cause::no_series);
+        else if (!as_bool(3))
+            one.gap_cause = std::string(gap_cause::no_point);
+        else if (!as_bool(4))
+            one.gap_cause = std::string(gap_cause::stale);
         out.push_back(std::move(one));
     }
     return out;

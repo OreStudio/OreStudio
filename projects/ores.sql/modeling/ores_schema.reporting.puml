@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: reporting
-Tables: 42
+Tables: 43
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -866,7 +866,6 @@ package "reporting" #E0F7FA {
     Template: sql_schema_domain_entity_create.mustache
     To modify, update the template and regenerate.
     Report Address Market Readiness Table
-    +#+updated: 2026-11-26
     One row per oresmd address the run needs, written before the engine sees any
     work, whether or not the market answers it.
     This is the grain that answers why the market is short. A party that has to buy
@@ -1329,6 +1328,42 @@ package "reporting" #E0F7FA {
     run.
     end note
 
+    entity ores_reporting_report_trade_market_gaps_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * report_instance_id : uuid <<FK>>
+        * trade_id : text <<FK>>
+        * oresmd_uri : text
+        * modified_by : text
+        * performed_by : text
+        * acting_agent : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_trade_market_gaps_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Trade Market Gap Table
+    +#+updated: 2026-11-27
+    One row per address an incomplete trade named and the market did not answer,
+    written with the run.
+    A trade's readiness row states that it is incomplete and how many addresses it
+    lost. This table states which ones, so a reader of one trade sees its gaps
+    without asking another component what the trade names.
+    The cause is not repeated here. It belongs to the address, and the address
+    grain states it once for every trade that needed it: the two rows name one run
+    and one address, so a reader that wants the cause joins them. Writing the cause
+    twice would let the copies disagree, and a party acting on one of them would
+    buy the wrong thing.
+    end note
+
     entity ores_reporting_report_trade_market_readinesses_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -1359,10 +1394,10 @@ package "reporting" #E0F7FA {
     at the run's as-of, and incomplete otherwise. An incomplete trade is left out
     of the run rather than sent to the engine, so this row is the run's account of
     which trades it lost.
-    The addresses that make an incomplete trade incomplete are not repeated here.
-    They are the trade's own requirement rows, which the trading component stores
-    per trade, read against the run's unanswered addresses; storing them again
-    would state one fact twice and let the two copies disagree.
+    The addresses that make an incomplete trade incomplete are the run's own rows
+    in report_trade_market_gap, one per address the market did not answer. They
+    are written from the same decision that wrote this row, so the count here and
+    the rows there are two readings of one fact.
     end note
 
     entity ores_reporting_report_trigger_events_tbl  #F7E5FF {

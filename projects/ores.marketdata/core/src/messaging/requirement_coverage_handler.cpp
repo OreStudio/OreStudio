@@ -70,8 +70,9 @@ void requirement_coverage_handler::get_requirement_coverage(ores::nats::message 
         for (const auto& one : coverage_repo.read(ctx, req->requirements, req->as_of)) {
             if (!one.answered())
                 ++gaps;
-            resp.answers.push_back(requirement_answer{
-                .oresmd_uri = one.oresmd_uri, .series_id = one.series_id, .gap_cause = one.cause});
+            resp.answers.push_back(requirement_answer{.oresmd_uri = one.oresmd_uri,
+                                                      .series_id = one.series_id,
+                                                      .gap_cause = one.gap_cause});
         }
         resp.success = true;
         resp.message = "Answered " + std::to_string(resp.answers.size() - gaps) + " of " +

@@ -1091,7 +1091,7 @@ TEST_CASE("an_exported_swap_trade_books_back_to_the_same_rows", "[service]") {
 
     ores::trading::domain::instrument_batch exported;
     ores::trading::service::trade_export_service(f.ctx).export_books(
-        {boost::uuids::to_string(f.book_id)}, 0, 100, exported);
+        {boost::uuids::to_string(f.book_id)}, 0, 100, exported, {});
     REQUIRE(ores::trading::domain::find(exported.rate_instruments, first.anchor.id) != nullptr);
 
     auto second = f.request();
@@ -1107,7 +1107,7 @@ TEST_CASE("an_exported_swap_trade_books_back_to_the_same_rows", "[service]") {
 
     ores::trading::domain::instrument_batch again;
     ores::trading::service::trade_export_service(f.ctx).export_books(
-        {boost::uuids::to_string(f.book_id)}, 0, 100, again);
+        {boost::uuids::to_string(f.book_id)}, 0, 100, again, {});
     const auto legs = ores::trading::domain::find_all(again.swap_legs, second.anchor.id);
     const auto original = ores::trading::domain::find_all(again.swap_legs, first.anchor.id);
     REQUIRE(legs.size() == original.size());
@@ -1158,7 +1158,7 @@ TEST_CASE("an_export_names_only_the_trades_it_was_asked_for", "[service]") {
 
     // No filter is the whole book, which is what a run that names every trade writes.
     ores::trading::domain::instrument_batch both;
-    svc.export_books({book}, 0, 100, both);
+    svc.export_books({book}, 0, 100, both, {});
     CHECK(ores::trading::domain::find(both.rate_instruments, first.anchor.id) != nullptr);
     CHECK(ores::trading::domain::find(both.rate_instruments, second.anchor.id) != nullptr);
 }
@@ -1237,7 +1237,7 @@ TEST_CASE("a_scripted_trade_books_its_variables_and_underlyings_back", "[service
 
     ores::trading::domain::instrument_batch exported;
     ores::trading::service::trade_export_service(f.ctx).export_books(
-        {boost::uuids::to_string(f.book_id)}, 0, 100, exported);
+        {boost::uuids::to_string(f.book_id)}, 0, 100, exported, {});
 
     const auto parameters =
         ores::trading::domain::find_all(exported.scripted_parameters, first.anchor.id);

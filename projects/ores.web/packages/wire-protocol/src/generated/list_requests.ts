@@ -5342,6 +5342,24 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         ],
         rows: ['values'],
     },
+    'reporting.v1.report_trade_market_gaps.list': {
+        asOf: true,
+        filter: [
+            'report_instance_id',
+            'trade_id',
+            'oresmd_uri',
+            'id_one_of',
+            'report_instance_id_one_of',
+            'trade_id_one_of',
+            'oresmd_uri_one_of',
+        ],
+        rows: ['trade_gaps'],
+    },
+    'reporting.v1.report_trade_market_gaps_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'reporting.v1.report_trade_market_readinesses.list': {
         asOf: true,
         filter: [

@@ -25,7 +25,9 @@
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include <cstdint>
+#include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace ores::trading::service {
@@ -81,7 +83,7 @@ public:
                  std::uint32_t offset,
                  std::uint32_t limit,
                  domain::instrument_batch& instruments,
-                 const std::vector<std::string>& trade_ids = {}) const;
+                 const std::vector<std::string>& trade_ids) const;
 
     /**
      * @brief The trades booked in a set of books, as identifiers only.
@@ -93,6 +95,17 @@ public:
     std::vector<std::string> trade_ids_of_books(const std::vector<std::string>& book_ids) const;
 
 private:
+    /**
+     * @brief The trades booked in a set of books, as identifiers.
+     *
+     * @param trade_ids The trades to read, or every trade of the books when empty.
+     * @param page The offset and the limit to read, or nothing for the whole set.
+     */
+    [[nodiscard]] std::vector<std::string>
+    booking_trade_ids(const std::vector<std::string>& book_ids,
+                      const std::vector<std::string>& trade_ids,
+                      std::optional<std::pair<std::uint32_t, std::uint32_t>> page) const;
+
     std::vector<messaging::trade_export_item>
     export_trades(const std::vector<std::string>& trade_ids,
                   domain::instrument_batch& instruments) const;

@@ -42,10 +42,10 @@ namespace ores::reporting::domain {
  * of the run rather than sent to the engine, so this row is the run's account of
  * which trades it lost.
  *
- * The addresses that make an incomplete trade incomplete are not repeated here.
- * They are the trade's own requirement rows, which the trading component stores
- * per trade, read against the run's unanswered addresses; storing them again
- * would state one fact twice and let the two copies disagree.
+ * The addresses that make an incomplete trade incomplete are the run's own rows
+ * in report_trade_market_gap, one per address the market did not answer. They
+ * are written from the same decision that wrote this row, so the count here and
+ * the rows there are two readings of one fact.
  */
 struct report_trade_market_readiness final {
     /**

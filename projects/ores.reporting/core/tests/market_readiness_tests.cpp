@@ -27,16 +27,18 @@ namespace {
 
 using namespace ores::reporting::service;
 
-address_answer answered(const std::string& uri) {
-    return address_answer{.oresmd_uri = uri, .series_id = "series-" + uri, .cause = ""};
+address_readiness answered(const std::string& uri) {
+    return address_readiness{.oresmd_uri = uri, .series_id = "series-" + uri, .gap_cause = ""};
 }
 
-address_answer missing(const std::string& uri) {
-    return address_answer{.oresmd_uri = uri, .series_id = std::nullopt, .cause = "no_series"};
+address_readiness missing(const std::string& uri) {
+    return address_readiness{
+        .oresmd_uri = uri, .series_id = std::nullopt, .gap_cause = "no_series"};
 }
 
-address_answer no_point(const std::string& uri) {
-    return address_answer{.oresmd_uri = uri, .series_id = "series-" + uri, .cause = "no_point"};
+address_readiness no_point(const std::string& uri) {
+    return address_readiness{
+        .oresmd_uri = uri, .series_id = "series-" + uri, .gap_cause = "no_point"};
 }
 
 trade_requirement needs(const std::string& trade_id, std::vector<std::string> uris) {
@@ -106,6 +108,11 @@ TEST_CASE("an_incomplete_trade_keeps_the_addresses_its_book_needs", "[market_rea
     REQUIRE(readiness.trades.at(0).trade_id == "trade-1");
     REQUIRE(readiness.trades.at(0).gap_count == 1);
     REQUIRE(readiness.trades.at(1).complete);
+
+    // The incomplete trade names the address it lost, and nothing else is a gap.
+    REQUIRE(readiness.gaps.size() == 1);
+    CHECK(readiness.gaps.at(0).trade_id == "trade-1");
+    CHECK(readiness.gaps.at(0).oresmd_uri == "USD-SOFR-3M");
 
     // The address two trades name is one row, stated once.
     REQUIRE(readiness.addresses.size() == 2);

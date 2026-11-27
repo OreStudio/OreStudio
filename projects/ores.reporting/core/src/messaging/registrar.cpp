@@ -102,6 +102,7 @@
 #include "ores.reporting.core/messaging/report_scheduling_handler.hpp"
 #include "ores.reporting.core/messaging/report_text_value_registrar.hpp"
 #include "ores.reporting.core/messaging/report_trade_market_readiness_history_provider_registrar.hpp"
+#include "ores.reporting.core/messaging/report_trade_market_gap_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/report_trigger_type_history_provider_registrar.hpp"
 #include "ores.reporting.core/messaging/report_type_handler.hpp"
 #include "ores.reporting.core/messaging/report_type_history_provider_registrar.hpp"
@@ -837,6 +838,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_report_instance_kind_history_provider(hist_registry);
         register_report_run_market_readiness_history_provider(hist_registry);
         register_report_trade_market_readiness_history_provider(hist_registry);
+        register_report_trade_market_gap_history_provider(hist_registry);
         register_report_trigger_type_history_provider(hist_registry);
         register_report_type_history_provider(hist_registry);
         register_cut_approval_detail_history_provider(hist_registry);

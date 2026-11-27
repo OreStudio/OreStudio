@@ -25,63 +25,63 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace ores::reporting::service {
 
 /**
- * @brief The market's answer for one address, as the market data read states it.
+ * @brief The market's answer for one address a run needs.
  *
- * The cause travels as the text the market data component states, which is
- * =no_series= when nothing holds the address and =no_point= when a series holds
- * it but carries no point at or before the as-of. This component records the
- * cause rather than deciding it: the vocabulary belongs to the read that can
- * establish it.
+ * The answer and the run's record of it are one fact, so one type states both:
+ * the address, the series that answers it, and why it does not when nothing
+ * does. The cause is the text the market data component states, which this
+ * component records rather than decides.
  */
-struct address_answer {
+struct address_readiness final {
     std::string oresmd_uri;
     /// The series that answers the address, absent when nothing holds it.
     std::optional<std::string> series_id;
     /// Why the market does not answer it, empty when it does.
-    std::string cause;
+    std::string gap_cause;
 };
 
 /**
  * @brief One trade and the addresses its instruments name.
  */
-struct trade_requirement {
+struct trade_requirement final {
     std::string trade_id;
     std::vector<std::string> oresmd_uris;
 };
 
 /**
- * @brief What the run records about one address.
- */
-struct address_readiness {
-    std::string oresmd_uri;
-    std::optional<std::string> series_id;
-    std::string gap_cause;
-};
-
-/**
  * @brief What the run records about one trade.
  */
-struct trade_readiness {
+struct trade_readiness final {
     std::string trade_id;
     bool complete = false;
     std::size_t gap_count = 0;
 };
 
 /**
+ * @brief One address an incomplete trade named that the market did not answer.
+ */
+struct trade_gap final {
+    std::string trade_id;
+    std::string oresmd_uri;
+};
+
+/**
  * @brief The run's readiness, decided from what each trade needs and what the
  * market answered.
  */
-struct market_readiness {
+struct market_readiness final {
     /// One entry per distinct address the run needs, in ascending address order.
     std::vector<address_readiness> addresses;
     /// One entry per trade the scope holds, in the order the trades were named.
     std::vector<trade_readiness> trades;
+    /// One entry per unanswered address of an incomplete trade, in the order the
+    /// trades were named and each trade's addresses in byte order.
+    std::vector<trade_gap> gaps;
     /// How many trades the scope holds.
     std::size_t booked = 0;
     /// How many the market answered in full, which are the ones to submit.
@@ -121,7 +121,7 @@ struct market_readiness {
 [[nodiscard]] ORES_REPORTING_CORE_EXPORT market_readiness
 decide_market_readiness(const std::vector<std::string>& trade_ids,
                         const std::vector<trade_requirement>& requirements,
-                        const std::vector<address_answer>& answers);
+                        const std::vector<address_readiness>& answers);
 
 }
 

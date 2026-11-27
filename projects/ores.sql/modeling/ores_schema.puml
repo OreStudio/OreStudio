@@ -814,6 +814,7 @@ entity "reporting" as reporting {
   ores_reporting_report_metrics_tbl
   ores_reporting_report_run_market_readinesses_tbl
   ores_reporting_report_text_values_tbl
+  ores_reporting_report_trade_market_gaps_tbl
   ores_reporting_report_trade_market_readinesses_tbl
   ores_reporting_report_trigger_events_tbl
   ores_reporting_report_trigger_types_tbl
@@ -825,7 +826,7 @@ entity "reporting" as reporting {
 }
 note bottom of reporting
 Reporting & Analytics
-42 tables — ores_schema.reporting.puml
+43 tables — ores_schema.reporting.puml
 end note
 
 entity "compute" as compute {

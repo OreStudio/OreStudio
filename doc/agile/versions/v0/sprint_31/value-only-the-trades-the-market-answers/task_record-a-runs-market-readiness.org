@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-25
 #+updated: 2026-11-26
-#+environment: jolly_knuth jolly_knuth
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,9 +28,9 @@ A run knows, before the engine sees it, which trades its market can answer: the 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | The three grains are recorded, an incomplete trade leaves the run before the export, and a run with nothing complete fails in preprocessing. The branch is committed and its gates are green; no PR is raised yet. |
+| Now          | The three grains, the per-trade gaps and the exclusion are built, the review round is applied, and [[https://github.com/OreStudio/OreStudio/pull/5192][#5192]] is open with its gates green. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR, review it, and close the task. |
+| Next         | Merge [[https://github.com/OreStudio/OreStudio/pull/5192][#5192]] and close the task. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
@@ -95,9 +95,11 @@ task and name that file in the Command column.
   so the export's own loop is edited in the model and not in the header. Editing
   the header alone survives until the next =compass codegen regenerate=, which
   restores it.
-- The coverage read is stricter than the export's inclusion rule on purpose. A
-  series with no point at the date answers the export, which writes its history
-  alone, and does not answer a run, which would value a trade off nothing.
+- The coverage read is stricter than the export's inclusion rule on purpose, and
+  never looser. A series with no point at the date answers the export, which
+  writes its history alone, and does not answer a run, which would value a trade
+  off nothing. A point older than the export's age limit is stale, and the export
+  writes no line for it, so the read applies that same limit from one constant.
 - The rigging the codegen leaves to the author is three things, and the ratchet
   names all three: =rls_tenant_isolation= and =rls_party_isolation= under the
   model's =* SQL= flags, the permission codes the handlers check, and the
@@ -111,9 +113,13 @@ task and name that file in the Command column.
   output, so it was regenerated from the merged models rather than merged by
   hand, and every gate was re-run on the new base.
 - The trade grain states whether a trade is complete and how many of its
-  addresses went unanswered. The addresses and their causes are the address
-  grain; joining the two through the trade's own requirements, which trading
-  stores per trade, names each gap without writing the cause twice.
+  addresses went unanswered. The addresses themselves are the gap grain, which
+  names one address per row and leaves the cause where it is stated once: the
+  address grain. The review asked for the gap rows because acceptance names them,
+  and the run now answers which addresses a trade lost without asking trading.
+- The record converges rather than accumulates. A workflow re-dispatches a step
+  that failed after it committed, so the recorder retires the run's rows at every
+  grain before it writes, and a retry leaves one record.
 
 
 * Test Scenarios
@@ -147,15 +153,23 @@ A run decides what it may value before it writes anything.
   pre-processing. It resolves the scope's books, asks trading which trades they
   hold and what each names, asks market data which addresses it answers at the
   run's date, records the answer, and fails in preprocessing when no trade is
-  complete.
+  complete. A scope that holds no trade fails with a sentence of its own rather
+  than as a run whose trades were all incomplete.
 - The coverage read names the series that answers an address and states
-  =no_series= or =no_point= when none does, so a party buying data knows which
-  one it is missing. The export keeps its own looser rule and the two are
-  documented apart.
-- Readiness is recorded at three grains: =report_run_market_readinesses= holds
-  the counts and the as-of, =report_trade_market_readinesses= the complete flag
-  and the gap count, and =report_address_market_readinesses= the series and the
-  cause. All three carry tenant and party policies.
+  =no_series=, =no_point= or =stale= when none does, so a party buying data knows
+  which one it is missing. It applies the export's own age limit, so a point the
+  body would not carry cannot pass a trade. The export keeps its looser
+  inclusion rule and the two are documented apart.
+- Readiness is recorded at four grains: =report_run_market_readinesses= holds
+  the counts, the as-of, and a check that they partition the population;
+  =report_trade_market_readinesses= the complete flag and the gap count;
+  =report_address_market_readinesses= the series and the cause; and
+  =report_trade_market_gaps= the addresses an incomplete trade lost, so a
+  trade's gaps are the run's own record and not a join into trading. All four
+  carry tenant and party policies, and the run's page reads them.
+- A record converges when the step is dispatched again: the run's rows are
+  retired before the new ones are written, so a retry after a committed write
+  leaves one record rather than a collision.
 - =gather_trades= writes the trades the readiness step named, so an incomplete
   trade reaches neither storage nor the engine. The export takes the trades to
   write for that reason.
@@ -163,15 +177,12 @@ A run decides what it may value before it writes anything.
   requirements and the coverage answer, with eight cases: a complete trade, an
   absent series, a series with no point, a trade that names nothing, one address
   two trades name, a trade named twice, and the two refusals of a message that
-  does not match what was asked.
+  does not match what was asked. A ninth case pins the gap rows.
 
-What the tree says: build green, the eight decision cases and the five
-component suites green, the schema suite at 111 files and 1074 tests,
-=compass-ng= at no new diagnostics, and the format gate clean. Every number is
-in the measurements above with its commit.
+What the tree says: build green, the decision and recorder cases and the six
+component suites green, the schema suite at 112 files and 1083 tests,
+=compass-ng= at no new diagnostics, and the format gate clean. Every number is in
+the measurements above with its commit.
 
-Two things this task does not do. It records the addresses of an incomplete
-trade at the address grain rather than repeating them per trade, so a report
-that names a trade's gaps joins the run's record to the trade's requirements in
-trading. And the phase a failure was produced in is still unstated: that is
-[[id:E6B29704-7BEF-4C2A-B95F-32623AF49200][State the phase of every error a run records]].
+What this task does not do: it does not state the phase a failure was produced
+in. That is [[id:E6B29704-7BEF-4C2A-B95F-32623AF49200][State the phase of every error a run records]].

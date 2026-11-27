@@ -130,6 +130,8 @@
 \ir ./reporting_report_trade_market_readinesses_notify_trigger_create.sql
 \ir ./reporting_report_address_market_readinesses_create.sql
 \ir ./reporting_report_address_market_readinesses_notify_trigger_create.sql
+\ir ./reporting_report_trade_market_gaps_create.sql
+\ir ./reporting_report_trade_market_gaps_notify_trigger_create.sql
 -- The three tables are chunked by the instant their rows were written, so each
 -- names that column as its partitioning column and needs a default for it: a
 -- hypertable checks the column for null before the insert trigger supplies it.

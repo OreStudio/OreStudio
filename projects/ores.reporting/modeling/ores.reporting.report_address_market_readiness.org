@@ -12,7 +12,7 @@
 #+entity_plural: report_address_market_readinesses
 #+entity_title: Report Address Market Readiness
 #+created: 2026-11-26
-+#+updated: 2026-11-26
+#+updated: 2026-11-26
 
 One row per oresmd address the run needs, written before the engine sees any
 work, whether or not the market answers it.

@@ -24,8 +24,6 @@
  *
  * Report Address Market Readiness Table
  *
- * +#+updated: 2026-11-26
- *
  * One row per oresmd address the run needs, written before the engine sees any
  * work, whether or not the market answers it.
  *

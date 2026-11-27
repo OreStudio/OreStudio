@@ -64,7 +64,11 @@ create table if not exists "ores_reporting_report_run_market_readinesses_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn())
+    check ("id" <> ores_utility_nil_uuid_fn()),
+    check ("booked_count" = "complete_count" + "excluded_count"),
+    check ("booked_count" >= 0),
+    check ("complete_count" >= 0),
+    check ("excluded_count" >= 0)
 );
 
 -- Composite natural key: unique combination for active records

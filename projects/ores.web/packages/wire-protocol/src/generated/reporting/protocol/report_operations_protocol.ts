@@ -219,9 +219,8 @@ export interface GatherTradesRequest {
     /**
      * @brief The trades to write: the ones the market answered in full.
      *
-     * Empty means every trade of the books, which is what a run that could not
-     * resolve readiness would have written before this step existed. The readiness
-     * step never sends it empty: a run with no complete trade fails there.
+     * Empty means every trade of the books. The readiness step never sends it
+     * empty, because a run with no complete trade fails there.
      */
     trade_ids: string[];
 }

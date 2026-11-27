@@ -34,8 +34,6 @@ namespace ores::reporting::domain {
 /**
  * @brief Which oresmd addresses a run needed, and which of them its market answered.
  *
- * +#+updated: 2026-11-26
- *
  * One row per oresmd address the run needs, written before the engine sees any
  * work, whether or not the market answers it.
  *

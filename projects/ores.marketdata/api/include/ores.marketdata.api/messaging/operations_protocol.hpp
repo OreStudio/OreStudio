@@ -2145,7 +2145,7 @@ struct get_requirement_coverage_request {
 };
 
 struct get_requirement_coverage_response {
-    bool success = true;
+    bool success = false;
     std::string message;
     std::vector<requirement_answer> answers;
 

@@ -341,7 +341,7 @@ void report_execution_handler::resolve_market_readiness(ores::nats::delivery del
             using request_type = std::decay_t<decltype(request)>;
             std::string call_err;
             auto response = nats_call(*owner, request, call_err);
-            if (!response && call_err.find("token_expired") != std::string::npos) {
+            if (!response && call_err.contains("token_expired")) {
                 call_err.clear();
                 auto renewed =
                     run_token_client(req.tenant_id, req.report_instance_id, true, call_err);
@@ -355,14 +355,23 @@ void report_execution_handler::resolve_market_readiness(ores::nats::delivery del
             return std::optional<typename request_type::response_type>(std::move(response));
         };
 
+        // One sentence for the three refusals the bus can state, so no two of them read apart.
+        const auto refusal = [&err](std::string_view what, const auto& response) {
+            return std::string(what) + " failed: " +
+                   (err.empty() ? (response ? response->message : "(no response)") : err);
+        };
+
         // Which trades the scope holds, and what each of them needs. Trading owns both:
         // the run does not read the trades' contents to ask what they name.
         ores::trading::messaging::list_book_trade_ids_request ids_req;
         ids_req.book_ids = book_ids;
         const auto ids_resp = call(ids_req);
         if (!ids_resp || !ids_resp->success) {
-            fail("list_book_trade_ids failed: " +
-                 (err.empty() ? (ids_resp ? ids_resp->message : "(no response)") : err));
+            fail(refusal("list_book_trade_ids", ids_resp));
+            return;
+        }
+        if (ids_resp->trade_ids.empty()) {
+            fail("The run's scope holds no trade: the books in scope hold none.");
             return;
         }
 
@@ -371,8 +380,7 @@ void report_execution_handler::resolve_market_readiness(ores::nats::delivery del
         res_req.as_of = as_of_date;
         const auto res_resp = call(res_req);
         if (!res_resp || !res_resp->success) {
-            fail("resolve_market_data_requirements failed: " +
-                 (err.empty() ? (res_resp ? res_resp->message : "(no response)") : err));
+            fail(refusal("resolve_market_data_requirements", res_resp));
             return;
         }
 
@@ -392,16 +400,16 @@ void report_execution_handler::resolve_market_readiness(ores::nats::delivery del
         cov_req.requirements.assign(addresses.begin(), addresses.end());
         const auto cov_resp = call(cov_req);
         if (!cov_resp || !cov_resp->success) {
-            fail("get_requirement_coverage failed: " +
-                 (err.empty() ? (cov_resp ? cov_resp->message : "(no response)") : err));
+            fail(refusal("get_requirement_coverage", cov_resp));
             return;
         }
 
-        std::vector<service::address_answer> answers;
+        std::vector<service::address_readiness> answers;
         answers.reserve(cov_resp->answers.size());
         for (const auto& one : cov_resp->answers)
-            answers.push_back(service::address_answer{
-                .oresmd_uri = one.oresmd_uri, .series_id = one.series_id, .cause = one.gap_cause});
+            answers.push_back(service::address_readiness{.oresmd_uri = one.oresmd_uri,
+                                                         .series_id = one.series_id,
+                                                         .gap_cause = one.gap_cause});
 
         const auto readiness =
             service::decide_market_readiness(ids_resp->trade_ids, requirements, answers);

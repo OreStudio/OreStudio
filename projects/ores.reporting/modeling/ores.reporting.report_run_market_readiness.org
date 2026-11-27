@@ -112,11 +112,20 @@ How many the market answered in full, which are the ones the run submitted.
 :nullable: false
 :END:
 
-How many the run left out. The run does not store it as a subtraction, so a
-record that disagrees with its own counts is refused at write rather than read
-as a partition that holds.
+How many the run left out. The run does not store it as a subtraction, so the
+table refuses a row whose counts do not add up rather than storing a record a
+reader would take for a partition that holds.
 
 * SQL
+
+** Checks
+
+| expression                                              |
+|---------------------------------------------------------|
+| "booked_count" = "complete_count" + "excluded_count"    |
+| "booked_count" >= 0                                     |
+| "complete_count" >= 0                                   |
+| "excluded_count" >= 0                                   |
 
 ** Flags
 :PROPERTIES:

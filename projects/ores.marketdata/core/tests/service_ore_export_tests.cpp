@@ -883,13 +883,15 @@ TEST_CASE("a requirement the market cannot answer is reported unanswered",
     const std::string unanswered =
         "oresmd://fx/EUR?type=series&instrument=fx_spot&quote=rate&ccy=JPY";
     ores::marketdata::repository::requirement_coverage_repository repo;
-    const auto coverage = repo.read(t.ctx, {held, unanswered}, std::nullopt);
+    // The point the fixture writes is dated, so the read is too: a read at "now" would report
+    // the fixture's own point as stale.
+    const auto coverage = repo.read(t.ctx, {held, unanswered}, "2016-02-06");
 
     REQUIRE(coverage.size() == 2);
     const auto cause_of = [&](const std::string& uri) {
         for (const auto& one : coverage)
             if (one.oresmd_uri == uri)
-                return one.cause;
+                return one.gap_cause;
         return std::string("not asked about");
     };
     CHECK(cause_of(held).empty());
@@ -902,5 +904,12 @@ TEST_CASE("a requirement the market cannot answer is reported unanswered",
     const auto earlier = repo.read(t.ctx, {held}, "2015-01-01");
     REQUIRE(earlier.size() == 1);
     CHECK(earlier.at(0).series_id.has_value());
-    CHECK(earlier.at(0).cause == "no_point");
+    CHECK(earlier.at(0).gap_cause == "no_point");
+
+    // A point that exists but is older than the export's own limit is stale, and the export
+    // writes no line for it, so the run cannot call the trade complete.
+    const auto late = repo.read(t.ctx, {held}, "2016-03-01");
+    REQUIRE(late.size() == 1);
+    CHECK(late.at(0).series_id.has_value());
+    CHECK(late.at(0).gap_cause == "stale");
 }

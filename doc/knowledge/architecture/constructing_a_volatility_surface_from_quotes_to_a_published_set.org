@@ -207,7 +207,7 @@ from the blueprint and its published grid at the export, and is not stored.
 
 The fourth is the synthetic surface feed, which publishes into the series the
 pillars name, through the contributors of
-[[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]].
+[[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][Synthetic contributor observations of a latent surface]].
 
 Surfaces of other asset classes are not changes to this construction: an equity
 or commodity surface quotes by strike or moneyness and an IR cube adds the swap
@@ -238,7 +238,7 @@ two ways a surface differs from a curve.
 - [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol Surface No-Arbitrage Conditions]]
 - [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd: ORE Studio Market Data URI]]
 - [[id:7AE57098-08D4-4D4A-83D6-918FE520B68E][Market series identity in curve pillars]]
-- [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][A synthetic contributor publishes noisy observations of a latent surface]]
+- [[id:D4C7C4A7-CD2D-4307-AB06-DA9BE3C3A334][Synthetic contributor observations of a latent surface]]
 - [[id:F439271D-F8CD-4A6E-A9FE-E523A4419846][Author a surface's framework]]
 - [[id:89537A61-5C48-4A8D-AE3A-8DD4069433DF][Calibrate or refresh a surface]]
 - [[id:F2E3F72C-60B9-4D23-A51F-B426B481470D][Inspect a surface's slices]]

@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 142FDA27-36E6-4C0D-95F2-6FAE223FC5E3
+:END:
+#+title: Story: Split the publisher of a market data value from its producer
+#+description: A value names one party today, so a derivation with no publisher mints one and a simulated source claims the administrator's identity. Give the value a producer beside its publisher, a standing of internal or external, and the lineage of what its derivation read.
+#+type: story
+#+level: s2
+#+filetags: :split_the_publisher_from_the_producer:inbox:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Two facts share one name in the store. The publisher is the party whose item a
+value is. The producer is what made the value. =market_series.provider_code= holds
+one of them, and the series key makes it the same one, so a derivation that no
+publisher owns had to mint a provider called =derived=, and a simulated source had
+to claim the identity of the administrator it stands in for.
+
+This story splits the two. A series will name the publisher whose item it is and
+the producer that made the value, with a kind that says whether the value was
+observed, generated or computed. Every value will state a standing, internal or
+external, so the model can hold a value no party may see without inventing a
+party to own it. Every derivation will name the series it read.
+
+When the story closes, the words on
+[[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]] are the
+words of the store, and no provider names a mechanism.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Now           | The words are written and one task is done; the schema work has not started. |
+| Waiting on    | Nothing.                               |
+| Next          | Settle the shape of the split, then start the producer task.            |
+| Last touched  | 2026-11-27                               |
+
+* Acceptance
+
+- A series names the publisher whose item it is and the producer that made the
+  value, and the producer's kind says whether the value was observed, generated
+  or computed.
+- A real view and a simulated view of one item are two series for one party, and
+  the ranking replaces one with the other; a test proves the replacement.
+- Every value states a standing, internal or external. An internal value never
+  becomes a series, no party can be entitled to it, and no bill meters it.
+- No provider names a mechanism. =derived=, =composite= and =latent= are not
+  publishers.
+- Every derivation writes the series it read, the derived FX volatility quotes
+  among them.
+- The 194 series, 2,612 fixings and 2,280 vendor ids filed under =derived= are
+  filed under the owner of their item, by
+  [[id:0B9995FC-96D1-4785-AEBD-512397ECA7D5][Annotate a derived value instead of naming a derived provider]].
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AA0728E0-F803-4789-B1FC-03D208EB3DF9][Name the acts and the standings of a market data value]] | DONE | 2026-11-27 | 2026-11-27 | The market data pages spend publish on three acts: a vendor quotes, the ingest delivers, and we publish a set. Name each act once, and give a value a standing of internal or external, so the model stops minting a publisher for every derivation. |
+| [[id:777EEF85-0CFA-4E5F-A9FF-338489810D22][Give a value a producer beside its publisher]] | BACKLOG | | | The series key names one party, so a real view and a simulated view of one item collide and every derivation mints a provider. Record what produced the value, with its kind, beside the publisher whose item it is, and let the two ranks coexist for a party. |
+| [[id:6ABDF5E7-0FDE-47A7-839A-5CB87FDF52EE][Give a value a standing of internal or external]] | BACKLOG | | | A latent surface is consumed by the generators alone and never becomes a series, yet nothing on the value says so. State the standing, so a reader knows whether a party can ever be entitled to it, and metering and the reads agree. |
+| [[id:43AFE7B9-E138-48CB-8893-E3AB335D17DA][Carry the inputs a derivation read]] | BACKLOG | | | A published curve and a calibrated surface record the series they read, but the derived FX volatility quotes and the fixings record nothing, so the graph stops exactly where the simulator is the producer. Make every derivation write its lineage. |
+| [[id:5F0B4C1D-7A2E-4B93-8C61-2D9E4A7F3B18][Finish the words in the pages the fixings work left behind]] | BACKLOG | | | The fixings pages and the provider pages still say publish where a producer quotes or fixes, and the fixings page's own title is carried by eighteen references in three different spellings. Finish the sweep where the fixings work is done. |
+
+The re-file of the =derived= items belongs to
+[[id:0B9995FC-96D1-4785-AEBD-512397ECA7D5][Annotate a derived value instead of
+naming a derived provider]], which this story unblocks: that task cannot name the
+owner of a value until the store can hold a producer that is not its publisher.
+
+* Decisions
+
+- *Three roles, three words.* An /administrator/ sets the benchmark or index an
+  item belongs to. A /publisher/ owns the ids, the credit and the terms, and a
+  series travels under its identity. A /producer/ makes the value. A value may
+  have no administrator, and then nobody is attributed for it.
+- *One word for each act.* A producer quotes a price or fixes a benchmark. The
+  ingest records the observation and delivers the tick. We publish a set, with its
+  approval, its candidate version, its supersession and its withdrawal. The
+  broker's publish of a message on a subject is the broker's word.
+- *Standing is a property of the value, not of a party.* Internal: consumed by
+  the generators of the synthetic market alone, never a series, never entitled,
+  never metered. External: may reach a party, by subscription or published set.
+  The latent volatility surface is the one internal value today.
+- *Three producer kinds.* Real, for a value observed from a live feed; simulated,
+  for one generated by the simulator, whether it stands in for a vendor or a
+  benchmark administrator; derived, for one we compute from other data, where
+  =derivation_kind= names the computation.
+- *The producer kind enters the series key.* A real and a simulated view of one
+  item are different series for one party, so the ranking can replace one with the
+  other. Without that, the two collide on the current key.
+- *=latent= is a producer, not a publisher.* Its provider row is referenced by
+  nothing: it holds no series, vendor instrument, mapping, feed, subscription or
+  route (measured 2026-11-27 in =bright_faraday=). The word survives as the
+  namespace token that [[id:90D85E90-E7EA-48D8-9245-313ECA3F9392][Synthetic feed
+  naming scheme]] reserves for a market no vendor publishes.
+- *=ore= is the producer of our own computation.* It is already a provider with
+  3,648 series in the store, so the code =derived= retires rather than being
+  replaced by a new name.
+- *Position is not a producer.* =composite= names a rule that blends providers'
+  series, and =demo= names a fictional publisher for exercises. Neither makes a
+  value of its own, so neither belongs in the producer column.
+
+* Out of scope
+
+- The standing of the fixings a run states, and the fixing a wide spot book
+  hides, which are
+  [[id:695BF078-277C-46B4-8F49-CEFFDD9E2752][State the fixing a party's trade
+  needs]].
+- The screens that read a producer, beyond the facts a read must expose.

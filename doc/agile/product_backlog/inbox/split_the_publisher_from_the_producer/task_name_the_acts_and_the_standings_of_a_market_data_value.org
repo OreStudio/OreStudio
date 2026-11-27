@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: AA0728E0-F803-4789-B1FC-03D208EB3DF9
+:END:
+#+title: Task: Name the acts and the standings of a market data value
+#+description: The market data pages spend publish on three acts: a vendor quotes, the ingest delivers, and we publish a set. Name each act once, and give a value a standing of internal or external, so the model stops minting a publisher for every derivation.
+#+type: task
+#+level: s1
+#+filetags: :split_the_publisher_from_the_producer:inbox:product_backlog:
+#+owner: marco
+#+branch: feature/name-the-acts-of-a-market-data-value
+#+pr: 5207
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:142FDA27-36E6-4C0D-95F2-6FAE223FC5E3][Split the publisher of a market data value from its producer]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The market data pages say one thing for each act, and a value has a word for
+whether a party can ever read it. A producer quotes a price or fixes a benchmark.
+The ingest records the observation and delivers the tick. We publish a set, and
+that act alone carries an approval, a candidate version, a supersession and a
+withdrawal. A value is internal or external.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:142FDA27-36E6-4C0D-95F2-6FAE223FC5E3][Split the publisher of a market data value from its producer]] |
+| Now          | Done. The words are on the hub and the pages that contradicted it are fixed. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. The model tasks take the words from here. |
+| Last touched | 2026-11-27                               |
+
+* Acceptance
+
+- The hub states four acts, each with one word, and names the two standings with
+  what each decides.
+- The producer's act no longer reads as publication in the three pages that
+  described it: the live path, the synthetic contributor, and the derivation of
+  FX volatility quotes.
+- The pages whose titles taught the opposite are renamed, and every reference to
+  them carries the new name.
+- Every id in the edited pages resolves, and every edited page renders.
+
+* Plan
+
+1. Read the pages that define the rule, and the pages that contradict it.
+2. Write the acts and the standings into the hub, before touching any other page,
+   so the authority exists first.
+3. Fix the three pages that state a different rule, and rename the two whose
+   titles state it.
+4. Replace the producer's act with the model's word in the pages that carry it,
+   and leave the broker's publish of a message alone.
+5. Read the changed pages back and run the doc gate.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Edited pages that render | 9 | =./compass.sh site page <the edited pages>= | =a818182055= |
+| Ids referenced by the four rewritten pages that do not resolve | 0 of 112 | inline python against =.org-id-locations-file= (17,128 ids) | =a818182055= |
+| New diagnostics from the doc ratchet | 0 | =compass-ng check --ratchet 02bc34395c5d5e1a6e1e28cc4157bc9939214418= | =e453cbf79f= |
+| The audience gate | pass | =./compass.sh check --only audience= | =e453cbf79f= |
+
+* Notes
+
+- The hub gained two words, =Producer= and =Administrator=, because the model
+  needed them and had no row for either. Its =Publisher= row now says that a party
+  is not an act, and that a publisher need be neither the administrator of the
+  item nor the producer of the value.
+- Publication on the wire is left alone where it names the mechanism: =core NATS
+  publish= in the adapter contract, and a feed's tick subject. The hub says the
+  broker's word is the broker's, so these stand as they are.
+- The pages that still carry the producer's act as publication are collected in
+  [[id:5F0B4C1D-7A2E-4B93-8C61-2D9E4A7F3B18][Finish the words in the pages the
+  fixings work left behind]], because the fixings pages are changing in another
+  worktree.
+- Two generated indexes were stale at the branch point, and the model task does
+  not need them. They are regenerated in their own commit on this branch.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5207][#5207]] | [docs] Name the acts and the standings of a market data value |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Done on 2026-11-27. The hub states the four acts and the two standings, and its
+words table carries producer and administrator. The live path is renamed from
+publication to delivery and says that delivery is not publication. The synthetic
+contributor page is renamed, and a contributor now quotes what it sees. The
+derivation of FX volatility quotes says the derived source is a provider and a
+producer of its own, which settles the rule its own task was raised to settle. A
+demand set covers both quoting and fixing, so that page's title uses produce.
+
+Fifteen files changed across three commits. Every page renders and every id
+resolves. The doc ratchet reports no new diagnostic.

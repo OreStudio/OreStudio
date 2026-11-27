@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 43AFE7B9-E138-48CB-8893-E3AB335D17DA
+:END:
+#+title: Task: Carry the inputs a derivation read
+#+description: A published curve and a calibrated surface record the series they read, but the derived FX volatility quotes and the fixings record nothing, so the graph stops exactly where the simulator is the producer. Make every derivation write its lineage.
+#+type: task
+#+level: s1
+#+filetags: :split_the_publisher_from_the_producer:inbox:product_backlog:
+#+owner: marco
++#+branch:
++#+pr:
++#+blocked_on:
++#+blocked_since:
++#+created: 2026-11-27
++#+updated: 2026-11-27
++#+environment: bright_faraday
++#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:142FDA27-36E6-4C0D-95F2-6FAE223FC5E3][Split the publisher of a market data value from its producer]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every value we compute names the series it read. A reader walks from a published
+surface back through its calibration to the quotes, and from those to the fixings
+the derived source inferred them from, without reading a configuration.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:142FDA27-36E6-4C0D-95F2-6FAE223FC5E3][Split the publisher of a market data value from its producer]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Add the writer to the derived source, the largest gap. |
+| Last touched | 2026-11-27                               |
+
+* Acceptance
+
+- The derived FX volatility quotes write one lineage row per point, naming the
+  fixing series and the as-of they read.
+- A fixing the simulator derives from a spot series writes a lineage row naming
+  that series.
+- A read walks from a published surface to the fixings behind its quotes through
+  the lineage alone.
+- A test asserts a lineage row for every derived point, and asserts that a quoted
+  tick gets none.
+- The composites tables are either read by the resolution or deleted. They hold
+  the definition-level edge and currently hold no rows.
+
+* Plan
+
+1. *Inventory the writers.* =curve_republish_service.cpp= and
+   =fx_vol_surface_calibration_service.cpp= write one lineage row per point today,
+   with the config, its version, the source series ids and the as-of.
+   =ores.synthetic= writes none, so the derived FX volatility quotes and the
+   simulator's fixings record nothing.
+2. *The derived source first.* It reads fixings through the market data reader and
+   publishes quotes; its lineage names the fixing series and the as-of of the day
+   it read. It writes through the market data service rather than the ingest, so
+   the writer goes with that path.
+3. *The fixing derivation.* A fixing inferred from a spot series names the spot
+   series it cancelled and the as-of.
+4. *The composites.* Decide: read them in resolution, so a composite's inputs are
+   a stored edge, or delete them because the lineage already carries the fact at
+   the point.
+5. *Prove.* A provisioned tenant publishes a surface, and a read of one of its
+   points returns the fixings behind it.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Services that write observation lineage | 2: the curve republish and the surface calibration | =git grep -l observation_lineage -- projects/ores.marketdata/service/src/app= | =1fd8150a69= |
+| Services in =ores.synthetic= that write it | 0 | =git grep -rl observation_lineage -- projects/ores.synthetic= | =1fd8150a69= |
+| Composite rows in the store | 0 | =./compass.sh sql -- -c "select count(*) from ores_marketdata_composites_tbl"= | =eb7fd32aa7= |
+
+* Notes
+
+- The lineage table already carries the fact: =point_source_kind=, the derivation
+  config and version, =source_as_of=, =source_series_ids= and =source_weights=,
+  with a check that the weights match the ids. The gap is writers, not schema.
+- A quoted tick gets no row by design: quoted is the absence of a row. Every
+  writer added here must keep that, or the hypertable's volume argument breaks.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

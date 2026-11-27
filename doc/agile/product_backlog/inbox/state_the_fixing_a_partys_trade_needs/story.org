@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 695BF078-277C-46B4-8F49-CEFFDD9E2752
+:END:
+#+title: Story: State the fixing a party's trade needs
+#+description: The fixing now names its administrator, but a synthetic run leaves the overnight indices with no producer and a party with a wide spot book loses every fixing it could derive. State the fixing, once, under the administrator that sets it.
+#+type: story
+#+level: s2
+#+filetags: :inbox:product_backlog:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A trade floats on an index, and its coupon needs the fixing of the day before the
+valuation date. The catalogue now names the administrator of every fixing, and the
+simulator states the fixings of the administrators that no public adapter serves.
+
+Two gaps remain, and both stop a swap from pricing. The overnight indices whose
+administrator also has a public adapter have no producer in a run, because that
+adapter is not installed in the release. And a fixing is derived from a party's
+spot series by cancelling one base against the other, so a party routed to several
+vendors' spots carries several bases, nothing cancels, and every fixing is
+dropped.
+
+When the story closes, a party's overnight swap prices from the fixing its index
+states, and the reason a fixing is missing is a fact the run states.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Now           | Planned only. No code change has started. |
+| Waiting on    | Nothing.                               |
+| Next          | Decide who states an overnight index in a synthetic run.            |
+| Last touched  | 2026-11-27                               |
+
+* Acceptance
+
+- A provisioned synthetic tenant holds the fixings of ESTR, SONIA and SOFR, each
+  under its administrator, or the story records which of them a run does not state
+  and why.
+- A party routed to more than one vendor's spots holds the fixing of every pair it
+  trades.
+- An overnight swap prices from the fixing of its index, and a report of the run
+  shows a non-zero NPV for it.
+- No item has two producers in a run, and the source a party reaches is the one
+  its route picks.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7D79E648-0905-4FA7-81E5-42FC781A7DCB][State the overnight indices a synthetic run needs]] | BACKLOG | | | Every fixing administrator now has a simulated source except the overnight indices whose administrator also has a public adapter, and that adapter is not installed. Decide who states ESTR, SONIA and SOFR in a synthetic run, and prove it with a provisioned tenant. |
+| [[id:DD7F623E-7CB3-4C6A-AB99-6C722D14A241][Fix the fixing a party's spot book hides]] | BACKLOG | | | A fixing series is inferred from the party's spot series by cancelling one base against the other, so a party routed to several vendors' spots carries several bases, nothing cancels, and every fixing is dropped. Narrow the inference to the series the index names. |
+
+* Decisions
+
+- *A fixing is keyed by the index and the pair it belongs to.* The index names
+  what is fixed. The party's whole spot book must not decide whether a fixing
+  exists.
+- *The simulator states an overnight index it stands in for.* The public adapters
+  for the Bank of England and the New York Fed are not installed, and a synthetic
+  run must price a swap without them. The administrator is unchanged: the value is
+  simulated, and its producer kind says so, as
+  [[id:142FDA27-36E6-4C0D-95F2-6FAE223FC5E3][Split the publisher of a market
+  data value from its producer]] establishes.
+
+* Out of scope
+
+- An adapter that reads the Bank of England or the New York Fed over the network.
+  That is its own task, wanted when a run prices from live sources.
+- The vocabulary and the producer model, which the story above owns.

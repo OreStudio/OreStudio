@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 083D4B54-549B-4D56-AE89-430A8A4277FF
 :END:
-#+title: Demand drives what an adapter publishes
+#+title: Demand drives what an adapter produces
 #+description: How the service computes the set of ids each adapter must serve, when it sends the set, and why demand also feeds metering.
 #+type: knowledge
 #+level: cross
@@ -11,7 +11,7 @@
 
 * Summary
 
-An adapter publishes only the ids that parties need. The service computes the
+An adapter produces only the ids that parties need. The service computes the
 demand set of each adapter from the subscriptions and the routes of its
 parties, and sends the set by request and reply. A live adapter then pays the
 vendor for those ids only. The same demand intervals feed metering.

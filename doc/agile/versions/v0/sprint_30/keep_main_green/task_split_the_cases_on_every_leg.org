@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 6CCF02BC-0A3B-4BBB-A13B-222D2EE5E63D
+:END:
+#+title: Task: Split the cases on every leg
+#+description: Task for: Keep main green
+#+type: task
+#+level: s1
+#+filetags: :keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/split-the-cases-on-every-leg
+#+pr: 5199
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give CDash one entry per Catch2 case on the memcheck legs too, so every leg reports at the same granularity.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-27                               |
+
+* Acceptance
+
+- The memcheck legs submit one entry per case, or a suite entry where the cases cannot account for the suite.
+
+* Plan
+
+Move the expansion step out of the branch that runs =ctest_test=, so it runs
+after either test step, and leave the script's rules alone.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Entries the debug leg submits today | 112 suites and 1 not run, against 30,457 cases on the release leg | =my.cdash.org/api/v1/index.php?project=OreStudio&date=2026-11-27= | 71dd9efbe41e |
+| A memcheck-shaped entry through the script | 1 suite expanded into 6 cases, with valgrind in the command line | =expand_catch2_cases.py= on a hand-built Test.xml | HEAD |
+| The same entry with the suite failed and its cases passing | 0 suites expanded, so the suite entry stays | same | HEAD |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5199][#5199]] | [ci] Split the cases on every leg |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+Every leg now splits its results. The expansion step used to sit inside the
+branch that runs =ctest_test=, so the memcheck legs submitted one entry per
+suite: =linux-clang-debug-ninja= reports 112 entries where =linux-clang-release=
+reports 30,457 cases.
+
+The script needed no change. It reads the suite's command line for the path its
+Catch2 results were written to, and a valgrind command line carries that path
+like any other. Two rules still hold the suite-level entry where the cases
+cannot account for it, which is what a valgrind defect on an otherwise passing
+suite looks like.
+
+Verified locally: a hand-built memcheck entry expands into its six cases, and
+the same entry with the suite failed and every case passing stays one entry.
+The CMake configure is clean.

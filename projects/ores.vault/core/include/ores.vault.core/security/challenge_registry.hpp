@@ -20,6 +20,7 @@
 #define ORES_VAULT_CORE_SECURITY_CHALLENGE_REGISTRY_HPP
 
 #include <chrono>
+#include <cstddef>
 #include <mutex>
 #include <optional>
 #include <string>
@@ -45,18 +46,26 @@ public:
     /// enough that a captured nonce is worthless before it is used.
     static constexpr std::chrono::seconds default_life{60};
 
+    /// The most challenges the vault holds at once. Issuing one costs no
+    /// credential, so the number outstanding is bounded rather than left to
+    /// whoever asks: at a minute's life this is the ceiling on the memory one
+    /// caller can occupy, and a burst larger than this is a caller retrying.
+    static constexpr std::size_t max_live{4096};
+
     /**
      * @brief Records a nonce against a challenge and a consumer.
      *
-     * @return The nonce the caller must see come back, so the answer can be
-     * compared with what was issued.
+     * @return Whether the challenge was recorded, which it is not when the
+     * registry already holds as many as it will.
      */
-    [[nodiscard]] std::string
-    issue(const std::string& challenge_id, const std::string& consumer, std::string nonce) {
+    bool issue(const std::string& challenge_id, const std::string& consumer, std::string nonce) {
         std::lock_guard<std::mutex> lock(mutex_);
         forget_expired();
-        held_[challenge_id] = held{consumer, nonce, std::chrono::steady_clock::now() + default_life};
-        return nonce;
+        if (held_.size() >= max_live)
+            return false;
+        held_[challenge_id] =
+            held{consumer, nonce, std::chrono::steady_clock::now() + default_life};
+        return true;
     }
 
     /**

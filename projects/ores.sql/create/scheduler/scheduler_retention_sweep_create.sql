@@ -57,6 +57,13 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+-- The sweep is the platform's maintenance path, and it deletes from tables other
+-- components own: the report run output, the quotes and the delivery counters.
+-- The alternative is to grant the scheduler service standing delete rights on
+-- every store it might bound, which is a wider right than the job needs and one
+-- no grant can keep in step with a catalogue that is data. So the function is
+-- the definer's and the targets come from the catalogue, which only the platform
+-- writes; a store whose column does not exist is refused rather than executed.
 create or replace function ores_scheduler_apply_retention_policies_fn()
 returns table (
     "policy_code" text,
@@ -66,6 +73,7 @@ returns table (
     "outcome" text
 )
 language plpgsql
+security definer
 as $$
 declare
     policy record;
@@ -73,6 +81,7 @@ declare
     chunks_before bigint;
     chunks_after bigint;
     dropped bigint;
+    deleted bigint;
     target_name text;
     failure text;
 begin
@@ -86,7 +95,19 @@ begin
         -- ledger is read rather than the policy row updated, because an update
         -- to a versioned row opens a new version: a sweep writing its own
         -- bookkeeping there would read, to a person, as a change they made.
-        select * from "ores_scheduler_retention_policies_tbl" p
+        --
+        -- The store comes from the catalogue, not from the policy: the target,
+        -- the shape and the column a delete compares are facts the catalogue
+        -- states once, so a policy that has drifted from its store is visible
+        -- here rather than acted on.
+        select p.*, s.code as store_found, s.target as store_target,
+               s.target_kind as store_target_kind,
+               s.time_column as store_time_column
+        from "ores_scheduler_retention_policies_tbl" p
+        left join "ores_scheduler_retained_stores_tbl" s
+               on s."tenant_id" = p."tenant_id"
+              and s."code" = p."store_code"
+              and s."valid_to" = ores_utility_infinity_timestamp_fn()
         where p."enabled"
           and p."tenant_id" = ores_utility_system_tenant_id_fn()
           and p."valid_to" = ores_utility_infinity_timestamp_fn()
@@ -100,9 +121,19 @@ begin
     loop
         cutoff := now() - make_interval(days => policy."retention_days");
         dropped := 0;
+        deleted := 0;
         failure := '';
 
-        if policy."action" = 'drop_chunks' and policy."target_kind" = 'chunked_table' then
+        policy_code := policy."code";
+        action := policy."action";
+        target := policy."target";
+        outcome := 'skipped';
+
+        if policy.store_found is null then
+            failure := 'the catalogue names no store ' || policy."store_code";
+            target := policy."target";
+        elsif policy."action" = 'drop_chunks' and policy.store_target_kind = 'chunked_table' then
+            target := policy.store_target;
             begin
                 -- Resolve the target to the name the catalogue states, so a
                 -- policy naming its table without a schema still counts what it
@@ -112,13 +143,13 @@ begin
                 select format('%I.%I', h.hypertable_schema, h.hypertable_name)
                 into target_name
                 from timescaledb_information.hypertables h
-                where format('%I.%I', h.hypertable_schema, h.hypertable_name) = policy."target"
-                   or h.hypertable_name = policy."target"
+                where format('%I.%I', h.hypertable_schema, h.hypertable_name) = policy.store_target
+                   or h.hypertable_name = policy.store_target
                 limit 1;
 
                 if target_name is null then
                     outcome := 'skipped';
-                    failure := 'no hypertable matches ' || policy."target";
+                    failure := 'no hypertable matches ' || policy.store_target;
                 else
                     select count(*) into chunks_before
                     from timescaledb_information.chunks c
@@ -139,15 +170,56 @@ begin
                 failure := sqlerrm;
                 outcome := 'failed';
             end;
+        elsif policy."action" = 'delete_rows' and policy.store_target_kind = 'table' then
+            target := policy.store_target;
+            begin
+                -- The column a delete compares is the catalogue's, and it is
+                -- checked against the table before the delete runs: a store
+                -- whose column no longer exists is reported, not deleted from
+                -- by a guess.
+                if policy.store_time_column is null then
+                    outcome := 'skipped';
+                    failure := 'the store names no column a delete compares';
+                elsif not exists (
+                    select 1
+                    from pg_catalog.pg_attribute a
+                    where a.attrelid = to_regclass(policy.store_target)
+                      and a.attname = policy.store_time_column
+                      and a.attnum > 0
+                ) then
+                    outcome := 'skipped';
+                    failure := 'the store names no column ' || policy.store_time_column;
+                else
+                    execute format('delete from %s where %I < $1',
+                                   policy.store_target, policy.store_time_column)
+                    using cutoff;
+
+                    get diagnostics deleted = row_count;
+                    outcome := 'applied';
+                end if;
+            exception when others then
+                failure := sqlerrm;
+                outcome := 'failed';
+            end;
+        elsif policy."action" in ('expire_prefix', 'release_directory') then
+            -- Neither action is reachable from SQL: an object prefix lives in
+            -- the object store and a job's folder on a node's disk. The sweep
+            -- says who owns it instead of pretending to have bounded the store.
+            outcome := 'skipped';
+            target := coalesce(policy.store_target, policy."target");
+            failure := case policy."action"
+                when 'expire_prefix' then
+                    'the storage lifecycle expires an object prefix; the sweep cannot reach the object store'
+                else
+                    'a node releases a job''s folder when it uploads the output; the sweep cannot reach a host''s disk'
+            end;
         else
             outcome := 'skipped';
-            failure := 'the sweep applies only a chunk drop today';
+            failure := 'the sweep performs a chunk drop and a row delete, and this store asks for ' ||
+                       policy."action";
         end if;
 
-        policy_code := policy."code";
-        action := policy."action";
-        target := policy."target";
-        removed := dropped;
+        removed := dropped + deleted;
 
         -- The ledger carries the tenant of the policy it ran, not the tenant the
         -- sweep ran in: a sweep that applies a tenant's own policies writes that
@@ -157,7 +229,7 @@ begin
              "removed", "outcome", "detail")
         values
             (gen_random_uuid(), policy."tenant_id", policy."code", policy."action",
-             policy."target", now(), dropped, outcome, failure);
+             target, now(), removed, outcome, failure);
 
         return next;
     end loop;

@@ -154,6 +154,10 @@ def fetch_service_definitions(services):
             "args_template": args_template,
             "runtime": svc.get("runtime", "native"),
             "entry_point": svc.get("entry_point", ""),
+            # The vault material a unit resolves its own password with, which
+            # compass vault provision writes under these two names.
+            "psql_var": svc.get("psql_var", ""),
+            "email": svc.get("email", ""),
         })
     return defs
 
@@ -216,6 +220,44 @@ SERVICE_CREDENTIALS = {
 }
 
 
+# The names the vault client reads a unit's keys by, which are not the names the
+# keys are stored under: LoadCredential= states the name the unit sees.
+CONSUMER_KEY_CREDENTIAL = "vault-consumer.key"
+TRANSPORT_KEY_CREDENTIAL = "vault-transport.pub"
+
+# The services that cannot resolve their own password. The vault would have to
+# answer its own request, and IAM has to exist before the vault does: the vault
+# fetches the keys that verify tokens from IAM before it subscribes. Both keep
+# the credential file the deployment places for them.
+SELF_PROVISIONING = {"vault_service", "iam_service"}
+
+
+def _vault_credential_lines(def_row, checkout_root):
+    """The LoadCredential= and Environment= lines a unit needs to resolve its
+    own database password from the vault.
+
+    Written only where compass vault provision has placed the material, so a
+    checkout that never provisioned anything starts from its environment file
+    exactly as before. Returns the credential lines and the environment lines.
+    """
+    psql_var = def_row.get("psql_var", "")
+    email = def_row.get("email", "")
+    if not psql_var or not email or psql_var in SELF_PROVISIONING:
+        return "", ""
+
+    keys_dir = Path(checkout_root) / "build" / "keys"
+    private = keys_dir / f"{psql_var}.vault.key"
+    transport = keys_dir / "vault.transport.pub"
+    if not private.is_file() or not transport.is_file():
+        return "", ""
+
+    credentials = (f"LoadCredential={CONSUMER_KEY_CREDENTIAL}:{private}\n"
+                   f"LoadCredential={TRANSPORT_KEY_CREDENTIAL}:{transport}\n")
+    environment = (f"Environment=ORES_VAULT_CONSUMER={email}\n"
+                   f"Environment=ORES_VAULT_PASSWORD_SECRET=db.{psql_var}.password\n")
+    return credentials, environment
+
+
 def _credential_lines(service_name, checkout_root):
     """The LoadCredential= lines a service's unit needs, one per key file.
 
@@ -255,8 +297,16 @@ def render_singleton_unit(def_row, deps_on, checkout_root, env_name, target_name
     args = _substitute_args(def_row["args_template"], def_row, keys_dir,
                             log_level=log_level, log_to_file=log_to_file)
 
+    vault_credentials, vault_environment = _vault_credential_lines(def_row, checkout_root)
+
     after = [_unit_basename("nats-server", env_name) + ".service"] + \
         [_unit_basename(d, env_name) + ".service" for d in deps_on]
+    # A unit that resolves its own password asks the vault first thing it does,
+    # so the vault goes before it. Ordering only: the resolver waits for the
+    # vault and falls back to the configuration when it does not answer, so a
+    # failed vault must not stop the fleet from starting.
+    if vault_credentials:
+        after.append(_unit_basename("ores.vault.service", env_name) + ".service")
     after_line = " ".join(after)
 
     jwt_key_reexport = ""
@@ -267,6 +317,7 @@ def render_singleton_unit(def_row, deps_on, checkout_root, env_name, target_name
         )
 
     credential_lines = _credential_lines(def_row["service_name"], checkout_root)
+    credential_lines += vault_credentials
 
     shell_cmd = (f'{jwt_key_reexport}cd "{bin_dir}" && '
                  f'exec "./{def_row["binary_name"]}" {args}')
@@ -286,7 +337,7 @@ Type=notify
 {START_TIMEOUT}
 NotifyAccess=all
 EnvironmentFile={env_file}
-{credential_lines}ExecStart=/bin/sh -c '{shell_cmd}'
+{credential_lines}{vault_environment}ExecStart=/bin/sh -c '{shell_cmd}'
 Restart=always
 RestartSec=2
 {FLEET_MEMORY_LIMITS}

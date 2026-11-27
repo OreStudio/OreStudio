@@ -35,8 +35,11 @@ from pathlib import Path
 import vault_credentials
 from service_registry import load_service_registry
 
-# The services whose password never enters the vault, because they are on the
-# path the vault's own material takes.
+# The service whose password never enters the vault, because it would have to
+# answer its own request. IAM is provisioned here like any other service, even
+# though its unit does not resolve yet: it has to start before the vault, because
+# the vault fetches its token keys from IAM, so the value waits in the vault for
+# the day that order changes. systemd_generate holds the other half of that fact.
 SELF_PROVISIONING = {"vault_service"}
 
 # The vault's key encryption key, transport key and the version that says which

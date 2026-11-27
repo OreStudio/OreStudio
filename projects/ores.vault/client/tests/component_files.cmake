@@ -22,5 +22,6 @@
 set(files
     "credential_bootstrap_tests.cpp"
     "main.cpp"
+    "service_password_tests.cpp"
     "stub_tests.cpp"
 )

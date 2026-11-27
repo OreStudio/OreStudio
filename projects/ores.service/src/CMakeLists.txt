@@ -44,6 +44,10 @@ target_link_libraries(${lib_target_name}
         ores.database.lib
         ores.utility.lib
         ores.workflow.api.lib
+        # The runner takes a unit's database password from the vault before the
+        # pool opens, which is the one place every service passes through and so
+        # the one place the exchange has to live.
+        ores.vault.client.lib
         Boost::boost
     PRIVATE
         ores.logging.lib)

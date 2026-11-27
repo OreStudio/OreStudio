@@ -22,6 +22,7 @@
 
 #include "ores.telemetry.core/log/lifecycle_manager.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.vault.client/client/service_password.hpp"
 #include <boost/exception/diagnostic_information.hpp>
 #include <cstdlib>
 
@@ -44,6 +45,49 @@ void log_host_command(ores::logging::logger_t& lg,
 
     ORES_LOG_SEV(lg, info) << "Command line arguments: " << args;
     ORES_LOG_SEV(lg, debug) << "Configuration: " << cfg;
+}
+
+/**
+ * @brief Takes this unit's database password from the vault, when one was placed.
+ *
+ * The first secret a workload resolves is its own database password, and it has
+ * to be resolved before the pool opens, which is before any token can exist. A
+ * deployment states the unit's consumer and the secret to ask for; the platform
+ * places the key pair; the vault seals a challenge to the public half. See
+ * =lib/doc/knowledge/security/secure_introduction_of_a_workload_to_the_vault.org=.
+ *
+ * A configuration that states neither name is left alone, so a checkout, a test
+ * run and a tool that links this runner still start from their own options. A
+ * named unit whose vault refuses keeps the configured password and logs the
+ * refusal: the fleet boots, and the operator sees why it did not use the vault.
+ * The fallback goes when the environment file stops carrying a password to fall
+ * back to.
+ */
+template <typename Config>
+void take_database_password_from_vault(Config& cfg, ores::logging::logger_t& lg) {
+    using namespace ores::logging;
+
+    if constexpr (requires {
+                      cfg.database;
+                      cfg.nats;
+                  }) {
+        try {
+            const auto placed = ores::vault::client::placed_credential_from_environment();
+            if (!placed)
+                return;
+
+            const auto resolved = ores::vault::client::resolve_placed_password(cfg.nats, *placed);
+            if (!resolved)
+                return;
+
+            cfg.database.password = *resolved;
+            ORES_LOG_SEV(lg, info)
+                << "Took the database password from the vault as " << placed->consumer;
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(lg, error) << "The vault did not answer for " << cfg.database.user
+                                    << ", so the configured password stands: " << e.what();
+        }
+    }
 }
 
 /**
@@ -85,9 +129,12 @@ boost::asio::awaitable<int> run_host_async(const std::vector<std::string>& args,
     if (!ocfg)
         co_return EXIT_SUCCESS;
 
-    const auto& cfg(*ocfg);
+    // A copy, because the database password may be replaced below and the
+    // application is handed the resolved one rather than the file's.
+    auto cfg(*ocfg);
     lifecycle_manager lm(cfg.logging);
 
+    detail::take_database_password_from_vault(cfg, lg);
     detail::log_host_command(lg, args, cfg, opts);
 
     try {

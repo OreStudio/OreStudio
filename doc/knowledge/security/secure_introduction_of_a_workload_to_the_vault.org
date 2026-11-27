@@ -241,6 +241,29 @@ then opened by the ordinary write, so provisioning runs the path the bus runs
 instead of a parallel one that could drift from it; the audit records the vault's
 own account as the performer and the consumer as the owner.
 
+** Who asks, and when
+
+The write above puts the material in the vault. The asking happens in the
+service runner, which every compiled service passes through before it builds its
+database context: the deployment states the unit's consumer and the name of the
+secret in the unit itself, the platform placed the unit's key pair, and the
+runner exchanges a challenge for the password.
+
+The order the units start in is what the exchange cannot decide for itself, and
+it has one constraint that is easy to miss. The vault fetches the keys that
+verify tokens from IAM before it subscribes to anything, so IAM must exist
+before the vault, and the vault must exist before every service that resolves.
+The order is therefore nats, IAM, the vault, then the rest; a unit that resolves
+is ordered after the vault without requiring it, because a resolver that cannot
+reach the vault falls back to the password its configuration states and the fleet
+still boots.
+
+That order is also why two processes keep a password in a file rather than
+resolving one: the vault cannot answer its own request, and IAM cannot be asked
+before the process it has to start before. Both exceptions are stated in
+[[id:DBF20EC5-63BB-4DE5-957C-5322DE0E487F][Secrets Register]] rather than left
+to be rediscovered.
+
 ** What it does not do
 
 The bootstrap key lives as long as the unit's deployment, so the guarantee is

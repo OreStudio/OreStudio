@@ -8,7 +8,7 @@
 #+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
 #+owner: marco
 #+branch: feature/record-a-runs-market-readiness
-#+pr:
+#+pr: 5192
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
@@ -131,7 +131,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5192][#5192]] | [reporting] Decide what a run may value before it exports anything |
 
 * Review
 

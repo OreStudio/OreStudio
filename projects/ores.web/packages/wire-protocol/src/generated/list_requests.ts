@@ -5246,11 +5246,9 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         asOf: false,
         filter: [
             'report_instance_id',
-            'phase_code',
             'severity',
             'id_one_of',
             'report_instance_id_one_of',
-            'phase_code_one_of',
             'severity_one_of',
         ],
         rows: ['errors'],
@@ -5259,11 +5257,9 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         asOf: false,
         filter: [
             'report_instance_id',
-            'phase_code',
             'severity',
             'id_one_of',
             'report_instance_id_one_of',
-            'phase_code_one_of',
             'severity_one_of',
         ],
         rows: ['errors'],

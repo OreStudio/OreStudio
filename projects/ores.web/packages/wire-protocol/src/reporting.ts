@@ -49,6 +49,26 @@ export const reportHealthWordSchema = z.enum(REPORT_HEALTH_WORDS);
 export type ReportHealthWord = z.infer<typeof reportHealthWordSchema>;
 
 /**
+ * Where in a report run an error came from.
+ *
+ * The three are the platform's own closed set, and the store checks the same
+ * three words in `report_error_event.phase_code`: `preprocess`, the run's own
+ * work before the engine receives anything; `engine`, the engine's execution;
+ * and `postprocess`, the reading and closing of what the engine produced. A run
+ * that fails before the engine sees it states `preprocess`, which is why the
+ * phase and the error's scope are two different questions.
+ *
+ * The set is an enumeration rather than any string, so a phase the platform has
+ * not stated is unrepresentable here rather than drawn as a word a person
+ * cannot place.
+ */
+export const REPORT_PHASES = ['preprocess', 'engine', 'postprocess'] as const;
+
+export const reportPhaseSchema = z.enum(REPORT_PHASES);
+
+export type ReportPhase = z.infer<typeof reportPhaseSchema>;
+
+/**
  * The latest run of one definition, as a row states it.
  *
  * The problem counts are null when the run's problems could not be read, which
@@ -60,6 +80,20 @@ export const reportRunViewSchema = z.object({
     completedAt: nullableWireTimestampSchema,
     errors: z.int().nonnegative().nullable(),
     warnings: z.int().nonnegative().nullable(),
+    /**
+     * The same problems, split by the phase that recorded them, and no entry
+     * for a phase that recorded none. Null when the problems could not be
+     * read, which is why the two totals above are null beside it.
+     */
+    errorsByPhase: z
+        .array(
+            z.object({
+                phase: reportPhaseSchema,
+                errors: z.int().nonnegative(),
+                warnings: z.int().nonnegative(),
+            }),
+        )
+        .nullable(),
 });
 
 export type ReportRunView = z.infer<typeof reportRunViewSchema>;

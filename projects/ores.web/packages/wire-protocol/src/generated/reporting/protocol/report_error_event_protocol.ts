@@ -38,11 +38,9 @@ export interface ReportErrorEventLookup {
 
 export interface ReportErrorEventsFilter {
     report_instance_id: string | null;
-    phase_code: string | null;
     severity: string | null;
     id_one_of: string[] | null;
     report_instance_id_one_of: string[] | null;
-    phase_code_one_of: string[] | null;
     severity_one_of: string[] | null;
 }
 

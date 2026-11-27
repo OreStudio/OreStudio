@@ -20,7 +20,7 @@
  */
 
 import { z } from 'zod';
-import { reportHealthWordSchema } from './reporting.js';
+import { reportHealthWordSchema, reportPhaseSchema } from './reporting.js';
 import { nullableWireTimestampSchema, wireTimestampSchema } from './time.js';
 
 /**
@@ -103,7 +103,7 @@ export const reportRunErrorViewSchema = z.object({
     id: z.string(),
     severity: z.string(),
     scope: z.string(),
-    phase: z.string(),
+    phase: reportPhaseSchema,
     about: z.string(),
     message: z.string(),
     subject: z.string().nullable(),

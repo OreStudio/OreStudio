@@ -142,6 +142,28 @@ the request, and a consumer that asks for another's entry is refused as one that
 holds no such secret. The exchange is therefore a narrower power than a token,
 not a wider one, and it cannot be used as a general login.
 
+** Where the platform's own secrets live
+
+The exchange answers in one tenant, and it is the system tenant, because what it
+hands over belongs to the deployment and not to any of the tenants it serves. A
+service's database password protects a database role, and the role is the same
+whichever tenant's request the service later serves; a tenant that held a copy
+would hold the deployment's credential, and an installation with ten tenants
+would hold ten copies of it. Service accounts are already rows of the system
+tenant (=ores_iam_service_accounts_upsert_fn= writes them with
+=ores_utility_system_tenant_id_fn()=), so the consumer a service registers and
+the password it resolves sit beside its own account.
+
+Two consequences follow. Provisioning must act as a system-tenant identity, not
+as a tenant administrator, because the row it writes belongs to the system
+tenant; the shell account =shell@system.ores= is one, and the deployment already
+holds its database user. And the person-facing =register_consumer= stays as it
+is: a tenant's own consumer, such as an integration that resolves a tenant's
+secret, registers under the tenant whose request it makes, and the vault
+resolves it in that tenant through the verified token. The two paths do not
+overlap: a token path for what belongs to a tenant, the bootstrap path for what
+belongs to the deployment.
+
 ** What it does not do
 
 The bootstrap key lives as long as the unit's deployment, so the guarantee is

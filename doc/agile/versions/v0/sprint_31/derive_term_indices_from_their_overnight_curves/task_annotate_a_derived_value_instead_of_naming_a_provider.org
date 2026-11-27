@@ -32,11 +32,11 @@ This contradicts the page that blesses a derived source of our own (Derivation o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
-| Now          | The three term indices sit under their administrators and say how they were made; the FX volatility quotes are what is left under =derived=. |
+| Now          | Nothing. |
 | Waiting on   | The story that gives a value a producer and a standing, for the FX volatility quotes. |
-| Next         | Step 5: settle the contradiction against the FX volatility page, and settle where those 35 series go. |
+| Next         | Nothing. |
 | Last touched | 2026-11-27                               |
 
 * Acceptance

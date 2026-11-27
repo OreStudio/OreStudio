@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :housekeeping:retention:catalogue:defaults:sprint_31:housekeeping_bound_every_store_the_system_keeps:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/bound-every-store-by-default
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -32,11 +32,11 @@ cannot be expressed as an age, or somebody removed the default.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
@@ -49,9 +49,28 @@ cannot be expressed as an age, or somebody removed the default.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The catalogue states the default; the shipped policies are derived from it, so
+  one statement of a period serves both and the two cannot drift. The policy
+  dataset's artefact rows become a =select= over the catalogue's artefact rows
+  rather than a hand-written list, and the catalogue stages first so the rows
+  exist when the derivation runs.
+- A policy needs to name the store it came from, so =retention_policy= gains
+  =store_code=. That is also what makes one policy per store checkable: the
+  publish creates a policy only where no current policy already names the store,
+  so a changed default never applies an older period beside a person's choice.
+- The policy's own vocabulary had to grow to match the catalogue. It refused
+  =release_directory= and a =directory= target, which is exactly what the node
+  scratch default asks for; the checks and the model now state both.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Policies created from the catalogue | 8 of 10 stores | =select code, store_code from ores_scheduler_retention_policies_tbl= | feature branch |
+| Stores with no policy | 2: the package cache (keying) and the calendar dates (none) | the same read against the catalogue | feature branch |
+| Scheduler pgTAP suites | 24 of 24 passed | =./test/run_tests.sh test/scheduler_publish_*_test.sql= | feature branch |
+| Scheduler C++ suites | 3 of 3 passed | =./compass.sh test run -- -R scheduler= | feature branch |
+| Local checks, non-heavy | 13 of 13 passed | =./compass.sh check --exclude-heavy= | feature branch |
 
 * Measurements
 
@@ -93,3 +112,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+An installation ships with every store the catalogue can bound already bound.
+Eight policies are derived from the ten catalogue rows: the two stores that take
+none are the package cache, bounded by its content keying, and the calendar
+dates, whose bound is a range rather than an age.
+
+The derivation is one statement: the policy artefact rows are a select over the
+catalogue's artefact rows, where the bound is a policy. A new store therefore
+arrives with its policy, a default changes in one place, and the policy code
+names the store and the period so an operator reads it without a join.
+
+Two things were found by doing it. The policy needed to name its store, or a
+second default for the same store could apply an older period beside the first;
+=store_code= is the fix, and the publish now skips a store that already holds a
+policy under another code. And the policy's own checks refused the node scratch
+default, because =release_directory= and a =directory= target were not in its
+vocabulary even though the sweep's task names them: the catalogue found a gap in
+the model it was meant to serve.

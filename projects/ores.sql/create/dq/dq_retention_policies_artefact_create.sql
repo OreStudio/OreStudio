@@ -34,6 +34,7 @@ create table if not exists "ores_dq_retention_policies_artefact_tbl" (
     "version" integer not null,
     "target_kind" text not null,
     "target" text not null,
+    "store_code" text not null,
     "action" text not null,
     "retention_days" integer not null,
     "cadence_hours" integer not null,

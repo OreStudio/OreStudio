@@ -3120,6 +3120,7 @@ package "dq_staging" #F3E5F5 {
         * version : integer
         * target_kind : text
         * target : text
+        * store_code : text
         * action : text
         * retention_days : integer
         * cadence_hours : integer

@@ -367,8 +367,11 @@ select ores_utility_allow_version_replace_fn();
 \ir scheduler/scheduler_retention_policies_dataset_populate.sql
 \ir scheduler/scheduler_retained_stores_dataset_populate.sql
 \ir scheduler/scheduler_job_definitions_artefact_populate.sql
-\ir scheduler/scheduler_retention_policies_artefact_populate.sql
+-- The catalogue stages first: the policies the installation ships with are
+-- derived from the default bounds it states, so one statement of a default
+-- serves both.
 \ir scheduler/scheduler_retained_stores_artefact_populate.sql
+\ir scheduler/scheduler_retention_policies_artefact_populate.sql
 
 -- =============================================================================
 -- Analytics Layer

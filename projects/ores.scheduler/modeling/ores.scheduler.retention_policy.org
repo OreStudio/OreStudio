@@ -60,8 +60,8 @@ Examples: 'report_cashflows_365d', 'compute_node_caches_30d'.
 :nullable: false
 :END:
 
-The shape of what the policy bounds: a chunked table, an ordinary table or an
-object store key prefix.
+The shape of what the policy bounds: a chunked table, an ordinary table, an
+object store key prefix, or a directory on a compute host.
 
 #+begin_src cpp :name generator
 std::string("chunked_table")
@@ -80,6 +80,25 @@ The table name or key prefix the policy bounds.
 std::string("ores_reporting_report_cashflows_tbl")
 #+end_src
 
+** store_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The catalogue store this policy bounds, as =retained_stores.code= names it.
+
+A policy is created from the default the catalogue states, and this is what says
+which store it came from. It is also what keeps one policy per store: the publish
+that creates the defaults writes a policy only where no current policy already
+names the store, so changing a default never leaves a second policy applying an
+older period beside the first.
+
+#+begin_src cpp :name generator
+std::string("refdata.calendar_dates")
+#+end_src
+
 ** action
 :PROPERTIES:
 :type:     text
@@ -88,7 +107,7 @@ std::string("ores_reporting_report_cashflows_tbl")
 :END:
 
 What the sweep does to the target past the period: drop its chunks, delete its
-rows, or expire its objects.
+rows, expire its objects, or release a directory its node no longer needs.
 
 #+begin_src cpp :name generator
 std::string("drop_chunks")
@@ -163,11 +182,12 @@ std::string(faker::lorem::sentence())
 
 | expression |
 |------------|
-| "target_kind" in ('chunked_table', 'table', 'object_prefix') |
-| "action" in ('drop_chunks', 'delete_rows', 'expire_prefix') |
+| "target_kind" in ('chunked_table', 'table', 'object_prefix', 'directory') |
+| "action" in ('drop_chunks', 'delete_rows', 'expire_prefix', 'release_directory') |
 | "retention_days" > 0 |
 | "cadence_hours" > 0 |
 | "target" <> '' |
+| "store_code" <> '' |
 
 * C++
 
@@ -207,6 +227,7 @@ std::string(faker::lorem::sentence())
 | column         | header         |
 |----------------+----------------|
 | code           | Code           |
+| store_code     | Store          |
 | target_kind    | Kind           |
 | target         | Target         |
 | action         | Action         |
@@ -231,6 +252,7 @@ std::string(faker::lorem::sentence())
 | field          | label         | type      | is_key | is_required | placeholder            |
 |----------------+---------------+-----------+--------+-------------+------------------------|
 | code           | Code          | line_edit | true   | true        | Enter policy code      |
+| store_code     | Store         | line_edit |        | true        | Enter the catalogue store code |
 | target_kind    | Kind          | combo_box |        | true        | Select a kind          |
 | target         | Target        | line_edit |        | true        | Enter a table or prefix |
 | action         | Action        | combo_box |        | true        | Select an action       |
@@ -244,6 +266,7 @@ std::string(faker::lorem::sentence())
 | enum_name    | field          | header        | type      | width |
 |--------------+----------------+---------------+-----------+-------|
 | Code         | code           | Code          | string    | 200   |
+| StoreCode    | store_code     | Store         | string    | 220   |
 | TargetKind   | target_kind    | Kind          | string    | 140   |
 | Target       | target         | Target        | string    | 300   |
 | Action       | action         | Action        | string    | 140   |

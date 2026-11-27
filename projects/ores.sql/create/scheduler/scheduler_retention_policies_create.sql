@@ -48,6 +48,7 @@ create table if not exists "ores_scheduler_retention_policies_tbl" (
     "version" integer not null,
     "target_kind" text not null,
     "target" text not null,
+    "store_code" text not null,
     "action" text not null,
     "retention_days" integer not null,
     "cadence_hours" integer not null,
@@ -68,11 +69,12 @@ create table if not exists "ores_scheduler_retention_policies_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("code" <> ''),
-    check ("target_kind" in ('chunked_table', 'table', 'object_prefix')),
-    check ("action" in ('drop_chunks', 'delete_rows', 'expire_prefix')),
+    check ("target_kind" in ('chunked_table', 'table', 'object_prefix', 'directory')),
+    check ("action" in ('drop_chunks', 'delete_rows', 'expire_prefix', 'release_directory')),
     check ("retention_days" > 0),
     check ("cadence_hours" > 0),
-    check ("target" <> '')
+    check ("target" <> ''),
+    check ("store_code" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency

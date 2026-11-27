@@ -71,8 +71,8 @@ struct retention_policy final {
     std::string code;
 
     /**
-     * @brief The shape of what the policy bounds: a chunked table, an ordinary table or an object
-     * store key prefix.
+     * @brief The shape of what the policy bounds: a chunked table, an ordinary table, an object
+     * store key prefix, or a directory on a compute host.
      */
     std::string target_kind;
 
@@ -82,8 +82,18 @@ struct retention_policy final {
     std::string target;
 
     /**
+     * @brief The catalogue store this policy bounds, as retained_stores.code names it.
+     *
+     * A policy is created from the default the catalogue states, and this is what says which store
+     * it came from. It is also what keeps one policy per store: the publish that creates the
+     * defaults writes a policy only where no current policy already names the store, so changing a
+     * default never leaves a second policy applying an older period beside the first.
+     */
+    std::string store_code;
+
+    /**
      * @brief What the sweep does to the target past the period: drop its chunks, delete its rows,
-     * or expire its objects.
+     * expire its objects, or release a directory its node no longer needs.
      */
     std::string action;
 

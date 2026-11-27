@@ -61,6 +61,7 @@ carries the remaining work from sprint 30's close. This story ships
 | [[id:A00ACCD0-E242-4AFE-9850-9208B0F92FCD][Fix the Windows compass install]] | DONE | 2026-11-26 | 2026-11-26 | Task for: Keep main green |
 | [[id:93CC0B03-3875-4E47-BBC7-3B6D46C99687][Name the test the memcheck leg hangs on]] | DONE | 2026-11-26 | 2026-11-26 | Task for: Keep main green |
 | [[id:9BF69BF9-F032-4CEF-8A68-F4C912EF691C][Find the double free in the synthetic service tests]] | BACKLOG | | | Task for: Keep main green |
+| [[id:C5D7C83F-521F-428E-B42B-B3DBCD239682][Unpack the Windows release where PowerShell is not on the path]] | BACKLOG | | | Task for: Keep main green |
 
 * Decisions
 

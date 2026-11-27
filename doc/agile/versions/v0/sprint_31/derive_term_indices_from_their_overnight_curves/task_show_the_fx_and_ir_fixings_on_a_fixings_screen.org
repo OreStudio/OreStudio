@@ -33,9 +33,9 @@ an explanation, in the fixings manager that captures it: see
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
-| Now          | Shipped in =main= through [[https://github.com/OreStudio/OreStudio/pull/5196][#5196]]: the operation, the handler, the route on both servers and the screen. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. The naming the list still owes is captured. |
+| Next         | Nothing. |
 | Last touched | 2026-11-27                               |
 
 * Acceptance

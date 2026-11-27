@@ -8,7 +8,7 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch: feature/give-housekeeping-a-screen
-#+pr:
+#+pr: 5205
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -110,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5205][#5205]] | [web] Give housekeeping a screen |
 
 * Review
 

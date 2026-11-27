@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-25
 #+updated: 2026-11-27
-#+environment: jolly_knuth jolly_knuth
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A reader of a run's errors can tell where each one came from: the run's own prep
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | Read the error event, its recorder and the three writers. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The phase lookup, the column, then the writers. |
+| Next         | Nothing. |
 | Last touched | 2026-11-27                               |
 
 * Acceptance
@@ -41,21 +41,27 @@ A reader of a run's errors can tell where each one came from: the run's own prep
 
 * Plan
 
-- The phase is data, not an enum in code: a lookup table with the three rows
-  the story names, seeded, as the error scope already is. A phase the run
-  cannot state is then a row nobody seeds rather than a value nobody compiled.
+- The phase is the platform's own closed set of three words, so it is a checked
+  column beside =severity= and not a lookup table. The scope is a table because
+  the engine grows that vocabulary and a new group is a row; a phase row would
+  be code the platform compiles. The check refuses a value no phase states,
+  exactly as a foreign key to seeded rows would.
 - =report_error_event= gains =phase_code= beside =scope_code=, and the model
-  states why the scope stays the engine's own group name: the two answer
-  different questions, and folding one into the other would make the engine's
-  words mean something the engine never said.
-- One recorder writes every error a run holds, so it is the one place that
-  states the phase. Each caller names it: the engine log reader states engine,
-  the results ingester states postprocessing, and a workflow step that refuses
-  its work states preprocessing.
-- The compensation that fails the report is dispatched by the failing step, so
-  the phase travels with that command rather than being guessed at the far end.
-- A read answers a run's count of errors per phase, so a screen can open the
-  errors of one phase without reading them all.
+  states why the two answer different questions: the scope is the engine's own
+  word about what an error is about, and the phase is the platform's word about
+  which part of the run was working when it failed.
+- One vocabulary type, =domain::run_phase=, states the three codes and their
+  words, so a writer can only name a phase the store holds, and a code read
+  from a message is parsed once where it enters.
+- One recorder writes every error a run holds, so it states the phase once. The
+  log rows state the engine phase, because every one of them is a line of the
+  engine's own log; a step that refuses its work states the phase it belongs to.
+- The compensation that fails a report states the phase of the step it rolls
+  back. The engine compensates only the steps that completed, so the failing
+  step writes the failure itself and this is the fallback for a step that
+  stopped without a word.
+- A read answers a run's problems per phase, so a screen can open the errors of
+  one phase without reading them all.
 
 * Measurements
 
@@ -69,9 +75,45 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The build of the whole tree | succeeded in 0:09:29 | =compass build= | =441cb29dd4= |
+| The reporting domain, codec and workflow suites | 5264 assertions in 1346 test cases | =ores.reporting.api.tests= | =441cb29dd4= |
+| The reporting core suite, including the recorder and the counts | 1735 assertions in 295 test cases | =ores.reporting.core.tests= | =441cb29dd4= |
+| The reporting shell suite, including the generated =fail-report= command | 1658 assertions in 602 test cases | =ores.shell.reporting.tests= | =441cb29dd4= |
+| The reporting HTTP routes | 731 assertions in 102 test cases | =ores.http.reporting.tests= | =441cb29dd4= |
+| The reporting service suite | 28 assertions in 11 test cases | =ores.reporting.service.tests= | =441cb29dd4= |
+| The errors table of a run, with its phase column | 4 tests | =npm run test --workspace @ores/web -- --run src/reporting/RunErrorsTable.test.tsx= | =441cb29dd4= |
+| The BFF's run-error rows, which serve the phase | 10 tests | =npm run test --workspace @ores/bff -- --run src/grid-report-runs.test.ts= | =441cb29dd4= |
+| The format gate | passed | =compass check --only format= | =441cb29dd4= |
+| The ratchet, which records two new wide-type warnings | 2 new diagnostics, exit 0 | =compass-ng check --ratchet 1fd8150a69= | =441cb29dd4= |
+| The local gate, including the database and the whole suite | 22 of 22 checks passed; 100% of 115 suites | =compass check= | =441cb29dd4= |
 
 * Notes
+
+The plan changed in two places once the code was read.
+
+- The phase is a checked column and not a seeded lookup. =severity= is the same
+  kind of fact — a closed set of the platform's own words — and it is a check in
+  this very table; the scope is the one that cannot be, because the engine grows
+  it. A three-row lookup would also owe a permission code, a screen and a
+  service for rows nobody edits.
+- The compensation is built for the steps that completed, in reverse order, and
+  never for the failing step: =workflow_engine::begin_compensation= skips every
+  step whose state is not =completed=. The failing step's handler writes the
+  row itself, so the phase of the failure travels on that row; the compensation
+  states the last phase the run completed, and its row is the fallback for a
+  step that died without writing one.
+
+Two surfaces moved with the column, because both write an error row: the shell's
+=fail-report= command gained the phase as its first positional argument, and the
+agent eval seed states =preprocess= on the run-level row it writes.
+
+The ratchet records the column as two new wide-type warnings:
+=report_error_event= and its entity now hold seventeen fields against a recorded
+ceiling of sixteen, which the rule does not raise. The exception the check offers
+is a source comment the entity template emits and the api domain template does
+not, so accepting it would silence one of the two warnings and leave the other;
+the pair is recorded here instead, and grouping the fields that belong together
+is the work the rule asks for.
 
 * Test Scenarios
 
@@ -97,3 +139,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every error a run records states the phase that produced it, beside the scope
+the engine names. The phases are the platform's own closed vocabulary, and the
+store checks them: =preprocess=, =engine= and =postprocess=.
+
+- The engine's own log rows state =engine= whatever step reads them, because a
+  row is the engine's account of itself and not the account of the step that
+  collected it. The results ingester therefore states the engine's phase, which
+  is what the row's subject already says: only the engine names trades.
+- A step that refuses its work states its own phase. A compute result the
+  engine failed states =engine= even though the collecting step is what reads
+  it, because that failure is the valuation's, and a reader who read it as
+  postprocessing would look in the wrong place for it.
+- The compensation states the phase of the step it rolls back, because the
+  engine compensates only the steps that completed and never the failing one.
+- A read answers a run's problems split by phase beside its totals, and the
+  screen shows the phase of every row and searches it.

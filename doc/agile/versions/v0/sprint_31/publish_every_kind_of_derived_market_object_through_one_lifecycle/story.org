@@ -21,11 +21,11 @@ ores.marketdata holds one implementation of the raise, the decide, the apply and
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
-| Now           | Not yet started.                       |
+| Now           | Done. The lifecycle exists once and every kind publishes through it, and a smokehouse tenant is the end-to-end proof. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.                               |
 | Last touched  | 2026-11-24                               |
 
 * Acceptance
@@ -50,6 +50,14 @@ ores.marketdata holds one implementation of the raise, the decide, the apply and
 | [[id:537E5CFC-4B41-468B-9B38-C931E489A683][Route a party only to the classes its feed serves]] | DONE | 2026-11-26 | 2026-11-27 | The subscription step takes the asset classes of a route from the provider's catalogue, but a provider may serve several classes through different feeds and a feed serves only its own scopes, so the step asks for an interest rate route on an FX feed and the store refuses it. |
 
 * Decisions
+
+- *A route names the class its feed serves, not the class its provider maps.* A
+  provider may serve several classes through different feeds, and a feed's scopes
+  are what the store enforces. The route's class is the catalogue's, kept to the
+  feed's scope when the feed states one.
+- *A smokehouse tenant is the end-to-end proof, not a demonstration tenant.* One
+  party, three books, three trades and six report documents provision in 212 s and
+  price in one run, where ACME takes a quarter of an hour. A gate can afford it.
 
 * Out of scope
 

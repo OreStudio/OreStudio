@@ -47,6 +47,11 @@ Every call names who acts, and IAM knows four kinds of actor.
 The last two act for a person without the person present, and so neither may
 hold more than its grant's role and the person allow.
 
+A service's own row assumes a token it does not yet have. Its first credential
+is obtained before IAM can mint anything for it, by
+[[id:4D069D1A-EADA-407B-89B4-92F2375C0836][Secure Introduction]] against the
+secret store, and only then does client credentials apply.
+
 * Operational Scope
 
 The IAM subsystem operates across two primary phases:

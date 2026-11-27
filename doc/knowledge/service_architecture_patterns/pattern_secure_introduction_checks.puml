@@ -1,0 +1,52 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Secure Introduction: what the store checks before it answers
+
+skinparam shadowing false
+
+start
+
+:receive a challenge request, naming a consumer;
+if (is the consumer registered\nand enabled?) then (yes)
+  :draw a nonce, record it against the consumer\nwith a short life;
+  :answer the nonce, sealed to the consumer's key;
+else (no)
+  :refuse, as a consumer it does not hold;
+  stop
+endif
+
+:receive an answer, sealed to the store's key;
+if (does it name a nonce this consumer holds,\nunexpired and unused?) then (yes)
+  :retire the nonce;
+else (no)
+  :refuse, as a consumer that proved nothing;
+  stop
+endif
+
+if (does the consumer own the secret it asks for?) then (yes)
+  :seal the secret to the consumer's key;
+  :record the act;
+  stop
+else (no)
+  :refuse, as one that holds no such secret;
+  stop
+endif
+
+@enduml

@@ -468,6 +468,126 @@ states what exists and not how long it has been there.
 :cpp_type: std::vector<archive_entry>
 :END:
 
+** expire_objects_request
+:PROPERTIES:
+:subject: storage.v1.objects.expire
+:response: expire_objects_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Removes the objects under a prefix whose age has passed a cutoff.
+ *
+ * One operation rather than a listing and a deletion the caller loops over: a
+ * caller that lists a page, removes part of it and reports the whole page has
+ * stated something it did not do. The store answers what it found and what it
+ * did in one reply, and a dry run answers the first without doing the second.
+ */
+#+end_src
+
+*** bucket
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** prefix
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Only keys that start with this are considered. An empty prefix is every key,
+which a caller that means a whole bucket asks for and a policy never does.
+
+*** older_than
+:PROPERTIES:
+:type:       timestamp with time zone
+:cpp_type:   std::chrono::system_clock::time_point
+:END:
+
+The cutoff: an object whose last write is at or before this instant has passed
+its period.
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default:  1000
+:END:
+
+The most objects this call removes. A prefix can hold more than one call's work,
+so the reply states how many passed the cutoff and were left.
+
+*** dry_run
+:PROPERTIES:
+:cpp_type: bool
+:default:  true
+:END:
+
+Whether to state what would be removed without removing it. It defaults to
+true, so a caller that forgets the flag reports rather than deletes.
+
+** expire_objects_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What passed the cutoff, and what the call did about it.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  true
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** would_remove
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+How many objects this call selected. On a dry run it is the answer; on a removal
+it is the same count as =removed=, stated once as what the cutoff held.
+
+*** would_bytes
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+The bytes a dry run states it would free.
+
+*** removed
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+How many objects the call removed: zero on a dry run.
+
+*** removed_bytes
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+The bytes the removal freed: zero on a dry run.
+
+*** remaining
+:PROPERTIES:
+:cpp_type: std::uint64_t
+:default:  0
+:END:
+
+How many objects passed the cutoff and were left because the call reached its
+limit. A caller repeats until it is zero.
+
 ** list_archive_entries_request
 :PROPERTIES:
 :subject: storage.v1.ops.list_archive_entries

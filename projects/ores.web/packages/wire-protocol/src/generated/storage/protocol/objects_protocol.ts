@@ -184,6 +184,35 @@ export interface ArchiveListing {
 }
 
 /**
+ * @brief Removes the objects under a prefix whose age has passed a cutoff.
+ *
+ * One operation rather than a listing and a deletion the caller loops over: a
+ * caller that lists a page, removes part of it and reports the whole page has
+ * stated something it did not do. The store answers what it found and what it
+ * did in one reply, and a dry run answers the first without doing the second.
+ */
+export interface ExpireObjectsRequest {
+    bucket: string;
+    prefix: string;
+    older_than: string;
+    limit: number;
+    dry_run: boolean;
+}
+
+/**
+ * @brief What passed the cutoff, and what the call did about it.
+ */
+export interface ExpireObjectsResponse {
+    success: boolean;
+    message: string;
+    would_remove: number;
+    would_bytes: number;
+    removed: number;
+    removed_bytes: number;
+    remaining: number;
+}
+
+/**
  * @brief Asks what the files inside a set of packages are.
  *
  * The caller that wants one package's contents wants every package's contents,
@@ -216,6 +245,7 @@ export const subjects = {
     get_objects_request: 'storage.v1.objects.get',
     delete_objects_request: 'storage.v1.objects.delete',
     list_objects_request: 'storage.v1.objects.list',
+    expire_objects_request: 'storage.v1.objects.expire',
     list_archive_entries_request: 'storage.v1.ops.list_archive_entries',
 } as const;
 /**
@@ -228,5 +258,6 @@ export const requiresSession = {
     get_objects_request: true,
     delete_objects_request: true,
     list_objects_request: true,
+    expire_objects_request: true,
     list_archive_entries_request: true,
 } as const;

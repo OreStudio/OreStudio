@@ -68,6 +68,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              }));
 
     subs.push_back(
+        nats.queue_subscribe(std::string(expire_objects_request::nats_subject),
+                             queue,
+                             [&nats, ctx, verifier, store](ores::nats::message msg) mutable {
+                                 objects_handler h(nats, ctx, store, verifier);
+                                 h.expire(std::move(msg));
+                             }));
+
+    subs.push_back(
         nats.queue_subscribe(std::string(list_archive_entries_request::nats_subject),
                              queue,
                              [&nats, ctx, verifier, store](ores::nats::message msg) mutable {

@@ -260,6 +260,49 @@ struct archive_listing {
 };
 
 /**
+ * @brief Removes the objects under a prefix whose age has passed a cutoff.
+ *
+ * One operation rather than a listing and a deletion the caller loops over: a
+ * caller that lists a page, removes part of it and reports the whole page has
+ * stated something it did not do. The store answers what it found and what it
+ * did in one reply, and a dry run answers the first without doing the second.
+ */
+struct expire_objects_request {
+    using response_type = struct expire_objects_response;
+    static constexpr std::string_view nats_subject = "storage.v1.objects.expire";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string bucket;
+    std::string prefix;
+    std::chrono::system_clock::time_point older_than;
+    std::uint32_t limit = 1000;
+    bool dry_run = true;
+
+    friend bool operator==(const expire_objects_request&, const expire_objects_request&) = default;
+};
+
+/**
+ * @brief What passed the cutoff, and what the call did about it.
+ */
+struct expire_objects_response {
+    bool success = true;
+    std::string message;
+    std::uint64_t would_remove = 0;
+    std::uint64_t would_bytes = 0;
+    std::uint64_t removed = 0;
+    std::uint64_t removed_bytes = 0;
+    std::uint64_t remaining = 0;
+
+    friend bool operator==(const expire_objects_response&,
+                           const expire_objects_response&) = default;
+};
+
+/**
  * @brief Asks what the files inside a set of packages are.
  *
  * The caller that wants one package's contents wants every package's contents,
@@ -485,6 +528,44 @@ struct list_archive_entries_response {
 }
 
 /**
+ * @brief The members of expire_objects_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<expire_objects_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"bucket", &expire_objects_request::bucket},
+        ::ores::utility::codec::field{"prefix", &expire_objects_request::prefix},
+        ::ores::utility::codec::field{"older_than", &expire_objects_request::older_than},
+        ::ores::utility::codec::field{"limit", &expire_objects_request::limit},
+        ::ores::utility::codec::field{"dry_run", &expire_objects_request::dry_run},
+    };
+}
+
+/**
+ * @brief The members of expire_objects_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<expire_objects_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &expire_objects_response::success},
+        ::ores::utility::codec::field{"message", &expire_objects_response::message},
+        ::ores::utility::codec::field{"would_remove", &expire_objects_response::would_remove},
+        ::ores::utility::codec::field{"would_bytes", &expire_objects_response::would_bytes},
+        ::ores::utility::codec::field{"removed", &expire_objects_response::removed},
+        ::ores::utility::codec::field{"removed_bytes", &expire_objects_response::removed_bytes},
+        ::ores::utility::codec::field{"remaining", &expire_objects_response::remaining},
+    };
+}
+
+/**
  * @brief The members of list_archive_entries_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -624,6 +705,26 @@ struct ORES_STORAGE_API_EXPORT wire_traits<ores::storage::messaging::archive_lis
     static ores::storage::messaging::archive_listing read_json(std::string_view text);
     static std::string write_msgpack(const ores::storage::messaging::archive_listing& v);
     static ores::storage::messaging::archive_listing read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_STORAGE_API_EXPORT wire_traits<ores::storage::messaging::expire_objects_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::storage::messaging::expire_objects_request& v);
+    static ores::storage::messaging::expire_objects_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::storage::messaging::expire_objects_request& v);
+    static ores::storage::messaging::expire_objects_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_STORAGE_API_EXPORT wire_traits<ores::storage::messaging::expire_objects_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::storage::messaging::expire_objects_response& v);
+    static ores::storage::messaging::expire_objects_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::storage::messaging::expire_objects_response& v);
+    static ores::storage::messaging::expire_objects_response
+    read_msgpack(std::span<const std::byte> data);
 };
 template <>
 struct ORES_STORAGE_API_EXPORT wire_traits<ores::storage::messaging::list_archive_entries_request> {

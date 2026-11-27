@@ -79,6 +79,12 @@ public:
     void list(ores::nats::message msg);
 
     /**
+     * @brief Removes the objects under a prefix whose age has passed a cutoff,
+     * or states what it would remove.
+     */
+    void expire(ores::nats::message msg);
+
+    /**
      * @brief Answers the files inside each of a set of packages.
      */
     void list_archive_entries(ores::nats::message msg);

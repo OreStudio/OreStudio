@@ -42,6 +42,15 @@ namespace {
  */
 constexpr std::uint32_t k_max_list_limit = 1000;
 
+/**
+ * @brief The most objects one expiry removes, whatever the caller asks for.
+ *
+ * An expiry is one request, and a prefix can hold more work than one request
+ * should hold the store for. The reply states what the cutoff left, so a caller
+ * repeats until nothing is left rather than asking for it all at once.
+ */
+constexpr std::uint32_t k_max_expire_limit = 1000;
+
 }
 
 objects_handler::objects_handler(ores::nats::service::client& nats,
@@ -183,10 +192,47 @@ void objects_handler::list(ores::nats::message msg) {
         const auto first = std::min<std::size_t>(req->offset, entries.size());
         const auto last = std::min<std::size_t>(first + limit, entries.size());
         for (std::size_t i = first; i < last; ++i)
-            resp.objects.push_back(object_summary{
-                entries[i].key, entries[i].size_bytes, entries[i].last_modified});
+            resp.objects.push_back(
+                object_summary{entries[i].key, entries[i].size_bytes, entries[i].last_modified});
     } catch (const std::exception& e) {
         ORES_LOG_SEV(lg(), error) << "list failed: " << e.what();
+        resp.success = false;
+        resp.message = e.what();
+    }
+
+    reply(nats_, msg, resp);
+}
+
+void objects_handler::expire(ores::nats::message msg) {
+    ORES_LOG_SEV(lg(), debug) << "Handling " << msg.subject;
+
+    const auto req = decode<expire_objects_request>(msg);
+    if (!req) {
+        error_reply(nats_, msg, ores::service::error_code::bad_request);
+        return;
+    }
+
+    // An expiry is the deletion path, so it is admitted by the code the delete
+    // is admitted by, whatever the call states it will do.
+    if (!authorise(msg, "storage::objects:delete", "expire"))
+        return;
+
+    expire_objects_response resp;
+    try {
+        const auto limit = std::min(req->limit, k_max_expire_limit);
+        const auto done =
+            store_.expire(req->bucket, req->prefix, req->older_than, limit, req->dry_run);
+        resp.would_remove = done.selected;
+        resp.would_bytes = done.selected_bytes;
+        resp.removed = done.removed;
+        resp.removed_bytes = done.removed_bytes;
+        resp.remaining = done.remaining;
+
+        ORES_LOG_SEV(lg(), debug) << "Expiry of " << req->prefix << ": would remove "
+                                  << resp.would_remove << ", removed " << resp.removed << ", left "
+                                  << resp.remaining;
+    } catch (const std::exception& e) {
+        ORES_LOG_SEV(lg(), error) << "expire failed: " << e.what();
         resp.success = false;
         resp.message = e.what();
     }

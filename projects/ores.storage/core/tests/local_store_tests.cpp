@@ -124,8 +124,8 @@ TEST_CASE("a listing states when each object was written", "[filesystem]") {
     const auto after = std::chrono::system_clock::now();
 
     const auto old = root.path() / "ores" / "compute" / "input" / "old.tar.gz";
-    std::filesystem::last_write_time(
-        old, std::filesystem::last_write_time(old) - std::chrono::days(10));
+    std::filesystem::last_write_time(old,
+                                     std::filesystem::last_write_time(old) - std::chrono::days(10));
 
     const auto entries = store.list("ores", "compute/input/");
     REQUIRE(entries.size() == 2);
@@ -142,6 +142,117 @@ TEST_CASE("a listing states when each object was written", "[filesystem]") {
     CHECK(age < std::chrono::days(11));
 
     ORES_LOG_SEV(lg, debug) << "Listed age of " << entries[0].key;
+}
+
+TEST_CASE("an expiry reports the objects past its cutoff and removes none", "[filesystem]") {
+    auto lg(make_logger(test_suite));
+
+    scoped_temp_directory root;
+    local_store store(root.path());
+
+    store.put("ores", "compute/input/old.tar.gz", "aa");
+    store.put("ores", "compute/input/recent.tar.gz", "bbb");
+    const auto old = root.path() / "ores" / "compute" / "input" / "old.tar.gz";
+    std::filesystem::last_write_time(old,
+                                     std::filesystem::last_write_time(old) - std::chrono::days(10));
+
+    const auto state = store.expire("ores",
+                                    "compute/input/",
+                                    std::chrono::system_clock::now() - std::chrono::days(7),
+                                    100,
+                                    true);
+
+    CHECK(state.selected == 1);
+    CHECK(state.selected_bytes == 2);
+    CHECK(state.removed == 0);
+    CHECK(state.remaining == 0);
+    CHECK(store.list("ores", "compute/input/").size() == 2);
+
+    ORES_LOG_SEV(lg, debug) << "Dry run selected " << state.selected;
+}
+
+TEST_CASE("an expiry removes the objects past its cutoff and keeps the rest", "[filesystem]") {
+    auto lg(make_logger(test_suite));
+
+    scoped_temp_directory root;
+    local_store store(root.path());
+
+    store.put("ores", "compute/input/old.tar.gz", "aa");
+    store.put("ores", "compute/input/recent.tar.gz", "bbb");
+    const auto old = root.path() / "ores" / "compute" / "input" / "old.tar.gz";
+    std::filesystem::last_write_time(old,
+                                     std::filesystem::last_write_time(old) - std::chrono::days(10));
+
+    const auto state = store.expire("ores",
+                                    "compute/input/",
+                                    std::chrono::system_clock::now() - std::chrono::days(7),
+                                    100,
+                                    false);
+
+    CHECK(state.selected == 1);
+    CHECK(state.removed == 1);
+    CHECK(state.removed_bytes == 2);
+
+    const auto left = store.list("ores", "compute/input/");
+    REQUIRE(left.size() == 1);
+    CHECK(left[0].key == "compute/input/recent.tar.gz");
+
+    ORES_LOG_SEV(lg, debug) << "Removed " << state.removed;
+}
+
+TEST_CASE("an expiry past its limit states what it left for the next call", "[filesystem]") {
+    auto lg(make_logger(test_suite));
+
+    scoped_temp_directory root;
+    local_store store(root.path());
+
+    store.put("ores", "compute/input/a.tar.gz", "a");
+    store.put("ores", "compute/input/b.tar.gz", "b");
+    store.put("ores", "compute/input/c.tar.gz", "c");
+    for (const auto* key : {"a.tar.gz", "b.tar.gz", "c.tar.gz"}) {
+        const auto path = root.path() / "ores" / "compute" / "input" / key;
+        std::filesystem::last_write_time(
+            path, std::filesystem::last_write_time(path) - std::chrono::days(10));
+    }
+
+    const auto cutoff = std::chrono::system_clock::now() - std::chrono::days(7);
+    const auto first = store.expire("ores", "compute/input/", cutoff, 2, false);
+
+    CHECK(first.selected == 2);
+    CHECK(first.removed == 2);
+    CHECK(first.remaining == 1);
+    CHECK(store.list("ores", "compute/input/").size() == 1);
+
+    const auto second = store.expire("ores", "compute/input/", cutoff, 2, false);
+
+    CHECK(second.selected == 1);
+    CHECK(second.removed == 1);
+    CHECK(second.remaining == 0);
+    CHECK(store.list("ores", "compute/input/").empty());
+
+    ORES_LOG_SEV(lg, debug) << "Two calls removed " << first.removed + second.removed;
+}
+
+TEST_CASE("an expiry leaves an object at the cutoff instant", "[filesystem]") {
+    auto lg(make_logger(test_suite));
+
+    scoped_temp_directory root;
+    local_store store(root.path());
+
+    store.put("ores", "compute/input/edge.tar.gz", "a");
+    const auto listed = store.list("ores", "compute/input/");
+    REQUIRE(listed.size() == 1);
+
+    const auto listed_at = listed[0].last_modified;
+    const auto after =
+        store.expire("ores", "compute/input/", listed_at + std::chrono::seconds(1), 100, true);
+    const auto before =
+        store.expire("ores", "compute/input/", listed_at - std::chrono::seconds(1), 100, true);
+
+    CHECK(after.selected == 1);
+    CHECK(before.selected == 0);
+
+    ORES_LOG_SEV(lg, debug) << "The cutoff is the boundary the object is on";
 }
 
 TEST_CASE("a part file is named for one caller and published by its own hand", "[filesystem]") {

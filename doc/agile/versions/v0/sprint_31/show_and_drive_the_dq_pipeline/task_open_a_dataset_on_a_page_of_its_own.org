@@ -32,12 +32,12 @@ dataset with its outcome and what the run said.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
-| Now          | Both screens are drawn and the gate has to run on them. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the gate, then raise the PR.       |
-| Last touched | 2026-11-26                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-27                               |
 
 * Acceptance
 
@@ -113,6 +113,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The two screens shipped in PR #5188, with the review's findings answered in the
+same PR: the state filter offers only what the roster answers, the second read
+states its wait and its failure, each level says where its rows live, the page
+states the last publication as unserved beside the published count, and the
+read-only access mark is drawn.
 
 The page is at =/data-quality/datasets/:code=, reached from a row of the coverage
 list and reachable from a saved address: the page names the dataset and the

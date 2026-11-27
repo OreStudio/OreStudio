@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: 0338170F-FDB0-48F5-BCBE-D3F559ED98E3
+:END:
+#+title: Task: Say which party a bundle publishes for
+#+description: A bundle states its scope and, when it is party-scoped, the party whose rows it writes; the coverage list says which bundles are the party's own, so a person acting as one party reads their data and not every party's.
+#+type: task
+#+level: s1
+#+filetags: :dq:modeling:sql:web:coverage:sprint_31:v0:show_and_drive_the_dq_pipeline:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A bundle says whether it is the whole tenant's or one party's, and a party-scoped
+bundle names the party it writes for. The coverage list then says which bundles
+are the party's own, so a person acting as one party reads their data and not
+every party's.
+
+Today the roster states the level and nothing else. The installation holds
+bundles for six parties and every person sees all of them, and nothing on the
+row says which party one belongs to.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-27                               |
+
+* Acceptance
+
+- A bundle states its scope: platform, world, tenant-wide or party. The scope is
+  on the model and served by the roster, not inferred from the code.
+- A party-scoped bundle names the party whose rows its publish writes.
+- The coverage list marks the bundles of the party the session acts in, and can
+  be filtered to them, so a person reads the party's data first.
+- A bundle whose party is not the session's is still readable, because a
+  platform, world or another party's bundle is not a secret; it is marked, not
+  hidden.
+- A test reads the roster for a demo tenant and asserts a party bundle's scope
+  and party.
+
+* Notes
+
+The model has no scope and no party. =ores_dq_dataset_bundles_tbl= carries
+=level=, =code=, =name= and =description=, and the party a bundle writes for is a
+publish *parameter*: =acme_group='s description says "Publish with a
+{"party_id": "..."} param scoping to the holding company's own party". A
+parameter carried in a description is not a fact a screen can read.
+
+The knowledge page
+[[id:7287B58F-964C-4D42-8EC4-6C5DA53EEE2D][Reference data classification by
+publication level]] already states the rule the model is missing: "The level and,
+within the tenant level, the scope name the bundle". Its table assigns every
+bundle a scope — =party_essentials=, =party_reporting=, =ore_samples=,
+=risk_management= and =crm_topology= are party; =tenant_defaults=,
+=lei_hierarchy= and =lei_counterparties= are tenant-wide — and the model states
+only the level, so the scope lives in a document and not in the store.
+
+Two things follow and both belong to this task: the scope is a column of the
+bundle, and the party of a party-scoped bundle is a reference, so a run can say
+which party it wrote and a person can read it back. Whether the party is a column
+or a publish parameter that the run records is the design decision this task
+owns; the run log records the dataset and the target, so the party has a home
+there either way.
+
+Until it lands, the coverage list shows every bundle of the tenant and says
+nothing about the party, which is why a person cannot tell which datasets are
+theirs.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

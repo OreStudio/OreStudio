@@ -1,0 +1,200 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_domain_type_repository.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
+#ifndef ORES_REPORTING_CORE_REPOSITORY_REPORT_RUN_MARKET_READINESS_REPOSITORY_HPP
+#define ORES_REPORTING_CORE_REPOSITORY_REPORT_RUN_MARKET_READINESS_REPOSITORY_HPP
+
+#include "ores.database/domain/context_fwd.hpp"
+#include "ores.logging/logger.hpp"
+#include "ores.reporting.api/domain/report_run_market_readiness.hpp"
+#include "ores.reporting.api/messaging/report_run_market_readiness_protocol.hpp"
+#include "ores.reporting.core/export.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <string_view>
+#include <vector>
+
+namespace ores::reporting::repository {
+
+/**
+ * @brief Reads and writes run readinesses to data storage.
+ */
+class ORES_REPORTING_CORE_EXPORT report_run_market_readiness_repository {
+private:
+    inline static std::string_view logger_name =
+        "ores.reporting.repository.report_run_market_readiness_repository";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    using context = ores::database::context;
+
+    /**
+     * @brief Returns the insert statement the repository writes.
+     */
+    std::string sql();
+
+    /**
+     * @brief Writes run readinesses to database.
+     *
+     * The plain form replaces the row the caller last read: it states the
+     * version the row carries now, so the store can tell a replace from a
+     * create. A row that moved on since that read is a conflict, never a silent
+     * overwrite.
+     */
+    /**@{*/
+    void write(const context& ctx, const domain::report_run_market_readiness& v);
+    void write(const context& ctx, const std::vector<domain::report_run_market_readiness>& v);
+    /**@}*/
+
+    /**
+     * @brief Writes a run readiness, honouring the claim it states.
+     *
+     * The claim is the version the caller read (@c must_match_version), that no
+     * current row exists (@c must_not_exist), or neither (@c any, which
+     * replaces the row as it stands). The store decides in the write's own
+     * transaction, so a create that collides with a live row and a write over a
+     * row that moved on are refused by the store rather than by a check a
+     * caller might have forgotten.
+     */
+    void write(const context& ctx,
+               const domain::report_run_market_readiness& v,
+               const ores::utility::domain::precondition& claim);
+
+    /**
+     * @brief Writes a set of run readinesses, each honouring its own
+     * claim, as one statement.
+     */
+    void write(const context& ctx,
+               const std::vector<domain::report_run_market_readiness>& v,
+               const std::vector<ores::utility::domain::precondition>& claims);
+
+    /**
+     * @brief Reads latest run readinesses, possibly filtered by primary key.
+     */
+    /**@{*/
+    std::vector<domain::report_run_market_readiness> read_latest(const context& ctx);
+    std::vector<domain::report_run_market_readiness> read_latest(const context& ctx,
+                                                                 const std::string& id);
+    std::vector<domain::report_run_market_readiness>
+    read_latest(const context& ctx, const std::vector<std::string>& ids);
+    /**@}*/
+
+
+    /**
+     * @brief Reads all run readinesses, possibly filtered by primary key.
+     */
+    std::vector<domain::report_run_market_readiness> read_all(const context& ctx,
+                                                              const std::string& id);
+
+    /**
+     * @brief Reads a single run readiness as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
+     */
+    std::optional<domain::report_run_market_readiness>
+    read_at_version(const context& ctx, const std::string& id, std::uint32_t version);
+
+    /**
+     * @brief Whether a list of run readinesses can be ordered by a field.
+     *
+     * The model's :sortable: columns, and nothing else.
+     */
+    static bool is_sortable(std::string_view field);
+
+    /**
+     * @brief Reads latest run readinesses with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     * @param filter The filter record; the members it sets must all hold
+     * @throws std::invalid_argument if the field is not sortable
+     */
+    std::vector<domain::report_run_market_readiness> read_latest(
+        const context& ctx,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::report_run_market_readinesses_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
+
+    /**
+     * @brief Gets the total count of active run readinesses.
+     * @param ctx Repository context with database connection
+     * @return Total number of active run readinesses
+     */
+    std::uint32_t get_total_run_readiness_count(
+        const context& ctx,
+        const std::optional<messaging::report_run_market_readinesses_filter>& filter = std::nullopt,
+        const std::optional<std::string>& as_of = std::nullopt);
+
+    /**
+     * @brief Deletes a run readiness by closing its temporal validity.
+     */
+    void remove(const context& ctx, const std::string& id);
+
+    /**
+     * @brief What a removal did, so a caller reports a conflict as an outcome
+     * rather than catching an exception.
+     *
+     * @c missing means there was no current row to remove, and @c unsupported
+     * means the store cannot answer the version at all -- a current-state
+     * table has no version column, so a versioned removal has no meaning
+     * there.
+     */
+    enum class remove_status { removed, conflicting, missing, unsupported };
+
+    /**
+     * @brief Removes a run readiness, refusing a row that moved on.
+     *
+     * A stated version is the version the caller read. The removal is refused
+     * with @c conflicting when the current row carries another, so a caller
+     * that decided on stale state cannot remove a change it never saw. A null
+     * version removes whatever is current, which is what a caller that stated
+     * no version asked for.
+     */
+    remove_status
+    remove(const context& ctx, const std::string& id, std::optional<std::uint32_t> version);
+
+    /**
+     * @brief Deletes run readinesses by closing their temporal validity.
+     */
+    void remove(const context& ctx, const std::vector<std::string>& ids);
+};
+
+}
+
+#endif

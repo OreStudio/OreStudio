@@ -84,7 +84,8 @@ TEST_CASE("a run that executes every phase builds the chain it always built",
           "[workflow][reporting]") {
     const auto steps = steps_for(run_request("execute", "", "execute"));
 
-    CHECK(names_of(steps) == std::vector<std::string>{"gather_trades",
+    CHECK(names_of(steps) == std::vector<std::string>{"resolve_market_readiness",
+                                                      "gather_trades",
                                                       "gather_market_data",
                                                       "assemble_bundle",
                                                       "prepare_ore_package",
@@ -92,6 +93,39 @@ TEST_CASE("a run that executes every phase builds the chain it always built",
                                                       "collect_compute_results",
                                                       "post_process_results",
                                                       "finalise"});
+}
+
+TEST_CASE("the gathering step is told the trades the market answered", "[workflow][reporting]") {
+    const auto json = run_request("execute", "", "execute");
+    const auto steps = steps_for(json);
+    REQUIRE(steps[0].name == "resolve_market_readiness");
+    REQUIRE(steps[1].name == "gather_trades");
+
+    msg::resolve_market_readiness_result readiness;
+    readiness.success = true;
+    readiness.message = "1 of 2 trade(s) complete; 1 left out";
+    readiness.book_ids = {"book-a", "book-b"};
+    readiness.trade_ids = {"trade-2"};
+    readiness.booked_count = 2;
+    readiness.complete_count = 1;
+    readiness.excluded_count = 1;
+    const std::vector<svc::workflow_step_result> prev{
+        {.name = "resolve_market_readiness",
+         .response_json = ores::utility::codec::json::write(readiness)}};
+
+    const auto cmd = ores::utility::codec::json::read_expected<msg::gather_trades_request>(
+        steps[1].build_command(json, prev));
+    REQUIRE(cmd.has_value());
+    // The readiness step decided the set, so the export writes what it decided and not what
+    // the books happen to hold.
+    CHECK(cmd->book_ids == std::vector<std::string>{"book-a", "book-b"});
+    CHECK(cmd->trade_ids == std::vector<std::string>{"trade-2"});
+}
+
+TEST_CASE("gathering without a readiness answer fails at command build", "[workflow][reporting]") {
+    const auto json = run_request("execute", "", "execute");
+    const auto steps = steps_for(json);
+    CHECK_THROWS_AS(steps[1].build_command(json, {}), std::runtime_error);
 }
 
 TEST_CASE("a run that replaces both phases builds the substituted chain", "[workflow][reporting]") {
@@ -111,7 +145,8 @@ TEST_CASE("a run substitutes one phase at a time", "[workflow][reporting]") {
                                    "finalise"});
 
     CHECK(names_of(steps_for(run_request("execute", "", "ignore"))) ==
-          std::vector<std::string>{"gather_trades",
+          std::vector<std::string>{"resolve_market_readiness",
+                                   "gather_trades",
                                    "gather_market_data",
                                    "assemble_bundle",
                                    "prepare_ore_package",
@@ -149,9 +184,9 @@ TEST_CASE("the substitute is indistinguishable to the step that follows it",
     const std::vector<svc::workflow_step_result> from_substitute{
         {.name = "resolve_prepared_input", .response_json = packaging_result("a.tar.gz")}};
 
-    CHECK(executed[4].name == "submit_compute");
+    CHECK(executed[5].name == "submit_compute");
     CHECK(substituted[1].name == "submit_compute");
-    CHECK(executed[4].build_command(json, from_phase) ==
+    CHECK(executed[5].build_command(json, from_phase) ==
           substituted[1].build_command(json, from_substitute));
 }
 
@@ -160,7 +195,7 @@ TEST_CASE("a consumer whose result is absent fails rather than guessing", "[work
     const auto steps = steps_for(json);
 
     // gather_trades answered nothing, so bundle assembly has no input.
-    CHECK_THROWS_AS(steps[2].build_command(json, {}), std::runtime_error);
+    CHECK_THROWS_AS(steps[3].build_command(json, {}), std::runtime_error);
 }
 
 TEST_CASE("a consumer whose result cannot be read fails rather than guessing",
@@ -170,7 +205,7 @@ TEST_CASE("a consumer whose result cannot be read fails rather than guessing",
 
     const std::vector<svc::workflow_step_result> prev{
         {.name = "gather_trades", .response_json = R"({"not":"a trades result"})"}};
-    CHECK_THROWS_AS(steps[2].build_command(json, prev), std::runtime_error);
+    CHECK_THROWS_AS(steps[3].build_command(json, prev), std::runtime_error);
 }
 
 TEST_CASE("finalisation needs no result from the phase before it", "[workflow][reporting]") {
@@ -187,7 +222,7 @@ TEST_CASE("finalisation needs no result from the phase before it", "[workflow][r
 TEST_CASE("the bundle is told the version of each trade the run read", "[workflow][reporting]") {
     const auto json = run_request("execute", "", "execute");
     const auto steps = steps_for(json);
-    REQUIRE(steps[2].name == "assemble_bundle");
+    REQUIRE(steps[3].name == "assemble_bundle");
 
     msg::gather_trades_result trades;
     trades.storage_key = "trades";
@@ -202,7 +237,7 @@ TEST_CASE("the bundle is told the version of each trade the run read", "[workflo
          .response_json = ores::utility::codec::json::write(market_data)}};
 
     const auto cmd = ores::utility::codec::json::read_expected<msg::assemble_bundle_request>(
-        steps[2].build_command(json, prev));
+        steps[3].build_command(json, prev));
     REQUIRE(cmd.has_value());
     // The manifest is the only record of which trade versions the run priced,
     // so the gather step's answer has to reach the bundle unchanged.
@@ -212,7 +247,7 @@ TEST_CASE("the bundle is told the version of each trade the run read", "[workflo
 TEST_CASE("packaging names the report definition the run belongs to", "[workflow][reporting]") {
     const auto json = run_request("execute", "", "execute");
     const auto steps = steps_for(json);
-    REQUIRE(steps[3].name == "prepare_ore_package");
+    REQUIRE(steps[4].name == "prepare_ore_package");
 
     msg::assemble_bundle_result bundle;
     bundle.bundle_id = "bundle";
@@ -228,7 +263,7 @@ TEST_CASE("packaging names the report definition the run belongs to", "[workflow
         {.name = "assemble_bundle", .response_json = ores::utility::codec::json::write(bundle)}};
 
     const auto cmd = ores::utility::codec::json::read_expected<msg::prepare_ore_package_request>(
-        steps[3].build_command(json, prev));
+        steps[4].build_command(json, prev));
     REQUIRE(cmd.has_value());
     CHECK(cmd->definition_id == "definition");
     CHECK(cmd->bundle_id == "bundle");
@@ -248,7 +283,8 @@ TEST_CASE("a package instance prepares the input and stops before the grid",
           "[workflow][reporting]") {
     const auto steps = steps_for(run_request("execute", "", "execute", "package"));
 
-    CHECK(names_of(steps) == std::vector<std::string>{"gather_trades",
+    CHECK(names_of(steps) == std::vector<std::string>{"resolve_market_readiness",
+                                                      "gather_trades",
                                                       "gather_market_data",
                                                       "assemble_bundle",
                                                       "prepare_ore_package",
@@ -266,16 +302,16 @@ TEST_CASE("a package instance runs the very steps a production instance runs",
     const auto package = steps_for(run_request("execute", "", "execute", "package"));
     const auto production = steps_for(run_request("execute", "", "execute", "production"));
 
-    REQUIRE(package.size() == 5);
-    REQUIRE(production.size() == 8);
-    // The package steps are the first four of the production chain, and finalise: none
+    REQUIRE(package.size() == 6);
+    REQUIRE(production.size() == 9);
+    // The package steps are the first five of the production chain, and finalise: none
     // of them is a variant made for the package.
-    for (std::size_t i = 0; i < 4; ++i) {
+    for (std::size_t i = 0; i < 5; ++i) {
         CHECK(package[i].name == production[i].name);
         CHECK(package[i].command_subject == production[i].command_subject);
         CHECK(package[i].compensation_subject == production[i].compensation_subject);
     }
-    CHECK(package[4].name == production[7].name);
+    CHECK(package[5].name == production[8].name);
 }
 
 TEST_CASE("an instance that names no kind is a production instance", "[workflow][reporting]") {

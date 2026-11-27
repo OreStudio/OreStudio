@@ -82,6 +82,7 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <chrono>
@@ -1090,7 +1091,7 @@ TEST_CASE("an_exported_swap_trade_books_back_to_the_same_rows", "[service]") {
 
     ores::trading::domain::instrument_batch exported;
     ores::trading::service::trade_export_service(f.ctx).export_books(
-        {boost::uuids::to_string(f.book_id)}, 0, 100, exported);
+        {boost::uuids::to_string(f.book_id)}, 0, 100, exported, {});
     REQUIRE(ores::trading::domain::find(exported.rate_instruments, first.anchor.id) != nullptr);
 
     auto second = f.request();
@@ -1106,7 +1107,7 @@ TEST_CASE("an_exported_swap_trade_books_back_to_the_same_rows", "[service]") {
 
     ores::trading::domain::instrument_batch again;
     ores::trading::service::trade_export_service(f.ctx).export_books(
-        {boost::uuids::to_string(f.book_id)}, 0, 100, again);
+        {boost::uuids::to_string(f.book_id)}, 0, 100, again, {});
     const auto legs = ores::trading::domain::find_all(again.swap_legs, second.anchor.id);
     const auto original = ores::trading::domain::find_all(again.swap_legs, first.anchor.id);
     REQUIRE(legs.size() == original.size());
@@ -1117,6 +1118,49 @@ TEST_CASE("an_exported_swap_trade_books_back_to_the_same_rows", "[service]") {
         CHECK(legs[i].day_count_fraction_code == original[i].day_count_fraction_code);
     }
     CHECK(ores::trading::domain::find(again.rate_instruments, second.anchor.id) != nullptr);
+}
+
+TEST_CASE("an_export_names_only_the_trades_it_was_asked_for", "[service]") {
+    fixture f;
+    const auto book = boost::uuids::to_string(f.book_id);
+
+    // Two trades in one book, so the filter has something to leave out.
+    auto first = f.request();
+    first.anchor.trade_type = "Swap";
+    first.instruments.rate_instruments.push_back(
+        ores::trading::generators::generate_synthetic_rate_instrument(f.gen));
+    REQUIRE(trade_operations_service(f.ctx, every_book_open).book_trade(first, {}).result.outcome ==
+            outcome::ok);
+
+    auto second = f.request();
+    second.anchor.trade_type = "Swap";
+    second.instruments.rate_instruments.push_back(
+        ores::trading::generators::generate_synthetic_rate_instrument(f.gen));
+    REQUIRE(
+        trade_operations_service(f.ctx, every_book_open).book_trade(second, {}).result.outcome ==
+        outcome::ok);
+
+    ores::trading::service::trade_export_service svc(f.ctx);
+
+    // A run asks which trades its books hold before it decides which to write, so the ids
+    // come back without the contents.
+    auto expected = std::vector<std::string>{boost::uuids::to_string(first.anchor.id),
+                                             boost::uuids::to_string(second.anchor.id)};
+    std::ranges::sort(expected);
+    CHECK(svc.trade_ids_of_books({book}) == expected);
+
+    ores::trading::domain::instrument_batch only_the_second;
+    svc.export_books({book}, 0, 100, only_the_second, {boost::uuids::to_string(second.anchor.id)});
+    CHECK(ores::trading::domain::find(only_the_second.rate_instruments, first.anchor.id) ==
+          nullptr);
+    CHECK(ores::trading::domain::find(only_the_second.rate_instruments, second.anchor.id) !=
+          nullptr);
+
+    // No filter is the whole book, which is what a run that names every trade writes.
+    ores::trading::domain::instrument_batch both;
+    svc.export_books({book}, 0, 100, both, {});
+    CHECK(ores::trading::domain::find(both.rate_instruments, first.anchor.id) != nullptr);
+    CHECK(ores::trading::domain::find(both.rate_instruments, second.anchor.id) != nullptr);
 }
 
 TEST_CASE("a_scripted_trade_books_its_variables_and_underlyings_back", "[service]") {
@@ -1193,7 +1237,7 @@ TEST_CASE("a_scripted_trade_books_its_variables_and_underlyings_back", "[service
 
     ores::trading::domain::instrument_batch exported;
     ores::trading::service::trade_export_service(f.ctx).export_books(
-        {boost::uuids::to_string(f.book_id)}, 0, 100, exported);
+        {boost::uuids::to_string(f.book_id)}, 0, 100, exported, {});
 
     const auto parameters =
         ores::trading::domain::find_all(exported.scripted_parameters, first.anchor.id);

@@ -290,6 +290,69 @@ struct publish_engine_settings_from_dq_request {
                            const publish_engine_settings_from_dq_request&) = default;
 };
 
+/**
+ * @brief Asks the run to decide which trades its market can answer.
+ *
+ * The decision is preprocessing and it comes first, because everything after it
+ * gathers what it decided: a trade the market cannot answer never reaches the
+ * engine, so there is no case for exporting it and leaving it out later.
+ */
+struct resolve_market_readiness_request {
+    using response_type = struct resolve_market_readiness_result;
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.resolve_market_readiness";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string report_instance_id;
+    std::string definition_id;
+    std::string tenant_id;
+    std::string correlation_id;
+
+    friend bool operator==(const resolve_market_readiness_request&,
+                           const resolve_market_readiness_request&) = default;
+};
+
+struct resolve_market_readiness_result {
+    bool success = false;
+    /**
+     * @brief What the run states about its readiness, in one sentence.
+     *
+     * A run with no complete trade never reaches the next step, so this sentence is
+     * the account of what it lacked, and it names the causes rather than a count.
+     */
+    std::string message;
+    /**
+     * @brief The books the run's scope resolved to.
+     *
+     * The step that gathers the trades reads them, so the scope is resolved once and
+     * every later step gathers the same set.
+     */
+    std::vector<std::string> book_ids;
+    /**
+     * @brief The trades the market answered in full, which are the ones to export.
+     */
+    std::vector<std::string> trade_ids;
+    /**
+     * @brief How many trades the scope holds.
+     */
+    int booked_count = 0;
+    /**
+     * @brief How many of them the market answered in full.
+     */
+    int complete_count = 0;
+    /**
+     * @brief How many the run leaves out. The counts partition the population.
+     */
+    int excluded_count = 0;
+
+    friend bool operator==(const resolve_market_readiness_result&,
+                           const resolve_market_readiness_result&) = default;
+};
+
 struct gather_trades_request {
     using response_type = struct gather_trades_result;
     static constexpr std::string_view nats_subject = "reporting.v1.ops.gather_trades";
@@ -304,6 +367,17 @@ struct gather_trades_request {
     std::string definition_id;
     std::string tenant_id;
     std::string correlation_id;
+    /**
+     * @brief The books the run's scope resolved to, read from the readiness step.
+     */
+    std::vector<std::string> book_ids;
+    /**
+     * @brief The trades to write: the ones the market answered in full.
+     *
+     * Empty means every trade of the books. The readiness step never sends it
+     * empty, because a run with no complete trade fails there.
+     */
+    std::vector<std::string> trade_ids;
 
     friend bool operator==(const gather_trades_request&, const gather_trades_request&) = default;
 };
@@ -1111,6 +1185,49 @@ wire_fields(std::type_identity<publish_engine_settings_from_dq_request>) {
 }
 
 /**
+ * @brief The members of resolve_market_readiness_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<resolve_market_readiness_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"report_instance_id",
+                                      &resolve_market_readiness_request::report_instance_id},
+        ::ores::utility::codec::field{"definition_id",
+                                      &resolve_market_readiness_request::definition_id},
+        ::ores::utility::codec::field{"tenant_id", &resolve_market_readiness_request::tenant_id},
+        ::ores::utility::codec::field{"correlation_id",
+                                      &resolve_market_readiness_request::correlation_id},
+    };
+}
+
+/**
+ * @brief The members of resolve_market_readiness_result, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<resolve_market_readiness_result>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &resolve_market_readiness_result::success},
+        ::ores::utility::codec::field{"message", &resolve_market_readiness_result::message},
+        ::ores::utility::codec::field{"book_ids", &resolve_market_readiness_result::book_ids},
+        ::ores::utility::codec::field{"trade_ids", &resolve_market_readiness_result::trade_ids},
+        ::ores::utility::codec::field{"booked_count",
+                                      &resolve_market_readiness_result::booked_count},
+        ::ores::utility::codec::field{"complete_count",
+                                      &resolve_market_readiness_result::complete_count},
+        ::ores::utility::codec::field{"excluded_count",
+                                      &resolve_market_readiness_result::excluded_count},
+    };
+}
+
+/**
  * @brief The members of gather_trades_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -1125,6 +1242,8 @@ wire_fields(std::type_identity<publish_engine_settings_from_dq_request>) {
         ::ores::utility::codec::field{"definition_id", &gather_trades_request::definition_id},
         ::ores::utility::codec::field{"tenant_id", &gather_trades_request::tenant_id},
         ::ores::utility::codec::field{"correlation_id", &gather_trades_request::correlation_id},
+        ::ores::utility::codec::field{"book_ids", &gather_trades_request::book_ids},
+        ::ores::utility::codec::field{"trade_ids", &gather_trades_request::trade_ids},
     };
 }
 
@@ -2026,6 +2145,34 @@ struct ORES_REPORTING_API_EXPORT
     static std::string
     write_msgpack(const ores::reporting::messaging::publish_engine_settings_from_dq_request& v);
     static ores::reporting::messaging::publish_engine_settings_from_dq_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::resolve_market_readiness_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::resolve_market_readiness_request& v);
+    static ores::reporting::messaging::resolve_market_readiness_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::resolve_market_readiness_request& v);
+    static ores::reporting::messaging::resolve_market_readiness_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_REPORTING_API_EXPORT
+    wire_traits<ores::reporting::messaging::resolve_market_readiness_result> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::reporting::messaging::resolve_market_readiness_result& v);
+    static ores::reporting::messaging::resolve_market_readiness_result
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::reporting::messaging::resolve_market_readiness_result& v);
+    static ores::reporting::messaging::resolve_market_readiness_result
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

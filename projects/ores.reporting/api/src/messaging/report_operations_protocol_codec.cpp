@@ -344,6 +344,51 @@ wire_traits<ores::reporting::messaging::publish_engine_settings_from_dq_request>
         ores::reporting::messaging::publish_engine_settings_from_dq_request>(data);
 }
 
+std::string wire_traits<ores::reporting::messaging::resolve_market_readiness_request>::write_json(
+    const ores::reporting::messaging::resolve_market_readiness_request& v) {
+    return object::write_json(v);
+}
+
+ores::reporting::messaging::resolve_market_readiness_request
+wire_traits<ores::reporting::messaging::resolve_market_readiness_request>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::reporting::messaging::resolve_market_readiness_request>(text);
+}
+
+std::string
+wire_traits<ores::reporting::messaging::resolve_market_readiness_request>::write_msgpack(
+    const ores::reporting::messaging::resolve_market_readiness_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::reporting::messaging::resolve_market_readiness_request
+wire_traits<ores::reporting::messaging::resolve_market_readiness_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::reporting::messaging::resolve_market_readiness_request>(data);
+}
+
+std::string wire_traits<ores::reporting::messaging::resolve_market_readiness_result>::write_json(
+    const ores::reporting::messaging::resolve_market_readiness_result& v) {
+    return object::write_json(v);
+}
+
+ores::reporting::messaging::resolve_market_readiness_result
+wire_traits<ores::reporting::messaging::resolve_market_readiness_result>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::reporting::messaging::resolve_market_readiness_result>(text);
+}
+
+std::string wire_traits<ores::reporting::messaging::resolve_market_readiness_result>::write_msgpack(
+    const ores::reporting::messaging::resolve_market_readiness_result& v) {
+    return object::write_msgpack(v);
+}
+
+ores::reporting::messaging::resolve_market_readiness_result
+wire_traits<ores::reporting::messaging::resolve_market_readiness_result>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::reporting::messaging::resolve_market_readiness_result>(data);
+}
+
 std::string wire_traits<ores::reporting::messaging::gather_trades_request>::write_json(
     const ores::reporting::messaging::gather_trades_request& v) {
     return object::write_json(v);

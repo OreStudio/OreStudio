@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 8F72B4D1-5A6C-4E38-9C21-7B0D93A1E562
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.reporting.report_trade_market_readiness
+#+description: Codegen entity model for the reporting =report_trade_market_readiness= table. Whether a run's market answered every address one trade names.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:marketdata:
+#+brief: Whether a run's market answered every address one trade names.
+#+entity_singular: report_trade_market_readiness
+#+entity_plural: report_trade_market_readinesses
+#+entity_title: Report Trade Market Readiness
+#+created: 2026-11-26
+#+updated: 2026-11-26
+
+One row per trade the run's scope holds, written before the engine sees any
+work.
+
+A trade is complete when every oresmd address its instruments name is answered
+at the run's as-of, and incomplete otherwise. An incomplete trade is left out
+of the run rather than sent to the engine, so this row is the run's account of
+which trades it lost.
+
+The addresses that make an incomplete trade incomplete are the run's own rows
+in =report_trade_market_gap=, one per address the market did not answer. They
+are written from the same decision that wrote this row, so the count here and
+the rows there are two readings of one fact.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:subcomponent:  api
+:profile:       readonly-timeseries
+:END:
+
+* C++
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: trade_readiness
+:entity_plural_short:   trade_readinesses
+:entity_singular_words: trade readiness
+:entity_plural_words:   trade readinesses
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate UUID identifying this readiness row.
+
+** party_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:END:
+
+The party that owns the run.
+
+** report_instance_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:filterable:   true
+:END:
+
+The run this row states the readiness of.
+
+** trade_id
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:filterable:   true
+:END:
+
+The engine's own identifier for the trade. It is text because the engine names
+trades with strings, not with uuids.
+
+** complete
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:END:
+
+Whether every address the trade names was answered, which is what decides
+whether the run submits it.
+
+** gap_count
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+How many of the addresses it names went unanswered. It is stored so that a
+reader of an incomplete trade sees how short the market was without reading the
+address detail, and a complete trade states zero.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:           ores_reporting_report_trade_market_readinesses_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation:  true
+:END:
+
+A run is its party's own, so a tenant reads only its own rows and a party only the trades it priced.

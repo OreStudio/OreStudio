@@ -420,6 +420,13 @@ export interface ExportTradesToStorageRequest {
      * @brief The target key, such as reporting/runs/{instance_id}/trades.msgpack.
      */
     storage_key: string;
+    /**
+     * @brief The trades to write, or every trade of the books when empty.
+     *
+     * A run decides which trades its market can answer before it exports any and
+     * writes only those, because an incomplete trade never reaches the engine.
+     */
+    trade_ids: string[];
 }
 
 /**
@@ -509,6 +516,43 @@ export interface ResolveMarketDataRequirementsResponse {
     trade_requirements: TradeRequirement[];
 }
 
+/**
+ * @brief Asks which trades a set of books holds.
+ *
+ * A run decides which trades its market can answer before it exports any, so it
+ * needs the set itself rather than the trades' contents. Asking for the ids
+ * alone keeps that decision off the export, which writes a blob the run has not
+ * earned yet.
+ */
+export interface ListBookTradeIdsRequest {
+    /**
+     * @brief The books whose trades to name.
+     */
+    book_ids: string[];
+}
+
+/**
+ * @brief The trades the books hold.
+ */
+export interface ListBookTradeIdsResponse {
+    /**
+     * @brief Whether the read ran.
+     */
+    success: boolean;
+    /**
+     * @brief Why the read failed, when it did.
+     */
+    message: string;
+    /**
+     * @brief The trade ids, in ascending order so two reads of one set read alike.
+     *
+     * A book that holds no trade contributes nothing, and a set of books with no
+     * trades between them answers with none rather than with an error: an empty
+     * scope is the definition's problem, which the run states when it gathers.
+     */
+    trade_ids: string[];
+}
+
 export const subjects = {
     book_trade_request: 'trading.v1.ops.book_trade',
     book_product_request: 'trading.v1.ops.book_product',
@@ -518,6 +562,7 @@ export const subjects = {
     export_portfolio_request: 'trading.v1.ops.export_portfolio',
     export_trades_to_storage_request: 'trading.v1.ops.export_trades_to_storage',
     resolve_market_data_requirements_request: 'trading.v1.ops.resolve_market_data_requirements',
+    list_book_trade_ids_request: 'trading.v1.ops.list_book_trade_ids',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -533,4 +578,5 @@ export const requiresSession = {
     export_portfolio_request: true,
     export_trades_to_storage_request: true,
     resolve_market_data_requirements_request: true,
+    list_book_trade_ids_request: true,
 } as const;

@@ -117,25 +117,46 @@ It is addressed at =reporting.v1.ops.unschedule_report_definitions=.
 report_operations unschedule-report-definitions __none__
 #+end_src
 
-** =gather-trades=
+** =resolve-market-readiness=
 :PROPERTIES:
-:ID: 244D8475-7F5E-55AA-8B60-6E3C2C7A9853
+:ID: 08E842FC-5B65-5D76-AB77-21B2070B5478
 :END:
 
-Sends =gather_trades_request= and prints =gather_trades_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =definition_id=, =tenant_id=, =correlation_id=, in that order. The caller must have established a session first.
+Sends =resolve_market_readiness_request= and prints =resolve_market_readiness_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =definition_id=, =tenant_id=, =correlation_id=, in that order. The caller must have established a session first.
 
 
 The command is shaped like this:
 
 #+begin_example
-report_operations gather-trades <report_instance_id> <definition_id> <tenant_id> <correlation_id>
+report_operations resolve-market-readiness <report_instance_id> <definition_id> <tenant_id> <correlation_id>
+#+end_example
+
+It is addressed at =reporting.v1.ops.resolve_market_readiness=.
+
+#+name: report_operations-resolve-market-readiness
+#+begin_src ores-shell :tangle report_operations-resolve-market-readiness.ores :exports none
+report_operations resolve-market-readiness __none__ __none__ __none__ __none__
+#+end_src
+
+** =gather-trades=
+:PROPERTIES:
+:ID: 244D8475-7F5E-55AA-8B60-6E3C2C7A9853
+:END:
+
+Sends =gather_trades_request= and prints =gather_trades_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =definition_id=, =tenant_id=, =correlation_id=, =book_ids=, =trade_ids=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations gather-trades <report_instance_id> <definition_id> <tenant_id> <correlation_id> <book_ids> <trade_ids>
 #+end_example
 
 It is addressed at =reporting.v1.ops.gather_trades=.
 
 #+name: report_operations-gather-trades
 #+begin_src ores-shell :tangle report_operations-gather-trades.ores :exports none
-report_operations gather-trades __none__ __none__ __none__ __none__
+report_operations gather-trades __none__ __none__ __none__ __none__ __none__ __none__
 #+end_src
 
 ** =gather-market-data=

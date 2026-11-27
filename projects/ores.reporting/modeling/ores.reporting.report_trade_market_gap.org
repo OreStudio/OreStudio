@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: 5E0C7A94-2B18-4D6F-8A31-C9740B5D2E63
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.reporting.report_trade_market_gap
+#+description: Codegen entity model for the reporting =report_trade_market_gap= table. One address an incomplete trade named that the market did not answer.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:marketdata:
+#+brief: One address an incomplete trade named that the market did not answer.
+#+entity_singular: report_trade_market_gap
+#+entity_plural: report_trade_market_gaps
+#+entity_title: Report Trade Market Gap
+#+created: 2026-11-27
++#+updated: 2026-11-27
+
+One row per address an incomplete trade named and the market did not answer,
+written with the run.
+
+A trade's readiness row states that it is incomplete and how many addresses it
+lost. This table states which ones, so a reader of one trade sees its gaps
+without asking another component what the trade names.
+
+The cause is not repeated here. It belongs to the address, and the address
+grain states it once for every trade that needed it: the two rows name one run
+and one address, so a reader that wants the cause joins them. Writing the cause
+twice would let the copies disagree, and a party acting on one of them would
+buy the wrong thing.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:subcomponent:  api
+:profile:       readonly-timeseries
+:END:
+
+* C++
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: trade_gap
+:entity_plural_short:   trade_gaps
+:entity_singular_words: trade gap
+:entity_plural_words:   trade gaps
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+Surrogate UUID identifying this gap.
+
+** party_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:END:
+
+The party that owns the run.
+
+** report_instance_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:natural_key:  true
+:filterable:   true
+:END:
+
+The run this gap belongs to.
+
+** trade_id
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:filterable:   true
+:END:
+
+The engine's own identifier for the trade that lost the address.
+
+** oresmd_uri
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
+:filterable:   true
+:END:
+
+The address the trade named that the market did not answer. The same row in the
+address grain states why.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename:           ores_reporting_report_trade_market_gaps_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation:  true
+:END:
+
+A run is its party's own, so a tenant reads only its own rows and a party only
+the gaps of the trades it priced.

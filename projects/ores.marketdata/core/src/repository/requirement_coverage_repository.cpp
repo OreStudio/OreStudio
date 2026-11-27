@@ -19,6 +19,7 @@
  */
 #include "ores.marketdata.core/repository/requirement_coverage_repository.hpp"
 #include "ores.database/query_builder/execute.hpp"
+#include "ores.marketdata.core/service/ore_export_service.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <stdexcept>
@@ -29,39 +30,74 @@ namespace ores::marketdata::repository {
 namespace {
 
 /*
- * One row per requirement, whether the market answers it or not. A party's own
- * series answers the address. A fixing is also answered by the system tenant's
- * series of the same address, because the export writes the world's fixing when
- * the party holds none of its own; a quote is not, because the export takes from
- * the system tenant only fixing series, so counting a system-tenant quote here
- * would pass a requirement the body never carries.
+ * One row per requirement, whether the market answers it or not, with the series
+ * that answers it and whether that series holds a point at the date.
  *
- * A series answers whether or not it holds a point at the date: the export writes
- * a series with no point at the date as its history alone and counts it, so a
- * missing point is the export's own stale accounting and not a gap here.
+ * A party's own series answers the address. A fixing is also answered by the
+ * system tenant's series of the same address, because the export writes the
+ * world's fixing when the party holds none of its own; a quote is not, because
+ * the export takes from the system tenant only fixing series, so counting a
+ * system-tenant quote here would pass a requirement the body never carries.
  *
  * The system tenant's series are installation reference data, which every party
  * reads, so its rows are counted without asking for a party of their own.
+ *
+ * A point older than the age limit is stale and answers nothing: the export writes
+ * no line for it, so a run that treated it as answered would send the engine a
+ * trade whose datum at the date the body does not carry.
+ *
+ * The point is read from the series that answers the address, which is why the
+ * share of the read that the coverage function performs is joined here rather
+ * than asked again: the function answers for the party's series, and the fixing
+ * fallback has to be read with its own tenant.
  */
 constexpr auto coverage_query =
     "with requirements as ("
     "    select distinct jsonb_array_elements_text($3::jsonb)::text as uri),"
-    " coverage as ("
-    "    select c.oresmd_uri, bool_or(c.series_id is not null) as answered"
+    " party as ("
+    "    select c.oresmd_uri as uri,"
+    "           (array_agg(c.series_id order by c.series_id)"
+    "               filter (where c.series_id is not null))[1] as series_id,"
+    "           max(c.latest_point) as latest_point"
     "    from ores_marketdata_requirement_coverage_fn("
     "        $1::uuid, $2::uuid,"
     "        array(select uri from requirements),"
     "        coalesce($4::timestamptz, now())) c"
-    "    group by c.oresmd_uri)"
+    "    group by c.oresmd_uri),"
+    " system_fixing as ("
+    "    select distinct on (r.uri) r.uri, s.id as series_id,"
+    "        greatest("
+    "            (select max(f.fixing_date)::timestamp at time zone 'UTC'"
+    "             from ores_marketdata_market_fixings_tbl f"
+    "             where f.tenant_id = s.tenant_id and f.series_id = s.id"
+    "               and f.fixing_date <="
+    "                   (coalesce($4::timestamptz, now()) at time zone 'UTC')::date"
+    "               and f.valid_to = ores_utility_infinity_timestamp_fn()),"
+    "            (select max(o.observation_datetime)"
+    "             from ores_marketdata_market_observations_tbl o"
+    "             where o.tenant_id = s.tenant_id and o.series_id = s.id"
+    "               and o.observation_datetime <= coalesce($4::timestamptz, now())"
+    "               and o.valid_to = ores_utility_infinity_timestamp_fn())) as latest_point"
+    "    from requirements r"
+    "    join ores_marketdata_market_series_tbl s"
+    "      on s.tenant_id = ores_utility_system_tenant_id_fn()"
+    "     and s.oresmd_uri = r.uri"
+    "     and s.valid_to = ores_utility_infinity_timestamp_fn()"
+    "    where position('?type=fixing&' in r.uri) > 0"
+    "      and not exists (select 1 from party p"
+    "                      where p.uri = r.uri and p.series_id is not null)"
+    "    order by r.uri, s.id)"
     " select r.uri,"
-    "        coalesce(c.answered, false)"
-    "        or (position('?type=fixing&' in r.uri) > 0"
-    "            and exists (select 1 from ores_marketdata_market_series_tbl s"
-    "                        where s.tenant_id = ores_utility_system_tenant_id_fn()"
-    "                          and s.oresmd_uri = r.uri"
-    "                          and s.valid_to = ores_utility_infinity_timestamp_fn()))"
+    "        p.series_id, sy.series_id,"
+    "        (case when p.series_id is not null then p.latest_point"
+    "              else sy.latest_point end) is not null,"
+    "        (case when p.series_id is not null then p.latest_point"
+    "              else sy.latest_point end)"
+    "            >= coalesce($4::timestamptz, now())"
+    "               - make_interval(days => $5::integer)"
     " from requirements r"
-    " left join coverage c on c.oresmd_uri = r.uri"
+    " left join party p on p.uri = r.uri"
+    " left join system_fixing sy on sy.uri = r.uri"
     " order by r.uri";
 
 }
@@ -89,13 +125,34 @@ requirement_coverage_repository::read(const context& ctx,
         // a time is read as it stands.
         (as_of && as_of->size() == 10 && as_of->find('T') == std::string::npos) ?
             std::optional<std::string>(*as_of + "T23:59:59.999999Z") :
-            as_of};
+            as_of,
+        // The limit is the export's own, so the answer is as strict as the body it stands for
+        // and the two cannot drift apart on what counts as stale.
+        std::to_string(service::ore_export_service::default_max_age_days)};
 
     for (const auto& row : ores::database::query_builder::execute_parameterized_multi_column_query(
-             ctx, coverage_query, params, lg(), "Reading the market's coverage of requirements"))
-        if (row.size() >= 2 && row[0])
-            out.push_back(
-                requirement_coverage{*row[0], row[1] && (*row[1] == "t" || *row[1] == "true")});
+             ctx, coverage_query, params, lg(), "Reading the market's coverage of requirements")) {
+        if (row.size() < 5 || !row[0])
+            continue;
+        requirement_coverage one{.oresmd_uri = *row[0]};
+        // The series the party holds answers first; the system's fixing answers when it holds
+        // none, and the query picks one of the two so that the row names the series read.
+        if (row[1])
+            one.series_id = *row[1];
+        else if (row[2])
+            one.series_id = *row[2];
+
+        const auto as_bool = [&row](std::size_t column) {
+            return row[column] && (*row[column] == "t" || *row[column] == "true");
+        };
+        if (!one.series_id)
+            one.gap_cause = std::string(gap_cause::no_series);
+        else if (!as_bool(3))
+            one.gap_cause = std::string(gap_cause::no_point);
+        else if (!as_bool(4))
+            one.gap_cause = std::string(gap_cause::stale);
+        out.push_back(std::move(one));
+    }
     return out;
 }
 

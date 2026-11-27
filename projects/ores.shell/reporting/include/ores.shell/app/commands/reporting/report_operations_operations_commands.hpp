@@ -99,7 +99,16 @@ public:
                                                       const std::vector<std::string>& args);
 
     /**
+     * @brief resolve-market-readiness <report_instance_id> <definition_id> <tenant_id>
+     * <correlation_id>
+     */
+    static void process_resolve_market_readiness(std::ostream& out,
+                                                 ores::nats::service::nats_client& session,
+                                                 const std::vector<std::string>& args);
+
+    /**
      * @brief gather-trades <report_instance_id> <definition_id> <tenant_id> <correlation_id>
+     * <book_ids> <trade_ids>
      */
     static void process_gather_trades(std::ostream& out,
                                       ores::nats::service::nats_client& session,

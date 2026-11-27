@@ -239,15 +239,16 @@ cross join (values
     -- A curve blueprint names the provider whose quotes its pillars read, so the
     -- party takes that provider and no other for its curves. The derived source
     -- carries the volatility quotes a surface calibrates from.
-    -- The swap's overnight coupon reads an index fixing for the day before the
-    -- valuation date, so the party takes the fixings the installation simulates
-    -- as well as the quotes.
+    -- The swap's overnight coupon reads the fixing of its index for the day before
+    -- the valuation date. Every fixing now sits under the administrator that sets
+    -- it, and no source states the overnight indices whose administrator also has
+    -- a public adapter: the Bank of England's is not installed. So the party takes
+    -- no fixing source, and the run says so when the swap does not price.
     ('smokehouse', 'subscribe_market_data', 50, '{"provider": "bloomberg", "source": "bloomberg-a", "parties": [
         {"party": "Smokehouse Trading Ltd", "provider": "bloomberg", "source": "bloomberg-a"},
         {"party": "Smokehouse Trading Ltd", "provider": "ice", "source": "ice-a"},
         {"party": "Smokehouse Trading Ltd", "provider": "lseg", "source": "lseg-a"},
-        {"party": "Smokehouse Trading Ltd", "provider": "derived", "source": "derived-fx-vol"},
-        {"party": "Smokehouse Trading Ltd", "provider": "simulated-fixings", "source": "simulated-fixings-a"}
+        {"party": "Smokehouse Trading Ltd", "provider": "derived", "source": "derived-fx-vol"}
     ]}'::jsonb),
     -- The two curves and the one pair this tenant quotes, stated rather than
     -- inherited. Copying the whole catalogue costs every curve the installation

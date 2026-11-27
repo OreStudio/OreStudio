@@ -2,7 +2,7 @@
 :ID: AB2A18DF-4449-4757-B65A-D564522E1CA9
 :END:
 #+title: The report market names what ORE cannot resolve
-#+description: The swap prices nothing because the run carries no index fixing for the overnight index its coupon reads
+#+description: A smokehouse swap once priced nothing for want of an index fixing. It prices now, and the two defects the run exposed remain, unexercised, for the trade that does need a fixing.
 #+type: capture
 #+level: cross
 #+filetags: :reporting:ore:market-data:
@@ -13,84 +13,70 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-A smokehouse run prices two of its three trades. The forward prices at 80,815.55
-GBP; the option prices at zero, which is correct, since its premium is its value
-on the valuation date. The swap records no pricing:
+A report run prices a trade from the market data it names. When an index the trade
+floats on has no fixing in that market, ORE refuses the trade and says which index
+and which date it wanted, so the refusal is a precise statement about the market
+the run carried.
+
+Round four of the smokehouse tenant priced two of its three trades and refused the
+swap:
 
 #+begin_example
 2nd leg: OvernightIndexedCouponPricer: missing GBP-SONIAON Actual/365 (Fixed)
 fixing for fixing date November 24th, 2026.
 #+end_example
 
-* Why
+Round five, on the tree that states every fixing under its administrator, prices
+all three trades and records no market-data gap. The swap floats on
+=GBP-LIBOR-12M=, not on an overnight index, and its ORE package carries 520
+fixings for it. Its first period starts on the valuation date, so it needs no
+fixing before them.
 
-The run carries no index fixing, and there are two reasons, each on its own side
-of the line.
+* Why the trade that does need one would still fail
 
-The first was the routes. A subscription step wrote one route per provider with
-the asset class stated as a constant =fx=, so a party subscribed to
-=simulated-fixings= reached the FX fixings and not the interest rate ones, which
-are the ones an overnight coupon reads. The step now reads what each provider's
-catalogue states: the asset class is the authority of every address the provider
-maps, so a provider that serves interest rates gets an =ir= route as well as an
-=fx= one. That change is in and the routes are right.
+Two defects the run exposed outlive it. Neither is exercised by this tenant while
+its swap floats on an index whose fixings the store holds.
 
-The second is upstream of the run. No fixing series reaches the tenant at all,
-and the fixing source says why:
+The first is the source. No source states an overnight index in a synthetic run:
+every fixing sits under its administrator now, and the administrators that also
+have a public adapter have no simulated source, because that adapter is not
+installed. It is
+[[id:7D79E648-0905-4FA7-81E5-42FC781A7DCB][State the overnight indices a
+synthetic run needs]].
+
+The second is the derivation. A fixing series is derived from the party's spot
+series by cancelling one base against the other, so a party whose book spans
+several bases cancels nothing and every fixing is dropped:
 
 #+begin_example
 The simulated-fixings fixing series of party <id> quote against EUR and NZD at
 once, so no one base cancels; it is left out.
 #+end_example
 
-A fixing series is derived from the party's spot series, and the inference of
-which currency a fixing quotes against cancels one base against the other. When
-the series in scope carry several bases, as a party routed to every vendor's
-spots does, nothing cancels and every fixing is dropped. So a party holding a
-rich spot book gets no fixings, and every overnight coupon in the run is refused.
+It is [[id:DD7F623E-7CB3-4C6A-AB99-6C722D14A241][Fix the fixing a party's spot
+book hides]].
 
-That is the defect to fix next, and it is a data-model question rather than a
-configuration one: either the fixing is keyed by the pair it belongs to rather
-than inferred from the party's whole spot book, or the inference is narrowed to
-the series the trade's index names.
+* A third defect the rebase exposed
+
+The subscription step routes a party by the asset classes of the provider's
+catalogue, but a route names a feed and a feed serves only its own scopes. Because
+the =derived= provider now maps interest rate term indices as well as FX
+volatility quotes, the step asks for an =ir= route on an FX feed and the store
+refuses it, and the provision records a warning. It is
+[[id:537E5CFC-4B41-468B-9B38-C931E489A683][Route a party only to the classes its
+feed serves]].
 
 * References
 
-- Fixed on this branch: the market data export carries a party's FX spots and
-  volatility surfaces with every run; the conventions file names calendars the
-  way ORE reads them; and the routes name the asset classes each provider
-  publishes rather than =fx= alone.
-- The run's own record: =ores_reporting_report_error_events_tbl=. The fixing
-  source's line is in =publish/log/ores.marketdata.service.0.log=.
+- The run's own record: =ores_reporting_report_metrics_tbl= for the pricing count,
+  =ores_reporting_report_trade_market_gaps_tbl= for the gaps, and the generated
+  input package under =storage/ores/ore/packages/<instance>/ore_package.tar.gz=
+  for the market the engine read.
+- The two fixes this branch carries: the export takes the FX spots a run prices
+  through, and the conventions file names calendars the way ORE reads them.
 
 * See also
 
-- =projects/ores.seeder/datasets/smokehouse/= is the tenant whose run surfaced
-  this.
-* References
-
-- Fixed on this branch: the market data export carries a party's FX spots and
-  volatility surfaces with every run, because an FX instrument holds currencies
-  and no market address; and the conventions file names calendars the way ORE
-  reads them, because ORE drops a convention whose calendar it cannot convert.
-  The second took the option's volatility curve with it.
-- The run's own record: =ores_reporting_report_error_events_tbl=, and the
-  generated input package under =ore/packages/<run>/ore_package.tar.gz=.
-
-* See also
-
-- =projects/ores.seeder/datasets/smokehouse/= is the tenant whose run surfaced
-  this.
-* References
-
-- Fixed in the same branch: the market data export now carries a party's FX
-  spots and volatility surfaces with every run, whether or not a trade names
-  them, because an FX instrument holds currencies and no market address. The
-  export is =is_fx_conversion= in =ore_export_service.cpp=.
-- The run's own record: =ores_reporting_report_error_events_tbl=, and the
-  generated input package under =ore/packages/<run>/ore_package.tar.gz=.
-
-* See also
-
-- =projects/ores.seeder/datasets/smokehouse/= is the tenant whose run surfaced
-  both.
+- =projects/ores.seeder/datasets/smokehouse/= is the tenant whose runs surfaced all
+  of this, and
+  [[id:D3F27A89-78A5-4972-B8B8-895722DFC5BB][its task]] carries the measurements.

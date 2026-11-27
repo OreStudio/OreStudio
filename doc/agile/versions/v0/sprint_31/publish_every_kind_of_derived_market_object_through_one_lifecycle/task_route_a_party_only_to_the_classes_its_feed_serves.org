@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 537E5CFC-4B41-468B-9B38-C931E489A683
+:END:
+#+title: Task: Route a party only to the classes its feed serves
+#+description: The subscription step takes the asset classes of a route from the provider's catalogue, but a provider may serve several classes through different feeds and a feed serves only its own scopes, so the step asks for an interest rate route on an FX feed and the store refuses it.
+#+type: task
+#+level: s1
+#+filetags: :publish_every_kind_of_derived_market_object_through_one_lifecycle:sprint_31:v0:
+#+owner: marco
++#+branch: feature/provision-a-smokehouse-tenant
++#+pr:
++#+blocked_on:
++#+blocked_since:
++#+created: 2026-11-27
++#+updated: 2026-11-27
++#+environment: bright_faraday
++#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A party that subscribes to a provider is routed to exactly the asset classes the
+feed it reaches actually serves, so a subscription step never asks for a route the
+store refuses and finishes without a warning.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] |
+| Now          | Reproduced on a provisioned tenant; the fix is not written. |
+| Waiting on   | Nothing.                               |
+| Next         | Read the chosen feed's scopes, then re-provision. |
+| Last touched | 2026-11-27                               |
+
+* Acceptance
+
+- The subscription step asks for a route only for an asset class the chosen feed
+  serves, and the run records no warning.
+- A provider that serves interest rates through one feed and FX through another
+  gets both routes, each on the feed that serves it.
+- A test covers the case: a provider whose catalogue holds two classes, reached
+  through a feed whose scope holds one.
+
+* Plan
+
+1. *Reproduce.* Provision the smokehouse tenant. The step ends
+   =completed_with_warnings= and the warning is the store's own refusal:
+   =Invalid route: feed afd34349-1c6c-56b2-a686-97b623ee051a serves no ir scope=.
+2. *Read the cause.* The step takes the asset class from the authority of every
+   =oresmd= address the provider maps. A provider's catalogue is not a feed's
+   scope: =derived= maps the FX volatility quotes and, since the term indices
+   became ours, interest rate fixing items too, while the feed =derived-fx-vol=
+   serves FX alone.
+3. *Fix.* The route's class comes from the scopes of the feed the route names,
+   intersected with what the provider maps. The feed is already resolved before
+   the route is written.
+4. *Prove.* Re-provision and watch the step end without a warning; add the test in
+   step 3 of the acceptance.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Warning the step records | 1, the =ir= route refused for feed =derived-fx-vol= | the provisioning log of a fresh tenant | =5c7ec4b974= |
+
+* Notes
+
+- The warning costs the tenant nothing today: the party does not read the derived
+  term indices, and its surface published from the FX route. It is still a defect,
+  because every future provision records it and a reader cannot tell a harmless
+  warning from a load-bearing one.
+- The route table enforces the rule, so the store is right and the step is wrong.
+  The refusal is on =ores_marketdata_routes_insert_fn=.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

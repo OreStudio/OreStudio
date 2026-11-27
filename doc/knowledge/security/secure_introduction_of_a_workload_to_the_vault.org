@@ -156,6 +156,15 @@ on the path of every cold start, so a vault that is unavailable delays the
 services behind it; the vault itself starts alone, from its files, which is why
 its own material is not in its own store.
 
+The challenge is issued to whoever asks for it, since a caller that has no
+credential cannot be identified before it answers one. It is therefore bounded
+rather than trusted: a challenge is good once, for a short time, and it is
+useless to anyone who cannot open it. The request that answers it names the
+consumer, the nonce and the secret it asks for, and the vault opens the request
+with all three authenticated, so a nonce issued for one consumer cannot be
+redirected to another and a nonce issued for one secret cannot be spent on a
+second.
+
 * Patterns used
 
 - [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] — the challenge

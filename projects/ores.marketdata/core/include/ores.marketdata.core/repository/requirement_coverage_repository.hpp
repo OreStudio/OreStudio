@@ -31,15 +31,48 @@
 namespace ores::marketdata::repository {
 
 /**
+ * @brief Why the market does not answer an address.
+ *
+ * The two are different purchases, so the read keeps them apart and a reader
+ * that acts on the answer can tell which one it is buying. The vocabulary grows
+ * when a read can establish more; a cause no read can state is not invented.
+ */
+namespace gap_cause {
+/// Nothing holds the address: no series of the party, and no fixing of the system tenant.
+inline constexpr std::string_view no_series = "no_series";
+/// A series holds the address but carries no point at or before the as-of.
+inline constexpr std::string_view no_point = "no_point";
+}
+
+/**
  * @brief One oresmd address a run needs, and whether the market answers it.
  *
  * The answer mirrors what a run's export writes: the party's own series with the
  * address, or, for a fixing, the system tenant's series of that index, which the
  * export reads when the party holds none.
+ *
+ * It is stricter than the export's own inclusion rule, because a run decides
+ * whether a trade can be valued and the export decides what to write. A series
+ * that exists but carries no point at the as-of answers the export, which writes
+ * its history alone, and does not answer a run, which would value the trade off
+ * nothing.
  */
 struct requirement_coverage final {
     std::string oresmd_uri;
-    bool answered = false;
+    /// The series that answers the address, absent when the market holds none.
+    std::optional<std::string> series_id;
+    /// Why the market does not answer the address, empty when it does.
+    std::string cause;
+
+    /// Whether the run can value a trade off this address.
+    [[nodiscard]] bool answered() const {
+        return cause.empty();
+    }
+
+    /// Whether any series holds the address, which is the export's own rule.
+    [[nodiscard]] bool has_series() const {
+        return series_id.has_value();
+    }
 };
 
 /**

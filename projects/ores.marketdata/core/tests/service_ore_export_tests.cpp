@@ -886,12 +886,21 @@ TEST_CASE("a requirement the market cannot answer is reported unanswered",
     const auto coverage = repo.read(t.ctx, {held, unanswered}, std::nullopt);
 
     REQUIRE(coverage.size() == 2);
-    const auto answered = [&](const std::string& uri) {
+    const auto cause_of = [&](const std::string& uri) {
         for (const auto& one : coverage)
             if (one.oresmd_uri == uri)
-                return one.answered;
-        return false;
+                return one.cause;
+        return std::string("not asked about");
     };
-    CHECK(answered(held));
-    CHECK(!answered(unanswered));
+    CHECK(cause_of(held).empty());
+    // The two gaps a reader can act on are named apart, because buying a series and
+    // buying a point in a series are different purchases.
+    CHECK(cause_of(unanswered) == "no_series");
+
+    // The same address read before its first point: the series answers the address and
+    // carries nothing at the date, so the gap is the point and not the series.
+    const auto earlier = repo.read(t.ctx, {held}, "2015-01-01");
+    REQUIRE(earlier.size() == 1);
+    CHECK(earlier.at(0).series_id.has_value());
+    CHECK(earlier.at(0).cause == "no_point");
 }

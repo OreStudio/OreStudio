@@ -2103,6 +2103,57 @@ struct store_market_state_response {
 };
 
 /**
+ * @brief The market's answer for one oresmd address a run needs.
+ *
+ * A run asks about an address before it submits any work, so that a trade
+ * whose data is absent is left out rather than failed by the engine. The
+ * answer names the series that carries the address and states the cause when
+ * there is none, because a party that has to buy the data needs to know
+ * whether it is missing a series or missing a point in one it holds.
+ */
+struct requirement_answer {
+    std::string oresmd_uri;
+    std::optional<std::string> series_id;
+    std::string gap_cause;
+
+    friend bool operator==(const requirement_answer&, const requirement_answer&) = default;
+};
+
+/**
+ * @brief Asks which of a run's addresses the party's market answers.
+ *
+ * The party is the one the session acts for, because a run prices for the
+ * party it belongs to and reads that party's entitlement and no other's. The
+ * answer holds one entry per address asked about, whether or not the market
+ * answers it, so a caller counts the gaps as well as the answers.
+ */
+struct get_requirement_coverage_request {
+    using response_type = struct get_requirement_coverage_response;
+    static constexpr std::string_view nats_subject = "marketdata.v1.ops.get_requirement_coverage";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::optional<std::string> as_of;
+    std::vector<std::string> requirements;
+
+    friend bool operator==(const get_requirement_coverage_request&,
+                           const get_requirement_coverage_request&) = default;
+};
+
+struct get_requirement_coverage_response {
+    bool success = true;
+    std::string message;
+    std::vector<requirement_answer> answers;
+
+    friend bool operator==(const get_requirement_coverage_response&,
+                           const get_requirement_coverage_response&) = default;
+};
+
+/**
  * @brief The members of series_identity_field, named as the wire names them and in the order
  * the type declares them.
  *
@@ -3658,6 +3709,54 @@ wire_fields(std::type_identity<export_market_data_to_storage_response>) {
     };
 }
 
+/**
+ * @brief The members of requirement_answer, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<requirement_answer>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"oresmd_uri", &requirement_answer::oresmd_uri},
+        ::ores::utility::codec::field{"series_id", &requirement_answer::series_id},
+        ::ores::utility::codec::field{"gap_cause", &requirement_answer::gap_cause},
+    };
+}
+
+/**
+ * @brief The members of get_requirement_coverage_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_requirement_coverage_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"as_of", &get_requirement_coverage_request::as_of},
+        ::ores::utility::codec::field{"requirements",
+                                      &get_requirement_coverage_request::requirements},
+    };
+}
+
+/**
+ * @brief The members of get_requirement_coverage_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<get_requirement_coverage_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &get_requirement_coverage_response::success},
+        ::ores::utility::codec::field{"message", &get_requirement_coverage_response::message},
+        ::ores::utility::codec::field{"answers", &get_requirement_coverage_response::answers},
+    };
+}
+
 }
 namespace ores::utility::codec {
 
@@ -4658,6 +4757,44 @@ struct ORES_MARKETDATA_API_EXPORT
     static std::string
     write_msgpack(const ores::marketdata::messaging::store_market_state_response& v);
     static ores::marketdata::messaging::store_market_state_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::requirement_answer> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::requirement_answer& v);
+    static ores::marketdata::messaging::requirement_answer read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::requirement_answer& v);
+    static ores::marketdata::messaging::requirement_answer
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_requirement_coverage_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_requirement_coverage_request& v);
+    static ores::marketdata::messaging::get_requirement_coverage_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_requirement_coverage_request& v);
+    static ores::marketdata::messaging::get_requirement_coverage_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT
+    wire_traits<ores::marketdata::messaging::get_requirement_coverage_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::marketdata::messaging::get_requirement_coverage_response& v);
+    static ores::marketdata::messaging::get_requirement_coverage_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::marketdata::messaging::get_requirement_coverage_response& v);
+    static ores::marketdata::messaging::get_requirement_coverage_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

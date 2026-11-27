@@ -615,7 +615,11 @@ public:
                 std::vector<std::string> missing;
                 for (const auto& one :
                      coverage_repo.read(ctx, *req->requirements, req->valuation_date)) {
-                    if (one.answered)
+                    // The export writes a series that holds the address whether or not it
+                    // carries a point at the date, because the engine reads the series and not
+                    // a point. Whether a trade can be valued off it is the run's question, and
+                    // the run asks it before it exports.
+                    if (one.has_series())
                         answered.insert(one.oresmd_uri);
                     else
                         missing.push_back(one.oresmd_uri);

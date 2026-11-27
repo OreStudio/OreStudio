@@ -4490,6 +4490,105 @@ they were not forgotten.
 
 The reasons a market-state file could not be read.
 
+** requirement_answer
+:PROPERTIES:
+:END:
+
+The market's answer for one oresmd address a run needs: the series that
+answers it, and why it does not when none does.
+
+#+begin_src cpp :name comment
+/**
+ * @brief The market's answer for one oresmd address a run needs.
+ *
+ * A run asks about an address before it submits any work, so that a trade
+ * whose data is absent is left out rather than failed by the engine. The
+ * answer names the series that carries the address and states the cause when
+ * there is none, because a party that has to buy the data needs to know
+ * whether it is missing a series or missing a point in one it holds.
+ */
+#+end_src
+
+*** oresmd_uri
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The address the run asked about.
+
+*** series_id
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The series that answers the address, absent when the party's market holds
+none. A fixing the party holds no series of its own for is answered by the
+system tenant's series of the index, which is the one the export would write.
+
+*** gap_cause
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+Why the market does not answer the address, empty when it does. The codes are
+=no_series=, when nothing holds the address, and =no_point=, when a series
+holds it but carries no point at or before the run's as-of.
+
+** get_requirement_coverage_request
+:PROPERTIES:
+:subject: marketdata.v1.ops.get_requirement_coverage
+:response: get_requirement_coverage_response
+:END:
+
+Asks which of a run's oresmd addresses the party's market answers at a date.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks which of a run's addresses the party's market answers.
+ *
+ * The party is the one the session acts for, because a run prices for the
+ * party it belongs to and reads that party's entitlement and no other's. The
+ * answer holds one entry per address asked about, whether or not the market
+ * answers it, so a caller counts the gaps as well as the answers.
+ */
+#+end_src
+
+*** as_of
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+The business date the points are read at, or nothing for now. A bare date is
+read at the close of its day, so a point written about that day counts.
+
+*** requirements
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The addresses the run needs, as the trading component resolved them.
+
+** get_requirement_coverage_response
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: true
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** answers
+:PROPERTIES:
+:cpp_type: std::vector<requirement_answer>
+:END:
+
+One entry per address asked about, in ascending address order so two reads of
+one set read alike.
+
 * See also
 
 - [[id:5F3CB723-E44D-4A59-9471-AA049E27DE12][Clean ores.marketdata to the component clean standard]] — the story that models these operations.

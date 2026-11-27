@@ -1269,6 +1269,15 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_cashflows:read', 'View the cashflows a run produced');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_cashflows:write', 'Write report cashflows');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_cashflows:delete', 'Delete report cashflows');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_run_market_readinesses:read', 'View how much of a run''s population the market answered');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_run_market_readinesses:write', 'Write a run''s market readiness');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_run_market_readinesses:delete', 'Delete a run''s market readiness');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_trade_market_readinesses:read', 'View whether a run''s market answered each of its trades');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_trade_market_readinesses:write', 'Write the readiness of a run''s trades');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_trade_market_readinesses:delete', 'Delete the readiness of a run''s trades');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_address_market_readinesses:read', 'View which addresses a run needed and which the market answered');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_address_market_readinesses:write', 'Write the readiness of a run''s addresses');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_address_market_readinesses:delete', 'Delete the readiness of a run''s addresses');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::run_results:read', 'View the figures of a run as the result screen shows them');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_errors:read', 'View report errors');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'reporting::report_errors:write', 'Create and modify report errors');

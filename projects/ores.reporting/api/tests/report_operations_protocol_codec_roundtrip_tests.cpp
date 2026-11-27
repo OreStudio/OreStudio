@@ -103,6 +103,18 @@ TEST_CASE("ores::reporting::messaging::publish_engine_settings_from_dq_request",
         ores::reporting::messaging::publish_engine_settings_from_dq_request>();
 }
 
+TEST_CASE("ores::reporting::messaging::resolve_market_readiness_request",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::reporting::messaging::resolve_market_readiness_request>();
+}
+
+TEST_CASE("ores::reporting::messaging::resolve_market_readiness_result",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::reporting::messaging::resolve_market_readiness_result>();
+}
+
 TEST_CASE("ores::reporting::messaging::gather_trades_request", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::reporting::messaging::gather_trades_request>();
 }

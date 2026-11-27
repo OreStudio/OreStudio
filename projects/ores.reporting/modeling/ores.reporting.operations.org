@@ -421,13 +421,24 @@ The report definitions to stop firing.
  */
 #+end_src
 
-** gather_trades_request
+** resolve_market_readiness_request
 :PROPERTIES:
-:subject: reporting.v1.ops.gather_trades
-:response: gather_trades_result
+:subject: reporting.v1.ops.resolve_market_readiness
+:response: resolve_market_readiness_result
 :END:
 
-Step 0: gather trades from the trading service.
+The first step of a run that executes its pre-processing: decide which of the
+scope's trades the party's market can answer, before any of them is exported.
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks the run to decide which trades its market can answer.
+ *
+ * The decision is preprocessing and it comes first, because everything after it
+ * gathers what it decided: a trade the market cannot answer never reaches the
+ * engine, so there is no case for exporting it and leaving it out later.
+ */
+#+end_src
 
 *** report_instance_id
 :PROPERTIES:
@@ -448,6 +459,146 @@ Step 0: gather trades from the trading service.
 :PROPERTIES:
 :cpp_type: std::string
 :END:
+
+** resolve_market_readiness_result
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the run states about its readiness, in one sentence.
+ *
+ * A run with no complete trade never reaches the next step, so this sentence is
+ * the account of what it lacked, and it names the causes rather than a count.
+ */
+#+end_src
+
+*** book_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The books the run's scope resolved to.
+ *
+ * The step that gathers the trades reads them, so the scope is resolved once and
+ * every later step gathers the same set.
+ */
+#+end_src
+
+*** trade_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The trades the market answered in full, which are the ones to export.
+ */
+#+end_src
+
+*** booked_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many trades the scope holds.
+ */
+#+end_src
+
+*** complete_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many of them the market answered in full.
+ */
+#+end_src
+
+*** excluded_count
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many the run leaves out. The counts partition the population.
+ */
+#+end_src
+
+** gather_trades_request
+:PROPERTIES:
+:subject: reporting.v1.ops.gather_trades
+:response: gather_trades_result
+:END:
+
+Step 1: gather trades from the trading service.
+
+The readiness step decided which trades the run may value, so this step writes
+those and no others.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** definition_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** tenant_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** correlation_id
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** book_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The books the run's scope resolved to, read from the readiness step.
+ */
+#+end_src
+
+*** trade_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The trades to write: the ones the market answered in full.
+ *
+ * Empty means every trade of the books, which is what a run that could not
+ * resolve readiness would have written before this step existed. The readiness
+ * step never sends it empty: a run with no complete trade fails there.
+ */
+#+end_src
 
 
 ** gather_trades_result

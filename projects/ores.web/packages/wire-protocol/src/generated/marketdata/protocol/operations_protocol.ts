@@ -1588,6 +1588,40 @@ export interface StoreMarketStateResponse {
     refusals: string[];
 }
 
+/**
+ * @brief The market's answer for one oresmd address a run needs.
+ *
+ * A run asks about an address before it submits any work, so that a trade
+ * whose data is absent is left out rather than failed by the engine. The
+ * answer names the series that carries the address and states the cause when
+ * there is none, because a party that has to buy the data needs to know
+ * whether it is missing a series or missing a point in one it holds.
+ */
+export interface RequirementAnswer {
+    oresmd_uri: string;
+    series_id: string | null;
+    gap_cause: string;
+}
+
+/**
+ * @brief Asks which of a run's addresses the party's market answers.
+ *
+ * The party is the one the session acts for, because a run prices for the
+ * party it belongs to and reads that party's entitlement and no other's. The
+ * answer holds one entry per address asked about, whether or not the market
+ * answers it, so a caller counts the gaps as well as the answers.
+ */
+export interface GetRequirementCoverageRequest {
+    as_of: string | null;
+    requirements: string[];
+}
+
+export interface GetRequirementCoverageResponse {
+    success: boolean;
+    message: string;
+    answers: RequirementAnswer[];
+}
+
 export const subjects = {
     resolve_series_identity_request: 'marketdata.v1.ops.resolve_series_identity',
     describe_oresmd_schema_request: 'marketdata.v1.ops.describe_oresmd_schema',
@@ -1619,6 +1653,7 @@ export const subjects = {
     get_provider_ticks_request: 'marketdata.v1.ops.get_provider_ticks',
     list_watchable_feeds_request: 'marketdata.v1.ops.list_watchable_feeds',
     store_market_state_request: 'marketdata.v1.ops.store_market_state',
+    get_requirement_coverage_request: 'marketdata.v1.ops.get_requirement_coverage',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -1656,4 +1691,5 @@ export const requiresSession = {
     get_provider_ticks_request: true,
     list_watchable_feeds_request: true,
     store_market_state_request: true,
+    get_requirement_coverage_request: true,
 } as const;

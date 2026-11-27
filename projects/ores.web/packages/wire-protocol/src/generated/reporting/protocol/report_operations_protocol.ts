@@ -159,11 +159,71 @@ export interface PublishRiskReportConfigsFromDqRequest {}
  */
 export interface PublishEngineSettingsFromDqRequest {}
 
+/**
+ * @brief Asks the run to decide which trades its market can answer.
+ *
+ * The decision is preprocessing and it comes first, because everything after it
+ * gathers what it decided: a trade the market cannot answer never reaches the
+ * engine, so there is no case for exporting it and leaving it out later.
+ */
+export interface ResolveMarketReadinessRequest {
+    report_instance_id: string;
+    definition_id: string;
+    tenant_id: string;
+    correlation_id: string;
+}
+
+export interface ResolveMarketReadinessResult {
+    success: boolean;
+    /**
+     * @brief What the run states about its readiness, in one sentence.
+     *
+     * A run with no complete trade never reaches the next step, so this sentence is
+     * the account of what it lacked, and it names the causes rather than a count.
+     */
+    message: string;
+    /**
+     * @brief The books the run's scope resolved to.
+     *
+     * The step that gathers the trades reads them, so the scope is resolved once and
+     * every later step gathers the same set.
+     */
+    book_ids: string[];
+    /**
+     * @brief The trades the market answered in full, which are the ones to export.
+     */
+    trade_ids: string[];
+    /**
+     * @brief How many trades the scope holds.
+     */
+    booked_count: number;
+    /**
+     * @brief How many of them the market answered in full.
+     */
+    complete_count: number;
+    /**
+     * @brief How many the run leaves out. The counts partition the population.
+     */
+    excluded_count: number;
+}
+
 export interface GatherTradesRequest {
     report_instance_id: string;
     definition_id: string;
     tenant_id: string;
     correlation_id: string;
+    /**
+     * @brief The books the run's scope resolved to, read from the readiness step.
+     */
+    book_ids: string[];
+    /**
+     * @brief The trades to write: the ones the market answered in full.
+     *
+     * Empty means every trade of the books, which is what a run that could not
+     * resolve readiness would have written before this step existed. The readiness
+     * step never sends it empty: a run with no complete trade fails there.
+     */
+    trade_ids: string[];
 }
 
 export interface GatherTradesResult {
@@ -534,6 +594,7 @@ export const subjects = {
     publish_risk_report_configs_from_dq_request:
         'reporting.v1.ops.publish_risk_report_configs_from_dq',
     publish_engine_settings_from_dq_request: 'reporting.v1.ops.publish_engine_settings_from_dq',
+    resolve_market_readiness_request: 'reporting.v1.ops.resolve_market_readiness',
     gather_trades_request: 'reporting.v1.ops.gather_trades',
     gather_market_data_request: 'reporting.v1.ops.gather_market_data',
     assemble_bundle_request: 'reporting.v1.ops.assemble_bundle',
@@ -566,6 +627,7 @@ export const requiresSession = {
     publish_report_definitions_from_dq_request: true,
     publish_risk_report_configs_from_dq_request: true,
     publish_engine_settings_from_dq_request: true,
+    resolve_market_readiness_request: true,
     gather_trades_request: true,
     gather_market_data_request: true,
     assemble_bundle_request: true,

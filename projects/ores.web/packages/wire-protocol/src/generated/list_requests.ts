@@ -5133,6 +5133,22 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [],
         rows: ['rows'],
     },
+    'reporting.v1.report_address_market_readinesses.list': {
+        asOf: true,
+        filter: [
+            'report_instance_id',
+            'oresmd_uri',
+            'id_one_of',
+            'report_instance_id_one_of',
+            'oresmd_uri_one_of',
+        ],
+        rows: ['address_readinesses'],
+    },
+    'reporting.v1.report_address_market_readinesses_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'reporting.v1.report_cashflows.list': {
         asOf: true,
         filter: [
@@ -5301,6 +5317,16 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         ],
         rows: ['metrics'],
     },
+    'reporting.v1.report_run_market_readinesses.list': {
+        asOf: true,
+        filter: ['report_instance_id', 'id_one_of', 'report_instance_id_one_of'],
+        rows: ['run_readinesses'],
+    },
+    'reporting.v1.report_run_market_readinesses_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
+    },
     'reporting.v1.report_text_values.list': {
         asOf: true,
         filter: [
@@ -5315,6 +5341,22 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
             'name_one_of',
         ],
         rows: ['values'],
+    },
+    'reporting.v1.report_trade_market_readinesses.list': {
+        asOf: true,
+        filter: [
+            'report_instance_id',
+            'trade_id',
+            'id_one_of',
+            'report_instance_id_one_of',
+            'trade_id_one_of',
+        ],
+        rows: ['trade_readinesses'],
+    },
+    'reporting.v1.report_trade_market_readinesses_versions.list': {
+        asOf: false,
+        filter: ['version', 'from_version', 'to_version'],
+        rows: ['versions'],
     },
     'reporting.v1.report_trigger_types.list': {
         asOf: true,
@@ -7010,6 +7052,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         asOf: false,
         filter: ['version', 'from_version', 'to_version'],
         rows: ['versions'],
+    },
+    'trading.v1.ops.list_book_trade_ids': {
+        asOf: false,
+        filter: [],
+        rows: ['trade_ids'],
     },
     'trading.v1.ops.list_products': {
         asOf: false,

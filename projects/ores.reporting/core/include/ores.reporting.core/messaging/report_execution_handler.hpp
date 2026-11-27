@@ -43,6 +43,7 @@ namespace ores::reporting::messaging {
  *
  * Handles fire-and-forget commands dispatched by the workflow engine:
  *
+ *  reporting.v1.ops.resolve_market_readiness — the trades the market can answer
  *  reporting.v1.ops.gather_trades           — trades in the report's scope
  *  reporting.v1.ops.gather_market_data      — the series those trades need
  *  reporting.v1.ops.assemble_bundle         — persists the gathered input
@@ -75,6 +76,16 @@ public:
                              ores::workflow::service::fsm_state_map instance_states,
                              std::string http_base_url);
 
+    /**
+     * @brief Decides which of the scope's trades the party's market can answer.
+     *
+     * The step runs before anything is exported, because it decides what is
+     * exported: a trade whose requirements the market does not answer is left
+     * out here rather than failed by the engine. It records the readiness at the
+     * three grains a reader asks it at, and a run with no complete trade fails
+     * here, in preprocessing, naming the causes.
+     */
+    void resolve_market_readiness(ores::nats::delivery delivery);
     void gather_trades(ores::nats::delivery delivery);
     void gather_market_data(ores::nats::delivery delivery);
     void assemble_bundle(ores::nats::delivery delivery);

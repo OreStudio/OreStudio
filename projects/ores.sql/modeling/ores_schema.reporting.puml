@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: reporting
-Tables: 39
+Tables: 42
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -842,6 +842,41 @@ package "reporting" #E0F7FA {
     The table lists names and patterns. It does not hold the content of a file.
     end note
 
+    entity ores_reporting_report_address_market_readinesses_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * report_instance_id : uuid <<FK>>
+        * oresmd_uri : text
+          series_id : uuid <<FK>>
+        * gap_cause : text
+        * modified_by : text
+        * performed_by : text
+        * acting_agent : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_address_market_readinesses_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Address Market Readiness Table
+    +#+updated: 2026-11-26
+    One row per oresmd address the run needs, written before the engine sees any
+    work, whether or not the market answers it.
+    This is the grain that answers why the market is short. A party that has to buy
+    the data needs to know whether it is missing a series or missing a point in one
+    it holds, and those are different purchases, so the row names the series that
+    answers the address when there is one and the cause when there is not.
+    An address several trades name is one row, because the question is about the
+    address and not about the trade that asked for it.
+    end note
+
     entity ores_reporting_report_cashflows_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
         --
@@ -1218,6 +1253,45 @@ package "reporting" #E0F7FA {
     as a trade id or a netting set id, so it is text and not a uuid.
     end note
 
+    entity ores_reporting_report_run_market_readinesses_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * report_instance_id : uuid <<FK>>
+        * as_of : timestamptz
+        * booked_count : integer
+        * complete_count : integer
+        * excluded_count : integer
+        * modified_by : text
+        * performed_by : text
+        * acting_agent : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_run_market_readinesses_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Run Market Readiness Table
+    One row per run, written before the engine sees any work.
+    A run resolves each trade's market data requirements before it submits
+    anything, and leaves out every trade whose requirements its market does not
+    answer. The counts here are that partition: every trade the scope holds is
+    valued, failed or excluded, so booked_count is complete_count plus the
+    number the run left out. The counts are stored rather than counted from the
+    detail rows at read time, because a reader of a finished run asks how much of
+    the book survived, and that answer must not depend on how much detail the run
+    kept.
+    The as-of is the date the points were read at, stated on the record because
+    two runs of one book on different dates can differ and neither is the other's
+    error.
+    end note
+
     entity ores_reporting_report_text_values_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
         --
@@ -1253,6 +1327,42 @@ package "reporting" #E0F7FA {
     engine stated the value as a double.
     The row is written once, with the run, and never edited; a correction is a new
     run.
+    end note
+
+    entity ores_reporting_report_trade_market_readinesses_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+        * report_instance_id : uuid <<FK>>
+        * trade_id : text <<FK>>
+        * complete : boolean
+        * gap_count : integer
+        * modified_by : text
+        * performed_by : text
+        * acting_agent : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_trade_market_readinesses_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Trade Market Readiness Table
+    One row per trade the run's scope holds, written before the engine sees any
+    work.
+    A trade is complete when every oresmd address its instruments name is answered
+    at the run's as-of, and incomplete otherwise. An incomplete trade is left out
+    of the run rather than sent to the engine, so this row is the run's account of
+    which trades it lost.
+    The addresses that make an incomplete trade incomplete are not repeated here.
+    They are the trade's own requirement rows, which the trading component stores
+    per trade, read against the run's unanswered addresses; storing them again
+    would state one fact twice and let the two copies disagree.
     end note
 
     entity ores_reporting_report_trigger_events_tbl  #F7E5FF {

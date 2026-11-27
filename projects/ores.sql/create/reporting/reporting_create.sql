@@ -121,6 +121,15 @@
 \ir ./reporting_report_text_values_notify_trigger_create.sql
 \ir ./reporting_report_cashflows_create.sql
 \ir ./reporting_report_cashflows_notify_trigger_create.sql
+-- What the market answered before the run submitted, at the three grains a
+-- reader asks about: the run's counts, each trade, and each address. Each table
+-- names the run it belongs to, so these load after the run tables above them.
+\ir ./reporting_report_run_market_readinesses_create.sql
+\ir ./reporting_report_run_market_readinesses_notify_trigger_create.sql
+\ir ./reporting_report_trade_market_readinesses_create.sql
+\ir ./reporting_report_trade_market_readinesses_notify_trigger_create.sql
+\ir ./reporting_report_address_market_readinesses_create.sql
+\ir ./reporting_report_address_market_readinesses_notify_trigger_create.sql
 -- The three tables are chunked by the instant their rows were written, so each
 -- names that column as its partitioning column and needs a default for it: a
 -- hypertable checks the column for null before the insert trigger supplies it.

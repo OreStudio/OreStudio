@@ -42,6 +42,8 @@
 #include "ores.reporting.core/results/run_output_reader.hpp"
 #include "ores.reporting.core/service/engine_log_row.hpp"
 #include "ores.reporting.core/service/execution_storage_plan.hpp"
+#include "ores.reporting.core/service/market_readiness.hpp"
+#include "ores.reporting.core/service/market_readiness_recorder.hpp"
 #include "ores.reporting.core/service/report_error_recorder.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.reporting.core/service/run_document_generator.hpp"
@@ -60,6 +62,7 @@
 #include <format>
 #include <fstream>
 #include <map>
+#include <set>
 #include <stdexcept>
 #include <string_view>
 
@@ -246,6 +249,221 @@ std::string report_execution_handler::run_token(const std::string& tenant_id,
     }
 }
 
+void report_execution_handler::resolve_market_readiness(ores::nats::delivery delivery) {
+    const auto& msg = delivery.msg();
+
+    auto wf = workflow_step_context::from_message(nats_, msg);
+    if (!wf) {
+        std::move(delivery).reject();
+        return;
+    }
+
+    const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+    auto parsed = ores::utility::codec::json::try_read<resolve_market_readiness_request>(sv);
+    if (!parsed) {
+        wf->fail("Failed to decode resolve_market_readiness_request");
+        std::move(delivery).commit();
+        return;
+    }
+    const auto& req = *parsed;
+    run_token_step_scope step_tokens(run_tokens_, req.report_instance_id);
+
+    ORES_LOG_SEV(lg(), info) << "resolve_market_readiness starting | instance="
+                             << req.report_instance_id << " definition=" << req.definition_id;
+
+    const auto fail = [&](const std::string& why) {
+        mark_instance_failed(req.tenant_id, req.report_instance_id, why);
+        wf->fail(why);
+        std::move(delivery).commit();
+    };
+
+    try {
+        auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, req.tenant_id);
+
+        repository::risk_report_config_repository config_repo;
+        const auto config = config_repo.find_by_definition_id(tenant_ctx, req.definition_id);
+        if (!config) {
+            fail("risk_report_config not found for definition " + req.definition_id);
+            return;
+        }
+
+        const auto config_id = boost::uuids::to_string(config->id);
+        const auto book_ids =
+            config_repo.resolve_book_ids(tenant_ctx, config_id, req.definition_id);
+        if (book_ids.empty()) {
+            // A typed report reads the books of its type only, so a scope can hold books
+            // and still leave none to read. The message says which of the two it is.
+            const auto book_type =
+                config_repo.regulatory_book_type_of(tenant_ctx, req.definition_id);
+            fail(book_type ? "Report has no books to read: it reads " + *book_type +
+                                 " books only, and the risk report configuration has no such book "
+                                 "or portfolio in scope. Add a portfolio or book of that type to "
+                                 "the scope before running." :
+                             "Report has no trades: the risk report configuration "
+                             "has no books or portfolios in scope. Please add at least "
+                             "one portfolio or book to the report definition before "
+                             "running.");
+            return;
+        }
+
+        ORES_LOG_SEV(lg(), info) << "resolve_market_readiness: resolved " << book_ids.size()
+                                 << " book(s) in scope";
+
+        // The run is running from the moment it decides what it may value, because that
+        // decision is work, and a reader of the instance sees it begin here.
+        service::report_instance_service inst_svc(tenant_ctx);
+        boost::uuids::string_generator sg;
+        auto inst = inst_svc.get_instance(sg(req.report_instance_id));
+        if (!inst) {
+            fail("Report instance not found: " + req.report_instance_id);
+            return;
+        }
+        inst->fsm_state_id = instance_states_.require("running");
+        inst_svc.save_instance(*inst);
+
+        const auto as_of_date = service::valuation_date_of(
+            *config,
+            std::format("{:%F}",
+                        std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now())));
+        const auto as_of = std::chrono::system_clock::time_point(
+            std::chrono::sys_days(ores::platform::time::datetime::from_iso8601_date(as_of_date)));
+
+        std::string err;
+        auto owner = run_token_client(req.tenant_id, req.report_instance_id, false, err);
+        if (!owner) {
+            fail("Could not obtain a run token: " + err);
+            return;
+        }
+
+        // One exchange and one repeat covers a token that expired between the grant and
+        // the call, which is the only failure a repeat can repair.
+        const auto call = [&](const auto& request) {
+            using request_type = std::decay_t<decltype(request)>;
+            std::string call_err;
+            auto response = nats_call(*owner, request, call_err);
+            if (!response && call_err.find("token_expired") != std::string::npos) {
+                call_err.clear();
+                auto renewed =
+                    run_token_client(req.tenant_id, req.report_instance_id, true, call_err);
+                if (renewed) {
+                    owner = std::move(renewed);
+                    response = nats_call(*owner, request, call_err);
+                }
+            }
+            if (!response)
+                err = call_err;
+            return std::optional<typename request_type::response_type>(std::move(response));
+        };
+
+        // Which trades the scope holds, and what each of them needs. Trading owns both:
+        // the run does not read the trades' contents to ask what they name.
+        ores::trading::messaging::list_book_trade_ids_request ids_req;
+        ids_req.book_ids = book_ids;
+        const auto ids_resp = call(ids_req);
+        if (!ids_resp || !ids_resp->success) {
+            fail("list_book_trade_ids failed: " +
+                 (err.empty() ? (ids_resp ? ids_resp->message : "(no response)") : err));
+            return;
+        }
+
+        ores::trading::messaging::resolve_market_data_requirements_request res_req;
+        res_req.trade_ids = ids_resp->trade_ids;
+        res_req.as_of = as_of_date;
+        const auto res_resp = call(res_req);
+        if (!res_resp || !res_resp->success) {
+            fail("resolve_market_data_requirements failed: " +
+                 (err.empty() ? (res_resp ? res_resp->message : "(no response)") : err));
+            return;
+        }
+
+        std::vector<service::trade_requirement> requirements;
+        requirements.reserve(res_resp->trade_requirements.size());
+        std::set<std::string> addresses;
+        for (const auto& one : res_resp->trade_requirements) {
+            for (const auto& uri : one.oresmd_uris)
+                addresses.insert(uri);
+            requirements.push_back(service::trade_requirement{.trade_id = one.trade_id,
+                                                              .oresmd_uris = one.oresmd_uris});
+        }
+
+        // The market answers the addresses, once for the whole set.
+        ores::marketdata::messaging::get_requirement_coverage_request cov_req;
+        cov_req.as_of = as_of_date;
+        cov_req.requirements.assign(addresses.begin(), addresses.end());
+        const auto cov_resp = call(cov_req);
+        if (!cov_resp || !cov_resp->success) {
+            fail("get_requirement_coverage failed: " +
+                 (err.empty() ? (cov_resp ? cov_resp->message : "(no response)") : err));
+            return;
+        }
+
+        std::vector<service::address_answer> answers;
+        answers.reserve(cov_resp->answers.size());
+        for (const auto& one : cov_resp->answers)
+            answers.push_back(service::address_answer{
+                .oresmd_uri = one.oresmd_uri, .series_id = one.series_id, .cause = one.gap_cause});
+
+        const auto readiness =
+            service::decide_market_readiness(ids_resp->trade_ids, requirements, answers);
+
+        service::market_readiness_recorder recorder(tenant_ctx);
+        const auto not_recorded = recorder.record(
+            service::readiness_subject{.party_id = inst->party_id,
+                                       .report_instance_id = sg(req.report_instance_id),
+                                       .as_of = as_of},
+            readiness);
+        if (!not_recorded.empty()) {
+            fail("Could not record the run's market readiness: " + not_recorded);
+            return;
+        }
+
+        if (!readiness.has_a_valuation()) {
+            // The causes, not the count: a reader of a run that never reached the engine
+            // has to know what to buy.
+            std::map<std::string, std::size_t> by_cause;
+            std::size_t unanswered = 0;
+            for (const auto& one : readiness.addresses) {
+                if (one.gap_cause.empty())
+                    continue;
+                ++unanswered;
+                ++by_cause[one.gap_cause];
+            }
+            std::string causes;
+            for (const auto& [cause, count] : by_cause) {
+                if (!causes.empty())
+                    causes += ", ";
+                causes += std::to_string(count) + " with " + cause;
+            }
+            fail(std::format("No trade in the run's scope has complete market data: {} trade(s) "
+                             "booked, {} address(es) unanswered ({}).",
+                             readiness.booked,
+                             unanswered,
+                             causes));
+            return;
+        }
+
+        resolve_market_readiness_result result;
+        result.success = true;
+        result.book_ids = book_ids;
+        result.trade_ids = readiness.survivors;
+        result.booked_count = static_cast<int>(readiness.booked);
+        result.complete_count = static_cast<int>(readiness.complete);
+        result.excluded_count = static_cast<int>(readiness.excluded);
+        result.message = std::format("{} of {} trade(s) complete; {} left out",
+                                     readiness.complete,
+                                     readiness.booked,
+                                     readiness.excluded);
+        ORES_LOG_SEV(lg(), info) << "resolve_market_readiness complete | instance="
+                                 << req.report_instance_id << " " << result.message;
+
+        wf->complete(ores::utility::codec::json::write(result));
+        std::move(delivery).commit();
+    } catch (const std::exception& e) {
+        ORES_LOG_SEV(lg(), error) << "resolve_market_readiness failed: " << e.what();
+        fail(e.what());
+    }
+}
+
 void report_execution_handler::gather_trades(ores::nats::delivery delivery) {
     const auto& msg = delivery.msg();
 
@@ -269,64 +487,27 @@ void report_execution_handler::gather_trades(ores::nats::delivery delivery) {
                              << " definition=" << req.definition_id;
 
     try {
-        auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, req.tenant_id);
-
-        // ── Load risk_report_config ──────────────────────────────────
-        repository::risk_report_config_repository config_repo;
-        const auto config = config_repo.find_by_definition_id(tenant_ctx, req.definition_id);
-        if (!config) {
-            const auto err = "risk_report_config not found for definition " + req.definition_id;
-            mark_instance_failed(req.tenant_id, req.report_instance_id, err);
-            wf->fail(err);
-            std::move(delivery).commit();
-            return;
-        }
-
-        const auto config_id = boost::uuids::to_string(config->id);
-
-        // ── Resolve book scope via SQL function ──────────────────────
-        const auto book_ids =
-            config_repo.resolve_book_ids(tenant_ctx, config_id, req.definition_id);
-
+        // The readiness step resolved the scope and decided which of its trades the market
+        // can answer, so this step writes exactly those: an incomplete trade reaches neither
+        // storage nor the engine.
+        const auto& book_ids = req.book_ids;
         if (book_ids.empty()) {
-            // A typed report reads the books of its type only, so a scope can hold books
-            // and still leave none to read. The message says which of the two it is.
-            const auto book_type =
-                config_repo.regulatory_book_type_of(tenant_ctx, req.definition_id);
-            const std::string err =
-                book_type ? "Report has no books to read: it reads " + *book_type +
-                                " books only, and the risk report configuration has no such book "
-                                "or portfolio in scope. Add a portfolio or book of that type to "
-                                "the scope before running." :
-                            "Report has no trades: the risk report configuration "
-                            "has no books or portfolios in scope. Please add at least "
-                            "one portfolio or book to the report definition before "
-                            "running.";
+            const auto err = "gather_trades: the readiness step named no book to gather from.";
             mark_instance_failed(req.tenant_id, req.report_instance_id, err);
             wf->fail(err);
             std::move(delivery).commit();
             return;
         }
 
-        ORES_LOG_SEV(lg(), info) << "gather_trades: resolved " << book_ids.size()
-                                 << " book(s) in scope";
-
-        // ── Update instance state to running ─────────────────────────
-        service::report_instance_service inst_svc(tenant_ctx);
-        boost::uuids::string_generator sg;
-        auto inst = inst_svc.get_instance(sg(req.report_instance_id));
-        if (!inst) {
-            wf->fail("Report instance not found: " + req.report_instance_id);
-            std::move(delivery).commit();
-            return;
-        }
-        inst->fsm_state_id = instance_states_.require("running");
-        inst_svc.save_instance(*inst);
+        ORES_LOG_SEV(lg(), info) << "gather_trades: gathering from " << book_ids.size()
+                                 << " book(s) in scope, " << req.trade_ids.size()
+                                 << " trade(s) the market answered";
 
         // ── Ask trading service to export trades to storage ──────────
         const auto key = service::trades_storage_key(req.report_instance_id);
         ores::trading::messaging::export_trades_to_storage_request exp_req;
         exp_req.book_ids = book_ids;
+        exp_req.trade_ids = req.trade_ids;
         exp_req.storage_bucket = std::string(ores::storage::api::object_keys::ores_bucket);
         exp_req.storage_key = key;
 

@@ -45,6 +45,7 @@ set(files
     "engine_settings_proposal_tests.cpp"
     "file_type_eventing_integration_tests.cpp"
     "main.cpp"
+    "market_readiness_tests.cpp"
     "messaging_analytic_type_system_owned_tests.cpp"
     "messaging_concurrency_policy_system_owned_tests.cpp"
     "messaging_configuration_type_system_owned_tests.cpp"

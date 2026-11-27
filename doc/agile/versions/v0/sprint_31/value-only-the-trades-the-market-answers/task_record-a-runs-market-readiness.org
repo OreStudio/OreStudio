@@ -75,19 +75,20 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Build, whole tree | succeeded | =compass build= | =87c9873942= |
-| Readiness decision cases | 8 cases, 39 assertions | =ores.reporting.core.tests "[market_readiness]"= | =87c9873942= |
-| Reporting core suite | 291 cases, 1684 assertions | =ores.reporting.core.tests= | =87c9873942= |
-| Reporting api suite | 1308 cases, 5072 assertions | =ores.reporting.api.tests= | =87c9873942= |
-| Reporting service suite | 11 cases, 28 assertions | =ores.reporting.service.tests= | =87c9873942= |
-| Shell reporting suite | 602 cases, 1658 assertions | =ores.shell.reporting.tests= | =87c9873942= |
-| Market data core suite | 483 cases, 56690 assertions | =ores.marketdata.core.tests= | =87c9873942= |
-| Trading core suite | 323 cases, 2046 assertions | =ores.trading.core.tests= | =87c9873942= |
-| Coverage read states both causes | 6 assertions | =ores.marketdata.core.tests "[coverage]"= | =87c9873942= |
-| Export writes only the trades it was asked for | 7 assertions | =ores.trading.core.tests "an_export_names_only_the_trades_it_was_asked_for"= | =87c9873942= |
-| Schema suite | 112 files, 1083 tests, PASS | =projects/ores.sql/test/run_tests.sh= | =87c9873942= |
-| New check diagnostics | 0 | =compass-ng check --ratchet origin/main= | =87c9873942= |
-| Format gate | passed | =compass check --only format= | =87c9873942= |
+| Build, whole tree | succeeded | =compass build= | =93c8008de0= |
+| Readiness decision and recorder cases | 10 cases, 61 assertions | =ores.reporting.core.tests "[market_readiness]"= | =93c8008de0= |
+| Reporting core suite | 293 cases, 1706 assertions | =ores.reporting.core.tests= | =93c8008de0= |
+| Reporting api suite | 1339 cases, 5184 assertions | =ores.reporting.api.tests= | =93c8008de0= |
+| Reporting service suite | 11 cases, 28 assertions | =ores.reporting.service.tests= | =93c8008de0= |
+| Shell reporting suite | 602 cases, 1658 assertions | =ores.shell.reporting.tests= | =93c8008de0= |
+| Market data core suite | 483 cases, 56771 assertions | =ores.marketdata.core.tests= | =93c8008de0= |
+| Trading core suite | 323 cases, 2046 assertions | =ores.trading.core.tests= | =93c8008de0= |
+| Coverage read states all three causes | 9 assertions | =ores.marketdata.core.tests "[coverage]"= | =93c8008de0= |
+| Export writes only the trades it was asked for | 7 assertions | =ores.trading.core.tests "an_export_names_only_the_trades_it_was_asked_for"= | =93c8008de0= |
+| Synthetic core suite | 5453 assertions | =ores.synthetic.core.tests= | 93c8008de0 |
+| Schema suite | 112 files, 1083 tests, PASS | =projects/ores.sql/test/run_tests.sh= | =93c8008de0= |
+| New check diagnostics | 0 | =compass-ng check --ratchet origin/main= | =93c8008de0= |
+| Format gate | passed | =compass check --only format= | =93c8008de0= |
 
 * Notes
 
@@ -143,7 +144,29 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Acceptance names the addresses and causes that make a trade incomplete; the trade row held a count and the gaps needed a join into trading | =report_trade_market_readiness.org= | Fixed | The gaps are rows of their own, =report_trade_market_gaps=, and the cause stays on the address grain where it is stated once. |
+| 2 | The coverage read applied no age limit while the export drops points older than five days, so a stale point passed a trade the engine is then short of | =requirement_coverage_repository.cpp= | Fixed | The read applies the export's own limit from the one constant and states =stale= as a third cause; a case pins all three. |
+| 3 | The run model claimed the counts are refused when they do not add up, and the table held no such check | =report_run_market_readiness.org= | Fixed | The model carries a =* Checks= section: the partition and three non-negative counts. |
+| 4 | A retried step cannot record again: a new id each time against a one-row-per-run unique index | =market_readiness_recorder.cpp= | Fixed | The recorder retires the run's rows at every grain before writing, and a case writes twice. |
+| 5 | The coverage handler replied =success = true= on a decode or repository failure, because the response defaulted to true | =ores.marketdata.operations.org= | Fixed | The response defaults to false and the read states true only when it ran. |
+| 6 | The recorder had no test and no stated reason | =market_readiness_recorder.cpp= | Fixed | Two cases: the four grains written and read back, and a retry converging. |
+| 7 | The Result prose cited the schema suite at 111 files and 1074 tests while the measurement table named 112 and 1083 | task record | Fixed | The Result states the measured figures and the seven suites. |
+| 8 | Nine permissions were seeded and none granted, so a Member's read of the run's readiness is forbidden | =iam_roles_populate.sql= | Fixed | Member reads the four grains, as it reads the run's metrics and cashflows. |
+| 9 | =gather_trades_request.trade_ids= narrated what the step would have written before this change | =ores.reporting.operations.org= | Fixed | The comment states the present rule. |
+| 10 | The market series export's comment ended up above the coverage subscription | =ores.marketdata.registrar.cpp= | Fixed | Each subscription carries its own comment again. |
+| 11 | A stray =+#+updated:= line in the address model leaked into the generated SQL header | =report_address_market_readiness.org= | Fixed | The frontmatter line is a frontmatter line. |
+| 12 | Two booking reads in the trading export stated the same SELECT and WHERE | =trade_export_service.cpp= | Fixed | One private =booking_trade_ids= serves both, and the filter's placeholder follows the page. |
+| 13 | The export took its trades as a defaulted argument that silently means every trade | =trade_export_service.hpp= | Fixed | The argument is required, and every caller states the set it wants. |
+| 14 | Three copies of the same bus-refusal sentence | =report_execution_handler.cpp= | Fixed | One =refusal= helper, and a scope with no trade has a sentence of its own. |
+| 15 | =token_expired= was read with =find() != npos= | =report_execution_handler.cpp= | Fixed | The new code reads it with =contains=. |
+| 16 | The answer type and the record type were the same three fields twice, and the cause had two names | =market_readiness.hpp= | Fixed | One =address_readiness= states the answer and the record, and the field is =gap_cause= throughout. |
+| 17 | New structs were not =final= while a sibling in the same diff is | =market_readiness.hpp= | Fixed | Every new struct is =final=. |
+| 18 | Doxygen markup from the org model leaked into a C++ comment | =market_readiness.hpp= | Fixed | The comment reads as C++. |
+| 19 | The step is ~210 lines carrying scope, token, three calls, decision, record and message | =report_execution_handler.cpp= | Kept | The refusals and the empty scope moved to helpers, which is the part that repeated; the rest is a sequence a reader follows once, and splitting it would pass eight locals between helpers. |
+| 20 | A failable decision throws and the recorder returns an empty string, where the checklist asks for =std::expected= | =market_readiness.hpp= | Kept | Both follow the sibling recorder, which returns its refusal the same way; the throw is a refusal of the caller's message, which is what exceptions are for. |
+| 21 | The readiness step also runs for a package instance, so packaging fails when no trade is complete | =report_execution_workflow.hpp= | Kept | A package is a run: its trades are executed locally against the same market, so refusing to package unvaluable trades is the rule applied, not an accident. |
+| 22 | The coverage read ignores ticks, so a fresh tick beside a stale observation still answers stale | =requirement_coverage_repository.cpp= | Kept | The read has always answered from observations and fixings, and the export's own at-close read does too; the asymmetry is older than this change and is stated in the task's Notes. |
+| 23 | The branch field names a task branch where the recipe says tasks share the story branch | task record | Kept | Sprint 31 works one task per branch, which is what every closed task of the story records. |
 
 * Result
 
@@ -177,9 +200,10 @@ A run decides what it may value before it writes anything.
   requirements and the coverage answer, with eight cases: a complete trade, an
   absent series, a series with no point, a trade that names nothing, one address
   two trades name, a trade named twice, and the two refusals of a message that
-  does not match what was asked. A ninth case pins the gap rows.
+  does not match what was asked. That is eight; a ninth case pins the gap rows
+  and a tenth the record being written twice.
 
-What the tree says: build green, the decision and recorder cases and the six
+What the tree says: build green, the decision and recorder cases and the seven
 component suites green, the schema suite at 112 files and 1083 tests,
 =compass-ng= at no new diagnostics, and the format gate clean. Every number is in
 the measurements above with its commit.

@@ -140,6 +140,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/instrument_catalogue.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/instrument_naming.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/live_tenants.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/named_by.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/pair_levels.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/publication_kind.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/publication_kind_codes.hpp"

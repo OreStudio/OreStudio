@@ -19,6 +19,7 @@
 #define ORES_MARKETDATA_SERVICE_APP_ROUTED_ASSET_CLASSES_HPP
 
 #include "ores.marketdata.service/export.hpp"
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -40,8 +41,22 @@ namespace ores::marketdata::service::app {
  * that maps nothing is reached as FX: the route still names a class, and the
  * first tick that arrives says whether it was the right one.
  */
-ORES_MARKETDATA_SERVICE_EXPORT std::vector<std::string> routed_asset_classes(
-    const std::set<std::string>& mapped, const std::set<std::string>& served);
+ORES_MARKETDATA_SERVICE_EXPORT std::vector<std::string>
+routed_asset_classes(const std::set<std::string>& mapped, const std::set<std::string>& served);
+
+/**
+ * @brief The asset class of an oresmd address, which is its authority.
+ *
+ * Every kind of address states it: a quote, a series, an index and a fixing
+ * alike. The class is read from the address and not decoded from it, because a
+ * fixing is not a quote and decoding would refuse the addresses whose instrument
+ * holds no quote of its own.
+ *
+ * An address that is not an oresmd address, or whose authority names no class the
+ * vocabulary holds, has none.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT std::optional<std::string>
+asset_class_of(const std::string& oresmd_uri);
 
 }
 

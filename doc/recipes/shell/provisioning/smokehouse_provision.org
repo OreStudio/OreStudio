@@ -13,9 +13,10 @@ Smokehouse is the smallest tenant that exercises the publishing lifecycle. It is
 one legal entity with one desk, one portfolio and three books, one feed, one
 curve per funding currency the feed quotes, the forward sets those curves build,
 one surface per pair with volatility quotes, and one trade per book. A check can
-watch every kind of derived market object publish, be superseded and announce,
-and watch the three trades price against them, without paying for a
-demonstration tenant.
+watch every kind of derived market object publish and watch the three trades price
+against them, without paying for a demonstration tenant. The tenant publishes each
+kind once: the supersession and the notice a kind carries are proved by the
+lifecycle's own cases, not by this run.
 
 It is not a cut-down ACME. ACME pays for four legal entities, forty-five staff,
 seventy-two subscriptions, eleven hundred trades and a photograph per person.
@@ -147,9 +148,10 @@ completed and the run ended with no warnings. The tenant carried:
 - 1 volatility surface, for =EURGBP=.
 - 3 trades: a forward, an option and a swap, one per book.
 
-Provisioning took 326 seconds on a quiet host, of which the waits for quotes were
-the largest part. The floor the same profile cost before it published any market
-data was 122 seconds.
+Provisioning took 212 seconds on a quiet host, of which the waits for quotes were
+the largest part; an earlier round, before the route fix, took 262 seconds and
+recorded one warning. The floor the same profile cost before it published any
+market data was 122 seconds.
 
 ** The valuation report
 
@@ -183,10 +185,8 @@ of 80,815.55 GBP against it — and the other two trades record none:
    IBOR curve, so no LIBOR-based swap can price.
 
 The capture =the-report-market-names-what-ore-cannot-resolve= holds the evidence
-for both.
-Until they are closed the option and
-the swap price nothing, and a check that watches all three trades has nothing to
-read for them.
+for both. Neither stops this run: all three trades price, the swap against the
+LIBOR 12M fixings the store holds.
 
 * See also
 

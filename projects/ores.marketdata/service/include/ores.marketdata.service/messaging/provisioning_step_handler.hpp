@@ -56,6 +56,7 @@
 #include "ores.marketdata.service/app/fx_forward_publication_kind.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_calibration_service.hpp"
 #include "ores.marketdata.service/app/fx_vol_surface_publication_kind.hpp"
+#include "ores.marketdata.service/app/named_by.hpp"
 #include "ores.marketdata.service/app/publication_kind_codes.hpp"
 #include "ores.marketdata.service/app/publication_lifecycle.hpp"
 #include "ores.marketdata.service/app/published_curve_reader.hpp"
@@ -172,45 +173,6 @@ static_assert(::ores::utility::codec::names_every_member<provision_step_result>(
  * the installation dropped keeps working, and the run's record says which curves
  * were copied.
  */
-[[nodiscard]] inline std::vector<ores::refdata::domain::ir_curve_bootstrap_config>
-curves_named(std::vector<ores::refdata::domain::ir_curve_bootstrap_config> configs,
-             const std::vector<std::string>& names) {
-    if (names.empty())
-        return configs;
-
-    std::vector<ores::refdata::domain::ir_curve_bootstrap_config> kept;
-    for (auto& config : configs)
-        if (std::ranges::find(names, config.name) != names.end())
-            kept.push_back(std::move(config));
-    return kept;
-}
-
-/// The blueprint's pair, as a profile states it: the two ISO codes and no separator.
-[[nodiscard]] inline std::string
-pair_of(const ores::refdata::domain::fx_vol_surface_blueprint& blueprint) {
-    return blueprint.base_currency_code + blueprint.quote_currency_code;
-}
-
-/**
- * @brief The surface blueprints a step names, in the catalogue's own order.
- *
- * A step that names no pair keeps the catalogue whole. A pair the system tenant
- * does not hold a blueprint for is left out rather than refused, for the same
- * reason a curve name is.
- */
-[[nodiscard]] inline std::vector<ores::refdata::domain::fx_vol_surface_blueprint>
-blueprints_of_pairs(std::vector<ores::refdata::domain::fx_vol_surface_blueprint> blueprints,
-                    const std::vector<std::string>& pairs) {
-    if (pairs.empty())
-        return blueprints;
-
-    std::vector<ores::refdata::domain::fx_vol_surface_blueprint> kept;
-    for (auto& blueprint : blueprints)
-        if (std::ranges::find(pairs, pair_of(blueprint)) != pairs.end())
-            kept.push_back(std::move(blueprint));
-    return kept;
-}
-
 /**
  * @brief Answers the provisioning steps whose work ores.marketdata owns.
  *
@@ -436,19 +398,10 @@ private:
     }
 
     /**
-     * @brief The asset classes a party is routed to on one feed, in a stable order.
+     * @brief The asset classes a party is routed to on one feed.
      *
-     * A route names the class of data a party takes from a publisher, and two
-     * things bound the choice. The publisher's catalogue states what it maps, by
-     * the asset class of every oresmd address. The feed states what it carries,
-     * by its scopes, and a feed that fetches FX alone refuses an interest rate
-     * route. So the classes are the catalogue's, kept to those the feed states
-     * when it states any.
-     *
-     * A feed that states no scope serves whatever its publisher maps, which is how
-     * the simulated feeds are installed. A publisher the catalogue states nothing
-     * for is reached as FX: the route still names a class, and the first tick that
-     * arrives says whether it was the right one.
+     * The reads are here; the decision is app::routed_asset_classes, which states
+     * the rule and carries its cases.
      */
     [[nodiscard]] std::vector<std::string> routed_asset_classes(const std::string& provider,
                                                                 const boost::uuids::uuid& feed_id) {
@@ -470,20 +423,10 @@ private:
                 provider_of.find(boost::uuids::to_string(mapping.vendor_instrument_id));
             if (owner == provider_of.end() || owner->second != provider)
                 continue;
-            // The asset class is the address's authority, which every kind of
-            // address states: a quote, a series, an index and a fixing alike. A
-            // fixing is not a quote, so reading the address as one would drop the
-            // interest rate fixings a swapping tenant needs most.
-            const auto scheme = std::string_view("oresmd://");
-            const auto& uri = mapping.oresmd_uri;
-            if (!uri.starts_with(scheme))
+            const auto asset_class = app::asset_class_of(mapping.oresmd_uri);
+            if (!asset_class)
                 continue;
-            const auto rest = std::string_view(uri).substr(scheme.size());
-            const auto slash = rest.find('/');
-            const auto authority = std::string(rest.substr(0, slash));
-            if (!ores::marketdata::datum::asset_class_named(authority))
-                continue;
-            classes.insert(authority);
+            classes.insert(*asset_class);
         }
 
         std::set<std::string> served;
@@ -981,7 +924,9 @@ private:
             return;
         }
         if (!arguments.curves.empty())
-            catalogue.configs = curves_named(catalogue.configs, arguments.curves);
+            catalogue.configs = app::named_by(std::move(catalogue.configs),
+                                              arguments.curves,
+                                              [](const auto& config) { return config.name; });
 
         provision_step_result result;
         result.kind = command.kind;
@@ -1137,6 +1082,13 @@ private:
                 // pass published is what the projection behind it waits for.
                 held = published_configs_of(party_ctx, party->id);
             }
+            // A curve still pending waited on a curve the party does not hold,
+            // which no further pass can fix, so it is named among the ones not
+            // published rather than dropped.
+            for (const auto& curve : pending)
+                result.curves_not_published.push_back(
+                    party_name + ": " + curve.name + ": waits for a curve the party does not hold");
+
             const auto not_published_now = outcomes.size() - published_now;
             ORES_LOG_SEV(lg(), ores::logging::info)
                 << "publish_party_curves: " << party_name << ": published " << published_now
@@ -1560,8 +1512,10 @@ private:
             return;
         }
         if (!arguments.pairs.empty())
-            catalogue.blueprints =
-                blueprints_of_pairs(std::move(catalogue.blueprints), arguments.pairs);
+            catalogue.blueprints = app::named_by(
+                std::move(catalogue.blueprints), arguments.pairs, [](const auto& blueprint) {
+                    return blueprint.base_currency_code + blueprint.quote_currency_code;
+                });
 
         provision_step_result result;
         result.kind = command.kind;

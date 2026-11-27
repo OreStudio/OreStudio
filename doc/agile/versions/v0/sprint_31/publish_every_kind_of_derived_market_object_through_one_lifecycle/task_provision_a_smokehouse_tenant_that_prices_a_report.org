@@ -7,14 +7,14 @@
 #+level: s1
 #+filetags: :publish_every_kind_of_derived_market_object_through_one_lifecycle:sprint_31:v0:
 #+owner: marco
-+#+branch: feature/provision-a-smokehouse-tenant
-+#+pr:
-+#+blocked_on:
-+#+blocked_since:
-+#+created: 2026-11-27
-+#+updated: 2026-11-27
-+#+environment: bright_faraday
-+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+branch: feature/provision-a-smokehouse-tenant
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] story. It captures the goal, current status, acceptance, and any notes or results.
 
@@ -41,7 +41,9 @@ hundred trades.
 * Acceptance
 
 - [X] The profile provisions the tenant from a recreated database in under five
-  minutes. Measured at 262 s for all fourteen steps.
+  minutes. Measured at 262 s on tenant =smokehouse= and 212 s on
+  =Smokehouse Three=, for all fourteen steps the run executes from the profile's
+  fifteen rows.
 - [X] The party publishes a curve set, a forward set and a surface. Measured: three
   curves, one forward set on EUR/GBP, one surface on EURGBP.
 - [X] The tenant books one trade per book and all three price in one report run.
@@ -84,7 +86,8 @@ hundred trades.
 
 * Measurements
 
-Round five, on the rebased tree at =5c7ec4b974=, tenant =smokehouse=.
+Round five, on the rebased tree at =5c7ec4b974=, tenant =smokehouse=, and round six
+at =5118ff3313=, tenant =Smokehouse Three=.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
@@ -95,7 +98,7 @@ Round five, on the rebased tree at =5c7ec4b974=, tenant =smokehouse=.
 | Curves, forward sets, surfaces and trades the tenant holds | 3, 1, 1, 3 | the smokehouse evidence queries | =5c7ec4b974= |
 | Trades priced, and their pricing count | 3 of 3, =NumberOfPricings= 1 each | =ores_reporting_report_metrics_tbl= | =5c7ec4b974= |
 | Market-data gaps the run records | 0 | =ores_reporting_report_trade_market_gaps_tbl= | =5c7ec4b974= |
-| Steps that end with a warning | 1, =subscribe_market_data= | the provisioning log | =5c7ec4b974= |
+| Steps that end with a warning | 1 on tenant =smokehouse=, 0 on =Smokehouse Three= | the provisioning logs | =5c7ec4b974=, =5118ff3313= |
 
 | Trade | Product | Notional GBP | NPV GBP |
 |-------+---------+--------------+---------|
@@ -145,9 +148,7 @@ The option's zero is correct: its premium equals its value on the valuation date
 
 * Result
 
-* Result
-
-Done on 2026-11-27. A fresh tenant provisions in 212 s, publishes three curves, one
+Done on 2026-11-27. Two fresh tenants provision, at 262 s and 212 s, publishes three curves, one
 forward set and one surface, books three trades and prices all three in one report
 run with no market-data gap, and completes every step with no warning. The route
 that asked for a class its feed does not serve was the last warning, and fixing it

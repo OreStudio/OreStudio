@@ -7,14 +7,14 @@
 #+level: s1
 #+filetags: :publish_every_kind_of_derived_market_object_through_one_lifecycle:sprint_31:v0:
 #+owner: marco
-+#+branch: feature/provision-a-smokehouse-tenant
-+#+pr:
-+#+blocked_on:
-+#+blocked_since:
-+#+created: 2026-11-27
-+#+updated: 2026-11-27
-+#+environment: bright_faraday
-+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+#+branch: feature/provision-a-smokehouse-tenant
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] story. It captures the goal, current status, acceptance, and any notes or results.
 
@@ -40,7 +40,9 @@ store refuses and finishes without a warning.
 - [X] The subscription step asks for a route only for an asset class the chosen
   feed serves, and the run records no warning.
 - [X] A provider that serves interest rates through one feed and FX through
-  another gets both routes, each on the feed that serves it.
+  another gets both routes, each on the feed that serves it: each feed is routed
+  by its own scope, which the cases over =routed_asset_classes= state one feed at
+  a time.
 - [X] A test covers the case: a provider whose catalogue holds two classes, reached
   through a feed whose scope holds one.
 

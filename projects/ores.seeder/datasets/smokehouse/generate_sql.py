@@ -42,18 +42,16 @@ DATASET_BUSINESS_CONTEXT = "Smokehouse generated data"
 LEGAL_NAME = "Smokehouse Trading Ltd"
 LEI_ENTITY_CODE = "SMOKEHOUSE"
 
-# The market the tenant prices on: one pair and the two currencies that name it.
-# The pair is the one the tenant's curves leave it, because a desk books only a
-# pair whose two currencies it can price.
-# The report documents are cut to these, because a document that names every
-# currency the installation knows makes the engine read a market the tenant never
-# publishes, and the run fails on the first missing quote.
+# The market the tenant prices on: the pair it trades, the two currencies that
+# name it, and the dollar ORE triangulates the cross through. The report documents
+# are cut to these, because a document that names every currency the installation
+# knows makes the engine read a market the tenant never publishes, and the run
+# fails on the first missing quote.
 MARKET_CURRENCIES = ("EUR", "GBP", "USD")
 
-# The currencies whose discount curve the market configuration names. The United
-# States dollar is in the market and not among these: the tenant's pair is a
-# cross, and ORE triangulates it through the dollar, so the market needs the two
-# dollar legs and no dollar curve of its own.
+# The currencies whose discount curve the market configuration names. The tenant's
+# pair is a cross, so the market carries the dollar legs of the triangulation and
+# a dollar curve beside them.
 CURVE_CURRENCIES = ("EUR", "GBP", "USD")
 MARKET_PAIRS = ("EURGBP",)
 
@@ -160,11 +158,6 @@ def uuid5(key):
     return str(uuid.uuid5(NAMESPACE, "smokehouse:" + key))
 
 
-def load_acme(name):
-    with open(os.path.join(ACME_JSON_DIR, f"{name}.json")) as f:
-        return json.load(f)
-
-
 def sql_str(v):
     if v is None:
         return "null"
@@ -239,18 +232,6 @@ def market_currency(target: str) -> bool:
     # FX/GBP/USD and FXVolatility/GBP/USD/GBPUSD both name the pair in the two
     # parts after the family.
     return len(parts) > 2 and parts[1] in currencies and parts[2] in currencies
-
-
-def priced_by_the_report(rows, keep):
-    """The rows of one staging table that the kept rows still read.
-
-    The documents are one graph of ids, so cutting one table leaves the others
-    naming rows nobody reads, and the publish would stage a document larger than
-    the market it describes. Each family states its own rule below; this is the
-    common shape.
-    """
-    kept = {r["id"] for r in keep}
-    return [r for r in rows if r.get("id") in kept]
 
 
 def write(filename, content):
@@ -711,27 +692,28 @@ def curve_configuration_rows(table):
                        if d["section_code"] == "FXVolatilities" and d["curve_id"] in pairs}
     definitions = yield_definitions | vol_definitions
 
-    if table == "curve_configurations":
-        return rows
-    if table == "curve_definitions":
-        return [r for r in rows if r["id"] in definitions]
-    if table == "yield_curve_configs":
-        return yields
-    if table == "curve_segments":
-        return [r for r in rows if r["curve_definition_id"] in definitions]
-    if table == "curve_segment_conventions":
-        segments = {s["id"] for s in template_rows("curve_segments")
-                    if s["curve_definition_id"] in definitions}
-        return [r for r in rows if r["curve_segment_id"] in segments]
-    if table == "curve_quotes":
-        return [r for r in rows if r["curve_definition_id"] in definitions]
-    if table == "fx_volatility_configs":
-        return [r for r in rows if r["curve_definition_id"] in vol_definitions]
-    if table == "fx_volatility_smiles":
-        configs = {c["id"] for c in template_rows("fx_volatility_configs")
+    segments = {s["id"] for s in template_rows("curve_segments")
+                if s["curve_definition_id"] in definitions}
+    vol_configs = {c["id"] for c in template_rows("fx_volatility_configs")
                    if c["curve_definition_id"] in vol_definitions}
-        return [r for r in rows if r["fx_volatility_config_id"] in configs]
-    return []
+    rules = {
+        "curve_configurations": lambda: rows,
+        "curve_definitions": lambda: [r for r in rows if r["id"] in definitions],
+        "yield_curve_configs": lambda: yields,
+        "curve_segments": lambda: [r for r in rows
+                                   if r["curve_definition_id"] in definitions],
+        "curve_segment_conventions": lambda: [r for r in rows
+                                              if r["curve_segment_id"] in segments],
+        "curve_quotes": lambda: [r for r in rows
+                                 if r["curve_definition_id"] in definitions],
+        "fx_volatility_configs": lambda: [r for r in rows
+                                          if r["curve_definition_id"] in vol_definitions],
+        "fx_volatility_smiles": lambda: [r for r in rows
+                                         if r["fx_volatility_config_id"] in vol_configs],
+    }
+    if table not in rules:
+        raise ValueError(f"no curve configuration rule for {table}")
+    return rules[table]()
 
 
 # The one run settings document the valuation report binds, and the one report
@@ -752,17 +734,20 @@ def risk_report_configs_rows(table):
     # than off the config's.
     ids = {c["configuration_id"] for c in configs}
 
-    if table == "risk_report_configs":
-        return configs
-    if table == "configuration_analytics":
-        return [r for r in rows if r["configuration_id"] in ids]
-    if table == "configuration_analytic_parameters":
-        analytics = {a["id"] for a in template_rows("configuration_analytics")
-                     if a["configuration_id"] in ids}
-        return [r for r in rows if r["configuration_analytic_id"] in analytics]
-    if table == "configuration_market_bindings":
-        return [r for r in rows if r["configuration_id"] in ids]
-    return []
+    analytics = {a["id"] for a in template_rows("configuration_analytics")
+                 if a["configuration_id"] in ids}
+    rules = {
+        "risk_report_configs": lambda: configs,
+        "configuration_analytics": lambda: [r for r in rows
+                                            if r["configuration_id"] in ids],
+        "configuration_analytic_parameters": lambda: [r for r in rows
+                                                       if r["configuration_analytic_id"] in analytics],
+        "configuration_market_bindings": lambda: [r for r in rows
+                                                  if r["configuration_id"] in ids],
+    }
+    if table not in rules:
+        raise ValueError(f"no run settings rule for {table}")
+    return rules[table]()
 
 
 def generate_document_populate(family, title, tables, rows_of, note):
@@ -821,7 +806,8 @@ def generate_report_definitions_populate():
         raise ValueError("the template holds no NPV definition with its bindings")
 
     definition_rows = ",\n".join(
-        "        (v_dataset_id, ores_utility_system_tenant_id_fn(), gen_random_uuid(), 1, "
+        "        (v_dataset_id, ores_utility_system_tenant_id_fn(), "
+        f"{sql_str(uuid5('report_definition:' + r['name']))}, 1, "
         f"{sql_str(r['name'])}, {sql_str(r['description'])}, {sql_str(r['report_type'])}, "
         f"{sql_str(r['schedule_expression'])}, {sql_str(r['concurrency_policy'])}, "
         f"{r['display_order']}, {sql_str(r['tier'])}, "

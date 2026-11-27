@@ -43,6 +43,7 @@ set(files
     "app_instrument_catalogue_read_tests.cpp"
     "app_instrument_catalogue_tests.cpp"
     "app_live_tenants_tests.cpp"
+    "app_named_by_tests.cpp"
     "app_pair_levels_tests.cpp"
     "app_publication_lifecycle_tests.cpp"
     "app_published_curves_tests.cpp"

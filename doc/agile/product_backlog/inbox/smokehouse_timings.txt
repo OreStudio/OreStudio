@@ -110,3 +110,18 @@ The option records no pricing because ORE drops the FX convention whose
 AdvanceCalendar is "TARGET,UnitedKingdom.Settlement" and then cannot find it.
 The swap records none because the drawn convention indexes GBP-LIBOR-12M and no
 IBOR curve or forwarding entry exists.
+
+# ---------------------------------------------------------------------------
+# Round five, the rebased tree, tenant smokehouse
+# 2026-11-27, checkout 5c7ec4b974
+#
+services start   (compass services start):                     218 s
+provisioning     (bootstrap setup ... --profile smokehouse):   262 s, 14 steps, 1 warning
+compute publish-package:                                         3 s
+report run       (trigger-report-instance to completion):       37 s
+
+# ---------------------------------------------------------------------------
+# Round six, after the route fix, tenant Smokehouse Three
+# 2026-11-27, checkout 5118ff3313
+#
+provisioning     (provision tenant --profile smokehouse):      212 s, 14 steps, no warning

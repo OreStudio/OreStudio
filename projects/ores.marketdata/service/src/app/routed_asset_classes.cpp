@@ -16,8 +16,22 @@
  * Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 #include "ores.marketdata.service/app/routed_asset_classes.hpp"
+#include "ores.marketdata.api/datum/schema.hpp"
+#include <string_view>
 
 namespace ores::marketdata::service::app {
+
+std::optional<std::string> asset_class_of(const std::string& oresmd_uri) {
+    const auto scheme = std::string_view("oresmd://");
+    if (!oresmd_uri.starts_with(scheme))
+        return std::nullopt;
+    const auto rest = std::string_view(oresmd_uri).substr(scheme.size());
+    const auto slash = rest.find('/');
+    const auto authority = std::string(rest.substr(0, slash));
+    if (!ores::marketdata::datum::asset_class_named(authority))
+        return std::nullopt;
+    return authority;
+}
 
 std::vector<std::string> routed_asset_classes(const std::set<std::string>& mapped,
                                               const std::set<std::string>& served) {

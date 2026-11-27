@@ -175,7 +175,7 @@ bool is_curve_input(const std::string& uri) {
  * because the option's curve is built from the surface the party publishes and
  * from nothing a trade names either.
  */
-bool is_fx_conversion(const std::string& uri) {
+bool is_fx_market_input(const std::string& uri) {
     const auto datum = datum::oresmd_uri_codec::read(uri);
     if (!datum)
         return false;
@@ -197,7 +197,7 @@ series_to_export(const std::vector<domain::market_series>& series,
     // built from are an answer to a need no trade states, so they are always carried.
     const auto wanted = [&requirement_uris](const domain::market_series& s) {
         return !requirement_uris || requirement_uris->contains(s.oresmd_uri) ||
-               is_curve_input(s.oresmd_uri) || is_fx_conversion(s.oresmd_uri);
+               is_curve_input(s.oresmd_uri) || is_fx_market_input(s.oresmd_uri);
     };
     std::vector<const domain::market_series*> out;
     if (!party) {

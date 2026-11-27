@@ -58,6 +58,8 @@ ores.marketdata holds one implementation of the raise, the decide, the apply and
 - *A smokehouse tenant is the end-to-end proof, not a demonstration tenant.* One
   party, three books, three trades and six report documents provision in 212 s and
   price in one run, where ACME takes a quarter of an hour. A gate can afford it.
+  The tenant publishes each kind once; the supersession and the notice a kind
+  carries are proved by the lifecycle's own cases, not by this run.
 
 * Out of scope
 

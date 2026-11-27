@@ -707,6 +707,26 @@ struct report_schedule_step_arguments {
 };
 
 /**
+ * @brief The parties every party step must name.
+ *
+ * A step that names none is refused here, once, rather than by each parser.
+ */
+[[nodiscard]] inline std::vector<std::string>
+required_parties(const detail::json_document& arguments) {
+    const auto found = detail::member(arguments.root(), "parties");
+    if (!found.exists())
+        throw std::runtime_error("The step names no 'parties' argument.");
+
+    auto parties = detail::read_string_list(found, "parties");
+    if (parties.empty())
+        throw std::runtime_error("The step names no party in its 'parties' argument.");
+    for (const auto& party : parties)
+        if (party.empty())
+            throw std::runtime_error("The step names an empty party in its 'parties' argument.");
+    return parties;
+}
+
+/**
  * @brief Reads a schedule_reports step's arguments.
  *
  * A party is named by the legal name the LEI import created it with, as the
@@ -716,17 +736,8 @@ struct report_schedule_step_arguments {
 [[nodiscard]] inline report_schedule_step_arguments
 parse_report_schedule_arguments(const std::string& arguments_json) {
     const auto arguments = detail::read_step_arguments(arguments_json);
-    const auto found = detail::member(arguments.root(), "parties");
-    if (!found.exists())
-        throw std::runtime_error("The step names no 'parties' argument.");
-
     report_schedule_step_arguments result;
-    result.parties = detail::read_string_list(found, "parties");
-    if (result.parties.empty())
-        throw std::runtime_error("The step names no party in its 'parties' argument.");
-    for (const auto& party : result.parties)
-        if (party.empty())
-            throw std::runtime_error("The step names an empty party in its 'parties' argument.");
+    result.parties = required_parties(arguments);
     return result;
 }
 
@@ -769,7 +780,7 @@ struct party_curves_step_arguments {
 parse_party_curves_arguments(const std::string& arguments_json) {
     const auto arguments = detail::read_step_arguments(arguments_json);
     party_curves_step_arguments result;
-    result.parties = parse_report_schedule_arguments(arguments_json).parties;
+    result.parties = required_parties(arguments);
     result.curves = read_optional_names(arguments.root(), "curves");
     return result;
 }
@@ -808,7 +819,7 @@ struct surface_blueprints_step_arguments {
 parse_surface_blueprint_arguments(const std::string& arguments_json) {
     const auto arguments = detail::read_step_arguments(arguments_json);
     surface_blueprints_step_arguments result;
-    result.parties = parse_report_schedule_arguments(arguments_json).parties;
+    result.parties = required_parties(arguments);
     result.pairs = read_optional_names(arguments.root(), "pairs");
     return result;
 }

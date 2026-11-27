@@ -54,7 +54,7 @@ begin
         applicable_jurisdiction, regulatory_book_type, cut_kind_code
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), gen_random_uuid(), 1, 'NPV', 'Full mark-to-market portfolio valuation producing present values for all active trades. Applies validated yield curves and FX rates. Provides the daily P&L baseline, feeds downstream sensitivities, and serves as the reference for risk-neutral pricing across all asset classes.', 'risk', '0 6 * * 1-5', 'skip', 105, 'trading', null, null, null);
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), '26d31887-8bcb-549d-b61c-9e9bf3a61c04', 1, 'NPV', 'Full mark-to-market portfolio valuation producing present values for all active trades. Applies validated yield curves and FX rates. Provides the daily P&L baseline, feeds downstream sensitivities, and serves as the reference for risk-neutral pricing across all asset classes.', 'risk', '0 6 * * 1-5', 'skip', 105, 'trading', null, null, null);
 
     delete from ores_dq_report_configurations_artefact_tbl
     where dataset_id = v_dataset_id;

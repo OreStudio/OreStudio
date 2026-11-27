@@ -19,6 +19,7 @@
  */
 #include "conventions_family_units.hpp"
 #include "conventions_fields.hpp"
+#include "ores.ore.core/domain/calendar_names.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include <cmath>

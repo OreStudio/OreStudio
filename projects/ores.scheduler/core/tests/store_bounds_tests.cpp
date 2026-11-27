@@ -39,20 +39,25 @@ row_type bounded_row() {
             "marketdata",
             "table",
             "public.ores_marketdata_delivery_counts_tbl",
+            "period_start",
+            "relation_rows",
             "policy",
             "delete_rows",
             "30",
+            "24",
             "delivery_counts_30d",
             "t",
+            "7",
+            "A delivery counter is read for a month",
             "sweep",
             "t",
             "applied",
-            "2026-11-27T03:00:00Z",
+            "2026-11-27 03:00:00.000000Z",
             "2",
             "",
             "32768",
             "27",
-            "2026-11-27T03:15:00Z"};
+            "2026-11-27 03:15:00.000000Z"};
 }
 
 row_type unmeasured_row() {
@@ -62,15 +67,20 @@ row_type unmeasured_row() {
             "compute",
             "object_prefix",
             "compute/input/",
+            std::nullopt,
+            "objects",
             "policy",
             "expire_prefix",
             "7",
+            "24",
             "job_inputs_7d",
             "t",
+            "3",
+            "An input archive is the run's own copy",
             "storage_lifecycle",
             "f",
             "skipped",
-            "2026-11-27T03:00:00Z",
+            "2026-11-27 03:00:00.000000Z",
             "0",
             "the storage lifecycle expires an object prefix",
             std::nullopt,
@@ -87,14 +97,23 @@ TEST_CASE("a bounds row states the store, its bound and its size", "[repository]
     CHECK(bound.display_name == "Market data delivery counts");
     CHECK(bound.owner_component == "marketdata");
     CHECK(bound.target_kind == "table");
+    REQUIRE(bound.time_column.has_value());
+    CHECK(*bound.time_column == "period_start");
+    REQUIRE(bound.measure_kind.has_value());
+    CHECK(*bound.measure_kind == "relation_rows");
     CHECK(bound.bound_kind == "policy");
     REQUIRE(bound.bound.action.has_value());
     CHECK(*bound.bound.action == "delete_rows");
     REQUIRE(bound.bound.retention_days.has_value());
     CHECK(*bound.bound.retention_days == 30);
+    REQUIRE(bound.bound.cadence_hours.has_value());
+    CHECK(*bound.bound.cadence_hours == 24);
     REQUIRE(bound.bound.policy_code.has_value());
     CHECK(*bound.bound.policy_code == "delivery_counts_30d");
     CHECK(bound.bound.policy_enabled);
+    CHECK(bound.bound.policy_version == 7);
+    REQUIRE(bound.bound.policy_description.has_value());
+    CHECK(*bound.bound.policy_description == "A delivery counter is read for a month");
     CHECK(bound.bound.mechanism == "sweep");
     CHECK(bound.bound.bounded_now);
     REQUIRE(bound.last_run.outcome.has_value());
@@ -103,7 +122,7 @@ TEST_CASE("a bounds row states the store, its bound and its size", "[repository]
     CHECK(bound.size.size_bytes == 32768);
     CHECK(bound.size.measure_count == 27);
     REQUIRE(bound.size.sampled_at.has_value());
-    CHECK(*bound.size.sampled_at == "2026-11-27T03:15:00Z");
+    CHECK(*bound.size.sampled_at == "2026-11-27 03:15:00.000000Z");
 }
 
 TEST_CASE("a store nothing has measured reports no size rather than zero", "[repository][bounds]") {
@@ -112,6 +131,11 @@ TEST_CASE("a store nothing has measured reports no size rather than zero", "[rep
     CHECK(bound.code == "compute.job_inputs");
     CHECK(bound.bound.mechanism == "storage_lifecycle");
     CHECK_FALSE(bound.bound.bounded_now);
+    CHECK_FALSE(bound.time_column.has_value());
+    REQUIRE(bound.measure_kind.has_value());
+    CHECK(*bound.measure_kind == "objects");
+    REQUIRE(bound.bound.cadence_hours.has_value());
+    CHECK(*bound.bound.cadence_hours == 24);
     CHECK_FALSE(bound.size.sampled_at.has_value());
     CHECK(bound.size.size_bytes == 0);
     REQUIRE(bound.last_run.detail.has_value());
@@ -125,11 +149,16 @@ TEST_CASE("a store with no policy reports an absent action and period", "[reposi
                  "refdata",
                  "chunked_table",
                  "public.ores_refdata_calendar_dates_tbl",
+                 "valid_from",
+                 "relation_rows",
                  "none",
                  std::nullopt,
                  std::nullopt,
+                 "24",
                  std::nullopt,
                  "f",
+                 "0",
+                 std::nullopt,
                  "none",
                  "f",
                  std::nullopt,
@@ -138,7 +167,7 @@ TEST_CASE("a store with no policy reports an absent action and period", "[reposi
                  std::nullopt,
                  "57344",
                  "486540",
-                 "2026-11-27T03:15:00Z"};
+                 "2026-11-27 03:15:00.000000Z"};
 
     const auto bound = store_bound_from_row(row);
 
@@ -146,8 +175,52 @@ TEST_CASE("a store with no policy reports an absent action and period", "[reposi
     CHECK_FALSE(bound.bound.action.has_value());
     CHECK_FALSE(bound.bound.retention_days.has_value());
     CHECK_FALSE(bound.bound.policy_code.has_value());
+    CHECK(bound.bound.policy_version == 0);
+    CHECK_FALSE(bound.bound.policy_description.has_value());
     CHECK(bound.bound.mechanism == "none");
     CHECK_FALSE(bound.bound.bounded_now);
     CHECK(bound.size.size_bytes == 57344);
     CHECK(bound.size.measure_count == 486540);
+}
+
+TEST_CASE("a store no policy bounds opens on the defaults the catalogue ships with",
+          "[repository][bounds]") {
+    row_type row{"compute.package_cache",
+                 "Engine package cache",
+                 "The unpacked engine packages a host shares.",
+                 "compute",
+                 "directory",
+                 "publish/run/packages",
+                 std::nullopt,
+                 "files",
+                 "policy",
+                 "release_directory",
+                 "1",
+                 "24",
+                 std::nullopt,
+                 "f",
+                 "0",
+                 "A job's folder is scratch once its output is uploaded",
+                 "none",
+                 "f",
+                 std::nullopt,
+                 std::nullopt,
+                 "0",
+                 std::nullopt,
+                 std::nullopt,
+                 std::nullopt,
+                 std::nullopt};
+
+    const auto bound = store_bound_from_row(row);
+
+    CHECK_FALSE(bound.bound.policy_code.has_value());
+    REQUIRE(bound.bound.action.has_value());
+    CHECK(*bound.bound.action == "release_directory");
+    REQUIRE(bound.bound.retention_days.has_value());
+    CHECK(*bound.bound.retention_days == 1);
+    CHECK(bound.bound.policy_version == 0);
+    REQUIRE(bound.bound.policy_description.has_value());
+    CHECK(*bound.bound.policy_description ==
+          "A job's folder is scratch once its output is uploaded");
+    CHECK_FALSE(bound.bound.bounded_now);
 }

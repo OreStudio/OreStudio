@@ -73,13 +73,14 @@ store_bounds_repository::store_bounds_repository(const ores::database::context& 
 std::vector<messaging::store_bound> store_bounds_repository::read_bounds() {
     const std::string sql =
         "select code, display_name, description, owner_component, target_kind, target,"
-        " bound_kind, action, retention_days::text, policy_code,"
-        " coalesce(policy_enabled, false)::text, mechanism,"
-        " coalesce(bounded_now, false)::text, last_outcome,"
-        " to_char(last_run at time zone 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"'),"
+        " time_column, measure_kind, bound_kind, action, retention_days::text,"
+        " cadence_hours::text, policy_code,"
+        " coalesce(policy_enabled, false)::text, coalesce(policy_version, 0)::text,"
+        " policy_description, mechanism, coalesce(bounded_now, false)::text, last_outcome,"
+        " to_char(last_run at time zone 'UTC', 'YYYY-MM-DD HH24:MI:SS.US') || 'Z',"
         " coalesce(last_removed, 0)::text, last_detail,"
         " coalesce(size_bytes, 0)::text, coalesce(measure_count, 0)::text,"
-        " to_char(sampled_at at time zone 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"')"
+        " to_char(sampled_at at time zone 'UTC', 'YYYY-MM-DD HH24:MI:SS.US') || 'Z'"
         " from ores_scheduler_store_bounds_vw"
         " order by display_name, code";
 
@@ -96,7 +97,7 @@ std::vector<messaging::store_bound> store_bounds_repository::read_bounds() {
 std::vector<messaging::store_sample>
 store_bounds_repository::read_samples(const std::string& store_code, std::uint32_t limit) {
     const std::string sql =
-        "select to_char(sampled_at at time zone 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"'),"
+        "select to_char(sampled_at at time zone 'UTC', 'YYYY-MM-DD HH24:MI:SS.US') || 'Z',"
         " size_bytes::text, measure_count::text"
         " from ("
         "   select sampled_at, size_bytes, measure_count"
@@ -134,24 +135,30 @@ messaging::store_bound store_bound_from_row(const std::vector<std::optional<std:
     bound.owner_component = column(row, 3, "owner_component");
     bound.target_kind = column(row, 4, "target_kind");
     bound.target = column(row, 5, "target");
-    bound.bound_kind = column(row, 6, "bound_kind");
+    bound.time_column = absent_if_empty(row.size() > 6 ? row[6] : std::nullopt);
+    bound.measure_kind = absent_if_empty(row.size() > 7 ? row[7] : std::nullopt);
+    bound.bound_kind = column(row, 8, "bound_kind");
 
-    bound.bound.action = absent_if_empty(row.size() > 7 ? row[7] : std::nullopt);
-    if (row.size() > 8 && row[8] && !row[8]->empty())
-        bound.bound.retention_days = to_int(row[8]);
-    bound.bound.policy_code = absent_if_empty(row.size() > 9 ? row[9] : std::nullopt);
-    bound.bound.policy_enabled = to_bool(row.size() > 10 ? row[10] : std::nullopt);
-    bound.bound.mechanism = column(row, 11, "mechanism");
-    bound.bound.bounded_now = to_bool(row.size() > 12 ? row[12] : std::nullopt);
+    bound.bound.action = absent_if_empty(row.size() > 9 ? row[9] : std::nullopt);
+    if (row.size() > 10 && row[10] && !row[10]->empty())
+        bound.bound.retention_days = to_int(row[10]);
+    if (row.size() > 11 && row[11] && !row[11]->empty())
+        bound.bound.cadence_hours = to_int(row[11]);
+    bound.bound.policy_code = absent_if_empty(row.size() > 12 ? row[12] : std::nullopt);
+    bound.bound.policy_enabled = to_bool(row.size() > 13 ? row[13] : std::nullopt);
+    bound.bound.policy_version = to_int(row.size() > 14 ? row[14] : std::nullopt);
+    bound.bound.policy_description = absent_if_empty(row.size() > 15 ? row[15] : std::nullopt);
+    bound.bound.mechanism = column(row, 16, "mechanism");
+    bound.bound.bounded_now = to_bool(row.size() > 17 ? row[17] : std::nullopt);
 
-    bound.last_run.outcome = absent_if_empty(row.size() > 13 ? row[13] : std::nullopt);
-    bound.last_run.ran_at = absent_if_empty(row.size() > 14 ? row[14] : std::nullopt);
-    bound.last_run.removed = to_int64(row.size() > 15 ? row[15] : std::nullopt);
-    bound.last_run.detail = absent_if_empty(row.size() > 16 ? row[16] : std::nullopt);
+    bound.last_run.outcome = absent_if_empty(row.size() > 18 ? row[18] : std::nullopt);
+    bound.last_run.ran_at = absent_if_empty(row.size() > 19 ? row[19] : std::nullopt);
+    bound.last_run.removed = to_int64(row.size() > 20 ? row[20] : std::nullopt);
+    bound.last_run.detail = absent_if_empty(row.size() > 21 ? row[21] : std::nullopt);
 
-    bound.size.size_bytes = to_int64(row.size() > 17 ? row[17] : std::nullopt);
-    bound.size.measure_count = to_int64(row.size() > 18 ? row[18] : std::nullopt);
-    bound.size.sampled_at = absent_if_empty(row.size() > 19 ? row[19] : std::nullopt);
+    bound.size.size_bytes = to_int64(row.size() > 22 ? row[22] : std::nullopt);
+    bound.size.measure_count = to_int64(row.size() > 23 ? row[23] : std::nullopt);
+    bound.size.sampled_at = absent_if_empty(row.size() > 24 ? row[24] : std::nullopt);
     return bound;
 }
 

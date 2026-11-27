@@ -27,6 +27,7 @@
 #include "ores.scheduler.core/export.hpp"
 #include "ores.scheduler.core/repository/store_bounds_repository.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include <memory>
 #include <optional>
 
 namespace ores::scheduler::messaging {
@@ -50,7 +51,14 @@ public:
 
 private:
     ores::nats::service::client& nats_;
-    const ores::database::context& ctx_;
+    /*
+     * The context is owned, not borrowed. The registration seam moves the
+     * context into its own frame and returns, so a handler that kept the
+     * reference it was handed would hold a dead one and read freed memory on
+     * the first request. A copy costs a shared-pointer increment, because the
+     * pool and the identity behind it are shared.
+     */
+    std::shared_ptr<ores::database::context> ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
 };
 

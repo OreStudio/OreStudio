@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:operations:
 #+created: 2026-11-26
-#+updated: 2026-11-26
+#+updated: 2026-11-27
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator turns a retention policy on or off and changes its period, and the change is recorded with the reason.
@@ -81,11 +81,13 @@ other entity uses, so the previous period is still readable after the change.
 
 * Screens and wireframes
 
-One screen: the store's policy as the server holds it on the left, the edits
-on the right, and a bar that states the change and the record it will write
-before the change is made. The variant that carries forward is the two-pane
-one, because the decision needs the store's size in view while the period is
-chosen.
+One screen: the store's policy as the server holds it, the edits beside it, and
+the record the save will write. The editor is not a screen of its own. The
+prototype drew it as variant C, a two-pane list beside the editor, and the
+review that signed the prototype off moved it into variant A: the form opens on
+the store's own page, where the store, its size and its last sweep are already in
+view, so the person choosing a period reads the quantity it applies to without
+leaving the page.
 
 #+begin_example
 #+caption: The policy editor: the store and its size beside the period it is kept for, and the bar that states the change the save will record.
@@ -98,8 +100,8 @@ The source sits beside this page as =wireframe_change_what_is_kept.puml=, and
 
 * Prototype
 
-The same prototype argues the editor as variant C: the stores list on the left,
-the policy on the right, and a save bar that states what will change.
+The same prototype argues the editor as variant C, and the review accepted its
+editor while rejecting its shape: the form now lives on the store's page.
 
 - Design note :: [[id:F8EA4677-573F-4A81-A052-B3DA4E7BF8F6][The housekeeping screen prototype]]
 - Prototype :: [[file:../../../prototypes/operations/housekeeping/index.html][Housekeeping]]
@@ -120,26 +122,29 @@ the policy on the right, and a save bar that states what will change.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| 1 | Read the policy | =scheduler.v1.retention_policies.get= | exists |
-| 1, 2 | The store's size | (no subject) | missing |
-| 3, 6 | When the sweep next runs | =scheduler.v1.ops.get_scheduler_status= | exists |
+| 1 | The policy, with its version and the store it bounds | =scheduler.v1.store_bounds.list= | exists |
+| 1, 2 | The store's size | =scheduler.v1.store_bounds.list= | exists |
 | 5 | Write the policy | =scheduler.v1.retention_policies.put= | exists |
+| 3, 6 | When the sweep next runs | =scheduler.v1.ops.get_scheduler_status= | exists |
+| 8 | Which actions the sweep performs | =scheduler.v1.store_bounds.list= | exists |
 | 6 | The runs of the policy | (no subject until PR #5126) | missing |
-| 8 | Which actions the sweep performs | (no subject) | missing |
 
 * What is missing
 
-- *The size beside the period.* The editor cannot show what a period would
-  keep without a size read, and none exists. Until it does, the screen states
-  the period and says the size is unknown rather than implying a quantity it
-  did not read.
-- *The set of actions the sweep performs.* Step 8 needs it from the server. A
-  constant in the client would go stale the first time the sweep learns
-  an action, and would make the screen's warning a lie.
-- *A dry run.* Step 3's answer — "nothing is removed tonight" — is a
-  statement the client cannot make honestly without asking the server what the
-  sweep would find. Either the answer comes with the policy read, or the
-  screen says only what it knows: the period and the next due sweep.
+- *The size beside the period.* Closed. The store's page states the size now
+  above the form, and the bounds read answers it, so a period is chosen beside
+  the quantity it applies to.
+- *The set of actions the sweep performs.* Closed. The bounds read states the
+  mechanism a policy names and whether it applies today, and a store whose bound
+  the sweep cannot perform reads as unbounded with the reason, so the form never
+  presents a period that would delete nothing.
+- *A dry run.* Open. Step 3's answer — "nothing is removed tonight" — needs the
+  server to say what its own sweep would find, and no read does. The page states
+  the period, the cadence and the last sweep instead, and says nothing about
+  what the next one will remove.
+- *When the change takes effect.* The page states the period and the cadence and
+  does not compute the next due moment: the cadence is measured from the last
+  run, and the scheduler's own answer is the one to read.
 
 * Related journeys
 

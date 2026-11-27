@@ -67,6 +67,8 @@ import { GridAppVersionPage } from './operations/GridAppVersionPage.js';
 import { GridJobPage } from './operations/GridJobPage.js';
 import { GridPage } from './operations/GridPage.js';
 import { LogsPage } from './operations/LogsPage.js';
+import { HousekeepingPage } from './operations/HousekeepingPage.js';
+import { HousekeepingStorePage } from './operations/HousekeepingStorePage.js';
 import {
     AuthorisationQueuePage,
     AuthorisationRequestPage,
@@ -835,6 +837,30 @@ export function AppRoutes({
                     shell,
                     () => (
                         <BusPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.housekeeping}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <HousekeepingPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.housekeeping}/:code`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <HousekeepingStorePage />
                     ),
                     'workspace',
                 )}

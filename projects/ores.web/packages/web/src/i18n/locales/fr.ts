@@ -1831,6 +1831,155 @@ const fr: SourceCatalogue = {
             changedNotice:
                 'L’opération a changé après la création de cette demande : version {tradeVersion} maintenant, contre {requestTradeVersion} à son arrivée. La ligne n’est pas verrouillée, et une décision sur la version que vous avez lue est la décision enregistrée.',
         },
+        housekeeping: {
+            title: 'Entretien des données',
+            description:
+                'Chaque magasin que cette installation conserve, la limite qui le régit et sa taille.',
+            footnote:
+                'La taille et le nombre viennent du dernier relevé. Un magasin que rien ne mesure apparaît comme non mesuré, car une taille inconnue n’est pas une taille nulle.',
+            summary: {
+                stores: 'Magasins',
+                bounded: 'Bornés',
+                unbounded: 'Non bornés',
+                unboundedNote: 'Le travail restant',
+                size: 'Taille totale',
+                unmeasured: 'Non mesurés',
+            },
+            filter: {
+                all: 'Tous les magasins',
+                unbounded: 'Non bornés seulement ({count})',
+            },
+            order: {
+                label: 'Ordre',
+                attention: 'Non bornés d’abord',
+                size: 'Les plus gros d’abord',
+                name: 'Par nom',
+            },
+            emptyUnbounded:
+                'Chaque magasin a une limite. Rien sur cette installation ne grandit sans limite.',
+            emptyAll:
+                'Le catalogue ne contient aucun magasin. Il arrive avec les données de plateforme qu’une version publie.',
+            columns: {
+                store: 'Magasin',
+                bound: 'Limite',
+                boundBy: 'Borné par',
+                size: 'Taille',
+                lastRun: 'Dernier passage',
+            },
+            targetKinds: {
+                chunkedTable: 'Table découpée en blocs',
+                table: 'Table',
+                objectPrefix: 'Préfixe d’objets',
+                directory: 'Répertoire',
+            },
+            verdict: {
+                bounded: 'Borné',
+                keyed: 'Borné par sa clé',
+                unbounded: 'Non borné',
+            },
+            reason: {
+                off: 'la politique est désactivée',
+                notApplied: 'le balayage ne sait pas appliquer son action',
+                failed: 'le dernier passage a échoué',
+                noPolicy: 'aucune politique ne le nomme',
+                notBoundable: 'aucune période ne peut le borner',
+            },
+            row: {
+                noAction: 'Aucune action',
+                noPolicy: 'aucune politique',
+                notMeasured: 'non mesuré',
+                neverSwept: 'jamais balayé',
+                removed: '{count} supprimés',
+            },
+            actions: {
+                drop_chunks: 'Supprimer les blocs au-delà de la période',
+                delete_rows: 'Supprimer les lignes au-delà de la période',
+                expire_prefix: 'Expirer les objets au-delà de la période',
+                release_directory: 'Libérer le répertoire au-delà de la période',
+            },
+            outcomes: {
+                applied: 'appliqué',
+                skipped: 'ignoré',
+                failed: 'échoué',
+            },
+            units: {
+                relationRows: 'lignes',
+                objects: 'objets',
+                files: 'fichiers',
+                unknown: 'éléments',
+            },
+            period: '{days} jours',
+            cadence: 'tous les {hours} h',
+            measure: '{count} {unit}',
+            store: {
+                title: 'Magasin',
+                description: 'Un magasin, la limite qui le régit et sa taille.',
+                record: 'Le magasin',
+                notFound: 'Cette installation ne conserve aucun magasin nommé {code}.',
+                back: 'Retour à l’entretien des données',
+                fields: {
+                    code: 'Code',
+                    owner: 'Écrit par',
+                    targetKind: 'Type de cible',
+                    target: 'Cible',
+                    timeColumn: 'Colonne de temps',
+                    measures: 'Mesuré par',
+                    none: 'Non précisé',
+                },
+            },
+            size: {
+                title: 'Taille',
+                noSample:
+                    'Rien ne mesure encore ce magasin, donc sa taille et sa croissance sont inconnues. Le composant qui l’écrit est celui qui peut le mesurer.',
+                latest: 'Taille actuelle',
+                count: 'Contenu',
+                measuredAt: 'Mesuré',
+                onePoint: 'Un seul relevé pour l’instant. Un second donne une courbe.',
+                plot: 'Les relevés du magasin, du plus ancien au plus récent. La ligne montre la forme ; les chiffres ci-dessus donnent la taille.',
+                trend: 'de {from} à {to} sur {days} jours',
+                perWeek: '{rate} par semaine, {direction}',
+                rising: 'en hausse',
+                falling: 'en baisse',
+            },
+            bound: {
+                title: 'La limite',
+                create: 'Donner une limite',
+                change: 'Changer la limite',
+                lastRun: 'Dernier passage',
+                absent: 'aucune politique',
+                on: 's’applique',
+                off: 'désactivée',
+                noAction:
+                    'Aucune période ne peut borner ce magasin : il n’y a rien à changer ici. Il demande une action que le catalogue ne déclare pas.',
+                readOnly:
+                    'Votre rôle ne peut pas changer une limite. L’administrateur système change les limites de ces magasins.',
+                lead: 'La cible et l’action appartiennent à la plateforme. Une personne décide si la limite s’applique, pour combien de temps et à quelle fréquence.',
+                leadCreate:
+                    'Aucune politique ne borne ce magasin. La période et la fréquence ci-dessous sont celles que le catalogue fournit.',
+                periodInvalid: 'Indiquez un nombre entier de jours, supérieur à zéro.',
+                cadenceInvalid: 'Indiquez un nombre entier d’heures, supérieur à zéro.',
+                saved: 'La limite a changé. Le balayage l’applique à son prochain passage.',
+                save: 'Enregistrer la limite',
+                saving: 'Enregistrement...',
+                failure: 'La limite n’a pas changé : {message}',
+                fields: {
+                    action: 'Action',
+                    period: 'Conserver pendant',
+                    cadence: 'Appliquer au plus',
+                    policy: 'Politique',
+                    state: 'État',
+                    reason: 'Raison de la conservation',
+                },
+            },
+            gaps: {
+                runsTitle: 'Chaque balayage qui a touché ce magasin',
+                runsBody:
+                    'Le registre des passages enregistre chaque balayage par politique, et aucune lecture ne le sert encore. La page indique le dernier passage, d’après la lecture de l’entretien.',
+                remoteTitle: 'Les magasins qu’un composant possède',
+                remoteBody:
+                    'Un préfixe d’objets et un répertoire sur un hôte de calcul sont mesurés par le composant qui les écrit, et aucun ne rapporte encore de taille. Ces magasins apparaissent comme non mesurés.',
+            },
+        },
         feeds: {
             title: 'Flux de données de marché',
             description:
@@ -1964,6 +2113,9 @@ const fr: SourceCatalogue = {
                 'Chaque service attendu par le registre, confronté aux instances qui se signalent.',
             grid: 'Grille de calcul',
             gridBody: 'Les nœuds, le travail en cours et ce qui est terminé.',
+            housekeeping: 'Entretien des données',
+            housekeepingBody:
+                'Chaque magasin que l’installation conserve, ce qui le borne et sa taille.',
             bus: 'Bus de messages',
             busBody: 'Les compteurs rapportés par le serveur NATS et ses flux.',
             logs: 'Journaux de télémétrie',

@@ -55,6 +55,7 @@ export const PATHS = {
     signIns: '/operations/sign-ins',
     agentGrants: '/operations/agent-grants',
     marketDataFeeds: '/operations/market-data-feeds',
+    housekeeping: '/operations/housekeeping',
     authorisationQueue: '/operations/authorisation-queue',
     synthetic: '/market-data/synthetic',
     publishedCurves: '/market-data/published-curves',
@@ -211,6 +212,11 @@ export function structurePath(reference: string): string {
 /** The page of one authorisation request: the deal and the decision it awaits. */
 export function authorisationRequestPath(requestId: string): string {
     return `${PATHS.authorisationQueue}/${encodeURIComponent(requestId)}`;
+}
+
+/** The page of one store the installation keeps, named by its catalogue code. */
+export function housekeepingStorePath(code: string): string {
+    return `${PATHS.housekeeping}/${encodeURIComponent(code)}`;
 }
 
 /** The page of one trade. */

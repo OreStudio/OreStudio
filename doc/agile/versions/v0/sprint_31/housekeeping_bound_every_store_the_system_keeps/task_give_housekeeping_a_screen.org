@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/give-housekeeping-a-screen
+#+pr: 5205
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
-#+updated: 2026-11-24
+#+updated: 2026-11-27
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,7 +26,7 @@ A person sees every retention policy beside the size of what it governs, and can
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,35 @@ A person sees every retention policy beside the size of what it governs, and can
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The screen reads one answer and writes one small change, so the work went
+bottom-up in four layers, each provable before the next.
+
+1. *The read serves the screen.* The bounds read carried what bounds a store and
+   how large it is, and not the policy's cadence, its version or its words, nor
+   the store's time column and measure. A second read of the policy would have
+   been a second answer to the same question, and the form that changes a bound
+   has to send the row back whole, so the group and the row grew instead:
+   =store_bound_action= gained =cadence_hours=, =policy_version= and
+   =policy_description=, and =store_bound= gained =time_column= and
+   =measure_kind=. The view answers them, and the write composes from them.
+2. *Two facts the view had wrong.* The bounds view could not be read at all: its
+   select list omitted the description the repository asked for, so the previous
+   task's read would have failed on its first call. And it answered a store as
+   bounded when the last sweep had failed. Both are corrected in the view, with
+   the failure stated as unbounded because the mechanism exists and did nothing.
+3. *The wire and the BFF.* One wire module reads the bounds, reads a series and
+   writes a bound; the write takes the store's contract from the row the route
+   just read, so a client can change a period and never a target. Three routes
+   serve them, and none composes a bound.
+4. *The screens.* The list states the counts, the verdict in red and one row per
+   store, ordered with the unbounded first; a row opens the store's page, which
+   states the record, the size the sampler last found, the plot of a week, the
+   bound with its last sweep, and the form. The prototype's editor moved into the
+   store's page, as the review decided, and is offered only to a role that holds
+   the policy write.
+
+The journeys were updated in the same change, because they are the design of
+record and three of the gaps they stated are now closed.
 
 * Measurements
 
@@ -57,7 +83,15 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Scheduler suites | 3 of 3 pass, including 4 cases on the bounds row's mapping | =ctest -R '^ores.scheduler'= | 38626755d3 |
+| Wire cases for the two reads and the write | 8 of 8 pass | =npx vitest run src/housekeeping.test.ts= in =packages/wire-protocol= | 06ec6663a4 |
+| Route cases | 8 of 8 pass | =npx vitest run src/housekeeping.test.ts= in =packages/bff= | 06ec6663a4 |
+| Screen cases | 24 of 24 pass | =npx vitest run src/operations/housekeeping.test.tsx= in =packages/web= | 06ec6663a4 |
+| Web workspaces, whole suites | 1366, 24, 61, 2726 and 234 tests pass | =npm test= at =projects/ores.web= | 714d98da45 |
+| Stores the read answers on a recreated installation | 10, of which 6 bounded | =curl -b <cookie> /api/operations/housekeeping/stores= | 06ec6663a4 |
+| Size of the largest store, from one sampler pass | 296,919,040 bytes and 486,540 rows | =curl ... /stores/refdata.calendar_dates/samples?limit=5= | 06ec6663a4 |
+| The write, on a live installation | 200; the policy moved to version 2 at 45 days with its actor and reason, then back | =curl -X PUT ... /stores/marketdata.delivery_counts/policy= | 06ec6663a4 |
+| Local checks | 7 of 7 pass | =compass check --only web --only lint --only drift-sweep --only component-drift --only cmake-sources --only format= | 714d98da45 |
 
 * Notes
 
@@ -76,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5205][#5205]] | [web] Give housekeeping a screen |
 
 * Review
 
@@ -85,3 +119,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Housekeeping has a screen, and the read behind it answers on a live installation.
+
+- *The list* states every store with its verdict, what bounds it, the size it
+  holds and its last sweep. Unbounded is red, the unbounded stores sort first,
+  and the filter narrows the table to them; the summary states the count that has
+  to reach zero and the ground the stores occupy.
+- *The store's page* states the catalogue record, the size now with the plot of a
+  week of measurements, and the bound with its period, its cadence, its policy
+  and its last run. The form that changes whether the bound applies, for how long
+  and how often sits there, offered to a role that holds the policy write and to
+  no other. A store the catalogue says no period can bound states that instead of
+  offering a form.
+- *The screen composes nothing.* =scheduler.v1.store_bounds.list= answers the
+  verdict the database states, and =scheduler.v1.store_samples.list= answers the
+  series. The write sends three numbers and the reason; the server composes the
+  policy from the catalogue row it reads, so a client can change a period and
+  never a target.
+- *The read grew what a form needs,* and lost a defect that made it unreadable:
+  the view's select list omitted the description the read asked for, so the
+  previous task's read would have failed on its first call. The view also states
+  a store unbounded when its last sweep failed, because the mechanism exists and
+  did nothing.
+- *The two journeys* are updated to what exists, and the gaps that remain — the
+  runs ledger, the object store's own numbers, a dry run — are named there.
+
+Proved by the scheduler's three suites, including four cases that state the
+view's columns as the database sends them; 8 cases on the wire reads and the
+write; 8 on the three routes; 24 on the two screens; the non-heavy checks; and
+the read run against a recreated database, which answered the ten stores with
+their bounds and, after one sampler pass, the calendar dates' 283 MiB.
+
+Found on the way: the first live call to the read crashed the service with
+SIGSEGV. The registration seam hands every handler a context it has already
+destroyed ([[id:743BA702-F3CE-4AAF-B8DC-07139FBF1B12][the capture]]); this
+handler now owns its copy, and the seam itself is the capture's subject.

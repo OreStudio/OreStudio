@@ -1822,6 +1822,155 @@ const pt: SourceCatalogue = {
             changedNotice:
                 'A operação mudou depois de este pedido ter sido criado: versão {tradeVersion} agora, contra {requestTradeVersion} quando chegou. A linha não está bloqueada, e uma decisão sobre a versão que leu é a decisão registada.',
         },
+        housekeeping: {
+            title: 'Manutenção dos dados',
+            description:
+                'Cada armazém que esta instalação conserva, o limite que o governa e o seu tamanho.',
+            footnote:
+                'O tamanho e a contagem vêm da última medição. Um armazém que nada mede aparece como não medido, porque um tamanho desconhecido não é um tamanho vazio.',
+            summary: {
+                stores: 'Armazéns',
+                bounded: 'Limitados',
+                unbounded: 'Sem limite',
+                unboundedNote: 'O trabalho que resta',
+                size: 'Tamanho total',
+                unmeasured: 'Não medidos',
+            },
+            filter: {
+                all: 'Todos os armazéns',
+                unbounded: 'Apenas sem limite ({count})',
+            },
+            order: {
+                label: 'Ordem',
+                attention: 'Sem limite primeiro',
+                size: 'Maiores primeiro',
+                name: 'Por nome',
+            },
+            emptyUnbounded:
+                'Todos os armazéns têm um limite. Nada nesta instalação cresce sem limite.',
+            emptyAll:
+                'O catálogo não contém armazéns. Chega com os dados de plataforma que uma versão publica.',
+            columns: {
+                store: 'Armazém',
+                bound: 'Limite',
+                boundBy: 'Limitado por',
+                size: 'Tamanho',
+                lastRun: 'Última passagem',
+            },
+            targetKinds: {
+                chunkedTable: 'Tabela dividida em blocos',
+                table: 'Tabela',
+                objectPrefix: 'Prefixo de objetos',
+                directory: 'Diretório',
+            },
+            verdict: {
+                bounded: 'Limitado',
+                keyed: 'Limitado pela chave',
+                unbounded: 'Sem limite',
+            },
+            reason: {
+                off: 'a política está desligada',
+                notApplied: 'a varredura não consegue aplicar a sua ação',
+                failed: 'a última passagem falhou',
+                noPolicy: 'nenhuma política o nomeia',
+                notBoundable: 'nenhum período o pode limitar',
+            },
+            row: {
+                noAction: 'Sem ação',
+                noPolicy: 'sem política',
+                notMeasured: 'não medido',
+                neverSwept: 'nunca varrido',
+                removed: '{count} removidos',
+            },
+            actions: {
+                drop_chunks: 'Remover os blocos além do período',
+                delete_rows: 'Apagar as linhas além do período',
+                expire_prefix: 'Expirar os objetos além do período',
+                release_directory: 'Libertar a pasta além do período',
+            },
+            outcomes: {
+                applied: 'aplicado',
+                skipped: 'ignorado',
+                failed: 'falhou',
+            },
+            units: {
+                relationRows: 'linhas',
+                objects: 'objetos',
+                files: 'ficheiros',
+                unknown: 'itens',
+            },
+            period: '{days} dias',
+            cadence: 'a cada {hours} h',
+            measure: '{count} {unit}',
+            store: {
+                title: 'Armazém',
+                description: 'Um armazém, o limite que o governa e o seu tamanho.',
+                record: 'O armazém',
+                notFound: 'Esta instalação não conserva nenhum armazém chamado {code}.',
+                back: 'Voltar à manutenção dos dados',
+                fields: {
+                    code: 'Código',
+                    owner: 'Escrito por',
+                    targetKind: 'Tipo de alvo',
+                    target: 'Alvo',
+                    timeColumn: 'Coluna de tempo',
+                    measures: 'Medido por',
+                    none: 'Não indicado',
+                },
+            },
+            size: {
+                title: 'Tamanho',
+                noSample:
+                    'Nada mede ainda este armazém, por isso o seu tamanho e o seu crescimento são desconhecidos. O componente que o escreve é o que o pode medir.',
+                latest: 'Tamanho atual',
+                count: 'Conteúdo',
+                measuredAt: 'Medido',
+                onePoint: 'Uma medição até agora. Uma segunda desenha uma curva.',
+                plot: 'As medições do armazém, da mais antiga para a mais recente. A linha mostra a forma; os números acima dizem o tamanho.',
+                trend: 'de {from} para {to} em {days} dias',
+                perWeek: '{rate} por semana, {direction}',
+                rising: 'a subir',
+                falling: 'a descer',
+            },
+            bound: {
+                title: 'O limite',
+                create: 'Dar-lhe um limite',
+                change: 'Alterar o limite',
+                lastRun: 'Última passagem',
+                absent: 'sem política',
+                on: 'aplica-se',
+                off: 'desligada',
+                noAction:
+                    'Nenhum período pode limitar este armazém, por isso não há nada para alterar aqui. Precisa de uma ação que o catálogo não declara.',
+                readOnly:
+                    'O seu papel não pode alterar um limite. O administrador do sistema altera os limites destes armazéns.',
+                lead: 'O alvo e a ação são da plataforma. Uma pessoa decide se o limite se aplica, durante quanto tempo e com que frequência.',
+                leadCreate:
+                    'Nenhuma política limita este armazém. O período e a frequência abaixo são os que o catálogo fornece.',
+                periodInvalid: 'Indique um número inteiro de dias, maior do que zero.',
+                cadenceInvalid: 'Indique um número inteiro de horas, maior do que zero.',
+                saved: 'O limite mudou. A varredura aplica-o na próxima passagem.',
+                save: 'Guardar o limite',
+                saving: 'A guardar...',
+                failure: 'O limite não mudou: {message}',
+                fields: {
+                    action: 'Ação',
+                    period: 'Conservar durante',
+                    cadence: 'Aplicar no máximo',
+                    policy: 'Política',
+                    state: 'Estado',
+                    reason: 'Razão da conservação',
+                },
+            },
+            gaps: {
+                runsTitle: 'Cada varredura que tocou este armazém',
+                runsBody:
+                    'O registo das passagens regista cada varredura por política, e nenhuma leitura o serve ainda. A página indica a última passagem, a partir da leitura da manutenção.',
+                remoteTitle: 'Os armazéns de um componente',
+                remoteBody:
+                    'Um prefixo de objetos e uma pasta num anfitrião de cálculo são medidos pelo componente que os escreve, e nenhum reporta ainda um tamanho. Esses armazéns aparecem como não medidos.',
+            },
+        },
         feeds: {
             title: 'Fluxos de dados de mercado',
             description:
@@ -1955,6 +2104,9 @@ const pt: SourceCatalogue = {
                 'Cada serviço que o registo espera, confrontado com as instâncias que se anunciam.',
             grid: 'Grelha de cálculo',
             gridBody: 'Os nós, o trabalho que estão a fazer e o que já terminaram.',
+            housekeeping: 'Manutenção dos dados',
+            housekeepingBody:
+                'Cada armazém que a instalação conserva, o que o limita e o seu tamanho.',
             bus: 'Barramento de mensagens',
             busBody: 'Os contadores que o servidor NATS e os seus fluxos reportam.',
             logs: 'Registos de telemetria',

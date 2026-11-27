@@ -1809,6 +1809,155 @@ export const en: SourceCatalogue = {
             changedNotice:
                 'The deal moved after this request was raised: version {tradeVersion} now, against {requestTradeVersion} when it arrived. The row is not locked, and a decision on the version you have read is the decision recorded.',
         },
+        housekeeping: {
+            title: 'Housekeeping',
+            description:
+                'Every store this installation keeps, the bound that governs it, and how large it is.',
+            footnote:
+                'The size and the count are the latest measurement. A store nothing has measured reads as not measured, because an unknown size is not an empty one.',
+            summary: {
+                stores: 'Stores',
+                bounded: 'Bounded',
+                unbounded: 'Unbounded',
+                unboundedNote: 'The work left',
+                size: 'Total size',
+                unmeasured: 'Not measured',
+            },
+            filter: {
+                all: 'All stores',
+                unbounded: 'Unbounded only ({count})',
+            },
+            order: {
+                label: 'Order',
+                attention: 'Unbounded first',
+                size: 'Largest first',
+                name: 'By name',
+            },
+            emptyUnbounded:
+                'Every store has a bound. Nothing on this installation grows without one.',
+            emptyAll:
+                'The catalogue holds no store. It arrives with the platform data a release publishes.',
+            columns: {
+                store: 'Store',
+                bound: 'Bound',
+                boundBy: 'Bound by',
+                size: 'Size',
+                lastRun: 'Last sweep',
+            },
+            targetKinds: {
+                chunkedTable: 'Chunked table',
+                table: 'Table',
+                objectPrefix: 'Object prefix',
+                directory: 'Directory',
+            },
+            verdict: {
+                bounded: 'Bounded',
+                keyed: 'Bounded by keying',
+                unbounded: 'Unbounded',
+            },
+            reason: {
+                off: 'the policy is off',
+                notApplied: 'the sweep cannot perform its action',
+                failed: 'the last sweep failed',
+                noPolicy: 'no policy names it',
+                notBoundable: 'no period can bound it',
+            },
+            row: {
+                noAction: 'No action',
+                noPolicy: 'no policy',
+                notMeasured: 'not measured',
+                neverSwept: 'never swept',
+                removed: '{count} removed',
+            },
+            actions: {
+                drop_chunks: 'Drop the chunks past the period',
+                delete_rows: 'Delete the rows past the period',
+                expire_prefix: 'Expire the objects past the period',
+                release_directory: 'Release the folder past the period',
+            },
+            outcomes: {
+                applied: 'applied',
+                skipped: 'skipped',
+                failed: 'failed',
+            },
+            units: {
+                relationRows: 'rows',
+                objects: 'objects',
+                files: 'files',
+                unknown: 'items',
+            },
+            period: '{days} days',
+            cadence: 'every {hours} h',
+            measure: '{count} {unit}',
+            store: {
+                title: 'Store',
+                description: 'One store, the bound that governs it, and how large it is.',
+                record: 'The store',
+                notFound: 'This installation keeps no store called {code}.',
+                back: 'Back to housekeeping',
+                fields: {
+                    code: 'Code',
+                    owner: 'Written by',
+                    targetKind: 'Target kind',
+                    target: 'Target',
+                    timeColumn: 'Time column',
+                    measures: 'Measured by',
+                    none: 'Not stated',
+                },
+            },
+            size: {
+                title: 'Size',
+                noSample:
+                    'Nothing measures this store yet, so its size and its growth are unknown. The component that writes it is the one that can measure it.',
+                latest: 'Size now',
+                count: 'Contents',
+                measuredAt: 'Measured',
+                onePoint: 'One measurement so far. A second one makes a plot.',
+                plot: 'The store’s measurements, oldest first. The line shows the shape; the figures above state the size.',
+                trend: '{from} to {to} over {days} days',
+                perWeek: '{rate} a week, {direction}',
+                rising: 'rising',
+                falling: 'falling',
+            },
+            bound: {
+                title: 'The bound',
+                create: 'Give it a bound',
+                change: 'Change the bound',
+                lastRun: 'Last sweep',
+                absent: 'no policy',
+                on: 'applies',
+                off: 'off',
+                noAction:
+                    'No period can bound this store, so there is nothing here to change. It needs an action the catalogue does not state.',
+                readOnly:
+                    'Your role cannot change a bound. The system administrator changes the bounds of these stores.',
+                lead: 'The target and the action are the platform’s. A person decides whether the bound applies, for how long and how often.',
+                leadCreate:
+                    'No policy bounds this store. The period and the cadence below are the ones the catalogue ships with.',
+                periodInvalid: 'State a whole number of days, more than zero.',
+                cadenceInvalid: 'State a whole number of hours, more than zero.',
+                saved: 'The bound changed. The sweep applies it on its next run.',
+                save: 'Save the bound',
+                saving: 'Saving...',
+                failure: 'The bound did not change: {message}',
+                fields: {
+                    action: 'Action',
+                    period: 'Keep for',
+                    cadence: 'Apply at most',
+                    policy: 'Policy',
+                    state: 'State',
+                    reason: 'Why it is kept',
+                },
+            },
+            gaps: {
+                runsTitle: 'Every sweep that touched this store',
+                runsBody:
+                    'The runs ledger records each sweep against each policy, and no read serves it yet. What the page states is the last run, from the housekeeping read.',
+                remoteTitle: 'The stores a component owns',
+                remoteBody:
+                    'An object prefix and a folder on a compute host are measured by the component that writes them, and neither reports a size yet. Those stores read as not measured.',
+            },
+        },
         feeds: {
             title: 'Market data feeds',
             description:
@@ -1941,6 +2090,9 @@ export const en: SourceCatalogue = {
             servicesBody: 'Every service the registry expects, met by the instances that report.',
             grid: 'Compute grid',
             gridBody: 'The nodes, the work they are doing, and what they have finished.',
+            housekeeping: 'Housekeeping',
+            housekeepingBody:
+                'Every store the installation keeps, what bounds it, and how large it is.',
             bus: 'Message bus',
             busBody: 'The counters the NATS server and its streams report.',
             logs: 'Telemetry logs',

@@ -236,6 +236,14 @@ struct store_bound_action {
      */
     std::optional<int> retention_days;
     /**
+     * @brief How many hours the bound waits between two applications of itself.
+     *
+     * It is the policy's own cadence when one bounds the store and the catalogue's
+     * default when none does, so the form that creates a policy opens on the period
+     * and the cadence the installation ships with.
+     */
+    std::optional<int> cadence_hours;
+    /**
      * @brief The policy that bounds the store today, if one does.
      */
     std::optional<std::string> policy_code;
@@ -243,6 +251,23 @@ struct store_bound_action {
      * @brief Whether that policy is switched on.
      */
     bool policy_enabled = false;
+    /**
+     * @brief The version of that policy a write must still match.
+     *
+     * A change names the version it read, so a period somebody else moved in the
+     * meantime is refused rather than overwritten. It is zero when no policy exists,
+     * which is what a create claims: nothing is there yet.
+     */
+    int policy_version = 0;
+    /**
+     * @brief Why the store is kept for that period, in the policy's own words.
+     *
+     * A write carries it back unchanged, because a form that changes a period is not
+     * the place that decides why the store is kept. When no policy bounds the store
+     * it is the reason the catalogue ships with, so a person sees the words they are
+     * about to adopt.
+     */
+    std::optional<std::string> policy_description;
     /**
      * @brief What bounds the store: =sweep=, =storage_lifecycle=, =node_release=,
      * =content_keying=, =policy_off= or =none=.
@@ -316,6 +341,22 @@ struct store_bound {
     std::string owner_component;
     std::string target_kind;
     std::string target;
+    /**
+     * @brief The column a row delete compares against the period, where one does.
+     *
+     * A store bounded by age is bounded on a column of its own, and the column is
+     * what a person has to read to know which age the period means. A store the
+     * database measures as a whole, or one whose bound lives in another component,
+     * names no column.
+     */
+    std::optional<std::string> time_column;
+    /**
+     * @brief What the store is measured in: =relation_rows=, =objects= or =files=.
+     *
+     * The size is always bytes; this is the other number the sample carries, and
+     * without it a count of twenty-seven says nothing about what was counted.
+     */
+    std::optional<std::string> measure_kind;
     /**
      * @brief The kind of bound the store ships with: =policy=, =keying= or =none=.
      */
@@ -523,8 +564,12 @@ struct list_store_samples_response {
     return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"action", &store_bound_action::action},
         ::ores::utility::codec::field{"retention_days", &store_bound_action::retention_days},
+        ::ores::utility::codec::field{"cadence_hours", &store_bound_action::cadence_hours},
         ::ores::utility::codec::field{"policy_code", &store_bound_action::policy_code},
         ::ores::utility::codec::field{"policy_enabled", &store_bound_action::policy_enabled},
+        ::ores::utility::codec::field{"policy_version", &store_bound_action::policy_version},
+        ::ores::utility::codec::field{"policy_description",
+                                      &store_bound_action::policy_description},
         ::ores::utility::codec::field{"mechanism", &store_bound_action::mechanism},
         ::ores::utility::codec::field{"bounded_now", &store_bound_action::bounded_now},
     };
@@ -579,6 +624,8 @@ struct list_store_samples_response {
         ::ores::utility::codec::field{"owner_component", &store_bound::owner_component},
         ::ores::utility::codec::field{"target_kind", &store_bound::target_kind},
         ::ores::utility::codec::field{"target", &store_bound::target},
+        ::ores::utility::codec::field{"time_column", &store_bound::time_column},
+        ::ores::utility::codec::field{"measure_kind", &store_bound::measure_kind},
         ::ores::utility::codec::field{"bound_kind", &store_bound::bound_kind},
         ::ores::utility::codec::field{"bound", &store_bound::bound},
         ::ores::utility::codec::field{"last_run", &store_bound::last_run},

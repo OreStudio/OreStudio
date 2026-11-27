@@ -430,6 +430,21 @@ next unit of the scheduler clean-up.
  */
 #+end_src
 
+*** cadence_hours
+:PROPERTIES:
+:cpp_type: std::optional<int>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many hours the bound waits between two applications of itself.
+ *
+ * It is the policy's own cadence when one bounds the store and the catalogue's
+ * default when none does, so the form that creates a policy opens on the period
+ * and the cadence the installation ships with.
+ */
+#+end_src
+
 *** policy_code
 :PROPERTIES:
 :cpp_type: std::optional<std::string>
@@ -450,6 +465,38 @@ next unit of the scheduler clean-up.
 #+begin_src cpp :name comment
 /**
  * @brief Whether that policy is switched on.
+ */
+#+end_src
+
+*** policy_version
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The version of that policy a write must still match.
+ *
+ * A change names the version it read, so a period somebody else moved in the
+ * meantime is refused rather than overwritten. It is zero when no policy exists,
+ * which is what a create claims: nothing is there yet.
+ */
+#+end_src
+
+*** policy_description
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why the store is kept for that period, in the policy's own words.
+ *
+ * A write carries it back unchanged, because a form that changes a period is not
+ * the place that decides why the store is kept. When no policy bounds the store
+ * it is the reason the catalogue ships with, so a person sees the words they are
+ * about to adopt.
  */
 #+end_src
 
@@ -622,6 +669,36 @@ next unit of the scheduler clean-up.
 :PROPERTIES:
 :cpp_type: std::string
 :END:
+
+*** time_column
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The column a row delete compares against the period, where one does.
+ *
+ * A store bounded by age is bounded on a column of its own, and the column is
+ * what a person has to read to know which age the period means. A store the
+ * database measures as a whole, or one whose bound lives in another component,
+ * names no column.
+ */
+#+end_src
+
+*** measure_kind
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the store is measured in: =relation_rows=, =objects= or =files=.
+ *
+ * The size is always bytes; this is the other number the sample carries, and
+ * without it a count of twenty-seven says nothing about what was counted.
+ */
+#+end_src
 
 *** bound_kind
 :PROPERTIES:

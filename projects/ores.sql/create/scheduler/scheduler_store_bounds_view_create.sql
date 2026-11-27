@@ -27,26 +27,43 @@
  * its bound names exists and runs: the sweep performs a chunk drop and a row
  * delete, so those bound their store today. An object prefix waits on the
  * storage lifecycle and a job's folder on the node's own release, and until
- * either exists the store is not bounded, however clear its policy reads.
+ * either exists the store is not bounded, however clear its policy reads. A
+ * sweep whose last attempt failed leaves its store unbounded too: the mechanism
+ * exists and did nothing, and nothing bounds a store until something removes
+ * from it. A store no sweep has reached yet is bounded by the policy that will
+ * be applied.
  *
  * The size and the moment it was measured come from the latest sample, and a
  * store with no sample reports nothing rather than zero: the sampler measures the
  * stores the database can see, and an object prefix or a folder on a host is
  * measured by the component that owns it.
+ *
+ * The bound's own record travels with the answer — its period, its cadence, its
+ * version and its words — because the screen that changes one has to send the row
+ * back whole, and a second read of the policy would be a second answer to the
+ * same question. Where no policy bounds the store these are the catalogue's
+ * defaults, which is what makes the form that creates one open on the bound the
+ * installation ships with.
  */
 
 create or replace view ores_scheduler_store_bounds_vw as
 select
     s."code",
     s."display_name",
+    s."description",
     s."owner_component",
     s."target_kind",
     s."target",
+    s."time_column",
+    s."measure_kind",
     s."bound_kind",
     coalesce(p."action", s."default_action") as "action",
     coalesce(p."retention_days", s."default_retention_days") as "retention_days",
+    coalesce(p."cadence_hours", s."default_cadence_hours") as "cadence_hours",
     p."code" as "policy_code",
     p."enabled" as "policy_enabled",
+    coalesce(p."version", 0) as "policy_version",
+    coalesce(p."description", s."default_reason") as "policy_description",
     case
         when s."bound_kind" = 'keying' then 'content_keying'
         when s."bound_kind" = 'none' then 'none'
@@ -61,7 +78,8 @@ select
         when s."bound_kind" = 'keying' then true
         when s."bound_kind" = 'none' or p."code" is null then false
         when not p."enabled" then false
-        when p."action" in ('drop_chunks', 'delete_rows') then true
+        when p."action" in ('drop_chunks', 'delete_rows')
+            then l."outcome" is distinct from 'failed'
         else false
     end as "bounded_now",
     l."outcome" as "last_outcome",

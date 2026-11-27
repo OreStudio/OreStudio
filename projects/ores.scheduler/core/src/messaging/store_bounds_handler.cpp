@@ -47,13 +47,13 @@ store_bounds_handler::store_bounds_handler(
     const ores::database::context& ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier)
     : nats_(nats)
-    , ctx_(ctx)
+    , ctx_(std::make_shared<ores::database::context>(ctx))
     , verifier_(std::move(verifier)) {}
 
 void store_bounds_handler::list(ores::nats::message msg) {
     ORES_LOG_SEV(store_bounds_handler_lg(), debug) << "Handling " << msg.subject;
 
-    auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+    auto ctx_expected = ores::service::service::make_request_context(*ctx_, msg, verifier_);
     if (!ctx_expected) {
         error_reply(nats_, msg, ctx_expected.error());
         return;
@@ -87,7 +87,7 @@ void store_bounds_handler::list(ores::nats::message msg) {
 void store_bounds_handler::samples(ores::nats::message msg) {
     ORES_LOG_SEV(store_bounds_handler_lg(), debug) << "Handling " << msg.subject;
 
-    auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+    auto ctx_expected = ores::service::service::make_request_context(*ctx_, msg, verifier_);
     if (!ctx_expected) {
         error_reply(nats_, msg, ctx_expected.error());
         return;

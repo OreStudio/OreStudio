@@ -41,7 +41,19 @@ begin;
 select plan(15);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
-select set_config('app.current_service', 'ores_solid_dirac_scheduler_service', true);
+-- The scheduler service of this installation, by the suffix every environment's
+-- service account carries: the account names are prefixed with the environment's
+-- own label, so a test that named one label passed in that worktree and raised
+-- nothing anywhere else.
+select set_config(
+    'app.current_service',
+    (select a."username"
+     from "ores_iam_accounts_tbl" a
+     where a."valid_to" = ores_utility_infinity_timestamp_fn()
+       and a."username" like '%\_scheduler\_service'
+     order by a."username"
+     limit 1),
+    true);
 
 
 -- A person who can act. The audience is the holder of the write a bound needs,

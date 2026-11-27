@@ -40,6 +40,7 @@
 \ir ./marketdata_overnight_rates_catalogue_populate.sql
 \ir ./marketdata_derived_catalogue_populate.sql
 \ir ./marketdata_fixing_publishers_catalogue_populate.sql
+\ir ./marketdata_fixing_publishers_instruments_populate.sql
 
 \echo '--- FX Driver Rates Seed Data: 2016 Vintages ---'
 \ir ./marketdata_fx_driver_rates_populate.sql

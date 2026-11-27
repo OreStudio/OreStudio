@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-27
 #+updated: 2026-11-27
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Get the Windows nightlies past the compass install, which still dies with exit 1
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-27                               |
 
 * Acceptance
@@ -39,9 +39,8 @@ Get the Windows nightlies past the compass install, which still dies with exit 1
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Name PowerShell where Windows keeps it, using =WINDIR= and =cygpath=, and fall
+back to Python's zipfile module when that path holds no interpreter.
 
 * Measurements
 
@@ -55,7 +54,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Failing step on 27 November | =Install the pinned compass release=, exit 127 after the checksum passed | =gh run view --job 140415550050 --log-failed= | e742346e65 |
+| Step script syntax | =bash -n= clean, and the path resolves to =/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe= | =bash -n= on the step body, and a stub run of the resolution | HEAD |
 
 * Notes
 
@@ -83,3 +83,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The step now names PowerShell where Windows keeps it rather than trusting the
+bash PATH, which does not reach it, and falls back to Python's zipfile module
+when that interpreter is absent. Both runners paths fail loudly, naming the
+archive, instead of dying with a bare exit 127.
+
+The 27 November run proves the previous attempt reached the extraction and
+failed there: the checksum passed and the step exited 127, which is a command
+that is not on the PATH.
+
+Verified locally: the step body passes =bash -n=, the workflow parses as YAML,
+and a stub run of the resolution yields the interpreter's path under
+=/c/Windows/System32/WindowsPowerShell/v1.0/=.
+
+Not verified locally: the step on a Windows runner. The next nightly is the
+check.

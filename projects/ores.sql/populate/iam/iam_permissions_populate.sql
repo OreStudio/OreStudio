@@ -1233,6 +1233,8 @@ BEGIN
     -- platform's superuser and by nobody else by accident.
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::retention_policies:read',  'View how long a store is kept');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::retention_policies:write', 'Change how long a store is kept');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::retention_policies:delete', 'Remove a retention policy');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::retention_runs:read',       'View what each housekeeping sweep removed');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::*', 'Full access to all scheduler operations');
 
     -- =============================================================================

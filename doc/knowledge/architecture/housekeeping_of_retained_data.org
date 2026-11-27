@@ -138,6 +138,27 @@ visible. The size comes from the database's catalogues for tables and chunks,
 from the object store's listing for key prefixes, and from a directory walk for
 the caches and working directories a node holds.
 
+** What a person sees
+
+A sweep is a scheduler job, so it appears in the scheduler's own views beside
+every other job: its cadence, the instant it next fires, and the outcome of its
+last run. A job of the installation belongs to the system tenant, so the views
+that report jobs show it to the system tenant through the same tenant-scoped
+read a tenant uses for its own work, and to no other tenant.
+
+What a run removed is read as one row per policy, joined to the policy it names.
+The join is why the figure sits beside the period rather than inside the ledger:
+a period is a property of the policy now, and the ledger records only what the
+run was given. A policy turned off keeps its history, and reads as off beside
+the runs it made while it was on.
+
+Tuning is a write to a policy, not to the job. A policy is a row of the system
+tenant, so an operator holding the write permission changes a period, or turns a
+policy off, and the sweep applies the change at its next firing. The two
+cadences are stated apart: the policy's is the hours between two applications of
+itself, and the job's is how often the sweep looks, which bounds the finest
+cadence the installation can express.
+
 ** Telling a person without asking
 
 A policy is data, so a store can be kept for ever without anybody editing a

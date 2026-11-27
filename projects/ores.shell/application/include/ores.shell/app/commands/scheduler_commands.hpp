@@ -46,6 +46,10 @@ namespace ores::shell::app::commands {
  * - @c status — each job's schedule, its last run and its next firing.
  * - @c watch — subscribe to the execution events and print them as they
  *   arrive, which is the only way to see a job fire from the shell.
+ * - @c enable, @c disable and @c cadence — change what a definition says, which
+ *   is how housekeeping is tuned.
+ * - @c housekeeping — the policies housekeeping applies and what each sweep
+ *   removed, which is the housekeeping view of this component's work.
  *
  * The commands are hand-written rather than generated: the generated command
  * units project one entity onto one submenu, and the two things this flow
@@ -80,6 +84,63 @@ public:
     static void process_remove(std::ostream& out,
                                ores::nats::service::nats_client& session,
                                const std::string& job_name);
+
+    /**
+     * @brief Start or pause a job, by writing the definition it is named by.
+     *
+     * The definition is read first, so the write states the version it read and
+     * a change made in between is refused rather than overwritten.
+     */
+    static void process_set_active(std::ostream& out,
+                                   ores::nats::service::nats_client& session,
+                                   const std::string& job_name,
+                                   bool active);
+
+    /**
+     * @brief Change a job's cron expression, keeping the rest of its definition.
+     */
+    static void process_cadence(std::ostream& out,
+                                ores::nats::service::nats_client& session,
+                                const std::string& job_name,
+                                const std::string& cron);
+
+    /**
+     * @brief List the retention policies, with the store each one bounds.
+     *
+     * A disabled policy is listed as disabled rather than left out: a person
+     * reads this to decide what housekeeping should do, and a policy that is
+     * off is part of that answer.
+     *
+     * @param args Flags: --limit.
+     */
+    static void process_housekeeping_policies(std::ostream& out,
+                                              ores::nats::service::nats_client& session,
+                                              const std::vector<std::string>& args);
+
+    /**
+     * @brief List what each sweep removed, newest first.
+     *
+     * @param args Flags: --policy, --limit.
+     */
+    static void process_housekeeping_runs(std::ostream& out,
+                                          ores::nats::service::nats_client& session,
+                                          const std::vector<std::string>& args);
+
+    /**
+     * @brief Start or stop a policy, by writing the row it is named by.
+     */
+    static void process_housekeeping_set_enabled(std::ostream& out,
+                                                 ores::nats::service::nats_client& session,
+                                                 const std::string& policy_code,
+                                                 bool enabled);
+
+    /**
+     * @brief Change a policy's retention period, keeping the rest of its row.
+     */
+    static void process_housekeeping_period(std::ostream& out,
+                                            ores::nats::service::nats_client& session,
+                                            const std::string& policy_code,
+                                            int days);
 
     /**
      * @brief List the executions the scheduler recorded.

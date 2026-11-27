@@ -26,6 +26,8 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.scheduler.api/domain/cron_expression.hpp"
 #include "ores.scheduler.api/messaging/job_definition_protocol.hpp"
+#include "ores.scheduler.api/messaging/retention_policy_protocol.hpp"
+#include "ores.scheduler.api/messaging/retention_run_protocol.hpp"
 #include "ores.scheduler.api/messaging/scheduling_operations_protocol.hpp"
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
@@ -106,6 +108,92 @@ void print_definition(std::ostream& out, const ores::scheduler::domain::job_defi
         out << "    command: " << d.command << std::endl;
 }
 
+void print_policy(std::ostream& out, const ores::scheduler::domain::retention_policy& p) {
+    out << "  " << p.code << (p.enabled ? " [on]" : " [off]") << std::endl
+        << "    store:   " << p.target << std::endl
+        << "    period:  " << p.retention_days << " days" << std::endl
+        << "    action:  " << p.action << std::endl
+        << "    cadence: " << p.cadence_hours << " hours" << std::endl;
+    if (!p.description.empty())
+        out << "    about:   " << p.description << std::endl;
+}
+
+void print_run(std::ostream& out, const ores::scheduler::domain::retention_run& r) {
+    out << "  " << r.policy_code << " on " << r.target << std::endl
+        << "    when:    " << display_time(r.ran_at) << std::endl
+        << "    period:  " << r.retention_days << " days, "
+        << (r.enabled ? "policy on" : "policy off") << std::endl
+        << "    removed: " << r.removed << std::endl
+        << "    outcome: " << r.outcome << std::endl;
+    if (!r.detail.empty())
+        out << "    detail:  " << r.detail << std::endl;
+}
+
+bool report_result(std::ostream& out,
+                   const ores::utility::domain::result& r,
+                   const std::string& what);
+
+/**
+ * @brief The policy a person named, or nothing when the name matches none.
+ *
+ * The table is code keyed and held by the system tenant, so the policy is found
+ * by its own key rather than through a scope: a policy bounds a store of the
+ * whole installation, and every caller the read answers may change one.
+ */
+std::optional<ores::scheduler::domain::retention_policy>
+find_policy_by_code(std::ostream& out, nats_client& session, const std::string& code) {
+    list_retention_policies_request req;
+    req.limit = default_page_limit;
+
+    auto response = do_auth_request<list_retention_policies_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!response)
+        return std::nullopt;
+    if (!report_result(out, response->result, "Listing the retention policies"))
+        return std::nullopt;
+
+    for (const auto& p : response->policies) {
+        if (p.code == code)
+            return p;
+    }
+    fail(out) << "No retention policy is named '" << code << "'." << std::endl;
+    return std::nullopt;
+}
+
+/**
+ * @brief Writes a policy back with the change the caller made to it.
+ *
+ * The version the read stated travels in the claim, so two people changing one
+ * policy at once produce one write and one refusal rather than a silent
+ * overwrite of the other's period.
+ */
+bool put_policy(std::ostream& out,
+                nats_client& session,
+                const ores::scheduler::domain::retention_policy& current,
+                const ores::scheduler::domain::retention_policy& changed,
+                const std::string& commentary) {
+    put_retention_policy_request req;
+    req.change.write.code = changed.code;
+    req.change.write.target_kind = changed.target_kind;
+    req.change.write.target = changed.target;
+    req.change.write.action = changed.action;
+    req.change.write.retention_days = changed.retention_days;
+    req.change.write.store_code = changed.store_code;
+    req.change.write.cadence_hours = changed.cadence_hours;
+    req.change.write.enabled = changed.enabled;
+    req.change.write.description = changed.description;
+    req.change.precondition.kind = ores::utility::domain::precondition_kind::must_match_version;
+    req.change.precondition.version = static_cast<std::uint32_t>(current.version);
+    req.intent.reason_code = std::string(default_reason_code);
+    req.intent.commentary = commentary;
+
+    auto response = do_auth_request<put_retention_policy_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!response)
+        return false;
+    return report_result(out, response->result, "Changing the retention policy");
+}
+
 bool report_result(std::ostream& out,
                    const ores::utility::domain::result& r,
                    const std::string& what) {
@@ -181,6 +269,28 @@ void scheduler_commands::register_commands(cli::Menu& root_menu, nats_client& se
         [&session](std::ostream& out) { process_status(std::ref(out), std::ref(session)); },
         "Show each job's schedule, last run and next firing");
 
+    scheduler_menu->Insert("enable",
+                           [&session](std::ostream& out, std::string job_name) {
+                               process_set_active(std::ref(out), std::ref(session), job_name, true);
+                           },
+                           "Start a paused job",
+                           {"job_name"});
+
+    scheduler_menu->Insert("disable",
+                           [&session](std::ostream& out, std::string job_name) {
+                               process_set_active(
+                                   std::ref(out), std::ref(session), job_name, false);
+                           },
+                           "Pause a job",
+                           {"job_name"});
+
+    scheduler_menu->Insert("cadence",
+                           [&session](std::ostream& out, std::string job_name, std::string cron) {
+                               process_cadence(std::ref(out), std::ref(session), job_name, cron);
+                           },
+                           "Change when a job fires: cadence <job_name> <cron>",
+                           {"job_name", "cron"});
+
     scheduler_menu->Insert(
         "watch",
         [&session](std::ostream& out, std::vector<std::string> args) {
@@ -189,6 +299,51 @@ void scheduler_commands::register_commands(cli::Menu& root_menu, nats_client& se
         "Print execution events as they arrive: watch [--seconds <n>]");
 
     ores::shell::app::insert_menu(root_menu, std::move(scheduler_menu));
+
+    // Housekeeping is the scheduler's work seen from the stores it bounds, so
+    // the two views sit under one menu rather than in two units: a person asks
+    // "what is housekeeping doing" and "when did it last run" in one place.
+    auto housekeeping_menu = std::make_unique<cli::Menu>("housekeeping");
+
+    housekeeping_menu->Insert(
+        "policies",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_housekeeping_policies(std::ref(out), std::ref(session), std::move(args));
+        },
+        "List the retention policies and the store each one bounds: policies [--limit <n>]");
+
+    housekeeping_menu->Insert(
+        "runs",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_housekeeping_runs(std::ref(out), std::ref(session), std::move(args));
+        },
+        "List what each sweep removed, newest first: runs [--policy <code>] [--limit <n>]");
+
+    housekeeping_menu->Insert("enable",
+                              [&session](std::ostream& out, std::string policy_code) {
+                                  process_housekeeping_set_enabled(
+                                      std::ref(out), std::ref(session), policy_code, true);
+                              },
+                              "Start applying a policy",
+                              {"policy_code"});
+
+    housekeeping_menu->Insert("disable",
+                              [&session](std::ostream& out, std::string policy_code) {
+                                  process_housekeeping_set_enabled(
+                                      std::ref(out), std::ref(session), policy_code, false);
+                              },
+                              "Stop applying a policy, keeping its row and its history",
+                              {"policy_code"});
+
+    housekeeping_menu->Insert("period",
+                              [&session](std::ostream& out, std::string policy_code, int days) {
+                                  process_housekeeping_period(
+                                      std::ref(out), std::ref(session), policy_code, days);
+                              },
+                              "Set how many days a policy keeps: period <policy_code> <days>",
+                              {"policy_code", "days"});
+
+    ores::shell::app::insert_menu(root_menu, std::move(housekeeping_menu));
 }
 
 void scheduler_commands::process_jobs(std::ostream& out, nats_client& session) {
@@ -492,6 +647,255 @@ void scheduler_commands::process_watch(std::ostream& out,
     }
 
     out << printed << " event(s) in " << *seconds << " second(s)." << std::endl;
+}
+
+void scheduler_commands::process_set_active(std::ostream& out,
+                                            nats_client& session,
+                                            const std::string& job_name,
+                                            bool active) {
+    ORES_LOG_SEV(lg(), debug) << "Setting the active flag of a job.";
+
+    if (!session.is_logged_in()) {
+        fail(out) << "You must be logged in to change a job." << std::endl;
+        return;
+    }
+
+    const auto found = find_by_name(out, session, job_name);
+    if (!found)
+        return;
+
+    put_job_definition_request req;
+    req.change.write.id = found->id;
+    req.change.write.job_name = found->job_name;
+    req.change.write.description = found->description;
+    req.change.write.command = found->command;
+    req.change.write.schedule_expression = found->schedule_expression;
+    req.change.write.action_type = found->action_type;
+    req.change.write.action_payload = found->action_payload;
+    req.change.write.is_active = active;
+    req.change.precondition.kind = ores::utility::domain::precondition_kind::must_match_version;
+    req.change.precondition.version = static_cast<std::uint32_t>(found->version);
+    req.intent.reason_code = std::string(default_reason_code);
+    req.intent.commentary = active ? "Started from the shell" : "Paused from the shell";
+
+    auto response = do_auth_request<put_job_definition_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!response)
+        return;
+    if (!report_result(out, response->result, "Changing the job"))
+        return;
+
+    out << "'" << job_name << "' is now " << (active ? "active" : "paused") << " on '"
+        << found->schedule_expression.to_string() << "'." << std::endl;
+    out << "The scheduler re-reads the table on its next tick." << std::endl;
+}
+
+void scheduler_commands::process_cadence(std::ostream& out,
+                                         nats_client& session,
+                                         const std::string& job_name,
+                                         const std::string& cron) {
+    ORES_LOG_SEV(lg(), debug) << "Changing a job's cadence.";
+
+    if (!session.is_logged_in()) {
+        fail(out) << "You must be logged in to change a job." << std::endl;
+        return;
+    }
+
+    // The expression is validated here rather than on the server, because a
+    // cron the evaluator cannot parse is a typo the person can fix in place.
+    auto expression = ores::scheduler::domain::cron_expression::from_string(cron);
+    if (!expression) {
+        fail(out) << "'" << cron << "' is not a cron expression: " << expression.error()
+                  << std::endl;
+        return;
+    }
+
+    const auto found = find_by_name(out, session, job_name);
+    if (!found)
+        return;
+
+    put_job_definition_request req;
+    req.change.write.id = found->id;
+    req.change.write.job_name = found->job_name;
+    req.change.write.description = found->description;
+    req.change.write.command = found->command;
+    req.change.write.schedule_expression = *expression;
+    req.change.write.action_type = found->action_type;
+    req.change.write.action_payload = found->action_payload;
+    req.change.write.is_active = found->is_active;
+    req.change.precondition.kind = ores::utility::domain::precondition_kind::must_match_version;
+    req.change.precondition.version = static_cast<std::uint32_t>(found->version);
+    req.intent.reason_code = std::string(default_reason_code);
+    req.intent.commentary = "Rescheduled from the shell";
+
+    auto response = do_auth_request<put_job_definition_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!response)
+        return;
+    if (!report_result(out, response->result, "Changing the cadence"))
+        return;
+
+    out << "'" << job_name << "' now fires on '" << expression->to_string() << "' (was '"
+        << found->schedule_expression.to_string() << "')." << std::endl;
+    out << "The scheduler re-reads the table on its next tick." << std::endl;
+}
+
+void scheduler_commands::process_housekeeping_policies(std::ostream& out,
+                                                       nats_client& session,
+                                                       const std::vector<std::string>& args) {
+    ORES_LOG_SEV(lg(), debug) << "Listing the retention policies.";
+
+    if (!session.is_logged_in()) {
+        fail(out) << "You must be logged in to list the retention policies." << std::endl;
+        return;
+    }
+
+    const std::vector<flag_spec> specs{{.name = "limit",
+                                        .requires_value = true,
+                                        .default_value = std::to_string(default_page_limit)}};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    const auto limit = parse_uint32(parsed->flag("limit"));
+    if (!limit || *limit == 0) {
+        fail(out) << "Flag --limit must be a positive integer: " << parsed->flag("limit")
+                  << std::endl;
+        return;
+    }
+
+    list_retention_policies_request req;
+    req.limit = *limit;
+
+    auto response = do_auth_request<list_retention_policies_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!response)
+        return;
+    if (!report_result(out, response->result, "Listing the retention policies"))
+        return;
+
+    if (response->policies.empty()) {
+        out << "No retention policies are visible to this session." << std::endl;
+        return;
+    }
+
+    out << response->total << " retention policy(ies), showing " << response->policies.size() << ":"
+        << std::endl;
+    for (const auto& p : response->policies)
+        print_policy(out, p);
+}
+
+void scheduler_commands::process_housekeeping_runs(std::ostream& out,
+                                                   nats_client& session,
+                                                   const std::vector<std::string>& args) {
+    ORES_LOG_SEV(lg(), debug) << "Listing the housekeeping runs.";
+
+    if (!session.is_logged_in()) {
+        fail(out) << "You must be logged in to list what housekeeping removed." << std::endl;
+        return;
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "policy", .requires_value = true, .default_value = ""},
+        {.name = "limit",
+         .requires_value = true,
+         .default_value = std::to_string(default_page_limit)}};
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    const auto limit = parse_uint32(parsed->flag("limit"));
+    if (!limit || *limit == 0) {
+        fail(out) << "Flag --limit must be a positive integer: " << parsed->flag("limit")
+                  << std::endl;
+        return;
+    }
+
+    list_retention_runs_request req;
+    req.limit = *limit;
+    if (const auto& policy = parsed->flag("policy"); !policy.empty()) {
+        retention_runs_filter filter;
+        filter.policy_code = policy;
+        req.filter = filter;
+    }
+
+    auto response = do_auth_request<list_retention_runs_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!response)
+        return;
+    if (!report_result(out, response->result, "Listing what housekeeping removed"))
+        return;
+
+    if (response->runs.empty()) {
+        out << "No housekeeping run has been recorded for a policy you can see." << std::endl;
+        return;
+    }
+
+    out << response->total << " run(s) recorded, showing " << response->runs.size() << ":"
+        << std::endl;
+    for (const auto& r : response->runs)
+        print_run(out, r);
+}
+
+void scheduler_commands::process_housekeeping_set_enabled(std::ostream& out,
+                                                          nats_client& session,
+                                                          const std::string& policy_code,
+                                                          bool enabled) {
+    ORES_LOG_SEV(lg(), debug) << "Setting a retention policy's state.";
+
+    if (!session.is_logged_in()) {
+        fail(out) << "You must be logged in to change a retention policy." << std::endl;
+        return;
+    }
+
+    const auto found = find_policy_by_code(out, session, policy_code);
+    if (!found)
+        return;
+
+    auto changed = *found;
+    changed.enabled = enabled;
+    if (!put_policy(out,
+                    session,
+                    *found,
+                    changed,
+                    enabled ? "Started from the shell" : "Paused from the shell"))
+        return;
+
+    out << "'" << policy_code << "' is now " << (enabled ? "on" : "off") << "." << std::endl;
+    out << "The next sweep applies the policies that are on." << std::endl;
+}
+
+void scheduler_commands::process_housekeeping_period(std::ostream& out,
+                                                     nats_client& session,
+                                                     const std::string& policy_code,
+                                                     int days) {
+    ORES_LOG_SEV(lg(), debug) << "Setting a retention policy's period.";
+
+    if (!session.is_logged_in()) {
+        fail(out) << "You must be logged in to change a retention policy." << std::endl;
+        return;
+    }
+    if (days <= 0) {
+        fail(out) << "A period is a positive number of days: " << days << std::endl;
+        return;
+    }
+
+    const auto found = find_policy_by_code(out, session, policy_code);
+    if (!found)
+        return;
+
+    auto changed = *found;
+    changed.retention_days = days;
+    if (!put_policy(out, session, *found, changed, "Period changed from the shell"))
+        return;
+
+    out << "'" << policy_code << "' now keeps " << days << " days (was " << found->retention_days
+        << ")." << std::endl;
+    out << "The next sweep applies the period it finds." << std::endl;
 }
 
 }

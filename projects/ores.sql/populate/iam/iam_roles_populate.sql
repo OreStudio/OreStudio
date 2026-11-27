@@ -327,6 +327,8 @@ BEGIN
     -- schedule cell reads the definition's job in the scheduler.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'dq::fsm_states:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'scheduler::job_instances:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'scheduler::retention_policies:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'scheduler::retention_runs:read');
     -- A report page lists the configurations the report binds and opens each
     -- one: the binding, the configuration, its kind, and the analytics it holds
     -- with their names. The first three are party-scoped by row-level security,

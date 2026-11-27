@@ -1,0 +1,49 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title A workload proves which consumer it is before it holds a token
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+autonumber
+
+participant "systemd\n(the unit)" as systemd
+participant "a service\n(no token yet)" as service
+participant "ores.vault" as vault
+participant "ores.iam" as iam
+
+systemd -> service: LoadCredential: the unit's transport key pair
+note right of service
+  The private half is a file the platform owns;
+  the deployment registered the public half.
+end note
+
+service -> vault: challenge(consumer)
+vault --> service: nonce, sealed to the consumer's registered key
+service -> vault: credential(nonce, name), sealed to the vault's key
+vault --> service: the secret, sealed to the consumer's key
+
+service -> iam: sign in with the database password it just resolved
+iam --> service: an access token
+note right of service
+  Every later call is the ordinary token path;
+  the bootstrap key is used again at the next start.
+end note
+
+@enduml

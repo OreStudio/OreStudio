@@ -8426,6 +8426,9 @@ const fr: SourceCatalogue = {
             ready: 'Prêt',
             readyHint: 'Tous les faits nécessaires à une publication sont présents',
             notCarried: 'Aucun ensemble ne porte {code}.',
+            lastPublished: 'Dernière publication',
+            lastPublishedGap:
+                'Pas encore servi : le journal des exécutions n’a pas de script d’écriture, donc rien n’enregistre quand ce jeu de données a été publié pour la dernière fois.',
             publicationsTitle: 'Publications',
             publicationsLead:
                 'Une ligne pour chaque publication de ce jeu de données, avec ce que l’exécution a écrit et ce qu’elle a dit.',
@@ -8462,13 +8465,17 @@ const fr: SourceCatalogue = {
             filterState: 'Filtrer par état',
             noMatch: 'Aucun jeu de données ne correspond à ce filtre.',
             stateTitle: 'État',
+            levelNote: {
+                platform: 'Une copie, dans le tenant système, lue là où elle se trouve.',
+                world: 'Une copie, dans le tenant système, lue là où elle se trouve.',
+                tenant: 'Écrit dans le tenant qui l’a demandé.',
+            },
             state: {
                 all: 'Tous les états',
                 'not-ready': 'Pas prêt',
-                unpublished: 'Pas entièrement publié',
-                published: 'Prêt à publier',
+                ready: 'Prêt à publier',
             },
-            gap: 'Les comptes en attente et publiés ne sont pas encore servis : l’opération de couverture et la lecture de provenance restent à construire. L’écran dessine un tiret à leur place, car un zéro dirait que l’exécution n’a rien écrit.',
+            gap: 'Le compte publié n’est pas encore servi : la lecture de provenance reste à construire. L’écran dessine un tiret à sa place, car un zéro dirait que l’exécution n’a rien écrit.',
             reason: {
                 noDataset: 'Aucune ligne de jeu de données',
                 noArtefactType: 'Aucun type d’artefact',

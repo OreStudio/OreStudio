@@ -121,7 +121,10 @@ begin
             at.target_subject as target_subject,
             (d.id is not null)::boolean as has_dataset,
             (d.id is not null and at.code is not null)::boolean as has_artefact_type,
-            (d.id is not null and at.target_subject is not null)::boolean as is_publishable,
+            -- The same three facts the roster states, so one definition of ready
+            -- answers the publish path and the screen that names the reason.
+            (d.id is not null and at.code is not null and
+             at.target_subject is not null)::boolean as is_publishable,
             m.optional
         from ores_dq_dataset_bundle_members_tbl m
         left join ores_dq_datasets_tbl d

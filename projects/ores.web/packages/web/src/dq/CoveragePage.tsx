@@ -25,7 +25,8 @@ import type {
     BundleRosterBundle,
     BundleRosterMember,
 } from '@ores/wire-protocol/generated/dq/protocol/bundle_roster_protocol';
-import { readBundleRoster, reasonOf, type NotReadyReason } from '../api/dq.js';
+import { readBundleRoster, reasonOf } from '../api/dq.js';
+import { REASON_KEY } from './readiness.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { datasetPath } from '../shell/paths.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
@@ -33,19 +34,11 @@ import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { RefreshQueries } from '../ui/RefreshButton.js';
 
-/** The reason a member is not ready, in the words the screen gives it. */
-const REASON_KEY: Record<NotReadyReason, string> = {
-    'no dataset': 'dq.coverage.reason.noDataset',
-    'no artefact type': 'dq.coverage.reason.noArtefactType',
-    'no target subject': 'dq.coverage.reason.noTargetSubject',
-    'no staged rows': 'dq.coverage.reason.noStagedRows',
-};
-
 /** The levels a bundle publishes at, in the order the publication model names them. */
 const LEVELS: readonly string[] = ['platform', 'world', 'tenant'];
 
 /** The states the table filters by, in the order the filter lists them. */
-const STATES = ['all', 'not-ready', 'unpublished', 'published'] as const;
+const STATES = ['all', 'not-ready', 'ready'] as const;
 
 type StateFilter = (typeof STATES)[number];
 
@@ -128,7 +121,7 @@ export function CoveragePage(): ReactNode {
     const bundles = roster.data;
     const carried = detail.data?.find((bundle) => bundle.code === current);
     const held = carried?.members ?? [];
-    const members = held.filter((member) => shown(member, text, state));
+    const members = held.filter((member) => passesFilters(member, text, state));
 
     return (
         <div className="space-y-4">
@@ -169,15 +162,25 @@ export function CoveragePage(): ReactNode {
                             </span>
                         </header>
                         <Filters text={text} state={state} onText={setText} onState={setState} />
-                        <MembersTable
-                            members={members}
-                            empty={
-                                held.length > 0
-                                    ? t('dq.coverage.noMatch')
-                                    : t('dq.coverage.noMembers')
-                            }
-                            onOpen={(code) => navigate(datasetPath(code))}
-                        />
+                        {detail.isError ? (
+                            <p className="px-4 py-6 text-sm text-ink-muted">
+                                {detail.error.message}
+                            </p>
+                        ) : detail.isLoading ? (
+                            <p className="px-4 py-6 text-sm text-ink-muted">
+                                {t('common.loading')}
+                            </p>
+                        ) : (
+                            <MembersTable
+                                members={members}
+                                empty={
+                                    held.length > 0
+                                        ? t('dq.coverage.noMatch')
+                                        : t('dq.coverage.noMembers')
+                                }
+                                onOpen={(code) => navigate(datasetPath(code))}
+                            />
+                        )}
                     </section>
                 </div>
             )}
@@ -187,23 +190,26 @@ export function CoveragePage(): ReactNode {
     );
 }
 
-/** Whether one member passes the text and state filters. */
-function shown(member: BundleRosterMember, text: string, state: StateFilter): boolean {
+/**
+ * Whether one member passes the text and state filters.
+ *
+ * There is no "not fully published" state, because the count that would answer
+ * it is not served: the filter states what the roster can answer and nothing
+ * else.
+ */
+function passesFilters(member: BundleRosterMember, text: string, state: StateFilter): boolean {
     if (text !== '') {
         const needle = text.toLowerCase();
-        const hay = `${member.dataset_code} ${member.dataset_name}`.toLowerCase();
-        if (!hay.includes(needle)) {
+        const hay = `${member.dataset_code} ${member.dataset_name} ${member.artefact_type}`;
+        if (!hay.toLowerCase().includes(needle)) {
             return false;
         }
     }
+    if (state === 'all') {
+        return true;
+    }
     const ready = reasonOf(member) === null;
-    if (state === 'not-ready') {
-        return !ready;
-    }
-    if (state === 'published') {
-        return ready;
-    }
-    return true;
+    return state === 'ready' ? ready : !ready;
 }
 
 /** The bundles of every level, as the tree the person picks from. */
@@ -236,8 +242,11 @@ function BundleTree({
                     }
                     return (
                         <div key={level}>
-                            <p className="px-2 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+                            <p className="px-2 pt-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
                                 {level === '' ? t('dq.coverage.noLevel') : level}
+                            </p>
+                            <p className="px-2 pb-1 text-[11px] text-ink-faint">
+                                {t(`dq.coverage.levelNote.${level}`)}
                             </p>
                             {levelBundles.map((bundle) => (
                                 <button

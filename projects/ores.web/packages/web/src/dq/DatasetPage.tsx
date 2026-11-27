@@ -25,29 +25,14 @@ import type {
     BundleRosterBundle,
     BundleRosterMember,
 } from '@ores/wire-protocol/generated/dq/protocol/bundle_roster_protocol';
-import { readBundleRoster, reasonOf, type NotReadyReason } from '../api/dq.js';
+import { readBundleRoster, reasonOf } from '../api/dq.js';
+import { OWNER_KEY, REASON_KEY } from './readiness.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { PATHS } from '../shell/paths.js';
 import { Notice, Tag } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
 import { RecordHeader } from '../refdata/records.js';
-
-/** The reason a member is not ready, in the words the screen gives it. */
-const REASON_KEY: Record<NotReadyReason, string> = {
-    'no dataset': 'dq.coverage.reason.noDataset',
-    'no artefact type': 'dq.coverage.reason.noArtefactType',
-    'no target subject': 'dq.coverage.reason.noTargetSubject',
-    'no staged rows': 'dq.coverage.reason.noStagedRows',
-};
-
-/** The owner of each reason, because a reason without one sends nobody anywhere. */
-const OWNER_KEY: Record<NotReadyReason, string> = {
-    'no dataset': 'dq.coverage.owner.dq',
-    'no artefact type': 'dq.coverage.owner.dq',
-    'no target subject': 'dq.coverage.owner.dq',
-    'no staged rows': 'dq.coverage.owner.importer',
-};
 
 /**
  * One dataset, on the page the Record screen standard shapes.
@@ -74,23 +59,18 @@ export function DatasetPage(): ReactNode {
         titleOf: (one) => t(`dq.dataset.tabs.${one}`),
     });
 
-    const found = find(roster.data, code);
+    const found = memberOf(roster.data, code);
     const crumbs = [
         ...useAreaRoot('dq'),
         { label: t('dq.coverage.title'), to: PATHS.dataQualityCoverage },
         { label: code },
     ];
 
+    const bare = <RecordHeader crumbs={crumbs} title={code} recordKey={code} version={null} />;
     if (roster.isError) {
         return (
             <div className="space-y-4">
-                <RecordHeader
-                    crumbs={crumbs}
-                    title={code}
-                    recordKey={code}
-                    version={null}
-                    access={null}
-                />
+                {bare}
                 <Notice tone="error">{roster.error.message}</Notice>
             </div>
         );
@@ -98,13 +78,7 @@ export function DatasetPage(): ReactNode {
     if (roster.data === undefined) {
         return (
             <div className="space-y-4">
-                <RecordHeader
-                    crumbs={crumbs}
-                    title={code}
-                    recordKey={code}
-                    version={null}
-                    access={null}
-                />
+                {bare}
                 <p className="text-sm text-ink-muted">{t('common.loading')}</p>
             </div>
         );
@@ -112,13 +86,7 @@ export function DatasetPage(): ReactNode {
     if (found === undefined) {
         return (
             <div className="space-y-4">
-                <RecordHeader
-                    crumbs={crumbs}
-                    title={code}
-                    recordKey={code}
-                    version={null}
-                    access={null}
-                />
+                {bare}
                 <Notice tone="info">{t('dq.dataset.notCarried', { code })}</Notice>
             </div>
         );
@@ -133,7 +101,6 @@ export function DatasetPage(): ReactNode {
                 recordKey={code}
                 version={null}
                 detail={t('dq.dataset.level', { level: bundle.level })}
-                access={null}
             />
             {bar}
             {tab === 'details' ? <Details bundle={bundle} member={member} /> : <Publications />}
@@ -142,7 +109,7 @@ export function DatasetPage(): ReactNode {
 }
 
 /** The bundle that carries a dataset, and the dataset's row within it. */
-function find(
+function memberOf(
     bundles: readonly BundleRosterBundle[] | undefined,
     code: string,
 ): { readonly bundle: BundleRosterBundle; readonly member: BundleRosterMember } | undefined {
@@ -199,6 +166,7 @@ function Details({
             member.optional ? t('common.yes') : t('common.no'),
             t('dq.dataset.optionalHint'),
         ],
+        [t('dq.dataset.lastPublished'), '—', t('dq.dataset.lastPublishedGap')],
         [
             t('dq.dataset.readiness'),
             reason === null ? (

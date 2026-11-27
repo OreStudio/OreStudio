@@ -147,6 +147,18 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
 
+* Notes on the standard
+
+- *The list pages in the browser.* RS-LIST-04 asks a list to page, search and
+  order on the server. The roster answers the whole roster in one request and the
+  tree needs every bundle to draw its levels, so the table pages the bundle in
+  view in the browser; the roster has no filter or paging of its own, and adding
+  one before a second screen needs it would be speculative. Recorded in the
+  Record screen standard's conformance table.
+- *The state filter offers only what the roster can answer.* "Not fully
+  published" needs the published count, so it is not offered: an option that
+  matched every row would be a lie.
+
 * Result
 
 The screen is the arrangement signed off on 2026-11-26. The bundles of every level

@@ -100,10 +100,12 @@ describe('the dataset page', () => {
         expect(html).toContain('Ready');
     });
 
-    it('states that the published count is not served', () => {
+    it('states that the published count and the last publication are not served', () => {
         const html = render(WORLD, '/data-quality/datasets/iso.currencies');
 
         expect(html).toContain('Not served yet');
+        expect(html).toContain('Last published');
+        expect(html).toContain('the run log has no writer');
     });
 
     it('draws the publications tab, which says why it holds nothing yet', () => {

@@ -8296,6 +8296,9 @@ export const en: SourceCatalogue = {
             ready: 'Ready',
             readyHint: 'Every fact a publish needs is present',
             notCarried: 'No bundle carries {code}.',
+            lastPublished: 'Last published',
+            lastPublishedGap:
+                'Not served yet: the run log has no writer, so nothing records when this dataset was last published.',
             publicationsTitle: 'Publications',
             publicationsLead:
                 'One row for each publish of this dataset, with what the run wrote and what it said.',
@@ -8330,11 +8333,15 @@ export const en: SourceCatalogue = {
             filterState: 'Filter by state',
             noMatch: 'No dataset matches this filter.',
             stateTitle: 'State',
+            levelNote: {
+                platform: 'One copy, in the system tenant, read where it lies.',
+                world: 'One copy, in the system tenant, read where it lies.',
+                tenant: 'Written into the tenant that asked.',
+            },
             state: {
                 all: 'Every state',
                 'not-ready': 'Not ready',
-                unpublished: 'Not fully published',
-                published: 'Ready to publish',
+                ready: 'Ready to publish',
             },
             gap: 'The published count is not served yet: the provenance read is still to build. The screen draws a dash in its place, because a zero would say the run wrote nothing.',
             reason: {

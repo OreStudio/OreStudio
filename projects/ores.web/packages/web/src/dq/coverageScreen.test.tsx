@@ -106,6 +106,15 @@ describe('the coverage screen', () => {
         expect(html).toContain('Filter by dataset or artefact type');
         expect(html).toContain('Every state');
         expect(html).toContain('Not ready');
+        // The state that would need the published count is not offered, because
+        // no read answers it: an option that matched everything would lie.
+        expect(html).not.toContain('Not fully published');
+    });
+
+    it('says where the rows of each level live', () => {
+        const html = render(WORLD);
+
+        expect(html).toContain('One copy, in the system tenant, read where it lies.');
     });
 
     it('draws a fresh database as a sentence and not as a failure', () => {

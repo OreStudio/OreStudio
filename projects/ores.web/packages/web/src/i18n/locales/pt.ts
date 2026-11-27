@@ -8358,6 +8358,9 @@ const pt: SourceCatalogue = {
             ready: 'Pronto',
             readyHint: 'Todos os factos de que uma publicação precisa estão presentes',
             notCarried: 'Nenhum conjunto transporta {code}.',
+            lastPublished: 'Última publicação',
+            lastPublishedGap:
+                'Ainda não servido: o registo de execuções não tem escritor, por isso nada regista quando este conjunto de dados foi publicado pela última vez.',
             publicationsTitle: 'Publicações',
             publicationsLead:
                 'Uma linha por cada publicação deste conjunto de dados, com o que a execução escreveu e o que disse.',
@@ -8394,13 +8397,17 @@ const pt: SourceCatalogue = {
             filterState: 'Filtrar por estado',
             noMatch: 'Nenhum conjunto de dados corresponde a este filtro.',
             stateTitle: 'Estado',
+            levelNote: {
+                platform: 'Uma cópia, no tenant de sistema, lida onde se encontra.',
+                world: 'Uma cópia, no tenant de sistema, lida onde se encontra.',
+                tenant: 'Escrito no tenant que o pediu.',
+            },
             state: {
                 all: 'Todos os estados',
                 'not-ready': 'Não pronto',
-                unpublished: 'Não totalmente publicado',
-                published: 'Pronto a publicar',
+                ready: 'Pronto a publicar',
             },
-            gap: 'As contagens em preparação e publicadas ainda não são servidas: a operação de cobertura e a leitura de proveniência estão por construir. O ecrã desenha um traço no seu lugar, porque um zero diria que a execução não escreveu nada.',
+            gap: 'A contagem publicada ainda não é servida: a leitura de proveniência está por construir. O ecrã desenha um traço no seu lugar, porque um zero diria que a execução não escreveu nada.',
             reason: {
                 noDataset: 'Nenhuma linha de conjunto de dados',
                 noArtefactType: 'Nenhum tipo de artefacto',

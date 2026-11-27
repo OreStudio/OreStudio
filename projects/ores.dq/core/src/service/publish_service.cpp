@@ -534,7 +534,10 @@ publish_service::list_bundle_members(const std::string& bundle_code) {
 
 std::optional<std::string> publish_service::bundle_of_dataset(const std::string& dataset_code) {
     // No tenant predicate on purpose: a world or platform bundle's membership
-    // rows sit in the system tenant, and the read policy admits them.
+    // rows sit in the system tenant, and the read policy admits them. A dataset
+    // may be carried by several bundles; the answer names the lowest code, so the
+    // page states which bundle it read rather than drawing a different one each
+    // time.
     const auto sql = "SELECT bundle_code FROM ores_dq_dataset_bundle_members_tbl "
                      "WHERE dataset_code = $1 AND valid_to = ores_utility_infinity_timestamp_fn() "
                      "ORDER BY bundle_code LIMIT 1";

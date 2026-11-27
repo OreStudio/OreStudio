@@ -316,11 +316,16 @@ and read where it lies, and a tenant bundle is the tenant's own copy.
 
 A row of that list opens the dataset's own page at =/data-quality/datasets/:code=,
 which the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]
-shapes: the breadcrumb through the area and the list, then Details, Publications
-and History. It states where the dataset's rows are staged, what a publish
+shapes: the breadcrumb through the area and the list, then Details and
+Publications. It states where the dataset's rows are staged, what a publish
 dispatches to, both counts, when it was last published, and which of the four
-reasons keeps it from being ready. The Publications tab lists every publish of
-that dataset with its outcome and what the run said.
+reasons keeps it from being ready.
+
+The published count, the last publication and the Publications tab are drawn and
+state their absence rather than a zero or an empty table: the provenance read and
+a run log with a writer are the tasks this design names, and a zero would say the
+run wrote nothing. The History tab is not drawn yet; the dataset's versions are
+served, and drawing them is a screen of its own.
 
 The screen reads the bundle roster, which states the level of every bundle, the
 count of datasets each carries and, for the bundle in view, its members with the

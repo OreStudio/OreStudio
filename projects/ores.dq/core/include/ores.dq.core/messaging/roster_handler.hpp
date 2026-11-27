@@ -89,14 +89,14 @@ public:
 
             // A bundle named by the caller wins; a dataset names the bundle that
             // carries it, which is what the dataset's own page asks for.
-            auto asked = req->bundle_code;
-            if (asked.empty() && !req->dataset_code.empty())
-                asked = svc.bundle_of_dataset(req->dataset_code).value_or("");
+            auto bundle_in_view = req->bundle_code;
+            if (bundle_in_view.empty() && !req->dataset_code.empty())
+                bundle_in_view = svc.bundle_of_dataset(req->dataset_code).value_or("");
 
-            if (!asked.empty()) {
-                auto members = svc.list_bundle_members(asked);
+            if (!bundle_in_view.empty()) {
+                auto members = svc.list_bundle_members(bundle_in_view);
                 for (auto& bundle : resp.bundles) {
-                    if (bundle.code == asked) {
+                    if (bundle.code == bundle_in_view) {
                         bundle.members = std::move(members);
                         break;
                     }

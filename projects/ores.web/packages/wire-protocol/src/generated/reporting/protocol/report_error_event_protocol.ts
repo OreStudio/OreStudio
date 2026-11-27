@@ -38,9 +38,11 @@ export interface ReportErrorEventLookup {
 
 export interface ReportErrorEventsFilter {
     report_instance_id: string | null;
+    phase_code: string | null;
     severity: string | null;
     id_one_of: string[] | null;
     report_instance_id_one_of: string[] | null;
+    phase_code_one_of: string[] | null;
     severity_one_of: string[] | null;
 }
 
@@ -99,6 +101,18 @@ export interface ListByReportInstanceIdReportErrorEventsResponse {
     total: number;
 }
 
+export interface ReportErrorPhaseCount {
+    /**
+     * @brief The phase the problems were recorded in: preprocess, engine or
+     * postprocess.
+     */
+    phase_code: string;
+    /** @brief How many of the phase's problems are errors. */
+    errors: number;
+    /** @brief How many are warnings. */
+    warnings: number;
+}
+
 export interface ReportErrorCount {
     /** @brief The run the counts are of. */
     report_instance_id: string;
@@ -106,6 +120,14 @@ export interface ReportErrorCount {
     errors: number;
     /** @brief How many are warnings. */
     warnings: number;
+    /**
+     * @brief The same problems, split by the phase that recorded them, and no
+     * entry for a phase the run recorded nothing in.
+     *
+     * The totals above count the same rows, so the phases always add up to
+     * them: a reader that draws the split draws the run's own count.
+     */
+    by_phase: ReportErrorPhaseCount[];
 }
 
 /**

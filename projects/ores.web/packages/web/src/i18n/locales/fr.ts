@@ -8785,6 +8785,7 @@ const fr: SourceCatalogue = {
                 plural: 'lignes',
                 severity: 'Gravité',
                 scope: 'Portée',
+                phase: 'Phase',
                 about: 'Objet',
                 message: 'Message',
                 location: 'Emplacement',

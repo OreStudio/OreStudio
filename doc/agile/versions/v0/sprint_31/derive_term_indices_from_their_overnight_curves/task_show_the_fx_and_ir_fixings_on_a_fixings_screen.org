@@ -8,7 +8,7 @@
 #+filetags: :derive_term_indices_from_their_overnight_curves:ir:curves:sprint_31:v0:
 #+owner: marco
 #+branch: docs/close-the-fixings-screen-task
-#+pr: 5196
+#+pr: 5202
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-22
@@ -131,6 +131,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5202][#5202]] | [agile] Close the fixing observations task |
 | [[https://github.com/OreStudio/OreStudio/pull/5196][#5196]] | [marketdata] State each simulated fixing under its administrator — carried the screen into =main=, because it was cut from this task's branch |
 | [[https://github.com/OreStudio/OreStudio/pull/5179][#5179]] | [web] Show the fixing observations the platform states — closed as superseded by #5196 |
 

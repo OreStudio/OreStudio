@@ -31,4 +31,5 @@
 \ir ./scheduler_retained_stores_create.sql
 \ir ./scheduler_retained_stores_notify_trigger_create.sql
 \ir ./scheduler_retention_sweep_create.sql
+\ir ./scheduler_store_bounds_view_create.sql
 \ir ./scheduler_publish_from_dq_create.sql

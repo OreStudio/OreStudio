@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-26
 #+updated: 2026-11-26
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The sweep applies every action the policy model states, and a policy that names 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
@@ -122,3 +122,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The sweep applies both actions a database can perform, and it now reads the
+catalogue for the store behind each policy: the shape, the target and the column
+a delete compares are stated once, and a policy that has drifted from its store
+is reported rather than acted on. A row delete compares the catalogue's column,
+checked against the table first, so a store whose column is gone is reported
+instead of deleted from by a guess.
+
+The other two actions are not the sweep's to perform. An object prefix lives in
+the object store and a job's folder on a node's disk, and SQL reaches neither. The
+sweep records them skipped with the owning mechanism named in the detail, and it
+no longer pretends to have bounded the store. The bounds view is what a screen
+reads: it states, per store, which mechanism bounds it and whether that mechanism
+applies today, so a policy that names an unbuilt mechanism reads as unbounded
+rather than as bounded on paper.
+
+Two findings came out of the work. The sweep had never run as the service user,
+only as an administrator, so its rights had never been tested: it deletes from
+tables other components own and calls a TimescaleDB function it was not granted.
+It is now a definer function, with the targets taken from platform data and the
+column checked, which is the smaller right of the two available. And the ledger
+has to be read per tenant, or one tenant's run suppresses another's policy.

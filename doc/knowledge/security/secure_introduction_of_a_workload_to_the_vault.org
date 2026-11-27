@@ -189,6 +189,9 @@ second.
 
 * Patterns used
 
+- [[id:4D069D1A-EADA-407B-89B4-92F2375C0836][Secure Introduction]] — the
+  pattern this page applies, with the platform-integration family, a key pair as
+  the material and a challenge sealed to it as the proof.
 - [[id:94C14185-EE64-412F-8681-849AFF04B4D8][Request-Reply]] — the challenge
   and the credential are each one request and one reply on NATS, and the
   workload waits for the answer before it opens its pool.

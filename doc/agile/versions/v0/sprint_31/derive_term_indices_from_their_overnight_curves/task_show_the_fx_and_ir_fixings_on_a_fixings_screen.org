@@ -112,7 +112,8 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Commits that carry the screen into =main= | 5: a summary read, its route, a route on the gateway, the screen, the trail | =git log --oneline origin/main -- projects/ores.web/packages/web/src/marketdata/FixingObservationsPage.tsx projects/ores.web/packages/bff/src/fixing-observations.ts projects/ores.http/marketdata/src/routes/marketdata/fixing_series_routes.cpp projects/ores.marketdata/service/src/app/fixing_series_summaries.cpp= | 364007d989 |
-| Tests over the read and the screen | 2 of the handler, 2 of the route, 2 of the gateway route, 4 of the screen | =ores.http.marketdata.tests "[marketdata_views]"= — 196 assertions in 17 cases | 427ae4fcc3 |
+| Tests of the fixing observations route on =ores.http= | 2: an unknown filter refused, a gateway error with no service | =ores.http.marketdata.tests "[marketdata_views]"= — 196 assertions in 17 cases | 4a8583f06a |
+| Tests over the read and the screen in =main= | 2 of the handler, 2 of the gateway route, 4 of the screen | =ores.marketdata.service.tests=; =npm run test --workspace @ores/bff -- fixing-observations=; =npm run test --workspace @ores/web -- fixingObservationsScreen= | 364007d989 |
 
 * Notes
 

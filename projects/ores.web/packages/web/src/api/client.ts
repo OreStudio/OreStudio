@@ -5266,6 +5266,7 @@ const fixingObservationSchema = z.object({
     latest_value: z.string(),
     latest_date: z.string().nullable(),
     days: z.number(),
+    derivation_kind: z.string().default('OBSERVED'),
 });
 
 const fixingObservationsSchema = z.object({
@@ -5282,6 +5283,7 @@ const fixingSeriesSchema = z.object({
             oresmd_uri: z.string(),
             provider_code: z.string(),
             version: z.number(),
+            derivation_kind: z.string().default('OBSERVED'),
         })
         .nullable(),
     publisher: z.object({ code: z.string(), name: z.string() }).nullable().optional(),

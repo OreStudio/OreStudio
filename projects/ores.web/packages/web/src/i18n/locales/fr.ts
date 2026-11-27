@@ -5903,6 +5903,9 @@ const fr: SourceCatalogue = {
                 "Une série que la plateforme détient et n'a jamais constatée : c'est une ligne, et son compte est zéro.",
             legendEnded:
                 "Une série qui s'est arrêtée garde son dernier jour et son compte, car un fixing est un fait sur une date.",
+            computed: 'calculée : {method}',
+            legendComputed:
+                "Une série que l'exécution a calculée plutôt qu'une source constatée : le fournisseur nomme l'administrateur dont l'indice est celui-ci, et la méthode nomme comment la valeur a été faite.",
         },
         fixingSeries: {
             title: 'Série de fixings',
@@ -5917,6 +5920,7 @@ const fr: SourceCatalogue = {
             backToObservations: 'Retour aux observations de fixings',
             columns: {
                 provider: 'Publisher',
+                derivation: 'Comment elle a été faite',
                 first: 'Premier fixing',
                 last: 'Dernier fixing',
                 count: 'Fixings détenus',
@@ -5927,6 +5931,7 @@ const fr: SourceCatalogue = {
                 session: 'Session',
                 supplier: 'Fournisseur',
             },
+            observed: 'Constatée',
         },
         curveBlueprints: {
             title: 'Plans de courbe',

@@ -24,6 +24,14 @@ type Filters = {
     readonly source: string;
 };
 
+/**
+ * The derivation kind in the words a reader uses, such as "IR curve bootstrap".
+ * The store holds the code, and the page states it rather than inventing a name.
+ */
+function methodOf(kind: string): string {
+    return kind.toLowerCase().replaceAll('_', ' ');
+}
+
 /** A series that holds no day reads as such rather than disappearing. */
 function DaysCell({ series }: { readonly series: FixingObservation }): ReactNode {
     const { t } = useTranslation();
@@ -58,7 +66,17 @@ function SeriesRow({ series }: { readonly series: FixingObservation }): ReactNod
             {/* The label states the currency first for an index, and the pair for FX. */}
             <td className="px-3 py-2">{series.index_label.split(' ')[0] ?? '—'}</td>
             <td className="px-3 py-2">{series.source === '' ? '—' : series.source}</td>
-            <td className="px-3 py-2">{series.provider_code}</td>
+            <td className="px-3 py-2">
+                {series.provider_code}
+                {/* The provider names the administrator; this says the run computed the value. */}
+                {series.derivation_kind === 'OBSERVED' ? null : (
+                    <p className="text-xs text-ink-faint">
+                        {t('marketdata.fixingObservations.computed', {
+                            method: methodOf(series.derivation_kind),
+                        })}
+                    </p>
+                )}
+            </td>
             <td className="px-3 py-2 tabular-nums">
                 {series.latest_value === '' ? '—' : series.latest_value}
             </td>
@@ -234,6 +252,7 @@ export function FixingObservationsPage(): ReactNode {
                 <div className="space-y-1 text-xs text-ink-faint">
                     <p>{t('marketdata.fixingObservations.legendNoDay')}</p>
                     <p>{t('marketdata.fixingObservations.legendEnded')}</p>
+                    <p>{t('marketdata.fixingObservations.legendComputed')}</p>
                 </div>
             </section>
         </div>

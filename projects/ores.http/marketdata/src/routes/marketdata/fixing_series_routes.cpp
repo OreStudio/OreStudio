@@ -234,7 +234,8 @@ void fixing_series_routes::register_routes(
                         "{\"series\":{\"id\":" + json::write(series_key) +
                             ",\"oresmd_uri\":" + json::write(series.oresmd_uri) +
                             ",\"provider_code\":" + json::write(series.provider_code) +
-                            ",\"version\":" + std::to_string(series.version) + "}" +
+                            ",\"version\":" + std::to_string(series.version) +
+                            ",\"derivation_kind\":" + json::write(series.derivation_kind) + "}" +
                             ",\"publisher\":" + publisher_json + ",\"values\":{\"first\":" +
                             json::write(first) + ",\"last\":" + json::write(last) + ",\"count\":" +
                             std::to_string(values.size()) + ",\"rows\":" + rr::array_of(values) +
@@ -287,7 +288,8 @@ void fixing_series_routes::register_routes(
                             ",\"latest_value\":" + json::write(one.latest_value) +
                             ",\"latest_date\":" +
                             (one.latest_date ? json::write(date_text(*one.latest_date)) : "null") +
-                            ",\"days\":" + std::to_string(one.days) + "}");
+                            ",\"days\":" + std::to_string(one.days) +
+                            ",\"derivation_kind\":" + json::write(one.derivation_kind) + "}");
                     }
                     return fixing_series_answer(req, "{\"series\":" + rr::array_of(written) + "}");
                 });

@@ -35,9 +35,13 @@
  * run: the WM/R cuts, whose benchmark is licensed, and the rates and the money
  * market indices that no free source carries.
  *
- * WIBOR has no publisher here. Its term index is computed from the run's own
- * POLONIA curve, so the derived provider states it, and GPW Benchmark joins this
- * catalogue when a source of its settings exists to state.
+ * Three of the publishers state a term index the run computes rather than
+ * observes: GPW Benchmark's WIBOR 6M from the run's own POLONIA curve, CME
+ * Group's Term SOFR 1M from its SOFR curve, and Banco de la República's IBR 3M
+ * from its IBR curve. The index is the administrator's, so it is stated under
+ * the administrator's name, and the series' derivation_kind says the run
+ * computed it. No publisher is a mechanism: there is no provider called derived
+ * for these three.
  *
  * LIBOR is the one publisher whose settings the market retired. ICE Benchmark
  * Administration ceased to publish them between 2021 and 2023, and the teaching
@@ -72,6 +76,10 @@ values
     (ores_utility_system_tenant_id_fn(), 'hkab', 0, 'The Hong Kong Association of Banks', 'reference',
      'The Hong Kong Association of Banks fixes HIBOR, the Hong Kong interbank offered rate, and HONIA, the Hong Kong dollar overnight index average.',
      53, 53, true, current_user, current_user, 'system.initial_load',
+     'Initial population of the fixing publishers'),
+    (ores_utility_system_tenant_id_fn(), 'gpw', 0, 'GPW Benchmark', 'reference',
+     'GPW Benchmark administers WIBOR, the Warsaw interbank offered rate, and publishes POLONIA. The run states the WIBOR settings from its own POLONIA curve, so the index the administrator owns is stated under its name.',
+     54, 54, true, current_user, current_user, 'system.initial_load',
      'Initial population of the fixing publishers'),
     (ores_utility_system_tenant_id_fn(), 'banrep', 0, 'Banco de la República', 'reference',
      'Banco de la República publishes the IBR, the Colombian reference banking indicator, and its overnight rate.',
@@ -124,6 +132,10 @@ values
     (ores_utility_system_tenant_id_fn(), 'bist', 0, 'Borsa İstanbul', 'reference',
      'Borsa İstanbul publishes TLREF, the Turkish lira reference rate.',
      67, 67, true, current_user, current_user, 'system.initial_load',
+     'Initial population of the fixing publishers'),
+    (ores_utility_system_tenant_id_fn(), 'cme', 0, 'CME Group', 'reference',
+     'CME Group administers the Term SOFR rates, which it publishes from the overnight SOFR it also administers. The run states the term settings from its own SOFR curve, so the index the administrator owns is stated under its name.',
+     68, 68, true, current_user, current_user, 'system.initial_load',
      'Initial population of the fixing publishers')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -146,6 +158,7 @@ from (values
     ('iba', 'The LIBOR settings the simulator states, as if the market had not retired them.'),
     ('emmi', 'The EURIBOR settings the simulator states from the run''s own market.'),
     ('hkab', 'The HIBOR settings and the HONIA overnight rate the simulator states.'),
+    ('gpw', 'The WIBOR settings the simulator states from the run''s own POLONIA curve.'),
     ('banrep', 'The IBR the simulator states from the run''s own market.'),
     ('snb', 'SARON, as the simulator states it.'),
     ('danmarks-nationalbank', 'DESTR, as the simulator states it.'),
@@ -158,7 +171,8 @@ from (values
     ('nifc', 'SHIBOR settings, as the simulator states them.'),
     ('fbil', 'MIBOR settings, as the simulator states them.'),
     ('tba', 'TAIBOR settings, as the simulator states them.'),
-    ('bist', 'TLREF, as the simulator states it.')
+    ('bist', 'TLREF, as the simulator states it.'),
+    ('cme', 'The Term SOFR settings the simulator states from the run''s own SOFR curve.')
 ) as p(code, description)
 on conflict do nothing;
 
@@ -185,9 +199,9 @@ cross join (values
 where s.tenant_id = ores_utility_system_tenant_id_fn()
   and s.valid_to = ores_utility_infinity_timestamp_fn()
   and s.session_code = 'synthetic-local'
-  and s.name in ('wmr-a', 'iba-a', 'emmi-a', 'hkab-a', 'banrep-a', 'snb-a',
+  and s.name in ('wmr-a', 'iba-a', 'emmi-a', 'hkab-a', 'gpw-a', 'banrep-a', 'snb-a',
                  'danmarks-nationalbank-a', 'mnb-a', 'bok-a', 'nbp-a', 'rbnz-a', 'sarb-a',
-                 'boi-a', 'nifc-a', 'fbil-a', 'tba-a', 'bist-a')
+                 'boi-a', 'nifc-a', 'fbil-a', 'tba-a', 'bist-a', 'cme-a')
   and not exists (
       select 1 from ores_marketdata_rate_card_components_tbl x
       where x.tenant_id = ores_utility_system_tenant_id_fn()
@@ -218,9 +232,9 @@ begin
     select gen_random_uuid(), ores_utility_system_tenant_id_fn(), 0, v_party, p.code,
            true, true, false, current_user, current_user, 'system.initial_load',
            'The system party takes the fixings of ' || p.code
-    from (values ('wmr'), ('iba'), ('emmi'), ('hkab'), ('banrep'), ('snb'),
+    from (values ('wmr'), ('iba'), ('emmi'), ('hkab'), ('gpw'), ('banrep'), ('snb'),
                  ('danmarks-nationalbank'), ('mnb'), ('bok'), ('nbp'), ('rbnz'), ('sarb'),
-                 ('boi'), ('nifc'), ('fbil'), ('tba'), ('bist')) as p(code)
+                 ('boi'), ('nifc'), ('fbil'), ('tba'), ('bist'), ('cme')) as p(code)
     on conflict do nothing;
 
     insert into ores_marketdata_routes_tbl (
@@ -231,10 +245,10 @@ begin
            p.asset_class, f.id, current_user, current_user, 'system.initial_load',
            'The system party reads the fixings of ' || p.code || ' through ' || p.code || '-a'
     from (values
-        ('wmr', 'fx'), ('iba', 'ir'), ('emmi', 'ir'), ('hkab', 'ir'),
+        ('wmr', 'fx'), ('iba', 'ir'), ('emmi', 'ir'), ('hkab', 'ir'), ('gpw', 'ir'),
         ('banrep', 'ir'), ('snb', 'ir'), ('danmarks-nationalbank', 'ir'), ('mnb', 'ir'),
         ('bok', 'ir'), ('nbp', 'ir'), ('rbnz', 'ir'), ('sarb', 'ir'), ('boi', 'ir'),
-        ('nifc', 'ir'), ('fbil', 'ir'), ('tba', 'ir'), ('bist', 'ir')
+        ('nifc', 'ir'), ('fbil', 'ir'), ('tba', 'ir'), ('bist', 'ir'), ('cme', 'ir')
     ) as p(code, asset_class)
     join ores_marketdata_feeds_tbl f
       on f.publisher_code = p.code
@@ -248,23 +262,24 @@ select 'fixing publishers' as entity, count(*) as count
 from ores_marketdata_providers_tbl
 where tenant_id = ores_utility_system_tenant_id_fn()
   and valid_to = ores_utility_infinity_timestamp_fn()
-  and code in ('wmr', 'iba', 'emmi', 'hkab', 'banrep', 'snb', 'danmarks-nationalbank',
-               'mnb', 'bok', 'nbp', 'rbnz', 'sarb', 'boi', 'nifc', 'fbil', 'tba', 'bist')
+  and code in ('wmr', 'iba', 'emmi', 'hkab', 'gpw', 'banrep', 'snb', 'danmarks-nationalbank',
+               'mnb', 'bok', 'nbp', 'rbnz', 'sarb', 'boi', 'nifc', 'fbil', 'tba', 'bist',
+               'cme')
 union all
 select 'fixing sources', count(*)
 from ores_marketdata_feeds_tbl
 where tenant_id = ores_utility_system_tenant_id_fn()
   and valid_to = ores_utility_infinity_timestamp_fn()
   and session_code = 'synthetic-local'
-  and name in ('wmr-a', 'iba-a', 'emmi-a', 'hkab-a', 'banrep-a', 'snb-a',
+  and name in ('wmr-a', 'iba-a', 'emmi-a', 'hkab-a', 'gpw-a', 'banrep-a', 'snb-a',
                'danmarks-nationalbank-a', 'mnb-a', 'bok-a', 'nbp-a', 'rbnz-a', 'sarb-a',
-               'boi-a', 'nifc-a', 'fbil-a', 'tba-a', 'bist-a')
+               'boi-a', 'nifc-a', 'fbil-a', 'tba-a', 'bist-a', 'cme-a')
 union all
 select 'fixing routes of the system party', count(*)
 from ores_marketdata_routes_tbl
 where tenant_id = ores_utility_system_tenant_id_fn()
   and party_id = ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn())
   and valid_to = ores_utility_infinity_timestamp_fn()
-  and publisher_code in ('wmr', 'iba', 'emmi', 'hkab', 'banrep', 'snb',
+  and publisher_code in ('wmr', 'iba', 'emmi', 'hkab', 'gpw', 'banrep', 'snb',
                          'danmarks-nationalbank', 'mnb', 'bok', 'nbp', 'rbnz', 'sarb',
-                         'boi', 'nifc', 'fbil', 'tba', 'bist');
+                         'boi', 'nifc', 'fbil', 'tba', 'bist', 'cme');

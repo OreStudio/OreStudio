@@ -5823,6 +5823,9 @@ export const en: SourceCatalogue = {
                 'A series the platform holds and never stated: it is a row, and its count is zero.',
             legendEnded:
                 'A series that ended keeps its latest day and its count, because a fixing is a fact about a date.',
+            computed: 'computed: {method}',
+            legendComputed:
+                'A series the run computed rather than a source stated: the provider names the administrator whose index it is, and the method names how the value was made.',
         },
         fixingSeries: {
             title: 'Fixing series',
@@ -5840,6 +5843,7 @@ export const en: SourceCatalogue = {
                 first: 'First fixing',
                 last: 'Last fixing',
                 count: 'Fixings held',
+                derivation: 'How it was made',
                 date: 'Date',
                 value: 'Value',
                 feed: 'Feed',
@@ -5847,6 +5851,7 @@ export const en: SourceCatalogue = {
                 session: 'Session',
                 supplier: 'Supplier',
             },
+            observed: 'Observed',
         },
         curveBlueprints: {
             title: 'Curve blueprints',

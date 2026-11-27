@@ -399,12 +399,17 @@ select ores_utility_allow_version_replace_fn();
 \echo '--- Publishing the platform and world levels ---'
 \ir dq/dq_bootstrap_publish_populate.sql
 
--- The Derived provider publishes the term indices the platform states, so its
--- fixing addresses are installed once the dataset publish above has written
--- the collection that names it.
+-- The administrators publish the term indices the platform computes, so their
+-- fixing addresses are installed once the dataset publish above has written the
+-- collections that name them, and each series is seeded with the derivation that
+-- says the run computed it.
 \echo ''
-\echo '--- Derived Fixing Instruments ---'
-\ir synthetic/synthetic_ir_curve_derived_fixing_instruments_populate.sql
+\echo '--- Computed Fixing Series ---'
+\ir marketdata/marketdata_market_series_computed_fixings_populate.sql
+
+\echo ''
+\echo '--- Computed Fixing Instruments ---'
+\ir synthetic/synthetic_ir_curve_computed_fixing_instruments_populate.sql
 
 
 -- The tenor convention resolutions name tenor schedules, and a schedule row

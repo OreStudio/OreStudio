@@ -41,7 +41,19 @@ begin;
 select plan(15);
 
 select set_config('app.current_tenant_id', ores_utility_system_tenant_id_fn()::text, true);
-select set_config('app.current_service', 'ores_solid_dirac_scheduler_service', true);
+-- The scheduler service of this installation, by the suffix every environment's
+-- service account carries: the account names are prefixed with the environment's
+-- own label, so a test that named one label passed in that worktree and raised
+-- nothing anywhere else.
+select set_config(
+    'app.current_service',
+    (select a."username"
+     from "ores_iam_accounts_tbl" a
+     where a."valid_to" = ores_utility_infinity_timestamp_fn()
+       and a."username" like '%\_scheduler\_service'
+     order by a."username"
+     limit 1),
+    true);
 
 
 -- A person who can act. The audience is the holder of the write a bound needs,
@@ -66,6 +78,16 @@ select ores_utility_system_tenant_id_fn(),
 from ores_iam_roles_tbl r
 where r.name = 'SuperAdmin'
   and r.valid_to = ores_utility_infinity_timestamp_fn();
+
+-- The people the pass tells, by the rule the pass itself uses: the holders of the
+-- write a bound needs, read from the same function the alerts call. A freshly
+-- created installation holds none until a session makes one, and an installation
+-- that has provisioned a tenant holds that tenant's administrator too, so the
+-- count is read rather than assumed.
+create temp table t_people on commit drop as
+select coalesce(cardinality(
+    ores_scheduler_permission_holders_fn(ores_utility_system_tenant_id_fn(),
+                                         'scheduler::retention_policies:write')), 0) as people;
 
 create temp table t_actor on commit drop as
 select coalesce(
@@ -144,14 +166,17 @@ select is(
     0::bigint,
     'only a person is told, never a service account');
 
+-- Every holder of the write a bound needs is told, so an installation that has
+-- provisioned a tenant tells its administrator too: the count is the notices
+-- times the people, not four.
 select is(
     (select count(*)
      from ores_inbox_notification_recipients_tbl r
      where r.notification_id in (select id from t_raised)
        and r.valid_to = ores_utility_infinity_timestamp_fn()
        and r.cleared_at is null),
-    4::bigint,
-    'each notice is open for one person, which is what the inbox counts');
+    (select count(*) from t_raised) * (select people from t_people),
+    'each notice is open for each person who can act, which is what the inbox counts');
 
 select is(
     (select sum(raised)::bigint from ores_scheduler_raise_housekeeping_alerts_fn()),
@@ -219,8 +244,8 @@ where code = 'delivery_counts_30d'
 select is(
     (select resolved from ores_scheduler_raise_housekeeping_alerts_fn()
      where case_name = 'store'),
-    1::bigint,
-    'a store that comes back under a bound has its notice cleared');
+    (select people from t_people)::bigint,
+    'a store that comes back under a bound has its notice cleared for everybody');
 
 select is(
     (select count(distinct n.id)

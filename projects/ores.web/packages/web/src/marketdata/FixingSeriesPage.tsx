@@ -37,6 +37,15 @@ import { LineChart, SERIES_COLOURS } from './LineChart.js';
 /** The most values the table lists; the count states the rest. */
 const LATEST = 100;
 
+/**
+ * The derivation kind in the words a reader uses, such as "IR curve bootstrap".
+ * The code is the store's, and the page states it rather than inventing a name
+ * for a method it does not hold a word for.
+ */
+function methodOf(kind: string): string {
+    return kind.toLowerCase().replaceAll('_', ' ');
+}
+
 export function FixingSeriesPage(): ReactNode {
     const { t } = useTranslation();
     const [params] = useSearchParams();
@@ -104,6 +113,14 @@ export function FixingSeriesPage(): ReactNode {
                             <Detail
                                 label={t('marketdata.fixingSeries.columns.provider')}
                                 value={data.publisher?.name ?? data.series.provider_code}
+                            />
+                            <Detail
+                                label={t('marketdata.fixingSeries.columns.derivation')}
+                                value={
+                                    data.series.derivation_kind === 'OBSERVED'
+                                        ? t('marketdata.fixingSeries.observed')
+                                        : methodOf(data.series.derivation_kind)
+                                }
                             />
                             <Detail
                                 label={t('marketdata.fixingSeries.columns.first')}

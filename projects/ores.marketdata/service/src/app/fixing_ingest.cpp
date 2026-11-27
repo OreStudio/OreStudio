@@ -75,8 +75,14 @@ boost::uuids::uuid fixing_store::series_for(const ores::database::context& tenan
         const auto cl = classifier->classify(core::classification_key_of(*index));
         ORES_LOG_SEV(lg(), info) << "Creating fixing series " << index_uri << " for provider "
                                  << owner.provider_code;
-        existing.push_back(create_feed_series(
-            tenant_ctx, owner, uuid_gen_(), index_uri, cl, ctx_.service_account()));
+        existing.push_back(
+            create_feed_series(tenant_ctx,
+                               owner,
+                               uuid_gen_(),
+                               index_uri,
+                               cl,
+                               ctx_.service_account(),
+                               derivation_of(tenant_ctx, index_uri, owner.provider_code)));
     }
     const auto id = existing.front().id;
     series_.emplace(key, id);

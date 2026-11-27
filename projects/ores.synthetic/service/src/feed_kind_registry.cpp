@@ -27,7 +27,6 @@
 #include "ores.logging/logger.hpp"
 #include "ores.marketdata.api/datum/market_datum.hpp"
 #include "ores.marketdata.api/datum/oresmd_uri_codec.hpp"
-#include "ores.marketdata.core/vendor/derived_notation.hpp"
 #include "ores.refdata.core/mapping/quant_codes.hpp"
 #include "ores.refdata.core/repository/fx_option_convention_repository.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
@@ -504,14 +503,18 @@ feed_kind make_ir_curve_kind() {
                         return {.input = std::nullopt,
                                 .skip_reason = "Derived index " + cfg.source_name +
                                                " states no rule or no fixing address"};
+                    // The index is the administrator's, so the config names the provider the
+                    // value is stated under, and the adapter serving that provider writes the
+                    // id. That the run computed the value is the series' derivation_kind, not
+                    // a provider named after the mechanism.
                     const auto target =
                         adapter_target_of(adapter.id,
-                                          ores::marketdata::vendor::derived_provider,
+                                          adapter.provider_code,
                                           ores::marketdata::vendor::index_fixing{.item = *item});
                     if (!target)
                         return {.input = std::nullopt,
                                 .skip_reason = "Derived index " + cfg.source_name +
-                                               " has no id under the derived provider"};
+                                               " has no id under " + adapter.provider_code};
                     return {.input = feed::derived_fixing_feed_build_input{.source_name =
                                                                                cfg.source_name,
                                                                            .item = *item,

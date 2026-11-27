@@ -31,4 +31,5 @@ set(files
     "service_publish_subject_plan_tests.cpp"
     "service_schedule_decision_tests.cpp"
     "service_sql_action_handler_tests.cpp"
+    "store_bounds_tests.cpp"
 )

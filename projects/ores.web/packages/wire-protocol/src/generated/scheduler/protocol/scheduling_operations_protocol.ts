@@ -144,9 +144,162 @@ export interface GetSchedulerStatusResponse {
     total_active: number;
 }
 
+/**
+ * @brief Asks for every store the installation keeps, with its bound and size.
+ *
+ * The answer is one row per store and no paging: an installation keeps a dozen
+ * stores, and the screen that reads this shows them all at once. The read is the
+ * bounds view, so whether a store is bounded is a fact the database states rather
+ * than an inference the screen makes.
+ */
+export interface ListStoreBoundsRequest {}
+
+/**
+ * @brief What bounds the store, and whether that mechanism applies today.
+ *
+ * The mechanism is not the action. A policy may ask for an object expiry the
+ * sweep cannot perform, and the store is then not bounded however clear its
+ * policy reads.
+ */
+export interface StoreBoundAction {
+    /**
+     * @brief What the bound does past its period, when it is a policy.
+     */
+    action: string | null;
+    /**
+     * @brief The period the bound states, in days.
+     */
+    retention_days: number | null;
+    /**
+     * @brief The policy that bounds the store today, if one does.
+     */
+    policy_code: string | null;
+    /**
+     * @brief Whether that policy is switched on.
+     */
+    policy_enabled: boolean;
+    /**
+     * @brief What bounds the store: =sweep=, =storage_lifecycle=, =node_release=,
+     * =content_keying=, =policy_off= or =none=.
+     */
+    mechanism: string;
+    /**
+     * @brief Whether the mechanism the bound names exists and runs today.
+     */
+    bounded_now: boolean;
+}
+
+/**
+ * @brief What the bound last did, in its own words.
+ *
+ * A run that freed nothing is not a failure, and the detail line is what tells
+ * the two apart; a screen that dropped it would have to guess.
+ */
+export interface StoreLastRun {
+    /**
+     * @brief =applied=, =skipped= or =failed=.
+     */
+    outcome: string | null;
+    /**
+     * @brief When it ran, in ISO-8601 UTC.
+     */
+    ran_at: string | null;
+    /**
+     * @brief What it removed: chunks, rows or objects.
+     */
+    removed: number;
+    /**
+     * @brief The run's own words.
+     */
+    detail: string | null;
+}
+
+/**
+ * @brief What the store held when it was last measured.
+ *
+ * A store nothing measures answers with no sample rather than a size of zero, so
+ * the absence of =sampled_at= is what tells an empty store from an unmeasured one.
+ */
+export interface StoreSize {
+    size_bytes: number;
+    measure_count: number;
+    /**
+     * @brief When it was measured, in ISO-8601 UTC.
+     */
+    sampled_at: string | null;
+}
+
+/**
+ * @brief One store, with what bounds it, what it last did and how large it is.
+ */
+export interface StoreBound {
+    /**
+     * @brief The store's catalogue code.
+     */
+    code: string;
+    /**
+     * @brief The name a person reads.
+     */
+    display_name: string;
+    description: string;
+    owner_component: string;
+    target_kind: string;
+    target: string;
+    /**
+     * @brief The kind of bound the store ships with: =policy=, =keying= or =none=.
+     */
+    bound_kind: string;
+    bound: StoreBoundAction;
+    last_run: StoreLastRun;
+    size: StoreSize;
+}
+
+/**
+ * @brief Every store, in catalogue order.
+ */
+export interface ListStoreBoundsResponse {
+    success: boolean;
+    message: string;
+    stores: StoreBound[];
+}
+
+/**
+ * @brief Asks for one store's measurements, oldest first, for the plot.
+ */
+export interface ListStoreSamplesRequest {
+    /**
+     * @brief The store whose series the caller wants.
+     */
+    store_code: string;
+    /**
+     * @brief How many of the most recent points to return.
+     */
+    limit: number;
+}
+
+/**
+ * @brief One measurement of one store.
+ */
+export interface StoreSample {
+    /**
+     * @brief When the measurement was taken, in ISO-8601 UTC.
+     */
+    sampled_at: string;
+    size_bytes: number;
+    measure_count: number;
+}
+
+export interface ListStoreSamplesResponse {
+    success: boolean;
+    message: string;
+    samples: StoreSample[];
+}
+
 export const subjects = {
     get_job_instances_request: 'scheduler.v1.job_instances.list',
     get_scheduler_status_request: 'scheduler.v1.ops.get_scheduler_status',
+    list_store_bounds_request: 'scheduler.v1.store_bounds.list',
+    list_store_samples_request: 'scheduler.v1.store_samples.list',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -156,4 +309,6 @@ export const subjects = {
 export const requiresSession = {
     get_job_instances_request: true,
     get_scheduler_status_request: true,
+    list_store_bounds_request: true,
+    list_store_samples_request: true,
 } as const;

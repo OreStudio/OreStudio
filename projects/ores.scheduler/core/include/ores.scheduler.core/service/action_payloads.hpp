@@ -80,6 +80,18 @@ struct nats_request_payload {
 }
 static_assert(utility::codec::names_every_member<nats_request_payload>());
 
+// The body of an expire_prefix action. A dry run states what the cutoff would
+// remove and removes nothing, so a person reads the plan before the sweep acts.
+struct object_expiry_payload {
+    bool dry_run = false;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<object_expiry_payload>) {
+    return ::ores::utility::codec::field_list{
+        utility::codec::field{"dry_run", &object_expiry_payload::dry_run}};
+}
+static_assert(utility::codec::names_every_member<object_expiry_payload>());
+
 // The request an action of this kind sends: no members, so the callee's own
 // no-member request type reads it back whatever the process's wire format is.
 struct nats_request_body {};

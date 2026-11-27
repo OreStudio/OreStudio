@@ -28,20 +28,20 @@ store refuses and finishes without a warning.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] |
-| Now          | Reproduced on a provisioned tenant; the fix is not written. |
+| Now          | Done. A fresh tenant completes every step with no warning. |
 | Waiting on   | Nothing.                               |
-| Next         | Read the chosen feed's scopes, then re-provision. |
+| Next         | Nothing.                               |
 | Last touched | 2026-11-27                               |
 
 * Acceptance
 
-- The subscription step asks for a route only for an asset class the chosen feed
-  serves, and the run records no warning.
-- A provider that serves interest rates through one feed and FX through another
-  gets both routes, each on the feed that serves it.
-- A test covers the case: a provider whose catalogue holds two classes, reached
+- [X] The subscription step asks for a route only for an asset class the chosen
+  feed serves, and the run records no warning.
+- [X] A provider that serves interest rates through one feed and FX through
+  another gets both routes, each on the feed that serves it.
+- [X] A test covers the case: a provider whose catalogue holds two classes, reached
   through a feed whose scope holds one.
 
 * Plan
@@ -49,31 +49,39 @@ store refuses and finishes without a warning.
 1. *Reproduce.* Provision the smokehouse tenant. The step ends
    =completed_with_warnings= and the warning is the store's own refusal:
    =Invalid route: feed afd34349-1c6c-56b2-a686-97b623ee051a serves no ir scope=.
-2. *Read the cause.* The step takes the asset class from the authority of every
+2. *Read the cause.* The step took the asset class from the authority of every
    =oresmd= address the provider maps. A provider's catalogue is not a feed's
    scope: =derived= maps the FX volatility quotes and, since the term indices
    became ours, interest rate fixing items too, while the feed =derived-fx-vol=
    serves FX alone.
-3. *Fix.* The route's class comes from the scopes of the feed the route names,
-   intersected with what the provider maps. The feed is already resolved before
-   the route is written.
-4. *Prove.* Re-provision and watch the step end without a warning; add the test in
-   step 3 of the acceptance.
+3. *Fix.* The route's class is the catalogue's, kept to the classes the feed
+   states when it states any. A feed that states no scope serves whatever its
+   publisher maps, and a feed whose scope matches none of the mapped classes is
+   routed by its own scope, because the store refuses a class the feed disowns.
+   The decision is =app::routed_asset_classes=, a function of two sets.
+4. *Prove.* Four cases over the function, and a fresh tenant that completes every
+   step with no warning.
 
 * Measurements
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Warning the step records | 1, the =ir= route refused for feed =derived-fx-vol= | the provisioning log of a fresh tenant | =5c7ec4b974= |
+| Warning the step records, before | 1: the =ir= route refused for feed =derived-fx-vol= | the provisioning log of tenant =smokehouse= | =8614711adc= |
+| Warning the step records, after | 0; all fourteen steps complete | the provisioning log of tenant =Smokehouse Three= | =5118ff3313= |
+| Routes the tenant holds | bloomberg =fx= and =ir=, ice =fx= and =ir=, lseg =fx=, derived =fx= | a grouped select over the tenant's routes | =5118ff3313= |
+| Provisioning after the fix | 212 s | =provision tenant --tenant-code smokehouse3 --profile smokehouse= | =5118ff3313= |
+| The new test | 4 cases, 4 assertions, all pass | =ores.marketdata.service.tests "[routed_asset_classes]"= | =5118ff3313= |
 
 * Notes
 
-- The warning costs the tenant nothing today: the party does not read the derived
+- The warning cost the tenant nothing today: the party does not read the derived
   term indices, and its surface published from the FX route. It is still a defect,
   because every future provision records it and a reader cannot tell a harmless
   warning from a load-bearing one.
-- The route table enforces the rule, so the store is right and the step is wrong.
-  The refusal is on =ores_marketdata_routes_insert_fn=.
+- The route table enforces the rule, so the store was right and the step was
+  wrong. The refusal is on =ores_marketdata_routes_insert_fn=.
+- A feed that states no scope is not an oversight: the simulated feeds serve
+  whatever demand asks of them, so their class comes from the catalogue alone.
 
 * Test Scenarios
 
@@ -94,3 +102,8 @@ store refuses and finishes without a warning.
 |   |                 |      |          |       |
 
 * Result
+
+Done on 2026-11-27. The classes are =app::routed_asset_classes=, four cases cover
+it, and a fresh tenant provisions in 212 s with all fourteen steps complete and no
+warning. Its routes are bloomberg =fx= and =ir=, ice =fx= and =ir=, lseg =fx=, and
+derived =fx= alone.

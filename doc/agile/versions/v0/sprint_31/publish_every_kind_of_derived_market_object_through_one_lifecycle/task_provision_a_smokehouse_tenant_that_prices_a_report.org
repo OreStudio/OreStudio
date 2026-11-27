@@ -31,11 +31,11 @@ hundred trades.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] |
-| Now          | Rebased onto main. The tenant provisions in 262 s, publishes all three kinds, and prices all three trades in one run. One step still records a warning. |
-| Waiting on   | [[id:537E5CFC-4B41-468B-9B38-C931E489A683][Route a party only to the classes its feed serves]], for a clean run. |
-| Next         | Fix that route, re-provision, then raise the branch's PR. |
+| Now          | Done. The tenant provisions in 212 s with no warning, publishes all three kinds and prices all three trades. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the branch's PR.                 |
 | Last touched | 2026-11-27                               |
 
 * Acceptance
@@ -52,9 +52,9 @@ hundred trades.
   recipe.
 - [X] After the rebase onto main, the profile names only sources that exist, and
   none of them is retired.
-- [ ] The provision records no warning. One step still ends
-  =completed_with_warnings=, because a route asks for a class its feed does not
-  serve. That is [[id:537E5CFC-4B41-468B-9B38-C931E489A683][its own task]].
+- [X] The provision records no warning. It took
+  [[id:537E5CFC-4B41-468B-9B38-C931E489A683][a fix to the route's asset
+  class]]: a fresh tenant now completes all fourteen steps with none.
 
 * Plan
 
@@ -144,3 +144,11 @@ The option's zero is correct: its premium equals its value on the valuation date
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+Done on 2026-11-27. A fresh tenant provisions in 212 s, publishes three curves, one
+forward set and one surface, books three trades and prices all three in one report
+run with no market-data gap, and completes every step with no warning. The route
+that asked for a class its feed does not serve was the last warning, and fixing it
+was [[id:537E5CFC-4B41-468B-9B38-C931E489A683][its own task]].

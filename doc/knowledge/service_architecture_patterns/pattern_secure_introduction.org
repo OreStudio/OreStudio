@@ -74,8 +74,8 @@ Three parts make the pattern work in either form: material unique to the
 workload, an exchange that is good once, and an answer sealed to the material
 the workload proved.
 
-#+caption: Secure Introduction: the platform delivers a key pair unique to the unit, the store holds the public half, and the workload proves possession through a challenge before it asks for its secret.
 #+attr_html: :width 100%
+#+caption: Secure Introduction: the platform delivers a key pair unique to the unit, the store holds the public half, and the workload proves possession through a challenge before it asks for its secret.
 [[proj:doc/knowledge/service_architecture_patterns/pattern_secure_introduction_structure.png]]
 
 Source: =[[./pattern_secure_introduction_structure.puml][pattern_secure_introduction_structure.puml]]=. Regenerate with
@@ -85,8 +85,8 @@ The workload passes through four states on the way from unidentified to
 authenticated, and the pattern's whole point is the state in the middle: it is
 identified without having presented any credential the issuer minted.
 
-#+caption: Secure Introduction: the workload is unidentified, challenged, proven against the key it holds, provisioned with its own secret, and only then authenticated.
 #+attr_html: :width 100%
+#+caption: Secure Introduction: the workload is unidentified, challenged, proven against the key it holds, provisioned with its own secret, and only then authenticated.
 [[proj:doc/knowledge/service_architecture_patterns/pattern_secure_introduction_states.png]]
 
 Source: =[[./pattern_secure_introduction_states.puml][pattern_secure_introduction_states.puml]]=. Regenerate with
@@ -96,8 +96,8 @@ What the store checks is the pattern's mechanism, and the order of the checks is
 what makes a refusal cheap and an answer safe: the consumer first, then the
 freshness of the challenge, then whether the consumer owns what it asks for.
 
-#+caption: Secure Introduction: the store refuses an unknown consumer, a stale or foreign challenge, and a secret the consumer does not own, before it seals the answer to the key that proved itself.
 #+attr_html: :width 70%
+#+caption: Secure Introduction: the store refuses an unknown consumer, a stale or foreign challenge, and a secret the consumer does not own, before it seals the answer to the key that proved itself.
 [[proj:doc/knowledge/service_architecture_patterns/pattern_secure_introduction_checks.png]]
 
 Source: =[[./pattern_secure_introduction_checks.puml][pattern_secure_introduction_checks.puml]]=. Regenerate with

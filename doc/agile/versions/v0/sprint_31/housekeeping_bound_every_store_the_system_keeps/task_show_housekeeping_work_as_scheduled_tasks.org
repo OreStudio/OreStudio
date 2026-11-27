@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
-#+updated: 2026-11-24
+#+updated: 2026-11-27
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Every housekeeping sweep is a scheduler job with its own definition, so a person
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-24                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-27                               |
 
 * Acceptance
 
@@ -66,15 +66,15 @@ The ledger the sweep writes had no reader outside SQL, so a person could see
 that a sweep ran but not what it removed. It is now a read model: a view over
 the ledger joined to the policy each row names, so a run carries the period and
 the state the policy has now, and a policy turned off after a run keeps its
-history. Codegen gives the view a repository and a protocol, and four shell
-commands read and write it.
+history. Codegen gives the view a repository and a protocol, and the shell reads
+it with a command beside the policies it reports.
 
-Tuning is on the policy rather than on the job. A policy row carries no tenant,
-so any operator holding the write permission can change one, and the sweep
-applies the change at its next firing. A job definition belongs to the tenant
-that owns the schedule, and the shell's commands address the caller's own; the
-sweep's cadence is the installation's, and changing it is a separate question
-about who owns the platform's schedule.
+Tuning is on the policy rather than on the job. A policy is the system tenant's
+row, so an operator holding the write permission changes a period or turns one
+off, and the sweep applies the change at its next firing. A job definition
+belongs to the tenant that owns the schedule, and the shell's commands address
+the caller's own; the sweep's cadence is the installation's, and changing it is
+a separate question about who owns the platform's schedule.
 
 * Measurements
 
@@ -88,13 +88,15 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| The jobs the scheduler runs | 7 definitions, all of them the system tenant's | =compass sql -- -c "select job_name, tenant_id = ores_utility_system_tenant_id_fn() from ores_scheduler_job_definitions_tbl where valid_to = ores_utility_infinity_timestamp_fn()"= | a647ccd27a |
-| What the screens showed before the change | 3 jobs: the ones that had a tenant, and none of the platform's | =scheduler status= in a scripted shell session | bb49cb7aec |
-| What the screens show after it | 7 jobs, including =ores.scheduler.housekeeping_sweep= with its next firing and last run | the same command | a647ccd27a |
-| The sweep's firings are recorded | a job instance per firing, =succeeded=, 42 to 43 ms | =compass sql -- -c "select ... from ores_scheduler_job_instances_tbl"= with the job's cadence set to every minute | bb49cb7aec |
-| A sweep's removals are readable | 3 rows, one per policy, with the period and the policy's current state | =housekeeping runs= | bb49cb7aec |
-| Turning a policy off | the policy reads =[off]= and the change is recorded | =housekeeping disable report_metrics_90d= then =housekeeping policies= | bb49cb7aec |
-| Changing a period | 90 to 120 days and back, each write stating the version it read | =housekeeping period report_metrics_90d 120= | bb49cb7aec |
+| The jobs the scheduler lists | 9 active, of which =ores.scheduler.housekeeping_sweep= on =0 3 * * *= and =ores.scheduler.store_sampler= on =15 * * * *= | =scheduler status= | a41dc99e55 |
+| The policies a person reads | 8, each with its store, action, period, cadence, state and description | =housekeeping policies= | a41dc99e55 |
+| What one sweep recorded | 8 runs, one per policy, all sharing =ran_at 2026-11-27 18:39:26= | =housekeeping runs= | a41dc99e55 |
+| A run names its policy as the policy is now | =report_metrics_90d= reads =policy off= on the run it made while it was on | =housekeeping disable report_metrics_90d= then =housekeeping runs --policy report_metrics_90d= | aaba739bfe |
+| The runs narrow to one policy | 1 row where the unfiltered list answers 8 | =housekeeping runs --policy ticks_90d= | a41dc99e55 |
+| Changing a period | 90 to 120 days and back, each write stating the version it read | =housekeeping period report_metrics_90d 120= | aaba739bfe |
+| A firing writes a run | the sweep fired at 18:24 with its cadence set to every minute, and the run of a policy made never-run reads =18:25= | =scheduler cadence ores.scheduler.housekeeping_sweep "* * * * *"= then =housekeeping runs= | aaba739bfe |
+| The SQL suites | 1113 assertions in 115 files | =compass check --only pgtap= | a41dc99e55 |
+| The component suites | ores.scheduler.api, .core, .service and ores.shell.application pass 4 of 4 | =compass test run -- -R 'ores\.(scheduler|shell\.application)\.(api|core|service|tests)'= | a41dc99e55 |
 
 * Notes
 
@@ -106,14 +108,26 @@ task and name that file in the Command column.
   notify trigger returns null for every update, because a versioned table's
   update is the close of the row the insert that follows replaces. A definition
   edited that way stays stale until the service restarts; a probe that changed
-  the cadence to every minute fired nothing until it did.
-- The cause was the seed, not the read. The job table's tenant column was
-  nullable and the platform's jobs were written with NULL, which no tenant
-  scoped read can match. It is now not null, and the platform's jobs carry the
-  system tenant like the inbox's already did.
+  the cadence to every minute fired nothing until it did. The same change made
+  over the wire does reach it, which is how the firing above was produced.
+- The cause of the invisible jobs was the seed, not the read. Trunk corrected it
+  while this branch was open: the job table's tenant column is not null, and the
+  platform's jobs carry the system tenant as a published dataset. This branch
+  took that work in a merge and kept only the run ledger and the commands.
 - The four permissions the new commands check did not exist, and the retention
   policy entity's three were missing too, so the policy protocol added earlier
   was reachable only by a holder of =scheduler::*=. All seven are seeded now.
+- The runs filter never reached the request: the command read its value flag
+  with the helper that answers only for a boolean switch. Found by running the
+  command against the installation, where the filtered list answered every run.
+- The notice suite passed only on an installation that had never raised a sweep
+  notice, and its last assertion read the notice without running the pass that
+  clears it. Both are corrected; the suite now passes on a provisioned
+  installation as well as on a fresh one.
+- Three of the eight policies read =skipped= because the sweep cannot reach the
+  object store or a host's disk. The run states that in its detail, and the
+  object prefixes are the remaining store nothing bounds: that is the
+  object-storage lifecycle task, not this one.
 
 * Test Scenarios
 
@@ -142,9 +156,21 @@ via its "Verifies task" field.
 
 The sweep appears in the scheduler's status view beside every other job, with
 its cadence, its next firing and its last run. Its firings are job instances the
-instance list shows. What each sweep removed is readable as a run per policy,
-carrying the policy's period and its current state.
+instance list shows. It is one of nine jobs the installation runs, and it is the
+system tenant's row like the rest, so the tenant-scoped read a person already
+uses answers for it.
 
-A person changes what housekeeping does by changing a policy: its period, or
-whether it applies at all. A disabled policy stays on the list as disabled, with
-the runs it made while it was on.
+The shell reads housekeeping from the stores it bounds. =housekeeping policies=
+lists the eight policies with the store each bounds, the action, the period, the
+cadence, whether it is on and why it exists. =housekeeping runs= lists what each
+sweep removed, one row per policy, carrying the policy's period and its state as
+the policy states them now, so a policy turned off keeps the runs it made while
+it was on and reads as off beside them. =--policy= narrows the list to one.
+
+A person changes what housekeeping does from the same menu: =enable=, =disable=
+and =period= write the policy, each write stating the version it read, and the
+sweep applies the change at its next firing. The job's own cadence is the
+scheduler's, changed with =scheduler cadence= beside every other job.
+
+What the run cannot do, it says. Three stores read =skipped= with the reason in
+the row, which is the object-storage task's work and not a silence here.

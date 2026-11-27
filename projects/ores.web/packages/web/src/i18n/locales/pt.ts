@@ -550,6 +550,13 @@ const pt: SourceCatalogue = {
     'notification.inbox.approval_expiring':
         'Um pedido de {kind} vence em {deadline} e ninguém respondeu.',
 
+    'notification.scheduler.store_unbounded':
+        'O armazém {store} não é limitado por nada que seja executado. Nada remove dele, e o ecrã de manutenção dos dados indica porquê.',
+    'notification.scheduler.store_sweep_failed':
+        'A última passagem ao armazém {store} falhou, por isso o armazém fica sem limite até uma passagem ter sucesso.',
+    'notification.scheduler.sweep_skipped':
+        'Uma passagem deixou {count} políticas por aplicar, por isso os armazéns que elas limitam continuam a crescer. O ecrã de manutenção dos dados indica quais.',
+
     'notification.marketdata.curve_published':
         'A curva {curve} de {party} esta em vigor desde {published_at}, publicada por {publisher} com data de referencia {as_of}. Substitui o conjunto com data de {previous_as_of}, ou nada quando e o primeiro.',
     'notification.marketdata.surface_published':

@@ -551,6 +551,13 @@ const fr: SourceCatalogue = {
     'notification.inbox.approval_expiring':
         "Une demande de {kind} est due avant le {deadline} et personne n'y a répondu.",
 
+    'notification.scheduler.store_unbounded':
+        'Le magasin {store} n’est borné par rien qui s’exécute. Rien n’en supprime, et l’écran d’entretien des données en donne la raison.',
+    'notification.scheduler.store_sweep_failed':
+        'Le dernier passage sur le magasin {store} a échoué, donc le magasin n’est pas borné tant qu’un passage ne réussit pas.',
+    'notification.scheduler.sweep_skipped':
+        'Un passage a laissé {count} politiques non appliquées, donc les magasins qu’elles bornent grandissent encore. L’écran d’entretien des données indique lesquelles.',
+
     'notification.marketdata.curve_published':
         "La courbe {curve} de {party} est en vigueur depuis {published_at}, publiée par {publisher} à la date d'arrêté {as_of}. Elle remplace l'ensemble arrêté au {previous_as_of}, ou rien lorsqu'il s'agit du premier.",
     'notification.marketdata.surface_published':

@@ -44,7 +44,7 @@ const POLL_MS = 30_000;
  * a row carries the row's: the difference is the route, not the notification,
  * because only the screen knows whether it is showing a list or a record.
  */
-const ID_ROUTES = new Set(['/requests', '/tenants', '/people']);
+const ID_ROUTES = new Set(['/requests', '/tenants', '/people', '/operations/housekeeping']);
 
 /** Where a notification points, with the id when the route takes one. */
 export function notificationRoute(notification: InboxNotificationView): string {

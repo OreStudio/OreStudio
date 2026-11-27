@@ -20,6 +20,7 @@
 
 \ir ./scheduler_store_bounds_view_drop.sql
 \ir ./scheduler_store_sampler_drop.sql
+\ir ./scheduler_alerts_drop.sql
 \ir ./scheduler_job_instances_drop.sql
 \ir ./scheduler_job_definitions_notify_trigger_drop.sql
 \ir ./scheduler_job_definitions_drop.sql

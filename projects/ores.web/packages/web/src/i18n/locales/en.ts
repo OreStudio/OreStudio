@@ -553,6 +553,13 @@ export const en: SourceCatalogue = {
     'notification.inbox.approval_expiring':
         'A request for {kind} is due by {deadline} and nobody has answered it.',
 
+    'notification.scheduler.store_unbounded':
+        'The store {store} is not bounded by anything that runs. Nothing removes from it, and the housekeeping screen states why.',
+    'notification.scheduler.store_sweep_failed':
+        'The last sweep of the store {store} failed, so the store is unbounded until one succeeds.',
+    'notification.scheduler.sweep_skipped':
+        'A sweep left {count} policies unapplied, so the stores they bound are still growing. The housekeeping screen states which.',
+
     'notification.marketdata.curve_published':
         'The curve {curve} of {party} is live from {published_at}, published by {publisher} as of {as_of}. It replaces the set as of {previous_as_of}, or nothing when it is the first.',
     'notification.marketdata.surface_published':

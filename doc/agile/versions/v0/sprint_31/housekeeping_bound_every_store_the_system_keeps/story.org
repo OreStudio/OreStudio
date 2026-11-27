@@ -70,7 +70,7 @@ No store the system keeps grows without bound: each one has a declared policy, h
 | [[id:E4957BD6-3B40-41C5-A2AF-5AED8EF680C6][Design the housekeeping journeys and their screens]] | DONE | 2026-11-26 | 2026-11-26 | Housekeeping has no journey and no prototype: nobody has stated what an administrator needs to see when asking what the installation keeps, what bounds it and what the sweeps did. State the journeys, draw their wireframes and prototype the screen before it is built. |
 | [[id:A2713EC6-D7F8-4BDC-96B4-C0FCF9FF1EAA][Apply every action a policy states]] | DONE | | 2026-11-27 | The policy model names three actions and the sweep performs one: drop_chunks. A policy asking for a row delete or an object expiry is recorded as skipped, so a store reads as bounded while nothing bounds it. Implement the other two, prove the row delete on the delivery counts and the chunk drop on ticks, and state which actions the sweep performs in the read a screen uses. |
 | [[id:6802E7DF-9851-41A8-B1CB-6E0E678D389C][Bound every store by default]] | DONE | 2026-11-26 | 2026-11-27 | The store catalogue declares a default retention policy for every store that can take one, and provisioning creates it, so no installation ships a store whose size grows without a bound. A store is unbounded only when somebody removed the default, which the screen then reads as the alarm it is. |
-| [[id:53D81AE9-6031-4129-BBCE-52DEED048B9E][Tell the administrator a store is unbounded]] | BACKLOG | | | Housekeeping raises a notification into the inbox of the administrator who can act, the system's or the tenant's by the scope of the store, when a store has no bound, when a sweep records a policy skipped or failed, and when a store passes its size budget. The notification names the store and links to its page; it never carries the numbers a person needs to act. |
+| [[id:53D81AE9-6031-4129-BBCE-52DEED048B9E][Tell the administrator a store is unbounded]] | DONE | 2026-11-27 | 2026-11-27 | Housekeeping raises a notification into the inbox of the administrator who can act, the system's or the tenant's by the scope of the store, when a store has no bound, when a sweep records a policy skipped or failed, and when a store passes its size budget. The notification names the store and links to its page; it never carries the numbers a person needs to act. |
 | [[id:B0D71847-2101-4B9C-B228-29A1D5E372B0][Catalogue every store the installation keeps]] | DONE | 2026-11-26 | 2026-11-26 | A store is an entity, not a table name. The catalogue states each store the installation keeps: its code, the name a person reads, what it holds, which component writes it, whether the platform or a tenant owns it, the shape and name of its target, the column a delete compares, how its size is measured, and the bound it ships with. |
 | [[id:3A5A16E2-DCCA-41DF-A169-FAFB1509BDC7][Clear the schema warnings the story left on main]] | DONE | 2026-11-26 | 2026-11-26 | The validate-sql-schema job fails on any warning. Two of the three warnings main carries come from this story: the delivery counts' primary key omits the tenant, and the retention ledger has no tenant column at all. Make the tree state one truth for each. |
 | [[id:BE55D937-7CC4-4A50-B730-C6C1FEA50D08][Sample the size of every store]] | DONE | | 2026-11-27 | A store's size is a series, not an adjective. The installation measures each store it can reach, keeps the measurements keyed to the store, and reads back the latest size and the history the screen plots. |
@@ -169,6 +169,19 @@ No store the system keeps grows without bound: each one has a declared policy, h
   row it just read. The version the read answered travels back with the change,
   so a period somebody else moved is refused rather than overwritten, and a
   policy the screen creates is named by its store.
+
+- Housekeeping tells a person, and stops telling them. The screen is pull, so a
+  pass of its own reads the bounds view and the run ledger and raises a notice
+  per store nothing effective bounds; it also clears the notice of a store that
+  comes back under a bound, which is what makes the inbox's count follow the
+  count of unbounded stores rather than the number of times anybody looked. The
+  audience is the permission the catalogue's own write requires, resolved in the
+  tenant that holds the store, and only a person is told: a service account holds
+  the component's wildcard and no person signs in as it. A notice names the store
+  and links to its page, and carries no size, no rate and no period, because a
+  second statement of those numbers would drift from the page that reads them.
+  One sweep raises one notice however many policies it leaves unapplied: the
+  ledger's instant is the transaction's, so the sweep's own rows share it.
 
 * Out of scope
 

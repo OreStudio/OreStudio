@@ -60,6 +60,9 @@
 \ir ./ore/ore_ore_parameter_value_set_catalogue_views_create.sql
 \ir ./synthetic/synthetic_create.sql
 \ir ./inbox/inbox_create.sql
+-- The housekeeping alerts write the inbox's own tables, so the scheduler's pass
+-- is created after them rather than with the component it belongs to.
+\ir ./scheduler/scheduler_alerts_create.sql
 \ir ./vault/vault_create.sql
 
 -- Views that read tables of several components, so they come after all of them

@@ -38,6 +38,11 @@
  * stores the database can see, and an object prefix or a folder on a host is
  * measured by the component that owns it.
  *
+ * The row states the tenant that holds the store, because a reader that acts on
+ * every store rather than on one — the pass that raises the notices — must write
+ * in the tenant that owns it, and a view that left the tenant out would make the
+ * caller join the catalogue to find out what it is already looking at.
+ *
  * The bound's own record travels with the answer — its period, its cadence, its
  * version and its words — because the screen that changes one has to send the row
  * back whole, and a second read of the policy would be a second answer to the
@@ -48,6 +53,7 @@
 
 create or replace view ores_scheduler_store_bounds_vw as
 select
+    s."tenant_id",
     s."code",
     s."display_name",
     s."description",

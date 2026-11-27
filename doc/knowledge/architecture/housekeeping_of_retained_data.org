@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :housekeeping:retention:storage:scheduler:architecture:
 #+created: 2026-11-24
-#+updated: 2026-11-24
+#+updated: 2026-11-27
 
 * Summary
 
@@ -138,6 +138,39 @@ visible. The size comes from the database's catalogues for tables and chunks,
 from the object store's listing for key prefixes, and from a directory walk for
 the caches and working directories a node holds.
 
+** Telling a person without asking
+
+A policy is data, so a store can be kept for ever without anybody editing a
+schema, and nothing in a sweep complains about it: the sweep visits policies, and
+a store no policy names is a row it never reads. The absence therefore has to be
+said rather than discovered, and the installation says it through the inbox
+([[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]]).
+
+One scheduled pass reads the bounds view and the run ledger and raises a notice
+per store that nothing effective bounds. The pass is the definer's, because it
+reads the stores of every tenant and writes each one's inbox; the audience is the
+permission the catalogue's own write requires, resolved in the tenant that holds
+the store, and only a person is told: a service account holds the component's
+wildcard and no person signs in as it.
+
+Three kinds, one per case the screen distinguishes. A store nothing bounds reads
+as one notice, and a store whose last sweep failed reads as another, because a
+failure is an incident a person acts on and a missing policy is a decision nobody
+made. A sweep that leaves policies unapplied is one notice for the sweep, not one
+per policy: the ledger's =ran_at= is the transaction's instant, so every policy
+one sweep applied shares it, and that instant is what the notice groups by.
+
+The pass also clears. A store that comes back under a bound has the notice it
+raised cleared for every person it was raised for, so the count of open
+housekeeping notices follows the count of unbounded stores rather than the number
+of times anybody looked. That is what makes the number worth reading: it is the
+work left, and it reaches zero when the installation does.
+
+The notice names the store and links to its page, and carries no size, no rate
+and no period. A notice that repeated those numbers would be a second statement
+of them, drifting from the page that reads them; the person who has to act needs
+the plot and the policy, and both are behind the link.
+
 ** The parts
 
 #+caption: The retention policy table, the one executor that applies it, the four kinds of store it treats, and the telemetry it writes back.
@@ -157,6 +190,7 @@ Source: =housekeeping_sweep_structure.puml=, rendered with
 - [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — completes: it owns the key contract whose prefixes the lifecycle rule expires.
 - [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a package]] — answers: it establishes the content-addressed key that makes a duplicated cache detectable and removable.
 - [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — completes: it owns how a job's work is produced, and this page treats what the job leaves on the node.
+- [[id:7FAF3C0D-1131-4C32-9C29-3D1EF6D1005D][Notification requirements]] — answers: it owns what a notification is and who it reaches; this page owns which housekeeping cases are raised and why they carry no numbers.
 
 * Sources
 

@@ -373,6 +373,9 @@ select ores_utility_allow_version_replace_fn();
 -- serves both.
 \ir scheduler/scheduler_retained_stores_artefact_populate.sql
 \ir scheduler/scheduler_retention_policies_artefact_populate.sql
+-- The notices housekeeping raises are the scheduler's own kinds, seeded beside
+-- the stores they are about.
+\ir scheduler/scheduler_notification_kinds_populate.sql
 
 -- =============================================================================
 -- Analytics Layer

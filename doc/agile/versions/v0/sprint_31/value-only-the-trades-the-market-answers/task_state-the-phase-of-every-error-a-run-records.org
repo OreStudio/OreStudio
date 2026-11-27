@@ -8,7 +8,7 @@
 #+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
 #+owner: marco
 #+branch: feature/state-the-phase-of-every-error
-#+pr:
+#+pr: 5211
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
@@ -130,7 +130,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5211][#5211]] | [reporting] State the phase of every error a run records |
 
 * Review
 

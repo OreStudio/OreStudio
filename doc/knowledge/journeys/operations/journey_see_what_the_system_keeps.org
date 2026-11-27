@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:security:operations:
 #+created: 2026-11-26
-#+updated: 2026-11-26
+#+updated: 2026-11-27
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator sees every store the installation keeps, what bounds it, how large it is and whether it is growing.
@@ -156,47 +156,43 @@ a series of samples that point at the store, and the screen shows it as such.
 #+ATTR_HTML: :class hug-leading
 | Step | Operation | Subject | Status |
 |------+-----------+---------+--------|
-| 1, 3 | List the retention policies | =scheduler.v1.retention_policies.list= | exists |
+| 1, 3 | The store catalogue, with its names, descriptions, targets and bounds | =scheduler.v1.store_bounds.list= | exists |
+| 3, 5 | The size of every store now | =scheduler.v1.store_bounds.list= | exists |
+| 5 | The growth series of one store | =scheduler.v1.store_samples.list= | exists |
 | 3, 4 | The sweep's schedule and its last run | =scheduler.v1.ops.get_scheduler_status= | exists |
-| 3, 5 | The store catalogue, with its names, descriptions and targets | (no subject) | missing |
-| 3, 5 | The size of every store now | (no subject) | missing |
-| 5 | The growth series of one store | (no subject) | missing |
+| 7 | Which actions the sweep can apply | =scheduler.v1.store_bounds.list= | exists |
 | 5 | The latest activity that names one store | (no subject) | missing |
 | 5, 6 | The runs of one policy | (no subject until PR #5126) | missing |
-| 7 | Which actions the sweep can apply | (no subject) | missing |
 
 * What is missing
 
-- *A name and a description for a store.* The store's identity is its target
-  string, and nothing carries a human name or a sentence saying what the store
-  is: the policy's =description= describes the policy, and its =code= names the
-  policy. The store needs its own entry — a catalogue of the stores the
-  installation keeps, with a code, a display name, a description, the shape of
-  its target and how to measure it — and a policy should name one of those
-  entries. Without it this screen either derives "Refdata Calendar Dates" from
-  a table name, which says nothing about prefixes or directories, or writes
-  twelve names into the client.
-- *A size of a target.* Nothing in the tree reports how large a table, a chunk
-  set, an object-store prefix or a host directory is; the only size query is a
-  psql macro. The screen cannot answer its own first question without it. The
-  subject would be something like =scheduler.v1.retention_targets.sizes=,
-  answered from =pg_total_relation_size=, =timescaledb_information.chunks= and
-  the storage service's own accounting, and it belongs beside the policies
-  rather than in each screen.
-- *A growth history.* The runs ledger records what a sweep removed and not the
-  size it found, so no history exists to plot. The knowledge page promises
-  "the size of its target before and after … the measured size over time
-  yields a growth rate"; the schema does not deliver it. Until it does, the
-  screen states the size it reads now and says the trend is unknown.
-- *A read of the runs.* The table exists and the sweep writes it, but no wire
-  type does; PR #5126 adds one. Until it merges the screen can show only the
-  policy and the sweep's last job instance.
-- *Which actions the sweep performs.* The sweep performs one of the three the
-  policy model states, and records the rest as skipped. The screen must say so
-  from data, not from a constant in the client: the set of supported actions
-  belongs in the answer to the policies read.
-- *The object store's own numbers.* No read reports bytes under a prefix, so
-  the object-store rows can carry a policy and cannot carry a size.
+The screen was built after this journey was written, and three of the gaps it
+stated are closed by one read. What remains is stated here so the screen's own
+words match it.
+
+- *A name and a description for a store.* Closed: the catalogue
+  (=ores.scheduler.retained_stores_tbl=) holds a code, a display name, a
+  sentence about the store, the shape of its target and the component that
+  writes it, and =scheduler.v1.store_bounds.list= answers every store with
+  them. A policy names a store through =store_code=, so "unbounded" is a store
+  no policy names rather than a target string that appears in none.
+- *A size of a target.* Closed for the stores the database can see: the sampler
+  writes one sample per store per hour, and the same read answers the latest
+  one. An object prefix and a folder on a compute host are measured by the
+  component that owns them, and that component does not report a size yet, so
+  those stores read as not measured rather than as empty.
+- *A growth history.* Closed for shape and open for detail: the samples are a
+  series, so a store's page plots it, and the runs ledger still records what a
+  sweep removed and not the size it found. A step in the plot is therefore the
+  sampler's view of a sweep, not the sweep's own statement of it.
+- *A read of the runs.* Open. The table exists and the sweep writes it, and no
+  wire type reads it; PR #5126 adds one. Until it merges the screen states the
+  last run, which the bounds read carries, and names the gap.
+- *Which actions the sweep performs.* Closed: the bounds read states the
+  mechanism a bound names and whether it applies today, so a policy the sweep
+  cannot perform reads as unbounded and says why. The rule is the database's,
+  in =ores_scheduler_store_bounds_vw=, and never the client's.
+- *The object store's own numbers.* Open, as the size note above states.
 
 * Related journeys
 

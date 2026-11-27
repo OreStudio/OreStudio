@@ -234,6 +234,27 @@ export type {
 export { passwordPolicySchema } from './operations.js';
 export type { PasswordPolicy } from './operations.js';
 
+// The stores the housekeeping screen reads, as the BFF serves them: every store
+// the installation keeps, with the bound it carries, what that bound last did
+// and how large the store is, and one store's series of measurements. The
+// browser parses what the BFF served with the definition the BFF wrote it from,
+// and the write is the three numbers a person decided beside the reason for it.
+export {
+    storeBoundWriteSchema,
+    storeBoundResultSchema,
+    storeBoundsViewSchema,
+    storeSamplesViewSchema,
+    STORE_SAMPLES_LIMIT,
+} from './housekeeping.js';
+export type {
+    StoreBound,
+    StoreBoundResult,
+    StoreBoundWrite,
+    StoreBoundsView,
+    StoreSample,
+    StoreSamplesView,
+} from './housekeeping.js';
+
 // The services roster the operations screen reads, as the BFF serves it: one
 // row per expected instance, each with the age the BFF marked. The browser
 // parses what the BFF served with the definition the BFF wrote it from.

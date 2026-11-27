@@ -359,6 +359,14 @@ export const CARDS = {
         permission: 'compute::grid_samples:read',
         screenTitleKey: 'operations.grid.title',
     },
+    housekeeping: {
+        titleKey: 'operations.screens.housekeeping',
+        bodyKey: 'operations.screens.housekeepingBody',
+        to: PATHS.housekeeping,
+        icon: 'trend',
+        permission: 'scheduler::job_instances:read',
+        screenTitleKey: 'operations.housekeeping.title',
+    },
     bus: {
         titleKey: 'operations.screens.bus',
         bodyKey: 'operations.screens.busBody',
@@ -552,6 +560,7 @@ export const AREA_CARDS = {
         'services',
         'grid',
         'bus',
+        'housekeeping',
         'logs',
         'signIns',
         'agentGrants',

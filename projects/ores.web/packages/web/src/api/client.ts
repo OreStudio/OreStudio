@@ -108,6 +108,13 @@ import {
     tenantStatusesResponseSchema,
     tenantTypesResponseSchema,
     serviceRosterViewSchema,
+    storeBoundsViewSchema,
+    storeSamplesViewSchema,
+    storeBoundResultSchema,
+    type StoreBoundsView,
+    type StoreSamplesView,
+    type StoreBoundResult,
+    type StoreBoundWrite,
     gridSeriesViewSchema,
     gridUsageViewSchema,
     gridViewSchema,
@@ -4201,6 +4208,47 @@ export const api = {
             await request('/api/operations/services', { method: 'GET' }),
         );
         return payload.rows;
+    },
+
+    /**
+     * The stores the installation keeps, each with what bounds it, what that
+     * bound last did and how large the store is.
+     *
+     * The server states whether a store is bounded, so the screen never decides
+     * it from a policy's presence: a policy whose action the sweep cannot perform
+     * reads as a bound and is not one.
+     */
+    async housekeepingStores(): Promise<StoreBoundsView> {
+        return storeBoundsViewSchema.parse(
+            await request('/api/operations/housekeeping/stores', { method: 'GET' }),
+        );
+    },
+
+    /** One store's measurements, oldest first, for the plot of its growth. */
+    async housekeepingSamples(storeCode: string, limit: number): Promise<StoreSamplesView> {
+        const query = new URLSearchParams({ limit: String(limit) });
+        return storeSamplesViewSchema.parse(
+            await request(
+                `/api/operations/housekeeping/stores/${encodeURIComponent(storeCode)}/samples?${query.toString()}`,
+                { method: 'GET' },
+            ),
+        );
+    },
+
+    /**
+     * Changes one store's bound: whether it applies, its period and its cadence.
+     *
+     * The reason travels with the change so the audit trail names why, and the
+     * store's target and action are not sent: the server reads them from the
+     * catalogue, and a client that could send them could retarget a bound.
+     */
+    async saveStoreBound(storeCode: string, write: StoreBoundWrite): Promise<StoreBoundResult> {
+        return storeBoundResultSchema.parse(
+            await request(
+                `/api/operations/housekeeping/stores/${encodeURIComponent(storeCode)}/policy`,
+                { method: 'PUT', headers: JSON_HEADERS, body: JSON.stringify(write) },
+            ),
+        );
     },
 
     /**

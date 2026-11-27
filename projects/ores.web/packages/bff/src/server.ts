@@ -80,6 +80,7 @@ import { registerGridDownloadRoutes } from './grid-downloads.js';
 import { registerReportRunFileRoutes } from './report-run-files.js';
 import { registerGridJobsRoutes } from './grid-jobs.js';
 import { registerOperationsRoutes } from './operations.js';
+import { registerHousekeepingRoutes } from './housekeeping.js';
 import { registerRecordRoutes } from './records.js';
 import {
     NatsTransport,
@@ -2747,6 +2748,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         requireSession,
         resolveBroker(site.configuration, site.environment).subjectPrefix,
     );
+    registerHousekeepingRoutes(server, requireSession);
     registerGridJobsRoutes(server, requireSession);
     registerGridAppVersionRoutes(server, requireSession);
     registerGridReportRunRoutes(server, requireSession);

@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
-| Now          | The screen draws the roster whole: the bundles by level and the members with the rows each has staged. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the gate and raise the PR.         |
+| Next         | Nothing. |
 | Last touched | 2026-11-25                               |
 
 * Acceptance

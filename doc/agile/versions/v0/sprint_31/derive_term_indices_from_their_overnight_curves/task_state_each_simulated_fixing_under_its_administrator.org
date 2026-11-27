@@ -30,7 +30,7 @@ Today the catalogue has one publisher for all of it, simulated-fixings, with 82 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

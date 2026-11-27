@@ -40,9 +40,11 @@ namespace {
 
 const std::string fixing_series_pattern = "/api/marketdata/fixing-series";
 
+const std::string fixing_observations_pattern = "/api/marketdata/fixing-observations";
+
 const std::string fixing_series_refused = "An item's fixings are named by its URI.";
 
-http_request fixing_series_at(const std::vector<std::pair<std::string, std::string>>& query) {
+http_request query_at(const std::vector<std::pair<std::string, std::string>>& query) {
     http_request req;
     for (const auto& [name, value] : query)
         req.query_params[name] = value;
@@ -57,19 +59,17 @@ TEST_CASE("an_items_fixings_are_named_by_their_uri", "[marketdata_views]") {
 
     for (const auto& query :
          std::vector<std::vector<std::pair<std::string, std::string>>>{{}, {{"uri", ""}}}) {
-        const auto refused = answer_at<marketdata_routes>(http_method::get,
-                                                          fixing_series_pattern,
-                                                          fixing_series_at(query),
-                                                          fixing_series_pattern);
+        const auto refused = answer_at<marketdata_routes>(
+            http_method::get, fixing_series_pattern, query_at(query), fixing_series_pattern);
         CHECK(refused.status == http_status::bad_request);
         CHECK(refused.body.find(fixing_series_refused) != std::string::npos);
     }
 
-    const auto unknown = answer_at<marketdata_routes>(
-        http_method::get,
-        fixing_series_pattern,
-        fixing_series_at({{"uri", "ir.irs.USD.5Y"}, {"asOf", "2026-01-01"}}),
-        fixing_series_pattern);
+    const auto unknown =
+        answer_at<marketdata_routes>(http_method::get,
+                                     fixing_series_pattern,
+                                     query_at({{"uri", "ir.irs.USD.5Y"}, {"asOf", "2026-01-01"}}),
+                                     fixing_series_pattern);
     CHECK(unknown.status == http_status::bad_request);
     CHECK(unknown.body.find("asOf") != std::string::npos);
 }
@@ -80,7 +80,7 @@ TEST_CASE("an_items_fixings_reach_the_service", "[marketdata_views]") {
 
     CHECK(answer_at<marketdata_routes>(http_method::get,
                                        fixing_series_pattern,
-                                       fixing_series_at({{"uri", "ir.irs.USD.5Y"}}),
+                                       query_at({{"uri", "ir.irs.USD.5Y"}}),
                                        fixing_series_pattern)
               .status == http_status::bad_gateway);
 }
@@ -100,4 +100,28 @@ TEST_CASE("an_items_fixings_are_kept_privately_for_five_minutes", "[marketdata_v
     revalidation.headers["if-none-match"] = first.headers.at("ETag");
     CHECK(fixing_series_routes::fixing_series_answer(revalidation, "{}").status ==
           http_status::not_modified);
+}
+
+TEST_CASE("the_fixing_observations_refuse_a_filter_they_do_not_know", "[marketdata_views]") {
+    auto lg(make_logger(test_suite));
+    ORES_LOG_SEV(lg, info) << "Testing the filters the fixing observations are listed by";
+
+    const auto unknown =
+        answer_at<marketdata_routes>(http_method::get,
+                                     fixing_observations_pattern,
+                                     query_at({{"asset_class", "ir"}, {"asOf", "2026-01-01"}}),
+                                     fixing_observations_pattern);
+    CHECK(unknown.status == http_status::bad_request);
+    CHECK(unknown.body.find("asOf") != std::string::npos);
+}
+
+TEST_CASE("the_fixing_observations_reach_the_service", "[marketdata_views]") {
+    auto lg(make_logger(test_suite));
+    ORES_LOG_SEV(lg, info) << "Testing the fixing observations with no service behind them";
+
+    CHECK(answer_at<marketdata_routes>(http_method::get,
+                                       fixing_observations_pattern,
+                                       query_at({{"asset_class", "ir"}, {"currency", "USD"}}),
+                                       fixing_observations_pattern)
+              .status == http_status::bad_gateway);
 }

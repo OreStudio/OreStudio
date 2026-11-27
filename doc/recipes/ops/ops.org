@@ -28,6 +28,10 @@ environments. New recipes go in this folder; edit this inventory to add a link.
 
 - [[id:719F3770-0838-4FBC-B376-8CE41A3D1328][How do I solve the postgres max connections error?]]
 
+* Secrets
+
+- [[id:9831E5CC-9666-4EAB-B27C-7F9CB0804678][How do I provision the deployment's secrets into the vault?]]
+
 * See also
 
 - [[id:C4E8A2F1-D7B3-4A9C-8E6F-5B1D9C0A3E7F][SQL recipes]] — query-level SQL how-tos.

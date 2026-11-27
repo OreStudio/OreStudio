@@ -8,7 +8,7 @@
 #+filetags: :split_the_publisher_from_the_producer:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/name-the-acts-of-a-market-data-value
-#+pr:
+#+pr: 5207
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-27
@@ -94,7 +94,7 @@ withdrawal. A value is internal or external.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5207][#5207]] | [docs] Name the acts and the standings of a market data value |
 
 * Review
 

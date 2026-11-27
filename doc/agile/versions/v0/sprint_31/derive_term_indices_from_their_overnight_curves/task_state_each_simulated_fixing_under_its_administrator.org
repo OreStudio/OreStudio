@@ -32,9 +32,9 @@ Today the catalogue has one publisher for all of it, simulated-fixings, with 82 
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented and proved on a fresh provision. |
 | Waiting on   | Nothing.                               |
-| Next         | Step 1 of the plan: the publisher rows, from =wmr= to the central banks, with the LIBOR exception stated. |
+| Next         | A pull request, then the screen step of the plan once the reads carry the publisher name and the benchmark. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
@@ -126,31 +126,27 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
-
-* Notes
-
-* Test Scenarios
-
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
-
-| Scenario | State | Notes |
-|----------+-------+-------|
-|          |       |       |
-
-* PRs
-
-| PR | Title |
-|----+-------|
-|    |       |
-
-* Review
-
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| Publishers of the catalogue | 18, of kind =reference= | =select count(*) from ores_marketdata_providers_tbl where valid_to=ores_utility_infinity_timestamp_fn() and code in ('wmr','iba','emmi','hkab','gpw','banrep','snb','danmarks-nationalbank','mnb','bok','nbp','rbnz','sarb','boi','nifc','fbil','tba','bist');= | 845125860e |
+| Fixing instruments | 69: 36 =wmr_cut=, 33 =setting= | =select provider_code, id_scheme, count(*) from ores_marketdata_market_data_vendor_instruments_tbl where valid_to=ores_utility_infinity_timestamp_fn() and provider_code in ('wmr','iba','emmi','hkab','snb') group by 1,2;= | 845125860e |
+| Providers stating a fixing, fresh provision | 18, none of them the catch-all | =select provider_code, count(f.id) from ores_marketdata_market_series_tbl s join ores_marketdata_market_fixings_tbl f on f.series_id=s.id where s.oresmd_uri like '%type=fixing%' group by 1 order by 2 desc;= | 845125860e |
+| Fixings of the WM/R cuts | 11,440 over 36 series | as above, =provider_code = 'wmr'= | 845125860e |
+| Fixings of the LIBOR settings | 5,720 over 11 series | as above, =provider_code = 'iba'= | 845125860e |
+| Fixing items with two producers | 0 | =select count(*) from (select oresmd_uri from ores_marketdata_market_series_tbl where valid_to=ores_utility_infinity_timestamp_fn() and oresmd_uri like '%type=fixing%' group by 1 having count(distinct provider_code) > 1) t;= | 845125860e |
+| Series of =GENERIC= or =EYTIBOR= | 0 | =select count(*) from ores_marketdata_market_series_tbl where valid_to=ores_utility_infinity_timestamp_fn() and (oresmd_uri like '%name=GENERIC%' or oresmd_uri like '%name=EYTIBOR%');= | 845125860e |
 
 * Result
+
+The fixings the platform states are now stated by the administrators that own
+them. A fresh provision installs eighteen publishers of kind =reference=, their
+sources, shadow rate cards, subscriptions and routes; sixty-nine instruments in
+their own notations; and the simulator offers each source only the items its
+provider maps. On the rebuilt database eighteen providers state fixings — the
+WM/R cuts under =wmr=, the LIBOR settings under =iba=, the rest under their
+central banks — the catch-all publisher states none, no item has two producers,
+and neither invented index exists anywhere.
+
+Two things are left for other work. The screen still shows the source code
+rather than the publisher's name and the benchmark the item carries, which needs
+the reads to carry them. And =derived= still states the three term indices we
+compute, which is the subject of the sibling task that retires it as a provider.
+

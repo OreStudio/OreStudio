@@ -49,6 +49,7 @@ package "vault" #F3E8FD {
         * name : text
         * public_key : text
         * is_enabled : boolean
+        * actor : text
           description : text
         * modified_by : text
         * performed_by : text

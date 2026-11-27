@@ -141,6 +141,7 @@ domain::consumer consumer_to_domain(const messaging::consumer_write& write) {
     v.name = write.name;
     v.public_key = write.public_key;
     v.is_enabled = write.is_enabled;
+    v.actor = write.actor;
     v.description = write.description;
     return v;
 }

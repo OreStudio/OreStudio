@@ -100,7 +100,7 @@ consumer_filter_condition(const std::optional<messaging::consumers_filter>& filt
         r.push_back(query_builder::one_of("id", std::move(values)));
     }
     if (filter->search && !filter->search->empty())
-        r.push_back(query_builder::contains_any({"name"}, *filter->search));
+        r.push_back(query_builder::contains_any({"name", "actor"}, *filter->search));
     return query_builder::all_of(std::move(r));
 }
 

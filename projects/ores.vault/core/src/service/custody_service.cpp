@@ -61,6 +61,8 @@ constexpr std::string_view rotated = "rotated";
 constexpr std::string_view refused_unknown_secret = "refused_unknown_secret";
 constexpr std::string_view refused_not_owner = "refused_not_owner";
 constexpr std::string_view refused_no_consumer_key = "refused_no_consumer_key";
+constexpr std::string_view refused_no_challenge = "refused_no_challenge";
+constexpr std::string_view refused_bad_answer = "refused_bad_answer";
 
 }
 
@@ -160,6 +162,7 @@ custody_result custody_service::register_consumer(const std::string& subject,
             row.name = subject;
         }
         row.tenant_id = ctx_.tenant_id();
+        row.actor = ctx_.actor();
         row.public_key = public_key;
         row.is_enabled = true;
         row.modified_by = ctx_.actor();
@@ -310,6 +313,125 @@ custody_result custody_service::rotate(const std::string& subject) {
         return answer;
     } catch (const std::exception& e) {
         ORES_LOG_SEV(lg(), error) << "Rotation failed: " << e.what();
+        answer.message = e.what();
+        return answer;
+    }
+}
+
+custody_result custody_service::issue_challenge(security::challenge_registry& registry,
+                                                const std::string& consumer) {
+    custody_result answer;
+
+    if (consumer.empty()) {
+        answer.message = "A challenge needs a consumer";
+        return answer;
+    }
+
+    try {
+        repository::consumer_repository consumers;
+        const auto rows = consumers.read_latest_by_name(ctx_, consumer);
+        if (rows.empty() || !rows.front().is_enabled) {
+            answer.message = "The vault holds no enabled consumer by that name";
+            return answer;
+        }
+
+        boost::uuids::random_generator generate;
+        const auto challenge_id = boost::uuids::to_string(generate());
+
+        // Two generated uuids carry the 256 bits a nonce needs, and neither the
+        // clock nor a counter is involved.
+        const auto first = generate();
+        const auto second = generate();
+        std::string nonce_text(reinterpret_cast<const char*>(&first.data[0]), first.size());
+        nonce_text.append(reinterpret_cast<const char*>(&second.data[0]), second.size());
+
+        const auto raw = base64_converter::convert(rows.front().public_key);
+        answer.sealed_value =
+            sealed_box::seal(std::vector<unsigned char>(raw.begin(), raw.end()),
+                             nonce_text,
+                             messaging::custody_context::challenge(consumer, challenge_id));
+
+        registry.issue(challenge_id, consumer, nonce_text);
+        answer.challenge_id = challenge_id;
+        answer.success = true;
+        ORES_LOG_SEV(lg(), info) << "Issued a challenge to " << consumer;
+        return answer;
+    } catch (const std::exception& e) {
+        ORES_LOG_SEV(lg(), error) << "Challenge to " << consumer << " failed: " << e.what();
+        answer.message = e.what();
+        return answer;
+    }
+}
+
+custody_result custody_service::redeem_credential(security::challenge_registry& registry,
+                                                  const std::string& consumer,
+                                                  const std::string& challenge_id,
+                                                  const std::string& name,
+                                                  const std::string& sealed_answer) {
+    custody_result answer{.name = name};
+
+    try {
+        // The challenge is retired before anything is answered, so a wrong answer
+        // costs the caller a fresh exchange rather than another guess.
+        const auto issued = registry.redeem(challenge_id, consumer);
+        if (!issued) {
+            record_use(consumer, name, std::string(refused_no_challenge), 0);
+            answer.message = "The challenge is unknown, spent or belongs to another consumer";
+            return answer;
+        }
+
+        const std::string opened =
+            sealed_box::open(keys_.transport_private_key,
+                             sealed_answer,
+                             messaging::custody_context::credential(consumer, challenge_id, name));
+        if (opened != *issued) {
+            record_use(consumer, name, std::string(refused_bad_answer), 0);
+            answer.message = "The answer does not open the challenge it names";
+            return answer;
+        }
+
+        repository::consumer_repository consumers;
+        const auto consumer_rows = consumers.read_latest_by_name(ctx_, consumer);
+        if (consumer_rows.empty() || !consumer_rows.front().is_enabled) {
+            record_use(consumer, name, std::string(refused_no_consumer_key), 0);
+            answer.message = "The consumer that proved itself holds no registered key";
+            return answer;
+        }
+
+        repository::secret_repository repo;
+        const auto rows = repo.read_latest_by_name(ctx_, name);
+        if (rows.empty()) {
+            record_use(consumer, name, std::string(refused_unknown_secret), 0);
+            answer.message = "No such secret in this tenant";
+            return answer;
+        }
+
+        const auto& row = rows.front();
+        if (row.owner != consumer_rows.front().actor) {
+            record_use(consumer, name, std::string(refused_not_owner), row.key_version);
+            answer.message = "This secret belongs to another consumer";
+            return answer;
+        }
+
+        const secret_sealer sealer(keys_.key_of(row.key_version));
+        const std::string value =
+            sealer.open(row.sealed_value, row_context(row.name, row.owner, row.key_version));
+
+        const auto delivered = base64_converter::convert(consumer_rows.front().public_key);
+        answer.sealed_value =
+            sealed_box::seal(std::vector<unsigned char>(delivered.begin(), delivered.end()),
+                             value,
+                             messaging::custody_context::delivery(consumer, name, row.key_version));
+        answer.key_version = row.key_version;
+        answer.subject = consumer;
+        answer.success = true;
+
+        record_use(consumer, name, std::string(resolved), row.key_version);
+        ORES_LOG_SEV(lg(), info) << "Introduced " << consumer << " with " << name << " at version "
+                                 << row.key_version;
+        return answer;
+    } catch (const std::exception& e) {
+        ORES_LOG_SEV(lg(), error) << "The introduction of " << consumer << " failed: " << e.what();
         answer.message = e.what();
         return answer;
     }

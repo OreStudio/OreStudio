@@ -40,6 +40,7 @@ std::vector<ores::diff::domain::field_value> render_consumer_fields(const domain
     fields.push_back({.name = "Name", .value = v.name});
     fields.push_back({.name = "Public Key", .value = v.public_key});
     fields.push_back({.name = "Is Enabled", .value = v.is_enabled ? "true" : "false"});
+    fields.push_back({.name = "Actor", .value = v.actor});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

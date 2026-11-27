@@ -69,6 +69,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/repository/secret_use_entity.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/repository/secret_use_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/repository/secret_use_repository.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/security/challenge_registry.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/security/credential_source.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/service/consumer_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.core/service/custody_service.hpp"

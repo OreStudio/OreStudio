@@ -75,6 +75,22 @@ TEST_CASE("ores::vault::messaging::vault_public_key_response", "[codec][roundtri
     ores::testing::check_wire_roundtrip<ores::vault::messaging::vault_public_key_response>();
 }
 
+TEST_CASE("ores::vault::messaging::challenge_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::vault::messaging::challenge_request>();
+}
+
+TEST_CASE("ores::vault::messaging::challenge_response", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::vault::messaging::challenge_response>();
+}
+
+TEST_CASE("ores::vault::messaging::credential_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::vault::messaging::credential_request>();
+}
+
+TEST_CASE("ores::vault::messaging::credential_response", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::vault::messaging::credential_response>();
+}
+
 TEST_CASE("ores::vault::messaging::register_consumer_request", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::vault::messaging::register_consumer_request>();
 }

@@ -231,6 +231,74 @@ struct vault_public_key_response {
 };
 
 /**
+ * @brief Issues the nonce a workload answers to prove which consumer it is.
+ *
+ * The caller holds no token yet: obtaining one is what the exchange makes
+ * possible. The request therefore names the consumer, and the answer is sealed
+ * to that consumer's registered key, so only the holder of the private half can
+ * open it. A caller that names another consumer learns nothing.
+ */
+struct challenge_request {
+    using response_type = struct challenge_response;
+    static constexpr std::string_view nats_subject = "vault.v1.ops.challenge";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string consumer;
+
+    friend bool operator==(const challenge_request&, const challenge_request&) = default;
+};
+
+struct challenge_response {
+    bool success = false;
+    std::string message;
+    std::string challenge_id;
+    std::string nonce;
+
+    friend bool operator==(const challenge_response&, const challenge_response&) = default;
+};
+
+/**
+ * @brief Answers a challenge and asks for the consumer's own secret.
+ *
+ * The answer is the nonce the challenge carried, sealed to the vault's
+ * transport key under a context that names the consumer, the challenge and the
+ * secret, so the vault knows which consumer proved itself and which secret the
+ * proof was spent on. A challenge is good once.
+ */
+struct credential_request {
+    using response_type = struct credential_response;
+    static constexpr std::string_view nats_subject = "vault.v1.ops.credential";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string consumer;
+    std::string challenge_id;
+    std::string name;
+    std::string sealed_answer;
+
+    friend bool operator==(const credential_request&, const credential_request&) = default;
+};
+
+struct credential_response {
+    bool success = false;
+    std::string message;
+    std::string name;
+    std::int32_t key_version = 0;
+    std::string sealed_value;
+
+    friend bool operator==(const credential_response&, const credential_response&) = default;
+};
+
+/**
  * @brief Registers the caller's own public key, so that a resolve can seal to it.
  *
  * The row is about the caller and nobody else: the name is the subject the
@@ -448,6 +516,72 @@ struct register_consumer_response {
 }
 
 /**
+ * @brief The members of challenge_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<challenge_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"consumer", &challenge_request::consumer},
+    };
+}
+
+/**
+ * @brief The members of challenge_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<challenge_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &challenge_response::success},
+        ::ores::utility::codec::field{"message", &challenge_response::message},
+        ::ores::utility::codec::field{"challenge_id", &challenge_response::challenge_id},
+        ::ores::utility::codec::field{"nonce", &challenge_response::nonce},
+    };
+}
+
+/**
+ * @brief The members of credential_request, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<credential_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"consumer", &credential_request::consumer},
+        ::ores::utility::codec::field{"challenge_id", &credential_request::challenge_id},
+        ::ores::utility::codec::field{"name", &credential_request::name},
+        ::ores::utility::codec::field{"sealed_answer", &credential_request::sealed_answer},
+    };
+}
+
+/**
+ * @brief The members of credential_response, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<credential_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &credential_response::success},
+        ::ores::utility::codec::field{"message", &credential_response::message},
+        ::ores::utility::codec::field{"name", &credential_response::name},
+        ::ores::utility::codec::field{"key_version", &credential_response::key_version},
+        ::ores::utility::codec::field{"sealed_value", &credential_response::sealed_value},
+    };
+}
+
+/**
  * @brief The members of register_consumer_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -597,6 +731,43 @@ struct ORES_VAULT_API_EXPORT wire_traits<ores::vault::messaging::vault_public_ke
     static ores::vault::messaging::vault_public_key_response read_json(std::string_view text);
     static std::string write_msgpack(const ores::vault::messaging::vault_public_key_response& v);
     static ores::vault::messaging::vault_public_key_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VAULT_API_EXPORT wire_traits<ores::vault::messaging::challenge_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::vault::messaging::challenge_request& v);
+    static ores::vault::messaging::challenge_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::vault::messaging::challenge_request& v);
+    static ores::vault::messaging::challenge_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VAULT_API_EXPORT wire_traits<ores::vault::messaging::challenge_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::vault::messaging::challenge_response& v);
+    static ores::vault::messaging::challenge_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::vault::messaging::challenge_response& v);
+    static ores::vault::messaging::challenge_response read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VAULT_API_EXPORT wire_traits<ores::vault::messaging::credential_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::vault::messaging::credential_request& v);
+    static ores::vault::messaging::credential_request read_json(std::string_view text);
+    static std::string write_msgpack(const ores::vault::messaging::credential_request& v);
+    static ores::vault::messaging::credential_request read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_VAULT_API_EXPORT wire_traits<ores::vault::messaging::credential_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::vault::messaging::credential_response& v);
+    static ores::vault::messaging::credential_response read_json(std::string_view text);
+    static std::string write_msgpack(const ores::vault::messaging::credential_response& v);
+    static ores::vault::messaging::credential_response
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

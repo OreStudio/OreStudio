@@ -49,6 +49,26 @@ struct ORES_VAULT_API_EXPORT custody_context {
      */
     [[nodiscard]] static std::string
     delivery(const std::string& subject, const std::string& name, int key_version);
+
+    /**
+     * @brief The context the vault seals a challenge's nonce under.
+     *
+     * It names the consumer and the challenge, so a nonce issued for one
+     * challenge cannot be opened as another's.
+     */
+    [[nodiscard]] static std::string challenge(const std::string& consumer,
+                                               const std::string& challenge_id);
+
+    /**
+     * @brief The context a consumer seals its answer under.
+     *
+     * It names the consumer, the challenge and the secret it asks for, so the
+     * vault knows which consumer proved itself and which secret the proof was
+     * spent on.
+     */
+    [[nodiscard]] static std::string credential(const std::string& consumer,
+                                                const std::string& challenge_id,
+                                                const std::string& name);
 };
 
 }

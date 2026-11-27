@@ -90,6 +90,15 @@ struct consumer final {
     bool is_enabled = false;
 
     /**
+     * @brief The account the consumer runs as, in the form the audit columns take, such as
+     * powershell@system.ores:9000. A secret names its owner by this value, so the vault compares an
+     * owner with a consumer whether the caller proved itself with a token or with the key it holds:
+     * the token path reads the actor from the context, and the bootstrap path reads it from this
+     * row.
+     */
+    std::string actor;
+
+    /**
      * @brief What the consumer is, in a person's words, such as The gateway. Nothing reads it but a
      * person.
      */

@@ -53,6 +53,7 @@ namespace ores::vault::domain {
         utility::codec::field{"name", &consumer::name},
         utility::codec::field{"public_key", &consumer::public_key},
         utility::codec::field{"is_enabled", &consumer::is_enabled},
+        utility::codec::field{"actor", &consumer::actor},
         utility::codec::field{"description", &consumer::description},
         utility::codec::field{"modified_by", &consumer::modified_by},
         utility::codec::field{"performed_by", &consumer::performed_by},

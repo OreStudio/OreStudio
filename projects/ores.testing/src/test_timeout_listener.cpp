@@ -22,83 +22,14 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
-#include <string_view>
 
-#if defined(__unix__) || defined(__APPLE__)
-#    include <csignal>
-#    include <execinfo.h>
-#    define ORES_TESTING_HAS_CRASH_TRACE 1
-#endif
 
 namespace ores::testing {
 
 using namespace ores::logging;
 
-#ifdef ORES_TESTING_HAS_CRASH_TRACE
-namespace {
-
-constexpr int crash_trace_frames = 64;
-
-/// The signal's name, as a writer reports it.
-constexpr std::string_view crash_signal_name(int signal) {
-    switch (signal) {
-        case SIGABRT:
-            return "SIGABRT";
-        case SIGSEGV:
-            return "SIGSEGV";
-        case SIGBUS:
-            return "SIGBUS";
-        case SIGFPE:
-            return "SIGFPE";
-        case SIGILL:
-            return "SIGILL";
-        default:
-            return "signal";
-    }
-}
-
-/// Writes the stack of the thread that took the signal, and dies as it would
-/// have died. glibc reports a corrupted heap in one line and no stack, so a
-/// suite that frees a block twice says where it happened once only. The
-/// frames carry mangled names: pipe them through c++filt to read them.
-///
-/// Only the calls the dying process can still make are here: write and the
-/// unwinder. Allocating, in a process that has just failed inside free,
-/// would turn the report into a deadlock.
-extern "C" void crash_trace_handler(int signal) {
-    void* frames[crash_trace_frames];
-    const auto count = ::backtrace(frames, crash_trace_frames);
-
-    constexpr std::string_view note = "\n\nTEST FATAL SIGNAL: ";
-    const auto name = crash_signal_name(signal);
-    std::fwrite(note.data(), 1, note.size(), stderr);
-    std::fwrite(name.data(), 1, name.size(), stderr);
-    std::fputc('\n', stderr);
-    std::fflush(stderr);
-    ::backtrace_symbols_fd(frames, count, ::fileno(stderr));
-
-    ::signal(signal, SIG_DFL);
-    ::raise(signal);
-}
-
-/// Installs the handler once per process, on the first case that starts.
-void install_crash_trace() {
-    static const auto installed = [] {
-        for (const auto signal : {SIGABRT, SIGSEGV, SIGBUS, SIGFPE, SIGILL})
-            ::signal(signal, crash_trace_handler);
-        return true;
-    }();
-    static_cast<void>(installed);
-}
-
-}
-#endif
 
 void test_timeout_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
-#ifdef ORES_TESTING_HAS_CRASH_TRACE
-    install_crash_trace();
-#endif
-
     using ores::platform::environment::environment;
     timeout_ = std::chrono::seconds(environment::get_int_value_or_default(
         "ORES_TEST_TIMEOUT_SECONDS", static_cast<int>(timeout_.count())));

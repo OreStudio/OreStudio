@@ -29,12 +29,19 @@
 #include "ores.testing/test_database_manager.hpp"
 #include <catch2/catch_test_case_info.hpp>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
+#include <cstdio>
 #include <filesystem>
 #include <iostream>
 #include <memory>
 #include <optional>
 #include <sstream>
 #include <string>
+
+#if defined(__unix__) || defined(__APPLE__)
+#    include <csignal>
+#    include <execinfo.h>
+#    define ORES_TESTING_HAS_CRASH_TRACE 1
+#endif
 
 using namespace ores::logging;
 using telemetry_lifecycle_manager = ores::telemetry::log::lifecycle_manager;
@@ -52,6 +59,62 @@ struct test_logging_context {
 
 thread_local test_logging_context current_test_context;
 inline std::string_view component_name = "catch2";
+
+#ifdef ORES_TESTING_HAS_CRASH_TRACE
+constexpr int crash_trace_frames = 64;
+
+/// The signal's name, as a writer reports it.
+constexpr std::string_view crash_signal_name(int signal) {
+    switch (signal) {
+        case SIGABRT:
+            return "SIGABRT";
+        case SIGSEGV:
+            return "SIGSEGV";
+        case SIGBUS:
+            return "SIGBUS";
+        case SIGFPE:
+            return "SIGFPE";
+        case SIGILL:
+            return "SIGILL";
+        default:
+            return "signal";
+    }
+}
+
+/// Writes the stack of the thread that took the signal, and dies as it would
+/// have died. glibc reports a corrupted heap in one line and no stack, so a
+/// suite that frees a block twice says where it happened once only. The
+/// frames carry mangled names: pipe them through c++filt to read them.
+///
+/// Only the calls the dying process can still make are here: stdio on an
+/// unbuffered stderr, and the unwinder. Allocating, in a process that has just
+/// failed inside free, would turn the report into a deadlock.
+extern "C" void crash_trace_handler(int signal) {
+    void* frames[crash_trace_frames];
+    const auto count = ::backtrace(frames, crash_trace_frames);
+
+    constexpr std::string_view note = "\n\nTEST FATAL SIGNAL: ";
+    const auto name = crash_signal_name(signal);
+    std::fwrite(note.data(), 1, note.size(), stderr);
+    std::fwrite(name.data(), 1, name.size(), stderr);
+    std::fputc('\n', stderr);
+    std::fflush(stderr);
+    ::backtrace_symbols_fd(frames, count, ::fileno(stderr));
+
+    ::signal(signal, SIG_DFL);
+    ::raise(signal);
+}
+
+/// Installs the handler once per process, on the first case that starts.
+void install_crash_trace() {
+    static const auto installed = [] {
+        for (const auto signal : {SIGABRT, SIGSEGV, SIGBUS, SIGFPE, SIGILL})
+            ::signal(signal, crash_trace_handler);
+        return true;
+    }();
+    static_cast<void>(installed);
+}
+#endif
 
 std::string test_module_name = "ores.tests";
 
@@ -147,6 +210,9 @@ void logging_listener::testRunEnded(Catch::TestRunStats const& /*testRunStats*/)
 }
 
 void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
+#ifdef ORES_TESTING_HAS_CRASH_TRACE
+    install_crash_trace();
+#endif
     if (!is_logging_enabled())
         return;
 

@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 911AB04F-DFFB-4DB8-926C-AC8D192CACF9
+:END:
+#+title: Task: Install the crash trace where every suite runs
+#+description: Task for: Keep main green
+#+type: task
+#+level: s1
+#+filetags: :keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/install-the-crash-trace-where-every-suite-runs
+#+pr: 5198
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Put the fatal-signal trace in the listener every suite registers, so the gcc double free prints its stack.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-27                               |
+
+* Acceptance
+
+- A suite that registers only the logging listener writes a stack when it takes a fatal signal.
+
+* Plan
+
+Move the handler into =logging_listener=, which 111 of the 114 suites
+register, and install it from =testCaseStarting= there. Leave the timeout
+listener as it was.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Suites that register the timeout listener | 31 of 114, so the first cut left most suites untraced | =grep -rh CATCH_REGISTER_LISTENER --include=main.cpp projects \| sort \| uniq -c= | HEAD |
+| Suites that register the logging listener | 111 of 114, including the synthetic service suite the gcc leg aborts in | same | HEAD |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5198][#5198]] | [testing] Install the crash trace where every suite runs |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+The trace now installs from =logging_listener=, which 111 of the 114 suites
+register, and the synthetic service suite is one of them.
+
+Verified locally: =ores.synthetic.service.tests=, which registers only the
+logging and database listeners, writes =TEST FATAL SIGNAL: SIGABRT= and its
+frames when it is sent one, and exits 134 as an aborted process does.

@@ -64,6 +64,7 @@ carries the remaining work from sprint 30's close. This story ships
 | [[id:C5D7C83F-521F-428E-B42B-B3DBCD239682][Unpack the Windows release where PowerShell is not on the path]] | DONE | 2026-11-27 | 2026-11-27 | Task for: Keep main green |
 | [[id:D454F1AE-4DE0-4956-BB5E-17DA5D8E24FF][Give the slow case its own time limit]] | DONE | 2026-11-27 | 2026-11-27 | Task for: Keep main green |
 | [[id:B62B29DB-6D90-43FC-9428-CAFB70F8D851][Trace a fatal signal in a suite]] | DONE | 2026-11-27 | 2026-11-27 | Task for: Keep main green |
+| [[id:911AB04F-DFFB-4DB8-926C-AC8D192CACF9][Install the crash trace where every suite runs]] | DONE | 2026-11-27 | 2026-11-27 | Task for: Keep main green |
 
 * Decisions
 

@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :architecture:market_data:synthetic:fixing:
 #+created: 2026-11-22
-#+updated: 2026-11-22
+#+updated: 2026-11-27
 
 * Summary
 
@@ -96,6 +96,29 @@ for quotes; see [[id:37B27CA8-9F44-4A61-9B02-3EAABD8C3818][A party routes to exa
 An overnight rate with a public adapter is therefore never simulated, and a
 cut source such as WM/R, which is licensed, is always simulated.
 
+** A fixing the run computes
+
+Three term indices are stated for the run from its own overnight curves: Term
+SOFR at one month, IBR at three months and WIBOR at six. The index belongs to its
+administrator — CME Group, Banco de la República and GPW Benchmark respectively —
+so the fixing is stated under that administrator, as every other fixing is, and
+the administrator's simulated source states it.
+
+That the run computed the value rather than observed it is not a party and is not
+recorded as one. It is the series' derivation: =derivation_kind= says
+=IR_CURVE_BOOTSTRAP= and the series names the generation config and version that
+produced it. The series is seeded with that derivation before any fixing lands,
+so a reader never meets it as an observation, and a series the ingest creates
+later for a party takes the derivation the item already carries. A screen
+therefore says who owns the index and how the value was made, in two fields
+rather than in one name.
+
+The rule this replaces had a provider called =derived= state the value, which
+said both that the run made it and, by omission, that no party owned the item.
+The FX volatility quotes the run infers from stored fixings keep a source of
+their own, because no party in the store owns those items; the standing that
+would replace it is the subject of the producer beside the publisher.
+
 ** Consistency with the run
 
 Because a fixing reads the same board the run's other generators write, the
@@ -111,6 +134,7 @@ on.
 | The IR curve feed plans its index history; the synthetic service writes it straight to the store | A fixing generator per index publishes it through the adapter |
 | No FX fixing is generated | A fixing generator per cut source and pair publishes it |
 | Simulated and public fixings of one index can carry two names | The catalogue names each index once |
+| The provider =derived= states the computed term indices | Each administrator states its own index, and the series says the run computed it |
 | Generated trades name =TR20H= | Generated trades name a supported source |
 
 The implementation is tracked by the story

@@ -97,7 +97,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The notices' pgTAP cases | 15 of 15 pass | =projects/ores.sql/test/run_tests.sh scheduler_housekeeping_alerts_test.sql= | 3cbb26f4ec |
+| The whole SQL suite | 1113 assertions in 115 files pass | =compass check --only pgtap= | 3cbb26f4ec |
+| Kinds, job and permissions a recreated installation seeds | 3 kinds, 1 job at =25 * * * *=, 2 permissions | =compass sql -- -c "select ..."= | 3cbb26f4ec |
+| Local checks | 6 of 6 pass | =compass check --only lint --only drift-sweep --only cmake-sources --only component-drift --only format= | 3cbb26f4ec |
+| Web gate | passes, including the bell's route case | =compass check --only web= | 3cbb26f4ec |
+| The job in the running fleet | =succeeded= at 17:25:00, 80 ms, no error | =select ... from ores_scheduler_job_instances_tbl= | 3cbb26f4ec |
+| The notices it raised | 4, each open for one person, each naming its store | =select ... from ores_inbox_notifications_tbl= | 3cbb26f4ec |
+| What the person sees | an inbox of them, with the kind, the route and the message key | =curl /api/me/notifications= | 3cbb26f4ec |
 
 * Notes
 

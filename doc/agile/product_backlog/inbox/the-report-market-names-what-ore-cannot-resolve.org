@@ -2,7 +2,7 @@
 :ID: AB2A18DF-4449-4757-B65A-D564522E1CA9
 :END:
 #+title: The report market names what ORE cannot resolve
-#+description: Two of three trades still price nothing: an FX convention whose calendars ORE cannot parse, and an IBOR index no curve serves
+#+description: The swap prices nothing because the run carries no index fixing for the overnight index its coupon reads
 #+type: capture
 #+level: cross
 #+filetags: :reporting:ore:market-data:
@@ -13,51 +13,53 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-A smokehouse run now gathers the FX spots its trades convert at, and one of its
-three trades prices. The other two still record no NPV, and each names an object
-the market configuration cannot resolve:
+A smokehouse run now prices two of its three trades. The forward prices at
+80,815.55 GBP, and the option prices at zero, which is correct: its premium is
+its value on the valuation date, and ORE's NPV nets the two.
+
+The swap records no pricing at all:
 
 #+begin_example
-fx vol curve building failed: Convention 'EUR-GBP-FX' not found.
-did not find object 'GBP-LIBOR-12M' of type ibor index under configuration 'default'
+2nd leg: OvernightIndexedCouponPricer: missing GBP-SONIAON Actual/365 (Fixed)
+fixing for fixing date November 24th, 2026.
 #+end_example
 
 * Why
 
-The first is the FX convention and its calendars. The conventions file the run
-builds does carry =EUR-GBP-FX=:
+The swap's floating leg reads an overnight index fixing for the day before the
+valuation date, and the run's =fixings.txt= carries none. The tenant has never
+been subscribed to the provider that publishes them: its profile names
+=bloomberg=, =ice=, =lseg= and the derived volatility source, and the fixings
+come from =simulated-fixings=.
 
-#+begin_example
-<FX>
-  <Id>EUR-GBP-FX</Id>
-  <AdvanceCalendar>TARGET,UnitedKingdom.Settlement</AdvanceCalendar>
-  ...
-</FX>
-#+end_example
+Two things are needed, and the second is why this was recorded rather than just
+fixed:
 
-ORE parses that entry, cannot convert =UnitedKingdom.Settlement= to a calendar,
-and drops the convention — which is why a curve that names it says it is not
-found. The engine warns about exactly this for every pair whose calendars come
-from a country:
+1. The profile gives the party the =simulated-fixings= provider.
+2. The subscription step writes a route per provider with the asset class =fx=,
+   stated once in code. A fixing is an =ir= datum as well, and the system's own
+   routes for this provider name both =fx= and =ir=. So a party subscribed to the
+   fixings provider through the profile reaches the FX fixings and not the
+   interest rate ones, which are the ones an overnight swap coupon reads.
 
-#+begin_example
-Exception parsing convention AUD-CAD-FX: Cannot convert "Australia,Canada.Settlement"
-to Calendar … This is only a problem if this convention is used later on.
-#+end_example
+The route's asset class therefore has to stop being a constant. A provider
+publishes what it publishes, and the party's routes should name the classes it
+actually serves, rather than every provider being routed as FX.
 
-The calendar codes are QuantLib's own (=UnitedKingdom.Settlement=), and ORE's
-conventions accept the short aliases its built-in index catalogue uses
-(=TARGET=, and the =fixingCalendar= spellings there). The mapping between the two
-is what is missing. Every FX trade on a pair with a country calendar is blocked by
-it, not only this one.
+* References
 
-The second is the interest rate swap. The trade draws a convention whose index is
-=GBP-LIBOR-12M=, the curve configuration models overnight discount curves and
-volatility surfaces and no IBOR curve, and the today's market maps no forwarding
-curve for the index. A LIBOR-based swap therefore has nothing to read, however
-complete the rest of the market is. The same is true of the template's own
-documents, so no ACME LIBOR swap prices either.
+- Fixed on this branch: the market data export carries a party's FX spots and
+  volatility surfaces with every run, because an FX instrument holds currencies
+  and no market address; and the conventions file names calendars the way ORE
+  reads them, because ORE drops a convention whose calendar it cannot convert.
+  The second took the option's volatility curve with it.
+- The run's own record: =ores_reporting_report_error_events_tbl=, and the
+  generated input package under =ore/packages/<run>/ore_package.tar.gz=.
 
+* See also
+
+- =projects/ores.seeder/datasets/smokehouse/= is the tenant whose run surfaced
+  this.
 * References
 
 - Fixed in the same branch: the market data export now carries a party's FX

@@ -90,8 +90,18 @@ void conventions_mapper::reverse_fx(const ores::refdata::messaging::fx_conventio
     put_enum(w, "TargetCurrency", v.pair.quote_currency, "currency code");
     put_decimal(
         w, "PointsFactor", v.convention.pip_factor != 0.0 ? 1.0 / v.convention.pip_factor : 0.0);
-    if (!v.advance_calendars.empty())
-        w.set_text("AdvanceCalendar", join_with(v.advance_calendars, ','));
+    if (!v.advance_calendars.empty()) {
+        // The reference data states a calendar by its QuantLib code and ORE reads
+        // its own spelling, so the names are translated here, where the
+        // convention becomes the XML ORE parses. A calendar ORE cannot read costs
+        // it the whole convention, and a curve that names the convention then
+        // reports it not found.
+        std::vector<std::string> calendars;
+        calendars.reserve(v.advance_calendars.size());
+        for (const auto& calendar : v.advance_calendars)
+            calendars.push_back(ore_calendar_name(calendar));
+        w.set_text("AdvanceCalendar", join_with(calendars, ','));
+    }
     w.set_optional_flag("SpotRelative", v.convention.spot_relative);
     w.set_optional_flag("EOM", v.convention.end_of_month);
     put_bdc(w, "Convention", v.convention.business_day_convention);

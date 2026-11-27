@@ -153,6 +153,39 @@ std::string join_with(const std::vector<std::string>& parts, char sep) {
     return out;
 }
 
+std::string ore_calendar_name(const std::string& code) {
+    // The spellings ORE states for the calendars its own index catalogue quotes,
+    // for the codes whose QuantLib name ORE does not read. A code that names the
+    // same thing in both vocabularies is absent here and returned unchanged.
+    static const std::map<std::string, std::string, std::less<>> aliases{
+        {"Australia", "Australia settlement"},
+        {"Canada.Settlement", "Canada"},
+        {"China.IB", "China inter bank market"},
+        {"HongKong", "Hong Kong stock exchange"},
+        {"India", "National Stock Exchange of India"},
+        {"Indonesia.BEJ", "Jakarta stock exchange"},
+        {"Mexico", "Mexican stock exchange"},
+        {"NewZealand", "New Zealand (Wellington)"},
+        {"Poland", "Poland Settlement"},
+        {"Romania", "Bucharest stock exchange"},
+        {"Russia", "Russian settlement"},
+        {"SaudiArabia", "Tadawul"},
+        {"Singapore", "Singapore exchange"},
+        {"Slovakia", "Bratislava stock exchange"},
+        {"SouthAfrica", "South Africa"},
+        {"SouthKorea.Settlement", "South-Korean settlement"},
+        {"Taiwan", "Taiwan stock exchange"},
+        {"Thailand", "Thailand stock exchange"},
+        {"UnitedKingdom.Exchange", "London stock exchange"},
+        {"UnitedKingdom.Settlement", "UK settlement"},
+        {"UnitedStates.FederalReserve", "Federal Reserve Bankwire System"},
+        {"UnitedStates.GovernmentBond", "US government bond market"},
+        {"UnitedStates.Settlement", "US settlement"},
+        {"UnitedStates.SOFR", "SOFR fixing calendar"}};
+    const auto found = aliases.find(code);
+    return found == aliases.end() ? code : found->second;
+}
+
 std::string truth(bool v) {
     return v ? "true" : "false";
 }

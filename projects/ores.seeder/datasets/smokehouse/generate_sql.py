@@ -57,6 +57,12 @@ MARKET_CURRENCIES = ("EUR", "GBP", "USD")
 CURVE_CURRENCIES = ("EUR", "GBP", "USD")
 MARKET_PAIRS = ("EURGBP",)
 
+# The IBOR indices the tenant's swap conventions name. The tenant holds one GBP
+# curve and no projection curve, so its LIBOR swaps are forwarded off that curve:
+# a smokehouse prices them, it does not value a LIBOR book. A bank states a
+# projection curve per tenor and the engine builds it.
+FORWARDED_IBOR_INDICES = ("GBP-LIBOR-1M", "GBP-LIBOR-3M", "GBP-LIBOR-6M", "GBP-LIBOR-12M")
+
 # The office whose configuration documents are the template. Each office's
 # documents carry the same content, so one is as good as another.
 TEMPLATE_COMPANY = "acme_uk"
@@ -612,11 +618,62 @@ def missing_spot_entries(entries):
     return out
 
 
+def forwarded_index_entries(entries):
+    """The forwarding entries the tenant's own swap indices need.
+
+    The template forwards the overnight indices it prices on. This tenant's swap
+    conventions name LIBOR indices, and a swap whose index the market does not
+    forward is refused as an object the market does not hold.
+    """
+    collection = None
+    for candidate in template_rows("todays_market_collections"):
+        if candidate["collection"] == "IndexForwardingCurves":
+            collection = candidate
+            break
+    if collection is None:
+        raise ValueError("the template states no IndexForwardingCurves collection")
+
+    # The curve of the currency the indices belong to: the first discount curve
+    # the tenant states for it.
+    curve_of = {}
+    for entry in entries:
+        target = entry["target"]
+        if target.startswith("Yield/"):
+            parts = target.split("/")
+            curve_of.setdefault(parts[1], target)
+
+    # An entry of the collection is the shape, with the key and the target
+    # replaced: a forwarding entry names an index and the curve it reads.
+    template = [e for e in template_rows("todays_market_entries")
+                if e["todays_market_collection_id"] == collection["id"]]
+    if not template:
+        raise ValueError("the template states no index forwarding entry to copy")
+
+    out = []
+    for index in FORWARDED_IBOR_INDICES:
+        if any(e["key_value"] == index for e in entries):
+            continue
+        currency = index.split("-")[0]
+        target = curve_of.get(currency)
+        if target is None:
+            raise ValueError(f"the tenant states no {currency} curve to forward {index} off")
+        out.append({
+            **template[0],
+            "id": uuid5("todays_market_entry:" + index),
+            "todays_market_collection_id": collection["id"],
+            "key_value": index,
+            "key_value_2": None,
+            "target": target,
+            "position": max(e["position"] for e in entries) + 1 + len(out),
+        })
+    return out
+
+
 def todays_market_entries():
     """The market entries this tenant reads, the pair's own spot among them."""
     entries = [r for r in template_rows("todays_market_entries")
                if market_currency(r["target"])]
-    return entries + missing_spot_entries(entries)
+    return entries + missing_spot_entries(entries) + forwarded_index_entries(entries)
 
 
 def todays_market_rows(table):

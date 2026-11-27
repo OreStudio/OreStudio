@@ -168,6 +168,22 @@ void put_decimal(record_writer& w, std::string_view name, double value);
 
 void put_decimal(record_writer& w, std::string_view name, const std::optional<double>& value);
 
+/**
+ * @brief The name ORE knows a calendar by, from the code the reference data states.
+ *
+ * Reference data holds QuantLib's calendar codes, such as =UnitedKingdom.Settlement=
+ * and =Canada.Settlement=, and ORE's conventions name a calendar by its own
+ * spelling: =UK settlement=, =Canada=. An ORE build that cannot convert the code
+ * drops the convention that carries it, and a curve or a trade that then names
+ * that convention is refused as one it cannot find. The translation therefore
+ * belongs at the boundary, where the code becomes a name ORE reads.
+ *
+ * A code this table does not hold is returned unchanged. An unknown calendar is
+ * not silently guessed at: ORE states it in its own warning when a convention
+ * that uses it is read.
+ */
+std::string ore_calendar_name(const std::string& code);
+
 }
 
 #endif

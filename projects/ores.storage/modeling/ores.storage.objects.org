@@ -37,6 +37,7 @@ caller, checks the operation's permission code, and calls =ores.storage.core=.
 * Includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <cstdint>
 #include <string>
 #include <string_view>
@@ -348,6 +349,16 @@ caller, checks the operation's permission code, and calls =ores.storage.core=.
 :cpp_type: std::uint64_t
 :default:  0
 :END:
+
+*** last_modified
+:PROPERTIES:
+:type:       timestamp with time zone
+:cpp_type:   std::chrono::system_clock::time_point
+:END:
+
+When the object was last written. A caller that bounds a prefix by age needs
+this to tell a minute-old object from a year-old one; a listing without it
+states what exists and not how long it has been there.
 
 ** list_objects_response
 :PROPERTIES:

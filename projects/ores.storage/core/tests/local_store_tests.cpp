@@ -22,6 +22,8 @@
 #include "ores.storage.core/filesystem/local_store.hpp"
 #include "test_suite.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <filesystem>
 #include <fstream>
 #include <string>
 #include <string_view>
@@ -108,6 +110,38 @@ TEST_CASE("a local store lists a bucket by prefix", "[filesystem]") {
     CHECK(store.list("never-written", "").empty());
 
     ORES_LOG_SEV(lg, debug) << "Listed " << all.size() << " objects";
+}
+
+TEST_CASE("a listing states when each object was written", "[filesystem]") {
+    auto lg(make_logger(test_suite));
+
+    scoped_temp_directory root;
+    local_store store(root.path());
+
+    const auto before = std::chrono::system_clock::now();
+    store.put("ores", "compute/input/recent.tar.gz", "a");
+    store.put("ores", "compute/input/old.tar.gz", "a");
+    const auto after = std::chrono::system_clock::now();
+
+    const auto old = root.path() / "ores" / "compute" / "input" / "old.tar.gz";
+    std::filesystem::last_write_time(
+        old, std::filesystem::last_write_time(old) - std::chrono::days(10));
+
+    const auto entries = store.list("ores", "compute/input/");
+    REQUIRE(entries.size() == 2);
+    REQUIRE(entries[0].key == "compute/input/old.tar.gz");
+    REQUIRE(entries[1].key == "compute/input/recent.tar.gz");
+
+    // The filesystem states a write to its own resolution, so the instant is
+    // the write's to within a second rather than to the clock's.
+    CHECK(entries[1].last_modified >= before - std::chrono::seconds(1));
+    CHECK(entries[1].last_modified <= after + std::chrono::seconds(1));
+
+    const auto age = std::chrono::system_clock::now() - entries[0].last_modified;
+    CHECK(age > std::chrono::days(9));
+    CHECK(age < std::chrono::days(11));
+
+    ORES_LOG_SEV(lg, debug) << "Listed age of " << entries[0].key;
 }
 
 TEST_CASE("a part file is named for one caller and published by its own hand", "[filesystem]") {

@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/give-object-storage-a-lifecycle feature/give-object-storage-a-lifecycle
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
-#+updated: 2026-11-24
+#+updated: 2026-11-27
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Every key family in the object store expires by a stated rule, so a run's inputs
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Slice 1: the listing states an object's age. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-24                               |
+| Next         | Read =object_summary= through the protocol, the local store and the transfer client. |
+| Last touched | 2026-11-27                               |
 
 * Acceptance
 
@@ -41,9 +41,50 @@ Every key family in the object store expires by a stated rule, so a run's inputs
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The catalogue already states what bounds these stores: the mechanism is
+=policy=, the action is =expire_prefix=, and the period and the cadence are its
+columns. What is missing is something that can act on them. The sweep is a SQL
+function, =ores_scheduler_apply_retention_policies_fn=, and SQL cannot reach the
+object store: the two object prefixes are the rows that read =skipped= with the
+reason in the ledger.
+
+Two mechanisms can bound an object prefix, and only one of them can say what it
+would remove.
+
+- The store's own lifecycle is a bucket rule the installation writes once: the
+  store expires by prefix and age without a caller and without a ledger. It
+  cannot be asked what it would remove, so the acceptance point that a sweep
+  says what it would remove fails. It also states the period outside the
+  installation's own data, where no screen reads it and no policy version
+  records it, which is the second thing the story decided against.
+- An action that reaches the store reads the prefix, compares each object's age
+  with the period, and reports or removes. It states what it would remove before
+  it does, writes what it removed into the ledger beside the tables' runs, and
+  leaves the catalogue as the one place a period is stated.
+
+The second is chosen. It is three slices, each verifiable on its own.
+
+1. The listing states an object's age. =object_summary= gains the instant the
+   object was last written: the local store reads it from the filesystem, and
+   the transfer client reads the store's =Last-Modified= header. Without it a
+   caller cannot tell a minute-old object from a year-old one, and a period
+   cannot be applied.
+2. The storage service answers one expiry: =storage.v1.objects.expire= takes a
+   bucket, a prefix, a cutoff and a dry-run flag, and answers the objects it
+   would remove with the bytes they hold and, when it is not a dry run, what it
+   removed. One operation rather than a list-then-delete loop on the caller's
+   side, so a caller cannot remove half a page and report a whole one.
+3. The scheduler applies it. A job whose action is =expire_prefix= takes the
+   prefix from the catalogue and the period from the policy, calls the storage
+   service, and writes the run to the ledger with the outcome =planned=,
+   =applied= or =failed=. =housekeeping plan= runs the same path with the dry
+   run set and prints the run without writing it.
+
+The engine package cache takes no rule. The catalogue bounds it by its keying: a
+package is named by its digest, so two versions holding the same bytes are one
+copy, and the only way to shrink the cache is to remove a package a node may be
+running. That is the node's decision, made when it releases a job's folder, and
+it is why the catalogue states =keying= for that store and no policy for it.
 
 * Measurements
 

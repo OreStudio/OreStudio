@@ -19,6 +19,7 @@
  */
 #include "ores.storage.core/filesystem/local_store.hpp"
 #include "ores.logging/logger.hpp"
+#include "ores.platform/time/time_utils.hpp"
 #include <algorithm>
 #include <atomic>
 #include <fstream>
@@ -226,7 +227,10 @@ std::vector<local_store::entry> local_store::list(const std::string& bucket,
         if (!prefix.empty() && !key.starts_with(prefix))
             continue;
 
-        entries.push_back(entry{std::move(key), item.file_size(item_ec)});
+        const auto written = std::filesystem::last_write_time(item.path(), item_ec);
+        entries.push_back(entry{std::move(key),
+                                item.file_size(item_ec),
+                                ores::platform::time::time_utils::file_time_to_system_clock(written)});
     }
 
     std::sort(entries.begin(), entries.end(), [](const entry& left, const entry& right) {

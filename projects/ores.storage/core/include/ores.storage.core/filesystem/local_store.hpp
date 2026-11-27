@@ -21,6 +21,7 @@
 #define ORES_STORAGE_CORE_FILESYSTEM_LOCAL_STORE_HPP
 
 #include "ores.storage.core/export.hpp"
+#include <chrono>
 #include <cstdint>
 #include <filesystem>
 #include <optional>
@@ -67,6 +68,13 @@ public:
     struct entry {
         std::string key;
         std::uintmax_t size_bytes = 0;
+        /**
+         * @brief When the object was last written.
+         *
+         * The store's own record of age: a caller that bounds a prefix by a
+         * period compares this with the instant it cuts off at.
+         */
+        std::chrono::system_clock::time_point last_modified;
     };
 
     explicit local_store(std::filesystem::path root);

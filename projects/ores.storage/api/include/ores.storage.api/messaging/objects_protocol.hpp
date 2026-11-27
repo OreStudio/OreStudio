@@ -28,6 +28,7 @@
 #include "ores.storage.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include "ores.utility/codec/wire_traits_fwd.hpp"
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <span>
@@ -206,6 +207,7 @@ struct list_objects_request {
 struct object_summary {
     std::string key;
     std::uint64_t size_bytes = 0;
+    std::chrono::system_clock::time_point last_modified;
 
     friend bool operator==(const object_summary&, const object_summary&) = default;
 };
@@ -427,6 +429,7 @@ struct list_archive_entries_response {
     return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"key", &object_summary::key},
         ::ores::utility::codec::field{"size_bytes", &object_summary::size_bytes},
+        ::ores::utility::codec::field{"last_modified", &object_summary::last_modified},
     };
 }
 

@@ -183,7 +183,8 @@ void objects_handler::list(ores::nats::message msg) {
         const auto first = std::min<std::size_t>(req->offset, entries.size());
         const auto last = std::min<std::size_t>(first + limit, entries.size());
         for (std::size_t i = first; i < last; ++i)
-            resp.objects.push_back(object_summary{entries[i].key, entries[i].size_bytes});
+            resp.objects.push_back(object_summary{
+                entries[i].key, entries[i].size_bytes, entries[i].last_modified});
     } catch (const std::exception& e) {
         ORES_LOG_SEV(lg(), error) << "list failed: " << e.what();
         resp.success = false;

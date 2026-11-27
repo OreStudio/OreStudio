@@ -139,6 +139,7 @@ export interface ListObjectsRequest {
 export interface ObjectSummary {
     key: string;
     size_bytes: number;
+    last_modified: string;
 }
 
 /**

@@ -8,7 +8,7 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch: feature/give-housekeeping-a-screen
-#+pr: 5205
+#+pr: 5206
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
@@ -26,11 +26,11 @@ A person sees every retention policy beside the size of what it governs, and can
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-24                               |
 
 * Acceptance
@@ -110,6 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5206][#5206]] | [agile] Close the housekeeping screen task |
 | [[https://github.com/OreStudio/OreStudio/pull/5205][#5205]] | [web] Give housekeeping a screen |
 
 * Review

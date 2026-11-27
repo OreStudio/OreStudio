@@ -8,7 +8,7 @@
 #+filetags: :dq:web:coverage:sprint_31:v0:show_and_drive_the_dq_pipeline:
 #+owner: marco
 #+branch: feature/draw-the-counts-on-the-coverage-screen
-#+pr:
+#+pr: 5188
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-26
@@ -104,7 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5188][#5188]] | [web,dq] Show the coverage screens and open a dataset on its own page |
 
 * Review
 

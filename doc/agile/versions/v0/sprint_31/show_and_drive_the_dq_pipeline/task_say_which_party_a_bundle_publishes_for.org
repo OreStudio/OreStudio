@@ -8,7 +8,7 @@
 #+filetags: :dq:modeling:sql:web:coverage:sprint_31:v0:show_and_drive_the_dq_pipeline:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 5200
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-27
@@ -118,7 +118,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5200][#5200]] | [docs] Close the coverage tasks and ask the party question |
 
 * Review
 

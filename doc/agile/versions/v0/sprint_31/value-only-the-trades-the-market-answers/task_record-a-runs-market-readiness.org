@@ -75,19 +75,19 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Build, whole tree | succeeded | =compass build= | =0b396c3c5a= |
-| Readiness decision cases | 8 cases, 39 assertions | =ores.reporting.core.tests "[market_readiness]"= | =0b396c3c5a= |
-| Reporting core suite | 291 cases, 1684 assertions | =ores.reporting.core.tests= | =0b396c3c5a= |
-| Reporting api suite | 1308 cases, 5072 assertions | =ores.reporting.api.tests= | =0b396c3c5a= |
-| Reporting service suite | 11 cases, 28 assertions | =ores.reporting.service.tests= | =0b396c3c5a= |
-| Shell reporting suite | 602 cases, 1658 assertions | =ores.shell.reporting.tests= | =0b396c3c5a= |
-| Market data core suite | 483 cases, 56653 assertions | =ores.marketdata.core.tests= | =0b396c3c5a= |
-| Trading core suite | 323 cases, 2046 assertions | =ores.trading.core.tests= | =0b396c3c5a= |
-| Coverage read states both causes | 6 assertions | =ores.marketdata.core.tests "[coverage]"= | =0b396c3c5a= |
-| Export writes only the trades it was asked for | 7 assertions | =ores.trading.core.tests "an_export_names_only_the_trades_it_was_asked_for"= | =0b396c3c5a= |
-| Schema suite | 111 files, 1074 tests, PASS | =projects/ores.sql/test/run_tests.sh= | =0b396c3c5a= |
-| New check diagnostics | 0 | =compass-ng check --ratchet origin/main= | =0b396c3c5a= |
-| Format gate | passed | =compass check --only format= | =0b396c3c5a= |
+| Build, whole tree | succeeded | =compass build= | =87c9873942= |
+| Readiness decision cases | 8 cases, 39 assertions | =ores.reporting.core.tests "[market_readiness]"= | =87c9873942= |
+| Reporting core suite | 291 cases, 1684 assertions | =ores.reporting.core.tests= | =87c9873942= |
+| Reporting api suite | 1308 cases, 5072 assertions | =ores.reporting.api.tests= | =87c9873942= |
+| Reporting service suite | 11 cases, 28 assertions | =ores.reporting.service.tests= | =87c9873942= |
+| Shell reporting suite | 602 cases, 1658 assertions | =ores.shell.reporting.tests= | =87c9873942= |
+| Market data core suite | 483 cases, 56690 assertions | =ores.marketdata.core.tests= | =87c9873942= |
+| Trading core suite | 323 cases, 2046 assertions | =ores.trading.core.tests= | =87c9873942= |
+| Coverage read states both causes | 6 assertions | =ores.marketdata.core.tests "[coverage]"= | =87c9873942= |
+| Export writes only the trades it was asked for | 7 assertions | =ores.trading.core.tests "an_export_names_only_the_trades_it_was_asked_for"= | =87c9873942= |
+| Schema suite | 112 files, 1083 tests, PASS | =projects/ores.sql/test/run_tests.sh= | =87c9873942= |
+| New check diagnostics | 0 | =compass-ng check --ratchet origin/main= | =87c9873942= |
+| Format gate | passed | =compass check --only format= | =87c9873942= |
 
 * Notes
 
@@ -106,6 +106,10 @@ task and name that file in the Command column.
 - The run's readiness table first carried =report_definition_id= and the
   codegen's wide-type check refused it at sixteen fields. The run already names
   its definition and the record is one per run, so the column went.
+- The branch was rebased onto main before its review, and the schema diagram
+  conflicted because both sides added tables to it. The diagram is a codegen
+  output, so it was regenerated from the merged models rather than merged by
+  hand, and every gate was re-run on the new base.
 - The trade grain states whether a trade is complete and how many of its
   addresses went unanswered. The addresses and their causes are the address
   grain; joining the two through the trade's own requirements, which trading

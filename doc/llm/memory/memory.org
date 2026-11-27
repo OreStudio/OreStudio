@@ -135,6 +135,7 @@ of these exclusions, push back: the right home is somewhere else.
 - [[id:B83064E5-6357-4FC6-A8BE-395DD429ED2A][Run the checks the affected code needs before merging]] — there is no separate validation job; run =compass check= for every class the change belongs to, heavy tier included, and merge only on a green report.
 - [[id:B36F92CC-E83F-4C2C-A9AC-371B8AD01AC5][Change the BFF and ores.http together]] — the web app runs against either backend, so every BFF route change is made in =ores.http= in the same change and checked live on both.
 - [[id:A70B8C34-CCAE-4512-B788-A975A320D2C9][Write scratch under the checkout's tmp directory]] — keep scratch files, probe scripts and captured output in the checkout's =tmp/=, never the host's =/tmp=, which is private to each bash call.
+- [[id:3D9D858C-0885-4A06-9411-0AA9529E5212][A removed environment variable keeps its row]] — record the removal in the row's =removed= column; deleting the row makes the version table name a variable nothing matches, and only a bare =compass-ng check= catches it.
 
 ** User
 

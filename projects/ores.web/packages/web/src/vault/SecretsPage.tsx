@@ -27,7 +27,7 @@ import { useHeld } from '../access/holds.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { DEFAULT_PAGE_SIZE, Pager } from '../ui/Pager.js';
-import { LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
+import { Button, LinkButton, Notice, PageHeader, Tag } from '../ui/Primitives.js';
 import { RefreshQueries } from '../ui/RefreshButton.js';
 import { formatDateTime } from '../ui/Time.js';
 import { VAULT, secretPath } from '../shell/paths.js';
@@ -64,13 +64,9 @@ export function SecretsPage(): ReactNode {
                 {t('vault.consumers.title')}
             </LinkButton>
             {holds(PERMISSION.vaultSecretsWrite) && (
-                <button
-                    type="button"
-                    onClick={() => setWriting(true)}
-                    className="rounded-md border border-accent/50 bg-accent/10 px-3 py-2 text-sm text-accent-bright hover:bg-accent/20"
-                >
+                <Button icon="add" variant="primary" onClick={() => setWriting(true)}>
                     {t('vault.secrets.add')}
-                </button>
+                </Button>
             )}
             <RefreshQueries keys={[['vault-secrets', offset]]} />
         </div>

@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: 4C516D35-0DAA-47FD-8FC4-BE62E071D3D8
+:END:
+#+title: Task: Show what a dataset depends on, and what waits on it
+#+description: A read of the dependency edges over the bus, and the dataset page's Lineage tab drawn from it: what has to publish before a dataset, and what waits on it.
+#+type: task
+#+level: s1
+#+filetags: :dq:sql:web:coverage:sprint_31:v0:show_and_drive_the_dq_pipeline:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A dataset's page gains a Lineage tab: the datasets that have to publish before it,
+with the role each plays, and the datasets that wait on it. The Qt Data Librarian
+drew the first direction as a graph and never the second, and no operation reads
+the edges over the bus, so a person asking "what breaks if I change this dataset"
+has to read =ores_dq_dataset_dependencies_tbl= in psql.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
+| Now          | The prototype draws the tab; it awaits sign-off. |
+| Waiting on   | Marco's sign-off of the Lineage tab.   |
+| Next         | Read what a dataset depends on, over the bus, and draw it. |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- A read over the bus answers both directions of one dataset's dependencies: the
+  datasets it needs, and the datasets that need it, each with the role the edge
+  states. The caller names one dataset, never the whole table.
+- Each edge names the other dataset's code and display name, so a screen draws a
+  name and not a code it would have to join.
+- The dataset's page gains a Lineage tab. *Needs* is drawn as the graph the Qt
+  client drew — at most six nodes, each wire labelled with its role — and *Needed
+  by* is a table, because one dataset has thirty-two dependents and thirty-two
+  wires to one node is unreadable. The asymmetry is the design decision this task
+  owns, and the prototype records it.
+- A dependent in either direction opens that dataset's page.
+- Nothing is written: this is a read of edges that other screens manage.
+- A test asserts a known edge in each direction for a seeded dataset.
+
+
+* Plan
+
+The prototype is
+[[file:doc/prototypes/dq/reference-data-coverage.org][the coverage prototype note]]
+and =reference-data-coverage/prototype.js=, whose Lineage tab carries the design.
+The Qt client is the reference for the graph: =DatasetViewDialog::updateLineageView=
+draws the upstream nodes above the dataset, labels each wire with the edge's role,
+and =ClientDatasetDependencyModel::dependenciesForDataset= filters the edges the
+client loaded once. The web reads the same edges from the server instead.
+
+1. The store read. A function =ores_dq_dataset_lineage_fn(p_dataset_code)= beside
+   the roster, answering =(direction, dataset_code, dataset_name, role)= for both
+   directions, joining =ores_dq_datasets_tbl= for the name. It states no tenant
+   predicate, as the roster's functions do, because a world dataset's edges sit in
+   the system tenant.
+2. The operation, =dq.v1.ops.dataset_lineage=, in a model, so both languages get
+   the request and the answer from one statement.
+3. =publish_service::list_dataset_lineage= and a handler on =dq::datasets:read=.
+4. =GET /api/v1/dq/dataset_lineage?dataset_code=…=.
+5. The Lineage tab, to the signed-off prototype.
+6. Tests: a pgTAP suite for the function, a handler suite over the bus, and the
+   dataset page's tests for both halves.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Edges in the provisioned environment | 196 | =select count(*) from ores_dq_dataset_dependencies_tbl where valid_to=ores_utility_infinity_timestamp_fn()= | d7af5a2352 |
+| Datasets with an edge out | 119 | =select count(distinct dataset_code) from ores_dq_dataset_dependencies_tbl where valid_to=ores_utility_infinity_timestamp_fn()= | d7af5a2352 |
+| Datasets with an edge in | 81 | =select count(distinct dependency_code) from ores_dq_dataset_dependencies_tbl where valid_to=ores_utility_infinity_timestamp_fn()= | d7af5a2352 |
+| Roles an edge can state | 27 | =select count(distinct role) from ores_dq_dataset_dependencies_tbl where valid_to=ores_utility_infinity_timestamp_fn()= | d7af5a2352 |
+| Most edges out of one dataset | 6 | grouped count on =dataset_code= | d7af5a2352 |
+| Most edges into one dataset | 32 | grouped count on =dependency_code= | d7af5a2352 |
+
+* Notes
+
+The store holds one row per edge: =dataset_code= depends on =dependency_code= for a
+stated =role=, versioned, with a check that the two differ. Both directions are
+therefore one read of the same table, filtered on one side or the other, and the
+publish order already resolves the same edges — the tab states a fact about a
+publish and not a drawing of an idea.
+
+The asymmetry is the design question. The Qt client drew upstream only, as a row
+of nodes above the dataset with the role on each wire; it was drawn at most six
+wide. Downstream reaches thirty-two for =refdata.conventions=, which is the common
+case rather than an outlier: a reference dataset feeds every configuration that
+cites it. So the prototype draws upstream as a graph and downstream as a table
+whose rows open the dependent. The sign-off question is whether that holds, or
+whether downstream wants a graph cut by role.
+
+A role states what the dependent takes from this dataset — =currency_reference=,
+=convention_source=, =configuration_source= — and never the order. Order comes from
+the graph, not from the label, which is why the tab does not number the edges.
+
+Asked for on 2026-11-27, after the coverage screens were reviewed: the Qt area had
+a lineage graph, the web area has none.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

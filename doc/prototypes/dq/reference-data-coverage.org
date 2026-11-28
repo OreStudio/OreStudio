@@ -128,6 +128,17 @@ The page answers the questions a list cannot:
   why [[id:99F3E780-6AA0-4879-8F6F-2A1321ACDB85][its task]] owns that decision.
   The rows here are mock data and the page says so.
 
+- *Lineage.* What publishes before the dataset, and what waits on it. The store
+  holds every edge in =ores_dq_dataset_dependencies_tbl= — 196 rows when this was
+  written — as "this dataset depends on that one for this role". The publish order
+  already resolves them, so the tab states a fact about a publish and not a
+  drawing of an idea. It draws the two directions differently, and the asymmetry
+  is the decision: a dataset needs at most six others, which fits the small graph
+  the Qt Data Librarian drew, and is needed by as many as thirty-two, which does
+  not. So *Needs* is a graph with the role on each wire and *Needed by* is a table
+  whose rows open the dependent dataset. The edges here are mock data and the page
+  says so.
+
 The list keeps the state column *and* the page exists, because they answer
 different questions: the list says which datasets need attention, and the page
 says what one dataset needs and what happened to it last time.
@@ -171,6 +182,26 @@ dataset's own page, with these decisions:
   [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]].
 - The page states when the dataset was last published, and every publish with its
   outcome and what the run said, in its own Publications tab.
+
+The Contents tab was drawn and signed off on 2026-11-28, on the decision that a
+dataset's contents are a list of the tables its artefact type names and not one
+grid: =conventions= names thirty-four tables, each with its own columns, so a table
+is listed with its columns and count and opened to read its rows. See
+[[id:99F3E780-6AA0-4879-8F6F-2A1321ACDB85][See the rows a dataset has staged]].
+
+The Lineage tab was drawn on 2026-11-28 and awaits sign-off. It answers what the
+Qt Data Librarian's lineage graph answered, and its open point is the asymmetry
+above: whether the downstream side is a table, as drawn, or a graph cut to the
+roles a person picks.
+
+#+caption: The Lineage tab: one need, drawn as the Qt client drew it, and the
+#+caption: thirty-two dependents read as a table, of which six are shown.
+#+attr_html: :width 100%
+[[file:reference-data-coverage/lineage-conventions.png]]
+
+#+caption: Two needs, with each wire labelled by the role the edge states.
+#+attr_html: :width 100%
+[[file:reference-data-coverage/lineage-currencies.png]]
 
 The table layout stays on the page only as the record of what was first drawn.
 

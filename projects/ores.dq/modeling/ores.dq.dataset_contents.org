@@ -1,0 +1,209 @@
+:PROPERTIES:
+:ID: 8A52C358-70CF-4106-B44E-FAD3B33DB52C
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.dq.dataset_contents
+#+description: Codegen operation model for the dq dataset contents verb, rendered to C++ and TypeScript from one source.
+#+type: ores.codegen.operation
+#+component: dq
+#+subcomponent: api
+#+entity_singular: dataset_contents
+#+namespace: ores::dq::messaging
+#+brief: Reports the tables one dataset stages into, and one page of one table's rows.
+#+filetags: :model:operation:dq:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+
+The dataset contents verb: one request that names a dataset and, when it names a
+table too, one page of that table's rows.
+
+A dataset names one artefact type, and the type names a table or a family of them,
+so the dataset alone does not say which tables hold its rows. The answer carries
+the tables first and the rows second, because no screen knows a family's shape in
+advance and every family carries its own columns.
+
+It is an operation rather than an entity verb because the answer is a shape no
+table holds: a table's rows, with the columns that table states. The handler that
+serves it stays hand-written beside this model.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <string>
+#include <string_view>
+#include <vector>
+#+end_src
+
+* Messages
+
+** dataset_contents_request
+:PROPERTIES:
+:subject:  dq.v1.ops.dataset_contents
+:response: dataset_contents_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the tables of one dataset, or for one page of one table's rows.
+ */
+#+end_src
+
+*** dataset_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The dataset whose contents to read.
+ */
+#+end_src
+
+*** table_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The table whose rows to read, or empty for the list of tables alone.
+ */
+#+end_src
+
+*** limit
+:PROPERTIES:
+:cpp_type: int
+:default:  50
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many rows to answer, at most.
+ */
+#+end_src
+
+*** offset
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many rows to skip before the ones answered.
+ */
+#+end_src
+
+** dataset_table
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One table a dataset stages into.
+ */
+#+end_src
+
+*** table_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The table's name, as the store states it.
+ */
+#+end_src
+
+*** display_order
+:PROPERTIES:
+:cpp_type: int
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Where the table sits in the family its artefact type names.
+ */
+#+end_src
+
+*** columns
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The columns this table carries, comma separated, without the two every
+ * family shares.
+ */
+#+end_src
+
+*** staged_count
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many rows this table holds for the dataset.
+ */
+#+end_src
+
+** dataset_contents_response
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reports the tables and, when one was named, its rows.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  false
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the contents were read.
+ */
+#+end_src
+
+*** error_message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Why they could not be read, when they could not.
+ */
+#+end_src
+
+*** tables
+:PROPERTIES:
+:cpp_type: std::vector<dataset_table>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The tables the dataset stages into, in its family's order.
+ */
+#+end_src
+
+*** rows
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One page of the named table's rows, as JSON: the columns it carries, the
+ * rows in order, and the number the table holds.
+ */
+#+end_src

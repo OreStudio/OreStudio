@@ -285,3 +285,78 @@
     font-size: 11px;
     color: var(--ink-faint);
 }
+
+/* The lineage tab: the dependencies a dataset states, in both directions. The
+ * upstream side is small (six at most in the provisioned environment) and is
+ * drawn as the graph the Qt client drew; the downstream side reaches thirty-two
+ * and is read as a table, because thirty-two arcs to one box is a hairball. */
+.lineage-head {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 18px 0 8px;
+    color: var(--ink-dim);
+}
+
+.lineage-graph {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 120px;
+    flex-wrap: wrap;
+}
+
+.lineage-wires {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    color: var(--line);
+}
+
+.lineage-wires .lineage-role {
+    font-family: var(--mono);
+    font-size: 10px;
+    fill: var(--ink-faint);
+}
+
+.lineage-col {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.lineage-node {
+    display: block;
+    min-width: 220px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--panel-2);
+    text-align: left;
+    color: var(--ink);
+    font: inherit;
+    cursor: pointer;
+}
+
+.lineage-node:hover {
+    background: #1e1e23;
+}
+
+.lineage-node.here {
+    border-color: var(--accent);
+    cursor: default;
+}
+
+.lineage-node .key {
+    display: block;
+    font-family: var(--mono);
+    font-size: 12px;
+}
+
+.lineage-node .sub {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    color: var(--ink-faint);
+}

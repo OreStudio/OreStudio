@@ -61,6 +61,7 @@
 #include "ores.dq.core/messaging/dataset_bundle_member_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/dataset_bundle_member_registrar.hpp"
 #include "ores.dq.core/messaging/dataset_bundle_registrar.hpp"
+#include "ores.dq.core/messaging/dataset_contents_handler.hpp"
 #include "ores.dq.core/messaging/dataset_handler.hpp"
 #include "ores.dq.core/messaging/dataset_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/dataset_registrar.hpp"
@@ -309,6 +310,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         dataset_publications_request::nats_subject, queue_group, [publog](ores::nats::message msg) {
             publog->dataset_publications(std::move(msg));
+        }));
+
+    // =========================================================================
+    // The dataset contents verb reads what a dataset has staged: the tables its
+    // artefact type names, then one page of one table's rows.
+    // =========================================================================
+
+    auto contents = std::make_shared<dataset_contents_handler>(nats, ctx, verifier);
+
+    subs.push_back(nats.queue_subscribe(
+        dataset_contents_request::nats_subject, queue_group, [contents](ores::nats::message msg) {
+            contents->dataset_contents(std::move(msg));
         }));
 
     // =========================================================================

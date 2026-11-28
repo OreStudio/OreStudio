@@ -309,3 +309,142 @@ grant execute on function ores_dq_record_publication_fn(
        :inbox_service_user,
        :test_dml_user,
        :test_ddl_user;
+
+/**
+ * Lists the tables one dataset stages into, with each table's own columns and
+ * the rows it holds for the dataset.
+ *
+ * A dataset names one artefact type and the type names a table or a family of
+ * them, so the dataset itself does not say which tables hold its rows. The count
+ * is per table and not the sum the roster states: a family's sum answers "how
+ * much is staged" and never "which table is empty".
+ */
+create or replace function ores_dq_dataset_tables_fn(p_dataset_code text)
+returns table (
+    table_name text,
+    display_order integer,
+    columns text,
+    staged_count bigint
+) as $$
+declare
+    v_artefact_table text;
+    v_dataset_id uuid;
+    v_table text;
+    v_rows bigint;
+    v_columns text;
+    v_n integer := 0;
+begin
+    select at.artefact_table, d.id
+      into v_artefact_table, v_dataset_id
+      from ores_dq_datasets_tbl d
+      join ores_dq_artefact_types_tbl at on at.code = d.artefact_type
+     where d.code = p_dataset_code
+       and d.valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_artefact_table is null then
+        return;
+    end if;
+
+    foreach v_table in array string_to_array(v_artefact_table, ',') loop
+        v_table := btrim(v_table);
+        continue when v_table = '';
+        if v_table not like 'ores\_%' then
+            v_table := 'ores_' || v_table;
+        end if;
+
+        v_n := v_n + 1;
+        v_rows := 0;
+        execute format('select count(*) from %I where dataset_id = $1', v_table)
+            into v_rows using v_dataset_id;
+
+        -- The alias is not decoration: the OUT column is called table_name, so an
+        -- unqualified reference would be ambiguous.
+        select string_agg(c.column_name, ', ' order by c.ordinal_position)
+          into v_columns
+          from information_schema.columns c
+         where c.table_schema = 'public' and c.table_name = v_table
+           and c.column_name not in ('dataset_id', 'tenant_id');
+
+        table_name := v_table;
+        display_order := v_n;
+        columns := coalesce(v_columns, '');
+        staged_count := v_rows;
+        return next;
+    end loop;
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;
+
+/**
+ * One page of the rows a dataset stages into one of its own tables.
+ *
+ * The columns come with the rows, because every artefact family carries its own
+ * and no screen knows them. The table is checked against the dataset's own
+ * artefact type rather than trusted: the caller names a table it was shown, and
+ * this function refuses any other.
+ */
+create or replace function ores_dq_dataset_rows_fn(
+    p_dataset_code text,
+    p_table_name text,
+    p_limit integer default 50,
+    p_offset integer default 0
+) returns jsonb as $$
+declare
+    v_artefact_table text;
+    v_dataset_id uuid;
+    v_allowed boolean := false;
+    v_table text;
+    v_columns jsonb;
+    v_rows jsonb;
+    v_total bigint;
+begin
+    select at.artefact_table, d.id
+      into v_artefact_table, v_dataset_id
+      from ores_dq_datasets_tbl d
+      join ores_dq_artefact_types_tbl at on at.code = d.artefact_type
+     where d.code = p_dataset_code
+       and d.valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_artefact_table is null then
+        return jsonb_build_object('error', 'No dataset names ' || coalesce(p_dataset_code, ''));
+    end if;
+
+    foreach v_table in array string_to_array(v_artefact_table, ',') loop
+        v_table := btrim(v_table);
+        if v_table not like 'ores\_%' then
+            v_table := 'ores_' || v_table;
+        end if;
+        if v_table = p_table_name then
+            v_allowed := true;
+            exit;
+        end if;
+    end loop;
+
+    if not v_allowed then
+        return jsonb_build_object(
+            'error', 'This dataset stages into no table called ' || coalesce(p_table_name, ''));
+    end if;
+
+    select coalesce(jsonb_agg(jsonb_build_object(
+               'name', c.column_name,
+               'type', c.data_type) order by c.ordinal_position), '[]'::jsonb)
+      into v_columns
+      from information_schema.columns c
+     where c.table_schema = 'public' and c.table_name = p_table_name
+       and c.column_name not in ('dataset_id', 'tenant_id');
+
+    execute format('select count(*) from %I where dataset_id = $1', p_table_name)
+        into v_total using v_dataset_id;
+
+    -- The two columns every family shares are dropped from the rows too: they
+    -- say which dataset and tenant wrote a row, and the request states both.
+    execute format(
+        'select coalesce(jsonb_agg(to_jsonb(t) - ''dataset_id'' - ''tenant_id''), ''[]''::jsonb) '
+        'from ('
+        '  select * from %I where dataset_id = $1 order by 1 limit $2 offset $3'
+        ') t', p_table_name)
+        into v_rows using v_dataset_id, greatest(1, least(coalesce(p_limit, 50), 200)),
+                           greatest(0, coalesce(p_offset, 0));
+
+    return jsonb_build_object('columns', v_columns, 'rows', v_rows, 'total', v_total);
+end;
+$$ language plpgsql security definer set search_path = public, pg_temp;

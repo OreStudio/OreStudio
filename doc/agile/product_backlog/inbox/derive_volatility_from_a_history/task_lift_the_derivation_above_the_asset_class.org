@@ -8,7 +8,7 @@
 #+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/lift-the-derivation-above-the-asset-class
-#+pr:
+#+pr: 5219
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
@@ -117,7 +117,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5219][#5219]] | [quant] Lift the derivation above the asset class |
 
 * Review
 

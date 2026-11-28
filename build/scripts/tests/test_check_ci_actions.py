@@ -182,6 +182,27 @@ jobs:
     assert check_ci_actions.check_workflow(path) == []
 
 
+def test_a_conditional_checkout_before_a_local_action_is_a_finding(tmp_path):
+    path = tmp_path / "caller.yml"
+    path.write_text("""---
+jobs:
+  guard:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        # Skipped on a dispatch, which leaves the local action unreadable.
+        if: github.event_name == 'schedule'
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/relevance-guard
+""")
+
+    findings = check_ci_actions.check_workflow(path)
+
+    assert len(findings) == 1
+    assert "under a condition" in findings[0]
+
+
 def test_the_repository_actions_and_workflows_pass():
     findings = []
     for path in sorted(check_ci_actions.ACTIONS_DIR.glob("*/action.yml")):

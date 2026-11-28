@@ -41,11 +41,11 @@ jobs:
       should_build: ${{ steps.guard.outputs.should_build }}
     steps:
       - uses: actions/checkout@v7
-        # A local action is read from the workspace, which the runner needs
-        # before the job starts, so the guard's caller checks out and the guard
-        # itself holds no checkout. Only a scheduled run compares trees; a
-        # manual or tag run builds whatever the checkout holds.
-        if: github.event_name == 'schedule'
+        # The guard is a local action, and a local action is read from the
+        # workspace: skip this checkout and the job fails before its first step
+        # with "Can't find 'action.yml'". Only a scheduled run reads the tree,
+        # so the shallow clone of a manual or tag run is wasted work, but the
+        # job cannot tell its action apart without it.
         with:
           fetch-depth: 0
 

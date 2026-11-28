@@ -8,9 +8,9 @@ three of its rules are broken silently:
   `defaults.run.shell` does not reach into an action;
 - every local `uses:` must name a directory that holds an action.yml, or a
   workflow that declares `workflow_call`;
-- the job that calls a local action must check the repository out first, because
-  the runner prepares every action of a job before its first step runs, so a
-  checkout inside the action arrives too late.
+- the job that calls a local action must check the repository out first, and
+  without a condition, because a local action is read from the workspace and a
+  skipped checkout leaves it missing.
 
 None of these fails the pull request, or the merge: all fail hours later, in the
 nightly, on the platform that happens to take the branch. This is the check
@@ -185,11 +185,18 @@ def check_workflow(path: Path) -> list[str]:
     for name, body in job_blocks(text):
         if "./.github/actions/" not in body:
             continue
-        if "actions/checkout@" not in body:
+        checkouts = [step for step in steps_of(body)
+                     if "actions/checkout@" in "".join(step)]
+        if not checkouts:
             findings.append(
                 f"{relative}: job {name} calls a local action but never checks"
-                " the repository out, and the runner prepares a job's actions"
-                " before its first step runs")
+                " the repository out, so the action cannot be read")
+            continue
+        for step in checkouts:
+            if "if" in step_keys(step):
+                findings.append(
+                    f"{relative}: job {name} checks out under a condition, and"
+                    " a skipped checkout leaves a local action unreadable")
     return findings
 
 

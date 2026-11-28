@@ -69,10 +69,10 @@ coordinates and the smile model. The values are the platform's own arithmetic, p
 
 * Plan
 
-The task is two deliverables, and it lands in two pull requests. The first is the derivation: a
-rate history and a model's pillars to ATM normal volatilities and a smile, with no store and no
-feed. The second is the emission: the adapter that reads a currency's term histories, writes the
-quotes under the producer, stamps the method and the version, and holds them internal.
+The task is the derivation alone: a rate history and a model's pillars to ATM normal volatilities
+and a smile, with no store and no feed. The emission is a task of its own, because it must be built
+on the pattern that declares a class and on the batch that derives a whole class at once; building
+it before either would mean writing the interest rate emitter twice.
 
 The derivation is cut where the measurement stops. =ir_vol_derivation= holds three things, and none
 of them is a measurement: the projection, the smile, and the matrix that reads each expiry through
@@ -144,10 +144,10 @@ via its "Verifies task" field.
 
 * Result
 
-*Part one, the derivation, is committed at =ff4e275f73=.* =ir_vol_derivation= projects a term's
-measured level to a swaption's ATM normal volatility, states the smile the return shape supports,
-and reads a term's matrix over an expiry ladder through the measurement engine.
+Committed at =ff4e275f73=, then extended with the arc's pattern work. =ir_vol_derivation= projects
+a term's measured level to a swaption's ATM normal volatility, states the smile the return shape
+supports, and reads a term's matrix over an expiry ladder through the measurement engine.
 
-What part two still owes: the adapter that stores the quotes under the producer =orestudio=, stamps
-the method and the version, and keeps them internal, so that no non-system party reads them and no
-meter counts them. The task stays STARTED until it lands.
+The emission moved to [[id:74CAFA8B-016A-4775-A7AD-0503F82FEB9B][Emit the derived interest rate
+quotes]] when the review of the arc asked for one shape across classes and a batch over every
+series. Building the adapter here would have written it twice.

@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 40E61A13-B3A9-4EAF-A609-88638D24AF27
+:END:
+#+title: Task: Derive every series in one pass
+#+description: The platform quotes every interest rate series, not one, so a derivation is a batch: many series in, flat contiguous outputs out, no shared mutable state between series, and a measured cost over the whole seed. A refused series or pillar costs its own cell and no more.
+#+type: task
+#+level: s1
+#+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every series of a class is derived in one batch that scales, because the platform quotes the whole
+term structure rather than one rate: a per-series call with a vector of cells is the wrong shape for
+the job it has to do.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- The batch takes many series and returns flat, contiguous outputs: one array of levels, one of projections, one of widths, and a status per cell. A caller reads results without an allocation per series and without a variant per cell.
+- No step shares mutable state between series, so the pass can run one series per task with no lock and the parallel answer equals the serial one.
+- The cost is measured over a corpus of every interest rate series the seed carries, with the command and the commit on the task, and the measurement states the corpus size.
+- A refused series or pillar costs its own cell and no more: the rest of the batch stands, and the refusal is a status and a reason per cell.
+- The pass takes the discipline the FX batched grid already uses: prefix sums where a window slides, and one allocation for the whole output.
+
+* Notes
+
+- The precedent is =derive_grid= in the FX derivation: prefix sums of the first four powers of the returns make a day cost the same whether its window is a week or ten years, and a test holds it cell for cell equal to the day-at-a-time answer.
+- The corpus is the currencies and terms the seed configures, so the number is about this platform and not a synthetic benchmark. A measurement without the corpus size is not a measurement.
+- The parallel shape is one task per series over immutable inputs. Nothing in the derivation holds a cache, so no series can see another and the result does not depend on the order the tasks finish.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

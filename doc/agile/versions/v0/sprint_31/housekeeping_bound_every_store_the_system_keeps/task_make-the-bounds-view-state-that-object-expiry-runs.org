@@ -8,7 +8,7 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch: hotfix/make-the-bounds-view-state-that-object-expiry-runs
-#+pr: 5218
+#+pr: 5222
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
@@ -78,6 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5222][#5222]] | [compass] Open the app at the BFF, which serves every route it calls |
 | [[https://github.com/OreStudio/OreStudio/pull/5218][#5218]] | [sql] Let each job record the run it performed |
 | [[https://github.com/OreStudio/OreStudio/pull/5215][#5215]] | [sql] State that the sweep expires an object prefix |
 

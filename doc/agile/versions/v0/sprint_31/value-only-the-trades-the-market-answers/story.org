@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :marketdata:reporting:trading:synthetic:requirements:sprint_31:v0:
 #+created: 2026-11-25
-#+updated: 2026-11-27
+#+updated: 2026-11-28
 #+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 

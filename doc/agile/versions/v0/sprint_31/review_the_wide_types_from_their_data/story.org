@@ -5,7 +5,7 @@
 #+description: Every type over the fifteen-field ceiling gets a decision backed by the data: what it holds, which columns the data never fills, and which of them belong together.
 #+type: story
 #+level: s2
-#+filetags: :refdata:codegen:design:analysis:data:sprint_31:v0:
+#+filetags: :refdata:codegen:design:data:sprint_31:v0:
 #+created: 2026-11-28
 #+updated: 2026-11-28
 #+environment: jolly_knuth

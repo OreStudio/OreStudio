@@ -1,0 +1,37 @@
+:PROPERTIES:
+:ID: 7C4A1E92-5B03-4D6F-8A21-9E7C3D5B1F48
+:END:
+#+title: Vault prototypes
+#+description: The prototypes that answer to the Vault journeys: what each argues, and the design note beside it.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:index:ui:vault:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+
+* Summary
+
+The secrets an installation keeps for its own use, the consumers that may receive
+them, and the record of who asked for what.
+
+1 prototype answers to this group. It is a static page under =doc/prototypes/=,
+opens with no build and no session, and reads mock data only. The table below
+opens it and says what it argues.
+
+[[file:../index.org][Prototypes]] is the top page and the only inventory.
+
+* The prototypes
+
+#+ATTR_HTML: :class hug-leading
+| Prototype | What it argues | Open it | Review |
+|-----------+----------------+---------+--------|
+| Keep the installation's secrets | The vault is read-mostly: a list, one record with its versions, a masked value whose reveal is a recorded ask, the consumers beside it, and the uses last — with Add and Reveal not drawn at all for a person who lacks the permission, rather than drawn disabled. | [[file:keep-the-secrets/][prototype]] | none |
+
+* Adding a prototype
+
+Create =doc/prototypes/vault/<name>/= with an =index.html=, and a
+=prototype.css= and =prototype.js= when it needs them. Open the page with
+the links table every prototype carries, and leave its review row at
+=none=. Add a row to the table above, with the design note beside the
+prototype when there is one. Stop there: the site build finds every
+prototype under this tree, so no build file names it.

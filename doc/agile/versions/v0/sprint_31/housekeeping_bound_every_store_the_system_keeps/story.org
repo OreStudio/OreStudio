@@ -21,7 +21,7 @@ No store the system keeps grows without bound: each one has a declared policy, h
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
 | Now           | Nothing. |
 | Waiting on    | Nothing.                               |
@@ -76,6 +76,7 @@ No store the system keeps grows without bound: each one has a declared policy, h
 | [[id:BE55D937-7CC4-4A50-B730-C6C1FEA50D08][Sample the size of every store]] | DONE | | 2026-11-27 | A store's size is a series, not an adjective. The installation measures each store it can reach, keeps the measurements keyed to the store, and reads back the latest size and the history the screen plots. |
 | [[id:1F74AC5C-33D2-420A-9C4E-5AC2D074BFFA][Serve the housekeeping screen its data]] | DONE | | 2026-11-27 | The screen reads what bounds each store and one store's series. Both are computed from the catalogue, the policies and the samples, so they are served as two reads beside the operations model rather than composed from entities by the client. |
 | [[id:9585FFDA-F54F-4DD8-B236-737873FF213D][Make the bounds view state that object expiry runs]] | DONE | 2026-11-28 | 2026-11-28 | The bounds view still calls an object prefix a store that waits on a storage lifecycle, so the screen says unbounded and the alerts pass tells a person to act on a store the sweep now expires. |
+| [[id:5F1C092C-000E-4EE1-91CD-4E817297C284][Give the housekeeping screen its shape]] | DONE | 2026-11-28 | 2026-11-28 | A store's page is one long form, so the plot, the record and the form compete for the same scroll; the plot is a sparkline with no axes and no way to choose how far back it looks, so nobody can see what a policy does to a store; and the verdicts state phrases like 'Bounded by keying' that no screen explains. Put the store's page in tabs, plot the size against time over a horizon a person chooses, say what each verdict and mechanism means, and put housekeeping's health on the home the system administrator lands on. |
 
 * Result
 

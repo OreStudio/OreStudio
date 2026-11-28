@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: 5F1C092C-000E-4EE1-91CD-4E817297C284
+:END:
+#+title: Task: Give the housekeeping screen its shape
+#+description: A store's page is one long form, so the plot, the record and the form compete for the same scroll; the plot is a sparkline with no axes and no way to choose how far back it looks, so nobody can see what a policy does to a store; and the verdicts state phrases like 'Bounded by keying' that no screen explains. Put the store's page in tabs, plot the size against time over a horizon a person chooses, say what each verdict and mechanism means, and put housekeeping's health on the home the system administrator lands on.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: feature/give-the-housekeeping-screen-its-shape
+#+pr: 5231
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person reads one store as three questions in three places: what it is, how it moves, and what bounds it. The plot states its own window and its axes, so the effect of a policy is a shape and not a hope.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- A store's page holds two tabs, Details and Bound, and the bound is not part of the form the record lives in
+- The plot draws a time axis and a size axis over a horizon the person picks: the last day, the last week or the last month
+- The samples read answers the window it covered, so the axis states the deployment's window and not the browser's
+- Every verdict the list states and every mechanism the page names has a sentence that says what it means
+- The system administrator's home carries a housekeeping panel stating the stores nothing bounds, and opens the housekeeping screen
+
+* Plan
+
+The read had to state the horizon before the screen could draw one, so the work
+went in three layers.
+
+- The read. =scheduler.v1.store_samples.list= takes a =range= (=24h=, =7d=,
+  =30d=) in place of a count of points, and answers =from_at= and =to_at= beside
+  the points. The hours a range covers are one function, so an unknown range
+  answers the week rather than the whole history, and the window the plot draws
+  is the deployment's and not the browser's. The three presets are the sampler's
+  cadence and not the grid's: the sampler writes once an hour, so an hour-long
+  window would usually hold nothing.
+- The screen. The store's page is the two questions a person asks of it, in the
+  =useTabs= tabs every other page uses. Details carries the record and a chart
+  with a time axis, a value axis and one mark per measurement; Bound carries the
+  verdict, the mechanism's sentence, the last run and the form. The grid's range
+  bar became =ui/Presets.tsx=, so both screens ask a horizon in one shape.
+- What the words mean. The verdicts and the mechanisms are the read's own words,
+  so the list carries a folded note stating each once and the store's Bound tab
+  states the sentence for the store in hand.
+- The home. The system administrator's dashboard gains a full-width Housekeeping
+  panel that reads the screen's own query, so the panel and the screen cannot
+  disagree about how many stores are unbounded.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Web suite | 2746 tests, 223 files, all pass | =npx vitest run --root packages/web= | 78968cb53b |
+| Wire-protocol suite | 234 tests, 24 files, all pass | =npx vitest run= in =packages/wire-protocol= | 78968cb53b |
+| BFF suite | 1366 tests, 100 files, all pass | =npx vitest run= in =packages/bff= | 78968cb53b |
+| Scheduler and gateway suites | 4 of 4 suites pass | =./compass.sh test run -- -R 'scheduler|http.scheduler'= | 78968cb53b |
+| Live samples window, day | 200; 10 points; window 2026-11-27 10:12 to 2026-11-28 10:12 | =curl '.../samples?range=24h'= against =localhost:21001= | 4de00f5798 |
+| Live samples window, month | 200; 10 points; window 2026-10-29 10:12 to 2026-11-28 10:12 | =curl '.../samples?range=30d'= | 4de00f5798 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5231][#5231]] | [web,scheduler] Give the housekeeping screen its shape |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The store's page is its two questions, the plot states its own window and its
+axes over a horizon the person picks, every verdict and mechanism the screens
+state has a sentence that says what it means, and the system administrator's
+home carries housekeeping beside the services, the grid and the queue.
+
+Two things the work found and did not fix here. The stores outside a relation —
+two object prefixes and two compute folders — still have no measurement, because
+only the component that owns a store can measure it;
+[[id:AB5A72D3-3C4F-4898-81C9-B3FDA3974C16][the capture]] states what that would
+take. And the three presets are the sampler's cadence rather than the grid's, so
+a person asking for the last hour of a store would read an empty window; the
+screen says the window holds no measurement rather than drawing nothing.

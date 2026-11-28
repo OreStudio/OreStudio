@@ -144,7 +144,7 @@ export type {
 } from './tenants.js';
 export { readPartiesPage } from './party-page.js';
 export {
-    STORE_SAMPLES_LIMIT,
+    STORE_RANGES,
     readStoreBounds,
     readStoreSamples,
     saveStoreBound,
@@ -160,6 +160,8 @@ export type {
     StoreBoundResult,
     StoreBoundWrite,
     StoreBoundsView,
+    StoreRange,
+    StoreSampleSeries,
     StoreSamplesView,
 } from './housekeeping.js';
 export { readGridUsage } from './grid-usage.js';

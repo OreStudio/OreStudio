@@ -141,29 +141,43 @@ export const storeSampleSchema = z.object({
 });
 
 /**
- * How many points of one store's series a screen may ask for.
+ * The horizons a store's series is read over.
  *
- * The sampler writes one point an hour, so a week is 168 and a quarter about
- * 2200. A screen draws a season at most, and the cap keeps a deep link from
- * asking for the whole history.
+ * The sampler writes one point an hour, so a day is 24 points, a week 168 and a
+ * month 720. The screen offers these rather than a count of points, because a
+ * count would move the window whenever the sampler's cadence changed.
  */
-export const STORE_SAMPLES_LIMIT = 500;
+export const STORE_RANGES = ['24h', '7d', '30d'] as const;
+
+export type StoreRange = (typeof STORE_RANGES)[number];
 
 const listStoreSamplesReplySchema = z.object({
     success: z.boolean().default(false),
     message: text,
     samples: z.array(storeSampleSchema).default([]),
+    from_at: wireTimestampSchema,
+    to_at: wireTimestampSchema,
 }) satisfies z.ZodType<ListStoreSamplesResponse>;
 
-/** The measurements of one store, newest last, so a plot reads left to right. */
+/** One store's measurements over a window, and the window the read covered. */
+export interface StoreSampleSeries {
+    /** The points, oldest first, so a plot reads left to right. */
+    readonly samples: readonly StoreSample[];
+    /** Where the window opens, in the deployment's clock. */
+    readonly fromAt: string;
+    /** The instant the read ran, which is where the window closes. */
+    readonly toAt: string;
+}
+
+/** The measurements of one store over a range, oldest first. */
 export async function readStoreSamples(
     caller: AuthenticatedCaller,
     storeCode: string,
-    limit: number = STORE_SAMPLES_LIMIT,
-): Promise<readonly StoreSample[]> {
+    range: StoreRange = '7d',
+): Promise<StoreSampleSeries> {
     const reply = await caller.callAuthenticated(
         schedulingSubjects.list_store_samples_request,
-        { store_code: storeCode, limit },
+        { store_code: storeCode, range },
         listStoreSamplesReplySchema,
     );
     if (!reply.success) {
@@ -172,7 +186,7 @@ export async function readStoreSamples(
             reply.message,
         );
     }
-    return reply.samples;
+    return { samples: reply.samples, fromAt: reply.from_at, toAt: reply.to_at };
 }
 
 /**
@@ -255,10 +269,17 @@ export const storeBoundsViewSchema = z.object({
 
 export type StoreBoundsView = z.infer<typeof storeBoundsViewSchema>;
 
-/** One store's series, as the store's own page draws it. */
+/**
+ * One store's series, as the store's own page draws it.
+ *
+ * The window is the read's own answer, so the plot's axis states the horizon the
+ * installation measured and not the one the browser's clock would guess.
+ */
 export const storeSamplesViewSchema = z.object({
     store_code: z.string().default(''),
     samples: z.array(storeSampleSchema).default([]),
+    from_at: nullableWireTimestampSchema.default(null),
+    to_at: nullableWireTimestampSchema.default(null),
 });
 
 export type StoreSamplesView = z.infer<typeof storeSamplesViewSchema>;

@@ -1425,6 +1425,20 @@ const fr: SourceCatalogue = {
                     activeBatches: 'Lots actifs',
                     failed: 'Résultats en échec',
                 },
+                housekeeping: {
+                    title: 'Entretien des données',
+                    needAttention: {
+                        one: '{count} magasin n’est pas borné',
+                        other: '{count} magasins ne sont pas bornés',
+                    },
+                    allClear: 'Chaque magasin est borné',
+                    noCatalogue: 'Le catalogue n’a pas été lu',
+                    stores: 'Magasins',
+                    bounded: 'Bornés',
+                    unbounded: 'Non bornés',
+                    unmeasured: 'Non mesurés',
+                    held: 'Occupé',
+                },
                 queue: {
                     title: 'File de messages',
                     noSample: 'Aucun échantillon pour l’instant',
@@ -1918,9 +1932,41 @@ const fr: SourceCatalogue = {
             period: '{days} jours',
             cadence: 'tous les {hours} h',
             measure: '{count} {unit}',
+            legend: {
+                summary: 'Ce que ces verdicts veulent dire',
+                verdicts: 'Les verdicts',
+                mechanisms: 'Comment une limite agit',
+                bounded:
+                    'Quelque chose retire des données du magasin selon un calendrier, et son dernier passage n’a pas échoué.',
+                keyed: 'Les clés nomment leur contenu, donc le même contenu ne peut pas être conservé deux fois. Le magasin grandit quand même à chaque clé distincte, et aucun calendrier ne retire rien.',
+                unbounded:
+                    'Rien ne retire du magasin, donc il grandit tant que le système y écrit.',
+                mechanismNames: {
+                    sweep: 'Un balayage planifié',
+                    node_release: 'Le nœud le libère',
+                    content_keying: 'Clé de contenu',
+                    policy_off: 'Une politique désactivée',
+                    none: 'Aucun mécanisme',
+                },
+            },
+            mechanisms: {
+                sweep: 'Un balayage planifié supprime les blocs, supprime les lignes ou expire les objets au-delà de la période, à la fréquence de la politique.',
+                node_release:
+                    'Le nœud de calcul libère lui-même le répertoire quand il téléverse la sortie de la tâche, donc aucun passage planifié n’applique la période.',
+                content_keying:
+                    'Les clés nomment leur contenu, donc une clé conserve une copie. Rien ne retire les octets et rien ne doit le faire : le magasin ne peut pas conserver le même contenu deux fois.',
+                policy_off:
+                    'Une politique borne ce magasin et elle est désactivée. Rien n’est retiré tant qu’une personne ne l’active pas.',
+                none: 'Aucune période ne peut borner ce magasin. Il demande une action que le catalogue ne déclare pas.',
+            },
             store: {
                 title: 'Magasin',
                 description: 'Un magasin, la limite qui le régit et sa taille.',
+                tabs: {
+                    label: 'Les questions du magasin',
+                    details: 'Détails',
+                    bound: 'Limite',
+                },
                 record: 'Le magasin',
                 notFound: 'Cette installation ne conserve aucun magasin nommé {code}.',
                 back: 'Retour à l’entretien des données',
@@ -1936,13 +1982,24 @@ const fr: SourceCatalogue = {
             },
             size: {
                 title: 'Taille',
+                lead: 'La taille du magasin, et son évolution sur l’horizon couvert par la lecture.',
                 noSample:
                     'Rien ne mesure encore ce magasin, donc sa taille et sa croissance sont inconnues. Le composant qui l’écrit est celui qui peut le mesurer.',
                 latest: 'Taille actuelle',
                 count: 'Contenu',
                 measuredAt: 'Mesuré',
-                onePoint: 'Un seul relevé pour l’instant. Un second donne une courbe.',
-                plot: 'Les relevés du magasin, du plus ancien au plus récent. La ligne montre la forme ; les chiffres ci-dessus donnent la taille.',
+                rangeLabel: 'Horizon',
+                ranges: {
+                    day: 'Dernier jour',
+                    week: 'Dernière semaine',
+                    month: 'Dernier mois',
+                },
+                onePoint: 'Un seul relevé sur cet horizon. Un second trace une ligne.',
+                noneInWindow:
+                    'Cet horizon ne contient aucun relevé du magasin. La fenêtre est celle que la lecture a couverte, donc un horizon plus long peut en contenir un.',
+                plot: 'Chaque marque est un relevé, du plus ancien au plus récent. L’axe du temps indique la fenêtre couverte par la lecture, en UTC, et l’axe des valeurs la taille.',
+                plotCaption:
+                    'La taille de {name} sur l’horizon couvert par la lecture, {size} au dernier relevé.',
                 trend: 'de {from} à {to} sur {days} jours',
                 perWeek: '{rate} par semaine, {direction}',
                 rising: 'en hausse',

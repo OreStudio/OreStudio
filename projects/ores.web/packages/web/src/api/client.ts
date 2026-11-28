@@ -112,6 +112,7 @@ import {
     storeSamplesViewSchema,
     storeBoundResultSchema,
     type StoreBoundsView,
+    type StoreRange,
     type StoreSamplesView,
     type StoreBoundResult,
     type StoreBoundWrite,
@@ -4224,9 +4225,14 @@ export const api = {
         );
     },
 
-    /** One store's measurements, oldest first, for the plot of its growth. */
-    async housekeepingSamples(storeCode: string, limit: number): Promise<StoreSamplesView> {
-        const query = new URLSearchParams({ limit: String(limit) });
+    /**
+     * One store's measurements over a horizon, oldest first, for the plot.
+     *
+     * The answer states the window it covered, so the plot's axis is the
+     * installation's horizon and not this browser's subtraction.
+     */
+    async housekeepingSamples(storeCode: string, range: StoreRange): Promise<StoreSamplesView> {
+        const query = new URLSearchParams({ range });
         return storeSamplesViewSchema.parse(
             await request(
                 `/api/operations/housekeeping/stores/${encodeURIComponent(storeCode)}/samples?${query.toString()}`,

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
 #+owner: marco
-#+branch:
+#+branch: feature/name-what-the-surface-path-assumes
 #+pr: 5217
 #+blocked_on:
 #+blocked_since:
@@ -28,7 +28,7 @@ what it replaces and what it adds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -40,7 +40,7 @@ what it replaces and what it adds.
 - Every stage is named and given a verdict: the datum and the key grammar, the ingest, the series identity and its classification, the blueprint and its convention, the calibration, the checks, the publish, the withdrawal, the approval kinds, the export and the package, the simulator, and the page.
 - A part named generic names the evidence that it is: the test, the table or the call site. A part named FX only names what a second asset class needs instead.
 - The verdicts are checked against the claim the kind table makes: that a kind is a row and a declaration of its four parts.
-- The page ends with the split of the remaining tasks, and states where the story's scope is decided.
+- The page states which of the story's tasks the verdicts confirm, and any the verdicts change.
 
 * Notes
 
@@ -96,3 +96,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The survey is [[file:investigation_what_the_surface_path_assumes_about_fx.org][What the surface path assumes about FX]], written at =819a1245ee=.
+
+- *The quote layer is ready.* The datum, the key grammar, the URI, the classification, the ingest,
+  the publish record and the approval mechanics take a swaption quote today, unchanged. The missing
+  pieces are two seeds: an =ir.volatility= identity shape and the derived inventory's interest rate
+  rows.
+- *Five parts are FX only.* The blueprint, the calibration and the checks are FX shapes and take
+  their own tables; the export and the simulator are dispatch, one path per kind. The calibration
+  record and the blueprint name their FX assumptions in columns, so they cannot be parameterised by
+  a nullable asset class.
+- *The kind mechanism is closed in code.* A new kind costs an enumerator, a switch case and an
+  implementation. The header comment that calls a kind a row and a declaration understates it, and
+  the comment is worth correcting.
+- *The derivation is the only part that must be lifted rather than copied*, because its measurement
+  names no asset class and only its transform, coordinates and smile model do.
+- *The story's tasks stand.* The survey sizes the simulator and the export as the risk, not the
+  market data tables.
+
+A durable rule the survey produced: a part of the path is per kind when it holds a coordinate, a
+model or a convention of the asset class, and shared otherwise. That rule belongs on
+[[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface from quotes to a
+published set]], which is not this page's to edit.

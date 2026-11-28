@@ -1,0 +1,61 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title The identity link: the issuer and subject, and the address as evidence
+
+skinparam classAttributeIconSize 0
+
+package "a tenant's identity rows" {
+    class "identity provider" as provider {
+        tenant
+        issuer
+        client id
+        client secret: a name, never a value
+        enabled
+    }
+
+    class "account" as account {
+        username
+        email address
+        tenant, party, roles
+    }
+
+    class "identity link" as link {
+        provider
+        subject
+        account
+    }
+}
+
+class "the address\nthe provider sent" as address {
+    evidence of nothing on its own
+}
+
+provider "1" -- "0..*" link : enables
+link "0..*" -- "1" account : names
+provider ..> address : reports
+address ..> account : never matches
+note bottom of address
+  A workspace administrator can mint any
+  address in the domain the workspace holds,
+  so two equal addresses are two claims and
+  not one person.
+end note
+
+@enduml

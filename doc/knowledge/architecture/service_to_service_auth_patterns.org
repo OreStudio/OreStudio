@@ -249,3 +249,6 @@ handling and the pitfalls.
 - [[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap Phases]] — when during startup it is safe to mint a
   client-credentials token, including the self-referential case (a
   service minting a token against its own subjects).
+- [[id:B008A2C9-BAF5-49F7-AC79-B136AF9DAAE5][Federated identity]] — the
+  structure note that orders the cluster this page is read with, and where to
+  read it in it.

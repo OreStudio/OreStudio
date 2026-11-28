@@ -26,11 +26,11 @@ Measure the duplication between the platform workflows and settle the structure 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-28                               |
 
 * Acceptance
@@ -39,9 +39,9 @@ Measure the duplication between the platform workflows and settle the structure 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Measure the duplication, settle the mechanism, and record the shape and the
+order the work lands in. Nothing moves in this task; the phases are its
+successors.
 
 * Measurements
 
@@ -55,7 +55,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Run-block lines that repeat another workflow's block | 306 of 643 (48%) | =yaml.safe_load= over =.github/workflows/*.yml=, hashing each =run= body | a50053 |
+| Steps in each build job that all four build jobs carry | 10, of 18 to 32 | the same census, by step name | a50053 |
+| Lines in the cache steps, copied in both Linux workflows | 99 | the same census, by step name | a50053 |
 
 * Notes
 
@@ -83,3 +85,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The census and the shape are recorded in the capture
+[[id:B06E240E-D25A-4E31-B602-7259279F2B20][Share the CI setup across the
+platform workflows]], which is in the backlog for a phase to pick up.
+
+Four findings are worth carrying forward:
+
+- 48% of the lines inside run blocks repeat another workflow's block, and the
+  four build workflows are 58% of all the YAML in the repository.
+- Ten steps of each build job are the same on every platform; what differs is a
+  named, short list per operating system.
+- The logic that is already shared — the test run, the split, the submit —
+  lives in =CTest.cmake= and =build/scripts/expand_catch2_cases.py=, not in
+  YAML, which is why today's splitting fix reached every leg at once.
+- A composite action is the unit for a step group and a reusable workflow is the
+  unit for a leg, because a leg is a job and a step group is not.
+
+The phases, in order: =install-compass=, then the NATS, database and environment
+composites, then =save-sccache=, then =build-leg.yml=, then the guard and the
+package attachment.

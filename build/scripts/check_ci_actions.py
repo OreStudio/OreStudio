@@ -2,15 +2,18 @@
 """Check the shape of the CI YAML that GitHub alone would reject.
 
 A composite action is a list of steps that run inside somebody else's job, and
-two of its rules are broken silently:
+three of its rules are broken silently:
 
 - every step that runs a command must state its own shell, because the caller's
   `defaults.run.shell` does not reach into an action;
 - every local `uses:` must name a directory that holds an action.yml, or a
-  workflow that declares `workflow_call`.
+  workflow that declares `workflow_call`;
+- the job that calls a local action must check the repository out first, because
+  the runner prepares every action of a job before its first step runs, so a
+  checkout inside the action arrives too late.
 
-Neither mistake fails the pull request, or the merge: both fail hours later, in
-the nightly, on the platform that happens to take the branch. This is the check
+None of these fails the pull request, or the merge: all fail hours later, in the
+nightly, on the platform that happens to take the branch. This is the check
 that reads the YAML instead, written with the standard library alone so that it
 runs under either interpreter the gate has.
 
@@ -143,6 +146,18 @@ def check_action(path: Path) -> list[str]:
     return findings
 
 
+def job_blocks(text: str) -> list[tuple[str, str]]:
+    """Each job of a workflow, as its name and its lines."""
+    jobs: list[tuple[str, list[str]]] = []
+    for line in text.splitlines():
+        match = re.match(r"^  ([A-Za-z0-9_-]+):\s*$", line)
+        if match:
+            jobs.append((match.group(1), [line]))
+        elif jobs:
+            jobs[-1][1].append(line)
+    return [(name, "\n".join(lines)) for name, lines in jobs]
+
+
 def check_workflow(path: Path) -> list[str]:
     """The local paths a workflow calls, and the workflow it calls as a job."""
     findings: list[str] = []
@@ -166,6 +181,15 @@ def check_workflow(path: Path) -> list[str]:
             findings.append(
                 f"{relative}: calls ./.github/workflows/{workflow}, which does"
                 " not declare workflow_call")
+
+    for name, body in job_blocks(text):
+        if "./.github/actions/" not in body:
+            continue
+        if "actions/checkout@" not in body:
+            findings.append(
+                f"{relative}: job {name} calls a local action but never checks"
+                " the repository out, and the runner prepares a job's actions"
+                " before its first step runs")
     return findings
 
 

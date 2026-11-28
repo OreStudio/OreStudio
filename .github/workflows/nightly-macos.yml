@@ -40,6 +40,15 @@ jobs:
     outputs:
       should_build: ${{ steps.guard.outputs.should_build }}
     steps:
+      - uses: actions/checkout@v7
+        # A local action is read from the workspace, which the runner needs
+        # before the job starts, so the guard's caller checks out and the guard
+        # itself holds no checkout. Only a scheduled run compares trees; a
+        # manual or tag run builds whatever the checkout holds.
+        if: github.event_name == 'schedule'
+        with:
+          fetch-depth: 0
+
       - uses: ./.github/actions/relevance-guard
         id: guard
 

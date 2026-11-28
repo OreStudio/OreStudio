@@ -200,6 +200,12 @@ jobs:
     needs: build
     # Attach what passed, so one failed build does not cost the others.
     if: ${{ !cancelled() && github.ref_type == 'tag' && needs.build.result != 'skipped' }}
+    # A called workflow can only downgrade the token its caller passes, so the
+    # caller grants what the attachment asks for. Without this line the platform
+    # refuses the whole workflow at start, before any job runs.
+    permissions:
+      contents: write
+      actions: read
     uses: ./.github/workflows/attach-package.yml
     with:
       pattern: macos-*-release-ninja

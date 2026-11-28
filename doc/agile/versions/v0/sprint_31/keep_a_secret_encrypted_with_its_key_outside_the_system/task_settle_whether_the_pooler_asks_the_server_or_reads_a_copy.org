@@ -20,9 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-=ores_utility_pooler_auth_lookup_fn= exists so a transaction pooler can ask the
-server for a client's verifier instead of holding a copy of it. Nothing calls it.
-Settle it: wire the pooler to ask, or remove the function and keep the copies.
+=ores_utility_pooler_auth_lookup_fn= existed so a transaction pooler could ask
+the server for a client's verifier instead of holding a copy of it. Nothing
+called it, so the choice was to wire it or to remove it. This task removes it,
+and states why the copies stay.
 
 * Status
 
@@ -30,20 +31,35 @@ Settle it: wire the pooler to ask, or remove the function and keep the copies.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] |
-| Now          | Not yet started.                       |
+| Now          | The function and its entry-point lines are gone. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Run the gate, then merge.              |
 | Last touched | 2026-11-28                               |
 
 * Acceptance
 
--
+- The function, its drop script and both entry-point lines are gone, so a fresh
+  database holds no mechanism nothing calls.
+- Nothing in the tree names =ores_pooler_auth=, =auth_query= or =auth_user=, so
+  the pooler's configuration is the path it actually runs.
+- The reason the pooler reads verifiers rather than asking the server is written
+  where a reader of the pooler looks, so the decision is not re-opened as an
+  oversight.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The capture left two ways, and one of them had to be taken. This task takes the
+second: the function goes and the verifier copies stay.
+
+Wiring the pooler to ask the server costs a database role that the pooler logs
+in as. That role may read every verifier in the instance, which is a wider view
+than the pooler's own: it serves a named set of accounts, not the deployment.
+Wiring also costs a lookup function installed in each database the pooler
+fronts.
+
+What wiring buys is a pooler restart saved after a rotation. Each service
+resolves its password at start, so a rotation restarts the services, and the
+pooler's restart rides along in the same step.
 
 * Measurements
 
@@ -57,10 +73,18 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Callers of the lookup function | 0 | =grep -rn "pooler_auth\|auth_query\|auth_user" --include=*.sql --include=*.sh --include=*.py --include=*.ini .= | ef39f5344d |
+| Referrers of the role the grant names | 0 | same | ef39f5344d |
 
 * Notes
 
+- A verdict from review, not a defect: the function never had a caller, and a
+  mechanism that nothing calls reads as a mechanism that exists.
+- The verifier copies are not passwords. A SCRAM verifier is derived from a
+  password and cannot be turned back into one, so a copy opens nothing on its own
+  and the file that holds them is read by the pooler alone.
+- The grant inside the function named =ores_pooler_auth=, a role nothing in the
+  tree creates. It went with the file.
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

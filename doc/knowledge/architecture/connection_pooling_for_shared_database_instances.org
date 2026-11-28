@@ -52,6 +52,22 @@ present ([[id:42930B6A-544A-4F7E-ACF4-9ABC60F2B408][The environments share the d
 - The paths that need a session — the listener on =LISTEN= — go around the
   pooler in every deployment, so they are identical in both.
 
+** How the pooler authenticates a client
+
+The pooler opens the server connection as the client itself, so it needs what
+the server would accept in the client's place. It holds a SCRAM verifier for
+each account it serves and no password at all: a verifier is derived from a
+password and cannot be turned back into one, so a copy of it opens nothing on
+its own. The copies live under =build/=, which is not tracked, in one file read
+by the pooler alone.
+
+A rotation rewrites that file and restarts the pooler — a restart the services
+are owed anyway, because each resolves its password at start. Asking the server
+for a verifier instead would replace the file with a database role whose
+privilege is to read every verifier in the instance, and with a function to
+install in each database the pooler fronts. The pooler would then see more of
+the instance than the accounts it serves, to save a restart that is owed anyway.
+
 ** What it costs, and what it buys
 
 A deployment that runs a pooler gains a piece to operate and a place where a

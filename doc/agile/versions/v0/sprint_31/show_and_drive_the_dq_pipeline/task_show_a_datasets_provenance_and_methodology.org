@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: C764076D-053A-4980-95D2-EC74639C7954
+:END:
+#+title: Task: Show a dataset's own row, its provenance and its methodology
+#+description: The dataset page reads the dataset row itself, not only its roster member: description, context, classifications, domain and catalog on Details; provenance fields and the methodology its values are derived under on a Provenance tab.
+#+type: task
+#+level: s1
+#+filetags: :dq:sql:web:coverage:sprint_31:v0:show_and_drive_the_dq_pipeline:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A dataset's page states what the dataset is, not only what a publish does with it.
+Its Details tab reads the dataset's own row — description, business context, domain,
+subject area, catalog, the three classifications, and the last-changed line — and a
+Provenance tab states where the row came from and the methodology its values are
+derived under.
+
+The store holds all of it: =ores_dq_datasets_tbl= states 29 columns, 23 methodologies
+exist, and the label catalogue already maps the three classification domains. The
+page never reads any of it because it draws the roster member, which carries the
+publish-facing facts and nothing else.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
+| Now          | The prototype draws both tabs; they await sign-off. |
+| Waiting on   | Marco's sign-off of Details and Provenance. |
+| Next         | Read the dataset row with its methodology, and draw it. |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- The dataset's page reads the dataset's own row, and states its description, its
+  business context, its domain, subject area and catalog, its origin, nature and
+  treatment drawn as the labels the catalogue gives their codes, and the
+  last-changed line every record page ends with: version, modified by, recorded at,
+  change reason and commentary.
+- A Provenance tab states the source system, the license, the coding scheme, the
+  upstream dataset the row is derived from, its lineage depth, the date the rows
+  state and when they reached the store.
+- The same tab reads the methodology the dataset names: its name, version, where
+  the logic is written down, its description and its steps, or states that no
+  methodology is assigned.
+- The methodology is answered by the same read that answers the dataset, not by a
+  catalogue the page sorts through: one methodology belongs to one dataset.
+- A dataset the store does not hold is stated as such, not drawn from a roster
+  member with blanks.
+- A test asserts a seeded dataset's description, its classification labels and its
+  methodology's steps.
+
+
+* Plan
+
+The prototype is
+[[file:doc/prototypes/dq/reference-data-coverage.org][the coverage prototype note]],
+whose Details and Provenance tabs carry the design. The Qt client is the reference:
+=DatasetViewDialog::createOverviewTab= and =::createProvenanceAndMethodologyTab= drew
+the same split, and =BadgeLabelUtils= painted the three classifications.
+
+1. The read. One operation, =dq.v1.ops.dataset_profile=, answering the dataset row,
+   the labels the three classification codes map to, and the methodology it names.
+   The dataset's generated read already answers the row, but the methodology has no
+   HTTP route and one joined read is cheaper than a second round trip: the page asks
+   for one dataset and gets everything it draws.
+2. The handler on =dq::datasets:read=, and the route
+   =GET /api/v1/dq/dataset_profile?code=…=.
+3. The screen. The Details tab draws the row, then the grid, then the last-changed
+   line; the Provenance tab draws the provenance fields and the methodology. Both
+   replace the roster member as the page's source, except for the staged count and
+   readiness, which remain the roster's.
+4. Tests: a handler suite over the bus, and the dataset page's tests for the prose,
+   the classification labels, the last-changed line and the methodology steps.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Columns on the dataset row | 29 | =\d ores_dq_datasets_tbl= | 953a13c1e7 |
+| Methodologies in the store | 23 | =select count(*) from ores_dq_methodologies_tbl where valid_to=ores_utility_infinity_timestamp_fn()= | 953a13c1e7 |
+| Classification domains the catalogue maps | 3 | =GET /api/labels=, domains =dq_origin=, =dq_nature=, =dq_treatment= | 953a13c1e7 |
+| Fields the roster member carries | 12 | =bundle_roster_member= in =bundle_roster_protocol.hpp= | 953a13c1e7 |
+
+* Notes
+
+The page drew the roster member because the coverage screen needed it: code, name,
+artefact type, table, target subject, counts, optional, readiness. That is what a
+publish acts on. It is not what the dataset is, and the result was a record page
+with no description, no context, no classification and no provenance — the reviewer
+reading it could not tell a curated convention set from a plausible one.
+
+The classification codes are not free text. =/api/labels= answers the domains
+=dq_origin=, =dq_nature= and =dq_treatment= and maps each code the dataset states to
+the label it is painted with, which is how the Qt client drew them and how the page
+must draw them; a raw =Primary= would leave the screen responsible for a vocabulary
+the catalogue owns.
+
+The methodology is the new read. It is a versioned record with prose steps, and the
+dataset row names one by id. A page that read the whole catalogue to find one row
+would fetch 23 records to draw one; the joined read answers the dataset and its
+methodology together, and states the absence when the dataset names none.
+
+Asked for on 2026-11-28, on review of the Contents work: the page showed what a
+publish would write and nothing about the dataset that writes it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

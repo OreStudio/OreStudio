@@ -24,6 +24,7 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import type { BundleRosterBundle } from '@ores/wire-protocol/generated/dq/protocol/bundle_roster_protocol';
 import { TranslationProvider } from '../i18n/Provider.js';
+import { DEFAULT_PAGE_SIZE } from '../ui/Pager.js';
 import { DatasetPage } from './DatasetPage.js';
 
 /**
@@ -77,7 +78,7 @@ function render(
         client.setQueryData(['dq-tables', code], tables);
     }
     if (page !== null) {
-        client.setQueryData(['dq-rows', code, TABLE], page);
+        client.setQueryData(['dq-rows', code, TABLE, 0, DEFAULT_PAGE_SIZE], page);
     }
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
@@ -211,7 +212,11 @@ describe('the dataset page', () => {
 
         expect(html).toContain('GBP');
         expect(html).toContain('Pound Sterling');
-        expect(html).toContain('Showing 2 of 160 rows staged for iso.currencies.');
+        expect(html).toContain('Every row staged for iso.currencies is in this table: 160 in all.');
+        // Paging is the standard one: the page states its bounds, and the way to
+        // the other pages is the shared Pager rather than a button of its own.
+        expect(html).toContain('Rows 1–2 of 160');
+        expect(html).toContain('Next');
     });
 
     it('says so when no bundle carries the dataset', () => {

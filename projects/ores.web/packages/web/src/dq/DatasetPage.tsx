@@ -40,6 +40,7 @@ import { useAreaRoot } from '../shell/AreaTrail.js';
 import { PATHS } from '../shell/paths.js';
 import { Notice, Tag } from '../ui/Primitives.js';
 import type { DatasetPublication } from '@ores/wire-protocol/generated/dq/protocol/dataset_publications_protocol';
+import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 import { useTabs } from '../ui/Tabs.js';
 import { RelativeTime } from '../ui/Time.js';
 import { RecordHeader } from '../refdata/records.js';
@@ -387,15 +388,38 @@ function Contents({
     const { t } = useTranslation();
     const [search, setSearch] = useSearchParams();
     const table = search.get('table') ?? '';
+    // The page is held in the address the way every list holds it: `from` is the
+    // first row, omitted on the first page, and `size` is omitted at the default.
+    const offset = pageNumber(search.get('from'), 0);
+    const pageSize = Math.min(Math.max(pageNumber(search.get('size'), DEFAULT_PAGE_SIZE), 1), 1000);
     const tables = useQuery({
         queryKey: ['dq-tables', code],
         queryFn: () => readDatasetTables(code),
     });
     const rows = useQuery({
-        queryKey: ['dq-rows', code, table],
-        queryFn: () => readDatasetRows(code, table),
+        queryKey: ['dq-rows', code, table, offset, pageSize],
+        queryFn: () => readDatasetRows(code, table, pageSize, offset),
         enabled: table !== '',
     });
+    const move = (next: number): void => {
+        const params = new URLSearchParams(search);
+        if (next === 0) {
+            params.delete('from');
+        } else {
+            params.set('from', String(next));
+        }
+        setSearch(params);
+    };
+    const resize = (size: number): void => {
+        const params = new URLSearchParams(search);
+        params.delete('from');
+        if (size === DEFAULT_PAGE_SIZE) {
+            params.delete('size');
+        } else {
+            params.set('size', String(size));
+        }
+        setSearch(params);
+    };
 
     if (tables.isError) {
         return <Notice tone="error">{tables.error.message}</Notice>;
@@ -409,6 +433,10 @@ function Contents({
                 code={code}
                 table={table}
                 rows={rows.data}
+                offset={offset}
+                pageSize={pageSize}
+                onMove={move}
+                onPageSize={resize}
                 failed={rows.isError}
                 message={rows.error?.message}
                 onBack={() => setSearch({ tab: 'contents' })}
@@ -498,6 +526,10 @@ function TableRows({
     code,
     table,
     rows,
+    offset,
+    pageSize,
+    onMove,
+    onPageSize,
     failed,
     message,
     onBack,
@@ -505,6 +537,10 @@ function TableRows({
     readonly code: string;
     readonly table: string;
     readonly rows: DatasetRowsPage | undefined;
+    readonly offset: number;
+    readonly pageSize: number;
+    readonly onMove: (offset: number) => void;
+    readonly onPageSize: (pageSize: number) => void;
     readonly failed: boolean;
     readonly message: string | undefined;
     readonly onBack: () => void;
@@ -534,11 +570,7 @@ function TableRows({
                 {back}
                 <h2 className="mt-2 font-mono text-sm font-medium">{table}</h2>
                 <p className="mt-1 text-xs text-ink-muted">
-                    {t('dq.dataset.rowsLead', {
-                        code,
-                        count: rows.total.toLocaleString(),
-                        shown: rows.rows.length.toLocaleString(),
-                    })}
+                    {t('dq.dataset.rowsLead', { code, count: rows.total.toLocaleString() })}
                 </p>
             </div>
             {rows.rows.length === 0 ? (
@@ -577,8 +609,29 @@ function TableRows({
                     </tbody>
                 </table>
             )}
+            <div className="border-t border-line px-4 pb-3">
+                <Pager
+                    offset={offset}
+                    shown={rows.rows.length}
+                    total={rows.total}
+                    pageSize={pageSize}
+                    showing={t('dq.dataset.rowsShowing', {
+                        first: String(pageBounds(offset, rows.rows.length).first),
+                        last: String(pageBounds(offset, rows.rows.length).last),
+                        total: rows.total.toLocaleString(),
+                    })}
+                    onMove={onMove}
+                    onPageSize={onPageSize}
+                />
+            </div>
         </section>
     );
+}
+
+/** A page parameter, or its default when the address states none or nonsense. */
+function pageNumber(raw: string | null, fallback: number): number {
+    const value = Number.parseInt(raw ?? '', 10);
+    return Number.isNaN(value) || value < 0 ? fallback : value;
 }
 
 /** One cell of a row, as the store's JSON holds it. */

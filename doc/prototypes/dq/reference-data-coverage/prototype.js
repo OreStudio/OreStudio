@@ -312,12 +312,18 @@
             {
                 table: 'dq_countries_artefact_tbl',
                 rows: [
-                    ['GB', 'GBR', '826', 'United Kingdom', 'United Kingdom of Great Britain and Northern Ireland'],
-                    ['US', 'USA', '840', 'United States', 'United States of America'],
-                    ['JP', 'JPN', '392', 'Japan', 'Japan'],
-                    ['CH', 'CHE', '756', 'Switzerland', 'Swiss Confederation']
+                    ['GB', 'GBR', '826', 'United Kingdom', 'gb'],
+                    ['US', 'USA', '840', 'United States', 'us'],
+                    ['JP', 'JPN', '392', 'Japan', 'jp'],
+                    ['CH', 'CHE', '756', 'Switzerland', 'ch']
                 ],
-                columns: ['alpha2_code', 'alpha3_code', 'numeric_code', 'name', 'official_name'],
+                // A column states its kind, and an image column is drawn rather
+                // than printed: the read answers the image's code, not the uuid
+                // the artefact table holds, so the screen never resolves one.
+                columns: [
+                    'alpha2_code', 'alpha3_code', 'numeric_code', 'name',
+                    { name: 'image', kind: 'image' }
+                ],
                 staged: 249
             }
         ],
@@ -356,6 +362,126 @@
             }
         ]
     };
+
+    /* What the dataset row itself states, beside the roster's publish-facing
+     * facts. The store holds all of it and the generated dataset read already
+     * answers it; this prototype draws it from a mock so the shape can be read
+     * before a screen reads the row. */
+    var FACTS = {
+        'refdata.conventions': {
+            version: 3,
+            description: 'The curated index and instrument convention set every tenant ' +
+                'reads: the conventions of the ORE examples, the index conventions ORE ' +
+                'defines in code, and the conventions OreStudio adds, one row per (kind, id), ' +
+                'each with its source in conventions.tsv.',
+            business_context: 'The conventions trade builders, curve bootstraps and ORE runs ' +
+                'resolve an index or an instrument by.',
+            domain: 'Reference Data',
+            subject: 'Conventions',
+            catalog: 'ORE Studio',
+            origin: 'Primary',
+            nature: 'Actual',
+            treatment: 'Raw',
+            source_system: 'ORESTUDIO',
+            license: 'Internal Use Only',
+            coding_scheme: 'NONE',
+            upstream_derivation: '',
+            lineage_depth: 0,
+            as_of: '2026-10-19T00:00:00Z',
+            ingestion: '2026-10-19T09:12:00Z',
+            recorded_at: '2026-10-19T09:12:00Z',
+            modified_by: 'system',
+            change_reason: 'Initial Load',
+            change_commentary: 'Seeded from conventions.tsv.',
+            methodology: {
+                id: 'a9b384aa-aa6f-4067-9947-d1ab0e4d798a',
+                name: 'Convention Curation Methodology',
+                version: 1,
+                logic: 'https://github.com/OreStudio/OreStudio/tree/main/projects/ores.seeder/' +
+                    'datasets/conventions',
+                description: 'How the one convention set is curated from the ORE examples, the ' +
+                    'ORE engine and the index administrators, and how a change or an ORE ' +
+                    'upgrade reaches it.',
+                steps: [
+                    '1. SOURCE OF TRUTH',
+                    'conventions.tsv is the dataset: one row per (kind, id), its terms in ' +
+                    'ORE\u2019s own notation, and the source they are taken from. The populate ' +
+                    'script is generated from the table and never edited by hand.',
+                    '2. SOURCES',
+                    'A row names one of four sources: an ORE example, the ORE engine, an ' +
+                    'administrator publication, or OreStudio itself, and the source column ' +
+                    'cites the file or the publication the terms follow.',
+                    '3. CHANGING A ROW',
+                    'Edit conventions.tsv, state the source of the new terms, and run ' +
+                    'generate_sql.py. A change to a row that came from an ORE source moves it ' +
+                    'to the source its new terms follow.',
+                    '4. AN ORE UPGRADE',
+                    'After a new ORE release is vendored, its examples are extracted and its ' +
+                    'engine mined, then compared with the dataset: the report names each ' +
+                    'convention ORE holds that the dataset lacks, and each whose terms differ.'
+                ]
+            }
+        },
+        'refdata.currencies': {
+            version: 2,
+            description: 'ISO 4217 currency codes, their minor units and the currencies the ' +
+                'deployment trades.',
+            business_context: 'Every amount, curve and trade names a currency from this set.',
+            domain: 'Reference Data', subject: 'Currencies', catalog: 'ISO 4217',
+            origin: 'Primary', nature: 'Actual', treatment: 'Cleaned',
+            source_system: 'ISO', license: 'Internal Use Only', coding_scheme: 'ISO 4217',
+            upstream_derivation: '', lineage_depth: 0,
+            as_of: '2026-10-19T00:00:00Z', ingestion: '2026-10-19T09:12:00Z',
+            recorded_at: '2026-10-19T09:12:00Z', modified_by: 'system',
+            change_reason: 'Initial Load', change_commentary: 'Seeded from the ISO list.',
+            methodology: {
+                name: 'ISO List Ingestion',
+                version: 1,
+                logic: 'projects/ores.seeder/datasets/currencies',
+                description: 'How the ISO 4217 list is read and its minor units stated.',
+                steps: ['The published list is read as published.',
+                        'A currency the list withdraws is kept while a trade names it.']
+            }
+        },
+        'refdata.calendars': {
+            version: 1,
+            description: 'The business calendars a date rolls on, with their holidays.',
+            business_context: 'Every schedule and settlement date resolves against one of these.',
+            domain: 'Reference Data', subject: 'Calendars', catalog: 'ORE Studio',
+            origin: 'Derived', nature: 'Actual', treatment: 'Enriched',
+            source_system: 'ORESTUDIO', license: 'Internal Use Only', coding_scheme: 'NONE',
+            upstream_derivation: 'iso.countries', lineage_depth: 1,
+            as_of: '2026-10-19T00:00:00Z', ingestion: '2026-10-19T09:12:00Z',
+            recorded_at: '2026-10-19T09:12:00Z', modified_by: 'system',
+            change_reason: 'Initial Load', change_commentary: '',
+            methodology: {
+                name: 'Calendar Assembly',
+                version: 2,
+                logic: 'projects/ores.seeder/datasets/calendars',
+                description: 'How each calendar is assembled from its country and type.',
+                steps: ['The calendar type states the weekend and the rule.',
+                        'The country states which holidays the calendar takes.']
+            }
+        },
+        'refdata.countries': {
+            version: 1,
+            description: 'ISO 3166 countries, their codes and their names.',
+            business_context: 'Parties, calendars and holidays name a country from this set.',
+            domain: 'Reference Data', subject: 'Countries', catalog: 'ISO 3166',
+            origin: 'Primary', nature: 'Actual', treatment: 'Raw',
+            source_system: 'ISO', license: 'Internal Use Only', coding_scheme: 'ISO 3166',
+            upstream_derivation: '', lineage_depth: 0,
+            as_of: '2026-10-19T00:00:00Z', ingestion: '2026-10-19T09:12:00Z',
+            recorded_at: '2026-10-19T09:12:00Z', modified_by: 'system',
+            change_reason: 'Initial Load', change_commentary: '',
+            methodology: null
+        }
+    };
+
+    /** One dataset's own row, or nothing when the prototype holds no mock for it. */
+    function factsOf(code) {
+        return FACTS[code] || null;
+    }
 
     /* The dependency edges a dataset states, in both directions. The store holds
      * one row per edge: dataset_code depends on dependency_code for a stated role.
@@ -515,20 +641,89 @@
     }
 
     /** The rows of one table, drawn as its own columns state them. */
+    /* The page sizes every list offers, and the size a list starts at. Both are
+     * the record screen standard's; the contents view is a list and pages like
+     * one, rather than capping itself at the first fifty rows. */
+    var PAGE_SIZES = [15, 25, 50, 100, 200, 500];
+    var DEFAULT_PAGE_SIZE = 15;
+
+    /** The standard pager: where this page sits in the whole, and the way on. */
+    function pager(offset, shown, total, size) {
+        var first = shown === 0 ? 0 : offset + 1;
+        var last = offset + shown;
+        var lastOffset = Math.max(0, Math.floor((total - 1) / size) * size);
+        var atStart = offset === 0;
+        var atEnd = offset + shown >= total;
+        function btn(label, target, disabled) {
+            return '<button class="btn small" data-act="page" data-arg="' + target + '"' +
+                (disabled ? ' disabled' : '') + '>' + label + '</button>';
+        }
+        function step(delta) {
+            return Math.max(0, Math.min(lastOffset, offset + delta));
+        }
+        return '<div class="pager"><span>Rows ' + first + '\u2013' + last + ' of ' +
+            total.toLocaleString() + '</span><span class="pager-acts">' +
+            btn('First', 0, atStart) + btn('Previous', step(-size), atStart) +
+            btn('Next', step(size), atEnd) + btn('Last', lastOffset, atEnd) +
+            '<label>Page size <select data-act="size">' +
+            PAGE_SIZES.map(function (n) {
+                return '<option value="' + n + '"' +
+                    (n === size ? ' selected' : '') + '>' + n + '</option>';
+            }).join('') + '</select></label>' +
+            (total <= 1000 && total > size ?
+                '<button class="btn small ghost" data-act="size" data-arg="' + total +
+                '">Load all</button>' : '') +
+            '</span></div>';
+    }
+
+    /**
+     * One table's rows as the standard list draws them: the columns the rows
+     * carry, then the pager.
+     *
+     * The prototype holds a handful of mock rows, so a page past the first says
+     * so rather than pretending the table ended.
+     */
+    /** A column's name, whether it is stated as a string or as a name and kind. */
+    function columnName(c) {
+        return typeof c === 'string' ? c : c.name;
+    }
+
+    /** What a column holds, which decides how its cell is drawn. */
+    function columnKind(c) {
+        return typeof c === 'string' ? 'text' : (c.kind || 'text');
+    }
+
+    /** One cell, drawn as its column's kind: an image is shown, not printed. */
+    function cell(c, value) {
+        if (columnKind(c) === 'image') {
+            return '<td class="imgcell"><img src="flag-' + M.esc(value) + '.svg" alt="' +
+                M.esc(value) + '" title="' + M.esc(value) + '"></td>';
+        }
+        return '<td class="mono">' + M.esc(value) + '</td>';
+    }
+
     function rowsOfTable(code, table) {
         var held = (CONTENTS[code] || []).filter(function (t) { return t.table === table; })[0];
         if (!held) {
             return '<p class="tblstate">No table of ' + M.esc(code) + ' is named ' +
                 M.esc(table) + '.</p>';
         }
+        var offset = Math.max(0, Number(Q.get('page') || 0));
+        var size = Number(Q.get('size') || DEFAULT_PAGE_SIZE);
         var head = '<table class="rows"><thead><tr>' +
-            held.columns.map(function (c) { return '<th>' + M.esc(c) + '</th>'; }).join('') +
-            '</tr></thead><tbody>';
-        var body = held.rows.map(function (r) {
-            return '<tr>' + r.map(function (v) { return '<td class="mono">' + M.esc(v) + '</td>'; })
-                .join('') + '</tr>';
-        }).join('');
-        return head + body + '</tbody></table>';
+            held.columns.map(function (c) { return '<th>' + M.esc(columnName(c)) + '</th>'; })
+                .join('') + '</tr></thead><tbody>';
+        var shown = Math.min(size, held.rows.length);
+        var visible = held.rows.slice(offset, offset + size);
+        var body = visible.length === 0
+            ? '<tr><td class="tblstate" colspan="' + held.columns.length + '">The prototype ' +
+              'holds mock rows for the first page only.</td></tr>'
+            : visible.map(function (r) {
+                return '<tr>' + r.map(function (v, i) { return cell(held.columns[i], v); })
+                    .join('') + '</tr>';
+            }).join('');
+        return head + body + '</tbody></table>' +
+            pager(offset, visible.length === 0 ? 0 : shown, held.staged, size);
     }
 
     function publicationsTable(rows) {
@@ -558,35 +753,158 @@
         return M.table(cols, rows, { plain: true }) + messages;
     }
 
+    /** One titled card, as the Qt dialog drew its sections. */
+    function dcard(title, body, note) {
+        return '<section class="dcard"><h3>' + title +
+            (note ? ' <span class="dim">' + note + '</span>' : '') + '</h3>' + body + '</section>';
+    }
+
+    /** A label and value list inside a card, one row each. */
+    function kv(pairs) {
+        return '<dl class="kv">' + pairs.map(function (p) {
+            return '<div><dt>' + p[0] + '</dt><dd>' + p[1] +
+                (p[2] ? '<span class="hint" style="display:block">' + p[2] + '</span>' : '') +
+                '</dd></div>';
+        }).join('') + '</dl>';
+    }
+
+    /**
+     * What the dataset is: its own row, in the cards the Qt client drew for it.
+     *
+     * The cards answer different questions — what it is, how it is classified,
+     * where it came from, what a publish does with it — and a single grid of
+     * seventeen values answered none of them, which is why the review could not
+     * find the dataset in its own page.
+     */
     function detailsFields(b, m) {
         var last = (PUBLICATIONS[m.dataset] || [])[0];
         var reason = m.reason;
-        var fields = [
-            ['Name', M.esc(m.name), ''],
-            ['Code', '<span class="mono">' + M.esc(m.dataset) + '</span>', ''],
-            ['Bundle', M.esc(b.name) + ' <span class="dim">· ' + M.esc(b.code) + '</span>',
-             M.esc(b.level) + ' level'],
-            ['Artefact type', '<span class="mono">' + M.esc(m.type) + '</span>', ''],
-            ['Artefact table', '<span class="mono">' + M.esc(m.type) + '_artefact_tbl</span>',
-             'Where the rows are staged'],
-            ['Target subject', '<span class="mono">' + M.dash(m.subject) + '</span>',
-             'The bus subject a publish dispatches to'],
-            ['Staged', String(m.staged), 'Rows in the artefact table'],
-            ['Published', String(published(m)), 'Rows whose provenance names this dataset'],
-            ['Optional', m.optional ? 'yes' : 'no', 'Publishes only when a caller opts in'],
-            ['Last published', last ? M.relTime(last.at) + ' · ' + M.esc(last.by) : M.dash(''),
-             last ? 'Mode ' + last.mode : 'Never published'],
-            ['Readiness', reason ? M.badge('bad', reason) : M.badge('ok', 'ready'),
-             reason ? (reason === 'no staged rows' ? 'The importer fixes it.' : 'Data quality fixes it.')
-                    : 'Every fact a publish needs is present']
-        ];
-        return '<dl class="fields">' + fields.map(function (f) {
-            return '<div><dt>' + f[0] + '</dt><dd>' + f[1] +
-                (f[2] ? '<span class="hint" style="display:block">' + f[2] + '</span>' : '') +
-                '</dd></div>';
-        }).join('') + '</dl>' +
-            '<div class="lastchanged">Staged and published are the counts the roster serves. ' +
-            'The artefact table is the roster\'s, not a read of its own.</div>';
+        var f = factsOf(m.dataset) || {};
+        var main = dcard('Description', f.description ?
+                '<p>' + M.esc(f.description) + '</p>' : '<p class="muted-dash">—</p>') +
+            dcard('Business context', f.business_context ?
+                '<p>' + M.esc(f.business_context) + '</p>' : '<p class="muted-dash">—</p>') +
+            dcard('Commentary', (f.change_reason ?
+                '<p><b>' + M.esc(f.change_reason) + '</b> ' +
+                M.esc(f.change_commentary || '') + '</p>' : '<p class="muted-dash">—</p>')) +
+            dcard('Lifecycle', kv([
+                ['As of date', M.relTime(f.as_of),
+                 'The date the rows state, not when they reached the store'],
+                ['Ingestion', M.relTime(f.ingestion), 'When the rows reached the store']
+            ])) +
+            dcard('Publish', kv([
+                ['Artefact type', '<span class="mono">' + M.esc(m.type) + '</span>', ''],
+                ['Artefact table',
+                 '<span class="mono">ores_dq_' + M.esc(m.type) + '_artefact_tbl</span>',
+                 'Where the rows are staged'],
+                ['Target subject', '<span class="mono">' + M.dash(m.subject) + '</span>',
+                 'The bus subject a publish dispatches to'],
+                ['Staged', String(m.staged), 'Rows in the artefact table'],
+                ['Published', String(published(m)),
+                 'Rows whose provenance names this dataset'],
+                ['Optional', m.optional ? 'yes' : 'no',
+                 'Publishes only when a caller opts in'],
+                ['Last published',
+                 last ? M.relTime(last.at) + ' \u00b7 ' + M.esc(last.by) : M.dash(''),
+                 last ? 'Mode ' + last.mode : 'Never published'],
+                ['Readiness', reason ? M.badge('bad', reason) : M.badge('ok', 'ready'),
+                 reason ? (reason === 'no staged rows' ? 'The importer fixes it.'
+                                                      : 'Data quality fixes it.')
+                        : 'Every fact a publish needs is present']
+            ]));
+        var meth = f.methodology;
+        var side = dcard('Classification', kv([
+                ['Domain', M.esc(f.domain || '-'), ''],
+                ['Subject area', M.esc(f.subject || '-'), ''],
+                ['Catalog', M.esc(f.catalog || '-'), ''],
+                ['Origin', M.badge('class', f.origin || '-'), 'Where the rows come from'],
+                ['Nature', M.badge('class', f.nature || '-'), 'How the values are arrived at'],
+                ['Treatment', M.badge('class', f.treatment || '-'), 'What was done to them']
+            ])) +
+            dcard('Source and governance', kv([
+                ['Source system', '<span class="mono">' + M.esc(f.source_system || '-') +
+                    '</span>', ''],
+                ['License', M.esc(f.license || '-'), ''],
+                ['Coding scheme', '<span class="mono">' + M.esc(f.coding_scheme || 'NONE') +
+                    '</span>', '']
+            ])) +
+            dcard('Methodology', meth ? kv([
+                ['Name', M.esc(meth.name), ''],
+                ['Version', String(meth.version), ''],
+                ['Logic reference', '<a class="mono" href="' + M.esc(meth.logic) + '">' +
+                    M.esc(meth.logic) + '</a>', 'Where the logic is written down']
+            ]) : '<p class="tblstate">No methodology is assigned.</p>') +
+            dcard('Audit', kv([
+                ['Version', String(f.version || '-'), ''],
+                ['Modified by', '<span class="mono">' + M.esc(f.modified_by || '-') +
+                    '</span>', ''],
+                ['Recorded at', M.relTime(f.recorded_at), '']
+            ]));
+        return '<div class="dossier"><div class="dossier-main">' + main +
+            '</div><aside class="dossier-side">' + side + '</aside></div>' +
+            '<div class="lastchanged">Version ' + (f.version || '-') + ' \u00b7 modified by ' +
+                M.esc(f.modified_by || '-') + ' \u00b7 recorded ' + M.relTime(f.recorded_at) +
+                ' \u00b7 ' + M.esc(f.change_reason || '-') +
+                (f.change_commentary ? ' \u00b7 ' + M.esc(f.change_commentary) : '') + '</div>';
+    }
+
+    /**
+     * The provenance of one dataset: where its row came from, and the methodology
+     * its values are derived by.
+     *
+     * The Qt client split this from the overview for the same reason: the overview
+     * answers what the dataset is, and this answers how its values came to be. A
+     * methodology is a record of its own, so its steps are read, not summarised.
+     */
+    function provenancePanel(code) {
+        var f = factsOf(code);
+        if (!f) {
+            return '<p class="tblstate">No dataset row is drawn for ' + M.esc(code) + '.</p>';
+        }
+        var meth = f.methodology;
+        var main = dcard('Methodology',
+            meth ? (meth.description ? '<p>' + M.esc(meth.description) + '</p>' : '') +
+                '<div class="meth-body">' + meth.steps.map(function (step, i) {
+                    // A numbered step is a heading in the source; every other
+                    // line is prose under it.
+                    return /^\d+\./.test(step) ?
+                        '<h4>' + M.esc(step) + '</h4>' : '<p>' + M.esc(step) + '</p>';
+                }).join('') + '</div>' :
+                '<p class="tblstate">No methodology is assigned. Nothing states how the ' +
+                'values are derived.</p>',
+            meth ? M.esc(meth.name) + ' \u00b7 version ' + meth.version : '');
+        var side = dcard('Source', kv([
+                ['Source system', '<span class="mono">' + M.esc(f.source_system || '-') +
+                    '</span>', 'The system the rows were read from'],
+                ['License', M.esc(f.license || '-'), 'What the deployment may do with the rows'],
+                ['Coding scheme', '<span class="mono">' + M.esc(f.coding_scheme || 'NONE') +
+                    '</span>', '']
+            ])) +
+            dcard('Lineage metrics', kv([
+                ['Upstream derivation',
+                 f.upstream_derivation ?
+                    '<a class="mono" href="#" data-dataset="' +
+                    M.esc(f.upstream_derivation) + '">' + M.esc(f.upstream_derivation) + '</a>' :
+                    M.dash(''),
+                 'The dataset this one is derived from'],
+                ['Lineage depth', String(f.lineage_depth === undefined ? '-' : f.lineage_depth),
+                 'How many derivations away from a source']
+            ])) +
+            (meth ? dcard('Methodology info', kv([
+                ['Name', M.esc(meth.name), ''],
+                ['Version', String(meth.version), ''],
+                ['ID', '<span class="mono">' + M.esc(meth.id) + '</span>', ''],
+                ['Logic reference', '<a class="mono" href="' + M.esc(meth.logic) + '">' +
+                    M.esc(meth.logic) + '</a>', '']
+            ])) : '') +
+            dcard('Audit', kv([
+                ['Modified by', '<span class="mono">' + M.esc(f.modified_by || '-') +
+                    '</span>', ''],
+                ['Recorded at', M.relTime(f.recorded_at), ''],
+                ['Change reason', M.esc(f.change_reason || '-'), '']
+            ]));
+        return '<div class="dossier"><div class="dossier-main">' + main +
+            '</div><aside class="dossier-side">' + side + '</aside></div>';
     }
 
     function renderDataset() {
@@ -619,10 +937,11 @@
             '<a class="btn small" href="../publish-a-dataset/index.html">Publish</a>');
         var tabs = '<div class="tabs">' + [
             ['details', 'Details'],
+            ['provenance', 'Provenance'],
             ['publications', 'Publications' + (pubs.length ? ' (' + pubs.length + ')' : '') +
                 (warned ? ' ⚠' : '')],
             ['contents', 'Contents'],
-            ['lineage', 'Lineage'],
+            ['dependencies', 'Dependencies'],
             ['history', 'History']
         ].map(function (t) {
             return '<button class="' + (tab === t[0] ? 'on' : '') + '" data-act="tab" data-arg="' +
@@ -644,8 +963,15 @@
             if (table === '' && tables.length === 0) {
                 body = '<div class="cardhead"><h2>Contents</h2></div>' + tablesOf(code);
             }
-        } else if (tab === 'lineage') {
-            body = '<div class="cardhead"><h2>Lineage</h2><span class="dim">What publishes ' +
+        } else if (tab === 'provenance') {
+            body = '<div class="cardhead"><h2>Provenance and methodology</h2>' +
+                '<span class="dim">Where the row came from, and how its values are derived' +
+                '</span></div>' + provenancePanel(code) +
+                '<p class="hint">A methodology is a record of its own, so it is read rather ' +
+                'than summarised: its steps are the derivation, and a version of it is what a ' +
+                'value was produced under.</p>';
+        } else if (tab === 'dependencies') {
+            body = '<div class="cardhead"><h2>Dependencies</h2><span class="dim">What publishes ' +
                 'before this dataset, and what waits on it</span></div>' +
                 '<h3 class="lineage-head">Needs</h3>' + lineageNeeds(code) +
                 '<h3 class="lineage-head">Needed by</h3>' + lineageNeededBy(code) +
@@ -672,6 +998,10 @@
                 'prototype still draws mock rows because it reads no server.') +
             M.gap('The published count has no operation. Every published row names its dataset and no ' +
                 'service counts by it, so the figure here is mock data.') +
+            M.gap('The methodology has no read over HTTP. The store holds 23 of them and the ' +
+                'dataset row names the one it was produced under, but the generated entity has ' +
+                'no route, so this tab draws mock steps; the answer is one joined read of the ' +
+                'dataset and its methodology, not a catalogue the page sorts through.') +
             M.gap('The dependencies have no read over the bus. The store holds every edge in ' +
                 'ores_dq_dataset_dependencies_tbl and the publish order already resolves them, ' +
                 'but no operation answers them for a screen; until one does, this tab draws mock ' +
@@ -694,9 +1024,24 @@
                 }
             });
         });
+        document.querySelectorAll('[data-act="page"]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var target = Number(btn.getAttribute('data-arg'));
+                goto({ page: target === 0 ? null : String(target) });
+            });
+        });
+        document.querySelectorAll('[data-act="size"]').forEach(function (el) {
+            el.addEventListener('change', function () {
+                goto({ size: el.value, page: null });
+            });
+            el.addEventListener('click', function () {
+                var arg = el.getAttribute('data-arg');
+                if (arg) { goto({ size: arg, page: null }); }
+            });
+        });
         document.querySelectorAll('tr[data-table]').forEach(function (tr) {
             tr.addEventListener('click', function () {
-                goto({ table: tr.getAttribute('data-table') });
+                goto({ table: tr.getAttribute('data-table'), page: null });
             });
         });
         document.querySelectorAll('[data-act="back-to-tables"]').forEach(function (a) {

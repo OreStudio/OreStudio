@@ -360,3 +360,220 @@
     font-size: 11px;
     color: var(--ink-faint);
 }
+
+
+/* The dataset's own facts, above the grid the record standard lays out: a
+ * description and the business context are prose, and a prose line in a grid
+ * cell would be read as one more value. */
+.facts-prose {
+    margin: 0 0 18px;
+    max-width: 84ch;
+}
+
+.facts-prose p {
+    margin: 0 0 8px;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.facts-prose p.dim {
+    color: var(--ink-dim);
+}
+
+/* The provenance tab: the fields, then the methodology as the record it is. */
+.meth {
+    margin-top: 24px;
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+    max-width: 84ch;
+}
+
+.meth h3 {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0 0 8px;
+}
+
+.meth p {
+    margin: 0 0 10px;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.meth-steps {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--ink-dim);
+}
+
+.meth-steps li {
+    margin: 0 0 6px;
+}
+
+
+/* The dataset's own row, in the cards the Qt dialog drew: the main column answers
+ * what the dataset is, and the side column how it is classified and where it came
+ * from. One grid of seventeen values answered none of those questions. */
+.dossier {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+    gap: 18px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .dossier {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.dossier-main,
+.dossier-side {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+}
+
+.dcard {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--panel-2);
+    padding: 12px 14px;
+}
+
+.dcard h3 {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin: 0 0 10px;
+    color: var(--ink-dim);
+}
+
+.dcard h3 .dim {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.dcard p {
+    margin: 0 0 8px;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.dcard p:last-child {
+    margin-bottom: 0;
+}
+
+.kv {
+    margin: 0;
+    display: grid;
+    gap: 9px;
+}
+
+.kv > div {
+    display: grid;
+    grid-template-columns: 130px minmax(0, 1fr);
+    gap: 10px;
+    align-items: baseline;
+}
+
+.kv dt {
+    font-size: 12px;
+    color: var(--ink-dim);
+}
+
+.kv dd {
+    margin: 0;
+    font-size: 13px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.kv dd .hint {
+    margin-top: 2px;
+}
+
+/* The methodology's implementation details: a heading line and the prose under it,
+ * read in the order the curator wrote it. */
+.meth-body h4 {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    margin: 14px 0 6px;
+    color: var(--ink-dim);
+}
+
+.meth-body p {
+    margin: 0 0 8px;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--ink-dim);
+}
+
+.meth-body h4:first-child {
+    margin-top: 0;
+}
+
+/* The standard pager: where this page sits in the whole, and the way on. A list
+ * that is a page of a bigger table states the bounds it drew. */
+.pager {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--ink-dim);
+}
+
+.pager-acts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.pager-acts label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 6px;
+}
+
+.pager-acts select {
+    background: var(--panel-2);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 12px;
+}
+
+.pager button[disabled] {
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* An image column is drawn, not printed: the read answers the image's code and
+ * its column kind, so the screen shows the flag rather than the uuid the
+ * artefact table holds. */
+.imgcell {
+    width: 64px;
+}
+
+.imgcell img {
+    display: block;
+    width: 40px;
+    height: 28px;
+    object-fit: cover;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--panel);
+}

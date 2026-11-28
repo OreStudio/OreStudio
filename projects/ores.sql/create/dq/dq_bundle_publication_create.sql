@@ -442,7 +442,7 @@ begin
         'from ('
         '  select * from %I where dataset_id = $1 order by 1 limit $2 offset $3'
         ') t', p_table_name)
-        into v_rows using v_dataset_id, greatest(1, least(coalesce(p_limit, 50), 200)),
+        into v_rows using v_dataset_id, greatest(1, least(coalesce(p_limit, 50), 1000)),
                            greatest(0, coalesce(p_offset, 0));
 
     return jsonb_build_object('columns', v_columns, 'rows', v_rows, 'total', v_total);

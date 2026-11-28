@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: D1B5FAF4-BD7A-4740-AC52-A980A0FFE901
+:END:
+#+title: Task: Show an artefact row's image, not its id
+#+description: The contents read states an image column's kind and answers the image's code, and a route serves the stored image at its own content type, so a screen draws the flag instead of the uuid.
+#+type: task
+#+level: s1
+#+filetags: :dq:sql:web:coverage:sprint_31:v0:show_and_drive_the_dq_pipeline:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A row whose point is a picture shows the picture. Six artefact tables hold an
+=image_id=, the store keeps 687 images — SVG flags and JPEG photographs — and a
+contents row prints the uuid today, so a reader learns nothing about it.
+
+Two halves, and neither is served: the contents read states an image column's kind
+and answers the image's code, and a route serves the stored image at its own content
+type so the browser caches it. The prototype draws the result: the Contents table
+shows four flags where it showed four uuids.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
+| Now          | The prototype draws the column; it awaits sign-off. |
+| Waiting on   | Marco's sign-off of the image column.  |
+| Next         | Read the image's code with the row, and serve its bytes. |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- The contents read states each column's kind as well as its name, and an image
+  column's kind is =image=.
+- A row's image column answers the image's code, not the uuid the artefact table
+  holds, so the screen never resolves a reference.
+- A route serves a stored image's bytes at the image's own content type, so an
+  =<img>= reads it, the browser caches it, and no JSON carries a byte array.
+- The Contents tab draws an image column as a small picture with its code as the
+  alternative text, and prints no uuid.
+- An image the store does not hold, or one the caller may not read, is drawn as a
+  muted dash rather than a broken picture.
+- A test asserts a seeded country row's image code and that the route answers
+  =image/svg+xml= for it.
+
+
+* Plan
+
+The prototype is
+[[file:doc/prototypes/dq/reference-data-coverage.org][the coverage prototype note]],
+whose Contents tab draws the four flags of the countries mock from real stored SVGs.
+
+1. The read. =ores_dq_dataset_rows_fn= joins =ores_assets_images_tbl= for a column
+   named =image_id=, states the column's kind as =image= in =columns=, and answers
+   the image's code in place of the id. The join is per page, so it costs what the
+   page costs.
+2. The route. =GET /api/v1/assets/images/by-code/{code}/content= answers the bytes
+   with the stored =mime_type=, so the screen sets =src= and the browser caches it.
+   The existing JSON route stays for the images screen, which needs the metadata.
+3. The screen. A column whose kind is =image= is drawn as a 40 by 28 thumbnail, its
+   code as the alternative text and the title. A missing or forbidden image is a
+   muted dash.
+4. Tests: a pgTAP assertion for the kind and the code, a route test for the content
+   type and the bytes, and the dataset page's test for the image cell.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Images in the store | 687 | =select count(*) from ores_assets_images_tbl where valid_to=ores_utility_infinity_timestamp_fn()= | 953a13c1e7 |
+| Image kinds | 2, =image/svg+xml= and =image/jpeg= | =select mime_type, count(*) from ores_assets_images_tbl where valid_to=ores_utility_infinity_timestamp_fn() group by 1= | 953a13c1e7 |
+| Artefact tables with an image column | 6 | =select count(*) from information_schema.columns where table_schema='public' and column_name='image_id' and table_name like 'ores\_dq\_%artefact_tbl'= | 953a13c1e7 |
+| A flag, as stored | 30,510 bytes of SVG at =code= =ad= | =GET /api/v1/assets/images/ad= | 953a13c1e7 |
+
+* Notes
+
+An image is stored as base64 text in =ores_assets_images_tbl.data= with its
+=mime_type= beside it, and the JSON route decodes it into a byte array. That is the
+wrong shape for a picture in a table: a 30 KB SVG costs 94 KB of JSON, the screen
+must decode it, and every page re-reads every byte. A route that answers the bytes
+at the stored type lets the browser do what it already does for an image.
+
+The read answers the image's code rather than its id for the same reason the read
+answers a family's table names: the screen is given something it can draw with, and
+a reference it would have to resolve is not that. The id stays in the store; the
+code is what a route and a person both use.
+
+Only =image_id= is treated this way. A =party_id= or an =index_id= is a reference to
+another record and is drawn as its code by the screen that knows that record's kind;
+guessing from the name would draw a flag wherever a uuid happened to look like one.
+
+Asked for on 2026-11-28, on review of the Contents work: the mock rows showed
+uuids, and the flags the store holds were invisible.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

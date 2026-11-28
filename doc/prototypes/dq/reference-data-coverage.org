@@ -107,10 +107,26 @@ key and the level as the lead, then the tabs.
 
 The page answers the questions a list cannot:
 
-- *Details.* What the dataset is and where it goes: its name and code, the bundle
-  that carries it and that bundle's level, its artefact type and table, the target
-  subject a publish dispatches to, the two counts, whether it is optional, when it
-  was last published and by whom, and its readiness with the owner of the reason.
+- *Details.* The dataset's own row and not only its publish-facing
+  facts, in the cards the Qt client drew and not in one grid of seventeen values.
+  The main column answers what the dataset is: its description, its business
+  context, its commentary, when its rows state a date and when they reached the
+  store, and what a publish does with them. The side column answers how it is
+  classified and where it came from: domain, subject area and catalog, the three
+  classifications — origin, nature and treatment, each drawn as the badge the label
+  catalogue gives its code — the source system, the license, the coding scheme, and
+  the methodology's name, version and logic reference. Under both stands the
+  last-changed line every record page ends with. The row states all of it and the
+  generated dataset read already answers it; the page that drew the roster member
+  alone could not.
+
+- *Provenance.* Where the row came from and how its values are derived: the source
+  system, the license and the coding scheme, the upstream dataset it is derived
+  from, its lineage depth, and the methodology read as the record it is — name,
+  version, id, logic reference, description and implementation details. The Qt
+  client split this from the overview for the same reason the cards keep them
+  apart: one answers what the dataset is, the other how it came to be.
+
 - *Publications.* Every publish of this dataset, one row each: when, by whom, the
   mode, the four counts, the outcome, and what the run said. A warning is a row
   the run chose not to write; an error is a row it could not. A run that wrote
@@ -128,7 +144,18 @@ The page answers the questions a list cannot:
   why [[id:99F3E780-6AA0-4879-8F6F-2A1321ACDB85][its task]] owns that decision.
   The rows here are mock data and the page says so.
 
-- *Lineage.* What publishes before the dataset, and what waits on it. The store
+  The rows are a list, so they page like every other list: the same six page
+  sizes, the same first–previous–next–last strip, the same bounds sentence, and
+  the page held in the address. A table of half a million rows reads like a page
+  of fifteen, and a page size of five hundred is a choice a person makes, not a
+  cap the view takes on their behalf.
+
+  A column states its kind as well as its name, because some kinds are drawn and
+  not printed. An =image= column is the first: the artefact table holds an image
+  id, the read answers the image's code, and the screen draws the flag. Printing
+  the id would tell a reader nothing about a row whose point is the picture.
+
+- *Dependencies.* What publishes before the dataset, and what waits on it. The store
   holds every edge in =ores_dq_dataset_dependencies_tbl= — 196 rows when this was
   written — as "this dataset depends on that one for this role". The publish order
   already resolves them, so the tab states a fact about a publish and not a
@@ -189,8 +216,19 @@ grid: =conventions= names thirty-four tables, each with its own columns, so a ta
 is listed with its columns and count and opened to read its rows. See
 [[id:99F3E780-6AA0-4879-8F6F-2A1321ACDB85][See the rows a dataset has staged]].
 
-The Lineage tab was drawn on 2026-11-28 and awaits sign-off. It answers what the
-Qt Data Librarian's lineage graph answered, and its open point is the asymmetry
+The Details tab and a Provenance tab were drawn on 2026-11-28 and await sign-off,
+on the question the review raised: a dataset's page showed nothing of the dataset
+itself. They were redrawn as cards on the same day, because the first cut laid
+seventeen values in one grid and the reviewer still could not find the dataset in
+its own page; the cards are the Qt dialog's sections, which is what the area is
+measured against. Both readings exist — the row is served by the generated dataset read, and
+the label catalogue already maps the three classifications — except the
+methodology, which has a bus list and no HTTP route. The answer drawn is one joined
+read of the dataset and its methodology, not a catalogue the page sorts through.
+
+The Dependencies tab was drawn on 2026-11-28 and awaits sign-off. It is the Qt
+dialog's Dependencies tab under the name the Qt client gave it, and it answers what
+the Qt Data Librarian's lineage graph answered, and its open point is the asymmetry
 above: whether the downstream side is a table, as drawn, or a graph cut to the
 roles a person picks.
 
@@ -202,6 +240,16 @@ roles a person picks.
 #+caption: Two needs, with each wire labelled by the role the edge states.
 #+attr_html: :width 100%
 [[file:reference-data-coverage/lineage-currencies.png]]
+
+#+caption: The Details tab in the Qt dialog's cards: what the dataset is on the
+#+caption: left, how it is classified and where it came from on the right.
+#+attr_html: :width 100%
+[[file:reference-data-coverage/dataset-details.png]]
+
+#+caption: The Provenance tab: the methodology read as a record, and the source,
+#+caption: lineage metrics and audit that say where its values came from.
+#+attr_html: :width 100%
+[[file:reference-data-coverage/dataset-provenance.png]]
 
 The table layout stays on the page only as the record of what was first drawn.
 

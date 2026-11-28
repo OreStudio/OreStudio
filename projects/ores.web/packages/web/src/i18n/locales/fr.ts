@@ -8723,8 +8723,10 @@ const fr: SourceCatalogue = {
             table: 'Table',
             columns: 'Colonnes',
             allTables: 'Toutes les tables',
-            rowsLead: '{shown} lignes sur {count} mises en attente pour {code}.',
+            rowsLead:
+                'Toutes les lignes mises en attente pour {code} sont dans cette table : {count} au total.',
             rowsNone: 'Cette table ne porte aucune ligne pour {code}.',
+            rowsShowing: 'Lignes {first}–{last} sur {total}',
             title: 'Jeu de données',
             level: 'Niveau {level}',
             name: 'Nom',

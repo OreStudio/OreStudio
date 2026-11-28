@@ -58,7 +58,11 @@ left the staged rows to psql.
   content.
 - The dataset's page draws the Contents tab as a list of tables, each with its
   columns and staged count, and opening one table draws its rows under the
-  columns' own names. Paging is stated: how many of how many the page holds.
+  columns' own names.
+- The rows page like every list in the application: the standard =Pager=, its six
+  page sizes, its first–previous–next–last strip and its bounds sentence, with the
+  page held in the address as =from= and =size=. The read's own cap is the Load
+  all limit, not a number the screen invents.
 - The view is a read. Changing a row is
   [[id:88F9E5B4-20FF-4EEC-B8A0-97B35970E120][its own task]].
 - A test reads the contents of a seeded dataset and asserts a table, its columns
@@ -90,8 +94,9 @@ prototype and its sign off are in
    =dataset_contents_handler= owns the =dq::datasets:read= gate.
 4. The route. =GET /api/v1/dq/dataset_contents= forwards the named dataset, the
    optional table and the page.
-5. The screen. A Contents tab between Publications and History, holding the open
-   table in the address so a link reopens the rows and Back returns to the list.
+5. The screen. A Contents tab between Publications and Dependencies, holding the
+   open table in the address so a link reopens the rows and Back returns to the
+   list, and paging through the shared =Pager= the record lists already use.
 6. Tests: a pgTAP suite for the two functions and their refusals, a handler suite
    through the bus, and the dataset page's tests for both the list and the rows.
 
@@ -111,6 +116,8 @@ task and name that file in the Command column.
 | Rows in the first of them | 1,040 | =select staged_count from ores_dq_dataset_tables_fn('refdata.conventions') limit 1= | 60e8f51364 |
 | pgTAP assertions | 8 | =pg_prove -d <db> test/dq_dataset_contents_test.sql= | 60e8f51364 |
 | Handler assertions | 166 in 4 cases | =ores.dq.core.tests "[contents]"= | 60e8f51364 |
+| Page sizes the pager offers | 6, from 15 to 500 | =PAGE_SIZES= in =ui/Pager.tsx= | d7af5a2352 |
+| Rows a page may answer | 1,000 at most | =least(coalesce(p_limit, 50), 1000)= in =ores_dq_dataset_rows_fn= | d7af5a2352 |
 
 * Notes
 
@@ -136,6 +143,12 @@ The write half is
 [[id:88F9E5B4-20FF-4EEC-B8A0-97B35970E120][Read and write an artefact row over
 the bus]], which reads one row by key to correct it. This task reads many to look
 at them. They share the read path and land in whichever order suits the sprint.
+
+The first cut capped the rows at fifty and stated how many of how many it showed.
+Review refused that: a list pages like every other list in the application, through
+the same control and the same address parameters, and a cap of its own is a second
+paging scheme to learn. The read's cap is the Load all limit so the pager can offer
+every size it states.
 
 Asked for on 2026-11-26, after the coverage screens were reviewed. The Data
 Librarian drew a lineage graph of a dataset and never its rows, which is the gap

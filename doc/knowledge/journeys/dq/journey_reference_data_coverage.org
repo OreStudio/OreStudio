@@ -67,9 +67,16 @@ is a journey of its own.
    dataset was last published and by whom, and which of four reasons keeps it from
    being ready: no dataset row names it, it names no artefact type, the artefact
    type names no target subject, or its artefact table holds no rows. The first
-   three are DQ's to fix; the fourth is the importer's. Its Publications tab lists
-   every publish of that dataset with the outcome and what the run said, because a
-   run that wrote nothing and a run that failed are not the same answer.
+   three are DQ's to fix; the fourth is the importer's. Its Details tab also states
+   the dataset's own row: what it is, how it is classified, where it came from and
+   when it last changed. Its Provenance tab states the source system, the license,
+   the coding scheme, the upstream derivation and the methodology its values are
+   derived under, read as the record it is. Its Publications tab lists every publish
+   of that dataset with the outcome and what the run said, because a run that wrote
+   nothing and a run that failed are not the same answer. Its Contents tab lists the
+   tables the dataset's artefact type names, each with its own columns and staged
+   count, and a table is opened to read its rows. Its Dependencies tab states what
+   has to publish before the dataset and what waits on it.
 
 4. *Read what a publish would write.* The person opens the preview for the
    bundle. The system reports, per dataset, the number of staged rows and what a
@@ -165,6 +172,14 @@ view.
 
 - *A preview operation.* =ores_dq_bundle_preview_fn= exists in the database and
   has no subject, so step 4 is the one read of the screen that is not served.
+- *An image column, read as an image.* =ores_dq_countries_artefact_tbl= and
+  thirteen other tables hold an =image_id= pointing at =ores_assets_images_tbl=,
+  where 687 images sit — SVG flags and JPEG photographs. The contents read answers
+  the id, and no route serves an image's bytes at its own content type, so a
+  screen can only print a uuid. Both halves are missing: a read that states an
+  image column's kind and answers its code, and a route that serves the image so
+  the browser caches it.
+
 - *A read of the dependency edges.* =ores_dq_dataset_dependencies_tbl= holds one
   row per edge — 196 in the provisioned environment, at most six out of one
   dataset and as many as thirty-two into one — and the publish order resolves them,

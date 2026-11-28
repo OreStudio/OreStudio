@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A dataset's page gains a Lineage tab: the datasets that have to publish before it,
+A dataset's page gains a Dependencies tab: the datasets that have to publish before it,
 with the role each plays, and the datasets that wait on it. The Qt Data Librarian
 drew the first direction as a graph and never the second, and no operation reads
 the edges over the bus, so a person asking "what breaks if I change this dataset"
@@ -33,7 +33,7 @@ has to read =ores_dq_dataset_dependencies_tbl= in psql.
 | State        | BACKLOG                              |
 | Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
 | Now          | The prototype draws the tab; it awaits sign-off. |
-| Waiting on   | Marco's sign-off of the Lineage tab.   |
+| Waiting on   | Marco's sign-off of the Dependencies tab.   |
 | Next         | Read what a dataset depends on, over the bus, and draw it. |
 | Last touched | 2026-11-28                               |
 
@@ -44,7 +44,7 @@ has to read =ores_dq_dataset_dependencies_tbl= in psql.
   states. The caller names one dataset, never the whole table.
 - Each edge names the other dataset's code and display name, so a screen draws a
   name and not a code it would have to join.
-- The dataset's page gains a Lineage tab. *Needs* is drawn as the graph the Qt
+- The dataset's page gains a Dependencies tab. *Needs* is drawn as the graph the Qt
   client drew — at most six nodes, each wire labelled with its role — and *Needed
   by* is a table, because one dataset has thirty-two dependents and thirty-two
   wires to one node is unreadable. The asymmetry is the design decision this task
@@ -58,7 +58,7 @@ has to read =ores_dq_dataset_dependencies_tbl= in psql.
 
 The prototype is
 [[file:doc/prototypes/dq/reference-data-coverage.org][the coverage prototype note]]
-and =reference-data-coverage/prototype.js=, whose Lineage tab carries the design.
+and =reference-data-coverage/prototype.js=, whose Dependencies tab carries the design.
 The Qt client is the reference for the graph: =DatasetViewDialog::updateLineageView=
 draws the upstream nodes above the dataset, labels each wire with the edge's role,
 and =ClientDatasetDependencyModel::dependenciesForDataset= filters the edges the
@@ -73,7 +73,7 @@ client loaded once. The web reads the same edges from the server instead.
    the request and the answer from one statement.
 3. =publish_service::list_dataset_lineage= and a handler on =dq::datasets:read=.
 4. =GET /api/v1/dq/dataset_lineage?dataset_code=…=.
-5. The Lineage tab, to the signed-off prototype.
+5. The Dependencies tab, to the signed-off prototype.
 6. Tests: a pgTAP suite for the function, a handler suite over the bus, and the
    dataset page's tests for both halves.
 

@@ -105,8 +105,12 @@ std::optional<derived_fx_quote_id> parse_derived_fx_external_id(std::string_view
                                .label = std::string(label)};
 }
 
+const qm::vol_derivation_kind& fx_vol_derivation() {
+    return qm::fx_vol_derivation();
+}
+
 boost::uuids::uuid derived_fx_method_id() {
-    return boost::uuids::string_generator{}("fefdf018-d882-5c4e-bd27-2aeedfcad9c9");
+    return qm::method_id_of(fx_vol_derivation());
 }
 
 std::string derived_fx_series_uri(const derived_fx_pair& pair) {

@@ -1,0 +1,101 @@
+:PROPERTIES:
+:ID: 5A80416A-59AA-4840-9115-018E533CFE90
+:END:
+#+title: Task: Let the script library check parse without logging in
+#+description: Task for: Keep main green
+#+type: task
+#+level: s1
+#+filetags: :keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/let-the-script-library-check-parse-without-logging-in
+#+pr: 5240
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Have the script library generator call the shell as a parser, not as a client, so a checkout's login default cannot stop it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- The generator runs with the ORES_SHELL_LOGIN_ variables removed from the shell's environment.
+- The check fails with the variable set on main and passes with it set after the change.
+
+* Plan
+
+Reproduce the failure before touching the generator, with the variable the
+workflow exports:
+
+#+begin_src sh
+ORES_SHELL_LOGIN_USERNAME=tenant_admin@acme_corporation \
+  python3 external/ore/tools/generate_script_library.py --check \
+  --shell ./build/output/linux-clang-release-ninja/publish/bin/ores.shell
+#+end_src
+
+It answers "error: the shell refused a script: Usage error: Login username
+provided but password is missing!" — the same two lines Continuous Linux has
+printed since 2026-11-27.
+
+Then drop the login from the environment the generator hands the shell.
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Continuous Linux runs red on the check | 5, from 2026-11-27 | =gh api .../workflows/continuous-linux.yml/runs= | main at 46090052047 |
+| The check with the login variable exported, before this change | exit 1 | see the Plan command, on =origin/main= | ea11b8ec3d |
+| The same, after | exit 0 | as above, on this branch | this branch |
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5240][#5240]] | [tooling] Call the shell as a parser, without the checkout's login |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The generator calls the shell to parse scripts, and the shell refuses to start
+when it carries a login name and no password. Since environment format version
+38 took the demo password out of =.env= while the username stayed, the workflows
+that export the file hand the shell exactly that pair: a username with nothing
+beside it. Continuous Linux has been red on the step since 2026-11-27 for this
+reason, and the suites never were: the failure is the check's own shell call.
+
+The generator now removes every =ORES_SHELL_LOGIN_= variable from the
+environment it gives the shell, which is what a parser needs and what a client
+does not. A developer who exported only the username, as the file's own comment
+suggests, was hitting the same wall in =./compass.sh check=.

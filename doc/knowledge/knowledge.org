@@ -38,6 +38,7 @@ one, start there rather than here.
 | [[id:FA45D3D1-C3D9-4FDB-B03B-8AB724D71092][Interest Rate Curves]] | Discounting, bootstrapping, and the multi-curve family |
 | [[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] | Realised against implied, the surface, and what trades on it |
 | [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] | Who an actor is, and where each layer enforces it |
+| [[id:B008A2C9-BAF5-49F7-AC79-B136AF9DAAE5][Federated identity]] | ORE as a relying party to a provider, the link it keeps, and ORE as an authorization server |
 | [[id:338DCC6D-4913-4FDC-9078-1F0B0486A9E5][MASD]] | The methodology the code generator implements |
 | [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity Lifecycle]] | The order an entity's layers must be built in |
 | [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] | How a subject is addressed, what a message must look like, and where a service binds to the bus |
@@ -173,6 +174,10 @@ features. Each component's own page carries its script inventory.
 
 - [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the structure note: who an actor is, and where
   each layer enforces it. It orders the IAM and RBAC pages.
+
+- [[id:B008A2C9-BAF5-49F7-AC79-B136AF9DAAE5][Federated identity]] — the structure note for the other half of the
+  question: where an identity comes from when it is not ORE's to hold, and what
+  ORE hands a client that asks to act for a person.
 
 * Documentation tooling
 

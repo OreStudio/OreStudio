@@ -1,0 +1,31 @@
+# Commands behind the numbers on task_group-the-approval-state-of-a-party-and-a-desk.org
+
+Measured at 84d9e9320c (origin/main) on 2026-11-28.
+
+$ grep -c "^| projects/" compass/checks/wide_types.org
+596
+
+$ awk -F"|" '/^\| projects/ {print $3}' compass/checks/wide_types.org | grep -c "_entity"
+237
+
+$ awk -F"|" '/^\| projects/ && $3 ~ /_entity/ {gsub(/ /,"",$4); if ($4>=16 && $4<=18) n++} END {print n}' compass/checks/wide_types.org
+83
+
+$ grep -rl "std::string modified_by;" projects/*/core/include/*/repository/*_entity.hpp | wc -l
+597
+
+$ grep -rln "domain_audit_group" projects/*/modeling/*.org | wc -l
+46
+
+$ grep -c restricts_product_types projects/ores.sql/create/refdata/refdata_parties_create.sql projects/ores.sql/create/refdata/refdata_business_units_create.sql projects/ores.sql/create/refdata/refdata_product_approvals_create.sql
+projects/ores.sql/create/refdata/refdata_parties_create.sql:1
+projects/ores.sql/create/refdata/refdata_business_units_create.sql:1
+projects/ores.sql/create/refdata/refdata_product_approvals_create.sql:15
+
+$ grep -c "p\.restricts_product_types\|u\.restricts_product_types" projects/ores.sql/create/refdata/refdata_product_approvals_create.sql
+6
+
+$ ls projects/ores.sql/test/refdata_*product_type*test.sql
+projects/ores.sql/test/refdata_book_product_types_seed_test.sql
+projects/ores.sql/test/refdata_business_unit_product_types_test.sql
+projects/ores.sql/test/refdata_party_product_types_test.sql

@@ -50,6 +50,7 @@ set(files
     "dataset_bundle_protocol_codec_roundtrip_tests.cpp"
     "dataset_codec_roundtrip_tests.cpp"
     "dataset_protocol_codec_roundtrip_tests.cpp"
+    "dataset_publications_protocol_codec_roundtrip_tests.cpp"
     "domain_badge_definition_tests.cpp"
     "domain_catalog_tests.cpp"
     "domain_change_reason_category_tests.cpp"

@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 4A1DDF29-F1C2-4193-A9DB-20B4C14633F1
+:END:
+#+title: A refused step answer skips the run log
+#+description: The publish-from-dq step binds its tenant context outside the try, so a throw there logs nothing and never fails the step; the log row is written after the step is answered, so a refused answer leaves one run without a row.
+#+type: capture
+#+level: cross
+#+filetags: :dq:publishing:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two shapes in the publish-from-dq step, both inherited from the file it copies,
+that lose evidence about a run.
+
+The tenant context is bound before the `try`:
+
+#+begin_src cpp
+    auto tenant_ctx = ores::database::service::tenant_context::with_tenant(ctx_, wf->tenant_id);
+    try {
+#+end_src
+
+If `with_tenant` throws, the catch never runs: no log row is written, `wf->fail`
+is never called and the delivery is never committed, so the step is redelivered
+until its attempt limit and the run's reason is nowhere.
+
+The log row is written after `wf->complete(...)`. When the answer is refused, the
+catch writes a *failed* row for a run whose rows were published, so the log says
+the run failed while the data says it worked.
+
+The fix is one shape: bind the tenant inside the step's own failure path, write
+the log before the answer, and let the answer's failure be a failure of the same
+run rather than a second row. Eleven copies of the handler carry it.
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

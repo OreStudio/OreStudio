@@ -20,6 +20,7 @@
 #include "ores.http/routes/dq/bundle_roster_routes.hpp"
 #include "ores.http/routes/dq/dataset_bundle_member_routes.hpp"
 #include "ores.http/routes/dq/dataset_bundle_routes.hpp"
+#include "ores.http/routes/dq/dataset_publication_routes.hpp"
 #include "ores.http/routes/dq/dataset_routes.hpp"
 
 namespace ores::http::routes::dq {
@@ -32,6 +33,7 @@ void dq_routes::register_routes(std::shared_ptr<ores::http::net::router> router,
     dataset_bundle_member_routes::register_routes(router, registry, session);
     artefact_type_routes::register_routes(router, registry, session);
     bundle_roster_routes::register_routes(router, registry, session);
+    dataset_publication_routes::register_routes(router, registry, session);
 }
 
 }

@@ -64,9 +64,11 @@ function render(
     roster: readonly BundleRosterBundle[],
     path: string,
     code = 'iso.currencies',
+    runs: readonly unknown[] = [],
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['dq-roster', 'dataset', code], roster);
+    client.setQueryData(['dq-publications', code], runs);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -105,14 +107,39 @@ describe('the dataset page', () => {
 
         expect(html).toContain('Not served yet');
         expect(html).toContain('Last published');
-        expect(html).toContain('the run log has no writer');
+        expect(html).toContain('Nothing has published this dataset yet.');
     });
 
-    it('draws the publications tab, which says why it holds nothing yet', () => {
+    it('draws the publications tab, which says nothing has published yet', () => {
         const html = render(WORLD, '/data-quality/datasets/iso.currencies?tab=publications');
 
-        expect(html).toContain('Publications');
-        expect(html).toContain('The run log has no writer');
+        expect(html).toContain('Nothing has published this dataset yet.');
+    });
+
+    it('draws a run the log holds, with its outcome', () => {
+        const html = render(
+            WORLD,
+            '/data-quality/datasets/iso.currencies?tab=publications',
+            'iso.currencies',
+            [
+                {
+                    published_at: '2026-11-27 15:49:00.000Z',
+                    published_by: 'tenant_admin',
+                    mode: 'upsert',
+                    target_table: 'dq_currencies_artefact_tbl',
+                    records_inserted: 160,
+                    records_updated: 0,
+                    records_skipped: 2,
+                    records_deleted: 0,
+                    outcome: 'published_with_warnings',
+                    messages: '[{"severity":"warning","text":"2 row(s) were skipped"}]',
+                },
+            ],
+        );
+
+        expect(html).toContain('tenant_admin');
+        expect(html).toContain('Published with warnings');
+        expect(html).toContain('2 row(s) were skipped');
     });
 
     it('says so when no bundle carries the dataset', () => {

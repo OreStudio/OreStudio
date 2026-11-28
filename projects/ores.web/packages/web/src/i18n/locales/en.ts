@@ -281,7 +281,7 @@ export const en: SourceCatalogue = {
                 held: 'Waiting for you',
                 applying: 'Being made',
                 applied: 'Made',
-                failed: 'Could not be made',
+                failed: 'Failed',
             },
         },
         autoApproval: {
@@ -8494,9 +8494,22 @@ export const en: SourceCatalogue = {
             ready: 'Ready',
             readyHint: 'Every fact a publish needs is present',
             notCarried: 'No bundle carries {code}.',
+            runWhen: 'Published',
+            runBy: 'By',
+            runMode: 'Mode',
+            runInserted: 'Inserted',
+            runUpdated: 'Updated',
+            runSkipped: 'Skipped',
+            runDeleted: 'Deleted',
+            runOutcome: 'Outcome',
+            publicationsNone: 'Nothing has published this dataset yet.',
+            outcome: {
+                published: 'Published',
+                warnings: 'Published with warnings',
+                failed: 'Failed',
+            },
             lastPublished: 'Last published',
-            lastPublishedGap:
-                'Not served yet: the run log has no writer, so nothing records when this dataset was last published.',
+            lastPublishedGap: 'Nothing has published this dataset yet.',
             publicationsTitle: 'Publications',
             publicationsLead:
                 'One row for each publish of this dataset, with what the run wrote and what it said.',

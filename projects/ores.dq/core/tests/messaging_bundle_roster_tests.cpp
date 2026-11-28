@@ -27,6 +27,7 @@
  * in the bundle's own order, the members carry the counts the SQL function
  * returns, and the verb asks for the read and not the write.
  */
+#include "ores.database/query_builder/execute.hpp"
 #include "ores.dq.api/messaging/bundle_roster_protocol.hpp"
 #include "ores.dq.core/messaging/roster_handler.hpp"
 #include "ores.dq.core/service/publish_service.hpp"
@@ -36,6 +37,8 @@
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <optional>
@@ -44,6 +47,11 @@
 #include <vector>
 
 namespace {
+
+ores::logging::logger_t& lg_for_tests() {
+    static auto instance = ores::logging::make_logger("ores.dq.tests.roster");
+    return instance;
+}
 
 const std::string roster_subject("ores.test.dq.bundle_roster.");
 const std::string roster_method("bundle_roster");
@@ -180,6 +188,50 @@ TEST_CASE("naming a bundle returns its members with what each has staged", "[mes
                                     world->members.end(),
                                     [](const auto& member) { return member.staged_count > 0; });
     CHECK(staged);
+}
+
+TEST_CASE("a failed run states its outcome and what it said", "[messaging][roster]") {
+    bundle_roster_fixture f;
+    const auto named = f.roster("world");
+    REQUIRE(named.success);
+    const auto* world = find_bundle(named, "world");
+    REQUIRE(world != nullptr);
+    REQUIRE_FALSE(world->members.empty());
+    const auto dataset_code = world->members.front().dataset_code;
+
+    // The log is written by the step, and this reads it back the way a dataset's
+    // page does: a failed run states its outcome and the error the target raised.
+    auto ctx = f.db.context();
+    const auto sql = "SELECT ores_dq_record_publication_fn($1::uuid, $2::uuid, $3, 0, 0, 0, 0, $4, "
+                     "$5::jsonb)";
+    const auto dataset_id = [&] {
+        const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+            ctx,
+            "SELECT id::text FROM ores_dq_datasets_tbl WHERE code = $1 "
+            "AND valid_to = ores_utility_infinity_timestamp_fn()",
+            {dataset_code},
+            lg_for_tests(),
+            "Reading a dataset id");
+        REQUIRE_FALSE(rows.empty());
+        return *rows.front().front();
+    }();
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+    ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx,
+        sql,
+        {dataset_id,
+         instance_id,
+         "upsert",
+         "failed",
+         R"([{"severity":"error","text":"the target refused the rows"}])"},
+        lg_for_tests(),
+        "Recording a failed publication");
+
+    ores::dq::service::publish_service svc(f.db.context());
+    const auto runs = svc.list_dataset_publications(dataset_code);
+    REQUIRE_FALSE(runs.empty());
+    CHECK(runs.front().outcome == "failed");
+    CHECK(runs.front().messages.find("the target refused the rows") != std::string::npos);
 }
 
 TEST_CASE("naming a dataset answers the bundle that carries it", "[messaging][roster]") {

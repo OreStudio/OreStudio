@@ -62,6 +62,8 @@ struct publication_entity {
     std::int64_t records_skipped{};
     std::int64_t records_deleted{};
     std::string published_by;
+    std::string outcome;
+    std::string messages;
     db_timestamp published_at;
 
     /**
@@ -81,6 +83,8 @@ struct publication_entity {
                query_builder::bind("records_skipped", &e::records_skipped) |
                query_builder::bind("records_deleted", &e::records_deleted) |
                query_builder::bind("published_by", &e::published_by) |
+               query_builder::bind("outcome", &e::outcome) |
+               query_builder::bind_text("messages", &e::messages) |
                query_builder::bind("published_at", &e::published_at);
     }
 };

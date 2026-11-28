@@ -58,6 +58,8 @@ namespace ores::dq::domain {
         utility::codec::field{"records_skipped", &publication::records_skipped},
         utility::codec::field{"records_deleted", &publication::records_deleted},
         utility::codec::field{"published_by", &publication::published_by},
+        utility::codec::field{"outcome", &publication::outcome},
+        utility::codec::field{"messages", &publication::messages},
         utility::codec::field{"published_at", &publication::published_at},
     };
 }

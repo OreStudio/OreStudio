@@ -25,13 +25,15 @@ import type {
     BundleRosterBundle,
     BundleRosterMember,
 } from '@ores/wire-protocol/generated/dq/protocol/bundle_roster_protocol';
-import { readBundleRoster, reasonOf } from '../api/dq.js';
+import { readBundleRoster, readDatasetPublications, reasonOf } from '../api/dq.js';
 import { OWNER_KEY, REASON_KEY } from './readiness.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { PATHS } from '../shell/paths.js';
 import { Notice, Tag } from '../ui/Primitives.js';
+import type { DatasetPublication } from '@ores/wire-protocol/generated/dq/protocol/dataset_publications_protocol';
 import { useTabs } from '../ui/Tabs.js';
+import { RelativeTime } from '../ui/Time.js';
 import { RecordHeader } from '../refdata/records.js';
 
 /**
@@ -51,6 +53,11 @@ export function DatasetPage(): ReactNode {
     const roster = useQuery({
         queryKey: ['dq-roster', 'dataset', code],
         queryFn: () => readBundleRoster('', code),
+        enabled: code !== '',
+    });
+    const runs = useQuery({
+        queryKey: ['dq-publications', code],
+        queryFn: () => readDatasetPublications(code),
         enabled: code !== '',
     });
     const { tab, bar } = useTabs({
@@ -103,7 +110,15 @@ export function DatasetPage(): ReactNode {
                 detail={t('dq.dataset.level', { level: bundle.level })}
             />
             {bar}
-            {tab === 'details' ? <Details bundle={bundle} member={member} /> : <Publications />}
+            {tab === 'details' ? (
+                <Details bundle={bundle} member={member} runs={runs.data ?? []} />
+            ) : (
+                <Publications
+                    runs={runs.data}
+                    failed={runs.isError}
+                    message={runs.error?.message}
+                />
+            )}
         </div>
     );
 }
@@ -126,12 +141,15 @@ function memberOf(
 function Details({
     bundle,
     member,
+    runs,
 }: {
     readonly bundle: BundleRosterBundle;
     readonly member: BundleRosterMember;
+    readonly runs: readonly DatasetPublication[];
 }): ReactNode {
     const { t } = useTranslation();
     const reason = reasonOf(member);
+    const last = runs[0];
     const fields: readonly (readonly [string, ReactNode, string])[] = [
         [t('dq.dataset.name'), member.dataset_name, ''],
         [
@@ -166,7 +184,17 @@ function Details({
             member.optional ? t('common.yes') : t('common.no'),
             t('dq.dataset.optionalHint'),
         ],
-        [t('dq.dataset.lastPublished'), '—', t('dq.dataset.lastPublishedGap')],
+        [
+            t('dq.dataset.lastPublished'),
+            last === undefined ? (
+                '—'
+            ) : (
+                <span>
+                    <RelativeTime at={last.published_at} /> · {last.published_by}
+                </span>
+            ),
+            last === undefined ? t('dq.dataset.lastPublishedGap') : outcomeLabel(t, last.outcome),
+        ],
         [
             t('dq.dataset.readiness'),
             reason === null ? (
@@ -197,23 +225,134 @@ function Details({
 }
 
 /**
- * The publishes of one dataset.
+ * The publishes of one dataset, newest first.
  *
- * The run log that holds them has no writer and no column for an outcome or a
- * message, so this tab states that and draws nothing. A table that said "none
- * yet" would claim nothing was published, which is the opposite of what is known.
+ * A run that failed is drawn beside the runs that worked, because a person
+ * asking when a dataset was last published is asking whether the last attempt
+ * worked, and a table of the successes answers a different question.
  */
-function Publications(): ReactNode {
+function Publications({
+    runs,
+    failed,
+    message,
+}: {
+    readonly runs: readonly DatasetPublication[] | undefined;
+    readonly failed: boolean;
+    readonly message: string | undefined;
+}): ReactNode {
     const { t } = useTranslation();
+    if (failed) {
+        return (
+            <section className="rounded-md border border-line bg-surface-raised">
+                <div className="p-4">
+                    <h2 className="text-sm font-medium">{t('dq.dataset.publicationsTitle')}</h2>
+                </div>
+                <div className="px-4 pb-4">
+                    <Notice tone="error">{message ?? ''}</Notice>
+                </div>
+            </section>
+        );
+    }
+    if (runs === undefined) {
+        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
+    }
+    if (runs.length === 0) {
+        return (
+            <section className="rounded-md border border-line bg-surface-raised">
+                <div className="p-4">
+                    <h2 className="text-sm font-medium">{t('dq.dataset.publicationsTitle')}</h2>
+                    <p className="mt-1 text-xs text-ink-muted">
+                        {t('dq.dataset.publicationsNone')}
+                    </p>
+                </div>
+            </section>
+        );
+    }
     return (
-        <section className="rounded-md border border-line bg-surface-raised">
-            <div className="p-4">
-                <h2 className="text-sm font-medium">{t('dq.dataset.publicationsTitle')}</h2>
-                <p className="mt-1 text-xs text-ink-muted">{t('dq.dataset.publicationsLead')}</p>
-            </div>
-            <div className="px-4 pb-4">
-                <Notice tone="warn">{t('dq.dataset.publicationsGap')}</Notice>
-            </div>
+        <section className="overflow-x-auto rounded-md border border-line bg-surface-raised">
+            <table className="w-full text-left text-sm">
+                <thead>
+                    <tr className="border-b border-line text-xs text-ink-muted">
+                        <th className="px-4 py-2 font-medium">{t('dq.dataset.runWhen')}</th>
+                        <th className="px-4 py-2 font-medium">{t('dq.dataset.runBy')}</th>
+                        <th className="px-4 py-2 font-medium">{t('dq.dataset.runMode')}</th>
+                        <th className="px-4 py-2 text-right font-medium">
+                            {t('dq.dataset.runInserted')}
+                        </th>
+                        <th className="px-4 py-2 text-right font-medium">
+                            {t('dq.dataset.runUpdated')}
+                        </th>
+                        <th className="px-4 py-2 text-right font-medium">
+                            {t('dq.dataset.runSkipped')}
+                        </th>
+                        <th className="px-4 py-2 text-right font-medium">
+                            {t('dq.dataset.runDeleted')}
+                        </th>
+                        <th className="px-4 py-2 font-medium">{t('dq.dataset.runOutcome')}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {runs.map((run, i) => (
+                        <tr
+                            key={`${run.published_at}-${i}`}
+                            className="border-b border-line-subtle last:border-b-0"
+                        >
+                            <td className="px-4 py-2">
+                                <RelativeTime at={run.published_at} />
+                            </td>
+                            <td className="px-4 py-2 font-mono text-xs">{run.published_by}</td>
+                            <td className="px-4 py-2 font-mono text-xs">{run.mode}</td>
+                            <td className="px-4 py-2 text-right font-mono text-xs">
+                                {run.records_inserted.toLocaleString()}
+                            </td>
+                            <td className="px-4 py-2 text-right font-mono text-xs">
+                                {run.records_updated.toLocaleString()}
+                            </td>
+                            <td className="px-4 py-2 text-right font-mono text-xs">
+                                {run.records_skipped.toLocaleString()}
+                            </td>
+                            <td className="px-4 py-2 text-right font-mono text-xs">
+                                {run.records_deleted.toLocaleString()}
+                            </td>
+                            <td className="px-4 py-2">
+                                <Tag
+                                    {...(run.outcome === 'failed' ? { tone: 'down' as const } : {})}
+                                >
+                                    {outcomeLabel(t, run.outcome)}
+                                </Tag>
+                                {messagesOf(run).map((one) => (
+                                    <span key={one} className="mt-1 block text-xs text-ink-faint">
+                                        {one}
+                                    </span>
+                                ))}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </section>
     );
+}
+
+/** The words a run's outcome is drawn in. */
+function outcomeLabel(t: (key: string) => string, outcome: string): string {
+    if (outcome === 'failed') {
+        return t('dq.dataset.outcome.failed');
+    }
+    if (outcome === 'published_with_warnings') {
+        return t('dq.dataset.outcome.warnings');
+    }
+    return t('dq.dataset.outcome.published');
+}
+
+/** What a run said, one sentence per message. */
+function messagesOf(run: DatasetPublication): readonly string[] {
+    try {
+        const parsed = JSON.parse(run.messages) as { severity?: string; text?: string }[];
+        return parsed
+            .filter((one) => typeof one.text === 'string')
+            .map((one) => `${one.severity ?? ''}: ${one.text}`.trim());
+    } catch {
+        return [];
+    }
 }

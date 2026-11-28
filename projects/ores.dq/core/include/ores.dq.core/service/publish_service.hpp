@@ -27,6 +27,7 @@
 #include "ores.dq.api/domain/publication_mode.hpp"
 #include "ores.dq.api/domain/publication_result.hpp"
 #include "ores.dq.api/messaging/bundle_roster_protocol.hpp"
+#include "ores.dq.api/messaging/dataset_publications_protocol.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/artefact_type_repository.hpp"
 #include "ores.dq.core/repository/dataset_dependency_repository.hpp"
@@ -185,6 +186,18 @@ public:
      */
     std::vector<messaging::bundle_roster_member>
     list_bundle_members(const std::string& bundle_code);
+
+    /**
+     * @brief Reads the runs that published one dataset, newest first.
+     *
+     * The log is append-only, so a page is the whole history of a dataset that
+     * anyone reads. A run that failed is in it, with what it said.
+     *
+     * @param dataset_code The dataset whose runs to read.
+     * @return The runs, newest first.
+     */
+    std::vector<messaging::dataset_publication>
+    list_dataset_publications(const std::string& dataset_code);
 
     /**
      * @brief Reads the bundle that carries a dataset.

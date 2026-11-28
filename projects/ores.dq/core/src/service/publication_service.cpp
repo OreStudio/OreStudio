@@ -148,6 +148,8 @@ domain::publication publication_to_domain(const messaging::publication_write& wr
     v.records_skipped = write.records_skipped;
     v.records_deleted = write.records_deleted;
     v.published_by = write.published_by;
+    v.outcome = write.outcome;
+    v.messages = write.messages;
     v.published_at = write.published_at;
     return v;
 }

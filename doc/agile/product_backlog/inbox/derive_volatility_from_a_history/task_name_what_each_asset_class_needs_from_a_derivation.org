@@ -97,18 +97,14 @@ via its "Verifies task" field.
 
 * Result
 
-The survey is [[file:investigation_what_each_asset_class_needs_from_a_derivation.org][What each asset
-class needs from a derivation]], written at =819a1245ee=.
+The survey is [[id:F1E7B79A-A96D-47C0-AFFD-330ABF7B9513][What each asset class needs from a
+derivation]], written on 2026-11-28 at =819a1245ee=.
 
-- *Two classes can be served now.* FX is served; interest rates needs only the engine's three
-  parameters. Between them they cover the volatility of every trade in the seed population.
-- *Four classes fail, for three reasons.* Inflation and equity need an adapter each. Commodity needs
-  an adapter and has no obvious free source. Credit needs a datum first: the key grammar has no
-  instrument for a CDS option volatility, though ORE's today's market names =CDSVolatilities=.
-- *Inflation is the nearest third class*: its quote is already nameable and ten curves are already
-  configured, so the only missing piece is an index-fixing adapter.
-- *Interest rates reads many series where FX reads one.* An FX ladder hangs off one spot series; a
-  swaption reads the series of its term, so a term the curves do not carry has no history and the
-  refusal names the term.
-- *A generated series is a history if it is stored*, so the engine's refusal must say whether the
-  store holds no series at all or holds one the generator has not yet extended.
+It answers the question the engine cannot: FX and interest rates can be served now, and the other
+five classes fail on a history first -- inflation, equity, commodity and bond on the series alone,
+credit on the series and, for a single name, on a datum. Inflation is the nearest third class, one
+adapter away.
+
+What a class supplies to the engine is on
+[[id:099697A6-8526-48E0-A63D-DB3932C06468][Deriving FX volatility quotes from historical fixings]],
+not here.

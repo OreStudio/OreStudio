@@ -2,18 +2,16 @@
 :ID: F1E7B79A-A96D-47C0-AFFD-330ABF7B9513
 :END:
 #+title: Investigation: What each asset class needs from a derivation
-#+description: For each asset class: the series the platform holds, the transform that turns it into a return, the coordinates a quote is named by, the smile model, and the object a published set must be. It says which classes can be served now and which wait on a history. Point in time: 819a1245ee.
+#+description: The series, transform, coordinates and smile each class needs before a volatility.
 #+type: investigation
 #+level: s1
 #+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
 #+created: 2026-11-28
 #+updated: 2026-11-28
 
-A point-in-time record, written while the story that commissioned it was open, of an
-[[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into what each asset class needs
+A point-in-time record, written on 2026-11-28 at =819a1245ee=, of what each asset class needs
 before a volatility can be derived for it. It is a snapshot, not a description of the system. The
-durable half -- what a class supplies to the engine -- belongs on the page that owns the
-derivation; cite that page from code and recipes, not this one.
+durable half -- what a class supplies to the engine -- is on the page that owns the derivation.
 
 * Context
 
@@ -24,49 +22,60 @@ named by, and the smile model.
 That leaves a question the engine cannot answer: for which asset classes does the platform hold a
 history at all? A derivation with no series is not a small feature with a fake input. It is a
 fabrication, and the platform must refuse it by naming the series it lacks. This survey answers the
-question class by class, so the story can say which classes it serves and which it refuses.
+question class by class.
+
+Each class is judged by one of three verdicts, and the verdict is the finding: *servable now*, when
+the series is held and the quote is nameable; *waits on a history*, when the quote is nameable and no
+source fixes the series; and *waits on a datum*, when the key grammar cannot name the quote at all.
 
 * Methodology
 
-Three questions were asked of each asset class, in this order, because each one is cheaper than the
-next and a failure at any of them ends the enquiry:
+Three questions were asked of each class, in this order, because each is cheaper than the next and a
+failure at any of them ends the enquiry:
 
-1. *Is a series held?* The adapter catalogue (=marketdata_adapters_artefact_populate.sql=) says
-   which public sources the release reads; the simulator's feed kinds say which series it generates;
-   the ACME dataset says which curves the groups are configured from.
+1. *Is a series held?* The adapter catalogue says which public sources the release reads, the
+   simulator's feed kinds say which series it generates, and the ACME dataset says which curves the
+   groups are configured from.
 2. *Can a quote be named?* The datum schema says whether the key grammar has an instrument type for
    the class's volatility, with the coordinates the class quotes.
 3. *Is a set configured?* The refdata curve configurations say whether a surface of the class has
    anywhere to land.
 
-The measures, at =819a1245ee=:
+The measures, at =819a1245ee=. Each command is the one that produced the number:
 
-| Measure                                  | Value | Command                                    |
-|------------------------------------------+-------+--------------------------------------------|
-| Adapters the catalogue installs          |    14 | =grep -o "'ores.marketdata.official', '[a-z]*'" marketdata_adapters_artefact_populate.sql= |
-| ... of those that serve interest rates   |    13 | the same, all of them =ir=                 |
-| ... that serve FX                        |     1 | the same file, =fx=                        |
-| ... that serve another asset class       |     0 | the same file                              |
-| Simulator feed kinds                     |     4 | =fx_spot=, =fx_vol_surface=, =ir_curve=, =index_fixing= |
-| ACME curve sections                      |    99 | =curve_definitions.json=                   |
-| ... FX volatility                        |    54 | the same file                              |
-| ... yield curves                         |    35 | the same file                              |
-| ... inflation curves                     |    10 | the same file                              |
-| ... any other section                    |     0 | the same file                              |
+| Measure                                  | Value | Command                                                                                     |
+|------------------------------------------+-------+---------------------------------------------------------------------------------------------|
+| Adapters the catalogue installs          |    14 | =grep -o "'ores\.marketdata\.[a-z]*', '[a-z_]*'" marketdata_adapters_artefact_populate.sql= |
+| ... of those that serve interest rates   |    13 | the same, =| uniq -c=, the rows naming =ir=                                                 |
+| ... that serve FX                        |     1 | the same, the rows naming =fx=                                                              |
+| ... that serve another asset class       |     0 | the same                                                                                    |
+| Simulator feed kinds                     |     4 | =grep -rn "feed_kind = " --include=*.hpp projects/ores.synthetic/api/include=               |
+| ACME curve sections                      |    99 | =python3 -c='import json,collections; ...' curve_definitions.json=, counting =section_code=  |
+| ... FX volatility                        |    54 | the same                                                                                    |
+| ... yield curves                         |    35 | the same                                                                                    |
+| ... inflation curves                     |    10 | the same                                                                                    |
+| ... any other section                    |     0 | the same                                                                                    |
 
 * Paths taken
 
-The classes were walked in the order of the taxonomy, and each was carried as far as the first
-question it failed.
+Each class is carried as far as the first question it fails. The table states what the engine would
+need from the class, and whether it can be answered today.
 
-| Class | Series held | Quote the datum names | Verdict |
-|-------+-------------+-----------------------+---------|
-| FX | ECB reference spots through =frankfurter= (real, daily), the simulator's spot paths, and the forwards the IR curves imply | =fx_option=, by pair, expiry and a delta label | served today |
-| Interest rates | 13 official rate sources (real, daily, one per central bank) and the 35 yield curves' own quote series (generated and stored per observation date) | =swaption= by currency, expiry, term and strike; =capfloor= by currency, index, term and index tenor | servable now |
-| Inflation | 10 inflation curves configured, and no source that fixes an index | =zc_inflation_capfloor= and =yy_inflation_capfloor=, by index, term, cap or floor, and strike | waits on a history: an index-fixing adapter |
-| Credit | nothing configured | none: the schema names the CDS spread, the hazard rate and the recovery rate, not a CDS option volatility, while ORE's today's market names =CDSVolatilities= | waits on a datum, then a history |
-| Equity | nothing | =equity_option=, by name, currency, expiry, strike and option type | waits on a history |
-| Commodity | nothing | =commodity_option=, by commodity, expiry, strike and option type | waits on a history |
+| Class | Series held | Transform | Coordinates | Smile | Published set | Verdict |
+|-------+-------------+-----------+-------------+-------+---------------+---------|
+| FX | ECB reference spots through =frankfurter= (real, daily), the simulator's spot paths, and the forwards the curves imply | log return of the spot | pair, expiry, delta label | in delta: ATM, risk reversal, butterfly | a surface over expiry by delta, written as =fx_option= quotes | servable now, and served |
+| Interest rates | 13 official rate sources (real, daily, one per official source) and the 35 yield curves' quote series (generated and stored per observation date) | difference of the rate, in basis points | currency, expiry, term, strike, payer or receiver; a cap/floor adds index and index tenor | in strike | a swaption or cap/floor set over expiry by term by strike, in normal volatility with a shift | servable now |
+| Inflation | 10 inflation curves configured, and no source that fixes an index | difference of the index rate | index, term, cap or floor, strike | in strike | a zero-coupon or year-on-year cap/floor set over term by strike | waits on a history: an index-fixing adapter |
+| Credit | nothing configured | difference of the spread, in basis points | entity or index, expiry, strike | in strike | a CDS volatility set | waits on a history, and on a single-name datum |
+| Equity | nothing | log return of the spot | name, currency, expiry, strike, option type | in strike | a surface over expiry by strike | waits on a history |
+| Commodity | nothing | log return of the forward | commodity, expiry, strike, option type | in strike | a set per delivery point, over expiry by strike | waits on a history |
+| Bond | nothing | log return of the future's price | security or contract, expiry, strike | in strike | a bond future volatility set | waits on a history |
+
+Two classes the taxonomy holds are absent from the table on purpose. =scripted= states no market
+data of its own: a scripted trade observes its underlyings, so its volatility is theirs. =bond= is in
+the table because the schema names a bond option and a bond future option, and ORE names
+=BondFutureVolatilities= as a component of today's market, so the quote is nameable even though no
+series exists.
 
 Three of the rows need to be read carefully.
 
@@ -81,52 +90,60 @@ and the derivation can measure it. A fresh database holds none of it, and then t
 nothing to read until the generator has run. The engine's refusal must say which of the two it is
 looking at.
 
-*Credit fails twice, and the first failure is the datum.* ORE reads CDS volatilities as a component
-of today's market, and the configuration tables for them exist. The datum schema has no instrument
-type for a CDS option, so no key can name the quote the derivation would write. A credit volatility
-is a datum story before it is a derivation story.
+*Credit is two cases, not one.* An index CDS option is nameable today: =schema.hpp= carries
+=index_cds_option= under the credit asset class. A single-name CDS option is not: the schema names the
+CDS spread, the hazard rate and the recovery rate, and no option on a single name. No series exists
+for either case, so credit fails on the history in both, and on the datum only for the single name.
 
 * Conclusions
 
 1. *Two classes can be served now.* FX is served today; interest rates can be served as soon as the
    derivation has its three parameters. Between them they cover the volatility of every trade in the
    seed population: the FX options, the swaptions and the caps.
-2. *Four classes fail, for three different reasons.* Inflation and equity fail on a series and would
-   pass with an adapter each. Commodity fails on a series and has no obvious free source to adapt.
-   Credit fails on a datum first and a series second.
+2. *Five classes fail, and the history is the common cause.* Inflation, equity, commodity and bond
+   fail on a series alone, and would pass with an adapter each. Credit fails on a series in both its
+   cases, and on a single-name datum as well.
 3. *Inflation is the nearest third class.* Its quotes are already nameable, ten curves are already
    configured, and the missing piece is an index-fixing adapter -- a market data task, not a
    derivation task.
 4. *The transform is a log return or a difference, and the class decides which.* A price or a rate
-   that stays positive takes a log return: FX, equity, commodity. A rate or a spread that can be
+   that stays positive takes a log return: FX, equity, commodity, bond. A rate or a spread that can be
    negative, or that is quoted in basis points, takes a difference: interest rates, inflation, credit.
-5. *The coordinates differ more than the measurement does.* FX names a delta label, the other
-   classes name a strike. The ladder that a class quotes is the ladder its surface is published on,
-   so the coordinates belong to the class and the window rule does not.
+   The engine takes the transform as an argument, so the class states it where it builds its returns.
+5. *The coordinates differ more than the measurement does.* FX names a delta label, every other class
+   names a strike. The ladder a class quotes is the ladder its surface is published on, so the
+   coordinates belong to the class and the window rule does not.
 6. *The derived provider is FX-named too.* The catalogue row for the =derived= provider describes
    "the FX volatility quotes our own computation states", so a second class renames that row as well
    as the code.
 
 * Recommendations
 
-- Serve FX and interest rates in this story. Refuse the other four by name, with the reason each one
+- Serve FX and interest rates in this story. Refuse the other five by name, with the reason each one
   fails, so an operator reads "no fixing history for the index" and not "unsupported asset class".
 - Make the refusal per missing input: the series, the coordinate or the datum. The distinction is
   what tells the next planner whether the work is an adapter, a table or a key grammar change.
 - Take inflation as the next class after this story, as a market data task: add the index-fixing
-  adapter, then the derivation's three parameters follow with nothing new.
-- Treat credit as its own story, because it starts with a datum the key grammar cannot name, and an
-  engine that grew a credit branch before its datum would be the exact fault this story avoids.
-- Do not serve equity or commodity until an adapter exists. A derived quote with no history behind it
-  is indistinguishable from an invented one, and the platform already states it does not invent
-  quotes for a party.
+  adapter, then the derivation's three parameters follow with nothing new. The story itself builds
+  none of the other classes, by its own decision.
+- Treat credit's single-name case as a datum story, because it starts with an instrument the key
+  grammar cannot name. An engine that grew a credit branch before its datum would be the fault this
+  story avoids.
+- Do not serve equity, commodity or bond until an adapter exists. A derived quote with no history
+  behind it is indistinguishable from an invented one, and the platform already states it does not
+  invent quotes for a party.
+- The durable half -- what a class supplies to the engine, and what the engine owns -- is not stated
+  here. It is on [[id:099697A6-8526-48E0-A63D-DB3932C06468][Deriving FX volatility quotes from
+  historical fixings]], which is the page that owns the derivation.
 
 * See also
 
 - [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through
   the lifecycle]] -- the story this survey was written for.
-- [[file:investigation_what_the_surface_path_assumes_about_fx.org][What the surface path assumes
-  about FX]] -- the sibling survey of the code path.
+- [[id:259D09B0-F37F-4ADC-9C71-148634FB2773][What the surface path assumes about FX]] -- the sibling
+  survey, which asks the same question of the code rather than of the data.
+- [[id:099697A6-8526-48E0-A63D-DB3932C06468][Deriving FX volatility quotes from historical fixings]]
+  -- the derivation, and the home of what a class supplies.
 - [[id:2400E0FE-AEF0-4F9A-8392-F7D2E0E2A1E2][A data model for fixings]] -- the series a derivation
   reads.
 - [[id:F24FA489-790A-4065-B8E1-DCC141595356][Synthetic generation of fixings]] -- how a generated

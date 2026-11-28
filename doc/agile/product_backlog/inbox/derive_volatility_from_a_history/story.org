@@ -2,7 +2,7 @@
 :ID: 6DA34BE7-4F67-42B6-9BCB-20D7EDA55783
 :END:
 #+title: Story: Derive volatility from a history, and serve it through the lifecycle
-#+description: No free source offers a volatility quote for any asset class, so each class derives its volatility from a history the platform holds, through one engine whose only per-class inputs are the transform, the coordinates and the smile model. Interest rates runs the whole chain first -- derived normal volatilities, a latent cube, vendor views, a party's calibrated surface, and a swaption that prices.
+#+description: One derivation measures volatility for any asset class, and interest rates is the first class to run the whole chain.
 #+type: story
 #+level: s2
 #+filetags: :marketdata:volatility:derivation:lifecycle:backlog:inbox:product_backlog:
@@ -45,9 +45,9 @@ is the second instance of both.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing. The last task waits on the FX volatility production page. |
-| Next          | Name what the surface path assumes about FX, and what each asset class needs. |
+| Now           | The lift is merged. The two surveys are written, and the interest rate derivation is next. |
+| Waiting on    | Nothing.                               |
+| Next          | Derive the swaption volatilities from the rate history. |
 | Last touched  | 2026-11-28                               |
 
 * Acceptance
@@ -73,6 +73,13 @@ is the second instance of both.
   trades it priced and the market it lacked.
 - Every part the audit names generic is used unchanged, and every part it names FX only is
   parameterised or stated as a limitation.
+
+* Documents
+
+| Document | What it records |
+|----------+-----------------|
+| [[id:259D09B0-F37F-4ADC-9C71-148634FB2773][What the surface path assumes about FX]] | Every part of a surface's path, judged generic, parameterised or FX only. |
+| [[id:F1E7B79A-A96D-47C0-AFFD-330ABF7B9513][What each asset class needs from a derivation]] | The series, transform, coordinates and smile each class needs, and which classes can be served. |
 
 * Tasks
 

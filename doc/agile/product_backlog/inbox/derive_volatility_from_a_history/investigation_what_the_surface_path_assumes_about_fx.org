@@ -2,18 +2,15 @@
 :ID: 259D09B0-F37F-4ADC-9C71-148634FB2773
 :END:
 #+title: Investigation: What the surface path assumes about FX
-#+description: A survey of every part of the path a volatility surface takes, from the datum that holds a quote to the ORE block a package carries, saying for each part whether a second asset class can use it unchanged, needs a parameter, or needs a copy. Point in time: 819a1245ee.
+#+description: Every part of a volatility surface's path, judged generic, parameterised or FX only.
 #+type: investigation
 #+level: s1
 #+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
 #+created: 2026-11-28
 #+updated: 2026-11-28
 
-A point-in-time record, written while the story that commissioned it was open, of an
-[[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into what the path a volatility
-surface takes assumes about FX. It is a snapshot, not a description of the system. Whatever it
-concludes that the code must keep doing belongs on the page that owns the subject; cite that page
-from code, recipes and models, not this one.
+A point-in-time record, written on 2026-11-28 at =819a1245ee=, of what the path a volatility
+surface takes assumes about FX. It is a snapshot, not a description of the system.
 
 * Context
 
@@ -22,36 +19,38 @@ surface is calibrated from them, the set is published through the lifecycle, and
 the ORE block a package carries. The story that commissions this survey must serve a second asset
 class through the same lifecycle, the same derivation engine and the same page.
 
-Before any of that work is written, the question is how much of the path already serves any asset
-class, and where an FX assumption is baked in. The answer decides the story's tasks: a part that is
-generic is a part the story must not touch, and every part that is not is work a reviewer will see.
+The question is how much of the path already serves any asset class, and where an FX assumption is
+baked in. The answer decides the story's tasks: a part that is generic is a part the story must not
+touch, and every part that is not is work a reviewer will see.
 
-The survey sorts each part into three verdicts, because the cost differs by an order of magnitude:
+Each part is judged by one of four verdicts. The cost of each differs by an order of magnitude, so
+the verdict is the finding:
 
 - *generic* -- a swaption quote takes the same route. Nothing to change, except possibly a seed row
-  that the route reads as data.
+  the route reads as data. A generic part is qualified *empty* when nothing has ever written it, and
+  *closed in code* when it serves any class but names each one in an enumerator.
 - *parameterised* -- the route is the same and a name or a coordinate is FX's. A rename, or a value
   read from the subject instead of from a constant.
 - *FX only* -- the shape of the part is FX's: a column that holds a delta, a check that holds a
   butterfly, a signature that takes a pair. A second class needs its own copy, or a dispatch.
+- *not built* -- the part is planned and does not exist yet, so its verdict belongs to the task that
+  writes it.
 
 * Methodology
 
 Every part of the path was read in the checkout at =819a1245ee=, from the datum that holds one quote
-to the ORE block a package carries. For each part the schema or the type was read, then the code
-that writes it, then one FX volatility quote was followed through it. A part is generic when a
-swaption quote would take the same route; parameterised when the route is the same and a name or a
-coordinate is FX's; FX only when the part's shape is FX's.
+to the ORE block a package carries. For each part the schema or the type was read, then the code that
+writes it, then one FX volatility quote was followed through it.
 
-The size of the subject, measured at the same commit:
+The size of the subject, at the same commit. Each command is the one that produced the number:
 
-| Measure                                       | Value | Command                                              |
-|-----------------------------------------------+-------+------------------------------------------------------|
-| Code files that name the surface              |   306 | =grep -rl fx_vol_surface --include=*.hpp --include=*.cpp projects=, tests excluded |
-| Code files that name the derivation           |    10 | =grep -rl derived_fx_vol=, tests excluded            |
-| Code files that name the FX option convention |    94 | =grep -rl fx_option_convention=, tests excluded      |
-| Kinds the lifecycle declares                  |     3 | =derived_market_object_kind.hpp=                     |
-| Asset classes the taxonomy names              |     8 | =refdata_asset_class_codes_populate.sql=             |
+| Measure                                       | Value | Command                                                                                  |
+|-----------------------------------------------+-------+------------------------------------------------------------------------------------------|
+| Code files that name the surface              |   306 | =grep -rl fx_vol_surface --include=*.hpp --include=*.cpp projects=, then =grep -v "tests\?/"= |
+| Code files that name the derivation           |    10 | =grep -rl derived_fx_vol --include=*.hpp --include=*.cpp projects=, then =grep -v "tests\?/"= |
+| Files that name the FX option convention      |    94 | =grep -rl fx_option_convention --include=*.hpp --include=*.cpp --include=*.sql projects=, then =grep -v "tests\?/"= |
+| Kinds the lifecycle declares                  |     3 | =derived_market_object_kind.hpp=, the =derived_kind= enumerators                                    |
+| Asset classes the taxonomy names              |     8 | =refdata_asset_class_codes_populate.sql=, one row per class                                        |
 
 The count of 306 is not 306 decisions. Each entity carries a generated domain type, an entity, a
 repository, codecs, table I/O, a generator and a protocol, so the number counts files per entity and
@@ -60,39 +59,40 @@ assumption.
 
 * Paths taken
 
-The path was walked in order, one part at a time. Each row states the part, its verdict, and the
-evidence or the work a second class needs.
+The path was walked in order, one part at a time. Each row states the part, its verdict, and what a
+second class needs of it.
 
 | Part | Verdict | Evidence, and what a second class needs |
 |------+---------+-----------------------------------------|
 | Datum schema | generic | =datum/schema.hpp= carries a =swaption= row and a =capfloor= row, both under the =ir= asset class, with fields for expiry, term, dimension, strike level, payer/receiver, the volatility type and the shift. Nothing to add. |
 | Key grammar | generic | =datum/ore_key_volatility.cpp= reads the ATM form, the Smile form and the shift form of both instruments, and the quote types =rate_lnvol=, =rate_nvol= and =rate_slnvol=. |
-| URI and classification | generic | =oresmd_uri_codec= writes and reads a key per instrument type; =marketdata_series_classification_rules_populate.sql= already places =swaption= in =interest_rates= as volatility. |
+| URI | generic | =oresmd_uri_codec= writes and reads a key per instrument type, so the URI of an interest rate volatility is data and not a code path. |
+| Classification | generic | =marketdata_series_classification_rules_populate.sql= already places =swaption= in =interest_rates= as volatility. |
 | Series identity | parameterised | =ores_marketdata_series_identity_shapes_tbl= is keyed by asset class and subclass, and its seed holds =fx.volatility= with no =ir.volatility=. One row. |
 | Ingest | generic | =marketdata/core/service/import_service.cpp= parses an ORE market file through the key codec, so a swaption quote becomes a series and an observation with no new code. |
-| Blueprint | FX only | =ores_refdata_fx_vol_surface_blueprints_tbl= holds base and quote currency, =fx_option_convention_id= and a strike grid; =..._pillars_tbl= checks the label against ATM, RR, BF, C and P; =smile_model= is closed to ssvi, sabr and spline. A swaption grid states a currency, an expiry by term by strike cube, a volatility type and a shift: another table. |
-| Calibration | FX only | =ores_marketdata_fx_vol_surface_calibrations_tbl= holds =forward_publish_id= and the SSVI parameters rho, eta and gamma as columns; =fx_vol_surface_calibration_plan= reads a pair's calendar and roll convention and parses delta labels; =ssvi_calibration_engine= takes delta strikes. |
-| Checks | FX only | The recipe check requires the convention to name a butterfly style and each pillar to be ATM or a delta the smile model reads, and the calibration reports calendar and butterfly violations by expiry, in delta. A swaption surface is checked across expiry and term and its strike axis is a smile, so the rules differ over a different grid. |
-| Publish record | generic | =ores_marketdata_fx_vol_surface_publishes_tbl= holds no FX column: blueprint, as-of, output series, calibration id and version, converged, maximum error, violations. A copy is a rename and a foreign key. |
+| Blueprint | FX only | =ores_refdata_fx_vol_surface_blueprints_tbl= holds base and quote currency, =fx_option_convention_id= and a strike grid; =..._pillars_tbl= checks the label against ATM, RR, BF, C and P; =smile_model= is closed to ssvi, sabr and spline. A swaption grid needs a currency, an expiry by term by strike cube, a volatility type and a shift: another table. |
+| Calibration | FX only | =ores_marketdata_fx_vol_surface_calibrations_tbl= holds =forward_publish_id= and the SSVI parameters rho, eta and gamma as columns; =fx_vol_surface_calibration_plan= reads a pair's calendar and roll convention and parses delta labels. A second class needs a record whose columns are its own model: a normal volatility by expiry and term, with no forward publish, fitted by a smile across strikes. |
+| Checks | FX only | The recipe check requires the convention to name a butterfly style and each pillar to be ATM or a delta the smile model reads, and the calibration reports calendar and butterfly violations by expiry, in delta. A second class needs checks over its own grid: calendar arbitrage across expiry and term, and a smile that stays positive in the strike wings. |
+| Publish record | generic | =ores_marketdata_fx_vol_surface_publishes_tbl= holds no FX column: blueprint, as-of, output series, calibration id and version, converged, maximum error, violations. Its keys point into the FX subject, so a second class copies the table rather than sharing it. |
 | Withdrawal, approvals, supersession | generic | The acts, the kind codes and the approval kinds are data. A kind declares its subject table, its publish kind and its withdrawal kind, and no act of the lifecycle branches past that declaration. |
-| Kind registry | closed in code | =derived_kind= is an enum, =publication_kind_of= is a switch over it, and each kind has its own =publication_kind= implementation (=fx_vol_surface_publication_kind.cpp=). A new kind costs an enumerator, a switch case and an implementation. No step of the lifecycle changes, which is the claim that holds. |
-| Export | FX only | =ore_export_service= writes each surface point as an =fx_option= quote whose strike is a delta label, and ORE takes the delta type from the FX volatility configuration. ORE wants a =SwaptionVolatilities= block and a =SwaptionVolatility= configuration; the configuration tables exist with no data. |
-| Simulator | FX only | The feed holds SSVI parameters, the contributor and the view are per surface, the derived-quote adapter works a pair's ladder and writes =fx_option= ids, and the feed registry dispatches to those branches. The framework around them -- sessions, ticks, batches, adapters, entitlement -- is generic. |
+| Kind registry | generic, closed in code | =derived_kind= is an enum, =publication_kind_of= is a switch over it, and each kind has its own =publication_kind= implementation (=fx_vol_surface_publication_kind.cpp=). A new kind costs an enumerator, a switch case and an implementation. No step of the lifecycle changes. |
+| Export | FX only | =ore_export_service= writes each surface point as an =fx_option= quote whose strike is a delta label, and ORE takes the delta type from the FX volatility configuration. A second class needs a =SwaptionVolatilities= block and a =SwaptionVolatility= configuration; the configuration tables exist with no data. |
+| Simulator | FX only | The feed holds SSVI parameters, the contributor and the view are per surface, the derived-quote adapter works a pair's ladder and writes =fx_option= ids, and the feed registry dispatches to those branches. A second class needs a feed whose state is its own model, and a contributor and a view keyed by its coordinates; the framework around them -- sessions, ticks, batches, adapters, entitlement -- is generic. |
 | Pricing consumption | generic, empty | =analytics_todays_market_collection_kinds= already names =SwaptionVolatilities= and =CapFloorVolatilities= as components of today's market. Nothing has ever written them. |
 | The page | not built | The read must state the axes a quote set declares. The second class is the test that it does, and the story's last task runs that test. |
 
 * Conclusions
 
-1. *The quote layer is ready.* Seven of the fifteen parts take a swaption quote today, unchanged:
-   the datum, the key grammar, the URI, the classification, the ingest, the publish record and the
-   approval mechanics. What is missing is data, not code: an =ir.volatility= identity shape and the
-   derived inventory's interest rate rows.
-2. *What FX owns is where a surface is named.* The blueprint, the calibration, the checks, the
-   export and the simulator each carry the FX shape in a column, a check or a signature: a delta
-   label, an FX option convention, a forward publish, the SSVI parameters as columns, a pair's
-   calendar, an =fx_option= quote, an SSVI feed.
-3. *Three of those five need a copy, and two need a dispatch.* The blueprint, the calibration and
-   the checks are FX shapes, because a swaption grid is a different object with different rules; they
+1. *Eight of the sixteen parts take a swaption quote today, unchanged*: the datum and the key
+   grammar, the URI and the classification, the ingest, the publish record, the withdrawal and
+   approval mechanics, and the pricing consumption that waits for a set. What is missing is data, not
+   code: an =ir.volatility= identity shape, and the derived inventory's interest rate rows.
+2. *What FX owns is where a surface is named.* The blueprint, the calibration, the checks, the export
+   and the simulator each carry the FX shape in a column, a check or a signature: a delta label, an
+   FX option convention, a forward publish, the SSVI parameters as columns, a pair's calendar, an
+   =fx_option= quote, an SSVI feed.
+3. *Three of those five need a copy, and two need a dispatch.* The blueprint, the calibration and the
+   checks are FX shapes, because a swaption grid is a different object with different rules; they
    take their own tables. The export and the simulator are dispatch: one path per kind, selected by
    the kind, and never a branch inside the FX path.
 4. *The kind mechanism is closed in code, and that is acceptable.* A new kind costs an enumerator, a
@@ -100,37 +100,39 @@ evidence or the work a second class needs.
    declaration, which understates it by those three places; a planner who trusts the comment will
    size the work wrong.
 5. *The derivation is the one part that must be lifted, not copied.* Its measurement -- the window,
-   the moments, the multiplier, the shape, the reach, the method -- names no asset class. Only the
-   transform, the coordinates and the smile model do. Two derivations would drift apart the first
-   time either is corrected.
-6. *The risk is not the store.* It is the simulator, which names SSVI and pairs in a dozen places,
-   and the export, which alone decides what ORE can price. A plan that spends its effort on the
-   market data tables would spend it in the one place that needs almost none.
+   the moments, the multiplier, the shape, the reach -- names no asset class. Only the transform, the
+   coordinates and the smile model do. Two derivations would drift apart the first time either is
+   corrected. The lift is the story's third task, and it has since merged as =f306a1152c=.
+6. *The risk is not the store.* It is the simulator, which names SSVI and pairs in a dozen places, and
+   the export, which alone decides what ORE can price. A plan that spends its effort on the market
+   data tables would spend it in the one place that needs almost none.
 
 * Recommendations
 
-- Keep the story's tasks. The survey confirms them and sizes three: the copy verdicts are the
-  blueprint, calibration and checks work; the dispatch verdicts are the simulator and the export.
-- Lift the derivation before the interest rate derivation is written, for the reason in conclusion
-  5. It is the only order in which the second class cannot become a copy.
+- The story's tasks stand. This survey sizes three of them and changes none: the copy verdicts are
+  the blueprint, the calibration and the checks of the task that calibrates and publishes an interest
+  rate surface; the dispatch verdicts are the simulator's latent cube and the export that prices a
+  swaption.
+- Lift the derivation before the interest rate derivation is written, for the reason in conclusion 5.
+  It is the only order in which the second class cannot become a copy. Done: the lift merged.
 - Copy the publish record rather than parameterise it. It holds no FX column, so a copy is a rename
   and a key; a parameterised one would put a nullable asset class in the table every kind shares.
 - Add the missing seeds as data: an =ir.volatility= identity shape, and the derived inventory rows
   for the interest rate volatility kinds.
 - Correct the kind header's comment to "a row, a declaration, an enumerator and an implementation",
   because that comment is what a planner reads before sizing the work.
-- Promote the durable half of this survey -- which parts of the path are per kind and which are
-  shared -- to [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface from
-  quotes to a published set]], and take the FX out of the title of
-  [[id:099697A6-8526-48E0-A63D-DB3932C06468][Deriving FX volatility quotes from historical fixings]]
-  once the lift lands.
+- The durable half -- which parts of the path are per kind and which are shared -- is not stated here.
+  It is on [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface from quotes
+  to a published set]], which is the page that owns the subject.
 
 * See also
 
 - [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through
   the lifecycle]] -- the story this survey was written for.
+- [[id:F1E7B79A-A96D-47C0-AFFD-330ABF7B9513][What each asset class needs from a derivation]] -- the
+  sibling survey, which asks the same question of the data rather than of the code.
 - [[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface from quotes to a
-  published set]] -- the durable account of the path.
+  published set]] -- the durable account of the path, and the home of the per-kind rule.
 - [[id:EEE9DBF4-F190-4FCD-8193-40B583184BD4][The publication record of a derived market data set]].
 - [[id:24950B8E-7FC4-4F0A-8AA4-9603B344F970][Candidate computation and storage before
   publication]].

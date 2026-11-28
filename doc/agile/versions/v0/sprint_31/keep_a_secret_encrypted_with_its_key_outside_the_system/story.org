@@ -125,11 +125,11 @@ Then the store is modelled, served, wired into the provider registry and proven 
   the vault's journey and prototype its screens]].
 
 - *The pooler reads verifiers, and asks no one* (2026-11-28, after the review of
-  PR #5220). The pooler authenticates each client from a SCRAM verifier, so the
-  deployment holds no password for it to read, and a copy of a verifier opens
-  nothing on its own. The alternative — a lookup function the pooler calls — was
-  removed rather than wired: it would cost a database role that may read every
-  verifier in the instance, and save a pooler restart that a rotation owes
+  PR #5220). The pooler authenticates each service from the SCRAM verifier the
+  server derived, so no service password reaches it, and a verifier cannot be
+  turned back into the password it came from. The lookup function that would have
+  let the pooler ask the server instead is removed: that route costs a role that
+  may read every verifier in the instance, to save a restart a rotation owes
   anyway. See [[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][Connection pooling for
   shared database instances]].
 

@@ -40,8 +40,8 @@ and states why the copies stay.
 
 - The function, its drop script and both entry-point lines are gone, so a fresh
   database holds no mechanism nothing calls.
-- Nothing in the tree names =ores_pooler_auth=, =auth_query= or =auth_user=, so
-  the pooler's configuration is the path it actually runs.
+- Nothing in a configuration or a script sets =auth_query= or =auth_user=, so the
+  pooler's configuration is the path it actually runs.
 - The reason the pooler reads verifiers rather than asking the server is written
   where a reader of the pooler looks, so the decision is not re-opened as an
   oversight.
@@ -52,8 +52,9 @@ The capture left two ways, and one of them had to be taken. This task takes the
 second: the function goes and the verifier copies stay.
 
 Wiring the pooler to ask the server costs a database role that the pooler logs
-in as. That role may read every verifier in the instance, which is a wider view
-than the pooler's own: it serves a named set of accounts, not the deployment.
+in as, and the file stays: it holds that role's one entry instead of one per
+account. The role may read every verifier in the instance, which is a wider view
+than the pooler's own — it serves a named set of accounts, not the deployment.
 Wiring also costs a lookup function installed in each database the pooler
 fronts.
 
@@ -73,18 +74,19 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Callers of the lookup function | 0 | =grep -rn "pooler_auth\|auth_query\|auth_user" --include=*.sql --include=*.sh --include=*.py --include=*.ini .= | ef39f5344d |
-| Referrers of the role the grant names | 0 | same | ef39f5344d |
+| Configurations that ask the server for a verifier | 0 | =git grep -n "auth_query\|auth_user" -- '*.sql' '*.sh' '*.py' '*.ini'= | 62cc0110f9 |
+| Role creations under the name the grant used | 0 | =git grep -n "create role ores_pooler_auth\|create user ores_pooler_auth" -- '*.sql' '*.sh' '*.py'= | 62cc0110f9 |
 
 * Notes
 
-- A verdict from review, not a defect: the function never had a caller, and a
-  mechanism that nothing calls reads as a mechanism that exists.
-- The verifier copies are not passwords. A SCRAM verifier is derived from a
-  password and cannot be turned back into one, so a copy opens nothing on its own
-  and the file that holds them is read by the pooler alone.
-- The grant inside the function named =ores_pooler_auth=, a role nothing in the
-  tree creates. It went with the file.
+- 2026-11-28 — The function, its drop twin and both =\\ir= lines are removed. A
+  database built before this change keeps the function until it is recreated.
+- 2026-11-28 — The grant the file carried named =ores_pooler_auth=, a role nothing
+  creates. It went with the file.
+- 2026-11-28 — Why the pooler holds verifiers rather than asking for them is in
+  [[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][Connection pooling for shared
+  database instances]].
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -106,9 +108,28 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The measurements do not reproduce: the recorded grep returns the function's own definition and its grant | task | Fixed | Both rows record a command that returns 0 at 62cc0110f9 |
+| 2 | "No password at all" is contradicted by the deployment accounts, whose password the user file carries | pooling page, script | Fixed | The claim is scoped to service accounts, and the script says which account carries what |
+| 3 | "Read by the pooler alone" | task, pooling page, script | Fixed | Provisioning writes the verifiers and the script generates the file from them; both are named |
+| 4 | The promoted capture recommends wiring, which is the opposite of the decision | task | Fixed | The superseded recommendation is gone, and the pooling page owns the reason |
+| 5 | The new knowledge section carries no citation | pooling page | Fixed | The prose names the two files that carry the mechanism |
+| 6 | No diagram for the authentication step | pooling page | Declined | The page carries no other figure, and the section states a single step rather than a lifecycle or a structure |
+| 7 | The notes are undated | task | Fixed | The log is dated |
+| 8 | The deleted drop script leaves the function in a database built earlier | sql | Accepted | Recreating the database removes it, and it was dead there as it was here |
 
 * Result
+
+- The function, its drop script and both =\\ir= lines are gone. No configuration
+  and no script sets =auth_query= or =auth_user=, and nothing creates the role the
+  grant named.
+- The pooling page says how the pooler authenticates a client, and why it reads
+  verifiers instead of asking the server. The story's Decisions link it.
+- =start_ci_pooler.sh= says the same beside the function that builds the user
+  file, and no longer claims a verifier where a deployment account puts a
+  password.
+- A database built before this change keeps the function until it is recreated.
+- =./compass.sh check --exclude-heavy= passed 6/6 on the branch, and =compass
+  generate= had nothing to write.
 
 * Promoted from capture
 
@@ -116,35 +137,18 @@ Captured 2026-11-28 in the product backlog; promoted preserving the UUID.
 
 ** What
 
-=ores_utility_pooler_auth_lookup_fn= exists so a transaction pooler can ask the
-server for a client's verifier instead of holding a copy of it. Nothing calls it.
-Settle it: wire the pooler to ask, or remove the function and keep the copies.
+=ores_utility_pooler_auth_lookup_fn= existed so a transaction pooler could ask
+the server for a client's verifier instead of holding a copy of it. Nothing
+called it.
 
-** Why
-
-=start_ci_pooler.sh= writes =auth_type = scram-sha-256= with an =auth_file=, and
-the file is filled with verifiers that =compass vault provision= reads from
-=pg_shadow= and writes under =build/keys=. No configuration anywhere sets
-=auth_query= or =auth_user=, so the function, its drop script and its two
-entry-point lines are the whole of its life. A standards review over PR #5220
-found that, and the PR merged with it recorded rather than hidden.
-
-Wiring it is the better design: a rotation then needs no pooler restart and no
-copy of anything lives under =build/=. It costs a login role for the pooler
-itself, which is one more credential in the environment file — the very thing the
-register's second phase removed from the services.
-
-Removing it keeps the verifier files, whose cost the register already states: a
-verifier is useless without the password, and a rotation needs a pooler restart.
-
-Doing neither is the only wrong answer, because a function nothing calls reads as
-a mechanism that exists.
+2026-11-28 — The capture this task came from recommended wiring the function. The
+plan above settles it the other way, and the pooling page carries the reason.
 
 ** References
 
-- =projects/ores.sql/create/utility/utility_pooler_auth_create.sql= — the
-  function, and the grant that names a role nothing creates.
-- =build/scripts/start_ci_pooler.sh= — the configuration, and the user list it
+- =projects/ores.sql/create/utility/utility_create.sql= — the entry point that no
+  longer runs the function, and its drop twin.
+- =build/scripts/start_ci_pooler.sh= — the configuration, and the user file it
   builds.
 - [[id:DBF20EC5-63BB-4DE5-957C-5322DE0E487F][Secrets Register]] — what the
   verifier copies are for.

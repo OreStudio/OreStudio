@@ -55,18 +55,22 @@ present ([[id:42930B6A-544A-4F7E-ACF4-9ABC60F2B408][The environments share the d
 ** How the pooler authenticates a client
 
 The pooler opens the server connection as the client itself, so it needs what
-the server would accept in the client's place. It holds a SCRAM verifier for
-each account it serves and no password at all: a verifier is derived from a
-password and cannot be turned back into one, so a copy of it opens nothing on
-its own. The copies live under =build/=, which is not tracked, in one file read
-by the pooler alone.
+the server would accept in the client's place. For a service account it holds
+the SCRAM verifier the server derived from the password, and never the password:
+a verifier cannot be turned back into one, so a copy of it opens nothing on its
+own. The copies live under =build/=, which is not tracked: =compass vault
+provision= reads each verifier back from the server, and
+=build/scripts/start_ci_pooler.sh= generates the one file the pooler reads from
+them.
 
-A rotation rewrites that file and restarts the pooler — a restart the services
-are owed anyway, because each resolves its password at start. Asking the server
-for a verifier instead would replace the file with a database role whose
-privilege is to read every verifier in the instance, and with a function to
-install in each database the pooler fronts. The pooler would then see more of
-the instance than the accounts it serves, to save a restart that is owed anyway.
+A rotation reads the verifiers back from the server and writes the file again,
+which takes a restart of the fleet — the services are owed one anyway, because
+each resolves its password at start. Asking the server for a verifier instead
+would leave the file in place, holding one entry for the pooler's own role
+rather than one per account, and would add that role, whose privilege is to read
+every verifier in the instance, and a function to install in each database the
+pooler fronts. The pooler would see more of the instance than the accounts it
+serves, to save a restart that is owed anyway.
 
 ** What it costs, and what it buys
 

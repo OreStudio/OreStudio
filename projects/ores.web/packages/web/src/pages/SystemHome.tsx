@@ -113,7 +113,25 @@ function useDashboardData() {
         queryKey: ['operations', 'housekeeping', 'capacity', CAPACITY_RANGE],
         queryFn: () => api.housekeepingCapacity(CAPACITY_RANGE),
     });
-    return { overview, types, tenantStatuses, health, grid, bus, housekeeping, capacity };
+    /*
+     * The largest tables, for the capacity panel: the database's total says it is
+     * filling and this says what is filling it.
+     */
+    const tables = useQuery({
+        queryKey: ['operations', 'housekeeping', 'tables', 5, '7d'],
+        queryFn: () => api.housekeepingTables(5, '7d'),
+    });
+    return {
+        overview,
+        types,
+        tenantStatuses,
+        health,
+        grid,
+        bus,
+        housekeeping,
+        capacity,
+        tables,
+    };
 }
 
 type DashboardData = ReturnType<typeof useDashboardData>;
@@ -526,6 +544,7 @@ function CapacityPanel({ data: reads, translator }: PanelProps): ReactNode {
     const latest = view === undefined ? null : latestOf(view.samples);
     const days = view === undefined ? null : daysOfSpaceLeft(view.samples);
     const points = view === undefined ? [] : freeSpacePoints(view.samples);
+    const largest = reads.tables.data?.rows;
     const sampled = latest === null ? undefined : sampleTime(latest.sampled_at);
 
     return (
@@ -575,6 +594,37 @@ function CapacityPanel({ data: reads, translator }: PanelProps): ReactNode {
                         />
                     </div>
                     {points.length > 1 && <Sparkline points={points} />}
+                    {largest !== undefined && largest.length > 0 && (
+                        <div className="space-y-1 border-t border-line-subtle pt-3 text-sm">
+                            <p className="text-xs uppercase tracking-wide text-ink-faint">
+                                {t('home.system.panels.capacity.largest')}
+                            </p>
+                            <ul className="space-y-1">
+                                {largest.map((row) => (
+                                    <li
+                                        key={row.relation_name}
+                                        className="flex items-baseline justify-between gap-3"
+                                    >
+                                        <span className="truncate font-mono text-xs text-ink-muted">
+                                            {row.relation_name}
+                                        </span>
+                                        <span className="shrink-0 tabular-nums">
+                                            {formatSize(row.size_bytes)}
+                                            {row.growth_bytes !== null && row.growth_bytes > 0 && (
+                                                <span className="text-warn">
+                                                    {' '}
+                                                    +{formatSize(row.growth_bytes)}
+                                                </span>
+                                            )}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                            <LinkButton to="/operations/housekeeping/tables" size="sm">
+                                {t('home.system.panels.capacity.allTables')}
+                            </LinkButton>
+                        </div>
+                    )}
                     {latest.note !== '' && (
                         <Notice tone="warn">
                             {t('home.system.panels.capacity.note', { note: latest.note })}

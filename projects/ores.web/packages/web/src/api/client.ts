@@ -4266,8 +4266,11 @@ export const api = {
      * The read starts from the relations, so a table the catalogue does not name
      * answers beside one that it does: that is the question the screen asks.
      */
-    async housekeepingTables(limit: number): Promise<LargestRelationsView> {
-        const query = new URLSearchParams({ limit: String(limit) });
+    async housekeepingTables(
+        limit: number,
+        range: StoreRange = '7d',
+    ): Promise<LargestRelationsView> {
+        const query = new URLSearchParams({ limit: String(limit), range });
         return largestRelationsViewSchema.parse(
             await request(`/api/operations/housekeeping/tables?${query.toString()}`, {
                 method: 'GET',

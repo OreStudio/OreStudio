@@ -1435,6 +1435,8 @@ export const en: SourceCatalogue = {
                     lasts: 'Free space lasts',
                     measuredOn: 'Measured on',
                     note: 'The measurement states a problem: {note}',
+                    largest: 'Largest tables',
+                    allTables: 'All tables, by size',
                 },
                 queue: {
                     title: 'Message queue',
@@ -1858,6 +1860,9 @@ export const en: SourceCatalogue = {
                 unbounded: 'Unbounded',
                 unboundedNote: 'The work left',
                 size: 'Total size',
+                boundedSize: 'Bounded size',
+                database: 'Database',
+                databaseShare: '{share}% of the database',
                 unmeasured: 'Not measured',
             },
             filter: {
@@ -2060,7 +2065,7 @@ export const en: SourceCatalogue = {
             },
             list: {
                 title: 'Largest relations',
-                lead: 'Biggest first, with the store the catalogue calls each one. A table nothing names is measured by nothing and bound by nothing.',
+                lead: 'Biggest first, with the store the catalogue calls each one and how much it moved over the last {days} days. A table nothing names is measured by nothing and bound by nothing.',
                 label: 'Rows',
                 more: 'Showing {shown} of {total} relations the read answered.',
             },
@@ -2069,10 +2074,16 @@ export const en: SourceCatalogue = {
                 named: 'Named by',
                 size: 'Size',
                 share: 'Share',
+                growth: 'Growth',
+            },
+            growth: {
+                unknown: 'not measured yet',
             },
             named: {
                 byNothing: 'not named',
             },
+            systemOnly:
+                "The installation's relations are the system administrator's to read. A tenant sees the stores the catalogue names for it.",
             rest: 'Everything else',
             footnote:
                 "The read measures the relations when the page asks, so it states what is large now. What grew is the capacity panel's question, and the housekeeping list is the catalogue's.",

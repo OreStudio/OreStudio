@@ -49,3 +49,7 @@
 -- that writes a row into it.
 \ir ./scheduler_capacity_samples_create.sql
 \ir ./scheduler_capacity_record_create.sql
+
+-- Every relation's size, as a series, so a screen can state what a table is doing.
+\ir ./scheduler_relation_sizes_create.sql
+\ir ./scheduler_relation_size_sampler_create.sql

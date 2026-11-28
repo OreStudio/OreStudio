@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 90C2DEFE-3554-4F70-BCB1-7544CE5AA23D
+:END:
+#+title: No screen registers a consumer
+#+description: A consumer registers itself with the key it holds, and the gateway has no door that registers one on somebody's behalf, so the consumers screen lists and cannot add. A person who must retire a consumer can disable none either: the vault serves vault.v1.ops.register_consumer and vault.v1.consumers.put, and neither has a route.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-11-28
+#+updated: 2026-11-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

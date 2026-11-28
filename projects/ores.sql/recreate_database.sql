@@ -130,6 +130,31 @@ alter  role :shell_user set search_path to public;
 -- and regenerate with: ./compass.sh generate
 \i create/iam/service_users_create.sql
 
+-- The two services that cannot take their password from the vault keep the value
+-- the deployment placed for them: the vault would have to answer its own request,
+-- and IAM has to exist before the vault does. A checkout that has not provisioned
+-- yet has no file, and the role keeps the password it already had.
+select set_config('ores.vault_service_user', :'vault_service_user', false);
+select set_config('ores.vault_service_password', :'vault_service_password', false);
+select set_config('ores.iam_service_user', :'iam_service_user', false);
+select set_config('ores.iam_service_password', :'iam_service_password', false);
+do $$
+declare
+    v_user text;
+    v_password text;
+begin
+    v_user := current_setting('ores.vault_service_user', true);
+    v_password := current_setting('ores.vault_service_password', true);
+    if coalesce(v_password, '') <> '' then
+        execute format('alter role %I with password %L', v_user, v_password);
+    end if;
+    v_user := current_setting('ores.iam_service_user', true);
+    v_password := current_setting('ores.iam_service_password', true);
+    if coalesce(v_password, '') <> '' then
+        execute format('alter role %I with password %L', v_user, v_password);
+    end if;
+end $$;
+
 -- The marketdata tick writer. It skips row-level security so that COPY can write the tick
 -- table, which PostgreSQL refuses for a role that the policies apply to. It is not a member
 -- of the service role and holds no grant here. The grant of INSERT on the tick table is in

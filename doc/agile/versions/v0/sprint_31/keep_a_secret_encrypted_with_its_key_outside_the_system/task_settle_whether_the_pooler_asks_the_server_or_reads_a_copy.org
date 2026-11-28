@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: 794C1BF1-1FEC-40F4-8490-438C53C712E2
+:END:
+#+title: Task: Delete the pooler lookup function nothing calls
+#+description: A lookup function nothing calls, beside a pooler that reads copies of verifiers: wire the one or remove the other.
+#+type: task
+#+level: s1
+#+filetags: :keep_a_secret_encrypted_with_its_key_outside_the_system:sprint_31:v0:
+#+owner: marco
+#+branch: feature/delete-the-pooler-lookup-function
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores_utility_pooler_auth_lookup_fn= exists so a transaction pooler can ask the
+server for a client's verifier instead of holding a copy of it. Nothing calls it.
+Settle it: wire the pooler to ask, or remove the function and keep the copies.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-11-28 in the product backlog; promoted preserving the UUID.
+
+** What
+
+=ores_utility_pooler_auth_lookup_fn= exists so a transaction pooler can ask the
+server for a client's verifier instead of holding a copy of it. Nothing calls it.
+Settle it: wire the pooler to ask, or remove the function and keep the copies.
+
+** Why
+
+=start_ci_pooler.sh= writes =auth_type = scram-sha-256= with an =auth_file=, and
+the file is filled with verifiers that =compass vault provision= reads from
+=pg_shadow= and writes under =build/keys=. No configuration anywhere sets
+=auth_query= or =auth_user=, so the function, its drop script and its two
+entry-point lines are the whole of its life. A standards review over PR #5220
+found that, and the PR merged with it recorded rather than hidden.
+
+Wiring it is the better design: a rotation then needs no pooler restart and no
+copy of anything lives under =build/=. It costs a login role for the pooler
+itself, which is one more credential in the environment file — the very thing the
+register's second phase removed from the services.
+
+Removing it keeps the verifier files, whose cost the register already states: a
+verifier is useless without the password, and a rotation needs a pooler restart.
+
+Doing neither is the only wrong answer, because a function nothing calls reads as
+a mechanism that exists.
+
+** References
+
+- =projects/ores.sql/create/utility/utility_pooler_auth_create.sql= — the
+  function, and the grant that names a role nothing creates.
+- =build/scripts/start_ci_pooler.sh= — the configuration, and the user list it
+  builds.
+- [[id:DBF20EC5-63BB-4DE5-957C-5322DE0E487F][Secrets Register]] — what the
+  verifier copies are for.
+
+** See also
+
+- [[id:9ED04F4B-C488-4AD6-BD85-5056E9D30135][Take the credentials out of the
+  environment file]] — the task that left this open, and said so.

@@ -191,14 +191,38 @@ def _confirm(prompt, assume_yes):
     return reply.strip() == "yes"
 
 
-def _svc_psql_args(env, names, with_passwords):
+def _placed_password_args(project_root, names):
+    """The passwords of the two services that keep a credential file.
+
+    The vault cannot answer its own request, and IAM has to exist before the
+    vault does, so neither resolves its own password: the deployment places each
+    as a file and the unit reads it. Recreate hands the role the same value,
+    because a role with no password is a service that cannot start. A checkout
+    that has not provisioned yet has no file, and the role is created without
+    one.
+    """
+    from service_registry import SELF_PROVISIONING
+
+    args = []
+    for psql_var in SELF_PROVISIONING:
+        if psql_var.removesuffix("_service") not in names:
+            continue
+        path = project_root / "build/keys" / f"{psql_var}.db-password"
+        value = path.read_text(encoding="utf-8").strip() if path.is_file() else ""
+        args += ["-v", f"{psql_var}_password={value}"]
+    return args
+
+
+def _svc_psql_args(env, names):
+    """The database user of each service, for the scripts that create them.
+
+    The password is not among them: a service role is created without one, and
+    compass vault provision writes it when the deployment places its secrets.
+    """
     args = []
     for svc in names:
         upper = svc.upper() + "_SERVICE"
         args += ["-v", f"{svc}_service_user={env.get(f'ORES_{upper}_DB_USER', '')}"]
-        if with_passwords:
-            args += ["-v",
-                     f"{svc}_service_password={env.get(f'ORES_{upper}_DB_PASSWORD', '')}"]
     return args
 
 
@@ -513,7 +537,7 @@ def cmd_setup(project_root, env, args):
         "-v", f"test_ddl_user={env.get('ORES_TEST_DB_DDL_USER', '')}",
         "-v", f"test_dml_user={env.get('ORES_TEST_DB_USER', '')}",
         "-v", f"marketdata_writer_user={env.get('ORES_MARKETDATA_SERVICE_WRITER_DB_USER', '')}",
-    ] + _svc_psql_args(env, names, with_passwords=False) + [
+    ] + _svc_psql_args(env, names) + [
         "-f", "setup_schema.sql",
     ]
     _psql(env, *schema_args, user=ddl_user, password=ddl_password,
@@ -578,7 +602,7 @@ def cmd_recreate(project_root, env, args):
                 "ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD"]
     for svc in names:
         upper = svc.upper() + "_SERVICE"
-        required += [f"ORES_{upper}_DB_USER", f"ORES_{upper}_DB_PASSWORD"]
+        required += [f"ORES_{upper}_DB_USER"]
     missing = [v for v in required if not env.get(v)]
     if missing:
         print("error: missing required environment variables:",
@@ -637,7 +661,7 @@ def cmd_recreate(project_root, env, args):
         "-v", f"ro_password={env['ORES_DB_READONLY_PASSWORD']}",
         "-v", f"marketdata_writer_user={env['ORES_MARKETDATA_SERVICE_WRITER_DB_USER']}",
         "-v", f"marketdata_writer_password={env['ORES_MARKETDATA_SERVICE_WRITER_DB_PASSWORD']}",
-    ] + _svc_psql_args(env, names, with_passwords=True) + [
+    ] + _svc_psql_args(env, names) + _placed_password_args(project_root, names) + [
         "-v", f"db_name={db_name}",
     ]
     _psql(env, *role_args, password=pw, cwd=str(sql_dir))

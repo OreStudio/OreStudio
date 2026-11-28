@@ -31,6 +31,7 @@ import type {
     GridView,
     ServiceRosterRow,
     SessionMode,
+    StoreBound,
     TenantSummary,
 } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
@@ -42,6 +43,7 @@ import {
 } from '../operations/InstallationHealth.js';
 import { BUS_QUERY_KEY } from '../operations/BusPage.js';
 import { GRID_QUERY_KEY } from '../operations/GridPage.js';
+import { HOUSEKEEPING_STORES_QUERY_KEY } from '../operations/HousekeepingPage.js';
 import { AUDIT_ACCOUNTS_QUERY_KEY, AUDIT_SESSIONS_QUERY_KEY } from './AuditPage.js';
 import { HomePage } from './HomePage.js';
 
@@ -175,6 +177,68 @@ describe('every home', () => {
     });
 });
 
+/** One store the installation keeps, as the bounds view states it. */
+function storeBound(overrides: Partial<StoreBound> = {}): StoreBound {
+    return {
+        code: 'marketdata.ticks',
+        display_name: 'Market data ticks',
+        description: 'Every tick the feeds served.',
+        owner_component: 'marketdata',
+        target_kind: 'chunked_table',
+        target: 'public.ores_marketdata_ticks_tbl',
+        time_column: 'recorded_at',
+        measure_kind: 'relation_rows',
+        bound_kind: 'policy',
+        bound: {
+            action: 'drop_chunks',
+            retention_days: 90,
+            cadence_hours: 24,
+            policy_code: 'ticks_90d',
+            policy_enabled: true,
+            policy_version: 1,
+            policy_description: 'A tick is read for a quarter',
+            mechanism: 'sweep',
+            bounded_now: true,
+        },
+        last_run: {
+            outcome: 'applied',
+            ran_at: '2026-10-10 03:00:00.000000Z',
+            removed: 3,
+            detail: '',
+        },
+        size: {
+            size_bytes: 17874944,
+            measure_count: 28799,
+            sampled_at: '2026-10-10 03:15:00.000000Z',
+        },
+        ...overrides,
+    };
+}
+
+/** A store nothing bounds: the housekeeping panel's one piece of bad news. */
+const unboundedStore = storeBound({
+    code: 'refdata.calendar_dates',
+    display_name: 'Calendar dates',
+    bound_kind: 'none',
+    bound: {
+        action: null,
+        retention_days: null,
+        cadence_hours: 24,
+        policy_code: null,
+        policy_enabled: false,
+        policy_version: 0,
+        policy_description: null,
+        mechanism: 'none',
+        bounded_now: false,
+    },
+    last_run: { outcome: null, ran_at: null, removed: 0, detail: null },
+    size: {
+        size_bytes: 293601280,
+        measure_count: 486540,
+        sampled_at: '2026-10-10 03:15:00.000000Z',
+    },
+});
+
 /** A dashboard on which every panel is fine: the quiet overview and every other read healthy. */
 function seedHealthy(client: QueryClient): void {
     client.setQueryData(SERVICES_QUERY_KEY, [
@@ -185,6 +249,10 @@ function seedHealthy(client: QueryClient): void {
     client.setQueryData(logCountKey('warn', DEFAULT_HEALTH_RANGE), 0);
     client.setQueryData(GRID_QUERY_KEY, gridView({ total_hosts: 5, online_hosts: 5 }));
     client.setQueryData([BUS_QUERY_KEY, '15m'], busView({ slow_consumers: 0 }));
+    client.setQueryData(HOUSEKEEPING_STORES_QUERY_KEY, {
+        read_at: '2026-10-10 12:00:00Z',
+        rows: [storeBound()],
+    });
 }
 
 function serviceRow(name: string, state: 'running' | 'lost' | 'missing'): ServiceRosterRow {
@@ -268,18 +336,20 @@ describe("the system administrator's home", () => {
         expect(html).not.toContain('href="/organisation/people"');
     });
 
-    it('has a Tenants, a Services, a Grid and a Message queue panel on the Dashboard', () => {
+    it('has a Tenants, a Services, a Grid, a Message queue and a Housekeeping panel', () => {
         const html = home('system-administration', quiet, undefined, seedHealthy);
 
-        for (const title of ['Tenants', 'Services', 'Grid', 'Message queue']) {
+        for (const title of ['Tenants', 'Services', 'Grid', 'Message queue', 'Housekeeping']) {
             expect(html).toContain(`>${title}</h2>`);
         }
     });
 
-    it('says Everything is running in every panel, and once more for the whole installation', () => {
+    it('says Everything is running where a panel reports health, and once more for the whole installation', () => {
         const html = home('system-administration', quiet, undefined, seedHealthy);
 
         expect(occurrences(html, ALL_CLEAR)).toBe(5);
+        /* Housekeeping's subject is the stores, so its mark names them. */
+        expect(html).toContain('Every store is bounded');
     });
 
     it('spends no line on a panel that is fine: its mark says so, and only the top status says it in words', () => {
@@ -287,6 +357,24 @@ describe("the system administrator's home", () => {
 
         expect(occurrences(html, `>${ALL_CLEAR}<`)).toBe(1);
         expect(occurrences(html, `aria-label="${ALL_CLEAR}"`)).toBe(4);
+    });
+
+    it('states the stores nothing bounds, and opens the housekeeping screen', () => {
+        const html = home('system-administration', quiet, undefined, (client) => {
+            seedHealthy(client);
+            client.setQueryData(HOUSEKEEPING_STORES_QUERY_KEY, {
+                read_at: '2026-10-10 12:00:00Z',
+                rows: [unboundedStore, storeBound()],
+            });
+        });
+
+        expect(html).toContain('1 store is not bounded');
+        expect(html).toContain('href="/operations/housekeeping"');
+        for (const label of ['Stores', 'Bounded', 'Unbounded', 'Not measured', 'Held']) {
+            expect(html).toContain(label);
+        }
+        /* The two stores' sizes, added up. */
+        expect(html).toContain('297.0 MiB');
     });
 
     it('counts the areas that need the person in the one status at the top', () => {
@@ -334,7 +422,7 @@ describe("the system administrator's home", () => {
         const html = home('system-administration', quiet, undefined, seedHealthy);
 
         expect(html).toContain('>v0.0.27<');
-        expect(occurrences(html, '>Sampled<')).toBe(2);
+        expect(occurrences(html, '>Sampled<')).toBe(3);
         expect(html).toContain('12:00:00 UTC');
     });
 
@@ -391,6 +479,7 @@ describe("the system administrator's home", () => {
             '/operations/services',
             '/operations/grid',
             '/operations/bus',
+            '/operations/housekeeping',
         ]) {
             expect(html).toContain(`href="${href}"`);
         }

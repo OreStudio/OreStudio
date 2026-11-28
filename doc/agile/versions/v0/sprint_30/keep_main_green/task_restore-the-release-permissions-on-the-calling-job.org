@@ -8,12 +8,12 @@
 #+filetags: :keep_main_green:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/restore-the-release-permissions-on-the-calling-job
-#+pr:
+#+pr: 5232
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
 #+updated: 2026-11-28
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Have every workflow that attaches a package grant the permission its called work
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-28                               |
 
 * Acceptance
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5232][#5232]] | [ci] Grant the release permissions and check out before the guard |
 
 * Review
 
@@ -84,3 +84,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Two separate faults, both introduced by the composite refactor, and both found
+by dispatching Continuous Linux on the branch rather than by waiting for the
+nightly.
+
+The first refused the whole workflow at start: a called workflow can only
+downgrade the token its caller passes, so the three that attach a package have
+to grant =contents: write= and =actions: read= themselves. Without the grant the
+run reported =startup_failure= with no jobs at all, which is the same symptom a
+malformed file gives.
+
+The second was the guard. Its checkout lived inside the action, and a local
+action is read from the workspace: the job failed with "Can't find 'action.yml'
+... Did you forget to run actions/checkout before running your local action?".
+The checkout moved to the caller, and then a second dispatch failed the same way,
+because the conditional checkout was skipped on a dispatch and an empty
+workspace is an unreadable action. It is now unconditional, and a wasted shallow
+clone on a manual or tag run is the price.
+
+The CI YAML check learned both lessons: a job that calls a local action must
+check out, and must not check out under a condition.
+
+Evidence: run 46135042813, dispatched on the branch after the second fix, reports
+=relevance-guard= and =ci-image-ref= green and both Linux legs running.

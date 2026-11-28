@@ -41,6 +41,15 @@ jobs:
     outputs:
       should_build: ${{ steps.guard.outputs.should_build }}
     steps:
+      - uses: actions/checkout@v7
+        # The guard is a local action, and a local action is read from the
+        # workspace: skip this checkout and the job fails before its first step
+        # with "Can't find 'action.yml'". Only a scheduled run reads the tree,
+        # so the shallow clone of a manual or tag run is wasted work, but the
+        # job cannot tell its action apart without it.
+        with:
+          fetch-depth: 0
+
       - uses: ./.github/actions/relevance-guard
         id: guard
 
@@ -302,6 +311,12 @@ jobs:
     needs: build
     # Attach what passed, so one failed build does not cost the others.
     if: ${{ !cancelled() && github.ref_type == 'tag' && needs.build.result != 'skipped' }}
+    # A called workflow can only downgrade the token its caller passes, so the
+    # caller grants what the attachment asks for. Without this line the platform
+    # refuses the whole workflow at start, before any job runs.
+    permissions:
+      contents: write
+      actions: read
     uses: ./.github/workflows/attach-package.yml
     with:
       pattern: linux-*-release-ninja

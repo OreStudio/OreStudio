@@ -92,6 +92,65 @@ export function actionLabel(t: (key: string) => string, action: string): string 
     return name === key ? action : name;
 }
 
+/**
+ * What the verdicts and the mechanisms mean, said in the screen's own words.
+ *
+ * The list states "Bounded by keying" and "the sweep cannot perform its action"
+ * because those are the read's answers, and a person who has not read this week's
+ * design does not know what either means. The explanation sits once, folded away,
+ * rather than beside every row.
+ */
+function BoundLegend(): ReactNode {
+    const { t } = useTranslation();
+    const verdicts = ['bounded', 'keyed', 'unbounded'] as const;
+    const mechanisms = ['sweep', 'node_release', 'content_keying', 'policy_off', 'none'] as const;
+    return (
+        <details className="card p-4 text-sm">
+            <summary className="cursor-pointer text-ink-muted">
+                {t('operations.housekeeping.legend.summary')}
+            </summary>
+            <div className="mt-3 grid gap-6 sm:grid-cols-2">
+                <div className="space-y-2">
+                    <h3 className="text-xs uppercase tracking-wide text-ink-faint">
+                        {t('operations.housekeeping.legend.verdicts')}
+                    </h3>
+                    <dl className="space-y-2">
+                        {verdicts.map((verdict) => (
+                            <div key={verdict}>
+                                <dt className="font-medium">
+                                    {t(`operations.housekeeping.verdict.${verdict}`)}
+                                </dt>
+                                <dd className="text-ink-muted">
+                                    {t(`operations.housekeeping.legend.${verdict}`)}
+                                </dd>
+                            </div>
+                        ))}
+                    </dl>
+                </div>
+                <div className="space-y-2">
+                    <h3 className="text-xs uppercase tracking-wide text-ink-faint">
+                        {t('operations.housekeeping.legend.mechanisms')}
+                    </h3>
+                    <dl className="space-y-2">
+                        {mechanisms.map((mechanism) => (
+                            <div key={mechanism}>
+                                <dt className="font-medium">
+                                    {t(
+                                        `operations.housekeeping.legend.mechanismNames.${mechanism}`,
+                                    )}
+                                </dt>
+                                <dd className="text-ink-muted">
+                                    {t(`operations.housekeeping.mechanisms.${mechanism}`)}
+                                </dd>
+                            </div>
+                        ))}
+                    </dl>
+                </div>
+            </div>
+        </details>
+    );
+}
+
 /** The tag a verdict wears: green where something bounds the store, red where nothing does. */
 function VerdictTag({
     verdict,
@@ -347,6 +406,8 @@ export function HousekeepingPage(): ReactNode {
                     </table>
                 </section>
             )}
+
+            <BoundLegend />
 
             <p className="text-xs text-ink-faint">{t('operations.housekeeping.footnote')}</p>
         </ScreenFrame>

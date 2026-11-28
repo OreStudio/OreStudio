@@ -27,7 +27,7 @@ import type { StoreBound, StoreSample } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { HousekeepingPage, HOUSEKEEPING_STORES_QUERY_KEY } from './HousekeepingPage.js';
 import { HousekeepingStorePage } from './HousekeepingStorePage.js';
-import { arrange, formatSize, summarise, trendOf, verdictOf } from './housekeeping.js';
+import { arrange, formatSize, mechanismOf, summarise, trendOf, verdictOf } from './housekeeping.js';
 
 /**
  * The housekeeping screens, read as a person reads them: which store is bounded,
@@ -171,20 +171,28 @@ const nodeScratch = store({
 
 const STORES: readonly StoreBound[] = [store(), calendarDates, jobInputs, nodeScratch];
 
+/** The series the store page plots, as the samples read answers it. */
+const SAMPLES = {
+    store_code: 'marketdata.delivery_counts',
+    samples: [
+        { sampled_at: '2026-11-27 01:15:00.000000Z', size_bytes: 30000, measure_count: 20 },
+        { sampled_at: '2026-11-27 02:15:00.000000Z', size_bytes: 31000, measure_count: 24 },
+        { sampled_at: '2026-11-27 03:15:00.000000Z', size_bytes: 32768, measure_count: 27 },
+    ],
+    from_at: '2026-11-27 00:00:00.000000Z',
+    to_at: '2026-11-27 04:00:00.000000Z',
+};
+
 function withProviders(element: React.ReactNode, path: string): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(HOUSEKEEPING_STORES_QUERY_KEY, {
         read_at: '2026-11-27 03:20:00.000000Z',
         rows: STORES,
     });
-    client.setQueryData(['operations', 'housekeeping', 'samples', 'marketdata.delivery_counts'], {
-        store_code: 'marketdata.delivery_counts',
-        samples: [
-            { sampled_at: '2026-11-27 01:15:00.000000Z', size_bytes: 30000, measure_count: 20 },
-            { sampled_at: '2026-11-27 02:15:00.000000Z', size_bytes: 31000, measure_count: 24 },
-            { sampled_at: '2026-11-27 03:15:00.000000Z', size_bytes: 32768, measure_count: 27 },
-        ],
-    });
+    client.setQueryData(
+        ['operations', 'housekeeping', 'samples', 'marketdata.delivery_counts', '7d'],
+        SAMPLES,
+    );
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -295,6 +303,21 @@ describe('what the list states at its head', () => {
     });
 });
 
+describe('the mechanism a bound names', () => {
+    it('names the mechanism the read states for a store', () => {
+        expect(mechanismOf(store())).toBe('sweep');
+        expect(mechanismOf(nodeScratch)).toBe('node_release');
+        expect(mechanismOf(calendarDates)).toBe('none');
+    });
+
+    it('describes nothing for a mechanism it has not been taught', () => {
+        const unknown = store({
+            bound: { ...store().bound, mechanism: 'star_chamber' },
+        });
+        expect(mechanismOf(unknown)).toBeNull();
+    });
+});
+
 describe('the sizes a store states', () => {
     it('states a size in the unit a person reads it in', () => {
         expect(formatSize(0)).toBe('0 B');
@@ -353,42 +376,82 @@ describe('the housekeeping list', () => {
         expect(html).toContain('2 removed');
         expect(html).toContain('skipped');
     });
+
+    it('says what each verdict and each mechanism means', () => {
+        expect(html).toContain('What these verdicts mean');
+        expect(html).toContain(
+            'The keys name their content, so the same content cannot be kept twice.',
+        );
+        expect(html).toContain('The compute node releases the folder itself');
+        expect(html).toContain('No period can bound this store.');
+    });
 });
 
 describe("a store's own page", () => {
-    const html = withProviders(
+    const details = withProviders(
         <HousekeepingStorePage />,
         '/operations/housekeeping/marketdata.delivery_counts',
     );
+    const bound = withProviders(
+        <HousekeepingStorePage />,
+        '/operations/housekeeping/marketdata.delivery_counts?tab=bound',
+    );
+
+    it('asks its two questions as tabs, and opens on the first', () => {
+        expect(details).toContain('role="tablist"');
+        expect(details).toContain('>Details</button>');
+        expect(details).toContain('>Bound</button>');
+        expect(details).toMatch(/aria-selected="true"[^>]*>Details</);
+    });
 
     it('states the record the catalogue publishes', () => {
-        expect(html).toContain('Market data delivery counts');
-        expect(html).toContain('period_start');
-        expect(html).toContain('Written by');
-        expect(html).toContain('marketdata');
+        expect(details).toContain('Market data delivery counts');
+        expect(details).toContain('period_start');
+        expect(details).toContain('Written by');
+        expect(details).toContain('marketdata');
     });
 
-    it('states the size now, and plots the measurements it read', () => {
-        expect(html).toContain('32.0 KiB');
-        expect(html).toContain('27 rows');
-        expect(html).toContain('<svg');
-        expect(html).toContain('227.1 KiB a week, rising');
+    it('states the size now, and plots it over the horizon the read covered', () => {
+        expect(details).toContain('32.0 KiB');
+        expect(details).toContain('27 rows');
+        expect(details).toContain('<svg');
+        /* The axis states the window the read answered, not one the browser guessed. */
+        expect(details).toContain('11-27 00:00');
+        expect(details).toContain('11-27 04:00');
+        expect(details).toContain('Last week');
+        expect(details).toContain('227.1 KiB a week, rising');
     });
 
-    it('states the bound, its period and its cadence', () => {
-        expect(html).toContain('Delete the rows past the period');
-        expect(html).toContain('30 days');
-        expect(html).toContain('every 24 h');
-        expect(html).toContain('delivery_counts_30d');
+    it('states the bound only on its own tab', () => {
+        expect(details).not.toContain('Delete the rows past the period');
+        expect(bound).toContain('Delete the rows past the period');
+        expect(bound).toContain('30 days');
+        expect(bound).toContain('every 24 h');
+        expect(bound).toContain('delivery_counts_30d');
+    });
+
+    it('says what the mechanism that bounds the store does', () => {
+        expect(bound).toContain(
+            'A scheduled sweep drops the chunks, deletes the rows or expires the objects past the period',
+        );
     });
 
     it('says what the page does not show, and which journey records why', () => {
-        expect(html).toContain('Every sweep that touched this store');
-        expect(html).toContain('F6622109-4F52-4DE9-9C06-6B0EAA7C8D2E');
+        expect(details).toContain('Every sweep that touched this store');
+        expect(details).toContain('F6622109-4F52-4DE9-9C06-6B0EAA7C8D2E');
     });
 
     it('offers no form to a role that cannot write a bound', () => {
-        expect(html).not.toContain('Change the bound');
+        expect(bound).not.toContain('Change the bound');
+    });
+
+    it('says a store nothing measures has no plot to draw', () => {
+        const unmeasured = withProviders(
+            <HousekeepingStorePage />,
+            '/operations/housekeeping/compute.job_inputs',
+        );
+        expect(unmeasured).toContain('Nothing measures this store yet');
+        expect(unmeasured).not.toContain('<svg');
     });
 
     it('states that a store of an unknown name is not kept here', () => {

@@ -34,13 +34,9 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v7
-      # Only a scheduled run compares trees; a manual or tag run builds
-      # whatever the checkout holds.
-      if: github.event_name == 'schedule'
-      with:
-        fetch-depth: 0
-
+    # The caller checks out before it calls this action: a local action is read
+    # from the workspace, which the runner prepares before the job's first step,
+    # so a checkout inside the action would arrive too late.
     - name: Check if code changed since last successful run
       id: check
       shell: bash

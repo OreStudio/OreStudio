@@ -101,6 +101,8 @@ const ANSWERS: Answers = {
     'scheduler.v1.store_samples.list': {
         success: true,
         message: '',
+        from_at: '2026-11-27 03:00:00.000000Z',
+        to_at: '2026-11-27 04:00:00.000000Z',
         samples: [
             {
                 sampled_at: '2026-11-27 03:15:00.000000Z',
@@ -211,24 +213,24 @@ describe('GET /api/operations/housekeeping/stores', () => {
 });
 
 describe('GET /api/operations/housekeeping/stores/:code/samples', () => {
-    it('sends the store and the limit the screen asked for', async () => {
+    it('sends the store and the horizon the screen asked for', async () => {
         const { response, calls } = await get(
             'system-administration',
-            '/api/operations/housekeeping/stores/marketdata.delivery_counts/samples?limit=168',
+            '/api/operations/housekeeping/stores/marketdata.delivery_counts/samples?range=24h',
         );
 
         expect(response.statusCode).toBe(200);
         expect(calls[0]?.body).toEqual({
             store_code: 'marketdata.delivery_counts',
-            limit: 168,
+            range: '24h',
         });
         expect(response.json<{ samples: unknown[] }>().samples).toHaveLength(1);
     });
 
-    it('refuses a limit above the one the read allows', async () => {
+    it('refuses a horizon the read does not state', async () => {
         const { response } = await get(
             'system-administration',
-            '/api/operations/housekeeping/stores/marketdata.delivery_counts/samples?limit=100000',
+            '/api/operations/housekeeping/stores/marketdata.delivery_counts/samples?range=all',
         );
 
         expect(response.statusCode).toBe(400);

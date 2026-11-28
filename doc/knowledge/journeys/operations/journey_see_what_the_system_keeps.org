@@ -72,19 +72,31 @@ how long]].
    anything bounds the store. Growth is the number that answers the trigger: a
    store that added 400 MB this week is a different problem from one holding 4
    GB that has not moved.
-5. *Open one store.* A row opens that store's own page: its code and name, its description, the component that writes it,
-   the shape of its target and the target itself, the column a row delete
-   would compare, and what measures it. Beneath the record are the size now,
-   the plot of its growth, the policy that bounds it, and the latest activity
-   that names it — measurements, sweep runs, and the changes a person made.
-   The plot is what separates a store that grew once from a store that grows
-   every hour; the activity is what says why. A breadcrumb and a back action
-   return to the list, which keeps the comparison the person came for.
-6. *Follow the store to its runs.* The detail links to the housekeeping log
+5. *Open one store.* A row opens that store's own page, in the two questions a
+   person asks of a store: *Details* and *Bound*. The tabs exist because the
+   plot needs the width the bound's form was taking, and because the two
+   questions are asked at different times.
+   *Details* states the record — the code, the name, the description, the
+   component that writes the store, the shape of its target and the target
+   itself, the column a row delete would compare, and what measures it — and
+   beneath it the size now and the plot of its growth. *Bound* states the
+   verdict, the mechanism that removes from the store, the policy that governs
+   it, what its last run did, and the form that changes the period.
+6. *Read the plot.* The plot is a reading and not a decoration: the time axis
+   states the window the read covered and the value axis the size, and every
+   mark is one measurement, so a reader can see the sampler's cadence as well
+   as the store's movement. The window is the read's own answer and never the
+   browser's subtraction, so the axis cannot claim a horizon the installation
+   did not measure. A person chooses the horizon — the last day, the last week
+   or the last month — because a week shows a policy's nightly drop and a day
+   shows the store regrowing into it. A store nothing measures says so in
+   place of the plot, and a horizon with no measurement in it says that, with
+   when the store was last measured, because those are different facts.
+7. *Follow the store to its runs.* The detail links to the housekeeping log
    filtered to that store, so the administrator can read what the sweep did
    and why it says what it says, in
    [[id:F6622109-4F52-4DE9-9C06-6B0EAA7C8D2E][Read the housekeeping log]].
-7. *Find what nothing bounds.* An unbounded store reads as such, with the
+8. *Find what nothing bounds.* An unbounded store reads as such, with the
    reason: no policy, a disabled policy, a failed run, or an action the sweep
    does not perform. The last is stated in the sweep's own words, so the screen
    reports the platform's behaviour rather than a guess about it. The screen
@@ -93,7 +105,12 @@ how long]].
    every row; the count is the work left, and it should reach zero. Each row
    also states the cost in bytes: what the store holds now, and what the rate of
    the last twelve weeks comes to over a year.
-8. *Leave by changing something.* From a store's detail the administrator
+9. *Learn what the verdicts mean.* The verdicts and the mechanisms are the
+   read's own words — "Bounded by keying", "the sweep cannot perform its
+   action" — and a person who has not read the design does not know what they
+   mean. A note folded under the table states each verdict and each mechanism
+   once; the store's own page states the sentence for the store in hand.
+10. *Leave by changing something.* From a store's *Bound* tab the administrator
    opens its policy in
    [[id:C647D403-BFF0-4910-83E4-4EFEBD4F39C4][Change what is kept, and for
    how long]], which is where a store stops being unbounded.
@@ -102,9 +119,12 @@ how long]].
 
 Two screens, in the shape the rest of the application uses. The list page is
 composed around the question "what is this installation keeping": a summary
-strip states the counts and the total, and the table carries one row per store.
-The store page is the record a row opens: the store's own fields, its plot, its
-policy and its log, with the way back to the list stated at its head.
+strip states the counts and the total, the table carries one row per store, and
+a folded note under it states what the verdicts and the mechanisms mean. The
+store page is the record a row opens, in two tabs — *Details*, with the store's
+fields and the plot of its size over a horizon the person chooses, and *Bound*,
+with the mechanism, the policy and its form — and the way back to the list rests
+at its head.
 
 #+begin_example
 #+caption: The housekeeping list: a summary of what is bounded and what is not, and one row per store with its policy, its size and its growth.
@@ -113,7 +133,7 @@ policy and its log, with the way back to the list stated at its head.
 #+end_example
 
 #+begin_example
-#+caption: The store's own page: its record, the plot of its growth, its policy and the activity that names it, with the way back to the list at its head.
+#+caption: The store's own page on its Details tab: the record, and the plot of its size over a horizon the person picks, with the time axis stating the window the read covered and the value axis the size.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/operations/wireframe_open_a_store.png]]
 #+end_example
@@ -158,11 +178,15 @@ a series of samples that point at the store, and the screen shows it as such.
 |------+-----------+---------+--------|
 | 1, 3 | The store catalogue, with its names, descriptions, targets and bounds | =scheduler.v1.store_bounds.list= | exists |
 | 3, 5 | The size of every store now | =scheduler.v1.store_bounds.list= | exists |
-| 5 | The growth series of one store | =scheduler.v1.store_samples.list= | exists |
+| 5, 6 | The growth series of one store over a horizon | =scheduler.v1.store_samples.list= | exists |
 | 3, 4 | The sweep's schedule and its last run | =scheduler.v1.ops.get_scheduler_status= | exists |
 | 7 | Which actions the sweep can apply | =scheduler.v1.store_bounds.list= | exists |
 | 5 | The latest activity that names one store | (no subject) | missing |
-| 5, 6 | The runs of one policy | (no subject until PR #5126) | missing |
+| 7 | The runs of one policy | (no subject) | missing |
+
+The samples read names a horizon — the last day, the last week or the last month
+— and answers the window it covered beside the points. The axis is therefore the
+installation's own window and not a subtraction the browser makes.
 
 * What is missing
 
@@ -186,8 +210,8 @@ words match it.
   sweep removed and not the size it found. A step in the plot is therefore the
   sampler's view of a sweep, not the sweep's own statement of it.
 - *A read of the runs.* Open. The table exists and the sweep writes it, and no
-  wire type reads it; PR #5126 adds one. Until it merges the screen states the
-  last run, which the bounds read carries, and names the gap.
+  wire type reads it; the screen states the last run, which the bounds read
+  carries, and names the gap.
 - *Which actions the sweep performs.* Closed: the bounds read states the
   mechanism a bound names and whether it applies today, so a policy the sweep
   cannot perform reads as unbounded and says why. The rule is the database's,

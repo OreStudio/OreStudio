@@ -22,7 +22,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import {
-    STORE_SAMPLES_LIMIT,
+    STORE_RANGES,
     readStoreBounds,
     readStoreSamples,
     saveStoreBound,
@@ -57,15 +57,10 @@ const codeParamsSchema = z.object({
 });
 
 const samplesQuerySchema = z.object({
-    limit: z
-        .string()
-        .regex(/^\d+$/)
-        .transform(Number)
-        .pipe(z.int().min(1).max(STORE_SAMPLES_LIMIT))
-        .default(STORE_SAMPLES_LIMIT),
+    range: z.enum(STORE_RANGES).default('7d'),
 });
 
-const LIMIT_REFUSED = `The samples read takes a limit of 1 to ${STORE_SAMPLES_LIMIT}.`;
+const RANGE_REFUSED = `The samples read takes a horizon of ${STORE_RANGES.join(', ')}.`;
 
 const STORE_REFUSED = 'The address names no store.';
 
@@ -142,10 +137,15 @@ export function registerHousekeepingRoutes(
         const code = storeCode(request);
         const query = samplesQuerySchema.safeParse(request.query ?? {});
         if (!query.success) {
-            throw invalidRequest(LIMIT_REFUSED);
+            throw invalidRequest(RANGE_REFUSED);
         }
-        const samples = await readStoreSamples(session.client, code, query.data.limit);
-        return storeSamplesViewSchema.parse({ store_code: code, samples });
+        const series = await readStoreSamples(session.client, code, query.data.range);
+        return storeSamplesViewSchema.parse({
+            store_code: code,
+            samples: series.samples,
+            from_at: series.fromAt,
+            to_at: series.toAt,
+        });
     });
 
     /**

@@ -36,11 +36,11 @@ left the staged rows to psql.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
-| Now          | In review on PR #5221. The review's two critical findings are fixed and the gate is re-running. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge on a green gate, then read the provenance and image tasks. |
+| Next         | Nothing. |
 | Last touched | 2026-11-28                             |
 
 * Acceptance
@@ -191,3 +191,25 @@ task's own acceptance, as two independent passes.
 | 10 | The task still said the gate and PR were next | this task | Fixed | Names the PR and the review round |
 
 * Result
+
+A dataset's page gains a Contents tab: the tables its artefact type names, each with
+its own columns and its own staged count, and one table opened to read its rows. The
+read is one operation, =dq.v1.ops.dataset_contents=, which answers the family first
+because a dataset names one artefact type and the type names a table or a family of
+them, and answers a page of rows with the columns they carry because every family
+carries different ones. The table is checked against the dataset's own family, so one
+read serves thirty-four of them and a caller cannot read another family's rows.
+
+The rows page through the shared =Pager=, not a cap of their own, and the read's own
+limit is the Load all limit. A row carries neither =dataset_id=, =tenant_id= nor
+=version=: the request states the first two and nobody reads the third.
+
+Two critical findings from the review were fixed before the merge: the page had no
+order (=order by 1= is =dataset_id=, constant after the filter, so LIMIT and OFFSET
+could repeat or skip a row), and the readers ran as the owner with no tenant
+predicate, so a dataset code stated in more than one tenant could return another
+tenant's rows. The page now orders by =ctid= and reads invoker-rights, scoped to the
+caller's tenant or the system tenant.
+
+Proven with 10 pgTAP assertions, 166 handler assertions in 4 cases, 8 dataset-page
+tests, a live read of 34 tables and 1,040 rows over the route, and a 21-of-21 gate.

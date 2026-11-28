@@ -21,6 +21,8 @@
 #include <array>
 #include <cmath>
 #include <format>
+#include <optional>
+#include <utility>
 
 namespace ores::analytics::quant::math {
 
@@ -81,10 +83,14 @@ std::expected<double, std::string> projection_factor(swaption_pillar pillar,
         return std::unexpected("the term must be positive and finite");
     if (!std::isfinite(model.mean_reversion) || model.mean_reversion < 0.0)
         return std::unexpected("the mean reversion must be finite and not negative");
+    // The model is one statement about every cell, so it is read before any cell is: a batch with
+    // no quoted cells must still refuse a model the projection cannot project through.
     if (!has_closed_form(model.model))
         return std::unexpected(std::format("the model {} is not one this projection is closed form "
                                            "for, and it is not approximated",
                                            name_of(model.model)));
+    if (!std::isfinite(model.mean_reversion) || model.mean_reversion < 0.0)
+        return std::unexpected("the mean reversion must be finite and not negative");
 
     const double a = model.mean_reversion;
     const bool has_reversion = a > minimum_mean_reversion;
@@ -134,8 +140,9 @@ std::expected<ir_term_matrix, std::string> derive_term_matrix(std::span<const da
                                                               std::span<const double> expiry_years,
                                                               const measurement_settings& settings,
                                                               short_rate_projection model) {
-    if (!(settings.periods_per_year > 0.0) || !std::isfinite(settings.periods_per_year))
-        return std::unexpected("the periods in a year must be positive and finite");
+    const auto valid = validate_settings(settings);
+    if (!valid)
+        return std::unexpected(valid.error());
     const auto returns = returns_of(levels, volatility_transform::difference);
     if (returns.returns.empty())
         return std::unexpected("the series has no return: it holds fewer than two observations");
@@ -164,6 +171,55 @@ std::expected<ir_term_matrix, std::string> derive_term_matrix(std::span<const da
                                           {.expiry_years = years, .term_years = term_years},
                                           model,
                                           horizon));
+    }
+    return out;
+}
+
+std::expected<ir_vol_projection, std::string> project_ir_vols(const vol_batch& measured,
+                                                              std::span<const double> term_years,
+                                                              short_rate_projection model) {
+    if (term_years.size() != measured.series_count())
+        return std::unexpected(std::format("the batch holds {} series and {} tenor(s) were stated",
+                                           measured.series_count(),
+                                           term_years.size()));
+    // The model is one statement about every cell, so it is read before any cell is: a batch with
+    // no quoted cell must still refuse a model the projection cannot project through.
+    if (!has_closed_form(model.model))
+        return std::unexpected(std::format("the model {} is not one this projection is closed form "
+                                           "for, and it is not approximated",
+                                           name_of(model.model)));
+    if (!std::isfinite(model.mean_reversion) || model.mean_reversion < 0.0)
+        return std::unexpected("the mean reversion must be finite and not negative");
+
+    // A pillar no batch cell could be measured at is not this projection's to answer; the batch
+    // refused it and says why.
+    const auto cells = measured.states.size();
+    ir_vol_projection out{.factors = std::vector<double>(cells, 0.0),
+                          .atms = std::vector<double>(cells, 0.0),
+                          .smile_skewnesses = std::vector<double>(cells, 0.0)};
+    for (std::size_t series = 0; series < measured.series_count(); ++series) {
+        if (!(term_years[series] > 0.0) || !std::isfinite(term_years[series]))
+            return std::unexpected(
+                std::format("the term of series {} must be positive and finite", series));
+        const std::size_t first = measured.offset_of(series);
+        const std::size_t last = measured.offsets[series + 1];
+        for (std::size_t cell = first; cell < last; ++cell) {
+            if (measured.states[cell] != vol_cell_state::quoted)
+                continue;
+            const double years = measured.pillars[cell - first];
+            const return_shape shape{.skewness = measured.skewnesses[cell],
+                                     .excess_kurtosis = measured.excess_kurtoses[cell]};
+            const auto vol = atm_vol_of(measured.levels[cell],
+                                        measured.window_returns[cell],
+                                        {.expiry_years = years, .term_years = term_years[series]},
+                                        model,
+                                        shape);
+            if (!vol)
+                return std::unexpected(vol.error());
+            out.factors[cell] = vol->factor;
+            out.atms[cell] = vol->atm;
+            out.smile_skewnesses[cell] = vol->smile.skewness;
+        }
     }
     return out;
 }

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.analytics.quant/math/volatility_measurement.hpp"
+#include <boost/math/statistics/univariate_statistics.hpp>
 #include <algorithm>
 #include <cmath>
 #include <format>
@@ -25,33 +26,40 @@
 
 namespace ores::analytics::quant::math {
 
-namespace {
-
-/// Whether a level of @p transform's series is an observation.
-bool is_observable(double level, volatility_transform transform) {
+bool reads_as_observation(double level, volatility_transform transform) noexcept {
     if (!std::isfinite(level))
         return false;
     return transform == volatility_transform::difference || level > 0.0;
 }
 
+double return_of(double value, double previous, volatility_transform transform) noexcept {
+    return transform == volatility_transform::log_return ? std::log(value) - std::log(previous) :
+                                                           value - previous;
 }
 
 dated_returns returns_of(std::span<const dated_level> levels, volatility_transform transform) {
     dated_returns out;
     std::optional<dated_level> previous;
     for (const auto& level : levels) {
-        if (!is_observable(level.level, transform))
+        if (!reads_as_observation(level.level, transform))
             continue;
         if (previous) {
-            const double value = transform == volatility_transform::log_return ?
-                                     std::log(level.level) - std::log(previous->level) :
-                                     level.level - previous->level;
-            out.returns.push_back(value);
+            out.returns.push_back(return_of(level.level, previous->level, transform));
             out.dates.push_back(level.date);
         }
         previous = level;
     }
     return out;
+}
+
+std::expected<void, std::string> validate_settings(const measurement_settings& settings) {
+    if (!(settings.periods_per_year > 0.0) || !std::isfinite(settings.periods_per_year))
+        return std::unexpected("the periods in a year must be positive and finite");
+    return {};
+}
+
+double level_of_variance(double variance, const measurement_settings& settings) noexcept {
+    return std::sqrt(variance * settings.periods_per_year) * settings.level_multiplier;
 }
 
 int measurement_window(double years, const measurement_settings& settings) {
@@ -85,16 +93,18 @@ pillar_reach reach_of(std::span<const double> pillar_years,
 
 std::expected<pillar_measurement, std::string> measure_pillar(
     std::span<const double> returns, double years, const measurement_settings& settings) {
-    if (!(settings.periods_per_year > 0.0) || !std::isfinite(settings.periods_per_year))
-        return std::unexpected("the periods in a year must be positive and finite");
+    const auto valid = validate_settings(settings);
+    if (!valid)
+        return std::unexpected(valid.error());
     if (!(years > 0.0) || !(years <= maximum_pillar_years))
         return std::unexpected(std::format("the pillar must be positive and at most {} years",
                                            static_cast<int>(maximum_pillar_years)));
     const int window = measurement_window(years, settings);
-    const auto level = realised_volatility(returns, window, settings.periods_per_year);
-    if (!level)
-        return std::unexpected(level.error());
-    return pillar_measurement{.window = window, .level = *level * settings.level_multiplier};
+    if (returns.size() < static_cast<std::size_t>(window))
+        return std::unexpected("the sample is shorter than the window");
+    const double variance =
+        boost::math::statistics::sample_variance(returns.last(static_cast<std::size_t>(window)));
+    return pillar_measurement{.window = window, .level = level_of_variance(variance, settings)};
 }
 
 }

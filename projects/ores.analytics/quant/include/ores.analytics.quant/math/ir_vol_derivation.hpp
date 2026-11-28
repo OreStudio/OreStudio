@@ -21,6 +21,7 @@
 
 #include "ores.analytics.quant/export.hpp"
 #include "ores.analytics.quant/math/return_moments.hpp"
+#include "ores.analytics.quant/math/vol_batch.hpp"
 #include "ores.analytics.quant/math/volatility_measurement.hpp"
 #include <cstdint>
 #include <expected>
@@ -215,6 +216,50 @@ derive_term_matrix(std::span<const dated_level> levels,
                    std::span<const double> expiry_years,
                    const measurement_settings& settings,
                    short_rate_projection model);
+
+/**
+ * @brief The swaption projection over a measured batch: the class's own columns, one per cell.
+ *
+ * A batch holds what every class measures — the returns a window read, the level, and the shape.
+ * It does not hold what a class quotes, because what a rate states at a pillar and what a pair
+ * states at a delta are different objects. This is the rates class's: the factor a measured level
+ * is carried to a swaption by, the ATM normal volatility that gives, and the slope of the smile
+ * the shape supports. Every array is keyed by the batch's layout, so a caller reads a series'
+ * quote at the batch's own offset and never walks another series.
+ *
+ * A cell the batch did not quote holds zeroes here, and the batch states why it holds nothing. The
+ * projection refuses as a whole and not per cell, because the model is one statement: a mean
+ * reversion the model cannot read, or a process it is not closed form for, refuses every pillar of
+ * every series rather than pretending some of them are the model's.
+ */
+struct ir_vol_projection final {
+    /// The model's dimensionless factor for the pillar, or zero.
+    std::vector<double> factors;
+    /// The ATM normal volatility: the level carried by the factor, or zero.
+    std::vector<double> atms;
+    /**
+     * @brief The smile's slope at the pillar, or zero.
+     *
+     * The smile's other parameter is its level at the money, which is the ATM this projection
+     * already holds: the model reads the smile as the ATM and a skewness, so a second copy of the
+     * ATM would be a second place the level can be wrong.
+     */
+    std::vector<double> smile_skewnesses;
+};
+
+/**
+ * @brief The swaption projection of every cell of @p measured.
+ *
+ * @param measured The batch, whose ladder and offsets the projection answers cell for cell.
+ * @param term_years One swap tenor per series of the batch, in the batch's own order.
+ * @param model The short-rate model the levels are carried through.
+ *
+ * Refused for a batch whose series count and tenor count disagree, for a tenor that is not
+ * positive, and for a model the projection is not closed form for. Nothing is written for a cell
+ * the batch did not quote.
+ */
+ORES_ANALYTICS_QUANT_EXPORT std::expected<ir_vol_projection, std::string> project_ir_vols(
+    const vol_batch& measured, std::span<const double> term_years, short_rate_projection model);
 
 }
 

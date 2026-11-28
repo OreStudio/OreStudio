@@ -8,7 +8,7 @@
 #+filetags: :derive_term_indices_from_their_overnight_curves:sprint_31:v0:
 #+owner: marco
 #+branch: feature/state-how-a-curve-was-made
-#+pr:
+#+pr: 5225
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5225][#5225]] | [marketdata] State how a curve was made, and name the kind a computed fixing is |
 
 * Review
 

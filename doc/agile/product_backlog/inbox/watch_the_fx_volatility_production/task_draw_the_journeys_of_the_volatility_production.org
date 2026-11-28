@@ -8,7 +8,7 @@
 #+filetags: :watch_the_fx_volatility_production:inbox:product_backlog:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 5217
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5217][#5217]] | [agile] Plan the view of the volatility production |
 
 * Review
 

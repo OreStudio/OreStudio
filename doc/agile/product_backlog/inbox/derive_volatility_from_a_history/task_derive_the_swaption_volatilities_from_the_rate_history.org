@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
 #+owner: marco
-#+branch:
+#+branch: feature/derive-the-swaption-volatilities
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -30,7 +30,7 @@ coordinates and the smile model. The values are the platform's own arithmetic, p
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -49,6 +49,19 @@ coordinates and the smile model. The values are the platform's own arithmetic, p
 
 * Notes
 
+- The projection reads the model's mean reversion and the pillar's two lengths, and nothing else. The
+  level is what the measurement read, so the model's volatility and the history's level are one
+  number stated twice.
+- The driftless limit is =sqrt(T)=. A curve whose mean reversion is below 1e-8 reads the limit, which
+  keeps the expression finite without a branch a reader has to trust.
+- A pillar the sample does not cover is refused alone and states that the sample is shorter than the
+  window; the rest of the ladder stands.
+- The matrix is in whatever unit the caller keeps its changes in, so the store's basis points are the
+  caller's to state. The engine does not convert between units.
+- =latent_market_tests.cpp= carried an undeclared =math= alias that another file in its unity batch
+  happened to provide. The new test file changed the batching and the alias went missing, so the
+  file now states it.
+
 - The series: the overnight fixing history for the short end, and the history of the term's own rate for a term. A term the curves do not carry is refused, never interpolated from the short end.
 - The pieces the engine reuses: =fx_derivation_window=, the moments and the shrink to the prior, =level_multiplier=, the reach, and the method and version a series is stamped with.
 - The seeded curves carry a per-currency =kappa= and =sigma= calibrated to the public rates (=synthetic_ir_curve_generation_configs=). The derivation reads the history; the process is what carries the measurement across expiry and term.
@@ -56,9 +69,23 @@ coordinates and the smile model. The values are the platform's own arithmetic, p
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The task is two deliverables, and it lands in two pull requests. The first is the derivation: a
+rate history and a model's pillars to ATM normal volatilities and a smile, with no store and no
+feed. The second is the emission: the adapter that reads a currency's term histories, writes the
+quotes under the producer, stamps the method and the version, and holds them internal.
+
+The derivation is cut where the measurement stops. =ir_vol_derivation= holds three things, and none
+of them is a measurement: the projection, the smile, and the matrix that reads each expiry through
+the engine. The projection is a product of two closed-form factors -- the variance a one-factor
+Gaussian short rate accumulates over the option's life, and the damping a swap's tenor imposes by
+averaging that rate over its own length -- and it is read through its driftless limit rather than
+refused when a curve runs no mean reversion. A process this formula is not (Cox-Ingersoll-Ross, a
+two-factor Gaussian, Black-Karasinski) is refused by name, because approximating it with the wrong
+formula would produce a number nobody could audit.
+
+The smile claims only what the shape supports: the first-order Gram-Charlier slope, the skewness
+over six, in the standardised strike. It fits no curvature, and the header says so, because a smile
+that pretends to a convexity it does not fit is worse than a line that admits it is one.
 
 * Measurements
 
@@ -72,9 +99,25 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Quant suite, cases | 772 | =ores.analytics.quant.tests= | ff4e275f73 |
+| Quant suite, assertions | 2276998 | the same | ff4e275f73 |
+| Derivation cases added | 7 | =ores.analytics.quant.tests "[ir_vol_derivation]"= | ff4e275f73 |
+| Build, quant tests | 1m 24s | =compass build ores.analytics.quant.tests= | ff4e275f73 |
 
 * Notes
+
+- The projection reads the model's mean reversion and the pillar's two lengths, and nothing else. The
+  level is what the measurement read, so the model's volatility and the history's level are one
+  number stated twice.
+- The driftless limit is =sqrt(T)=. A curve whose mean reversion is below 1e-8 reads the limit, which
+  keeps the expression finite without a branch a reader has to trust.
+- A pillar the sample does not cover is refused alone and states that the sample is shorter than the
+  window; the rest of the ladder stands.
+- The matrix is in whatever unit the caller keeps its changes in, so the store's basis points are the
+  caller's to state. The engine does not convert between units.
+- =latent_market_tests.cpp= carried an undeclared =math= alias that another file in its unity batch
+  happened to provide. The new test file changed the batching and the alias went missing, so the
+  file now states it.
 
 * Test Scenarios
 
@@ -100,3 +143,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+*Part one, the derivation, is committed at =ff4e275f73=.* =ir_vol_derivation= projects a term's
+measured level to a swaption's ATM normal volatility, states the smile the return shape supports,
+and reads a term's matrix over an expiry ladder through the measurement engine.
+
+What part two still owes: the adapter that stores the quotes under the producer =orestudio=, stamps
+the method and the version, and keeps them internal, so that no non-system party reads them and no
+meter counts them. The task stays STARTED until it lands.

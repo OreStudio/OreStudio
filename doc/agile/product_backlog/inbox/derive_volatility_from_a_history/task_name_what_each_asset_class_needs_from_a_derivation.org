@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
 #+owner: marco
-#+branch:
+#+branch: feature/name-what-the-surface-path-assumes
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -29,7 +29,7 @@ served now, which wait on a history, and it is the list the engine is built agai
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -96,3 +96,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The survey is [[file:investigation_what_each_asset_class_needs_from_a_derivation.org][What each asset
+class needs from a derivation]], written at =819a1245ee=.
+
+- *Two classes can be served now.* FX is served; interest rates needs only the engine's three
+  parameters. Between them they cover the volatility of every trade in the seed population.
+- *Four classes fail, for three reasons.* Inflation and equity need an adapter each. Commodity needs
+  an adapter and has no obvious free source. Credit needs a datum first: the key grammar has no
+  instrument for a CDS option volatility, though ORE's today's market names =CDSVolatilities=.
+- *Inflation is the nearest third class*: its quote is already nameable and ten curves are already
+  configured, so the only missing piece is an index-fixing adapter.
+- *Interest rates reads many series where FX reads one.* An FX ladder hangs off one spot series; a
+  swaption reads the series of its term, so a term the curves do not carry has no history and the
+  refusal names the term.
+- *A generated series is a history if it is stored*, so the engine's refusal must say whether the
+  store holds no series at all or holds one the generator has not yet extended.

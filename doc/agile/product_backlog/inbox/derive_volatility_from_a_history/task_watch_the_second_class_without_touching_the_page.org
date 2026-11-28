@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: A49B1E52-4C34-4EA9-B238-D250689B1852
+:END:
+#+title: Task: Watch the second class without touching the page
+#+description: The volatility production page reads the axes a surface declares. Interest rates is the first class the page was not built for, so this task adds the swaption cube to the page by adding nothing to the page: the surface declares an expiry and a term instead of an expiry and a delta, and the page draws it. A field the page lacks is added to the surface description, never as a branch.
+#+type: task
+#+level: s1
+#+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A swaption cube renders on the production page with the panels, the ladders and the
+checks the FX sheet already uses, and the page does not learn what a swaption is.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- The swaption cube renders for a currency and an as-of, at one expiry or one term at a time, with the other axis along the panel, and the page names no asset class to do it.
+- The page shows the derived level the cube started from, so a level that drifts away from the curve it prices against is visible.
+- Every field the page needs and does not find is added to the surface's description. No change is made to the page's code for the class, and the task records any that were.
+- A class whose surface declares no axes is refused with the axis it lacks, and the refusal names the surface and not the page.
+- The journeys and the prototype are unchanged by the task. A change to either is a signal that the read did not state the axes.
+
+* Notes
+
+- This task is the test of the story's claim, not a feature of interest rates. If the page needs a branch, the fault is in the surface's description or in the read, and the fix belongs there.
+- The FX page draws expiry by delta. The swaption cube declares an expiry and a term and holds one of them still. The difference between the two pages is data.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -2,10 +2,10 @@
 :ID: 45146EEA-76AA-41F2-8BBD-1D571E9E658E
 :END:
 #+title: Task: Draw the journeys of the volatility production
-#+description: Five journeys that answer what the machinery is doing: watch a surface being produced, explain why a surface has no quotes, compare the truth with the views and the calibration, debug one bad quote, and step through a day. Name the screens, the question each answers and the data each needs.
+#+description: Five journeys that answer what the machinery is doing: watch a surface being produced, explain why a surface has no quotes, compare the truth with the views and the calibration, debug one bad quote, and step through a day. They are drawn for any class, so a second one names no new journey.
 #+type: task
 #+level: s1
-#+filetags: :watch_the_fx_volatility_production:inbox:product_backlog:
+#+filetags: :watch_the_volatility_production:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr: 5217
@@ -16,18 +16,18 @@
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1EF4F5FE-802A-49C1-A133-B33281BDAA9D][Watch the FX volatility production]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1EF4F5FE-802A-49C1-A133-B33281BDAA9D][Watch the volatility production]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Five journeys state what the machinery is doing and what each screen must answer.
+Five journeys state what the machinery is doing and what each screen must answer, in terms no asset class owns.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:1EF4F5FE-802A-49C1-A133-B33281BDAA9D][Watch the FX volatility production]] |
+| Parent story | [[id:1EF4F5FE-802A-49C1-A133-B33281BDAA9D][Watch the volatility production]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -37,6 +37,7 @@ Five journeys state what the machinery is doing and what each screen must answer
 
 - Each journey names its screen, the question it answers and the data it needs.
 - The journeys cover watching a surface being produced, a surface with no quotes, the truth against the views and the calibration, one bad quote, and a day stepped through.
+- Each journey names a surface by the coordinates its class uses and never by an asset class, so interest rates adds no journey and changes none.
 - The prototype follows the journeys and no screen exists without one.
 
 * Plan

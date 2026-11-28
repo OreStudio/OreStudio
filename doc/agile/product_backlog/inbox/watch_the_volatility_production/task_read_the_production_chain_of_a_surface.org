@@ -2,10 +2,10 @@
 :ID: CA06E4FC-7B77-4B86-9D2A-E14647F1D079
 :END:
 #+title: Task: Read the production chain of a surface
-#+description: One read for a pair and an as-of: the spot and the curves it reads, the latent state, each vendor's quotes and the surface a party calibrated with its error. It spans the generator's state and the market data store, and the page draws the chain from it.
+#+description: One read for a subject and an as-of: the inputs the generator reads, the latent state, each vendor's quotes and the surface a party calibrated with its error, and the axes that surface declares. It spans the generator's state and the market data store, and the page draws the chain from it.
 #+type: task
 #+level: s1
-#+filetags: :watch_the_fx_volatility_production:inbox:product_backlog:
+#+filetags: :watch_the_volatility_production:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,18 +16,18 @@
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1EF4F5FE-802A-49C1-A133-B33281BDAA9D][Watch the FX volatility production]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1EF4F5FE-802A-49C1-A133-B33281BDAA9D][Watch the volatility production]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-One read answers a pair's chain for an as-of, from the inputs to the calibrated surface.
+One read answers a subject's chain for an as-of, from the inputs to the calibrated surface, and states the axes the surface is drawn on.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:1EF4F5FE-802A-49C1-A133-B33281BDAA9D][Watch the FX volatility production]] |
+| Parent story | [[id:1EF4F5FE-802A-49C1-A133-B33281BDAA9D][Watch the volatility production]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -35,9 +35,14 @@ One read answers a pair's chain for an as-of, from the inputs to the calibrated 
 
 * Acceptance
 
-- The read returns the spot and the curves the generator read, the latent state, each vendor's quotes and the calibrated surface with its error.
-- It spans the generator's state and the market data store, and needs no join a caller writes.
-- A pair whose chain is broken returns the node that failed and what it lacked, rather than an empty answer.
+- The read returns the inputs the generator read, the latent state, each vendor's quotes and the calibrated surface with its error.
+- The read returns the surface's own description: the names of its axes, their labels and the model it was fitted with. The page draws from that description and from nothing else.
+- The subject is whatever the surface's coordinates name, and the read refuses a subject the store does not know rather than answering an empty chain.
+- A subject whose chain is broken returns the node that failed and what it lacked, rather than an empty answer.
+
+* Notes
+
+- The read is the seam the page depends on: a page that cannot draw a new class without a change is a read that did not state the axes.
 
 * Plan
 

@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: 93718DC0-E92A-40D8-BAB7-E31AD9F08801
+:ID: D1B655A0-DEB3-4BC3-A738-5B2501061BE5
 :END:
-#+title: Task: Read the internal series of the generator
-#+description: The latent surface and the derived quotes keep a stored series that no read serves. Once the standing says an internal value keeps a series, add the system-tenant read that the debugger and a chart need.
+#+title: Task: Prototype the volatility production page
+#+description: A static prototype beside the fixings one: heatmap panels for the latent surface, each vendor's view, the calibrated surface and the difference between them, on the axes a surface declares, with the quote ladders, the calibration checks and the chain's states. It decides what the real page shows.
 #+type: task
 #+level: s1
-#+filetags: :watch_the_fx_volatility_production:inbox:product_backlog:
+#+filetags: :watch_the_volatility_production:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,18 +16,18 @@
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1EF4F5FE-802A-49C1-A133-B33281BDAA9D][Watch the FX volatility production]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1EF4F5FE-802A-49C1-A133-B33281BDAA9D][Watch the volatility production]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-The internal series of the generator are readable by the system tenant, so they can be charted and debugged.
+A static prototype decides what the page shows before any read is written, and it is drawn on the axes a surface declares rather than on the ones FX happens to use.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:1EF4F5FE-802A-49C1-A133-B33281BDAA9D][Watch the FX volatility production]] |
+| Parent story | [[id:1EF4F5FE-802A-49C1-A133-B33281BDAA9D][Watch the volatility production]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -35,9 +35,10 @@ The internal series of the generator are readable by the system tenant, so they 
 
 * Acceptance
 
-- The read serves the latent surface's series and the derived quotes under the system tenant.
-- No non-system party can reach them, and they are not metered.
-- A chart of a day's evolution reads from it.
+- The prototype holds the latent surface, each vendor's view, the calibrated surface and the difference between them as heatmaps on the axes a surface declares.
+- The axes are those of a sample surface the prototype reads, so a surface with another pair of axes is a change of the sample and not a change of the page.
+- The quote ladders, the calibration checks and the chain's states sit beside the graph.
+- The prototype is reachable from the journeys and states what it does not show.
 
 * Plan
 

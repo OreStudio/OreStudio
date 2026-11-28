@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: 6DA34BE7-4F67-42B6-9BCB-20D7EDA55783
+:END:
+#+title: Story: Derive volatility from a history, and serve it through the lifecycle
+#+description: No free source offers a volatility quote for any asset class, so each class derives its volatility from a history the platform holds, through one engine whose only per-class inputs are the transform, the coordinates and the smile model. Interest rates runs the whole chain first -- derived normal volatilities, a latent cube, vendor views, a party's calibrated surface, and a swaption that prices.
+#+type: story
+#+level: s2
+#+filetags: :marketdata:volatility:derivation:lifecycle:backlog:inbox:product_backlog:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+No feed the platform reads offers a volatility quote, for any asset class. The vendor
+feeds serve rates, spots and fixings; the only volatility the store holds is what the
+simulator writes itself, and the derived quotes the platform computes. The swap and cap books
+are the sharpest case, because ORE already names their volatility blocks as components of
+today's market and nothing has ever written them.
+
+So the platform measures the volatility it needs. A class derives it from a history the
+platform holds: a window as long as the pillar, the moments of a return series, a level
+multiplier, a shape shrunk to a prior, and the reach the sample supports. That measurement
+is the same work in every asset class, and only three things differ: the transform that
+turns the series into a return, the coordinates a quote is named by, and the smile model.
+They are parameters of one engine, and the engine is the first deliverable here.
+
+Interest rates is the first class to run the whole chain, because it is the class whose
+trades the seed holds and whose volatility block ORE waits for. The story derives a
+currency's normal volatilities from its rate history, simulates a latent cube with vendor
+views of it, calibrates a party's surface from those views, publishes the set through the
+lifecycle, and prices a swaption book from the result.
+
+The story is also the test of two claims the system makes: that a kind is a row in a
+table and not a branch in the code, and that a derivation is a transform, a coordinate set
+and a smile model. The FX surface was the first instance of the first claim. Interest rates
+is the second instance of both.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing. The last task waits on the FX volatility production page. |
+| Next          | Name what the surface path assumes about FX, and what each asset class needs. |
+| Last touched  | 2026-11-28                               |
+
+* Acceptance
+
+- One engine derives volatility. The only inputs that differ by asset class are the
+  transform, the coordinates a quote is named by and the smile model, and no other part of
+  the engine names an asset class.
+- A class with no history is refused by name, and the refusal states the series it lacks
+  and the returns a pillar needs. The inventory says which classes can be served now.
+- The FX quotes the derivation produced before the lift are the ones it produces after it,
+  cell for cell, over the same history.
+- A currency and an as-of answer the normal volatility of every expiry and term, and the
+  answer names the series, the window, the multiplier and the model it read.
+- A derived value is stored under =orestudio= with internal standing: no non-system party
+  reads it and no meter counts it. It states the method and the version that computed it.
+- A latent cube and each vendor's view of it exist for a currency, and the difference
+  between a view and the cube is the noise its contributor added.
+- A party calibrates a surface from the views it holds, and the fit states its errors, its
+  arbitrage checks and the pillars no contributor quoted.
+- The publish and the withdrawal of the surface take the steps the FX surface takes, no
+  step branches on the asset class, and the kind is a row in the kind table.
+- A book of swaptions or caps prices from the published surface, and a report states the
+  trades it priced and the market it lacked.
+- Every part the audit names generic is used unchanged, and every part it names FX only is
+  parameterised or stated as a limitation.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:DD79767F-9C58-48C9-A726-40334F0E662F][Name what the surface path assumes about FX]] | BACKLOG | | | An inventory of the path a surface takes, from its blueprint to the ORE package, saying for each part whether it is generic, parameterised by asset class, or FX-only. It decides which parts the rest of the story replaces and which it adds to. |
+| [[id:F654424E-FCAE-46F5-8183-22D5EE91007F][Name what each asset class needs from a derivation]] | BACKLOG | | | For each asset class: the series the platform holds, the transform that turns it into a return, the coordinates a quote is named by, the shape model across the smile, and the object a published surface must be. It says which classes can be served now and which wait on a history, and it is the list the engine is built against. |
+| [[id:CF9584EA-D1D8-42B2-B3EC-5934AEAC330B][Lift the derivation above the asset class]] | BACKLOG | | | The measurement an asset class's volatility is derived by -- a window as long as the pillar, the moments of a return series, the level multiplier, the shape shrunk to a prior, the reach a sample supports, the method and its version -- is the same for every asset class. Only the transform, the coordinates a quote is named by, and the smile model differ. Make those three the parameters of one engine, and prove the lift by the FX quotes coming out as they were. |
+| [[id:EC28D84F-807F-4893-8F43-BDC0BD8D88EA][Derive the swaption volatilities from the rate history]] | BACKLOG | | | Interest rates runs through the shared engine: a difference of the rate history as the transform, a currency with an expiry and a term as the coordinates, and a smile across strikes. The window, the moments, the multiplier and the reach are the engine's. Store the values under the producer =orestudio= and keep them internal. |
+| [[id:9756E44E-AC5F-4BC7-AA3A-C4C05DFDBF9B][Simulate the interest rate volatility cube and its vendor views]] | BACKLOG | | | A latent cube per currency, over expiry, term and strike, whose ATM level starts from the derived volatilities and whose smile evolves on its own. Three or four contributors quote it with noise of their own, so a party's adapters receive several views of one market. |
+| [[id:54228979-C84A-4ED2-B6C2-BA370FD943D8][Calibrate and publish an interest rate surface]] | BACKLOG | | | A blueprint for a currency's surface and a model that fits it, the arbitrage checks the fit must pass, the approval that lets it be published, and the withdrawal that takes it out of use. The fourth row of the kind table, and the second asset class the lifecycle serves. |
+| [[id:B1A4BB76-AF41-411E-8DC2-17AFCA782479][Export the swaption volatilities and price a swaption]] | BACKLOG | | | The published surface reaches ORE as a swaption volatility set with the configuration that names its volatility type and shift. A book whose trades are swaptions or caps prices, and a report states that they did. |
+| [[id:A49B1E52-4C34-4EA9-B238-D250689B1852][Watch the second class without touching the page]] | BACKLOG | | | Interest rates is the first class the production page was not built for. Add the swaption cube to the page by adding nothing to it: the surface declares an expiry and a term where an FX surface declares an expiry and a delta. A field the page lacks goes into the surface description, never into a branch. |
+
+* Decisions
+
+- *No feed offers a volatility quote, for any asset class.* The only volatility the store
+  holds is what the simulator wrote itself, and the derived FX quotes the platform computes.
+  This is the premise of the story: a volatility is measured here or not at all, so the
+  derivation is a platform capability and not an interest rate feature.
+- *The same problem has one answer, for every class.* The measurement is shared and the
+  class supplies three parameters: the transform (a log return for a series that stays
+  positive, a difference for a rate that may be negative), the coordinates a quote is named
+  by (a pair with an expiry and a delta label; or a currency with an expiry, a term and a
+  strike), and the smile model. The window rule, the moments, the multiplier, the shrink to
+  a prior, the reach, the method and its version belong to the engine and name no class.
+- *The lift comes before any interest rate value exists.* A second copy of the measurement
+  is the fault this story exists to avoid, so the FX derivation is lifted first, and its
+  values must come out as they were. The lift is also the cheaper half: the FX derivation
+  already holds the window rule, the multiplier, the shape prior and the reach.
+- *Interest rates is the first class through the whole chain, and the others follow.* The
+  seed holds 10 books of swaptions, 10 of caps and 2 of straddles, and ORE's today's market
+  names =SwaptionVolatilities= and =CapFloorVolatilities= as components nothing writes. The
+  inventory names what equity, credit, commodity and inflation need; this story builds none
+  of them, and a class is added later as three parameters and a series.
+- *The first interest rate value is measured from a rate history, not from a process
+  parameter.* The generated curve of a currency is already calibrated to the public rates,
+  and its short-rate process carries the shape the measurement is projected through. The
+  derivation reads the history directly, so a stored value states the series it came from.
+- *The quote layer already serves this asset class.* The datum schema reads an ORE
+  =SWAPTION= and =CAPFLOOR= key, in ATM and Smile form, with normal, lognormal and
+  shifted-lognormal quote types and the shift that goes with them. The classification rules
+  place both in =interest_rates= as volatility, and the ingest stores them through the same
+  key grammar as every other datum. The story adds the derived object and the simulator; it
+  does not rebuild the quote layer.
+- *The cube starts where the curve is.* Its ATM level at the as-of is the derived
+  volatility, so the cube and the curve agree at the start of a run and the smile is the
+  only part the cube adds. A cube whose level drifts away from the curve it prices against
+  is a fault the audit must be able to see.
+- *A swaption surface is a cube, not a sheet.* A quote states an expiry and a term, and its
+  smile adds a strike. The FX page's expiry-by-delta heatmap is one slice of this object, so
+  the page renders the slices a surface declares, and the class adds no page.
+- *Normal volatility first, and the volatility type stays a column.* The swaption market
+  quotes basis-point volatility and ORE reads either type, so the first surface states
+  normal volatility, and a shifted-lognormal surface is another row of the same kind rather
+  than another code path.
+- *The screen comes last, and it must not need a change when the class changes.* The
+  production is watchable in the store without a page, and the page needs the FX page to
+  exist first. When it is pointed at interest rates, the test is that only the data
+  changes: the axes and their labels come from the surface's description, and the page
+  names no asset class. A branch the page needs for a class is a fault in the description
+  or in the read, and the fix belongs there.
+
+* Out of scope
+
+- Volatility for equity, credit, commodity and inflation. The inventory says what each one
+  needs; the story builds none of them.
+- The choice of smile model, which the calibration task settles, and the choice of
+  volatility type, which the audit settles before a quote is derived.
+- Re-filing the derived FX quotes under an owner.
+- New pricing engines. The story prices with the configuration the engines already name.

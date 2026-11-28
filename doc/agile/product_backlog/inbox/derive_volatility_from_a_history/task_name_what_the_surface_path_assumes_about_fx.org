@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: DD79767F-9C58-48C9-A726-40334F0E662F
+:END:
+#+title: Task: Name what the surface path assumes about FX
+#+description: An inventory of the path a surface takes, from its blueprint to the ORE package, saying for each part whether it is generic, parameterised by asset class, or FX-only. It decides which parts the rest of the story replaces and which it adds to.
+#+type: task
+#+level: s1
+#+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One page says which parts of the path a surface takes are generic, which are
+parameterised by asset class, and which are FX only, so the rest of the story knows
+what it replaces and what it adds.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- Every stage is named and given a verdict: the datum and the key grammar, the ingest, the series identity and its classification, the blueprint and its convention, the calibration, the checks, the publish, the withdrawal, the approval kinds, the export and the package, the simulator, and the page.
+- A part named generic names the evidence that it is: the test, the table or the call site. A part named FX only names what a second asset class needs instead.
+- The verdicts are checked against the claim the kind table makes: that a kind is a row and a declaration of its four parts.
+- The page ends with the split of the remaining tasks, and states where the story's scope is decided.
+
+* Notes
+
+- The datum schema already reads a swaption and a cap/floor key, in ATM and Smile form, with normal, lognormal and shifted-lognormal quotes and the shift that goes with them (=schema.hpp=, rows 20 and 21; =ore_key_volatility.cpp=).
+- The classification rules place both in =interest_rates= as volatility (=marketdata_series_classification_rules_populate.sql=).
+- The kind table holds three rows, and its comment claims a fourth is a row and a declaration beside it (=derived_market_object_kind.hpp=).
+- The calibration record carries the smile model's own columns (rho, eta, gamma) and an FX forward publish id, so it is not asset-class neutral (=fx_vol_surface_calibration.hpp=).
+- The export writes an FX option quote per surface point and an FX volatility configuration (=ore_export_service.cpp=).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

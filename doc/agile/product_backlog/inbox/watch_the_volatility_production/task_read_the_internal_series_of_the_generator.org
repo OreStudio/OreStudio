@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: D1B655A0-DEB3-4BC3-A738-5B2501061BE5
+:ID: 93718DC0-E92A-40D8-BAB7-E31AD9F08801
 :END:
-#+title: Task: Prototype the volatility production page
-#+description: A static prototype beside the fixings one: heatmap panels for the latent surface, each vendor's view, the calibrated surface and the difference between them, with the quote ladders, the calibration checks and the chain's states. It decides what the real page shows.
+#+title: Task: Read the internal series of the generator
+#+description: The latent surface and the derived quotes keep a stored series that no read serves. Once the standing says an internal value keeps a series, add the system-tenant read that the debugger and a chart need.
 #+type: task
 #+level: s1
-#+filetags: :watch_the_fx_volatility_production:inbox:product_backlog:
+#+filetags: :watch_the_volatility_production:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,18 +16,18 @@
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1EF4F5FE-802A-49C1-A133-B33281BDAA9D][Watch the FX volatility production]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1EF4F5FE-802A-49C1-A133-B33281BDAA9D][Watch the volatility production]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-A static prototype decides what the page shows before any read is written.
+The internal series of the generator are readable by the system tenant, so they can be charted and debugged.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:1EF4F5FE-802A-49C1-A133-B33281BDAA9D][Watch the FX volatility production]] |
+| Parent story | [[id:1EF4F5FE-802A-49C1-A133-B33281BDAA9D][Watch the volatility production]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
@@ -35,9 +35,9 @@ A static prototype decides what the page shows before any read is written.
 
 * Acceptance
 
-- The prototype holds the latent surface, each vendor's view, the calibrated surface and the difference between them as heatmaps.
-- The quote ladders, the calibration checks and the chain's states sit beside the graph.
-- The prototype is reachable from the journeys and states what it does not show.
+- The read serves the latent surface's series and the derived quotes under the system tenant.
+- No non-system party can reach them, and they are not metered.
+- A chart of a day's evolution reads from it.
 
 * Plan
 

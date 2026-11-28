@@ -26,11 +26,11 @@ A person reading a curve learns how it was made, in the same words the fixings s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
-| Now          | The kind, the stamp and the record line are built and proven on a fresh database. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing: the record says how the curve was made and each kind names one table. |
+| Next         | Nothing. |
 | Last touched | 2026-11-28                               |
 
 * Acceptance

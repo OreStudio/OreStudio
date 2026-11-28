@@ -29,11 +29,11 @@ served now, which wait on a history, and it is the list the engine is built agai
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-28                               |
 
 * Acceptance

@@ -119,7 +119,17 @@ where it is invented to where it is checked.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The IAM populate still read each service's password from the removed variable, seeding the hash of an empty one | iam_service_accounts_populate | Fixed | The account is created without a credential and provisioning writes it |
+| 2 | =service_vars.sh= still documented the removed variable | registry template | Fixed | The template states that no variable carries a password |
+| 3 | The recreate comment claimed the role keeps a password it was just recreated without | recreate_database.sql | Fixed | It states the two placed roles and what a deployment without a file leaves |
+| 4 | The recipe said four places and named the pooler among them | recipe | Fixed | Three, and the pooler reads the verifier from the server |
+| 5 | The earlier decision "the pooler reads verifiers, and asks no one" is contradicted by the tool that asks | story | Fixed | Amended: the process asks nobody, the deployment tool asks once |
+| 6 | A fixture login reaches PostgreSQL, not the pooler the services use | testing page | Fixed | Stated where the fixture is described |
+| 7 | The drop order rested on lexicography | drop_roles.sql | Fixed | Fixtures are dropped first, named by pattern |
+| 8 | Dead includes and =using= left in three suites | tests | Fixed | Removed |
+| 9 | The new knowledge paragraph describes an interaction with no diagram | pooling page | Declined | The page carries no other figure and the section states one step |
+| 10 | =setup_user.sql=, the manual cluster script, still guards on the removed variable | setup_user.sql | Deferred | Captured; it is a manual path that recreate does not run |
+| 11 | The change is 21 files | — | Accepted | Each piece is needed for the path to work; splitting leaves the tree unable to build a database |
 
 * Result
 
@@ -134,7 +144,9 @@ where it is invented to where it is checked.
   verifier, no plaintext.
 - Provisioning restarts the pooler on the passwords it invented, so a rotation
   needs no hand-rolled sequence.
-- Four suites that sign in as a service pass under the service's own grants.
+- Four suites that sign in as a service pass under the service's own grants, and
+  nineteen service accounts carry a credential hash written by the provisioning
+  run rather than the hash of an empty password.
 
 * Promoted from capture
 

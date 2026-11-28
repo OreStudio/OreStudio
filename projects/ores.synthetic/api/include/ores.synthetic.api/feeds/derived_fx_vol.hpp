@@ -20,6 +20,7 @@
 #define ORES_SYNTHETIC_API_FEEDS_DERIVED_FX_VOL_HPP
 
 #include "ores.analytics.quant/math/fx_vol_derivation.hpp"
+#include "ores.analytics.quant/math/vol_derivation_kind.hpp"
 #include "ores.marketdata.api/messaging/adapter_operation_protocol.hpp"
 #include "ores.refdata.api/domain/fx_option_convention.hpp"
 #include "ores.synthetic.api/export.hpp"
@@ -49,8 +50,12 @@ inline constexpr std::string_view derived_fx_field = "rate_lnvol";
  * series a blueprint publish creates with a copy of the method and version, so a change here
  * must change it there.
  */
-inline constexpr std::string_view derived_fx_derivation_kind = "FX_VOL_DERIVATION";
-inline constexpr int derived_fx_method_version = 1;
+/// The FX derivation's declaration: its code, its version, its transform, its coordinates and its
+/// smile, as the engine states them. The derived source reads it instead of stating its own copy.
+ORES_SYNTHETIC_API_EXPORT const analytics::quant::math::vol_derivation_kind&
+fx_vol_derivation();
+
+/// The identifier a derived FX series records as its derivation configuration.
 ORES_SYNTHETIC_API_EXPORT boost::uuids::uuid derived_fx_method_id();
 
 /// A pair the derived source quotes, in its market base/quote order.

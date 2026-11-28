@@ -164,9 +164,9 @@ feed::derived_fx_store derived_fx_vol_adapter::make_store() {
                  .oresmd_uri = uri,
                  .provider_code = provider_code_,
                  .series_subclass = "volatility",
-                 .derivation_kind = std::string(feed::derived_fx_derivation_kind),
+                 .derivation_kind = std::string(feed::fx_vol_derivation().code),
                  .derivation_config_id = feed::derived_fx_method_id(),
-                 .derivation_config_version = feed::derived_fx_method_version},
+                 .derivation_config_version = feed::fx_vol_derivation().version},
                 {.reason_code = "system.new_record",
                  .commentary = "The series the derived FX volatility quotes are kept under"});
             if (!written)

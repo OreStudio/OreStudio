@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 9585FFDA-F54F-4DD8-B236-737873FF213D
+:END:
+#+title: Task: Make the bounds view state that object expiry runs
+#+description: The bounds view still calls an object prefix a store that waits on a storage lifecycle, so the screen says unbounded and the alerts pass tells a person to act on a store the sweep now expires.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: hotfix/make-the-bounds-view-state-that-object-expiry-runs
+#+pr: 5215
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The screen and the alerts pass both read ores_scheduler_store_bounds_vw for whether a store is bounded. The view was written while nothing could expire an object prefix, so it states one unbounded however often its policy applies; the sweep now applies it, and the view must say so.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- An object prefix whose policy the sweep applied reads as bounded, with the sweep as its mechanism
+- A store a mechanism cannot reach still reads unbounded, and the alerts pass still tells a person about it
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| The object prefixes the view states | both bounded, both with =sweep= as the mechanism | =compass sql -- -c "select code, bounded_now, mechanism from ores_scheduler_store_bounds_vw where target_kind = 'object_prefix'"= | daeda00462 |
+| A store the sweep cannot reach | =compute.node_scratch= reads unbounded with =node_release= | the same command, over every store | daeda00462 |
+| The SQL suites | 1122 assertions in 116 files | =compass check --only pgtap= | daeda00462 |
+| The web suites | 234 tests in 24 files | =compass check --only web= | daeda00462 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5215][#5215]] | [sql] State that the sweep expires an object prefix |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The view names the sweep as the mechanism of every action the sweep performs,
+an object prefix's expiry included, and it reads boundedness from the last
+outcome the same way it does for a chunk drop. The two object prefixes now read
+as bounded the moment their policy will be applied, and as unbounded when the
+last run failed, which is the rule the other stores already had.
+
+A store the sweep cannot reach is untouched by this: a node's scratch folder
+still reads unbounded with the node's release as its mechanism, and the alerts
+pass still tells a person about it. That is the case the notices exist for, and
+it is why the pass's own test now reads the stores it expects from the view
+instead of stating a number: the count follows the catalogue.
+
+The vocabulary loses =storage_lifecycle=, because no row can state it any more.
+The client's not-applied case is the node's release alone, and the store that
+exercises it is the scratch folder rather than an object prefix.

@@ -83,7 +83,7 @@ export function verdictOf(store: StoreBound): StoreVerdict {
     if (!store.bound.policy_enabled || store.bound.mechanism === 'policy_off') {
         return { verdict: 'unbounded', reason: 'off' };
     }
-    if (store.bound.mechanism === 'storage_lifecycle' || store.bound.mechanism === 'node_release') {
+    if (store.bound.mechanism === 'node_release') {
         return { verdict: 'unbounded', reason: 'notApplied' };
     }
     if (store.last_run.outcome === 'failed') {

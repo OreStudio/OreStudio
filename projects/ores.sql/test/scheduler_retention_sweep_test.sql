@@ -147,8 +147,8 @@ select is(
 select is(
     (select mechanism || ':' || bounded_now::text from ores_scheduler_store_bounds_vw
      where code = 'test.sweep_prefix'),
-    'storage_lifecycle:false',
-    'the view names the mechanism and says the prefix is not bounded by it yet');
+    'sweep:true',
+    'the view says the sweep applies an object prefix''s policy');
 
 select * from finish();
 

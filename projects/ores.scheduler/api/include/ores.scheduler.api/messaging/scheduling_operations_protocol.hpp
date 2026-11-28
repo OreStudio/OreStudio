@@ -269,8 +269,8 @@ struct store_bound_action {
      */
     std::optional<std::string> policy_description;
     /**
-     * @brief What bounds the store: =sweep=, =storage_lifecycle=, =node_release=,
-     * =content_keying=, =policy_off= or =none=.
+     * @brief What bounds the store: =sweep=, =node_release=, =content_keying=,
+     * =policy_off= or =none=.
      */
     std::string mechanism;
     /**

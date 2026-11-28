@@ -507,8 +507,8 @@ next unit of the scheduler clean-up.
 
 #+begin_src cpp :name comment
 /**
- * @brief What bounds the store: =sweep=, =storage_lifecycle=, =node_release=,
- * =content_keying=, =policy_off= or =none=.
+ * @brief What bounds the store: =sweep=, =node_release=, =content_keying=,
+ * =policy_off= or =none=.
  */
 #+end_src
 

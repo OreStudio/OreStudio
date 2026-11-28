@@ -18,6 +18,7 @@
  */
 #include "ores.analytics.quant/math/ir_vol_derivation.hpp"
 #include "ores.platform/environment/environment.hpp"
+#include "vol_test_data.hpp"
 #include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -33,46 +34,8 @@
 #include <vector>
 
 using namespace ores::analytics::quant::math;
+using namespace ores::analytics::quant::tests;
 
-namespace {
-
-using std::chrono::January;
-using std::chrono::sys_days;
-using std::chrono::year_month_day;
-
-/// A day the projection's histories are dated on, clear of the other suites' helpers.
-year_month_day ip_observation_day(int day) {
-    return year_month_day{sys_days{std::chrono::year{2026} / January / day}};
-}
-
-/// A rate that wanders from four percent, one observation a day, on a seed of its own.
-std::vector<dated_level> ip_wandering_rate(int count, std::uint32_t seed) {
-    std::mt19937 generator(seed);
-    std::normal_distribution<double> step(0.0, 0.0002);
-    std::vector<dated_level> out;
-    out.reserve(static_cast<std::size_t>(count));
-    double rate = 0.04;
-    for (int i = 0; i < count; ++i) {
-        rate = std::clamp(rate + step(generator), 0.005, 0.12);
-        out.push_back({.date = ip_observation_day(i + 1), .level = rate});
-    }
-    return out;
-}
-
-short_rate_projection ip_reversion(double mean_reversion) {
-    return {.model = short_rate_model::hull_white, .mean_reversion = mean_reversion};
-}
-
-std::vector<std::span<const dated_level>>
-ip_histories(const std::vector<std::vector<dated_level>>& levels) {
-    std::vector<std::span<const dated_level>> out;
-    out.reserve(levels.size());
-    for (const auto& history : levels)
-        out.emplace_back(history);
-    return out;
-}
-
-}
 
 TEST_CASE("the projection carries a batch to swaptions, cell for cell like the day-at-a-time "
           "derivation",
@@ -80,18 +43,18 @@ TEST_CASE("the projection carries a batch to swaptions, cell for cell like the d
     const std::vector<double> ladder{0.25, 1.0};
     const std::vector<double> terms{1.0, 2.0, 10.0};
     const std::vector<std::vector<dated_level>> histories{
-        ip_wandering_rate(400, 1), ip_wandering_rate(400, 2), ip_wandering_rate(400, 3)};
+        vol_wandering_rate(400, 1), vol_wandering_rate(400, 2), vol_wandering_rate(400, 3)};
 
     const auto batch =
-        measure_batch(ip_histories(histories), ladder, volatility_transform::difference, {});
+        measure_batch(vol_histories_of(histories), ladder, volatility_transform::difference, {});
     REQUIRE(batch);
-    const auto projection = project_ir_vols(*batch, terms, ip_reversion(0.05));
+    const auto projection = project_ir_vols(*batch, terms, vol_reversion(0.05));
     REQUIRE(projection);
     CHECK(projection->atms.size() == batch->states.size());
 
     for (std::size_t row = 0; row < histories.size(); ++row) {
         const auto matrix =
-            derive_term_matrix(histories[row], terms[row], ladder, {}, ip_reversion(0.05));
+            derive_term_matrix(histories[row], terms[row], ladder, {}, vol_reversion(0.05));
         REQUIRE(matrix);
         const std::size_t first = batch->offset_of(row);
         for (std::size_t cell = 0; cell < ladder.size(); ++cell) {
@@ -108,18 +71,34 @@ TEST_CASE("the projection carries a batch to swaptions, cell for cell like the d
     }
 }
 
+TEST_CASE("the projection refuses a model before it reads a single cell", "[ir_vol_projection]") {
+    // Every cell is refused for its own cause, so no cell reaches the model: the model is still
+    // the projection's to refuse, because it is one statement about the whole batch.
+    const std::vector<double> ladder{60.0};
+    const std::vector<double> terms{1.0};
+    const std::vector<std::vector<dated_level>> histories{vol_wandering_rate(400, 15)};
+    const auto batch =
+        measure_batch(vol_histories_of(histories), ladder, volatility_transform::difference, {});
+    REQUIRE(batch);
+    REQUIRE(batch->states[0] == vol_cell_state::refused);
+
+    const auto refused = project_ir_vols(*batch, terms, vol_reversion(-0.01));
+    REQUIRE_FALSE(refused);
+    CHECK(refused.error() == "the mean reversion must be finite and not negative");
+}
+
 TEST_CASE("the projection answers nothing where the batch quoted nothing", "[ir_vol_projection]") {
     const std::vector<double> ladder{3.0, 0.25};
     const std::vector<double> terms{1.0};
-    const std::vector<std::vector<dated_level>> histories{ip_wandering_rate(100, 10)};
+    const std::vector<std::vector<dated_level>> histories{vol_wandering_rate(100, 10)};
 
     const auto batch =
-        measure_batch(ip_histories(histories), ladder, volatility_transform::difference, {});
+        measure_batch(vol_histories_of(histories), ladder, volatility_transform::difference, {});
     REQUIRE(batch);
     REQUIRE(batch->states[0] == vol_cell_state::unreached);
     REQUIRE(batch->states[1] == vol_cell_state::quoted);
 
-    const auto projection = project_ir_vols(*batch, terms, ip_reversion(0.05));
+    const auto projection = project_ir_vols(*batch, terms, vol_reversion(0.05));
     REQUIRE(projection);
     CHECK(projection->factors[0] == 0.0);
     CHECK(projection->atms[0] == 0.0);
@@ -130,9 +109,9 @@ TEST_CASE("the projection answers nothing where the batch quoted nothing", "[ir_
 TEST_CASE("the projection refuses a model and a tenor it cannot read, and states each",
           "[ir_vol_projection]") {
     const std::vector<double> ladder{1.0};
-    const std::vector<std::vector<dated_level>> histories{ip_wandering_rate(400, 20)};
+    const std::vector<std::vector<dated_level>> histories{vol_wandering_rate(400, 20)};
     const auto batch =
-        measure_batch(ip_histories(histories), ladder, volatility_transform::difference, {});
+        measure_batch(vol_histories_of(histories), ladder, volatility_transform::difference, {});
     REQUIRE(batch);
 
     const std::vector<double> terms{1.0};
@@ -141,17 +120,17 @@ TEST_CASE("the projection refuses a model and a tenor it cannot read, and states
     REQUIRE_FALSE(refused);
     CHECK(refused.error().find("cox_ingersoll_ross") != std::string::npos);
 
-    const auto negative = project_ir_vols(*batch, terms, ip_reversion(-0.01));
+    const auto negative = project_ir_vols(*batch, terms, vol_reversion(-0.01));
     REQUIRE_FALSE(negative);
     CHECK(negative.error() == "the mean reversion must be finite and not negative");
 
     const std::vector<double> no_tenor{};
-    const auto missing = project_ir_vols(*batch, no_tenor, ip_reversion(0.05));
+    const auto missing = project_ir_vols(*batch, no_tenor, vol_reversion(0.05));
     REQUIRE_FALSE(missing);
     CHECK(missing.error() == "the batch holds 1 series and 0 tenor(s) were stated");
 
     const std::vector<double> zero_tenor{0.0};
-    const auto zero = project_ir_vols(*batch, zero_tenor, ip_reversion(0.05));
+    const auto zero = project_ir_vols(*batch, zero_tenor, vol_reversion(0.05));
     REQUIRE_FALSE(zero);
     CHECK(zero.error() == "the term of series 0 must be positive and finite");
 }
@@ -238,13 +217,13 @@ TEST_CASE("the batch over every rate series the seed carries", "[.benchmark]") {
     terms.reserve(keys.size());
     std::vector<std::string> currencies;
     for (std::size_t i = 0; i < keys.size(); ++i) {
-        histories.push_back(ip_wandering_rate(observations, static_cast<std::uint32_t>(i + 1)));
+        histories.push_back(vol_wandering_rate(observations, static_cast<std::uint32_t>(i + 1)));
         terms.push_back(ip_tenor_years(keys[i].substr(keys[i].rfind('/') + 1)));
         currencies.emplace_back(ip_key_currency(keys[i]));
     }
     std::ranges::sort(currencies);
     currencies.erase(std::unique(currencies.begin(), currencies.end()), currencies.end());
-    const auto series = ip_histories(histories);
+    const auto series = vol_histories_of(histories);
 
     // Processor time and not wall clock: the machine builds other worktrees while this runs, and
     // the answer to "what does the pass cost" is not a function of who else is compiling.
@@ -253,23 +232,23 @@ TEST_CASE("the batch over every rate series the seed carries", "[.benchmark]") {
     for (int pass = 0; pass < passes; ++pass) {
         const auto started = std::clock();
         const auto batch = measure_batch(series, ladder, volatility_transform::difference, {});
-        const auto projection = project_ir_vols(*batch, terms, ip_reversion(0.05));
-        const auto took = 1000.0 * static_cast<double>(std::clock() - started) / CLOCKS_PER_SEC;
         REQUIRE(batch);
+        const auto projection = project_ir_vols(*batch, terms, vol_reversion(0.05));
         REQUIRE(projection);
+        const auto took = 1000.0 * static_cast<double>(std::clock() - started) / CLOCKS_PER_SEC;
         if (pass == 0)
             best = took;
         best = std::min(best, took);
     }
 
-    // The same corpus one series at a time, which is the call the batch replaces: a vector per
-    // cell, a window walked per cell, and the shape re-read for every series.
+    // The same corpus one series at a time: a vector per cell, a window walked per cell, and the
+    // shape re-read for every series.
     double one_at_a_time = 0.0;
     for (int pass = 0; pass < passes; ++pass) {
         const auto started = std::clock();
         for (std::size_t i = 0; i < keys.size(); ++i) {
             const auto matrix =
-                derive_term_matrix(histories[i], terms[i], ladder, {}, ip_reversion(0.05));
+                derive_term_matrix(histories[i], terms[i], ladder, {}, vol_reversion(0.05));
             REQUIRE(matrix);
         }
         const auto took = 1000.0 * static_cast<double>(std::clock() - started) / CLOCKS_PER_SEC;

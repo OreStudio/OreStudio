@@ -47,6 +47,9 @@ namespace ores::analytics::quant::math {
  * length, with an offset per series: reading a row is an offset and not a walk over another row.
  */
 enum class vol_cell_state : std::uint8_t {
+    /// Allocated and not yet stated. A row a caller leaves unfilled reads as this, so it is
+    /// distinguishable from a cell the history does not cover.
+    unstated,
     /// The cell holds a level and a shape.
     quoted,
     /// The sample is shorter than the window the pillar needs: no history covers it.
@@ -60,8 +63,8 @@ struct vol_batch_row final {
     /// The ladder the row's cells answer, in the caller's order.
     std::span<const double> pillars;
     std::span<vol_cell_state> states;
-    /// The returns the level was read over, or zero.
-    std::span<int> windows;
+    /// The returns the level was read over: the window's length in returns, or zero.
+    std::span<int> window_returns;
     /// The level over the window, in the series' own unit a year, or zero.
     std::span<double> levels;
     /// The skewness of a return over the cell's own life, or zero.
@@ -96,7 +99,7 @@ struct vol_batch final {
     /// One more than the number of series: the row of series @p i is =[offsets[i], offsets[i+1])=.
     std::vector<std::size_t> offsets;
     std::vector<vol_cell_state> states;
-    std::vector<int> windows;
+    std::vector<int> window_returns;
     std::vector<double> levels;
     std::vector<double> skewnesses;
     std::vector<double> excess_kurtoses;
@@ -133,8 +136,8 @@ ORES_ANALYTICS_QUANT_EXPORT vol_batch_row row_of(vol_batch& batch, std::size_t s
  *
  * The one place the layout is decided, so a caller that fills the rows itself -- one task per
  * series, say -- holds the same arrays =measure_batch= would have allocated. Every cell starts
- * unquoted and without a reason, which is a state a reader must not see: the caller states a cell
- * or refuses it.
+ * =unstated=, which is the state of a cell a caller has not reached: a reader must never see it,
+ * and a row that is filled states every cell or refuses it.
  */
 ORES_ANALYTICS_QUANT_EXPORT vol_batch make_vol_batch(std::size_t rows,
                                                      std::span<const double> pillars);

@@ -17,6 +17,7 @@
  *
  */
 #include "ores.analytics.quant/math/vol_batch.hpp"
+#include "vol_test_data.hpp"
 #include <algorithm>
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -24,60 +25,19 @@
 #include <cstdint>
 #include <expected>
 #include <future>
-#include <random>
 #include <string>
 #include <vector>
 
 using namespace ores::analytics::quant::math;
+using namespace ores::analytics::quant::tests;
 
-namespace {
-
-using std::chrono::January;
-using std::chrono::sys_days;
-using std::chrono::year_month_day;
-
-/// A day the batch's histories are dated on, clear of the other suites' helpers.
-year_month_day vb_observation_day(int day) {
-    return year_month_day{sys_days{std::chrono::year{2026} / January / day}};
-}
-
-/**
- * A rate that wanders from four percent, one observation a day, on a seed of its own.
- *
- * A batch is about many series measured together, so each series needs a history that is plausible
- * and reproducible: a random walk of a few basis points a day, held inside a band.
- */
-std::vector<dated_level> vb_wandering_rate(int count, std::uint32_t seed) {
-    std::mt19937 generator(seed);
-    std::normal_distribution<double> step(0.0, 0.0002);
-    std::vector<dated_level> out;
-    out.reserve(static_cast<std::size_t>(count));
-    double rate = 0.04;
-    for (int i = 0; i < count; ++i) {
-        rate = std::clamp(rate + step(generator), 0.005, 0.12);
-        out.push_back({.date = vb_observation_day(i + 1), .level = rate});
-    }
-    return out;
-}
-
-/// The batch's view of the same histories, which is all a batch takes: levels and a ladder.
-std::vector<std::span<const dated_level>>
-vb_histories(const std::vector<std::vector<dated_level>>& levels) {
-    std::vector<std::span<const dated_level>> out;
-    out.reserve(levels.size());
-    for (const auto& history : levels)
-        out.emplace_back(history);
-    return out;
-}
-
-}
 
 TEST_CASE("a batch measures every series over the ladder, and a row is where its offset says",
           "[vol_batch]") {
     const std::vector<double> ladder{0.25, 1.0};
     const std::vector<std::vector<dated_level>> histories{
-        vb_wandering_rate(400, 1), vb_wandering_rate(400, 2), vb_wandering_rate(400, 3)};
-    const auto series = vb_histories(histories);
+        vol_wandering_rate(400, 1), vol_wandering_rate(400, 2), vol_wandering_rate(400, 3)};
+    const auto series = vol_histories_of(histories);
 
     const auto batch = measure_batch(series, ladder, volatility_transform::difference, {});
     REQUIRE(batch);
@@ -103,7 +63,7 @@ TEST_CASE("a batch measures every series over the ladder, and a row is where its
             REQUIRE(batch->states[first + cell] == vol_cell_state::quoted);
             const auto pillar = measure_pillar(returns.returns, ladder[cell], {});
             REQUIRE(pillar);
-            CHECK(batch->windows[first + cell] == pillar->window);
+            CHECK(batch->window_returns[first + cell] == pillar->window);
             CHECK(batch->levels[first + cell] == Catch::Approx(pillar->level).epsilon(1e-10));
             const auto scaled = over_days(moments->shape, ladder[cell] * 252.0);
             CHECK(batch->skewnesses[first + cell] == Catch::Approx(scaled.skewness).epsilon(1e-10));
@@ -118,8 +78,8 @@ TEST_CASE("a batch's rows can be filled at once, in any order, with the same ans
     const std::vector<double> ladder{0.25, 1.0};
     std::vector<std::vector<dated_level>> histories;
     for (std::uint32_t seed = 10; seed < 14; ++seed)
-        histories.push_back(vb_wandering_rate(400, seed));
-    const auto series = vb_histories(histories);
+        histories.push_back(vol_wandering_rate(400, seed));
+    const auto series = vol_histories_of(histories);
 
     const auto serial = measure_batch(series, ladder, volatility_transform::difference, {});
     REQUIRE(serial);
@@ -140,7 +100,7 @@ TEST_CASE("a batch's rows can be filled at once, in any order, with the same ans
     }
 
     CHECK(concurrent.states == serial->states);
-    CHECK(concurrent.windows == serial->windows);
+    CHECK(concurrent.window_returns == serial->window_returns);
     CHECK(concurrent.levels == serial->levels);
     CHECK(concurrent.skewnesses == serial->skewnesses);
     CHECK(concurrent.excess_kurtoses == serial->excess_kurtoses);
@@ -150,8 +110,8 @@ TEST_CASE("a batch's rows can be filled at once, in any order, with the same ans
 TEST_CASE("a refused series and an uncovered pillar cost their own cells, and every cell says why",
           "[vol_batch]") {
     const std::vector<double> ladder{0.25, 1.0};
-    const auto good = vb_wandering_rate(400, 20);
-    const auto flat = vb_wandering_rate(400, 21);
+    const auto good = vol_wandering_rate(400, 20);
+    const auto flat = vol_wandering_rate(400, 21);
     std::vector<dated_level> constant;
     constant.reserve(flat.size());
     for (const auto& level : flat)
@@ -159,10 +119,10 @@ TEST_CASE("a refused series and an uncovered pillar cost their own cells, and ev
     // Two levels are one change, which is no sample; a hundred levels are ninety-nine changes,
     // which cover the quarter's window and not the year's.
     const std::vector<dated_level> barely{good[0], good[1]};
-    const auto short_history = vb_wandering_rate(100, 22);
+    const auto short_history = vol_wandering_rate(100, 22);
 
     const std::vector<std::vector<dated_level>> histories{good, barely, constant, short_history};
-    const auto series = vb_histories(histories);
+    const auto series = vol_histories_of(histories);
 
     const auto batch = measure_batch(series, ladder, volatility_transform::difference, {});
     REQUIRE(batch);
@@ -198,18 +158,47 @@ TEST_CASE("a refused series and an uncovered pillar cost their own cells, and ev
             continue;
         INFO("cell " << cell);
         REQUIRE(batch->reason_of[cell] >= 0);
-        CHECK(batch->windows[cell] == 0);
+        CHECK(batch->window_returns[cell] == 0);
         CHECK(batch->levels[cell] == 0.0);
         CHECK(batch->skewnesses[cell] == 0.0);
         CHECK(batch->excess_kurtoses[cell] == 0.0);
     }
 }
 
+TEST_CASE("a series refusal keeps the cause a cell already states", "[vol_batch]") {
+    // Sixty years is past the longest pillar any measurement serves, and two levels are no sample:
+    // the long pillar is refused before the walk, and the series refusal must not overwrite it.
+    const std::vector<double> ladder{60.0, 0.25};
+    const std::vector<std::vector<dated_level>> histories{
+        {vol_wandering_rate(2, 60)[0], vol_wandering_rate(2, 60)[1]}};
+    const auto series = vol_histories_of(histories);
+
+    const auto batch = measure_batch(series, ladder, volatility_transform::difference, {});
+    REQUIRE(batch);
+    CHECK(batch->states[0] == vol_cell_state::refused);
+    CHECK(batch->states[1] == vol_cell_state::refused);
+    CHECK(batch->reasons.at(batch->reason_offset_of(0)) ==
+          "the pillar must be positive and at most 50 years");
+    CHECK(batch->reasons.at(batch->reason_offset_of(0) + 1) ==
+          "the series has no return: it holds fewer than two observations");
+}
+
+TEST_CASE("a batch states every cell, so no cell reads as unfilled", "[vol_batch]") {
+    const std::vector<double> ladder{0.25, 1.0};
+    const std::vector<std::vector<dated_level>> histories{vol_wandering_rate(400, 70),
+                                                          vol_wandering_rate(2, 71)};
+    const auto batch =
+        measure_batch(vol_histories_of(histories), ladder, volatility_transform::difference, {});
+    REQUIRE(batch);
+    for (const auto state : batch->states)
+        CHECK(state != vol_cell_state::unstated);
+}
+
 TEST_CASE("the transform is the class's, and the batch applies whichever it is handed",
           "[vol_batch]") {
     const std::vector<double> ladder{0.25};
-    const std::vector<std::vector<dated_level>> histories{vb_wandering_rate(400, 30)};
-    const auto series = vb_histories(histories);
+    const std::vector<std::vector<dated_level>> histories{vol_wandering_rate(400, 30)};
+    const auto series = vol_histories_of(histories);
 
     const auto rategrid = measure_batch(series, ladder, volatility_transform::difference, {});
     const auto pricegrid = measure_batch(series, ladder, volatility_transform::log_return, {});
@@ -222,19 +211,19 @@ TEST_CASE("the transform is the class's, and the batch applies whichever it is h
     std::vector<dated_level> crossed = histories[0];
     crossed[350].level = -0.01;
     const std::vector<std::vector<dated_level>> with_crossing{crossed};
-    const auto crossed_series = vb_histories(with_crossing);
+    const auto crossed_series = vol_histories_of(with_crossing);
     const auto crossing =
         measure_batch(crossed_series, ladder, volatility_transform::log_return, {});
     REQUIRE(crossing);
-    CHECK(crossing->windows[0] == rategrid->windows[0]);
+    CHECK(crossing->window_returns[0] == rategrid->window_returns[0]);
     CHECK(crossing->levels[0] != pricegrid->levels[0]);
 }
 
-TEST_CASE("the batch's ladder is the caller's, not the order the pass reaches the windows",
+TEST_CASE("the batch's ladder is the caller's, not the order the pass reaches the window_returns",
           "[vol_batch]") {
     const std::vector<double> ladder{3.0, 0.25, 1.0};
-    const std::vector<std::vector<dated_level>> histories{vb_wandering_rate(400, 40)};
-    const auto series = vb_histories(histories);
+    const std::vector<std::vector<dated_level>> histories{vol_wandering_rate(400, 40)};
+    const auto series = vol_histories_of(histories);
 
     const auto batch = measure_batch(series, ladder, volatility_transform::difference, {});
     REQUIRE(batch);
@@ -243,15 +232,15 @@ TEST_CASE("the batch's ladder is the caller's, not the order the pass reaches th
     CHECK(batch->states[0] == vol_cell_state::unreached);
     CHECK(batch->states[1] == vol_cell_state::quoted);
     CHECK(batch->states[2] == vol_cell_state::quoted);
-    CHECK(batch->windows[1] == 63);
-    CHECK(batch->windows[2] == 252);
+    CHECK(batch->window_returns[1] == 63);
+    CHECK(batch->window_returns[2] == 252);
     CHECK(batch->pillars[1] == 0.25);
 }
 
 TEST_CASE("the batch refuses only what a caller gets wrong, and states the rest", "[vol_batch]") {
     const std::vector<double> ladder{1.0};
-    const std::vector<std::vector<dated_level>> histories{vb_wandering_rate(400, 50)};
-    const auto series = vb_histories(histories);
+    const std::vector<std::vector<dated_level>> histories{vol_wandering_rate(400, 50)};
+    const auto series = vol_histories_of(histories);
 
     CHECK_FALSE(
         measure_batch(series, ladder, volatility_transform::difference, {.periods_per_year = 0.0}));

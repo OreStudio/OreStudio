@@ -27,13 +27,6 @@ namespace ores::analytics::quant::math {
 
 namespace {
 
-/// Whether a level of @p transform's series is an observation, as returns_of reads it.
-bool is_an_observation(double level, volatility_transform transform) {
-    if (!std::isfinite(level))
-        return false;
-    return transform == volatility_transform::difference || level > 0.0;
-}
-
 /// One cell of the ladder, in the order the pass reaches its window.
 struct ladder_cell final {
     std::size_t cell;
@@ -60,103 +53,34 @@ std::vector<ladder_cell> ladder_of(std::span<const double> pillars,
     return out;
 }
 
-/// The return of @p value from @p previous, by @p transform, both already observable.
-double return_of(double value, double previous, volatility_transform transform) {
-    return transform == volatility_transform::log_return ? std::log(value) - std::log(previous) :
-                                                           value - previous;
+/// Clears every axis of @p cell, so a cell that is not quoted holds no half answer.
+void clear_cell(vol_batch_row& row, std::size_t cell) {
+    row.window_returns[cell] = 0;
+    row.levels[cell] = 0.0;
+    row.skewnesses[cell] = 0.0;
+    row.excess_kurtoses[cell] = 0.0;
 }
 
-}
-
-void vol_batch_row::refuse(std::size_t cell, vol_cell_state state, std::string text) {
-    states[cell] = state;
-    reasons[used] = std::move(text);
-    reason_of[cell] = static_cast<std::int32_t>(used);
-    windows[cell] = 0;
-    levels[cell] = 0.0;
-    skewnesses[cell] = 0.0;
-    excess_kurtoses[cell] = 0.0;
-    ++used;
-}
-
-void vol_batch_row::refuse_all(vol_cell_state state, std::string text) {
-    reasons[used] = std::move(text);
-    const auto place = static_cast<std::int32_t>(used);
-    ++used;
-    for (std::size_t cell = 0; cell < states.size(); ++cell) {
-        states[cell] = state;
-        reason_of[cell] = place;
-        windows[cell] = 0;
-        levels[cell] = 0.0;
-        skewnesses[cell] = 0.0;
-        excess_kurtoses[cell] = 0.0;
-    }
-}
-
-vol_batch_row row_of(vol_batch& batch, std::size_t series) {
-    const std::size_t first = batch.offsets[series];
-    const std::size_t cells = batch.offsets[series + 1] - first;
-    const std::size_t slot = batch.reason_offset_of(series);
-    return vol_batch_row{.pillars = batch.pillars,
-                         .states = std::span(batch.states).subspan(first, cells),
-                         .windows = std::span(batch.windows).subspan(first, cells),
-                         .levels = std::span(batch.levels).subspan(first, cells),
-                         .skewnesses = std::span(batch.skewnesses).subspan(first, cells),
-                         .excess_kurtoses = std::span(batch.excess_kurtoses).subspan(first, cells),
-                         .reason_of = std::span(batch.reason_of).subspan(first, cells),
-                         .reasons =
-                             std::span(batch.reasons).subspan(slot, batch.pillars.size() + 1),
-                         .used = 0};
-}
-
-vol_batch make_vol_batch(std::size_t rows, std::span<const double> pillars) {
-    vol_batch out;
-    out.pillars.assign(pillars.begin(), pillars.end());
-    const std::size_t cells = rows * pillars.size();
-
-    out.offsets.resize(rows + 1);
-    for (std::size_t row = 0; row <= rows; ++row)
-        out.offsets[row] = row * pillars.size();
-    out.states.assign(cells, vol_cell_state::unreached);
-    out.windows.assign(cells, 0);
-    out.levels.assign(cells, 0.0);
-    out.skewnesses.assign(cells, 0.0);
-    out.excess_kurtoses.assign(cells, 0.0);
-    out.reason_of.assign(cells, -1);
-    out.reasons.resize(rows * (pillars.size() + 1));
-    return out;
-}
-
-std::expected<void, std::string> measure_row(std::span<const dated_level> levels,
-                                             volatility_transform transform,
-                                             const measurement_settings& settings,
-                                             vol_batch_row& row) {
-    if (!(settings.periods_per_year > 0.0) || !std::isfinite(settings.periods_per_year))
-        return std::unexpected("the periods in a year must be positive and finite");
-    const std::size_t cells = row.pillars.size();
-    if (row.states.size() != cells || row.levels.size() != cells || row.windows.size() != cells ||
-        row.skewnesses.size() != cells || row.excess_kurtoses.size() != cells ||
-        row.reason_of.size() != cells)
-        return std::unexpected(
-            std::format("the row does not hold the {} cell(s) of the ladder", cells));
-    if (row.reasons.size() < cells + 1)
-        return std::unexpected(std::format(
-            "the row holds {} refusal slot(s) for {} cell(s)", row.reasons.size(), cells));
-
-    // A pillar no measurement can read is refused before the history is walked, and the walk
-    // never looks for its window.
-    for (std::size_t cell = 0; cell < cells; ++cell)
+/**
+ * Measures one series into @p row, and no other.
+ *
+ * A pillar no measurement can read is refused before the history is walked, and the walk never
+ * looks for its window. The returns are then taken from the newest level backwards, so the sums of
+ * a window are the sums since the end: one walk reaches every window, and each window costs only
+ * the returns the one before it did not.
+ */
+void fill_row(std::span<const dated_level> levels,
+              volatility_transform transform,
+              const measurement_settings& settings,
+              const std::vector<ladder_cell>& ladder,
+              vol_batch_row& row) {
+    for (std::size_t cell = 0; cell < row.pillars.size(); ++cell)
         if (!(row.pillars[cell] > 0.0) || !(row.pillars[cell] <= maximum_pillar_years))
             row.refuse(cell,
                        vol_cell_state::refused,
                        std::format("the pillar must be positive and at most {} years",
                                    static_cast<int>(maximum_pillar_years)));
 
-    const auto ladder = ladder_of(row.pillars, settings);
-
-    // The returns are taken from the newest level backwards so the sums of a window are the sums
-    // since the end: one walk reaches every window, and each window costs only the returns the one
-    // before it did not.
     std::optional<double> newer;
     int count = 0;
     double sum = 0.0;
@@ -165,7 +89,7 @@ std::expected<void, std::string> measure_row(std::span<const dated_level> levels
     double fourths = 0.0;
     std::size_t next = 0;
     for (auto level = levels.rbegin(); level != levels.rend(); ++level) {
-        if (!is_an_observation(level->level, transform))
+        if (!reads_as_observation(level->level, transform))
             continue;
         if (!newer) {
             newer = level->level;
@@ -186,9 +110,8 @@ std::expected<void, std::string> measure_row(std::span<const dated_level> levels
             // The sample variance of the window, demeaning as the engine does, and held at zero
             // where a flat window leaves only rounding below it.
             const double variance = std::max((squares / n - mean * mean) * n / (n - 1.0), 0.0);
-            row.windows[cell] = count;
-            row.levels[cell] =
-                std::sqrt(variance * settings.periods_per_year) * settings.level_multiplier;
+            row.window_returns[cell] = count;
+            row.levels[cell] = level_of_variance(variance, settings);
             row.states[cell] = vol_cell_state::quoted;
             ++next;
         }
@@ -197,7 +120,7 @@ std::expected<void, std::string> measure_row(std::span<const dated_level> levels
     if (count < 2) {
         row.refuse_all(vol_cell_state::refused,
                        "the series has no return: it holds fewer than two observations");
-        return {};
+        return;
     }
 
     // The shape is the whole sample's, and it is read once: it does not depend on the pillar's
@@ -205,7 +128,7 @@ std::expected<void, std::string> measure_row(std::span<const dated_level> levels
     const auto sample = moments_from_power_sums(count, sum, squares, cubes, fourths);
     if (!sample) {
         row.refuse_all(vol_cell_state::refused, sample.error());
-        return {};
+        return;
     }
     const auto shape = shrink(*sample, settings.prior);
 
@@ -225,6 +148,85 @@ std::expected<void, std::string> measure_row(std::span<const dated_level> levels
         row.skewnesses[cell.cell] = scaled.skewness;
         row.excess_kurtoses[cell.cell] = scaled.excess_kurtosis;
     }
+}
+
+}
+
+void vol_batch_row::refuse(std::size_t cell, vol_cell_state state, std::string text) {
+    states[cell] = state;
+    reasons[used] = std::move(text);
+    reason_of[cell] = static_cast<std::int32_t>(used);
+    clear_cell(*this, cell);
+    ++used;
+}
+
+void vol_batch_row::refuse_all(vol_cell_state state, std::string text) {
+    reasons[used] = std::move(text);
+    const auto place = static_cast<std::int32_t>(used);
+    ++used;
+    for (std::size_t cell = 0; cell < states.size(); ++cell) {
+        // A cell that states its own cause keeps it: a series the history cannot support does not
+        // turn a pillar no measurement can read into the same refusal.
+        if (reason_of[cell] >= 0)
+            continue;
+        states[cell] = state;
+        reason_of[cell] = place;
+        clear_cell(*this, cell);
+    }
+}
+
+vol_batch_row row_of(vol_batch& batch, std::size_t series) {
+    const std::size_t first = batch.offsets[series];
+    const std::size_t cells = batch.offsets[series + 1] - first;
+    const std::size_t slot = batch.reason_offset_of(series);
+    return vol_batch_row{.pillars = batch.pillars,
+                         .states = std::span(batch.states).subspan(first, cells),
+                         .window_returns = std::span(batch.window_returns).subspan(first, cells),
+                         .levels = std::span(batch.levels).subspan(first, cells),
+                         .skewnesses = std::span(batch.skewnesses).subspan(first, cells),
+                         .excess_kurtoses = std::span(batch.excess_kurtoses).subspan(first, cells),
+                         .reason_of = std::span(batch.reason_of).subspan(first, cells),
+                         .reasons =
+                             std::span(batch.reasons).subspan(slot, batch.pillars.size() + 1),
+                         .used = 0};
+}
+
+vol_batch make_vol_batch(std::size_t rows, std::span<const double> pillars) {
+    vol_batch out;
+    out.pillars.assign(pillars.begin(), pillars.end());
+    const std::size_t cells = rows * pillars.size();
+
+    out.offsets.resize(rows + 1);
+    for (std::size_t row = 0; row <= rows; ++row)
+        out.offsets[row] = row * pillars.size();
+    out.states.assign(cells, vol_cell_state::unstated);
+    out.window_returns.assign(cells, 0);
+    out.levels.assign(cells, 0.0);
+    out.skewnesses.assign(cells, 0.0);
+    out.excess_kurtoses.assign(cells, 0.0);
+    out.reason_of.assign(cells, -1);
+    out.reasons.resize(rows * (pillars.size() + 1));
+    return out;
+}
+
+std::expected<void, std::string> measure_row(std::span<const dated_level> levels,
+                                             volatility_transform transform,
+                                             const measurement_settings& settings,
+                                             vol_batch_row& row) {
+    const auto valid = validate_settings(settings);
+    if (!valid)
+        return std::unexpected(valid.error());
+    const std::size_t cells = row.pillars.size();
+    if (row.states.size() != cells || row.levels.size() != cells ||
+        row.window_returns.size() != cells || row.skewnesses.size() != cells ||
+        row.excess_kurtoses.size() != cells || row.reason_of.size() != cells)
+        return std::unexpected(
+            std::format("the row does not hold the {} cell(s) of the ladder", cells));
+    if (row.reasons.size() < cells + 1)
+        return std::unexpected(std::format(
+            "the row holds {} refusal slot(s) for {} cell(s)", row.reasons.size(), cells));
+
+    fill_row(levels, transform, settings, ladder_of(row.pillars, settings), row);
     return {};
 }
 
@@ -233,15 +235,17 @@ measure_batch(std::span<const std::span<const dated_level>> series,
               std::span<const double> pillars,
               volatility_transform transform,
               const measurement_settings& settings) {
-    if (!(settings.periods_per_year > 0.0) || !std::isfinite(settings.periods_per_year))
-        return std::unexpected("the periods in a year must be positive and finite");
+    const auto valid = validate_settings(settings);
+    if (!valid)
+        return std::unexpected(valid.error());
 
     auto out = make_vol_batch(series.size(), pillars);
+    // The ladder is the batch's, not the series': a window is a function of the pillar and of the
+    // settings, so ordering it once is enough for every row.
+    const auto ladder = ladder_of(pillars, settings);
     for (std::size_t row = 0; row < series.size(); ++row) {
         auto slice = row_of(out, row);
-        const auto measured = measure_row(series[row], transform, settings, slice);
-        if (!measured)
-            return std::unexpected(measured.error());
+        fill_row(series[row], transform, settings, ladder, slice);
     }
     return out;
 }

@@ -1342,7 +1342,7 @@ private:
         request.limit = 1000;
         const auto wanted = std::chrono::floor<std::chrono::microseconds>(as_of);
         for (const auto& set : client.request(request, patience).sets) {
-            if (set.bootstrap_config_id != config_id)
+            if (set.derivation.config_id != config_id)
                 continue;
             if (std::chrono::floor<std::chrono::microseconds>(set.as_of) != wanted)
                 continue;

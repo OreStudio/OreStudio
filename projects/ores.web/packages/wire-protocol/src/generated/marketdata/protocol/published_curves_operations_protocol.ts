@@ -40,6 +40,12 @@ export interface PublishedCurvePoint {
     observation_datetime: string;
 }
 
+export interface CurveDerivation {
+    kind: string;
+    config_name: string;
+    config_id: string;
+}
+
 /**
  * @brief One published set, or the candidate that waits to become one.
  *
@@ -59,7 +65,7 @@ export interface PublishedCurveSet {
     curve: string;
     series_id: string;
     series_uri: string;
-    bootstrap_config_id: string;
+    derivation: CurveDerivation;
     party: string;
     party_id: string;
     as_of: string;

@@ -78,6 +78,8 @@ constexpr std::size_t col_superseded_at = 13;
 constexpr std::size_t col_superseded_by_request = 14;
 constexpr std::size_t col_superseded_as_of = 15;
 constexpr std::size_t col_point_count = 16;
+constexpr std::size_t col_derivation_kind = 17;
+constexpr std::size_t col_derivation_config_name = 18;
 
 /**
  * @brief The publish record's facts, shared by both reads.
@@ -99,13 +101,18 @@ constexpr const char* set_columns =
     "   where o.tenant_id = cp.tenant_id"
     "     and o.series_id = cp.output_series_id"
     "     and o.observation_datetime = cp.as_of"
-    "     and o.valid_to = ores_utility_infinity_timestamp_fn())::text";
+    "     and o.valid_to = ores_utility_infinity_timestamp_fn())::text,"
+    " coalesce(s.derivation_kind, ''), coalesce(b.name, '')";
 
 constexpr const char* set_from = " from ores_marketdata_curve_publishes_tbl cp"
                                  " left join ores_marketdata_market_series_tbl s"
                                  "   on s.tenant_id = cp.tenant_id"
                                  "  and s.id = cp.output_series_id"
-                                 "  and s.valid_to = ores_utility_infinity_timestamp_fn()";
+                                 "  and s.valid_to = ores_utility_infinity_timestamp_fn()"
+                                 " left join ores_refdata_ir_curve_bootstrap_configs_tbl b"
+                                 "   on b.tenant_id = cp.tenant_id"
+                                 "  and b.id = cp.bootstrap_config_id"
+                                 "  and b.valid_to = ores_utility_infinity_timestamp_fn()";
 
 /// A column's text, or the empty string when the store holds null there.
 std::string text_at(const row& r, std::size_t column) {
@@ -222,7 +229,7 @@ messaging::published_curve_set set_of(const row& r) {
     set.request_id = text_at(r, col_request_id);
     set.party_id = text_at(r, col_party_id);
     set.series_id = text_at(r, col_series_id);
-    set.bootstrap_config_id = text_at(r, col_config_id);
+    set.derivation.config_id = text_at(r, col_config_id);
     set.series_uri = text_at(r, col_series_uri);
     set.curve = curve_name_of(set.series_uri);
     set.as_of = required_instant_at(r, col_as_of);
@@ -230,6 +237,8 @@ messaging::published_curve_set set_of(const row& r) {
     set.published_by = text_at(r, col_published_by);
     set.state_code = state_of(r);
     set.point_count = count_at(r, col_point_count);
+    set.derivation.kind = text_at(r, col_derivation_kind);
+    set.derivation.config_name = text_at(r, col_derivation_config_name);
     set.withdrawn_at = instant_at(r, col_withdrawn_at);
     set.withdrawn_by = text_at(r, col_withdrawn_by);
     set.withdrawn_reason_code = text_at(r, col_withdrawn_reason);

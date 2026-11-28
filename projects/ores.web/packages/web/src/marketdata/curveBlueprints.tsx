@@ -339,7 +339,7 @@ function setsOf(
     configId: string,
 ): readonly PublishedCurveSet[] {
     return sets
-        .filter((set) => set.bootstrap_config_id === configId)
+        .filter((set) => set.derivation.config_id === configId)
         .sort((left, right) => (right.published_at ?? '').localeCompare(left.published_at ?? ''));
 }
 

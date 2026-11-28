@@ -107,6 +107,40 @@ The datum's own oresmd key, so a reader can ask the datum's series for more.
 
 The instant the value was observed at, which is the set's as-of.
 
+** curve_derivation
+
+The recipe behind a curve: how its output series was made, and the blueprint that
+built it. The three fields belong together, because the kind decides the table the
+config id resolves against and a reader that names one needs both.
+
+*** kind
+
+How the output series was made: =IR_CURVE_BOOTSTRAP= for a curve a blueprint
+bootstrapped, and =OBSERVED= for a series no derivation produced.
+
+:PROPERTIES:
+:cpp_type: std::string
+:default:  "OBSERVED"
+:END:
+
+*** config_name
+
+The blueprint's name, such as =USD-SOFR-FOMC=, or empty when no blueprint built
+the series. A person reads the name; the id stays for a reader that needs the
+exact row.
+
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** config_id
+
+The blueprint's id, as text.
+
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
 ** published_curve_set
 
 One publish record as a reader draws it: the subject, the act that published
@@ -164,12 +198,13 @@ The series the published output is written to.
 
 The output series' oresmd URI, exact, for a reader that names the series by it.
 
-*** bootstrap_config_id
+*** derivation
 :PROPERTIES:
-:cpp_type: std::string
+:cpp_type: curve_derivation
 :END:
 
-The curve configuration the publish was asked for.
+How the curve was made: the kind its output series states, and the blueprint that
+built it, which is also the configuration the publish was asked for.
 
 *** party
 :PROPERTIES:

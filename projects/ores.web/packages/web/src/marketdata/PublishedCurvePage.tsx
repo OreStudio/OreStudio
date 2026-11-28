@@ -212,6 +212,27 @@ function relativeOrExact(set: PublishedCurveSet, language: string): string {
 }
 
 /** The subject the request authorised, the act that published it, and its state. */
+/**
+ * How the curve was made, in the words a person reads: the kind the output
+ * series states, and the blueprint that built it. A series no derivation
+ * produced says so, because "observed" is a fact about the curve and not the
+ * absence of one.
+ */
+function derivationOf(
+    t: (key: string, values?: Readonly<Record<string, string | number>>) => string,
+    set: PublishedCurveSet,
+): string {
+    if (!set.derivation.kind || set.derivation.kind === 'OBSERVED') {
+        return t('marketdata.published.details.observed');
+    }
+    return set.derivation.config_name === ''
+        ? set.derivation.kind
+        : t('marketdata.published.details.builtBy', {
+              method: set.derivation.kind,
+              name: set.derivation.config_name,
+          });
+}
+
 function DetailsTab({
     record,
     sets,
@@ -241,8 +262,11 @@ function DetailsTab({
                             {record.series_uri}
                         </Link>
                     </Fact>
+                    <Fact label={t('marketdata.published.details.derivation')}>
+                        {derivationOf(t, record)}
+                    </Fact>
                     <Fact label={t('marketdata.published.details.config')}>
-                        <span className="break-all">{record.bootstrap_config_id}</span>
+                        <span className="break-all">{record.derivation.config_id}</span>
                     </Fact>
                     <Fact label={t('marketdata.published.columns.state')}>
                         {t(`marketdata.published.state.${state}`)}

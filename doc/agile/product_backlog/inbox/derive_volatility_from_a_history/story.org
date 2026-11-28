@@ -85,7 +85,7 @@ is the second instance of both.
 | [[id:9756E44E-AC5F-4BC7-AA3A-C4C05DFDBF9B][Simulate the interest rate volatility cube and its vendor views]] | BACKLOG | | | A latent cube per currency, over expiry, term and strike, whose ATM level starts from the derived volatilities and whose smile evolves on its own. Three or four contributors quote it with noise of their own, so a party's adapters receive several views of one market. |
 | [[id:54228979-C84A-4ED2-B6C2-BA370FD943D8][Calibrate and publish an interest rate surface]] | BACKLOG | | | A blueprint for a currency's surface and a model that fits it, the arbitrage checks the fit must pass, the approval that lets it be published, and the withdrawal that takes it out of use. The fourth row of the kind table, and the second asset class the lifecycle serves. |
 | [[id:B1A4BB76-AF41-411E-8DC2-17AFCA782479][Export the swaption volatilities and price a swaption]] | BACKLOG | | | The published surface reaches ORE as a swaption volatility set with the configuration that names its volatility type and shift. A book whose trades are swaptions or caps prices, and a report states that they did. |
-| [[id:A49B1E52-4C34-4EA9-B238-D250689B1852][Watch the second class without touching the page]] | BACKLOG | | | Interest rates is the first class the production page was not built for. Add the swaption cube to the page by adding nothing to it: the surface declares an expiry and a term where an FX surface declares an expiry and a delta. A field the page lacks goes into the surface description, never into a branch. |
+| [[id:A49B1E52-4C34-4EA9-B238-D250689B1852][Watch the second class without touching the page]] | BACKLOG | | | Interest rates is the first class the production page was not built for. Add the swaption quote set to the page by adding nothing to it: the surface declares an expiry and a term where an FX surface declares an expiry and a delta. A field the page lacks goes into the surface description, never into a branch. |
 
 * Decisions
 
@@ -124,7 +124,12 @@ is the second instance of both.
   is a fault the audit must be able to see.
 - *A swaption surface is a cube, not a sheet.* A quote states an expiry and a term, and its
   smile adds a strike. The FX page's expiry-by-delta heatmap is one slice of this object, so
-  the page renders the slices a surface declares, and the class adds no page.
+  the page renders the slices the quotes declare, and the class adds no page.
+- *The production page stops at the quotes, and the party's fit has its own screen.* The
+  calibration records its errors, its checks and its missing pillars, and the party's
+  screens read them from the record: a person learns to calibrate by taking quotes as an
+  input, whichever source they came from. A calibration debugger inside the generator would
+  serve neither the platform developer nor the party.
 - *Normal volatility first, and the volatility type stays a column.* The swaption market
   quotes basis-point volatility and ORE reads either type, so the first surface states
   normal volatility, and a shifted-lognormal surface is another row of the same kind rather

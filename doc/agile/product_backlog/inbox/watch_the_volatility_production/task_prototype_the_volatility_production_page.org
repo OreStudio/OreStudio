@@ -2,7 +2,7 @@
 :ID: D1B655A0-DEB3-4BC3-A738-5B2501061BE5
 :END:
 #+title: Task: Prototype the volatility production page
-#+description: A static prototype beside the fixings one: heatmap panels for the latent surface, each vendor's view, the calibrated surface and the difference between them, on the axes a surface declares, with the quote ladders, the calibration checks and the chain's states. It decides what the real page shows.
+#+description: A static prototype beside the fixings one: a chain graph of the nodes and what they carry, and heatmap panels for the latent value, each vendor's view and the difference between them, on the axes a quote set declares, with the quote ladders and the chain's states. Three variants of the chain decide what the real page shows.
 #+type: task
 #+level: s1
 #+filetags: :watch_the_volatility_production:inbox:product_backlog:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A static prototype decides what the page shows before any read is written, and it is drawn on the axes a surface declares rather than on the ones FX happens to use.
+A static prototype decides what the page shows before any read is written: the chain as a graph, and the numbers as heatmaps on the axes the quotes declare.
 
 * Status
 
@@ -35,10 +35,14 @@ A static prototype decides what the page shows before any read is written, and i
 
 * Acceptance
 
-- The prototype holds the latent surface, each vendor's view, the calibrated surface and the difference between them as heatmaps on the axes a surface declares.
-- The axes are those of a sample surface the prototype reads, so a surface with another pair of axes is a change of the sample and not a change of the page.
-- The quote ladders, the calibration checks and the chain's states sit beside the graph.
-- The prototype is reachable from the journeys and states what it does not show.
+- The prototype draws the chain as a graph whose nodes are market objects with a state and whose edges state what they carry, and it holds no calibration node.
+- Three chain variants are reachable in one prototype: a layered graph above the payload, a flat stepper with the fan-out as a list, and a graph beside the payload. The prototype records which one wins and why.
+- The payload panels hold the latent value, each vendor's view and the difference between them as heatmaps on the axes a quote set declares, so a quote set with another pair of axes is a change of sample and not a change of the page.
+- The quote ladders and the chain's states sit beside the graph, and the prototype states what it does not show.
+
+* Notes
+
+- Judge the variants on two questions with a ten-second budget: why is this subject empty, and which vendor moved.
 
 * Plan
 

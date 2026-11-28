@@ -2,7 +2,7 @@
 :ID: CA06E4FC-7B77-4B86-9D2A-E14647F1D079
 :END:
 #+title: Task: Read the production chain of a surface
-#+description: One read for a subject and an as-of: the inputs the generator reads, the latent state, each vendor's quotes and the surface a party calibrated with its error, and the axes that surface declares. It spans the generator's state and the market data store, and the page draws the chain from it.
+#+description: One read for a subject and an as-of: the inputs the generator read, the latent state, each vendor's view and the quotes the generator delivered, with the axes the quotes declare. It spans the generator's state and the market data store, and it returns the chain as nodes and edges that the page draws.
 #+type: task
 #+level: s1
 #+filetags: :watch_the_volatility_production:inbox:product_backlog:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-One read answers a subject's chain for an as-of, from the inputs to the calibrated surface, and states the axes the surface is drawn on.
+One read answers a subject's chain for an as-of, from the inputs to the quotes the generator delivered, and states the axes the quotes are drawn on.
 
 * Status
 
@@ -35,10 +35,11 @@ One read answers a subject's chain for an as-of, from the inputs to the calibrat
 
 * Acceptance
 
-- The read returns the inputs the generator read, the latent state, each vendor's quotes and the calibrated surface with its error.
-- The read returns the surface's own description: the names of its axes, their labels and the model it was fitted with. The page draws from that description and from nothing else.
-- The subject is whatever the surface's coordinates name, and the read refuses a subject the store does not know rather than answering an empty chain.
-- A subject whose chain is broken returns the node that failed and what it lacked, rather than an empty answer.
+- The read returns the inputs the generator read, the latent state, each vendor's view and the quotes that were delivered, and it ends there: no calibration and no party.
+- The read returns the chain as nodes and edges. A node carries its kind, its state, its as-of and the series it holds; an edge carries what it flows, the as-of of what flows and the lag between the two, so a stale input reads on the edge.
+- The read returns the axes the quote set declares -- their names, their labels and the model a fit would use -- and the page draws from that description and from nothing else.
+- The subject is whatever the quote set's coordinates name, and the read refuses a subject the store does not know rather than answering an empty chain.
+- A subject whose chain is broken returns the node that failed and the input it lacked, and the edge it should have carried is absent rather than empty.
 
 * Notes
 

@@ -2,7 +2,7 @@
 :ID: A49B1E52-4C34-4EA9-B238-D250689B1852
 :END:
 #+title: Task: Watch the second class without touching the page
-#+description: The volatility production page reads the axes a surface declares. Interest rates is the first class the page was not built for, so this task adds the swaption cube to the page by adding nothing to the page: the surface declares an expiry and a term instead of an expiry and a delta, and the page draws it. A field the page lacks is added to the surface description, never as a branch.
+#+description: The volatility production page reads the axes a quote set declares. Interest rates is the first class the page was not built for, so this task adds the swaption cube to the page by adding nothing to the page: the surface declares an expiry and a term instead of an expiry and a delta, and the page draws it. A field the page lacks is added to the surface description, never as a branch.
 #+type: task
 #+level: s1
 #+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
@@ -20,8 +20,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A swaption cube renders on the production page with the panels, the ladders and the
-checks the FX sheet already uses, and the page does not learn what a swaption is.
+A swaption quote set renders on the production page with the panels, the ladders and the
+chain states the FX sheet already uses, and the page does not learn what a swaption is.
 
 * Status
 
@@ -36,10 +36,10 @@ checks the FX sheet already uses, and the page does not learn what a swaption is
 
 * Acceptance
 
-- The swaption cube renders for a currency and an as-of, at one expiry or one term at a time, with the other axis along the panel, and the page names no asset class to do it.
+- The swaption quote set renders for a currency and an as-of, at one expiry or one term at a time, with the other axis along the panel, and the page names no asset class to do it.
 - The page shows the derived level the cube started from, so a level that drifts away from the curve it prices against is visible.
 - Every field the page needs and does not find is added to the surface's description. No change is made to the page's code for the class, and the task records any that were.
-- A class whose surface declares no axes is refused with the axis it lacks, and the refusal names the surface and not the page.
+- A class whose quotes declare no axes is refused with the axis it lacks, and the refusal names the quote set and not the page.
 - The journeys and the prototype are unchanged by the task. A change to either is a signal that the read did not state the axes.
 
 * Notes

@@ -93,6 +93,16 @@ export const PERMISSION = {
     cutKindsRead: 'reporting::cut_kinds:read',
     cutKindsWrite: 'reporting::cut_kinds:write',
     cutKindsDelete: 'reporting::cut_kinds:delete',
+    /**
+     * What the vault holds, and never the value of it.
+     *
+     * A value leaves the vault only through a resolve, which is a different
+     * permission and an act the vault records.
+     */
+    vaultSecretsRead: 'vault::secrets:read',
+    vaultSecretsWrite: 'vault::secrets:write',
+    vaultSecretsResolve: 'vault::secrets:resolve',
+    vaultSecretsDelete: 'vault::secrets:delete',
 } as const;
 
 export type Permission = (typeof PERMISSION)[keyof typeof PERMISSION];

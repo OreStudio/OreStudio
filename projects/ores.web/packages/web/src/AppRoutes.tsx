@@ -22,7 +22,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router';
 import { CardScreen } from './shell/CardScreen.js';
-import { MOVED, PATHS, takeCutPath } from './shell/paths.js';
+import { MOVED, PATHS, VAULT, takeCutPath } from './shell/paths.js';
 import { useQuery } from '@tanstack/react-query';
 import { api } from './api/client.js';
 import { useTranslation } from './i18n/Provider.js';
@@ -113,6 +113,9 @@ import { RefdataPage } from './refdata/RefdataPage.js';
 import { DqArea } from './dq/DqArea.js';
 import { CoveragePage } from './dq/CoveragePage.js';
 import { DatasetPage } from './dq/DatasetPage.js';
+import { SecretsPage } from './vault/SecretsPage.js';
+import { SecretPage } from './vault/SecretPage.js';
+import { ConsumersPage } from './vault/ConsumersPage.js';
 import { CurrenciesPage, CurrencyImportPage, CurrencyPage } from './refdata/currencies.js';
 import { BookTradePage } from './trading/BookTradePage.js';
 import { BlotterPage } from './trading/BlotterPage.js';
@@ -1542,6 +1545,48 @@ export function AppRoutes({
                     shell,
                     () => (
                         <DatasetPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={VAULT.consumers}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <Requires needs={NEEDS.vaultSecrets} screen={t('vault.consumers.title')}>
+                            <ConsumersPage />
+                        </Requires>
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={VAULT.list}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <Requires needs={NEEDS.vaultSecrets} screen={t('vault.secrets.title')}>
+                            <SecretsPage />
+                        </Requires>
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${VAULT.list}/:name`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <Requires needs={NEEDS.vaultSecrets} screen={t('vault.secrets.title')}>
+                            <SecretPage />
+                        </Requires>
                     ),
                     'workspace',
                 )}

@@ -431,6 +431,10 @@ select ores_utility_allow_version_replace_fn();
 -- collections that name them, and each series is seeded with the derivation that
 -- says the run computed it.
 \echo ''
+\echo '--- Derivation of the Curve Output Series ---'
+\ir marketdata/marketdata_ir_curve_output_series_derivation_populate.sql
+
+\echo ''
 \echo '--- Computed Fixing Series ---'
 \ir marketdata/marketdata_market_series_computed_fixings_populate.sql
 

@@ -87,8 +87,8 @@ public:
 
     /**
      * @brief add <dataset_id> <dataset_code> <mode> <target_table> <records_inserted>
-     * <records_updated> <records_skipped> <records_deleted> <published_by> <published_at> <reason>
-     * <commentary>
+     * <records_updated> <records_skipped> <records_deleted> <published_by> <outcome> <messages>
+     * <published_at> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -96,8 +96,8 @@ public:
 
     /**
      * @brief set <id> <dataset_id> <dataset_code> <mode> <target_table> <records_inserted>
-     * <records_updated> <records_skipped> <records_deleted> <published_by> <published_at> <reason>
-     * <commentary> [--version <n>]
+     * <records_updated> <records_skipped> <records_deleted> <published_by> <outcome> <messages>
+     * <published_at> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -106,7 +106,7 @@ public:
     /**
      * @brief put-many --count <n> <id> <dataset_id> <dataset_code> <mode> <target_table>
      * <records_inserted> <records_updated> <records_skipped> <records_deleted> <published_by>
-     * <published_at> <reason> <commentary>
+     * <outcome> <messages> <published_at> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :dq:sql:publishing:sprint_31:v0:show_and_drive_the_dq_pipeline:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/record-each-publication-with-its-outcome
+#+pr: 5210
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-26
@@ -29,11 +29,11 @@ published, whether that run worked, and why it did not.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5210][#5210]] | [dq] Record every publication run and serve it |
 
 * Review
 
@@ -107,3 +107,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The writer is in, and it is the live path: the step that publishes a dataset
+records its run from every component that runs one, through one SECURITY DEFINER
+function the service roles may call. The log states the outcome and the messages
+the run produced, and a failed run is recorded beside the successes.
+
+Proven by publishing a bundle on 2026-11-27: four datasets logged as published and
+one as failed, each with the person who asked and, for the failure, the error the
+target raised.
+
+The read is in too: the gateway serves GET /api/v1/dq/dataset_publications for
+one dataset, and a dataset's page draws each run with what it wrote, its outcome
+and what it said, and states when the dataset was last published and by whom.
+
+Verified against the running gateway on 2026-11-27: the route answers 200 for a
+published dataset with two runs, and for the dataset whose run failed, with the
+error the target raised. The local gate passes 23 of 23, build, ctest, the
+database and the service checks among them.

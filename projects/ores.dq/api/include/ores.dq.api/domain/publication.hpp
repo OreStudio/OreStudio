@@ -68,7 +68,8 @@ struct publication final {
 
     /**
      * @brief The dataset's code at the time of publication, recorded so the row still reads after
-     * the dataset is renamed or removed.
+     * the dataset is renamed or removed. A dataset's own page reads its runs by this code, because
+     * the id it holds is not the id the run recorded.
      */
     std::string dataset_code;
 
@@ -106,6 +107,28 @@ struct publication final {
      * @brief Who asked for the publication.
      */
     std::string published_by;
+
+    /**
+     * @brief What the run did, in one word a screen can draw: published, when every row it touched
+     * was written; published_with_warnings, when the run wrote its rows and chose to skip some;
+     * failed, when it wrote nothing. A failed run is recorded because a log that holds only the
+     * successes answers "when was this last published?" with an older run that did write something,
+     * which is a different question from the one a person is asking.
+     *
+     * The word is stored and not derived from the counts, because a run that skipped a row and a
+     * run that failed before touching any have the same counts.
+     */
+    std::string outcome;
+
+    /**
+     * @brief Serialised JSON array of what the run said, each an object with a severity of warning
+     * or error and a text. Empty for a run that said nothing.
+     *
+     * The messages live beside the row rather than in a table of their own because they belong to
+     * one run and are read with it. A run that failed states the error the target service raised; a
+     * run that warns states what it chose not to write.
+     */
+    std::string messages;
 
     /**
      * @brief When the publication was recorded. This is the column the log is read by.

@@ -59,6 +59,8 @@ struct publication_write {
     std::int64_t records_skipped{};
     std::int64_t records_deleted{};
     std::string published_by;
+    std::string outcome;
+    std::string messages;
     std::chrono::system_clock::time_point published_at;
 
     friend bool operator==(const publication_write&, const publication_write&) = default;
@@ -323,6 +325,8 @@ inline constexpr std::string_view deleted = "dq.v1.events.publications.deleted";
         utility::codec::field{"records_skipped", &publication_write::records_skipped},
         utility::codec::field{"records_deleted", &publication_write::records_deleted},
         utility::codec::field{"published_by", &publication_write::published_by},
+        utility::codec::field{"outcome", &publication_write::outcome},
+        utility::codec::field{"messages", &publication_write::messages},
         utility::codec::field{"published_at", &publication_write::published_at},
     };
 }

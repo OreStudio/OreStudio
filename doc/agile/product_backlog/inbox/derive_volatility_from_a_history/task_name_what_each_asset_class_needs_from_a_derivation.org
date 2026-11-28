@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: F654424E-FCAE-46F5-8183-22D5EE91007F
+:END:
+#+title: Task: Name what each asset class needs from a derivation
+#+description: For each asset class: the series the platform holds, the transform that turns it into a return, the coordinates a quote is named by, the shape model across the smile, and the object a published surface must be. It says which classes can be served now and which wait on a history, and it is the list the engine is built against.
+#+type: task
+#+level: s1
+#+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One page states, for every asset class, what the platform needs to derive its
+volatility: the series it holds, the transform, the coordinates a quote is named by, the
+smile model and the object a published surface must be. It says which classes can be
+served now, which wait on a history, and it is the list the engine is built against.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- Every asset class is named: FX, interest rates, credit, equity, commodity and inflation, with its volatility kinds (FX options, swaptions, caps and floors, CDS, equity options, commodity options, inflation caps and floors).
+- For each class the page names the series the platform holds or imports, and whether it is a free source, a generated series or nothing. The overnight fixings, the spot fixings and the generated curves are held; a swap-rate history, a CDS spread history and a commodity forward history are not, unless the page says where they are.
+- For each class the page states the transform (a log return or a difference), the coordinates a quote is named by, the smile model and the shape of the surface a publish must write.
+- The page states which classes the platform can serve today and gives the reason a class cannot be served: no history, no free source, or a datum the key grammar cannot name.
+- The page is the list the engine is built against: a class it names servable is three parameters and a series, and a class it names unservable is out of scope with a reason.
+
+* Notes
+
+- The store already names every class the taxonomy holds (=refdata_asset_class_codes=): fx, interest_rates, credit, equity, commodity, inflation, bond and scripted. A class with no volatility kind needs no derivation, and the page says so instead of leaving it out.
+- The datum schema and the key grammar cover the volatility of every class: =fx_option=, =swaption=, =capfloor=, =cds= with a spread quote, =equity_option=, =commodity_option=, =inflation_capfloor= and =correlation= (=schema.hpp=).
+- The platform imports free histories for FX spots and overnight rates, and a generated series for every curve the simulator steps. A class whose quoted history exists only inside a paid feed cannot be derived without a fabricated history, and the page states that rather than inventing one.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

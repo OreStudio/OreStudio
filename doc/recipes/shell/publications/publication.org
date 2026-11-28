@@ -86,14 +86,14 @@ Writes a row. The change states that the row must not exist, so a create that co
 The command is shaped like this:
 
 #+begin_example
-publications add <dataset_id> <dataset_code> <mode> <target_table> <records_inserted> <records_updated> <records_skipped> <records_deleted> <published_by> <published_at> <reason> <commentary>
+publications add <dataset_id> <dataset_code> <mode> <target_table> <records_inserted> <records_updated> <records_skipped> <records_deleted> <published_by> <outcome> <messages> <published_at> <reason> <commentary>
 #+end_example
 
 It is addressed at =dq.v1.publications.put=.
 
 #+name: publications-add
 #+begin_src ores-shell :tangle publications-add.ores :exports none
-publications add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 0 0 0 __none__ 1970-01-01T00:00:00Z system.new_record generated_script
+publications add 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 0 0 0 __none__ __none__ __none__ 1970-01-01T00:00:00Z system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -107,14 +107,14 @@ Writes a row. The change states no precondition, so it replaces whatever row the
 The command is shaped like this:
 
 #+begin_example
-publications set <id> <dataset_id> <dataset_code> <mode> <target_table> <records_inserted> <records_updated> <records_skipped> <records_deleted> <published_by> <published_at> <reason> <commentary> [--version <n>]
+publications set <id> <dataset_id> <dataset_code> <mode> <target_table> <records_inserted> <records_updated> <records_skipped> <records_deleted> <published_by> <outcome> <messages> <published_at> <reason> <commentary> [--version <n>]
 #+end_example
 
 It is addressed at =dq.v1.publications.put=.
 
 #+name: publications-set
 #+begin_src ores-shell :tangle publications-set.ores :exports none
-publications set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 0 0 0 __none__ 1970-01-01T00:00:00Z system.new_record generated_script
+publications set 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 0 0 0 __none__ __none__ __none__ 1970-01-01T00:00:00Z system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -128,14 +128,14 @@ Writes several rows in one request. The count states how many field groups follo
 The command is shaped like this:
 
 #+begin_example
-publications put-many --count <n> <id> <dataset_id> <dataset_code> <mode> <target_table> <records_inserted> <records_updated> <records_skipped> <records_deleted> <published_by> <published_at> <reason> <commentary>
+publications put-many --count <n> <id> <dataset_id> <dataset_code> <mode> <target_table> <records_inserted> <records_updated> <records_skipped> <records_deleted> <published_by> <outcome> <messages> <published_at> <reason> <commentary>
 #+end_example
 
 It is addressed at =dq.v1.publications.put_many=.
 
 #+name: publications-put-many
 #+begin_src ores-shell :tangle publications-put-many.ores :exports none
-publications put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 0 0 0 __none__ 1970-01-01T00:00:00Z system.new_record generated_script
+publications put-many --count 1 00000000-0000-0000-0000-000000000000 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ 0 0 0 0 __none__ __none__ __none__ 1970-01-01T00:00:00Z system.new_record generated_script
 #+end_src
 
 ** =delete=

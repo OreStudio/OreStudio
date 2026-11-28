@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 1EF4F5FE-802A-49C1-A133-B33281BDAA9D
+:END:
+#+title: Story: Watch the volatility production
+#+description: A debugger of the volatility machinery, for any asset class: the inputs a surface is generated from, the latent surface the generator holds, each vendor's view of it and the surface a party calibrated, on one canvas with the chain's states. The page reads the surface's own axes, so FX and interest rates share it.
+#+type: story
+#+level: s2
+#+filetags: :volatility:production:debugger:backlog:inbox:product_backlog:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A platform developer can watch the generated volatility of one subject and see why it
+looks the way it does. The page reads the chain in dependency order: the series the
+generator steps, the latent value it holds, and each vendor's view of it, ending at the
+quotes the generator delivers. Each node states its own state, so a subject with no quotes
+says which input it lacks.
+
+The page ends at the quotes. What a party does with them -- fit a model, read the error,
+publish a surface -- is the party's work, at domain level, with a helper of its own. This
+page is the platform developer's view of the market data the platform generates, and it
+holds no calibration and no publish.
+
+The chain is the debugger. It is not a quotes board and not a feed page: the internal
+values have no party to read them, and no existing screen joins the producer side to the
+delivered quotes.
+
+The page names no asset class. A quote set states its own axes -- an expiry and a delta
+label for an FX set, an expiry, a term and a strike for a swaption one -- and the page
+draws the grid the quotes declare. A subject whose axes the page cannot read is refused
+with the axis it lacks, and is never drawn with a guess.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Now           | FX volatility is the first production this page is pointed at. |
+| Waiting on    | Nothing.                               |
+| Next          | Draw the journeys, for FX and for the class that follows it. |
+| Last touched  | 2026-11-28                               |
+
+* Acceptance
+
+- A subject and an as-of answer the whole chain in one read, from the inputs to the quotes
+  the generator delivered. The subject is whatever the quote set's coordinates name: a pair
+  for FX, a currency for a swaption one.
+- The page renders the latent value, each vendor's view and the quotes the generator
+  delivers, with the difference between them and the quote ladders beside them, on the axes
+  the quotes declare.
+- A broken chain names the node that failed and the input it lacked, and the node's own
+  message log is reachable from it.
+- The internal series of the latent value and of the derived quotes are readable under the
+  system tenant, and no non-system party can read them.
+- A person can step the latent value through a day and watch the views follow.
+- The page holds no calibration, no publish and no party: an operator sees the market data
+  the platform generates, and the party's fit is a page of its own.
+- No part of the page names an asset class. A quote set of a class the page has never seen
+  renders when it declares its axes, and a class that declares no axes is refused with the
+  axis it lacks.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:45146EEA-76AA-41F2-8BBD-1D571E9E658E][Draw the journeys of the volatility production]] | BACKLOG | | | Five journeys that answer what the generated market data is doing: watch quotes being produced, explain why a subject has no quotes, compare the latent value with each vendor's view, debug one bad quote, and step through a day. Each journey stops at the quotes, and names the screen, the question and the data it needs. |
+| [[id:D1B655A0-DEB3-4BC3-A738-5B2501061BE5][Prototype the volatility production page]] | BACKLOG | | | A static prototype beside the fixings one: a chain graph of the nodes and what they carry, and heatmap panels for the latent value, each vendor's view and the difference between them, on the axes a quote set declares, with the quote ladders and the chain's states. Three variants of the chain decide what the real page shows. |
+| [[id:CA06E4FC-7B77-4B86-9D2A-E14647F1D079][Read the production chain of a surface]] | BACKLOG | | | One read for a subject and an as-of: the inputs the generator read, the latent state, each vendor's view and the quotes the generator delivered, with the axes the quotes declare. It spans the generator's state and the market data store, and it returns the chain as nodes and edges that the page draws. |
+| [[id:93718DC0-E92A-40D8-BAB7-E31AD9F08801][Read the internal series of the generator]] | BACKLOG | | | The latent surface and the derived quotes keep a stored series that no read serves. Once the standing says an internal value keeps a series, add the system-tenant read that the debugger and a chart need. |
+* Decisions
+
+- *Two views, two audiences, and the quotes are the seam.* A platform developer watches the
+  market data the platform generates, and that view ends at the quotes. A user of the domain
+  learns to calibrate a surface by taking quotes as an input, whichever source they came
+  from, and neither the screen nor the fit can tell a generated quote from a vendor's. The
+  system view is this page; the domain helper is the party's calibration screens, which
+  already have their journeys and prototypes. A calibration debugger inside the generator
+  would serve neither reader and would duplicate the party's own work.
+- *The page names no asset class.* The axes and their labels, the quote ladder's shape and
+  the model a fit would use come from the description the quotes carry. When a second class
+  needs something the page cannot show, the description gains a field; the page does not gain
+  a branch. This is the rule the second class is the test of.
+- *The internal values are stored and unentitled, not absent.* A latent surface and the
+  derived quotes keep a series so their evolution can be watched; no non-system party may
+  read them, and they are never metered.
+- *The derived quotes serve one role.* They drive the generation of the simulated surface.
+  They are not a quote source for a party.
+- *The platform does not manufacture a surface for a party.* A party with no system-level
+  quotes for its subject authors its own surface, calibrates it and publishes it.
+- *A separate card is not warranted yet.* The page sits under the simulator area until it
+  covers more than volatility.
+- *The chain is the spine, and the heatmaps are the payload.* The dependencies are drawn as
+  a graph whose nodes are market objects with states and whose edges state what they carry,
+  because the two joins -- one latent value to many vendor views, many views to what leaves
+  the platform -- are where the faults are. The columns are the pipeline's stages and the
+  rows are alternatives, so the layout is computed and stable; a force layout would re-shuffle
+  the picture a reader is learning. Selecting a node opens its heatmaps and ladders on the
+  axes it declares. The graph is drawn from a typed node-and-edge payload, so a new class
+  draws with the same component.
+- *The producer of the platform's own arithmetic is =orestudio=.* It is a producer, not a
+  publisher, and it replaces the mechanism-named =derived=.
+
+* Out of scope
+
+- An axis a surface cannot express. A surface with three axes is drawn as the slices it
+  declares, not as a new page.

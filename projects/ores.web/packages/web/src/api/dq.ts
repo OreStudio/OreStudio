@@ -24,6 +24,7 @@ import type {
     BundleRosterMember,
     BundleRosterResponse,
 } from '@ores/wire-protocol/generated/dq/protocol/bundle_roster_protocol';
+import type { DatasetPublication } from '@ores/wire-protocol/generated/dq/protocol/dataset_publications_protocol';
 import { baseFor } from './servers.js';
 import { request } from './transport.js';
 
@@ -75,6 +76,37 @@ export async function readBundleRoster(
         throw new Error(answer.error_message);
     }
     return answer.bundles;
+}
+
+/**
+ * The runs that published one dataset, newest first.
+ *
+ * The log states an outcome and the messages the run produced, so a screen can
+ * say whether a publication worked and why it did not, and not only when it last
+ * happened.
+ */
+export async function readDatasetPublications(
+    datasetCode: string,
+): Promise<readonly DatasetPublication[]> {
+    const page = await request(
+        `${CPP}/api/v1/dq/dataset_publications?dataset_code=${encodeURIComponent(datasetCode)}`,
+        { method: 'GET' },
+    );
+    const answer = z
+        .object({
+            success: z.boolean(),
+            error_message: z.string(),
+            publications: z.array(z.looseObject({})),
+        })
+        .parse(page) as unknown as {
+        success: boolean;
+        error_message: string;
+        publications: readonly DatasetPublication[];
+    };
+    if (!answer.success) {
+        throw new Error(answer.error_message);
+    }
+    return answer.publications;
 }
 
 /**

@@ -55,6 +55,8 @@ domain::publication publication_mapper::map(const publication_entity& v) {
     r.records_skipped = v.records_skipped;
     r.records_deleted = v.records_deleted;
     r.published_by = v.published_by;
+    r.outcome = v.outcome;
+    r.messages = v.messages;
     r.published_at = v.published_at;
 
     ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
@@ -76,6 +78,8 @@ publication_entity publication_mapper::map(const domain::publication& v) {
     r.records_skipped = v.records_skipped;
     r.records_deleted = v.records_deleted;
     r.published_by = v.published_by;
+    r.outcome = v.outcome;
+    r.messages = v.messages;
     r.published_at = v.published_at;
 
     ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

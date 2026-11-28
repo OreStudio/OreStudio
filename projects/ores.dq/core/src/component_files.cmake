@@ -263,6 +263,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/origin_dimension_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/origin_dimension_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/publication_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/publication_log_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/publication_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/publish_from_dq_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/publish_handler.hpp"

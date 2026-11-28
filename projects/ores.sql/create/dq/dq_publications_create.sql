@@ -51,6 +51,8 @@ create table if not exists "ores_dq_dataset_publications_tbl" (
     "records_skipped" bigint not null default 0,
     "records_deleted" bigint not null default 0,
     "published_by" text not null,
+    "outcome" text not null default 'published',
+    "messages" jsonb not null,
     "published_at" timestamp with time zone not null default current_timestamp,
     primary key (id),
     check ("id" <> ores_utility_nil_uuid_fn()),
@@ -62,7 +64,8 @@ create table if not exists "ores_dq_dataset_publications_tbl" (
     check ("records_updated" >= 0),
     check ("records_skipped" >= 0),
     check ("records_deleted" >= 0),
-    check ("published_by" <> '')
+    check ("published_by" <> ''),
+    check ("outcome" in ('published', 'published_with_warnings', 'failed'))
 );
 
 

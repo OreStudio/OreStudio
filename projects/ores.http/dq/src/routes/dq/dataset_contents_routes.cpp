@@ -73,7 +73,7 @@ void dataset_contents_routes::register_routes(
                          "",
                          false,
                          "The table whose rows to read, or empty for the list of tables alone")
-            .query_param("limit", "integer", "50", false, "The most rows to answer")
+            .query_param("limit", "integer", "15", false, "The most rows to answer")
             .query_param("offset", "integer", "0", false, "Rows to skip before the ones answered")
             .handler([&session](const http_request& req) { return handle_contents(req, session); });
     const auto built = contents_route.build();

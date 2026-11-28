@@ -38,9 +38,9 @@ left the staged rows to psql.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
-| Now          | Built and verified end to end; the gate and the PR are next. |
+| Now          | In review on PR #5221. The review's two critical findings are fixed and the gate is re-running. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the check gate, then raise the PR. |
+| Next         | Merge on a green gate, then read the provenance and image tasks. |
 | Last touched | 2026-11-28                             |
 
 * Acceptance
@@ -173,8 +173,21 @@ via its "Verifies task" field.
 
 * Review
 
+The round of 2026-11-28 reviewed the PR delta against the
+[[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review checklist]] and the
+task's own acceptance, as two independent passes.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The rows page has no order: =order by 1= is =dataset_id=, constant for a page, so LIMIT and OFFSET may repeat a row on one page and skip it on the next | dq_bundle_publication_create.sql | Fixed | Orders by =ctid=, the only key an artefact table states; a pgTAP case pins the page's first row to the table's first row |
+| 2 | Both readers were =security definer= with no tenant predicate and no grant: a code is unique per tenant, so a caller could read another tenant's staged rows | dq_bundle_publication_create.sql | Fixed | Invoker rights, the caller's own dataset row wins over the shared one, and the reads are scoped to the caller's tenant or the system tenant |
+| 3 | No test asserts a known row, as the acceptance requires | dq_dataset_contents_test.sql | Fixed | Asserts the first row of the page and the table's own column list |
+| 4 | A store refusal was detected by a JSON string prefix and pasted into the error message | publish_service.cpp | Fixed | The store raises; the service checks the named table against the list it just read, and states the refusal itself |
+| 5 | The page-size default was stated four times, with two values (50 and 15) | model, SQL, route, api | Fixed | All state 15, the list standard's default |
+| 6 | =version= was served as a content column, though it is bookkeeping like =dataset_id= and =tenant_id= | dq_bundle_publication_create.sql | Fixed | Dropped from the columns and the rows |
+| 7 | The rows offer no caller-stated sort, which RS-LIST-12 asks of every list | DatasetPage.tsx | Deferred | The columns differ per family, so a sort control must be built from the family's own column list and validated in the store, as the table name already is. Risk: a person can read 1,040 rows but not order them by name. Recorded here rather than silently dropped |
+| 8 | =DatasetPage.tsx= rebuilds =useListState= rather than sharing it | DatasetPage.tsx | Deferred | The hook lives in =refdata/RecordList.tsx=; moving it to =ui/= so both lists use it is a change of its own, and importing refdata from dq would couple the areas. Risk: the two drift on the address parameters |
+| 9 | The journey claimed the unbuilt Details, Provenance and Dependencies tabs as built; a Lineage/Dependencies reference and two =#+updated= dates were stale | journey, prototype note | Fixed | The journey now says which tabs exist and which are designed |
+| 10 | The task still said the gate and PR were next | this task | Fixed | Names the PR and the review round |
 
 * Result

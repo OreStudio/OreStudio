@@ -181,7 +181,7 @@ export async function readDatasetTables(datasetCode: string): Promise<readonly D
 export async function readDatasetRows(
     datasetCode: string,
     tableName: string,
-    limit = 50,
+    limit = 15,
     offset = 0,
 ): Promise<DatasetRowsPage> {
     const answer = await readContents(datasetCode, tableName, limit, offset);

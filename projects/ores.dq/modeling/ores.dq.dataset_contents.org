@@ -74,7 +74,7 @@ serves it stays hand-written beside this model.
 *** limit
 :PROPERTIES:
 :cpp_type: int
-:default:  50
+:default:  15
 :END:
 
 #+begin_src cpp :name comment

@@ -334,12 +334,18 @@ declare
     v_columns text;
     v_n integer := 0;
 begin
+    -- The caller's own dataset row wins when a code is stated in more than one
+    -- tenant: a tenant that holds a copy reads its copy, and everyone else reads
+    -- the shared one in the system tenant. The read is invoker-rights, so the
+    -- datasets read policy admits exactly those two rows.
     select at.artefact_table, d.id
       into v_artefact_table, v_dataset_id
       from ores_dq_datasets_tbl d
       join ores_dq_artefact_types_tbl at on at.code = d.artefact_type
      where d.code = p_dataset_code
-       and d.valid_to = ores_utility_infinity_timestamp_fn();
+       and d.valid_to = ores_utility_infinity_timestamp_fn()
+     order by (d.tenant_id = ores_iam_current_tenant_id_fn()) desc
+     limit 1;
 
     if v_artefact_table is null then
         return;
@@ -354,16 +360,19 @@ begin
 
         v_n := v_n + 1;
         v_rows := 0;
-        execute format('select count(*) from %I where dataset_id = $1', v_table)
+        -- A staged row belongs to the tenant that published it, and a shared row
+        -- to the system tenant. Both are readable; another tenant's copy is not.
+        execute format(
+            'select count(*) from %I where dataset_id = $1'
+            '  and tenant_id in (ores_iam_current_tenant_id_fn(),'
+            '                    ores_utility_system_tenant_id_fn())', v_table)
             into v_rows using v_dataset_id;
 
-        -- The alias is not decoration: the OUT column is called table_name, so an
-        -- unqualified reference would be ambiguous.
         select string_agg(c.column_name, ', ' order by c.ordinal_position)
           into v_columns
           from information_schema.columns c
          where c.table_schema = 'public' and c.table_name = v_table
-           and c.column_name not in ('dataset_id', 'tenant_id');
+           and c.column_name not in ('dataset_id', 'tenant_id', 'version');
 
         table_name := v_table;
         display_order := v_n;
@@ -372,7 +381,7 @@ begin
         return next;
     end loop;
 end;
-$$ language plpgsql security definer set search_path = public, pg_temp;
+$$ language plpgsql set search_path = public, pg_temp;
 
 /**
  * One page of the rows a dataset stages into one of its own tables.
@@ -381,11 +390,16 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
  * and no screen knows them. The table is checked against the dataset's own
  * artefact type rather than trusted: the caller names a table it was shown, and
  * this function refuses any other.
+ *
+ * A dataset that names no table, or a table the dataset does not stage into, is
+ * refused with an exception rather than an error object: the answer is either a
+ * page or a refusal, and a caller that has to inspect the answer to learn which
+ * one it got is a caller that will get it wrong.
  */
 create or replace function ores_dq_dataset_rows_fn(
     p_dataset_code text,
     p_table_name text,
-    p_limit integer default 50,
+    p_limit integer default 15,
     p_offset integer default 0
 ) returns jsonb as $$
 declare
@@ -402,10 +416,12 @@ begin
       from ores_dq_datasets_tbl d
       join ores_dq_artefact_types_tbl at on at.code = d.artefact_type
      where d.code = p_dataset_code
-       and d.valid_to = ores_utility_infinity_timestamp_fn();
+       and d.valid_to = ores_utility_infinity_timestamp_fn()
+     order by (d.tenant_id = ores_iam_current_tenant_id_fn()) desc
+     limit 1;
 
     if v_artefact_table is null then
-        return jsonb_build_object('error', 'No dataset names ' || coalesce(p_dataset_code, ''));
+        raise exception 'No dataset called % is readable here', coalesce(p_dataset_code, '');
     end if;
 
     foreach v_table in array string_to_array(v_artefact_table, ',') loop
@@ -420,8 +436,7 @@ begin
     end loop;
 
     if not v_allowed then
-        return jsonb_build_object(
-            'error', 'This dataset stages into no table called ' || coalesce(p_table_name, ''));
+        raise exception 'This dataset stages into no table called %', coalesce(p_table_name, '');
     end if;
 
     select coalesce(jsonb_agg(jsonb_build_object(
@@ -430,21 +445,33 @@ begin
       into v_columns
       from information_schema.columns c
      where c.table_schema = 'public' and c.table_name = p_table_name
-       and c.column_name not in ('dataset_id', 'tenant_id');
+       and c.column_name not in ('dataset_id', 'tenant_id', 'version');
 
-    execute format('select count(*) from %I where dataset_id = $1', p_table_name)
+    execute format(
+        'select count(*) from %I where dataset_id = $1'
+        '  and tenant_id in (ores_iam_current_tenant_id_fn(),'
+        '                    ores_utility_system_tenant_id_fn())', p_table_name)
         into v_total using v_dataset_id;
 
-    -- The two columns every family shares are dropped from the rows too: they
-    -- say which dataset and tenant wrote a row, and the request states both.
+    -- The columns every family shares are dropped from the rows too: they say
+    -- which dataset, tenant and version wrote a row, and the request states the
+    -- first two while nobody reads a version here.
+    --
+    -- ctid is the order because an artefact table has no key a reader can name,
+    -- and a page needs a total order: without one, LIMIT and OFFSET may repeat a
+    -- row on one page and skip it on the next.
     execute format(
-        'select coalesce(jsonb_agg(to_jsonb(t) - ''dataset_id'' - ''tenant_id''), ''[]''::jsonb) '
+        'select coalesce(jsonb_agg(to_jsonb(t) - ''dataset_id'' - ''tenant_id'' - ''version''), '
+        '                ''[]''::jsonb) '
         'from ('
-        '  select * from %I where dataset_id = $1 order by 1 limit $2 offset $3'
+        '  select * from %I where dataset_id = $1'
+        '    and tenant_id in (ores_iam_current_tenant_id_fn(),'
+        '                      ores_utility_system_tenant_id_fn())'
+        '  order by ctid limit $2 offset $3'
         ') t', p_table_name)
-        into v_rows using v_dataset_id, greatest(1, least(coalesce(p_limit, 50), 1000)),
+        into v_rows using v_dataset_id, greatest(1, least(coalesce(p_limit, 15), 1000)),
                            greatest(0, coalesce(p_offset, 0));
 
     return jsonb_build_object('columns', v_columns, 'rows', v_rows, 'total', v_total);
 end;
-$$ language plpgsql security definer set search_path = public, pg_temp;
+$$ language plpgsql set search_path = public, pg_temp;

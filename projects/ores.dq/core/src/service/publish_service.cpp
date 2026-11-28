@@ -593,8 +593,9 @@ messaging::dataset_contents_response publish_service::read_dataset_contents(
     // not the same answer as an empty one and is reported rather than shown.
     if (resp.tables.empty()) {
         resp.success = false;
-        resp.error_message =
-            std::format("No dataset called {} stages into any table", dataset_code);
+        resp.error_message = std::format(
+            "No dataset called {} is readable here, or its artefact type names no table",
+            dataset_code);
         return resp;
     }
 
@@ -602,6 +603,21 @@ messaging::dataset_contents_response publish_service::read_dataset_contents(
     if (table_name.empty())
         return resp;
 
+    // The table was listed a moment ago, so it is checked here rather than left
+    // to the store's refusal: the answer is the same page of tables, and the
+    // store's own exception names the portal and its parameters, which is not
+    // what a screen should read.
+    const auto known = std::any_of(resp.tables.begin(), resp.tables.end(), [&](const auto& table) {
+        return table.table_name == table_name;
+    });
+    if (!known) {
+        resp.success = false;
+        resp.error_message = std::format("This dataset stages into no table called {}", table_name);
+        return resp;
+    }
+
+    // A dataset no row names, or a table outside its family, makes the store
+    // raise; that is a backstop here, since both were checked above.
     const auto rows_sql = "SELECT ores_dq_dataset_rows_fn($1, $2, $3, $4)::text";
     const auto row_rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
@@ -616,14 +632,6 @@ messaging::dataset_contents_response publish_service::read_dataset_contents(
         return resp;
     }
     resp.rows = *row_rows.front().front();
-
-    // The store answers an {error} object for a table its dataset does not
-    // name, rather than raising, so it is turned into an answer here.
-    if (resp.rows.starts_with("{\"error\"")) {
-        resp.success = false;
-        resp.error_message = std::format("{} cannot be read: {}", table_name, resp.rows);
-        resp.rows.clear();
-    }
     return resp;
 }
 

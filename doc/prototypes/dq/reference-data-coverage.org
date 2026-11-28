@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :prototype:ui:dq:
 #+created: 2026-11-22
-#+updated: 2026-11-26
+#+updated: 2026-11-28
 
 | Item          | Where                                          |
 |---------------+------------------------------------------------|
@@ -153,7 +153,9 @@ The page answers the questions a list cannot:
   A column states its kind as well as its name, because some kinds are drawn and
   not printed. An =image= column is the first: the artefact table holds an image
   id, the read answers the image's code, and the screen draws the flag. Printing
-  the id would tell a reader nothing about a row whose point is the picture.
+  the id would tell a reader nothing about a row whose point is the picture. This
+  is drawn but not built: the contents read answers the id today, and
+  [[id:D1B5FAF4-BD7A-4740-AC52-A980A0FFE901][the image task]] owns both halves.
 
 - *Dependencies.* What publishes before the dataset, and what waits on it. The store
   holds every edge in =ores_dq_dataset_dependencies_tbl= — 196 rows when this was
@@ -232,7 +234,7 @@ the Qt Data Librarian's lineage graph answered, and its open point is the asymme
 above: whether the downstream side is a table, as drawn, or a graph cut to the
 roles a person picks.
 
-#+caption: The Lineage tab: one need, drawn as the Qt client drew it, and the
+#+caption: The Dependencies tab: one need, drawn as the Qt client drew it, and the
 #+caption: thirty-two dependents read as a table, of which six are shown.
 #+attr_html: :width 100%
 [[file:reference-data-coverage/lineage-conventions.png]]

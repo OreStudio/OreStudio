@@ -40,7 +40,7 @@ import { useAreaRoot } from '../shell/AreaTrail.js';
 import { PATHS } from '../shell/paths.js';
 import { Notice, Tag } from '../ui/Primitives.js';
 import type { DatasetPublication } from '@ores/wire-protocol/generated/dq/protocol/dataset_publications_protocol';
-import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
+import { DEFAULT_PAGE_SIZE, LOAD_ALL_LIMIT, Pager, pageBounds } from '../ui/Pager.js';
 import { useTabs } from '../ui/Tabs.js';
 import { RelativeTime } from '../ui/Time.js';
 import { RecordHeader } from '../refdata/records.js';
@@ -391,7 +391,10 @@ function Contents({
     // The page is held in the address the way every list holds it: `from` is the
     // first row, omitted on the first page, and `size` is omitted at the default.
     const offset = pageNumber(search.get('from'), 0);
-    const pageSize = Math.min(Math.max(pageNumber(search.get('size'), DEFAULT_PAGE_SIZE), 1), 1000);
+    const pageSize = Math.min(
+        Math.max(pageNumber(search.get('size'), DEFAULT_PAGE_SIZE), 1),
+        LOAD_ALL_LIMIT,
+    );
     const tables = useQuery({
         queryKey: ['dq-tables', code],
         queryFn: () => readDatasetTables(code),

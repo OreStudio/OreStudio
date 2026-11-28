@@ -28,8 +28,10 @@
  * - the tables read lists every table its artefact type names, and no other;
  * - each table states its own columns, without the two columns every family
  *   shares;
- * - a page states the columns it carries, and no served row carries the dataset
- *   or the tenant;
+ * - a page states the columns it carries, and no served row carries the dataset,
+ *   the tenant or the version;
+ * - the page's order is the table's own, so a known row is the row a person sees,
+ *   and paging cannot repeat or skip one;
  * - a table outside the dataset's own family is refused, and so is a dataset no
  *   artefact type names.
  *
@@ -38,7 +40,7 @@
 
 begin;
 
-select plan(8);
+select plan(10);
 
 create temporary view t_contents as
 select * from ores_dq_dataset_tables_fn('refdata.conventions');
@@ -66,9 +68,10 @@ select is(
 
 select is(
     (select count(*) from t_contents
-     where columns like '%dataset_id%' or columns like '%tenant_id%'),
+     where columns like '%dataset_id%' or columns like '%tenant_id%'
+        or columns like '%version%'),
     0::bigint,
-    'the two columns every family shares are not stated');
+    'the columns every family shares are not stated');
 
 select ok(
     ores_dq_dataset_rows_fn(
@@ -85,10 +88,31 @@ select is(
     0::bigint,
     'a served row carries neither the dataset nor the tenant');
 
-select ok(
-    ores_dq_dataset_rows_fn(
-        'refdata.conventions', 'ores_dq_currencies_artefact_tbl', 5, 0) ? 'error',
+select throws_ok(
+    $$select ores_dq_dataset_rows_fn(
+        'refdata.conventions', 'ores_dq_currencies_artefact_tbl', 5, 0)$$,
+    'P0001',
+    NULL,
     'a table outside the dataset family is refused');
+
+select is(
+    (select count(*)
+     from jsonb_array_elements(
+              ores_dq_dataset_rows_fn(
+                  'refdata.conventions', (select min(table_name) from t_contents), 1000, 0)
+              -> 'rows') as r
+     where r ? 'version'),
+    0::bigint,
+    'a served row carries no version');
+
+-- The page's first row is the table's first row: ctid is the order, and without
+-- one LIMIT and OFFSET could repeat a row on one page and skip it on the next.
+select is(
+    (ores_dq_dataset_rows_fn(
+         'refdata.conventions',
+         'ores_dq_conventions_artefact_tbl', 1, 0) -> 'rows' -> 0 ->> 'kind_code'),
+    (select kind_code from ores_dq_conventions_artefact_tbl order by ctid limit 1),
+    'the first row of the page is the first row of the table');
 
 select is(
     (select count(*) from ores_dq_dataset_tables_fn('no.such.dataset')),

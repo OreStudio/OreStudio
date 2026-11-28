@@ -62,7 +62,7 @@ struct dataset_contents_request {
     /**
      * @brief How many rows to answer, at most.
      */
-    int limit = 50;
+    int limit = 15;
     /**
      * @brief How many rows to skip before the ones answered.
      */

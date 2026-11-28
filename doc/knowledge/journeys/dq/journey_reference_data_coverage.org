@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:user_journey:dq:
 #+created: 2026-11-22
-#+updated: 2026-11-26
+#+updated: 2026-11-28
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A data quality operator reads whether the tenant holds every catalogue it needs, names why a member is not ready, and publishes the bundle that fills the gap.
@@ -67,16 +67,17 @@ is a journey of its own.
    dataset was last published and by whom, and which of four reasons keeps it from
    being ready: no dataset row names it, it names no artefact type, the artefact
    type names no target subject, or its artefact table holds no rows. The first
-   three are DQ's to fix; the fourth is the importer's. Its Details tab also states
-   the dataset's own row: what it is, how it is classified, where it came from and
-   when it last changed. Its Provenance tab states the source system, the license,
-   the coding scheme, the upstream derivation and the methodology its values are
-   derived under, read as the record it is. Its Publications tab lists every publish
-   of that dataset with the outcome and what the run said, because a run that wrote
-   nothing and a run that failed are not the same answer. Its Contents tab lists the
-   tables the dataset's artefact type names, each with its own columns and staged
-   count, and a table is opened to read its rows. Its Dependencies tab states what
-   has to publish before the dataset and what waits on it.
+   three are DQ's to fix; the fourth is the importer's. Its Publications tab lists
+   every publish of that dataset with the outcome and what the run said, because a
+   run that wrote nothing and a run that failed are not the same answer. Its
+   Contents tab lists the tables the dataset's artefact type names, each with its
+   own columns and staged count, and a table is opened to read its rows, paged like
+   every other list. The design adds three more that are not built yet: the
+   dataset's own row on Details, what it is, how it is classified, where it came
+   from and when it last changed; a Provenance tab with the source system, the
+   license, the coding scheme, the upstream derivation and the methodology; and a
+   Dependencies tab stating what has to publish before the dataset and what waits
+   on it. Each is a task of its own, and the screen draws none of them yet.
 
 4. *Read what a publish would write.* The person opens the preview for the
    bundle. The system reports, per dataset, the number of staged rows and what a
@@ -183,8 +184,8 @@ view.
 - *A read of the dependency edges.* =ores_dq_dataset_dependencies_tbl= holds one
   row per edge — 196 in the provisioned environment, at most six out of one
   dataset and as many as thirty-two into one — and the publish order resolves them,
-  but no subject answers them for a screen. Until one does, the dataset's Lineage
-  tab is designed and not served.
+  but no subject answers them for a screen. Until one does, the dataset's
+  Dependencies tab is designed and not served.
 - *A published-row count per dataset.* The provenance names the dataset on every
   published row, and nothing counts by it. Without the count the screen can say
   a bundle was published and cannot say how much of it landed.

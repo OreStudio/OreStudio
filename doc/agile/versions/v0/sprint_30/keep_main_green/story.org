@@ -71,6 +71,7 @@ carries the remaining work from sprint 30's close. This story ships
 | [[id:68FF3AAC-9008-4DCE-860F-6F7B426154A7][Move the CI setup steps into shared composite actions]] | DONE | 2026-11-28 | 2026-11-28 | Task for: Keep main green |
 | [[id:7BBECFF1-DA14-4CF5-9121-8524ECB2E65E][Build every leg from one workflow]] | STARTED | 2026-11-28 | | Task for: Keep main green |
 | [[id:78CE865D-4C07-4988-A39F-2BCAFED65715][Restore the release permissions on the calling job]] | DONE | 2026-11-28 | 2026-11-28 | Task for: Keep main green |
+| [[id:5A80416A-59AA-4840-9115-018E533CFE90][Let the script library check parse without logging in]] | BACKLOG | | | Task for: Keep main green |
 
 * Decisions
 

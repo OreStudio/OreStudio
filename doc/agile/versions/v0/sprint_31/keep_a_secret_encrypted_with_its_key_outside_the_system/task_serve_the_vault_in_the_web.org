@@ -103,6 +103,8 @@ task and name that file in the Command column.
 | Tests in the web package | 2786, all passing | =npx vitest run=, in =projects/ores.web/packages/web= | a425d0ca4d |
 | Tests the vault screens add | 10 | =npx vitest run src/vault= | a425d0ca4d |
 | Type errors in the web package | 0 | =npx tsc --noEmit -p packages/web/tsconfig.json=, in =projects/ores.web= | a425d0ca4d |
+| Secrets the live vault holds | 16 | =GET /api/v1/vault/secrets= as the system administrator | 69e118a13a |
+| Consumers the live vault knows | 16 | =GET /api/v1/vault/consumers= as the system administrator | 69e118a13a |
 
 * Notes
 
@@ -183,14 +185,29 @@ drawing a screen from seeded reads and a seeded access and stating what it shows
 and what it does not. The type check is clean. The route inventory regenerates
 with six vault routes. The local gate is green.
 
-*Not proven.* No browser session was run against the fleet for these screens:
-this environment's BFF was not started against the rebuilt database, so the
-three screens are proven by their tests and by the doors' own routes, and the
-first browser pass is still to be made.
+*Proven live*, against the gateway built from this branch and signed in as the
+system administrator: the list answered 16 secrets and 16 consumers in the shape
+the screens parse; the write stored =web.task.probe= and answered its key
+version; the record answered the owner and =written_at= in the wire's own form;
+the delete removed it and the record then answered that no such secret exists.
+The probe was the only row written and it is gone.
+
+*Not proven, and not true yet.* A person cannot reveal a secret a service owns.
+The reveal door resolves as the gateway, and the vault refuses because the
+secret's owner names a service: =GET .../web.task.probe/value= answered 404,
+"This secret belongs to another consumer", although the probe's owner was a
+consumer and the caller held the resolve permission. The screen draws the
+control and shows the vault's answer, and the gap is captured
+([[id:269D12F7-BDC0-4667-A825-912C4B83AC76][A person cannot reveal a secret a
+service owns]]). The vault's rule is documented and the fix is a decision about
+which side yields, so it is not taken here.
 
 *Not built, and captured.* A secret's versions (the record shows the current key
 version and no history), key rotation, consumer registration, and the uses
 screen. The list door also still forwards each value's stored ciphertext, which
 no screen needs
 ([[id:658F3BAE-4E9F-467D-A554-A78E5E6FE525][The list of secrets carries each
-value's ciphertext]]).
+value's ciphertext]]). And the reveal itself is refused for every secret a
+service owns
+([[id:269D12F7-BDC0-4667-A825-912C4B83AC76][A person cannot reveal a secret a
+service owns]]), which the live pass found and no test could.

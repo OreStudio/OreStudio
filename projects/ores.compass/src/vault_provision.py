@@ -369,6 +369,19 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
     if run_vault.returncode != 0:
         for line in run_vault.stderr.splitlines():
             print(f"  failed  {line}", file=sys.stderr)
+        if not run_vault.stdout.strip() and not run_vault.stderr.strip():
+            # The verb reports through its log, and an invocation that writes
+            # nothing has left the reason there rather than on a stream. Say so,
+            # because a silent non-zero reads as "nothing happened".
+            log = (project_root / "build/output" / preset / "publish/log" /
+                   "ores.vault.service.log")
+            print(f"  failed  the vault exited {run_vault.returncode} and wrote "
+                  f"nothing", file=sys.stderr)
+            if log.is_file():
+                print(f"  failed  see {log}", file=sys.stderr)
+                tail = log.read_text(encoding="utf-8", errors="replace").splitlines()[-5:]
+                for line in tail:
+                    print(f"  failed  {line}", file=sys.stderr)
         return run_vault.returncode
 
     restart_pooler(env)

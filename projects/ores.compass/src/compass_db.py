@@ -691,6 +691,11 @@ def cmd_recreate(project_root, env, args):
     mins, secs = divmod(int(time.time() - start), 60)
     print("\n=== Database recreation complete ===")
     print(f"Duration: {mins}m {secs:02d}s")
+    # Every service role was created without a password, because the environment
+    # file no longer carries one. Saying it here is the difference between an
+    # operator who runs the next step and one who reads a pooler fault.
+    print("\nThe deployment's secrets are not provisioned: run "
+          "./compass.sh vault provision before starting the services.")
     return 0
 
 

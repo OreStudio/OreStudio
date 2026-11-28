@@ -34,91 +34,113 @@ generation carry it, which returns all four to what their rows state.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | Teaching the row struct to group the change audit, which is the one saving available to all four types. |
-| Waiting on   | Nothing.                               |
-| Next         | The shared audit type, the entity template, the two models. |
+| Now          | The analysis is done; the mechanism is a decision between the two options that meet the acceptance. |
+| Waiting on   | A decision between option A and option B under =* Plan=. |
+| Next         | Take the chosen option; the codegen prototype is parked in =stash@{0}=. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
 
-The premise was re-cut on 2026-11-26, after the measurement below showed that
-a group member alone cannot bring the two row structs back. What is accepted
-now:
+Re-cut on 2026-11-26, twice. The first re-cut assumed a field group could be
+declared for the audit alone; the second found what that costs. What is
+accepted is not settled until the owner picks from the options under =* Plan=;
+whichever is picked, the acceptance is:
 
-- The change audit — the four columns =modified_by=, =performed_by=,
-  =change_reason_code= and =change_commentary= — is one member, =audit=, in
-  both the domain type and the row struct of a party and of a business unit.
-  The model states the block once, as a field group, and codegen writes each
-  layer from it.
-- The row struct can group, which it could not before: every other template
-  already honours the audit group, and the entity template was the one that
-  did not. The capability is the task's deliverable, not a party-only edit.
 - =party=, =party_entity=, =business_unit= and =business_unit_entity= hold no
   more fields than their =* Ceilings= rows state, and =business_unit= is at or
-  under fifteen so it joins no row. The three rows that exist come down to the
-  counts these types then have.
+  under fifteen so it joins no row.
 - No ceiling in =compass/checks/wide_types.org= rises: every row is the count
   its type has, and no row is added.
-- The approval chain's behaviour does not move: the two approval pgTAP files,
-  the refdata C++ suites, the wire roundtrip tests and the web typecheck pass.
-  The party's and the desk's wire shape changes only in that the audit columns
-  nest, which every generated type on the path mirrors.
+- The approval chain's behaviour does not move: the flag's two states stay
+  distinct — false permits everything, true with no junction rows permits
+  nothing — and the two approval pgTAP files, the refdata C++ suites, the wire
+  roundtrip tests and the web typecheck pass.
+- The common path does not grow: a party read and write carries no more than it
+  carries today, and no consumer of a party has to learn a new shape, unless the
+  owner picks an option that says otherwise and records the cost here.
 
 * Plan
 
-The plan's shape was settled by the measurement; the mechanism it records is
-the one the counts left open.
+The plan is an analysis first, because the first two mechanisms this task tried
+were both wrong about the codegen.
 
-1. Count the four types with the check's own command and record the numbers.
-   *Done*: =compass-ng check --codec wide_types= at =0c91ae4d65= reports
-   =party= 20 against a row of 19, =party_entity= 21 against 20,
-   =business_unit= 16 with no row, and =business_unit_entity= 17 against 16.
-   All four are exactly one field over, and all four crossed on
-   =restricts_product_types=.
-2. Choose the mechanism by what the counts say. A field group composes into the
-   domain type alone — =convention_entity= is flat although =convention=
-   declares three groups — so a group member cannot bring a row struct back.
-   The two mechanisms left are moving the flag out of both tables, which
-   rewrites the product approval SQL, or teaching the row struct to group the
-   columns the model already groups. The owner chose the second on 2026-11-26:
-   no schema change, the flag stays where it belongs, and the saving applies to
-   every entity, not to these four.
-3. Add the shared row type the group needs: the four change-audit columns as
-   one struct in =ores.database=, beside =db_timestamp=, because every entity's
-   audit block holds the same four columns in the same layer.
-4. Teach the entity template to use it. =has_audit_group= is already in the
-   model context and every other template that reads the audit block honours
-   it; the entity template states the four columns flat and binds them one by
-   one. It emits one member, =audit=, when the model declares the group, and
-   stays flat when it does not, so no other entity's generated code moves.
-5. Point the mapper at the nested member on the entity side. The domain side
-   already goes through =audit_prefix=; the entity side is written flat in four
-   places.
-6. Declare =| audit | ores.dq.audit_record |= in =ores.refdata.party.org= and
-   =ores.refdata.business_unit.org=, so both layers group from one statement in
-   the model, and let codegen write the domain type, the row struct, the
-   protocol, the schema documentation and the web types.
-7. Lower the three ceiling rows to the counts their types then have, and leave
-   =business_unit= off the list. No row rises and none is added.
-8. Run the two approval pgTAP files, the refdata C++ suites, the wire roundtrip
+** What the four counts say
+
+=compass-ng check --codec wide_types= at =0c91ae4d65= reports =party= 20 against
+a row of 19, =party_entity= 21 against 20, =business_unit= 16 with no row, and
+=business_unit_entity= 17 against 16. All four are exactly one field over, and
+all four crossed on the same column: =restricts_product_types=, added to the
+party by =01f0864d44= and to the desk by =21981d8ff8=. The four ceilings are
+exactly the pre-flag counts, so the flag is the whole of the movement.
+
+** What each layer can lose
+
+| Layer | Its members | How it can shed one |
+|-------+-------------+---------------------|
+| =party=, =business_unit= (domain, and the wire) | own columns + five audit members | only by losing a member: a group needs either the narrow identity/audit flag or the all-or-nothing table form |
+| =party_entity=, =business_unit_entity= (row struct) | one member per column, plus the validity window | only by losing a column: the template has no group support |
+| =_codec=, =_protocol=, TS types, shell recipes, screens | generated from the domain | follow the domain, no separate decision |
+
+** What the experiments showed
+
+1. A =** Domain groups= table is all-or-nothing. Declaring it on =business_unit=
+   with only the audit group is refused: =column business_centre_code belongs to
+   no domain group=. So grouping the audit that way means decomposing the whole
+   entity into identity and payload groups — a rename of every =party.= and
+   =business_unit.= access in the tree, and a new wire shape for the two most
+   used refdata types.
+2. =:domain_audit_group:= in the =C++ *= Flags drawer is the narrow form and it
+   works: it nests the four audit columns and the recorded instant as one =audit=
+   member and leaves the rest flat. Generated from it, =party= is 16 and
+   =business_unit= is 12 — both under, with room. This is the answer the
+   architecture points at: the audit block is a reused value shape, and
+   =convention= and all 48 trading instruments already nest it.
+3. That narrow form costs the entity its generic history. Codegen stops emitting
+   =party_history_provider_registrar= and =business_unit_history_provider_registrar=
+   the moment the flag is on: all 48 models that carry the flag have the history
+   field mapper and no provider, and the two files return the moment the flag is
+   taken off. An explicit =| ores.cpp.history-provider-registrar | true |= row in
+   the model's =* Physical space= table does not bring them back. So the cheap
+   route deletes the party's and the desk's =history.v1.get= surface.
+4. The row struct has no lever smaller than that flag: keying the template on
+   =has_audit_columns= instead would rewrite 550 entity headers and their 550
+   mappers across every component and every worktree.
+
+** The options
+
+| Option | What it costs | What it lands | Risk |
+|--------+---------------+--------------+------|
+| A. Fix the registrar gap in compass-ng, then group the audit on both models | two model lines, a row-struct template change (prototyped, parked in =stash@{0}=), a compass-ng release | all four under with room; no schema, no SQL | the party and desk wire shapes nest their audit, so every consumer learns =audit.*=; blocked on the compass repository |
+| B. Move the restriction state off the party and desk rows into an approval row | 2 models, 2 tables, 19 references in 8 SQL files, 4 pgTAP files, the surfaces that carry the flag, the design page's wording | all four exactly on their rows; the party and the desk lose a member | the chain's functions read a row instead of a column; the book keeps its flag, so the chain is mixed until the approval-matrix story moves it too |
+| C. Group only the row structs (template keyed on the audit columns) | 550 headers and 550 mappers regenerate repo-wide | the two row structs land; the two domain types stay one over | not sufficient alone, and it makes every other worktree's tree move |
+| D. Record the four counts as exceptions in =.compass.org= | four rows with a reason, an approver and an expiry | nothing changes in code | accepts the growth the rule forbids in principle; the house mechanism does allow it, and 13 exceptions are in use |
+| E. Amend the rule so a generated row mirror is not counted | a change to =compass/checks/wide_types.org= | 237 of the 596 rows leave the list | a policy change, not a clean-up; the owner has to want it |
+| F. Stop this task and capture | a note | nothing | the four rows stay grown |
+
+A and B are the only options that meet the acceptance. By the owner's own
+criterion — the common path must not get more expensive for an edge case — B is
+the honest one: the flag is the edge case, it is already on the common path
+today, and every party read carries a boolean that only the approval resolution
+reads. Nesting the audit (A) is the more general fix, but it changes what every
+consumer of a party sees, which is a common-path cost of exactly the kind this
+task is meant to avoid.
+
+** The plan once the owner picks
+
+1. Take the chosen option on this branch, and record the decision here with its
+   cost.
+2. Regenerate and lower the three ceiling rows to the counts the types then have,
+   leaving =business_unit= off the list. No row rises and none is added.
+3. Run the two approval pgTAP files, the refdata C++ suites, the wire roundtrip
    tests and the web typecheck and format: the chain's rules must not move, only
-   the shape that carries them. The flag's two states stay distinct — false
-   permits everything, true with no junction rows permits nothing — because
-   that distinction is the chain's whole point.
-9. Record the four counts before and after, with the command that measured them.
+   the shape that carries them.
+4. Record the four counts before and after, with the command that measured them.
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
-* Notes
-
-The ceilings the check records today, read from =compass/checks/wide_types.org=
-before any change: =party= 19, =party_entity= 20, =business_unit_entity= 16, and
-=business_unit= carries no row at all, which is the rule's way of saying it must
-come to fifteen or under rather than join the list.
-
-The measurement the plan's first step asked for is in =* Measurements=. It
+* Measurements=. It
 shows that the task's premise was wrong in one place and incomplete in another.
 Wrong, because a group member cannot bring a row struct back: the entity
 template states one member per column by design, and =convention_entity= is
@@ -157,6 +179,72 @@ task and name that file in the Command column.
 | =party_entity= fields, before | 21 (row: 20) | =compass-ng check --codec wide_types= | =0c91ae4d65= |
 | =business_unit= fields, before | 16 (no row; ceiling 15) | =compass-ng check --codec wide_types= | =0c91ae4d65= |
 | =business_unit_entity= fields, before | 17 (row: 16) | =compass-ng check --codec wide_types= | =0c91ae4d65= |
+| Entity headers holding a flat audit block | 550 | =grep -rl "std::string modified_by;" projects/*/core/include/*/repository/*_entity.hpp | wc -l= | =0c91ae4d65= |
+| Ceiling rows for row mirrors, of all rows | 237 of 596 | =awk= over the =* Ceilings= table | =0c91ae4d65= |
+| Row mirrors a grouping would clear outright | 83 | =awk= over the =* Ceilings= table | =0c91ae4d65= |
+| Models carrying =domain_audit_group=, none with a history provider | 48 | =grep -rln domain_audit_group projects/*/modeling/*.org= | =0c91ae4d65= |
+
+* Notes
+
+The ceilings the check records today, read from =compass/checks/wide_types.org=
+before any change: =party= 19, =party_entity= 20, =business_unit_entity= 16, and
+=business_unit= carries no row at all, which is the rule's way of saying it must
+come to fifteen or under rather than join the list.
+
+The codegen prototype — =change_audit= in =ores.database=, the entity template
+and mapper changes, the flag on the two models — is parked in =stash@{0}= on this
+branch, so option A costs a =git stash pop= plus a compass-ng fix rather than a
+rewrite. The four counts it generates are =party= 16, =party_entity= 18,
+=business_unit= 12 and =business_unit_entity= 14.
+
+Two mechanisms this task tried and dropped, recorded so the next reader does not
+try them again: a =** Domain groups= table requires every column of the entity to
+belong to a group; a =:domain_audit_group:= flag nests the audit alone but
+suppresses the entity's history-provider registrar.
+
+* Measurements=. It
+shows that the task's premise was wrong in one place and incomplete in another.
+Wrong, because a group member cannot bring a row struct back: the entity
+template states one member per column by design, and =convention_entity= is
+flat although its model declares three groups, so the group reaches the domain
+type alone. Incomplete, because the four types were not four different
+problems: each was exactly one field over its row, and all four crossed on the
+same boolean.
+
+So the saving had to be one the row struct could take, and the audit block is
+the only one it holds that the model can state as a group: four of
+=party_entity='s 21 members and four of =business_unit_entity='s 17. Making the
+row struct group it takes =party= to 16, =party_entity= to 18, =business_unit=
+to 12 and =business_unit_entity= to 14 — every one under its row, and
+=business_unit= well clear of the fifteen it may not exceed.
+
+The alternative was to move =restricts_product_types= out of both tables into a
+table of its own, which also lands all four on their rows. It lost on cost and
+on reach: it rewrites the product approval SQL, the junction triggers that
+maintain the permitted sets, the publish path that restricts a book, the shell
+recipes and both pgTAP files, inside a story another environment is working,
+and it leaves the next wide entity exactly as stuck as before.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =party= fields, before | 20 (row: 19) | =compass-ng check --codec wide_types= | =0c91ae4d65= |
+| =party_entity= fields, before | 21 (row: 20) | =compass-ng check --codec wide_types= | =0c91ae4d65= |
+| =business_unit= fields, before | 16 (no row; ceiling 15) | =compass-ng check --codec wide_types= | =0c91ae4d65= |
+| =business_unit_entity= fields, before | 17 (row: 16) | =compass-ng check --codec wide_types= | =0c91ae4d65= |
+| Entity headers holding a flat audit block | 550 | =grep -rl "std::string modified_by;" projects/*/core/include/*/repository/*_entity.hpp | wc -l= | =0c91ae4d65= |
+| Ceiling rows for row mirrors, of all rows | 237 of 596 | =awk= over the =* Ceilings= table | =0c91ae4d65= |
+| Row mirrors a grouping would clear outright | 83 | =awk= over the =* Ceilings= table | =0c91ae4d65= |
+| Models carrying =domain_audit_group=, none with a history provider | 48 | =grep -rln domain_audit_group projects/*/modeling/*.org= | =0c91ae4d65= |
 
 * Notes
 

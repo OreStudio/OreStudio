@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: AB30FE64-5790-4942-A1CB-30CB7AE17530
+:END:
+#+title: The vault's uses have no screen and no operation
+#+description: The vault records every resolve, and no operation lists the record and no rule draws the screen that would read it.
+#+type: capture
+#+level: cross
+#+filetags: :vault:secrets:web:tech_debt:capture:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The vault keeps a record of every secret it resolves, and a person cannot read
+it. The journey that keeps an installation's secrets names a *Uses* screen as its
+last step, and that step is the only one with no rule behind it and no operation
+under it: the record screen standard has no shape for a list of events across
+records, and the vault serves no read of the uses.
+
+* Why
+
+A reveal is recorded twice, which is the price the design sets for putting a value
+on a screen. A record nobody can read pays that price for nothing: the audit
+exists, and the person who has to explain a use cannot see it.
+
+It is a capture rather than an assumption because both halves are missing at once.
+A screen alone would have nothing to call, and an operation alone would have no
+shape to draw; settling one decides the other, so they belong to one piece of work.
+
+The record itself exists and holds the value's name, the consumer, the actor, the
+time and the key version, which is what a screen would need.
+
+* References
+
+- [[id:B14B2A74-CA0D-4A83-9C0A-46CAB79F6E8B][User Journey: Keep the installation's
+  secrets]] — the step that cannot be drawn.
+- [[id:4F28F755-7DA1-4EDD-9983-256622B6088A][Sealed Delivery of a Secret to Its
+  Consumer]] — why a resolve is recorded at all.
+- =projects/ores.sql/create/vault/vault_secret_uses_create.sql= — the record.
+
+* See also
+
+- [[id:DBF20EC5-63BB-4DE5-957C-5322DE0E487F][Secrets Register]] — which values the
+  installation holds.

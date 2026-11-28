@@ -301,14 +301,20 @@ std::optional<std::string> env_setting(const std::string& name) {
     return ores::platform::environment::environment::get_value(name);
 }
 
+/// The login the deployment keeps beside the marketdata service's role: it
+/// starts as that role, so a read here runs under the service's own grants
+/// without the test process holding a service password.
+std::string fixture_user() {
+    return env_setting("ORES_MARKETDATA_SERVICE_DB_USER").value_or("") + "_test";
+}
+
 /// One value of @p sql_text, read from the tick table as the marketdata service. The table
 /// carries no tenant and no party, so no session setting changes what this read finds.
 std::string tick_scalar(const std::string& sql_text) {
-    const auto info =
-        "host=" + env_setting("ORES_TEST_DB_HOST").value_or("") +
-        " dbname=" + env_setting("ORES_TEST_DB_DATABASE").value_or("") +
-        " user=" + env_setting("ORES_MARKETDATA_SERVICE_DB_USER").value_or("") +
-        " password=" + env_setting("ORES_MARKETDATA_SERVICE_DB_PASSWORD").value_or("");
+    const auto info = "host=" + env_setting("ORES_TEST_DB_HOST").value_or("") +
+                      " dbname=" + env_setting("ORES_TEST_DB_DATABASE").value_or("") +
+                      " user=" + fixture_user() +
+                      " password=" + env_setting("ORES_TEST_DB_PASSWORD").value_or("");
     std::unique_ptr<PGconn, decltype(&PQfinish)> conn(PQconnectdb(info.c_str()), &PQfinish);
     REQUIRE(PQstatus(conn.get()) == CONNECTION_OK);
     const auto run = [&](const std::string& sql) {
@@ -671,8 +677,7 @@ private:
     }
     static std::string connection_info() {
         return "host=" + env("ORES_TEST_DB_HOST") + " dbname=" + env("ORES_TEST_DB_DATABASE") +
-               " user=" + env("ORES_MARKETDATA_SERVICE_DB_USER") +
-               " password=" + env("ORES_MARKETDATA_SERVICE_DB_PASSWORD");
+               " user=" + fixture_user() + " password=" + env("ORES_TEST_DB_PASSWORD");
     }
     std::string run(const std::string& sql) {
         std::unique_ptr<PGresult, decltype(&PQclear)> r(PQexec(conn_.get(), sql.c_str()), &PQclear);

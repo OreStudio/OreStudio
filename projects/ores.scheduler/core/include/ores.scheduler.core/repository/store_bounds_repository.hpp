@@ -71,7 +71,7 @@ public:
      * no points, which is the honest answer and not a flat line at zero, and it
      * still answers with the window the read covered.
      *
-     * @param range =24h=, =7d= or =30d=; anything else answers the week.
+     * @param range =1h=, =24h= or =7d=; anything else answers the day.
      */
     [[nodiscard]] store_sample_series read_samples(const std::string& store_code,
                                                    const std::string& range);

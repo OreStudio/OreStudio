@@ -143,11 +143,11 @@ export const storeSampleSchema = z.object({
 /**
  * The horizons a store's series is read over.
  *
- * The sampler writes one point an hour, so a day is 24 points, a week 168 and a
- * month 720. The screen offers these rather than a count of points, because a
- * count would move the window whenever the sampler's cadence changed.
+ * The sampler writes one point an hour, so an hour holds at most one point, a day
+ * 24 and a week 168. The screen offers these rather than a count of points,
+ * because a count would move the window whenever the sampler's cadence changed.
  */
-export const STORE_RANGES = ['24h', '7d', '30d'] as const;
+export const STORE_RANGES = ['1h', '24h', '7d'] as const;
 
 export type StoreRange = (typeof STORE_RANGES)[number];
 
@@ -173,7 +173,7 @@ export interface StoreSampleSeries {
 export async function readStoreSamples(
     caller: AuthenticatedCaller,
     storeCode: string,
-    range: StoreRange = '7d',
+    range: StoreRange = '24h',
 ): Promise<StoreSampleSeries> {
     const reply = await caller.callAuthenticated(
         schedulingSubjects.list_store_samples_request,

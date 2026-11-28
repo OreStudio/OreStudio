@@ -154,7 +154,7 @@ function StoreRecord({ store }: { readonly store: StoreBound }): ReactNode {
  */
 function StoreSize({ store }: { readonly store: StoreBound }): ReactNode {
     const { t, language } = useTranslation();
-    const [range, setRange] = useState<StoreRange>('7d');
+    const [range, setRange] = useState<StoreRange>('24h');
     const samples = useQuery({
         queryKey: ['operations', 'housekeeping', 'samples', store.code, range],
         queryFn: () => api.housekeepingSamples(store.code, range),

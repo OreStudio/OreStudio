@@ -1990,9 +1990,9 @@ const fr: SourceCatalogue = {
                 measuredAt: 'Mesuré',
                 rangeLabel: 'Horizon',
                 ranges: {
+                    hour: 'Dernière heure',
                     day: 'Dernier jour',
                     week: 'Dernière semaine',
-                    month: 'Dernier mois',
                 },
                 onePoint: 'Un seul relevé sur cet horizon. Un second trace une ligne.',
                 noneInWindow:

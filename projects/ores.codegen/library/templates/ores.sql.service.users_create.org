@@ -2,16 +2,19 @@
 :ID: A3D9CD50-5E9B-47B7-8535-EFBEA1F6197D
 :END:
 #+title: ores.sql.service.users_create
-#+description: One =CREATE ROLE … LOGIN= per registry service, password supplied via the service's psql variable. Output =projects/ores.sql/create/iam/service_users_create.sql=.
+#+description: One =CREATE ROLE … LOGIN= per registry service, with no password until provisioning writes one, plus a fixture login that starts as that service for the test suites. Output =projects/ores.sql/create/iam/service_users_create.sql=.
 #+type: archetype
 #+output: projects/ores.sql/create/iam/service_users_create.sql
 #+facet: ores.sql.service
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-06-08
-#+updated: 2026-06-08
+#+updated: 2026-11-28
 
-One =CREATE ROLE … LOGIN= per registry service, password supplied via the service's psql variable. Output =projects/ores.sql/create/iam/service_users_create.sql=.
+One =CREATE ROLE … LOGIN= per registry service, with no password: each service
+resolves its own from the vault at start, and =compass vault provision= is the
+only writer of it. Beside each one, a fixture login that the test suites use to
+act as that service. Output =projects/ores.sql/create/iam/service_users_create.sql=.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -33,18 +36,38 @@ The full template source. Edit here and re-tangle with
  * Creates/updates domain service database users (idempotent).
  * Included by recreate_database.sql (postgres superuser phase).
  *
- * Required psql variables (one pair per service):
- *   :{name}_service_user, :{name}_service_password
- *   :service_role
+ * A service role gets no password here: it resolves its own from the vault at
+ * start, and compass vault provision writes it.
+ *
+ * Each one has a fixture login beside it, named <service user>_test, which
+ * holds the deployment's test password and starts as the service's own role.
+ * A test that acts as a service signs in as the fixture, so the grants it
+ * exercises are the service's, without holding a password the environment file
+ * does not carry.
+ *
+ * Required psql variables:
+ *   :{name}_service_user, :service_role, :test_dml_password
  */
+
+select set_config('ores.test_password', :'test_dml_password', false);
 
 {{#service_registry_db_services}}
 -- {{description}} domain service
 select set_config('ores.cur_user', :'{{psql_var}}_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :{{psql_var}}_user with password :'{{psql_var}}_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :{{psql_var}}_user;
 alter  role :{{psql_var}}_user set search_path to public;
 

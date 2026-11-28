@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: C42C8275-2A07-4D31-BD24-46200D090566
+:END:
+#+title: Task: Capture the sizing work the screens need
+#+description: The housekeeping screen states ten stores, and the installation holds 846 relations in 1672 MB across a host with 492 GB free. The review of the screen asked for the figures that answer the disk: the database and the host's free space, a per-party split, a per-tenant series, the share a policy bounds, and a list of the largest tables. None of those exists, and the telemetry tables are the sharpest case of the gap because they declare a retention policy that nothing runs. Capture each as a task with the measurement behind it.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: feature/capture-the-sizing-work-the-screens-need
+#+pr: 5233
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every question the disk asks has a task that states what is missing, the measurement that shows it, and the acceptance that closes it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- Each question the review raised is a task with its acceptance, wired into the housekeeping story
+- Every number a task states names the command and the tree it was measured on
+- The catalogue's gap against the schema is captured with its measurements, so the count cannot be mistaken for the whole
+
+* Plan
+
+Measure the tree before writing any task, so each task states a figure rather
+than an impression. The measurements below were taken against the running
+environment at =a44998824c=.
+
+Then one task per question the review raised, each with the acceptance that
+closes it:
+
+- the database's size against the host's free space, on both homes;
+- the telemetry tables, which declare a bound nothing applies;
+- the size a party holds, as a pie on the tenant's screen;
+- a tenant's own size over time;
+- how many bytes a policy bounds, as distinct from how many stores;
+- the largest tables, with a pie of the top N.
+
+One thing is captured rather than tasked, because it is a discovery and not a
+request: the catalogue names ten stores and the installation holds 846
+relations, so the count the screen states describes a tenth of the bytes.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Database size | 1672 MB | =compass sql -- -c "select pg_size_pretty(pg_database_size(current_database()))"= | a44998824c |
+| Relations in =public= | 846 | =compass sql -- -c "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public'"= | a44998824c |
+| Catalogued stores | 10, of which 6 are relations | =compass sql -- -c "select code, target_kind from ores_scheduler_retained_stores_tbl"= | a44998824c |
+| Bytes the catalogued relations hold | about 380 MB, of which the calendar dates are 283 MB and the delivery counts 97 MB | the sampler's own read, or =pg_total_relation_size= on each target | a44998824c |
+| TimescaleDB hypertables | 26, of which 22 are not in the catalogue | =timescaledb_information.hypertables= against the catalogue's chunked targets | a44998824c |
+| Retention jobs that run | 1, and it is the server's own job-history policy | =timescaledb_information.jobs= | a44998824c |
+| Telemetry log rows in 7.7 hours | 17,492 | =select count(*) from ores_telemetry_logs_tbl= | a44998824c |
+| Host disk | 906 GB, 368 GB used, 492 GB available | =df -h /home= | a44998824c |
+| Tables carrying =tenant_id= | 851 | =information_schema.columns= | a44998824c |
+| Tables carrying =party_id= | 373 | =information_schema.columns= | a44998824c |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5233][#5233]] | [agile] Capture the sizing tasks the screen review asked for |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Six tasks and one capture, each stating the measurement behind it:
+
+- [[id:4217BE44-1636-4166-B2C7-8EF0FDB7B2BA][Show the database's size against the host's free space]]
+- [[id:F65DAA98-A55D-4367-ADFF-91D21AA32388][Bound the telemetry tables by age]]
+- [[id:B4E290E5-C579-4A04-9166-6BE8F9C81E9A][Attribute the database's size to a party, and draw it as a pie]]
+- [[id:166B2434-D3DF-4DED-B59E-1AF449EE3D03][Track each tenant's database size over time]]
+- [[id:813E6178-45F0-48C7-8388-56CB723A0C89][State how much of the database a policy bounds]]
+- [[id:F5522F76-F7D0-4527-AEC8-7EA3DB46A18F][Show the largest tables, as a table and a pie]]
+- [[id:8F3C5759-4A02-4ED4-82F7-60C41061DDB6][The catalogue names ten stores and the database holds 846 relations]]
+
+The answer to the question that opened the work: no, the telemetry tables have
+no housekeeping. They declare a thirty-day TimescaleDB retention policy that
+only the paid licence runs, and the sweep visits only the catalogue's rows, so
+they are kept for ever on this installation.

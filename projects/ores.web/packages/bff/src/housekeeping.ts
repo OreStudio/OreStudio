@@ -57,7 +57,7 @@ const codeParamsSchema = z.object({
 });
 
 const samplesQuerySchema = z.object({
-    range: z.enum(STORE_RANGES).default('7d'),
+    range: z.enum(STORE_RANGES).default('24h'),
 });
 
 const RANGE_REFUSED = `The samples read takes a horizon of ${STORE_RANGES.join(', ')}.`;

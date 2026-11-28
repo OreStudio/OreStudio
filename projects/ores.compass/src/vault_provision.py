@@ -237,6 +237,13 @@ def _child_environment(env: dict, keys_dir: Path) -> dict:
     child.update(env)
     child["CREDENTIALS_DIRECTORY"] = str(keys_dir)
 
+    # PostgreSQL itself, not the pooler: a run rewrites the passwords the
+    # pooler's user list was built from, so a pooler asked during the run would
+    # refuse the password this run just invented. The restart that follows
+    # rebuilds that list.
+    child["ORES_VAULT_SERVICE_DB_HOST"] = env.get("ORES_DB_HOST", "localhost")
+    child["ORES_VAULT_SERVICE_DB_PORT"] = env.get("PGPORT") or "5432"
+
     # The vault's own password is not in the environment file any more: it is the
     # file the deployment places, and the unit reads it as a credential. This
     # invocation is not the unit, so it is handed the same value the way the
@@ -245,6 +252,32 @@ def _child_environment(env: dict, keys_dir: Path) -> dict:
     if own.is_file() and not child.get("ORES_VAULT_SERVICE_DB_PASSWORD"):
         child["ORES_VAULT_SERVICE_DB_PASSWORD"] = own.read_text(encoding="utf-8").strip()
     return child
+
+
+def restart_pooler(env: dict) -> None:
+    """Rebuilds the pooler's user list from the passwords this run invented.
+
+    The pooler authenticates each service with the verifier the server holds, so
+    a list built before the run names the passwords the run replaced. Restarting
+    it is the step that makes the new ones usable, and it belongs here rather
+    than in the operator's hands: nothing else knows the values just changed.
+    A host that runs no pooler has no unit to restart, which is not a failure.
+    """
+    label = env.get("ORES_ENV_NAME", "")
+    if not label:
+        return
+
+    import systemctl_bus
+
+    systemctl_bus.adopt_transport_setting(env)
+    unit = f"ores-pooler-{label}.service"
+    done = systemctl_bus.run(["--user", "restart", unit],
+                             capture_output=True, text=True, check=False)
+    if done.returncode == 0:
+        print("  pooler  restarted on the new passwords")
+    else:
+        print("  pooler  not restarted; start it before the services that "
+              "resolve at start", file=sys.stderr)
 
 
 def run(argv, project_root: Path, env_file: Path | None = None) -> int:
@@ -337,4 +370,6 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
         for line in run_vault.stderr.splitlines():
             print(f"  failed  {line}", file=sys.stderr)
         return run_vault.returncode
+
+    restart_pooler(env)
     return 0

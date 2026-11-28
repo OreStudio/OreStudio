@@ -22,21 +22,20 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
-#include "ores.platform/environment/environment.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 
 // The other proposal tests sign in under the read-write role, which may do
 // anything, so they cannot say whether the refdata service's own database user
-// may raise and apply a request. These tests sign in as that user, with the
-// credentials the service reads from its environment, and run the same work.
+// may raise and apply a request. These tests sign in as the fixture the
+// deployment keeps beside that role, which starts as the service, and run the
+// same work.
 
 namespace {
 
 using namespace ores::refdata::tests;
 using ores::refdata::service::book_proposal_service;
-using ores::platform::environment::environment;
 
 /**
  * @brief The context the refdata service runs a request in, acting as an account
@@ -44,21 +43,7 @@ using ores::platform::environment::environment;
  */
 ores::database::context as_refdata_service(ores::testing::scoped_database_helper& h,
                                            const world& w) {
-    const ores::database::database_options options{
-        .user = environment::get_value_or_throw("ORES_REFDATA_SERVICE_DB_USER"),
-        .password = environment::get_value_or_throw("ORES_REFDATA_SERVICE_DB_PASSWORD"),
-        .host = environment::get_value_or_default("ORES_REFDATA_SERVICE_DB_HOST", "localhost"),
-        .database = environment::get_value_or_throw("ORES_REFDATA_SERVICE_DB_DATABASE"),
-        .port = environment::get_int_value_or_default("ORES_REFDATA_SERVICE_DB_PORT", 5432),
-        .tenant = h.tenant_id().to_string()};
-    const ores::database::context_factory::configuration config{.database_options = options,
-                                                                .pool_min = 2,
-                                                                .pool_max = 2,
-                                                                .pool_idle_seconds = 30,
-                                                                .num_attempts = 3,
-                                                                .wait_time_in_seconds = 1,
-                                                                .service_account = options.user};
-    const auto base = ores::database::context_factory::make_context(config);
+    const auto base = h.as_service("ORES_REFDATA_SERVICE_DB_USER");
     return base.with_party(base.tenant_id(), w.party_id, {w.party_id}, w.ctx.actor());
 }
 

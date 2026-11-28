@@ -96,19 +96,9 @@ jobs:
       # and doesn't need to compete for it. Revisit if/when sccache moves to
       # an external cache backend (see the sccache_external_cache_backend
       # backlog capture) that isn't quota-shared.
-      - name: Ccache for gh actions
-        uses: hendrikmuhs/ccache-action@v1.2.26
-        with:
-          variant: sccache
-          key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          max-size: 1000M
-          save: false
-
       - name: Install NSIS
         if: ${{ matrix.compiler == 'clang' }}
         run: choco install nsis
-
-      - uses: ./.github/actions/setup-nats
 
       - name: Enable Developer Command Prompt
         uses: ilammy/msvc-dev-cmd@v1.13.0
@@ -142,64 +132,27 @@ jobs:
           (& $clang --version 2>&1 | Select-Object -First 1) | Write-Host
           $dir | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - uses: ./.github/actions/setup-postgres
-
-      - uses: ./.github/actions/install-compass
-
-      - uses: ./.github/actions/init-environment
-
-      - uses: ./.github/actions/start-nats
-
-      - uses: ./.github/actions/create-database
-
-      - name: get-cmake
-        uses: lukka/get-cmake@v4.5.0
-
-      - name: Cache vcpkg binary packages
-        uses: actions/cache@v6
+      # sccache is NOT kept across runs on this platform (deliberately -- see
+      # story canary_ctest_ignores_cancellation): GitHub's actions/cache is
+      # capped at a fixed 10 GB per repository, shared across every
+      # OS/compiler/buildtype variant. Linux CI jobs run on every PR, so they get
+      # the shared quota; Windows only runs on a schedule/tag push and doesn't need
+      # to compete for it. Revisit if/when sccache moves to an external cache
+      # backend (see the sccache_external_cache_backend backlog capture) that
+      # isn't quota-shared.
+      - uses: ./.github/actions/setup-sccache
         with:
-          path: ${{ github.workspace }}/vcpkg-cache
-          key: vcpkg-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ hashFiles('vcpkg.json') }}
-          restore-keys: |
-            vcpkg-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-
+          variant: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+          restore: 'false'
+          max-size: '1000M'
 
-      - name: run-vcpkg
-        uses: lukka/run-vcpkg@v11
+      - uses: ./.github/actions/build-leg
         with:
-          doNotCache: false
-
-      - name: Run CTest workflow
-        id: ctest
-        run: |
-          $env:VCPKG_DISABLE_SYSTEM_PACKAGE_CHECK=1
-          $env:ORES_BUILD_PROVIDER="github"
-          $env:ORES_BUILD_COMMIT="$env:GITHUB_SHA"
-          $env:ORES_BUILD_NUMBER="$env:GITHUB_RUN_NUMBER"
-          $env:ORES_BUILD_TIMESTAMP=Get-Date -format "yyyy/MM/dd HH:mm:ss"
-          $preset="${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja"
-          $cmake_args="build_group=Nightly,preset=$preset"
-          ctest -VV --preset $preset --script "CTest.cmake,$cmake_args"
-
-      - name: Show sccache statistics
-        # ccache-action installs sccache. If no build ran, it is absent, and
-        # the statistics are not worth a second red step.
-        if: ${{ always() && steps.ctest.outcome != 'skipped' }}
-        run: sccache --show-stats
-
-      - name: Upload WiX log on failure
-        if: failure() && matrix.compiler == 'msvc'
-        uses: actions/upload-artifact@v7
-        with:
-          name: wix-log-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/_CPack_Packages/win64/WIX/wix.log
-          if-no-files-found: ignore
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/packages/OreStudio-*-win64.*
-          if-no-files-found: error
+          family: ${{matrix.family}}
+          compiler: ${{matrix.compiler}}
+          buildtype: ${{matrix.buildtype}}
+          tier: nightly
+          persist-cache: 'false'
 
   attach_package:
     name: Attach packages to the release

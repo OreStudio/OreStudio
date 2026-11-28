@@ -117,6 +117,11 @@ publishing jobs. Everything between =checkout= and =Run CTest workflow= moves
 into =build-leg.yml=, with the OS branches inside the composites rather than
 inside the leg.
 
+The tree moved =build-leg= to an action for the reason given under phase 4, and
+phases 1 to 3 added a =setup-postgres= in place of a single
+=setup-database=, because the environment is written between the server and the
+database and has to be.
+
 * Phases
 
 1. =install-compass= as a composite. It is the step that broke twice this week,
@@ -130,11 +135,16 @@ inside the leg.
    *Landed*: 184 lines of the continuous workflow and 181 of the nightly, for
    one call in each.
 4. =build-leg.yml=, with the four callers reduced to trigger, guard, matrix and
-   call. *Next.* A reusable workflow cannot take the caller's =container=, and
-   the two Linux legs need the CI image, so the leg's steps may land as a
-   composite with the job's runner, container and permissions left in the
-   caller. That is a smaller cut than the one proposed here, and the phase
-   decides which with the tree in front of it.
+   call. *Landed*, as the composite =.github/actions/build-leg= rather than a
+   called workflow, with the job's runner, container, matrix entry, permissions
+   and platform preparation left in the caller. The reason is the one this
+   phase was told to decide on: a called workflow cannot take the caller's
+   =container=, and the two Linux legs run in it. A second reason appeared with
+   the tree open — the steps that are genuinely platform-specific (freeing disk,
+   selecting Xcode, the developer prompt, the Visual Studio Clang) are not
+   duplicated anywhere, so moving them into a branch of the leg would have
+   moved them rather than shared them. The leg's own steps are what the four
+   legs repeat.
 5. =check-changes= composite and =attach-package= workflow, which the same four
    files repeat. *Landed* as =relevance-guard= and =attach-package.yml=. The
    guard stays a composite for a reason the census did not have: it asks for the

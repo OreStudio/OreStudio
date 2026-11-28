@@ -49,6 +49,7 @@ public:
     void list(ores::nats::message msg);
     void samples(ores::nats::message msg);
     void capacity(ores::nats::message msg);
+    void tables(ores::nats::message msg);
 
 private:
     ores::nats::service::client& nats_;

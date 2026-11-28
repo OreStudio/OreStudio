@@ -1048,6 +1048,136 @@ next unit of the scheduler clean-up.
  */
 #+end_src
 
+** list_largest_relations_request
+:PROPERTIES:
+:subject: scheduler.v1.tables.list
+:response: list_largest_relations_response
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the largest relations the installation holds.
+ *
+ * The catalogue names ten stores and the database holds hundreds of relations, so
+ * a person asking what fills the disk reads a list that ends before the answer
+ * does. This read starts from the relations themselves and says which of them the
+ * catalogue names.
+ */
+#+end_src
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default:  200
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many of the largest relations to answer.
+ *
+ * A screen draws a table and a pie, so it needs the head of the list and not all
+ * of it; the read states how many relations there are beside the rows it returns,
+ * so a screen can say what it left out.
+ */
+#+end_src
+
+** largest_relation
+:PROPERTIES:
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One relation, its size, and the store the catalogue calls it.
+ */
+#+end_src
+
+*** relation_name
+:PROPERTIES:
+:cpp_type: std::string
+:end:
+
+*** size_bytes
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The relation's size with its indexes and its toast, in bytes.
+ */
+#+end_src
+
+*** store_code
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The store the catalogue names this relation by, where it names one.
+ *
+ * Absent means the catalogue does not name it, which is the fact the screen
+ * exists to show: a relation nothing names is not measured, not bounded, and not
+ * on the housekeeping list.
+ */
+#+end_src
+
+** list_largest_relations_response
+:PROPERTIES:
+:end:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  true
+:end:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:end:
+
+*** rows
+:PROPERTIES:
+:cpp_type: std::vector<largest_relation>
+:end:
+
+*** database_bytes
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The database's total size, which is what a share is a share of.
+ */
+#+end_src
+
+*** relation_count
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many relations the installation holds, of which the rows are the head.
+ */
+#+end_src
+
+*** read_at
+:PROPERTIES:
+:cpp_type: std::string
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The instant the read ran, in ISO-8601 UTC.
+ */
+#+end_src
+
 * See also
 
 

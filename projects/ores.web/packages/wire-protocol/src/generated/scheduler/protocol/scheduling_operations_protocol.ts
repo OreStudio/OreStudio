@@ -427,12 +427,69 @@ export interface ListCapacitySamplesResponse {
     to_at: string;
 }
 
+/**
+ * @brief Asks for the largest relations the installation holds.
+ *
+ * The catalogue names ten stores and the database holds hundreds of relations, so
+ * a person asking what fills the disk reads a list that ends before the answer
+ * does. This read starts from the relations themselves and says which of them the
+ * catalogue names.
+ */
+export interface ListLargestRelationsRequest {
+    /**
+     * @brief How many of the largest relations to answer.
+     *
+     * A screen draws a table and a pie, so it needs the head of the list and not all
+     * of it; the read states how many relations there are beside the rows it returns,
+     * so a screen can say what it left out.
+     */
+    limit: number;
+}
+
+/**
+ * @brief One relation, its size, and the store the catalogue calls it.
+ */
+export interface LargestRelation {
+    relation_name: string;
+    /**
+     * @brief The relation's size with its indexes and its toast, in bytes.
+     */
+    size_bytes: number;
+    /**
+     * @brief The store the catalogue names this relation by, where it names one.
+     *
+     * Absent means the catalogue does not name it, which is the fact the screen
+     * exists to show: a relation nothing names is not measured, not bounded, and not
+     * on the housekeeping list.
+     */
+    store_code: string | null;
+}
+
+export interface ListLargestRelationsResponse {
+    success: boolean;
+    message: string;
+    rows: LargestRelation[];
+    /**
+     * @brief The database's total size, which is what a share is a share of.
+     */
+    database_bytes: number;
+    /**
+     * @brief How many relations the installation holds, of which the rows are the head.
+     */
+    relation_count: number;
+    /**
+     * @brief The instant the read ran, in ISO-8601 UTC.
+     */
+    read_at: string;
+}
+
 export const subjects = {
     get_job_instances_request: 'scheduler.v1.job_instances.list',
     get_scheduler_status_request: 'scheduler.v1.ops.get_scheduler_status',
     list_store_bounds_request: 'scheduler.v1.store_bounds.list',
     list_store_samples_request: 'scheduler.v1.store_samples.list',
     list_capacity_samples_request: 'scheduler.v1.capacity.list',
+    list_largest_relations_request: 'scheduler.v1.tables.list',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -445,4 +502,5 @@ export const requiresSession = {
     list_store_bounds_request: true,
     list_store_samples_request: true,
     list_capacity_samples_request: true,
+    list_largest_relations_request: true,
 } as const;

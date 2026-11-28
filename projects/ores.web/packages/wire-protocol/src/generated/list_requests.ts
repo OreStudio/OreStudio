@@ -5484,6 +5484,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         filter: [],
         rows: ['samples'],
     },
+    'scheduler.v1.tables.list': {
+        asOf: false,
+        filter: [],
+        rows: ['rows'],
+    },
     'storage.v1.objects.list': {
         asOf: false,
         filter: [],

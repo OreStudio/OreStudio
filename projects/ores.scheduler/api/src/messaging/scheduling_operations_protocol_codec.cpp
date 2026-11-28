@@ -415,4 +415,69 @@ wire_traits<ores::scheduler::messaging::list_capacity_samples_response>::read_ms
     return object::read_msgpack<ores::scheduler::messaging::list_capacity_samples_response>(data);
 }
 
+std::string wire_traits<ores::scheduler::messaging::list_largest_relations_request>::write_json(
+    const ores::scheduler::messaging::list_largest_relations_request& v) {
+    return object::write_json(v);
+}
+
+ores::scheduler::messaging::list_largest_relations_request
+wire_traits<ores::scheduler::messaging::list_largest_relations_request>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::scheduler::messaging::list_largest_relations_request>(text);
+}
+
+std::string wire_traits<ores::scheduler::messaging::list_largest_relations_request>::write_msgpack(
+    const ores::scheduler::messaging::list_largest_relations_request& v) {
+    return object::write_msgpack(v);
+}
+
+ores::scheduler::messaging::list_largest_relations_request
+wire_traits<ores::scheduler::messaging::list_largest_relations_request>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::scheduler::messaging::list_largest_relations_request>(data);
+}
+
+std::string wire_traits<ores::scheduler::messaging::largest_relation>::write_json(
+    const ores::scheduler::messaging::largest_relation& v) {
+    return object::write_json(v);
+}
+
+ores::scheduler::messaging::largest_relation
+wire_traits<ores::scheduler::messaging::largest_relation>::read_json(std::string_view text) {
+    return object::read_json<ores::scheduler::messaging::largest_relation>(text);
+}
+
+std::string wire_traits<ores::scheduler::messaging::largest_relation>::write_msgpack(
+    const ores::scheduler::messaging::largest_relation& v) {
+    return object::write_msgpack(v);
+}
+
+ores::scheduler::messaging::largest_relation
+wire_traits<ores::scheduler::messaging::largest_relation>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::scheduler::messaging::largest_relation>(data);
+}
+
+std::string wire_traits<ores::scheduler::messaging::list_largest_relations_response>::write_json(
+    const ores::scheduler::messaging::list_largest_relations_response& v) {
+    return object::write_json(v);
+}
+
+ores::scheduler::messaging::list_largest_relations_response
+wire_traits<ores::scheduler::messaging::list_largest_relations_response>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::scheduler::messaging::list_largest_relations_response>(text);
+}
+
+std::string wire_traits<ores::scheduler::messaging::list_largest_relations_response>::write_msgpack(
+    const ores::scheduler::messaging::list_largest_relations_response& v) {
+    return object::write_msgpack(v);
+}
+
+ores::scheduler::messaging::list_largest_relations_response
+wire_traits<ores::scheduler::messaging::list_largest_relations_response>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::scheduler::messaging::list_largest_relations_response>(data);
+}
+
 }

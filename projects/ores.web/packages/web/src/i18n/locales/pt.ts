@@ -1939,6 +1939,7 @@ const pt: SourceCatalogue = {
             period: '{days} dias',
             cadence: 'a cada {hours} h',
             measure: '{count} {unit}',
+            seeTables: 'As maiores tabelas, por tamanho',
             legend: {
                 summary: 'O que estes veredictos querem dizer',
                 verdicts: 'Os veredictos',
@@ -2050,6 +2051,44 @@ const pt: SourceCatalogue = {
                 remoteBody:
                     'Um prefixo de objetos e uma pasta num anfitrião de cálculo são medidos pelo componente que os escreve, e nenhum reporta ainda um tamanho. Esses armazéns aparecem como não medidos.',
             },
+        },
+        tables: {
+            title: 'Tabelas por tamanho',
+            description:
+                'As maiores relações que esta instalação conserva, quer o catálogo de manutenção as nomeie ou não.',
+            figures: {
+                database: 'Base de dados',
+                relations: 'Relações',
+                named: 'Nomeadas por um armazém',
+                namedValue: '{count} de {rows}',
+                namedNote: 'O catálogo não nomeia nenhuma das maiores tabelas',
+                readAt: 'Medido',
+                noRead: 'Não indicado',
+            },
+            pie: {
+                title: 'As {count} maiores, e todo o resto',
+                lead: 'Cada fatia é uma relação que a leitura mediu; a última é tudo o que a base contém e que a cabeça não nomeia.',
+                label: 'Fatias',
+                caption: 'As {count} maiores relações, e todo o resto de uma base de {size}.',
+            },
+            list: {
+                title: 'Maiores relações',
+                lead: 'As maiores primeiro, com o armazém que o catálogo nomeia para cada uma. Uma tabela que nada nomeia não é medida por nada nem limitada por nada.',
+                label: 'Linhas',
+                more: '{shown} das {total} relações que a leitura devolveu.',
+            },
+            columns: {
+                table: 'Relação',
+                named: 'Nomeada por',
+                size: 'Tamanho',
+                share: 'Parte',
+            },
+            named: {
+                byNothing: 'não nomeada',
+            },
+            rest: 'Todo o resto',
+            footnote:
+                'A leitura mede as relações quando a página a pede, por isso indica o que é grande agora. O que cresceu é a pergunta do painel de capacidade, e a lista de manutenção é a do catálogo.',
         },
         feeds: {
             title: 'Fluxos de dados de mercado',

@@ -36,7 +36,7 @@ import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
 import { api } from '../api/client.js';
-import { housekeepingStorePath } from '../shell/paths.js';
+import { PATHS, housekeepingStorePath } from '../shell/paths.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { Metric } from '../ui/Metric.js';
@@ -409,7 +409,15 @@ export function HousekeepingPage(): ReactNode {
 
             <BoundLegend />
 
-            <p className="text-xs text-ink-faint">{t('operations.housekeeping.footnote')}</p>
+            <p className="text-xs text-ink-faint">
+                {t('operations.housekeeping.footnote')}{' '}
+                <Link
+                    to={PATHS.housekeepingTables}
+                    className="text-accent hover:text-accent-bright"
+                >
+                    {t('operations.housekeeping.seeTables')}
+                </Link>
+            </p>
         </ScreenFrame>
     );
 }

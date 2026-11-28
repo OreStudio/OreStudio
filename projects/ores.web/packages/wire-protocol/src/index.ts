@@ -147,6 +147,8 @@ export {
     STORE_RANGES,
     capacitySampleSchema,
     capacityViewSchema,
+    largestRelationSchema,
+    largestRelationsViewSchema,
     readStoreBounds,
     readStoreSamples,
     saveStoreBound,
@@ -160,6 +162,8 @@ export {
 export type {
     CapacitySample,
     CapacityView,
+    LargestRelation,
+    LargestRelationsView,
     StoreBoundChange,
     StoreBoundResult,
     StoreBoundWrite,

@@ -112,7 +112,9 @@ import {
     storeSamplesViewSchema,
     storeBoundResultSchema,
     capacityViewSchema,
+    largestRelationsViewSchema,
     type CapacityView,
+    type LargestRelationsView,
     type StoreBoundsView,
     type StoreRange,
     type StoreSamplesView,
@@ -4253,6 +4255,21 @@ export const api = {
         const query = new URLSearchParams({ range });
         return capacityViewSchema.parse(
             await request(`/api/operations/housekeeping/capacity?${query.toString()}`, {
+                method: 'GET',
+            }),
+        );
+    },
+
+    /**
+     * The largest relations the installation holds, with the store that names each.
+     *
+     * The read starts from the relations, so a table the catalogue does not name
+     * answers beside one that it does: that is the question the screen asks.
+     */
+    async housekeepingTables(limit: number): Promise<LargestRelationsView> {
+        const query = new URLSearchParams({ limit: String(limit) });
+        return largestRelationsViewSchema.parse(
+            await request(`/api/operations/housekeeping/tables?${query.toString()}`, {
                 method: 'GET',
             }),
         );

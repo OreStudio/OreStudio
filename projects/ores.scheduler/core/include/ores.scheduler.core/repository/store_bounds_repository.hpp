@@ -59,6 +59,19 @@ struct capacity_sample_series {
 };
 
 /**
+ * @brief The largest relations the installation holds, and what the read covered.
+ */
+struct largest_relation_page {
+    std::vector<messaging::largest_relation> rows;
+    /** The database's total size, which is what a share is a share of. */
+    std::int64_t database_bytes = 0;
+    /** How many relations the installation holds, of which the rows are the head. */
+    std::int64_t relation_count = 0;
+    /** The instant the read ran, in ISO-8601 UTC. */
+    std::string read_at;
+};
+
+/**
  * @brief The housekeeping reads: what bounds each store, and one store's series.
  *
  * Both are views over state three tables hold, and the screen reads them as the
@@ -86,6 +99,18 @@ public:
      */
     [[nodiscard]] store_sample_series read_samples(const std::string& store_code,
                                                    const std::string& range);
+
+    /**
+     * @brief The largest relations the installation holds, biggest first.
+     *
+     * The read starts from the relations rather than from the catalogue, because
+     * the catalogue names ten stores and the answer to "what fills the disk" is
+     * rarely one of them. A relation the catalogue does not name answers with no
+     * store code, which is the fact the screen states.
+     *
+     * @param limit How many of the largest relations to answer.
+     */
+    [[nodiscard]] largest_relation_page read_largest_relations(std::uint32_t limit);
 
     /**
      * @brief The installation's size and free space over a range, oldest first.

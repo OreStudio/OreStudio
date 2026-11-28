@@ -123,6 +123,47 @@ void store_bounds_handler::samples(ores::nats::message msg) {
     reply(nats_, msg, resp);
 }
 
+void store_bounds_handler::tables(ores::nats::message msg) {
+    ORES_LOG_SEV(store_bounds_handler_lg(), debug) << "Handling " << msg.subject;
+
+    auto ctx_expected = ores::service::service::make_request_context(*ctx_, msg, verifier_);
+    if (!ctx_expected) {
+        error_reply(nats_, msg, ctx_expected.error());
+        return;
+    }
+    const auto& ctx = *ctx_expected;
+    if (!ores::service::messaging::has_permission(ctx, read_permission)) {
+        error_reply(nats_, msg, ores::service::error_code::forbidden);
+        return;
+    }
+
+    const auto request = decode<list_largest_relations_request>(msg);
+    if (!request) {
+        ORES_LOG_SEV(store_bounds_handler_lg(), warn) << "Failed to decode the request";
+        reply(nats_,
+              msg,
+              list_largest_relations_response{.success = false,
+                                              .message = "Failed to decode request"});
+        return;
+    }
+
+    list_largest_relations_response resp;
+    try {
+        repository::store_bounds_repository repo(ctx);
+        auto page = repo.read_largest_relations(request->limit);
+        resp.rows = std::move(page.rows);
+        resp.database_bytes = page.database_bytes;
+        resp.relation_count = page.relation_count;
+        resp.read_at = std::move(page.read_at);
+    } catch (const std::exception& e) {
+        ORES_LOG_SEV(store_bounds_handler_lg(), error)
+            << "Reading the largest relations failed: " << e.what();
+        resp.success = false;
+        resp.message = e.what();
+    }
+    reply(nats_, msg, resp);
+}
+
 void store_bounds_handler::capacity(ores::nats::message msg) {
     ORES_LOG_SEV(store_bounds_handler_lg(), debug) << "Handling " << msg.subject;
 

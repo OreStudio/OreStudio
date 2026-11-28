@@ -109,3 +109,19 @@ TEST_CASE("ores::scheduler::messaging::list_capacity_samples_response",
     ores::testing::check_wire_roundtrip<
         ores::scheduler::messaging::list_capacity_samples_response>();
 }
+
+TEST_CASE("ores::scheduler::messaging::list_largest_relations_request",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::scheduler::messaging::list_largest_relations_request>();
+}
+
+TEST_CASE("ores::scheduler::messaging::largest_relation", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::scheduler::messaging::largest_relation>();
+}
+
+TEST_CASE("ores::scheduler::messaging::list_largest_relations_response",
+          "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<
+        ores::scheduler::messaging::list_largest_relations_response>();
+}

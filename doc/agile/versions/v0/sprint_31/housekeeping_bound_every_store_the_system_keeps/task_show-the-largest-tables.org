@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-28
 #+updated: 2026-11-28
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A person reads the largest tables first, whether or not the catalogue names them
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-28                               |
 
 * Acceptance
@@ -58,7 +58,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Live read | 200; 847 relations in a 3054974655-byte database; the top five named and unnamed as the catalogue states | =curl '/api/operations/housekeeping/tables?limit=5'= against =localhost:21001= | this branch |
+| The top of the list on this environment | calendar dates 296919040 (named), IP-to-country 100884480 (unnamed), its DQ artefact 98983936 (unnamed), delivery counts 49389568 (named), legal entities 45793280 (unnamed) | the same read | this branch |
+| Web suites | 409 tests across =operations= and =pages=, all pass; 17 of them new for the pie and the tables screen | =npx vitest run src/operations src/pages= | this branch |
+| Scheduler and gateway suites | pass, including the route inventory's fifth route | =./compass.sh test run -- -R 'scheduler|http.scheduler'= | this branch |
 
 * Notes
 
@@ -86,3 +89,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The housekeeping screen can now answer what fills the disk. Its foot opens a page
+of the largest relations, each with its size, its share of the database, and the
+store the catalogue calls it — or a stated "not named", which is the answer for
+most of the head on this environment. A pie of the largest five, ten or twenty
+folds the rest of the database into one slice, and the table shows ten, twenty-five
+or a hundred rows.
+
+The first read on this environment is the argument for the screen: the largest
+relation is bounded, and the next three largest are named by nothing at all.
+
+The read is live, so it states what is large at the instant it is asked. What grew
+is the capacity panel's question, and the footnote says so.

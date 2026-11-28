@@ -1948,6 +1948,7 @@ const fr: SourceCatalogue = {
             period: '{days} jours',
             cadence: 'tous les {hours} h',
             measure: '{count} {unit}',
+            seeTables: 'Les plus grandes tables, par taille',
             legend: {
                 summary: 'Ce que ces verdicts veulent dire',
                 verdicts: 'Les verdicts',
@@ -2059,6 +2060,45 @@ const fr: SourceCatalogue = {
                 remoteBody:
                     'Un préfixe d’objets et un répertoire sur un hôte de calcul sont mesurés par le composant qui les écrit, et aucun ne rapporte encore de taille. Ces magasins apparaissent comme non mesurés.',
             },
+        },
+        tables: {
+            title: 'Tables par taille',
+            description:
+                'Les plus grandes relations que cette installation conserve, que le catalogue d’entretien les nomme ou non.',
+            figures: {
+                database: 'Base de données',
+                relations: 'Relations',
+                named: 'Nommées par un magasin',
+                namedValue: '{count} sur {rows}',
+                namedNote: 'Le catalogue ne nomme aucune des plus grandes tables',
+                readAt: 'Mesuré',
+                noRead: 'Non précisé',
+            },
+            pie: {
+                title: 'Les {count} plus grandes, et tout le reste',
+                lead: 'Chaque part est une relation que la lecture a mesurée ; la dernière est tout ce que la base contient et que la tête ne nomme pas.',
+                label: 'Parts',
+                caption:
+                    'Les {count} plus grandes relations, et tout le reste d’une base de {size}.',
+            },
+            list: {
+                title: 'Plus grandes relations',
+                lead: 'Les plus grosses d’abord, avec le magasin que le catalogue nomme pour chacune. Une table que rien ne nomme n’est mesurée par rien et bornée par rien.',
+                label: 'Lignes',
+                more: '{shown} des {total} relations que la lecture a renvoyées.',
+            },
+            columns: {
+                table: 'Relation',
+                named: 'Nommée par',
+                size: 'Taille',
+                share: 'Part',
+            },
+            named: {
+                byNothing: 'non nommée',
+            },
+            rest: 'Tout le reste',
+            footnote:
+                'La lecture mesure les relations au moment où la page la demande, donc elle indique ce qui est gros maintenant. Ce qui a grossi est la question du panneau de capacité, et la liste d’entretien est celle du catalogue.',
         },
         feeds: {
             title: 'Flux de données de marché',

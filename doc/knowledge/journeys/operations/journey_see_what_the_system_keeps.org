@@ -107,12 +107,20 @@ how long]].
    every row; the count is the work left, and it should reach zero. Each row
    also states the cost in bytes: what the store holds now, and what the rate of
    the last twelve weeks comes to over a year.
-9. *Learn what the verdicts mean.* The verdicts and the mechanisms are the
+9. *Ask what fills the disk.* The list names ten stores and the installation holds
+   hundreds of relations, so the foot of the list opens a screen of the largest
+   tables by size: each relation's size, its share of the database, and whether
+   the catalogue names it. A table nothing names reads as unnamed, because that
+   is the fact that matters — nothing measures it, nothing bounds it, and the
+   list never carried it. The read measures the relations when it is asked, so
+   the screen states what is large now; what grew is the capacity panel's
+   question.
+10. *Learn what the verdicts mean.* The verdicts and the mechanisms are the
    read's own words — "Bounded by keying", "the sweep cannot perform its
    action" — and a person who has not read the design does not know what they
    mean. A note folded under the table states each verdict and each mechanism
    once; the store's own page states the sentence for the store in hand.
-10. *Leave by changing something.* From a store's *Bound* tab the administrator
+11. *Leave by changing something.* From a store's *Bound* tab the administrator
    opens its policy in
    [[id:C647D403-BFF0-4910-83E4-4EFEBD4F39C4][Change what is kept, and for
    how long]], which is where a store stops being unbounded.
@@ -122,8 +130,9 @@ how long]].
 Two screens, in the shape the rest of the application uses. The list page is
 composed around the question "what is this installation keeping": a summary
 strip states the counts and the total, the table carries one row per store, and
-a folded note under it states what the verdicts and the mechanisms mean. The
-store page is the record a row opens, in two tabs — *Details*, with the store's
+a folded note under it states what the verdicts and the mechanisms mean, and its
+foot opens a third screen of the largest tables by size. The store page is the
+record a row opens, in two tabs — *Details*, with the store's
 fields and the plot of its size over a horizon the person chooses, and *Bound*,
 with the mechanism, the policy and its form — and the way back to the list rests
 at its head.

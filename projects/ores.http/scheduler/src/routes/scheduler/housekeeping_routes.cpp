@@ -224,6 +224,22 @@ void housekeeping_routes::register_routes(
     router->add_route(capacity_route);
     registry->register_route(capacity_route);
 
+    auto tables =
+        router->get("/api/operations/housekeeping/tables")
+            .summary("The largest relations the installation holds, and what names them")
+            .description("Forwards to scheduler.v1.tables.list, which starts from the "
+                         "relations rather than from the catalogue, so a table nothing "
+                         "names appears beside the ones a store does.")
+            .tags({"housekeeping"})
+            .operation_catalogue("scheduler", "largest_relations", "largest_relations_read")
+            .auth_required()
+            .query_param(
+                "limit", "integer", "200", false, "How many of the largest relations to return")
+            .handler([&session](const http_request& req) { return handle_tables(req, session); });
+    const auto tables_route = tables.build();
+    router->add_route(tables_route);
+    registry->register_route(tables_route);
+
     auto policy =
         router->put("/api/operations/housekeeping/stores/{code}/policy")
             .summary("Change a store's bound: whether it applies, its period and cadence")
@@ -288,6 +304,24 @@ boost::asio::awaitable<http_response> housekeeping_routes::handle_capacity(const
         }
         co_return http_response::json(ores::utility::codec::object::write_json(
             capacity_body{reply.samples, reply.from_at, reply.to_at}));
+    } catch (const std::exception& e) {
+        co_return http_response::error(http_status::bad_request, e.what());
+    }
+}
+
+boost::asio::awaitable<http_response> housekeeping_routes::handle_tables(const http_request& req,
+                                                                         nats_client& session) {
+    try {
+        scheduling::list_largest_relations_request msg;
+        const auto limit = req.get_query_param("limit");
+        if (!limit.empty())
+            msg.limit = static_cast<std::uint32_t>(std::stoul(limit));
+
+        const auto reply = forwarding::forward(req, session, msg);
+        if (!reply.success) {
+            co_return http_response::error(http_status::bad_gateway, reply.message);
+        }
+        co_return http_response::json(ores::utility::codec::object::write_json(reply));
     } catch (const std::exception& e) {
         co_return http_response::error(http_status::bad_request, e.what());
     }

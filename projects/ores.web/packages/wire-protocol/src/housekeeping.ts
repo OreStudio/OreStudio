@@ -314,6 +314,33 @@ export const capacityViewSchema = z.object({
 export type CapacityView = z.infer<typeof capacityViewSchema>;
 
 /**
+ * One relation the installation holds, its size, and the store that names it.
+ *
+ * A relation with no store code is one the catalogue does not name: nothing
+ * measures it, nothing bounds it, and the housekeeping list does not carry it.
+ * That is the fact this read exists to state.
+ */
+export const largestRelationSchema = z.object({
+    relation_name: text,
+    size_bytes: z.int().nonnegative().default(0),
+    store_code: z.string().nullable().default(null),
+});
+
+export type LargestRelation = z.infer<typeof largestRelationSchema>;
+
+/** The largest relations, and what the read covered: the database and the count. */
+export const largestRelationsViewSchema = z.object({
+    success: z.boolean().default(true),
+    message: text,
+    rows: z.array(largestRelationSchema).default([]),
+    database_bytes: z.int().nonnegative().default(0),
+    relation_count: z.int().nonnegative().default(0),
+    read_at: nullableWireTimestampSchema.default(null),
+});
+
+export type LargestRelationsView = z.infer<typeof largestRelationsViewSchema>;
+
+/**
  * What a person sends to change a store's bound, beside the reason for it.
  *
  * The three numbers are the decision; the reason is the audit trail. The store,

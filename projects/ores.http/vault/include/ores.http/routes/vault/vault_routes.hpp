@@ -33,14 +33,15 @@
 namespace ores::http::routes::vault {
 
 /**
- * @brief The two routes a person uses against the vault.
+ * @brief The routes a person uses against the vault.
  *
- * Neither is generated, and neither forwards a body unchanged. A write seals
- * the value to the vault's transport key before it leaves this process, so the
- * bus carries ciphertext and the person's plaintext never crosses it. A reveal
- * resolves as this process and opens the answer with this process's own key,
- * so the vault seals to a consumer that holds a key rather than to a person who
- * does not.
+ * None of them is generated. A write seals the value to the vault's transport
+ * key before it leaves this process, so the bus carries ciphertext and the
+ * person's plaintext never crosses it. A reveal resolves as this process and
+ * opens the answer with this process's own key, so the vault seals to a
+ * consumer that holds a key rather than to a person who does not. The reads and
+ * the delete forward the person's own token, so the vault decides what they may
+ * do and records that they did it.
  */
 class vault_routes {
 private:
@@ -98,11 +99,21 @@ public:
     handle_list_consumers(const ores::http::domain::http_request& req,
                           ores::nats::service::nats_client& session);
 
+    /// GET /api/v1/vault/secrets/{name} — one secret's metadata, never its value.
+    static boost::asio::awaitable<ores::http::domain::http_response>
+    handle_describe(const ores::http::domain::http_request& req,
+                    ores::nats::service::nats_client& session);
+
     /// GET /api/v1/vault/secrets/{name}/value — reveal a value, over the session.
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_reveal(const ores::http::domain::http_request& req,
                   ores::nats::service::nats_client& session,
                   const gateway_keys& keys);
+
+    /// DELETE /api/v1/vault/secrets/{name} — remove one secret.
+    static boost::asio::awaitable<ores::http::domain::http_response>
+    handle_remove(const ores::http::domain::http_request& req,
+                  ores::nats::service::nats_client& session);
 };
 
 }

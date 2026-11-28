@@ -95,13 +95,16 @@ A test that has to run under a service's own database grants calls
 holds that service's user:
 
 #+begin_src cpp
+ores::testing::scoped_database_helper h;
 const auto svc = h.as_service("ORES_INBOX_SERVICE_DB_USER");
 #+end_src
 
 The deployment keeps a login beside each service role, named after it with
 =_test= appended, which holds =ORES_TEST_DB_PASSWORD= and starts as that role.
 The session therefore runs under the service's grants while no service password
-reaches the test process, and the context still reports the service account.
+reaches the test process, and the context still reports the service account. The
+connection goes to PostgreSQL at =ORES_TEST_DB_PORT=, as the rest of the suite
+does, and not through the pooler a deployed service uses.
 
 * Logging Configuration
 

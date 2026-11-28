@@ -132,8 +132,9 @@ alter  role :shell_user set search_path to public;
 
 -- The two services that cannot take their password from the vault keep the value
 -- the deployment placed for them: the vault would have to answer its own request,
--- and IAM has to exist before the vault does. A checkout that has not provisioned
--- yet has no file, and the role keeps the password it already had.
+-- and IAM has to exist before the vault does. Both roles were just recreated, so
+-- a deployment that placed no file leaves them without a password, and nothing
+-- starts until one is placed.
 select set_config('ores.vault_service_user', :'vault_service_user', false);
 select set_config('ores.vault_service_password', :'vault_service_password', false);
 select set_config('ores.iam_service_user', :'iam_service_user', false);

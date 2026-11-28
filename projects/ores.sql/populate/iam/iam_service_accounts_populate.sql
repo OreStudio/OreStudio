@@ -36,28 +36,15 @@
 
 \echo '--- Service Accounts ---'
 
--- Capture service DB passwords from the environment so they are never stored
--- in plaintext in committed SQL. The backtick syntax runs a shell command at
--- psql execution time; the result is bound to the named variable.
+-- Capture the gateway's password from the environment so it is never stored in
+-- plaintext in committed SQL. The backtick syntax runs a shell command at psql
+-- execution time; the result is bound to the named variable.
+--
+-- A domain service's account is created without a credential: compass vault
+-- provision writes the hash it signs the service in with, after this script has
+-- made the account. Seeding a hash here from a variable the environment file no
+-- longer carries would seed the hash of an empty password.
 \set http_service_pw        `echo "$ORES_HTTP_SERVER_DB_PASSWORD"`
-\set iam_service_pw    `echo "$ORES_IAM_SERVICE_DB_PASSWORD"`
-\set refdata_service_pw    `echo "$ORES_REFDATA_SERVICE_DB_PASSWORD"`
-\set dq_service_pw    `echo "$ORES_DQ_SERVICE_DB_PASSWORD"`
-\set variability_service_pw    `echo "$ORES_VARIABILITY_SERVICE_DB_PASSWORD"`
-\set assets_service_pw    `echo "$ORES_ASSETS_SERVICE_DB_PASSWORD"`
-\set scheduler_service_pw    `echo "$ORES_SCHEDULER_SERVICE_DB_PASSWORD"`
-\set reporting_service_pw    `echo "$ORES_REPORTING_SERVICE_DB_PASSWORD"`
-\set telemetry_service_pw    `echo "$ORES_TELEMETRY_SERVICE_DB_PASSWORD"`
-\set trading_service_pw    `echo "$ORES_TRADING_SERVICE_DB_PASSWORD"`
-\set compute_service_pw    `echo "$ORES_COMPUTE_SERVICE_DB_PASSWORD"`
-\set synthetic_service_pw    `echo "$ORES_SYNTHETIC_SERVICE_DB_PASSWORD"`
-\set workflow_service_pw    `echo "$ORES_WORKFLOW_SERVICE_DB_PASSWORD"`
-\set ore_service_pw    `echo "$ORES_ORE_SERVICE_DB_PASSWORD"`
-\set marketdata_service_pw    `echo "$ORES_MARKETDATA_SERVICE_DB_PASSWORD"`
-\set analytics_service_pw    `echo "$ORES_ANALYTICS_SERVICE_DB_PASSWORD"`
-\set storage_service_pw    `echo "$ORES_STORAGE_SERVICE_DB_PASSWORD"`
-\set inbox_service_pw    `echo "$ORES_INBOX_SERVICE_DB_PASSWORD"`
-\set vault_service_pw    `echo "$ORES_VAULT_SERVICE_DB_PASSWORD"`
 
 select ores_iam_service_accounts_upsert_fn(
     :'ddl_user',
@@ -104,7 +91,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'iam_service_user',
     'iam_service@system.ores',
     'System service account for IAM NATS domain service',
-    :'iam_service_pw',
     p_full_name => 'IAM Service',
     p_picture_code => 'ores_iam_service'
 );
@@ -113,7 +99,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'refdata_service_user',
     'refdata_service@system.ores',
     'System service account for Reference Data NATS domain service',
-    :'refdata_service_pw',
     p_full_name => 'Reference Data Service',
     p_picture_code => 'ores_refdata_service'
 );
@@ -122,7 +107,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'dq_service_user',
     'dq_service@system.ores',
     'System service account for Data Quality NATS domain service',
-    :'dq_service_pw',
     p_full_name => 'Data Quality Service',
     p_picture_code => 'ores_dq_service'
 );
@@ -131,7 +115,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'variability_service_user',
     'variability_service@system.ores',
     'System service account for Variability NATS domain service',
-    :'variability_service_pw',
     p_full_name => 'Variability Service',
     p_picture_code => 'ores_variability_service'
 );
@@ -140,7 +123,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'assets_service_user',
     'assets_service@system.ores',
     'System service account for Assets NATS domain service',
-    :'assets_service_pw',
     p_full_name => 'Assets Service',
     p_picture_code => 'ores_assets_service'
 );
@@ -149,7 +131,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'scheduler_service_user',
     'scheduler_service@system.ores',
     'System service account for Scheduler NATS domain service',
-    :'scheduler_service_pw',
     p_full_name => 'Scheduler Service',
     p_picture_code => 'ores_scheduler_service'
 );
@@ -158,7 +139,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'reporting_service_user',
     'reporting_service@system.ores',
     'System service account for Reporting NATS domain service',
-    :'reporting_service_pw',
     p_full_name => 'Reporting Service',
     p_picture_code => 'ores_reporting_service'
 );
@@ -167,7 +147,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'telemetry_service_user',
     'telemetry_service@system.ores',
     'System service account for Telemetry NATS domain service',
-    :'telemetry_service_pw',
     p_full_name => 'Telemetry Service',
     p_picture_code => 'ores_telemetry_service'
 );
@@ -176,7 +155,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'trading_service_user',
     'trading_service@system.ores',
     'System service account for Trading NATS domain service',
-    :'trading_service_pw',
     p_full_name => 'Trading Service',
     p_picture_code => 'ores_trading_service'
 );
@@ -185,7 +163,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'compute_service_user',
     'compute_service@system.ores',
     'System service account for Compute Grid NATS domain service',
-    :'compute_service_pw',
     p_full_name => 'Compute Service',
     p_picture_code => 'ores_compute_service'
 );
@@ -194,7 +171,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'synthetic_service_user',
     'synthetic_service@system.ores',
     'System service account for Synthetic NATS domain service',
-    :'synthetic_service_pw',
     p_full_name => 'Synthetic Data Service',
     p_picture_code => 'ores_synthetic_service'
 );
@@ -203,7 +179,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'workflow_service_user',
     'workflow_service@system.ores',
     'System service account for Workflow Orchestration NATS domain service',
-    :'workflow_service_pw',
     p_full_name => 'Workflow Service',
     p_picture_code => 'ores_workflow_service'
 );
@@ -212,7 +187,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'ore_service_user',
     'ore_service@system.ores',
     'System service account for ORE Import NATS domain service',
-    :'ore_service_pw',
     p_full_name => 'ORE Service',
     p_picture_code => 'ores_ore_service'
 );
@@ -221,7 +195,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'marketdata_service_user',
     'marketdata_service@system.ores',
     'System service account for Market Data NATS domain service',
-    :'marketdata_service_pw',
     p_full_name => 'Market Data Service',
     p_picture_code => 'ores_marketdata_service'
 );
@@ -230,7 +203,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'analytics_service_user',
     'analytics_service@system.ores',
     'System service account for Analytics NATS domain service',
-    :'analytics_service_pw',
     p_full_name => 'Analytics Service',
     p_picture_code => 'ores_analytics_service'
 );
@@ -239,7 +211,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'storage_service_user',
     'storage_service@system.ores',
     'System service account for Object Storage NATS domain service',
-    :'storage_service_pw',
     p_full_name => 'Storage Service',
     p_picture_code => 'ores_storage_service'
 );
@@ -248,7 +219,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'inbox_service_user',
     'inbox_service@system.ores',
     'System service account for Inbox NATS domain service',
-    :'inbox_service_pw',
     p_full_name => 'Inbox Service',
     p_picture_code => 'ores_inbox_service'
 );
@@ -257,7 +227,6 @@ select ores_iam_service_accounts_upsert_fn(
     :'vault_service_user',
     'vault_service@system.ores',
     'System service account for Vault NATS domain service',
-    :'vault_service_pw',
     p_full_name => 'Vault Service',
     p_picture_code => 'ores_vault_service'
 );

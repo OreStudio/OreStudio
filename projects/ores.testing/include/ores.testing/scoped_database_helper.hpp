@@ -102,7 +102,7 @@ public:
      * deployment's test password, which the environment file carries.
      *
      * @param service_user_variable The environment variable that names the
-     * service's database user, such as =ORES_INBOX_SERVICE_DB_USER=.
+     * service's database user, such as @c ORES_INBOX_SERVICE_DB_USER.
      * @param tenant The tenant to scope to; empty means the test's own.
      */
     database::context as_service(std::string_view service_user_variable,

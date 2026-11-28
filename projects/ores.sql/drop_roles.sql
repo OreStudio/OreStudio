@@ -93,13 +93,18 @@ begin
     -- each one, by pattern rather than by list: a list here goes stale the
     -- moment a service is added, and a role this environment created and never
     -- dropped keeps a password the next recreate did not set.
-    v_users := v_users || array(
+    --
+    -- A fixture is a member of the service role beside it and PostgreSQL
+    -- refuses to drop a role another role is a member of, so the fixtures are
+    -- dropped first and named here rather than left to the order of a list.
+    v_users := array(
         select rolname from pg_roles
-        where rolname ~ ('^ores_' || v_label || '_.+_service(_test)?$'));
-
-    -- A fixture is a member of the service role beside it, so it goes first:
-    -- PostgreSQL refuses to drop a role another role is a member of.
-    v_users := array(select distinct unnest(v_users) order by 1 desc);
+        where rolname ~ ('^ores_' || v_label || '_.+_service_test$'))
+        || array(
+            select rolname from pg_roles
+            where rolname ~ ('^ores_' || v_label || '_.+_service$'))
+        || v_users;
+    v_users := array(select distinct unnest(v_users));
 
     -- Revoke group memberships and drop user roles
     foreach v_role in array v_users loop

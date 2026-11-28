@@ -15,9 +15,10 @@
 #
 # Naming conventions (N = service name, e.g. "iam"):
 #   DB user env var:      ORES_{N_UPPER}_SERVICE_DB_USER
-#   DB password env var:  ORES_{N_UPPER}_SERVICE_DB_PASSWORD
 #   psql variable user:   {n}_service_user
-#   psql variable pw:     {n}_service_password
+#
+# The password is not here: provisioning invents it and writes the role, the IAM
+# credential and the vault, and no variable carries it.
 #   IAM role name:        {NPascal}Service
 #
 # shellcheck disable=SC2034

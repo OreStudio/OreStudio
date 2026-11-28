@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :vault:secrets:crypto:security:iam:sprint_31:v0:
 #+created: 2026-11-26
-#+updated: 2026-11-26
+#+updated: 2026-11-28
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -125,14 +125,18 @@ Then the store is modelled, served, wired into the provider registry and proven 
   =ores.http= route remains the only door. See [[id:5B2D332C-7480-40E4-A989-CC8B1D2124D5][Extract
   the vault's journey and prototype its screens]].
 
-- *The pooler reads verifiers, and asks no one* (2026-11-28, after the review of
-  PR #5220). The pooler authenticates each service from the SCRAM verifier the
-  server derived, so no service password reaches it, and a verifier cannot be
-  turned back into the password it came from. The lookup function that would have
-  let the pooler ask the server instead is removed: that route costs a role that
-  may read every verifier in the instance, to save a restart a rotation owes
-  anyway. See [[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][Connection pooling for
-  shared database instances]].
+- *The pooler holds verifiers, and its configuration asks the server for them*
+  (2026-11-28, amended the same day). The pooler authenticates each service from
+  the SCRAM verifier the server derived, so no service password reaches it, and a
+  verifier cannot be turned back into the password it came from. The pooler
+  process itself asks nobody: a lookup function it could call was removed,
+  because that route costs a database role that may read every verifier in the
+  instance, to save a restart a rotation owes anyway. The verifiers are read once,
+  by the deployment tool that writes the pooler's user list, because that tool
+  already holds the administrator's password and a copy taken before a rotation
+  is a list that refuses a password the server accepts. See
+  [[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][Connection pooling for shared
+  database instances]].
 
 - *A database is built without a service password, and a fixture stands beside
   each role* (2026-11-28). =compass db recreate= creates a service role with no

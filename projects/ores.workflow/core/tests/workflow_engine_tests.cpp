@@ -25,7 +25,6 @@
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.platform/environment/environment.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.testing/nats_options_helper.hpp"
@@ -188,8 +187,8 @@ struct fixture {
 
     /**
      * @brief The context the deployed workflow service runs in: its own
-     * database user, in the system tenant, with the credentials the service
-     * reads from its environment.
+     * database user, in the system tenant, through the fixture the deployment
+     * keeps beside that role.
      *
      * The other contexts here sign in under the read-write role, which may do
      * anything, so they cannot say whether the engine's own user holds every

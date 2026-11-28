@@ -79,10 +79,11 @@ mkdir -p "${out}"
 # falls back to the verifiers provisioning wrote under build/keys and to the
 # passwords the environment file carries for the deployment's own accounts.
 #
-# The pooler reads this file rather than asking the server for a verifier: an
-# account that answers that question may read every verifier in the instance,
-# and a rotation restarts the fleet anyway, because each service resolves its
-# password at start.
+# The pooler process reads this file and asks nobody: an account inside it that
+# answered a verifier question would hold the right to read every verifier in the
+# instance, and a rotation restarts the fleet anyway, because each service
+# resolves its password at start. The question is asked here instead, once, by
+# the deployment tool that already holds the administrator's password.
 users() {
     local key user pass verifier_dir secret_of
     verifier_dir="${root}/build/keys"

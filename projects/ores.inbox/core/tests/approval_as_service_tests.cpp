@@ -25,7 +25,6 @@
 #include "ores.inbox.core/service/approval_announcer.hpp"
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
-#include "ores.platform/environment/environment.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -36,10 +35,10 @@
 
 // The other inbox tests sign in under the read-write role, which may do
 // anything, so they cannot say whether the inbox service's own database user
-// holds every right the service uses. These tests sign in as that user, with the
-// credentials the service reads from its environment, and do the work the
-// service does: read a request, write the notice that tells its asker, and run
-// the three sweeps.
+// holds every right the service uses. These tests sign in as the fixture the
+// deployment keeps beside that role, which starts as the service, and do the
+// work the service does: read a request, write the notice that tells its asker,
+// and run the three sweeps.
 
 using ores::inbox::tests::seed_account;
 using ores::inbox::tests::acting;
@@ -49,7 +48,6 @@ namespace {
 using ores::inbox::service::approval_announcer;
 using ores::inbox::service::approval_lifecycle;
 using ores::inbox::service::notification_center;
-using ores::platform::environment::environment;
 
 }
 

@@ -2,7 +2,7 @@
 :ID: 42992A4D-BBFF-42CD-BA1C-89E09553EE60
 :END:
 #+title: Task: Build a database without the service passwords
-#+description: Environment format 39 removed the service passwords, but compass db recreate still demanded them, so a fresh checkout could not build a database and the fleet had nothing to authenticate against until provisioning ran.
+#+description: Format 39 removed the service passwords and left recreate demanding them, so a clean checkout could not build a database.
 #+type: task
 #+level: s1
 #+filetags: :keep_a_secret_encrypted_with_its_key_outside_the_system:sprint_31:v0:
@@ -33,15 +33,17 @@ fleet it started had nothing to authenticate against.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] |
-| Now          | Nothing. |
-| Waiting on   | Nothing.                               |
-| Next         | Nothing. |
+| Now          | Completed 2026-11-28.                  |
+| Waiting on   | None.                                  |
+| Next         | None.                                  |
 | Last touched | 2026-11-28                               |
 
 * Acceptance
 
 - =compass db recreate= runs on a file that carries no service password, and the
-  role it creates for a service has none: provisioning is the only writer.
+  role it creates for a service has none: provisioning is the only step that
+  invents one, and the two roles that cannot ask keep the value the deployment
+  placed for them.
 - The two units that cannot ask for their password still start, because a
   recreate keeps the value the deployment placed for them.
 - The pooler authenticates a service from the verifier the server holds, so a
@@ -85,7 +87,8 @@ where it is invented to where it is checked.
 |------+-------+---------+--------|
 | Units running after recreate, provision and a restart | 26 | =./compass.sh services status= | this branch |
 | Suites that sign in as a service | 4 passed | =./compass.sh test run -- -R "ores.inbox.core.tests\|ores.refdata.core.tests\|ores.workflow.core.tests\|ores.marketdata.service.tests"= | this branch |
-| Service roles holding a password after a recreate | 2 (the vault's and IAM's) | =select rolname from pg_authid where rolname ~ '_service$' and rolpassword is not null= | this branch |
+| Domain service roles holding a password after a recreate | 2: the vault's and IAM's, the two the deployment places | =select rolname from pg_authid where rolname ~ '_service$' and rolpassword is not null= | this branch |
+| Fixture logins holding a password after a recreate | 18, all the deployment's test password | =select count(*) from pg_authid where rolname ~ '_service_test$' and rolpassword is not null= | this branch |
 
 * Notes
 
@@ -121,9 +124,12 @@ where it is invented to where it is checked.
 * Result
 
 - =compass db recreate= on a file with no service password: 3m32s, exit 0, and
-  every service role created without one. The two the deployment places keep
-  their value, and the fleet came back to 26 running after a provisioning run
-  and a restart.
+  every domain service role created without a password except the vault's and
+  IAM's, which keep the value the deployment placed. The fleet came back to 26
+  running after a provisioning run and a restart.
+- A service account is created with no credential row until provisioning writes
+  one: =ores_iam_service_accounts_upsert_fn= is no longer given a password the
+  file does not carry, which had seeded the hash of an empty one.
 - The pooler's user file is generated from =pg_shadow=: 21 users, every entry a
   verifier, no plaintext.
 - Provisioning restarts the pooler on the passwords it invented, so a rotation

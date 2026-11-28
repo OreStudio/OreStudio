@@ -42,24 +42,36 @@ Define each step group the four build workflows repeat once, under .github/actio
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+One composite action per step group, and one reusable workflow per repeated
+job. The caller keeps what is its own — trigger, guard, matrix, runner,
+container, permissions — and the operating-system branch lives inside the
+action, so a platform fix is one file.
 
+The guard stays a composite rather than becoming a called workflow: it asks the
+API for the last successful run of =GITHUB_WORKFLOW_REF=, and a called workflow
+would answer for itself, so every caller would compare against a history that is
+not its own.
+
+Verification without a runner: expand every call into the steps it holds, and
+diff the resulting list of run bodies against the previous revision, so a
+dropped or reordered step shows as a diff line. Then lint the YAML with
+actionlint, and add the check that reads it for the two rules the platform
+enforces only at run time.
 * Measurements
-
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Lines in the four build workflows | 1,950 to 1,128 | =wc -l=.github/workflows/{continuous,nightly}-{linux,macos,windows}.yml= | 01ea5e86c6 |
+| Lines of run bodies in the four build workflows | 672 to 190 | expand each =run= and count its non-blank lines | 01ea5e86c6 |
+| Lines of run bodies that repeat across them | 519 (77%) to 67 (35%) | count the lines that appear in more than one of the four files | 01ea5e86c6 |
+| YAML lines under =.github= | 3,336 to 3,176 | =cat .github/workflows/*.yml .github/actions/*/action.yml | wc -l= | 01ea5e86c6 |
+| Steps in each build job | unchanged, same order | expand the calls and diff against =origin/main= | 01ea5e86c6 |
+| Copies of the pinned release install | 6 to 1 | =grep -l compass_ng.pin .github/workflows/*.yml= | 01ea5e86c6 |
 
+Six hundred and ninety-seven lines of new action and workflow files come from
+the change, and each of them is defined once. The run-body measurement parses
+every =run= under each job, splits it into non-blank lines, and counts the lines
+that appear in more than one of the four files.
 * Notes
 
 * Test Scenarios
@@ -86,3 +98,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The four build workflows lost 822 lines and the tree gained nine composite
+actions and one called workflow. Every step that ran before runs now, in the
+same order: expanding the calls and diffing each build job against the previous
+revision gives the same sequence of run bodies, and the three intended
+differences are the guard annotation reaching Continuous Linux, the version
+check running on every platform, and the compiler-cache save warning rather
+than reddening a job when sccache is absent.
+
+Two things the census did not have became clear while implementing. The guard
+cannot be a called workflow, because the API query is about the caller. And the
+reference password, the server and the database cannot share one composite,
+because the environment is written between them and has to be: the password and
+the server come first, the database after =env configure= has named it.
+
+The platform does not check either of the mistakes a composite introduces, so
+=build/scripts/check_ci_actions.py= reads the YAML for them and
+=./compass.sh check= runs it on any change under =.github=.
+
+What this does not prove: no step of the change ran on a runner before it
+merged. The first statement about a real leg comes from the continuous run on
+main, and from tonight's two nightlies for macOS and Windows.

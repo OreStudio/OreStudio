@@ -18,7 +18,7 @@
  *
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { describeSecret, removeSecret, revealSecret, type SecretReveal } from '../api/vault.js';
@@ -50,12 +50,14 @@ export function SecretPage(): ReactNode {
     const { t, language } = useTranslation();
     const { name = '' } = useParams();
     const navigate = useNavigate();
+    const queries = useQueryClient();
     const holds = useHeld();
     const [revealed, setRevealed] = useState<SecretReveal>();
     const [asking, setAsking] = useState(false);
     const [askError, setAskError] = useState<string>();
     const [writing, setWriting] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [removing, setRemoving] = useState(false);
     const [deleteError, setDeleteError] = useState<string>();
 
     const secret = useQuery({
@@ -82,12 +84,15 @@ export function SecretPage(): ReactNode {
 
     async function remove(): Promise<void> {
         setDeleteError(undefined);
+        setRemoving(true);
         try {
             await removeSecret(name);
             toast(t('vault.secret.deleted', { name }));
             navigate(VAULT.list);
         } catch (failure) {
             setDeleteError(failure instanceof Error ? failure.message : String(failure));
+        } finally {
+            setRemoving(false);
         }
     }
 
@@ -209,6 +214,7 @@ export function SecretPage(): ReactNode {
                     onWritten={() => {
                         setWriting(false);
                         setRevealed(undefined);
+                        void queries.invalidateQueries({ queryKey: ['vault-secret', name] });
                     }}
                 />
             )}

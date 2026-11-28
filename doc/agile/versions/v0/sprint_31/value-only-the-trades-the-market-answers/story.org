@@ -52,7 +52,7 @@ A report values the trades whose market data the system can answer, and states p
 | [[id:E6B29704-7BEF-4C2A-B95F-32623AF49200][State the phase of every error a run records]] | DONE | 2026-11-27 | 2026-11-27 | An error a run records carries the phase that produced it, the preprocessing of the run, the engine, or the postprocessing of its results, beside the scope the engine names. |
 | [[id:110CE18D-C64C-4C40-8E8E-D0664176707C][Name the trades a book did not value]] | BACKLOG | | | A report states, for each of its books, the trades that were left out and the cause of each, and shows the run's errors by the phase that produced them. |
 | [[id:2AF1ED6D-FD86-48FF-B194-B00E108C08ED][Narrow the approval at the desk]] | DONE | 2026-11-25 | 2026-11-26 | The chain gains the business unit between the party and the book: a desk states a set equal to or narrower than its party's, a book narrows its desk's, and the triggers hold both links. |
-| [[id:6EF48536-68CE-43B7-B629-7EC4D679C602][Group the approval state of a party and a desk]] | BACKLOG | | | The approval flag pushed two wide types past their recorded ceiling; grouping it into its own type brings both back under, and the rule allows no other way out. |
+| [[id:6EF48536-68CE-43B7-B629-7EC4D679C602][Group the approval state of a party and a desk]] | STARTED | 2026-11-28 | | The approval flag pushed two wide types past their recorded ceiling; grouping it into its own type brings both back under, and the rule allows no other way out. |
 
 * Decisions
 

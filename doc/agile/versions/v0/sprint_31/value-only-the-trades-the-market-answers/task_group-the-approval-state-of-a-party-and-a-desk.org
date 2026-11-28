@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/group-the-approval-state
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -32,11 +32,11 @@ generation carry it, which returns all four to what their rows state.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | Not yet started.                       |
+| Now          | Measuring the four types and choosing the mechanism that brings each to its row. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The measurement, then the group in the two models. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
@@ -54,15 +54,52 @@ generation carry it, which returns all four to what their rows state.
 
 * Plan
 
-1. State the group in the two models, beside the columns it holds.
-2. Regenerate, which writes the entity, the protocol, the table and the web types.
-3. Run the two approval pgTAP files, the refdata C++ suites and the web
-   typecheck: the chain's rules must not move, only the shape that carries them.
+The plan's shape is settled; the mechanism is what the first step decides.
+
+1. Count the four types as they stand, with the check's own command, and record
+   the numbers. The task's premise is four counts — =party= 20, =party_entity=
+   21, =business_unit= 17 and =business_unit_entity= 16 — and a plan that
+   starts from a remembered count is a plan that may be shaping the wrong type.
+2. Choose the mechanism by what the counts say, from the two the models offer:
+   - a =field_group= member, which is how =ores.refdata.convention= carries its
+     identity, payload and audit: the entity's domain struct gains one member
+     and the group states the flag once. This is the mechanism the task's
+     acceptance names, and it shrinks the domain type by one per type it
+     replaces;
+   - a state row of its own, which shrinks the entity as well, and is the
+     honest answer if the entity count is what stands over its ceiling, because
+     a group member is a C++ shape and not a column.
+   The measurement decides which of the two each of the four types needs; a mix
+   is possible, and if it is, the plan says so rather than forcing one shape.
+3. State the group, or the row, in =ores.refdata.party.org= and
+   =ores.refdata.business_unit.org=, and let codegen write the entity, the
+   protocol, the table and the web types.
+4. No ceiling in =compass/checks/wide_types.org= rises: if a count cannot come
+   down without moving a fact the chain needs, the task stops and says why
+   instead of raising a row.
+5. Run the two approval pgTAP files, the refdata C++ suites and the web
+   typecheck and format: the chain's rules must not move, only the shape that
+   carries them. The flag's two states stay distinct — false permits everything,
+   true with no junction rows permits nothing — because that distinction is the
+   chain's whole point.
 4. Record the four counts before and after, with the command that measured them.
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+The ceilings the check records today, read from =compass/checks/wide_types.org=
+before any change: =party= 19, =party_entity= 20, =business_unit_entity= 16, and
+=business_unit= carries no row at all, which is the rule's way of saying it must
+come to fifteen or under rather than join the list.
+
+The task's premise is therefore four counts, and the mechanism cannot be a group
+member alone: replacing one boolean field with one struct member leaves the count
+where it was. Something has to move out of the type, or several facts have to
+become one member. That is what the plan's first step measures, and it may mean
+the acceptance is re-cut rather than met.
 
 * Measurements
 

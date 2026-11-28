@@ -9,7 +9,7 @@
 #+owner: marco
 #+branch: feature/derive-the-swaption-volatilities
 #+pr: 5229
-#+blocked_on: review
+#+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
 #+updated: 2026-11-28
@@ -30,11 +30,11 @@ coordinates and the smile model. The values are the platform's own arithmetic, p
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
-| Now          | In review on PR #5229: the derivation, with the emission in its own task. |
-| Waiting on   | review                                 |
-| Next         | The review of PR #5229.                |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
 | Last touched | 2026-11-28                               |
 
 * Acceptance

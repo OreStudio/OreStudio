@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/give-the-derivation-one-shape
+#+pr: 5236
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
@@ -27,11 +27,11 @@ written once. A second class is a descriptor, a module and its note, and nothing
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-28                               |
 
 * Acceptance
@@ -44,9 +44,20 @@ written once. A second class is a descriptor, a module and its note, and nothing
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The pattern is cut as data first, because the parts that differ by class are stated, not computed:
+the code and version a stored value carries, the method identifier, the asset class, the transform,
+the datum fields that name a quote, and the smile model. =vol_derivation_kind= in
+=ores.analytics.quant= holds that row and the table of the kinds the platform derives, and nothing
+else: no arithmetic, no store, no feed. A caller that reads a stored value asks the table what made
+it, which is the branch the pattern removes.
+
+The two modules keep their own maths. FX measures a pair's spot on its logarithm and fits a smile in
+delta; interest rates measure a term's rate on its change and fit a smile in strike. The descriptor
+says which of those a kind states, and the modules are unchanged by the declaration.
+
+The FX derived source carried its own copy of its code and its version, and a method identifier as a
+literal. It now reads all three from the descriptor, and the identifier is unchanged, so the series
+it has already stamped stay readable.
 
 * Measurements
 
@@ -60,9 +71,25 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Quant suite, cases | 777 | =./build/output/linux-clang-release-ninja/publish/bin/ores.analytics.quant.tests= | 3f69ea0496 |
+| Quant suite, assertions | 2277042 | the same | 3f69ea0496 |
+| Kind cases added | 4 | the same, ="[vol_derivation_kind]"= | 3f69ea0496 |
+| FX derivation cases | 26, unchanged | =ores.synthetic.api.tests "[derived_fx_vol]"= | 3f69ea0496 |
+| Files holding the FX identity | 1 of C++, 2 of SQL | =grep -rn "FX_VOL_DERIVATION" projects= and =grep -rn "fefdf018" projects= | 3f69ea0496 |
 
 * Notes
+
+- The method identifier is fixed for the life of a kind. Changing it would make an old value
+  unreadable, so it is stated rather than computed, and a test pins the FX one to the value the
+  stored series already carry.
+- The table is a plain array and its lookup is a walk over two rows. It is read at start and at a
+  publish, not in a loop, so a map would be a cost with no reader.
+- The remainders: SQL stamps the method on a published series and carries its own copy of the FX
+  identity (=marketdata_surface_series_create.sql=), so the pattern reaches C++ and not yet SQL. The
+  emitter, the batch runner and the page do not exist yet; each takes the descriptor when it is
+  written, and the task that writes them is where the pattern is proven.
+- The count of places that name a class outside its module is now one C++ file. The two SQL copies
+  are the gap, and they belong to the task that writes the publisher.
 
 - The lift merged as =f306a1152c= cut the engine where the class stops being named, with three parameters: the transform, the coordinates and the smile model. This task makes those three a declared shape rather than a convention each caller keeps.
 - The stored method and version already exist as an identity for a series; the descriptor is where the emitter reads them, so the two cannot disagree.
@@ -80,7 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5236][#5236]] | [quant] Declare a derivation kind per class, in one table |
 
 * Review
 
@@ -89,3 +116,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Committed at =3f69ea0496=. A derivation kind is one row, both classes declare one, a kind is found by
+the code a stored value states, and the FX source reads its identity from the declaration instead of
+keeping a copy.
+
+What the pattern still owes, and to which task: the emitter and the batch runner take the descriptor
+when they are written, and SQL's copy of the FX identity is removed when the publisher is reworked.
+The pattern is not declared proven until a second class reaches a stored quote through it.

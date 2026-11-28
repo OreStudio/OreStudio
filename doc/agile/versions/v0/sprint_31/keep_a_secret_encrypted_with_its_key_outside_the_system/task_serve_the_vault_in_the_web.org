@@ -8,7 +8,7 @@
 #+filetags: :keep_a_secret_encrypted_with_its_key_outside_the_system:sprint_31:v0:
 #+owner: marco
 #+branch: feature/serve-the-vault-in-the-web
-#+pr: 5242
+#+pr: 5250
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
@@ -33,11 +33,11 @@ shell now serves all of that; the web serves none of it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] |
-| Now          | Scoped; the two questions the plan names are open. |
+| Now          | The gateway lists the secrets and the consumers; the screens come next. |
 | Waiting on   | Nothing.                               |
-| Next         | Settle who seals a browser's value, then the doors. |
+| Next         | Build the vault area in ores.web against the four doors. |
 | Last touched | 2026-11-28                               |
 
 * Acceptance
@@ -107,6 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5250][#5250]] | [http] Serve the vault's secrets and consumers as lists |
 | [[https://github.com/OreStudio/OreStudio/pull/5242][#5242]] | [agile] Scope the vault's web support |
 
 * Review

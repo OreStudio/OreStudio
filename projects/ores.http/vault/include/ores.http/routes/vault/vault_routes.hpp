@@ -88,6 +88,16 @@ public:
                  ores::nats::service::nats_client& session,
                  const gateway_keys& keys);
 
+    /// GET /api/v1/vault/secrets — the secrets this tenant keeps, without values.
+    static boost::asio::awaitable<ores::http::domain::http_response>
+    handle_list_secrets(const ores::http::domain::http_request& req,
+                        ores::nats::service::nats_client& session);
+
+    /// GET /api/v1/vault/consumers — the services that may receive a secret.
+    static boost::asio::awaitable<ores::http::domain::http_response>
+    handle_list_consumers(const ores::http::domain::http_request& req,
+                          ores::nats::service::nats_client& session);
+
     /// GET /api/v1/vault/secrets/{name}/value — reveal a value, over the session.
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_reveal(const ores::http::domain::http_request& req,

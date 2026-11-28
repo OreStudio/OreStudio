@@ -12,7 +12,7 @@
 #+full_name: ores.http
 #+brief: HTTP gateway
 #+component_kind: composite
-#+parts: analytics api assets client compute core dq iam marketdata nats refdata reporting server synthetic trading vault workflow
+#+parts: analytics api assets client compute core dq iam marketdata nats refdata reporting scheduler server synthetic trading vault workflow
 
 * Summary
 
@@ -41,3 +41,4 @@ serves — and a client, through which the system reads outside HTTP APIs.
 | [[id:2ACD2D6E-C6E5-4C5D-BBEE-3D3E67C2CC46][ores.http.workflow]] | Route units for the request inbox, the workflow engine and the operations roster. |
 | [[id:F3B8D35B-DA83-4F94-AFBD-7E2A77128D6F][ores.http.marketdata]] | Route units for the market data domain. |
 | [[id:94D94398-6DFC-414C-B139-BB01C297805D][ores.http.reporting]] | Route units for the reporting and analytics domains. |
+| [[id:5C1E7A20-3B4D-4F62-9A18-2E6C4B7D9F31][ores.http.scheduler]] | Route units for the scheduler's operational surface, housekeeping first. |

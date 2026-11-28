@@ -63,7 +63,7 @@ an API publishes no area, so it is counted under =(none)=.
 
 | Area | Owner components | Routes | Kinds |
 |------+------------------+--------+-------|
-|  | api, fixing-observations, housekeeping, iam, marketdata, refdata, series-identity-shapes, synthetic, vault | 27 | unclassified 27 |
+|  | api, fixing-observations, housekeeping, iam, marketdata, refdata, scheduler, series-identity-shapes, synthetic, vault | 30 | unclassified 30 |
 | access | iam, server | 109 | composed view 2, resource 107 |
 | agile | agile-routes | 6 | composed view 2, resource 4 |
 | analytics | analytics, sensitivity-templates | 12 | resource 12 |
@@ -519,7 +519,7 @@ against the answer the BFF gives.
 
 * The inventory
 
-1540 routes: 348 answered by the BFF and 1192 by ores.http.
+1543 routes: 348 answered by the BFF and 1195 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -986,8 +986,11 @@ against the answer the BFF gives.
 | composed view | grid | get | =/api/operations/grid/usage= | bff | projects/ores.web/packages/bff/src/operations.ts:540 | Who uses the grid, the results grouped by tenant or by party with each group's share, the results read and the party names beside them. |
 | composed view | grid | get | =/api/operations/grid/usage= | ores.http | projects/ores.http/compute/src/routes/compute/grid_composed_routes.cpp:500 | The grid usage answered by ores.http at the address and in the shape the BFF answered: a group for each tenant, read by entering each in turn, or for each of the caller's parties, with each group's share and a tenant that could not be read carried as unavailable. |
 |  |  | get | =/api/operations/housekeeping/stores= | bff | projects/ores.web/packages/bff/src/housekeeping.ts:130 |  |
+|  |  | get | =/api/operations/housekeeping/stores= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:151 |  |
 |  |  | put | =/api/operations/housekeeping/stores/:code/policy= | bff | projects/ores.web/packages/bff/src/housekeeping.ts:158 |  |
 |  |  | get | =/api/operations/housekeeping/stores/:code/samples= | bff | projects/ores.web/packages/bff/src/housekeeping.ts:140 |  |
+|  |  | put | =/api/operations/housekeeping/stores/{code}/policy= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:181 |  |
+|  |  | get | =/api/operations/housekeeping/stores/{code}/samples= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:165 |  |
 | resource | operations | get | =/api/operations/logs= | bff | projects/ores.web/packages/bff/src/operations.ts:640 | One page of telemetry entries a filter selects, with the count of everything it matches. |
 | resource | operations | get | =/api/operations/logs= | ores.http | projects/ores.http/workflow/src/routes/workflow/operations_routes.cpp:369 | One page of telemetry entries at the address and in the shape the BFF answered: the window from a range, the filters combined with and, and the page and its total. |
 | resource | operations | get | =/api/operations/services= | bff | projects/ores.web/packages/bff/src/operations.ts:386 | Every expected service instance with the age of its last report, read from the telemetry samples. |
@@ -1718,7 +1721,7 @@ against the answer the BFF gives.
 | resource | access | post | =/api/v1/iam/ops/update_account= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:206 | An RPC-shaped write to one account: its fields, or the lock that refuses the next sign-in and leaves the open sessions alone. |
 | resource | auth | post | =/api/v1/iam/ops/update_my_email= | ores.http | projects/ores.http/iam/src/routes/iam/account_operations_routes.cpp:285 | An RPC-shaped write to one credential or account: the caller's password or email, an administrator's reset, or the account a stranger registers. |
 | resource | access | post | =/api/v1/iam/roles_permissions/put= | ores.http | projects/ores.http/iam/src/routes/iam/authorization_routes.cpp:208 | Replaces the permissions one role grants with exactly the set sent. |
-| transport capability | (none) | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:178 | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
+| transport capability | (none) | get | =/api/v1/info= | ores.http | projects/ores.http/server/src/app/application.cpp:179 | The name, version and running state the API states about itself, the readiness answer beside the metrics. |
 | resource | market-data | get | =/api/v1/market-data/series_identity_shape_entries= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_routes.cpp:378 | A generated market data collection, answering under the published market data area: the list, one row by key, its versions, and the bulk get. |
 | resource | market-data | post | =/api/v1/market-data/series_identity_shape_entries= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_routes.cpp:436 | A generated write of a market data collection: create, replace, remove, or one of the bulk put and delete calls. |
 | resource | market-data | put | =/api/v1/market-data/series_identity_shape_entries= | ores.http | projects/ores.http/marketdata/src/routes/marketdata/series_identity_shape_entry_routes.cpp:451 | A generated write of a market data collection: create, replace, remove, or one of the bulk put and delete calls. |

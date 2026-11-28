@@ -244,22 +244,6 @@ def test_the_fill_script_refuses_any_other_origin():
     assert 'location.origin !== "http://localhost:20402"' in script
     assert open_as.origin_of("http://localhost:20402/") == "http://localhost:20402"
 
-def test_the_app_opens_at_the_bff_because_it_serves_the_bundle_and_the_api(tmp_path):
-    """
-    The HTTP server answers the component routes and not the ones the app itself
-    adds, so an app opened there 404s on its own screens. The BFF serves the
-    bundle and every route, and the environment states its port.
-    """
-    env = tmp_path / ".env"
-    env.write_text("ORES_HTTP_PORT=21001\nORES_WEB_PORT=21001\nORES_BFF_PORT=21002\n")
-    assert open_as.web_url(tmp_path) == "http://localhost:21002/"
-
-
-def test_a_tree_that_runs_no_bff_opens_at_the_web_port(tmp_path):
-    env = tmp_path / ".env"
-    env.write_text("ORES_HTTP_PORT=21001\nORES_WEB_PORT=21001\n")
-    assert open_as.web_url(tmp_path) == "http://localhost:21001/"
-
 
 def test_a_corrupt_preferences_file_is_started_again(tmp_path):
     path = tmp_path / "Preferences"

@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 5C1E7A20-3B4D-4F62-9A18-2E6C4B7D9F31
+:END:
+#+title: ores.http.scheduler
+#+description: The HTTP gateway's scheduler adapter part. Holds the route units that project the scheduler's operational reads onto the REST surface.
+#+type: ores.codegen.component
+#+component_kind: adapter
+#+level: cross
+#+filetags: :http:rest:scheduler:component:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+name: scheduler
+#+full_name: ores.http.scheduler
+#+brief: HTTP scheduler route units
+
+* Summary
+
+=ores.http.scheduler= is the adapter part that projects the scheduler's
+operational surface onto the HTTP server's REST surface. Its first unit is the
+housekeeping screen's: the stores the installation keeps, one store's series,
+and the write that changes a bound.
+
+The part declares =#+component_kind: adapter=. Its =CMakeLists.txt= files are
+hand-authored, because the link libraries belong to the HTTP surface rather than
+to the domain, and codegen writes only the two =component_files.cmake= lists.
+
+* Inputs
+
+- HTTP requests on the =/api/operations/housekeeping/...= paths the unit
+  registers.
+- The caller's bearer token, forwarded to the service on every NATS request.
+- The connected NATS client the hand-written aggregator passes to
+  =register_routes=.
+
+* Outputs
+
+- The housekeeping routes and their OpenAPI schemas, registered on the router
+  and the endpoint registry.
+- NATS request messages to the scheduler service, one per route.
+
+* Entry points
+
+- =include/ores.http/routes/scheduler/= -- the unit headers.
+- =src/routes/scheduler/= -- the unit implementations.
+- =scheduler_routes= -- the aggregate the host calls to install every unit.
+
+* Dependencies
+
+- =ores.http.api= -- the router, the route builder and the OpenAPI registry.
+- =ores.http.nats= -- the gateway's one forwarding step to the services.
+- =ores.nats= -- NATS transport for service calls.
+- =ores.scheduler.api= -- the protocol messages the units send.
+- =ores.utility= -- the codecs and the wire support types.
+
+* See also
+
+- [[id:a2589ea9-8a0c-489a-8445-6ba3052815cd][ores.http.dq]] — the adapter part this one is shaped after.
+- [[id:31C868B9-306E-4282-BA8C-07E647021B34][Housekeeping]] — the work the first unit serves.

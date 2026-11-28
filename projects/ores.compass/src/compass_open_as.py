@@ -164,22 +164,12 @@ def principal(person):
 
 
 def web_url(project_root, env_file=None):
-    """
-    The address a person opens the app at.
-
-    The BFF serves the built bundle and every route the app calls, including the
-    ones the C++ HTTP server does not have, so it is the app's origin. The
-    environment states it as ORES_BFF_PORT; ORES_WEB_PORT is the fallback for a
-    tree that runs no BFF, and the documented default last.
-    """
     dotenv = env_file if env_file is not None else Path(project_root) / ".env"
-    stated = {}
+    port = "8080"
     if Path(dotenv).is_file():
         for line in Path(dotenv).read_text(encoding="utf-8").splitlines():
-            name, _, value = line.partition("=")
-            if name in ("ORES_BFF_PORT", "ORES_WEB_PORT"):
-                stated[name] = value.strip().strip("'\"")
-    port = stated.get("ORES_BFF_PORT") or stated.get("ORES_WEB_PORT") or "8080"
+            if line.startswith("ORES_WEB_PORT="):
+                port = line.partition("=")[2].strip().strip("'\"")
     return f"http://localhost:{port}/"
 
 

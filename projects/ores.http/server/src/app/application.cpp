@@ -50,6 +50,7 @@
 #include "ores.http/routes/marketdata/marketdata_routes.hpp"
 #include "ores.http/routes/refdata/refdata_routes.hpp"
 #include "ores.http/routes/reporting/reporting_routes.hpp"
+#include "ores.http/routes/scheduler/scheduler_routes.hpp"
 #include "ores.http/routes/synthetic/synthetic_routes.hpp"
 #include "ores.http/routes/trading/trading_routes.hpp"
 #include "ores.http/routes/vault/vault_routes.hpp"
@@ -204,6 +205,8 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     ores::http::routes::assets::assets_routes::register_routes(router, registry, service_nats);
 
     ores::http::routes::dq::dq_routes::register_routes(router, registry, service_nats);
+    ores::http::routes::scheduler::scheduler_routes::register_routes(
+        router, registry, service_nats);
     ores::http::routes::refdata::refdata_routes::register_routes(router, registry, service_nats);
 
     ores::http::routes::history_routes::register_routes(router, registry, service_nats);

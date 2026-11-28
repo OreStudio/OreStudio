@@ -63,7 +63,7 @@ an API publishes no area, so it is counted under =(none)=.
 
 | Area | Owner components | Routes | Kinds |
 |------+------------------+--------+-------|
-|  | api, fixing-observations, housekeeping, iam, marketdata, refdata, scheduler, series-identity-shapes, synthetic, vault | 31 | unclassified 31 |
+|  | api, fixing-observations, housekeeping, iam, marketdata, refdata, scheduler, series-identity-shapes, synthetic, vault | 32 | unclassified 32 |
 | access | iam, server | 109 | composed view 2, resource 107 |
 | agile | agile-routes | 6 | composed view 2, resource 4 |
 | analytics | analytics, sensitivity-templates | 12 | resource 12 |
@@ -519,7 +519,7 @@ against the answer the BFF gives.
 
 * The inventory
 
-1544 routes: 348 answered by the BFF and 1196 by ores.http.
+1545 routes: 348 answered by the BFF and 1197 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -990,8 +990,9 @@ against the answer the BFF gives.
 |  |  | get | =/api/operations/housekeeping/stores= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:184 |  |
 |  |  | put | =/api/operations/housekeeping/stores/:code/policy= | bff | projects/ores.web/packages/bff/src/housekeeping.ts:158 |  |
 |  |  | get | =/api/operations/housekeeping/stores/:code/samples= | bff | projects/ores.web/packages/bff/src/housekeeping.ts:135 |  |
-|  |  | put | =/api/operations/housekeeping/stores/{code}/policy= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:228 |  |
+|  |  | put | =/api/operations/housekeeping/stores/{code}/policy= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:244 |  |
 |  |  | get | =/api/operations/housekeeping/stores/{code}/samples= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:197 |  |
+|  |  | get | =/api/operations/housekeeping/tables= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:228 |  |
 | resource | operations | get | =/api/operations/logs= | bff | projects/ores.web/packages/bff/src/operations.ts:640 | One page of telemetry entries a filter selects, with the count of everything it matches. |
 | resource | operations | get | =/api/operations/logs= | ores.http | projects/ores.http/workflow/src/routes/workflow/operations_routes.cpp:369 | One page of telemetry entries at the address and in the shape the BFF answered: the window from a range, the filters combined with and, and the page and its total. |
 | resource | operations | get | =/api/operations/services= | bff | projects/ores.web/packages/bff/src/operations.ts:386 | Every expected service instance with the age of its last report, read from the telemetry samples. |

@@ -56,6 +56,7 @@ export const PATHS = {
     agentGrants: '/operations/agent-grants',
     marketDataFeeds: '/operations/market-data-feeds',
     housekeeping: '/operations/housekeeping',
+    housekeepingTables: '/operations/housekeeping/tables',
     authorisationQueue: '/operations/authorisation-queue',
     synthetic: '/market-data/synthetic',
     publishedCurves: '/market-data/published-curves',

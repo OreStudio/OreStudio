@@ -142,7 +142,7 @@ struct vault_stub {
 
 }
 
-TEST_CASE("a workload resolves its own secret before it holds a token", "[client]") {
+TEST_CASE("a_workload_resolves_its_own_secret", "[client]") {
     vault_stub vault;
     const auto send = [&vault](const std::string_view subject, const std::string_view body) {
         return vault.answer(subject, body);
@@ -157,7 +157,7 @@ TEST_CASE("a workload resolves its own secret before it holds a token", "[client
     REQUIRE(vault.answer_opened);
 }
 
-TEST_CASE("a workload that does not hold the key answers nothing", "[client]") {
+TEST_CASE("a_workload_without_the_key_answers_nothing", "[client]") {
     vault_stub vault;
     const auto send = [&vault](const std::string_view subject, const std::string_view body) {
         return vault.answer(subject, body);
@@ -171,7 +171,7 @@ TEST_CASE("a workload that does not hold the key answers nothing", "[client]") {
     REQUIRE_FALSE(vault.answer_opened);
 }
 
-TEST_CASE("a challenge the vault refuses is reported with its reason", "[client]") {
+TEST_CASE("a_refused_challenge_is_reported_with_its_reason", "[client]") {
     vault_stub vault;
     vault.refusal = "The vault holds no enabled consumer by that name";
     const auto send = [&vault](const std::string_view subject, const std::string_view body) {
@@ -183,7 +183,7 @@ TEST_CASE("a challenge the vault refuses is reported with its reason", "[client]
         ContainsSubstring("The vault issued no challenge"));
 }
 
-TEST_CASE("a value sealed to another workload does not open", "[client]") {
+TEST_CASE("a_value_sealed_to_another_workload_does_not_open", "[client]") {
     vault_stub vault;
     vault.value_sealed_to_another_workload = true;
     const auto send = [&vault](const std::string_view subject, const std::string_view body) {
@@ -195,7 +195,7 @@ TEST_CASE("a value sealed to another workload does not open", "[client]") {
         std::runtime_error);
 }
 
-TEST_CASE("the credentials of a unit come from the directory the platform names", "[client]") {
+TEST_CASE("the_credentials_come_from_the_named_directory", "[client]") {
     const auto directory =
         ores::testing::project_root::resolve("tmp") /
         ("vault_client_credentials_" + boost::uuids::to_string(boost::uuids::random_generator()()));
@@ -226,7 +226,7 @@ TEST_CASE("the credentials of a unit come from the directory the platform names"
     std::filesystem::remove_all(directory);
 }
 
-TEST_CASE("a unit the platform gave no key of its own is refused", "[client]") {
+TEST_CASE("a_unit_with_no_placed_key_is_refused", "[client]") {
     const ores::testing::scoped_environment_override environment(
         {}, {std::string(ores::security::crypto::key_file::directory_variable)});
 

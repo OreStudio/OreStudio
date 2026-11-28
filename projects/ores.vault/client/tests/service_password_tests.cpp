@@ -42,7 +42,7 @@ std::string named_secret() {
 
 }
 
-TEST_CASE("a process the platform named learns both halves of its credential", "[client]") {
+TEST_CASE("a_named_process_learns_both_halves_of_its_credential", "[client]") {
     const ores::testing::scoped_environment_override environment(
         {{named_consumer(), "iam_service@system.ores"},
          {named_secret(), "db.iam_service.password"}});
@@ -54,14 +54,14 @@ TEST_CASE("a process the platform named learns both halves of its credential", "
     CHECK(placed->secret == "db.iam_service.password");
 }
 
-TEST_CASE("a process the platform named nothing for resolves nothing", "[client]") {
+TEST_CASE("a_process_named_nothing_resolves_nothing", "[client]") {
     const ores::testing::scoped_environment_override environment(
         {}, {named_consumer(), named_secret()});
 
     CHECK_FALSE(placed_credential_from_environment().has_value());
 }
 
-TEST_CASE("half a named unit is refused, naming the half it lacks", "[client]") {
+TEST_CASE("half_a_named_unit_is_refused_naming_the_missing_half", "[client]") {
     {
         const ores::testing::scoped_environment_override environment(
             {{named_consumer(), "iam_service@system.ores"}}, {named_secret()});

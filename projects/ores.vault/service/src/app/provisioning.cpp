@@ -131,27 +131,29 @@ int provision_from(const ores::database::context& ctx,
                              << document.secrets.size() << " secrets as " << ctx.actor();
 
     int failed = 0;
-    for (const auto& consumer : document.consumers) {
-        const auto answer =
-            custody.provision_consumer(consumer.name, consumer.actor, consumer.public_key);
+    const auto report = [&](const std::string_view kind,
+                            const std::string& name,
+                            const service::custody_result& answer) {
         if (!answer.success) {
-            err << "consumer " << consumer.name << ": " << answer.message << std::endl;
+            err << kind << " " << name << ": " << answer.message << std::endl;
             ++failed;
-            continue;
+            return;
         }
-        out << "consumer " << consumer.name << std::endl;
-    }
+        out << kind << " " << name;
+        if (answer.key_version != 0)
+            out << " at version " << answer.key_version;
+        out << std::endl;
+    };
 
-    for (const auto& secret : document.secrets) {
-        const auto answer =
-            custody.provision_secret(ctx.actor(), secret.name, secret.owner, secret.value);
-        if (!answer.success) {
-            err << "secret " << secret.name << ": " << answer.message << std::endl;
-            ++failed;
-            continue;
-        }
-        out << "secret " << secret.name << " at version " << answer.key_version << std::endl;
-    }
+    for (const auto& consumer : document.consumers)
+        report("consumer",
+               consumer.name,
+               custody.provision_consumer(consumer.name, consumer.actor, consumer.public_key));
+
+    for (const auto& secret : document.secrets)
+        report("secret",
+               secret.name,
+               custody.provision_secret(ctx.actor(), secret.name, secret.owner, secret.value));
 
     ORES_LOG_SEV(lg(), info) << "Provisioning wrote "
                              << document.consumers.size() + document.secrets.size() -

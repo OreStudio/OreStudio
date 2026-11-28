@@ -29,17 +29,31 @@
 
 namespace ores::vault::service::app {
 
-/// One consumer the deployment registers, and the account it runs as.
-struct provisioned_consumer {
+/**
+ * @brief One consumer the deployment registers.
+ */
+struct provisioned_consumer final {
+    /// The consumer's name, which is the subject its token will carry.
     std::string name;
+
+    /// The account it runs as, which a secret's owner names.
     std::string actor;
+
+    /// Its public key, Base64-encoded.
     std::string public_key;
 };
 
-/// One value the deployment stores, and the consumer that may resolve it.
-struct provisioned_secret {
+/**
+ * @brief One value the deployment stores.
+ */
+struct provisioned_secret final {
+    /// The secret's name.
     std::string name;
+
+    /// The consumer permitted to resolve it.
     std::string owner;
+
+    /// The plaintext.
     std::string value;
 };
 
@@ -51,7 +65,7 @@ struct provisioned_secret {
  * Consumers are written before secrets, so a value registered beside a key that
  * is not yet there is still owned by a consumer the vault knows.
  */
-struct ORES_VAULT_SERVICE_EXPORT provision_document {
+struct ORES_VAULT_SERVICE_EXPORT provision_document final {
     std::vector<provisioned_consumer> consumers;
     std::vector<provisioned_secret> secrets;
 

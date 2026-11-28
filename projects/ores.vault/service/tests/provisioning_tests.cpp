@@ -43,7 +43,7 @@ constexpr std::string_view document = R"({
 
 }
 
-TEST_CASE("a provisioning document reads its consumers and its secrets", "[provisioning]") {
+TEST_CASE("a_document_reads_its_consumers_and_its_secrets", "[provisioning]") {
     const auto read = provision_document::read(document);
 
     REQUIRE(read.consumers.size() == 1);
@@ -57,7 +57,7 @@ TEST_CASE("a provisioning document reads its consumers and its secrets", "[provi
     REQUIRE(read.secrets[0].value == "the password the deployment generated");
 }
 
-TEST_CASE("a document that names no consumers reads as one with no consumers", "[provisioning]") {
+TEST_CASE("a_document_with_no_consumers_reads_as_empty", "[provisioning]") {
     const auto read =
         provision_document::read(R"({"secrets": [{"name": "n", "owner": "o", "value": "v"}]})");
 
@@ -66,7 +66,7 @@ TEST_CASE("a document that names no consumers reads as one with no consumers", "
     REQUIRE(read.secrets[0].name == "n");
 }
 
-TEST_CASE("an entry that leaves a field out is refused, naming the field", "[provisioning]") {
+TEST_CASE("an_entry_missing_a_field_is_refused_naming_it", "[provisioning]") {
     REQUIRE_THROWS_WITH(provision_document::read(R"({"consumers": [{"name": "n", "actor": "a"}]})"),
                         ContainsSubstring("no public_key"));
 
@@ -74,11 +74,11 @@ TEST_CASE("an entry that leaves a field out is refused, naming the field", "[pro
                         ContainsSubstring("no owner"));
 }
 
-TEST_CASE("a document that is not JSON is refused", "[provisioning]") {
+TEST_CASE("a_document_that_is_not_json_is_refused", "[provisioning]") {
     REQUIRE_THROWS_WITH(provision_document::read("db.iam_service.password = hunter2"),
                         ContainsSubstring("does not parse"));
 }
 
-TEST_CASE("a document that is not an object is refused", "[provisioning]") {
+TEST_CASE("a_document_that_is_not_an_object_is_refused", "[provisioning]") {
     REQUIRE_THROWS_WITH(provision_document::read("[]"), ContainsSubstring("is not an object"));
 }

@@ -1,26 +1,31 @@
-# -*- coding: utf-8 -*-
-"""Provision the deployment's own custody material into the vault.
+"""Provision the deployment's own custody material, and rotate it.
 
-A service's database password must live in the vault before the service can ask
-for it, and asking is what the vault authenticates. The circle is broken where
-the keys already are: `ores.vault.service --provision` reads one document from a
-pipe and writes it with the key encryption key it holds. This module builds that
-document and hands it over.
+A service cannot ask for the database password it needs to start, because asking
+is what needs the password. The circle is broken where the keys already are:
+`ores.vault.service --provision` reads one document from a pipe and writes it
+with the key encryption key it holds. This module builds that document and hands
+it over, and it makes the values it writes.
 
-Two things are written per database service:
+One value, four homes, one act. A service proves the same password to its
+database role and to IAM, which keeps a hash of it, and the transaction pooler
+authenticates it from the verifier the server derived. So a run invents a
+password per service and writes it to the role, to the IAM credential, to the
+verifier the pooler reads under ``build/keys``, and to the vault. A value that
+reaches three of those four is a service nobody can sign in, which is why they
+are not separate steps.
 
-- a consumer, named by the service account the registry states, carrying the
-  public half of a key pair this module generates under ``build/keys``;
-- the password the environment file already holds, owned by that same account,
-  so the vault knows who may resolve it.
+Because a run invents every value, running it rotates every password: the units
+and the pooler read theirs at start, so a run is followed by a restart of the
+fleet. Rotation is what a second run is for; provisioning a new service and
+rotating an old one are the same act.
 
-The private half stays in the checkout, as ``build/keys/<psql_var>.vault.key``,
-and a unit is given it when the service starts resolving at boot. Nothing here
-changes the database: the roles already hold the passwords this reads.
+The two services that cannot ask keep a credential file instead of a vault entry:
+the vault, which would have to answer its own request, and IAM, which has to
+exist before the vault does.
 
-The vault is skipped. It is the one process that cannot ask itself, so its own
-password stays a credential file and never enters its own store, in the same way
-its keys do not.
+Provisioning acts as the database's own administrator, because a role cannot set
+its own password to a value it does not know. It therefore needs PGPASSWORD, and
+the deployment's shell account is not involved.
 """
 
 from __future__ import annotations
@@ -34,12 +39,11 @@ import sys
 from pathlib import Path
 
 import vault_credentials
-from service_registry import SELF_PROVISIONING as SELF_PROVISIONING_SERVICES
+from service_registry import SELF_PROVISIONING
 from service_registry import load_service_registry
 
 # The services whose password never enters the vault: they cannot ask for it, so
 # each gets a credential file instead.
-SELF_PROVISIONING = SELF_PROVISIONING_SERVICES
 
 # The vault's key encryption key, transport key and the version that says which
 # key a write uses. The service reads them from here, and so does provisioning.
@@ -47,10 +51,15 @@ KEYS_DIRECTORY = "build/keys"
 
 # How a service's own key pair is named under the keys directory.
 KEY_SUFFIX = ".vault.key"
+
+# What the pooler authenticates a service with: the verifier the server derived,
+# which is not a password and is useless without one.
+VERIFIER_SUFFIX = "db-verifier"
 PUBLIC_SUFFIX = ".vault.pub"
 
 
-# The credential a unit that cannot resolve reads its own password from.
+# The credential a unit that cannot ask reads its own password from, which is
+# the name the runner looks for in the directory the deployment places.
 PASSWORD_CREDENTIAL = "db-password"
 
 
@@ -62,7 +71,7 @@ def write_password_credential(keys_dir: Path, psql_var: str, password: str) -> P
     its owner, and the unit is given it as a credential rather than through the
     environment file, which no longer carries a value.
     """
-    path = keys_dir / f"{psql_var}.db-password"
+    path = keys_dir / f"{psql_var}.{PASSWORD_CREDENTIAL}"
     path.write_text(password, encoding="utf-8")
     path.chmod(0o600)
     return path
@@ -156,8 +165,6 @@ def apply_roles(env: dict, roles: list[dict]) -> None:
     needs the value, but only as the verifier the server derived from it, which
     is read back after the rotation and written where the pooler looks.
     """
-    import subprocess
-
     host = env.get("ORES_DB_HOST", "localhost")
     database = env.get("ORES_TEST_DB_DATABASE", "")
     password = env.get("PGPASSWORD", "")
@@ -311,11 +318,9 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
     for role in roles:
         user = env.get(role["user"].strip("{}"), "")
         if role["psql_var"] in SELF_PROVISIONING:
-            path = keys_dir / f"{role['psql_var']}.db-password"
-            path.write_text(role["value"], encoding="utf-8")
-            path.chmod(0o600)
+            write_password_credential(keys_dir, role["psql_var"], role["value"])
         if user in verifiers:
-            path = keys_dir / f"{role['psql_var']}.db-verifier"
+            path = keys_dir / f"{role['psql_var']}.{VERIFIER_SUFFIX}"
             path.write_text(verifiers[user], encoding="utf-8")
             path.chmod(0o600)
 

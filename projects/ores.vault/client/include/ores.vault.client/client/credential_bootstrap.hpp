@@ -42,7 +42,7 @@ namespace ores::vault::client {
  * another unit's identity, because the vault seals to the public key the
  * deployment registered for that name.
  */
-struct bootstrap_credentials {
+struct bootstrap_credentials final {
     /// The consumer the deployment registered for this unit, as the vault
     /// names it.
     std::string consumer;

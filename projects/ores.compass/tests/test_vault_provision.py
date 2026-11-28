@@ -43,16 +43,19 @@ def build(services, tmp_path):
 
 
 def test_one_consumer_and_one_secret_per_resolving_service(tmp_path):
-    document, skipped = build([REFDATA, DQ], tmp_path)
+    document, roles = build([REFDATA, DQ], tmp_path)
 
-    assert document["consumers"] == [
-        {"name": "refdata_service@system.ores",
-         "actor": "refdata_service@system.ores",
-         "public_key": document["consumers"][0]["public_key"]},
-        {"name": "dq_service@system.ores",
-         "actor": "dq_service@system.ores",
-         "public_key": document["consumers"][1]["public_key"]},
+    _, refdata_public = vault_provision.consumer_key_paths(tmp_path, "refdata_service")
+    assert document["consumers"][0] == {
+        "name": "refdata_service@system.ores",
+        "actor": "refdata_service@system.ores",
+        "public_key": base64.b64encode(refdata_public.read_bytes()).decode("ascii"),
+    }
+    assert [c["name"] for c in document["consumers"]] == [
+        "refdata_service@system.ores",
+        "dq_service@system.ores",
     ]
+    assert [r["psql_var"] for r in roles] == ["refdata_service", "dq_service"]
     assert [s["name"] for s in document["secrets"]] == [
         "db.refdata_service.password",
         "db.dq_service.password",

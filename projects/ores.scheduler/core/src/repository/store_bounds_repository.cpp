@@ -141,6 +141,48 @@ store_sample_series store_bounds_repository::read_samples(const std::string& sto
     return series;
 }
 
+capacity_sample_series store_bounds_repository::read_capacity(const std::string& range) {
+    const auto to = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
+    const auto from = to - std::chrono::hours(range_hours(range));
+
+    const std::string sql =
+        "select to_char(sampled_at at time zone 'UTC', 'YYYY-MM-DD HH24:MI:SS.US') || 'Z',"
+        " database_name, host_name, measured_path, database_bytes::text,"
+        " coalesce(disk_free_bytes::text, ''), coalesce(disk_total_bytes::text, ''), note"
+        " from ores_scheduler_capacity_samples_tbl"
+        " where sampled_at >= $1::timestamptz"
+        "   and sampled_at <= $2::timestamptz"
+        " order by sampled_at";
+
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx_,
+        sql,
+        {ores::platform::time::datetime::to_iso8601_utc(from),
+         ores::platform::time::datetime::to_iso8601_utc(to)},
+        lg(),
+        "Reading the installation's capacity");
+
+    capacity_sample_series series;
+    series.from_at = ores::platform::time::datetime::to_iso8601_utc(from);
+    series.to_at = ores::platform::time::datetime::to_iso8601_utc(to);
+    series.samples.reserve(rows.size());
+    for (const auto& row : rows) {
+        messaging::capacity_sample sample;
+        sample.sampled_at = column(row, 0, "sampled_at");
+        sample.database_name = column(row, 1, "database_name");
+        sample.host_name = column(row, 2, "host_name");
+        sample.measured_path = column(row, 3, "measured_path");
+        sample.database_bytes = to_int64(row.size() > 4 ? row[4] : std::nullopt);
+        if (row.size() > 5 && row[5] && !row[5]->empty())
+            sample.disk_free_bytes = to_int64(row[5]);
+        if (row.size() > 6 && row[6] && !row[6]->empty())
+            sample.disk_total_bytes = to_int64(row[6]);
+        sample.note = column(row, 7, "note");
+        series.samples.push_back(std::move(sample));
+    }
+    return series;
+}
+
 messaging::store_bound store_bound_from_row(const std::vector<std::optional<std::string>>& row) {
     messaging::store_bound bound;
     bound.code = column(row, 0, "code");

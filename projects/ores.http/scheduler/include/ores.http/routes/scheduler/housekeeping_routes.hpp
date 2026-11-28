@@ -42,8 +42,9 @@ namespace ores::http::routes::scheduler {
  * @brief The housekeeping screen's reads and its one write.
  *
  * The screen states whether each store the installation keeps is bounded, what
- * bounds it, what it holds and when it last ran; opens one store's series; and
- * changes a bound. Every one of them is a scheduler protocol call, so the routes
+ * bounds it, what it holds and when it last ran; opens one store's series; states
+ * the installation's own size against the space its host has left; and changes a
+ * bound. Every one of them is a scheduler protocol call, so the routes
  * forward and shape the answer rather than deciding anything: the verdict is the
  * view's, and the policy a write states is composed from the catalogue the read
  * already came from.
@@ -68,6 +69,10 @@ private:
     static boost::asio::awaitable<ores::http::domain::http_response>
     handle_policy(const ores::http::domain::http_request& req,
                   ores::nats::service::nats_client& session);
+
+    static boost::asio::awaitable<ores::http::domain::http_response>
+    handle_capacity(const ores::http::domain::http_request& req,
+                    ores::nats::service::nats_client& session);
 };
 
 }

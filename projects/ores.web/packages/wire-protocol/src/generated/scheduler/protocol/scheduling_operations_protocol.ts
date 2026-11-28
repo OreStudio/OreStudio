@@ -352,11 +352,87 @@ export interface ListStoreSamplesResponse {
     to_at: string;
 }
 
+/**
+ * @brief Asks for the installation's size and free space over a horizon.
+ *
+ * The database's size and the space left on the host are one question asked of
+ * two places, and only a series of both answers whether the disk is filling.
+ */
+export interface ListCapacitySamplesRequest {
+    /**
+     * @brief How far back the series reaches: =1h=, =24h= or =7d=.
+     *
+     * The same three horizons the store's plot offers, because the capacity panel
+     * asks the same question of the same measurements. A range the read does not
+     * state answers the day.
+     */
+    range: string;
+}
+
+/**
+ * @brief One measurement of the installation's capacity.
+ */
+export interface CapacitySample {
+    /**
+     * @brief When the measurement was taken, in ISO-8601 UTC.
+     */
+    sampled_at: string;
+    /**
+     * @brief The database the size describes, as the server names it.
+     */
+    database_name: string;
+    /**
+     * @brief The host whose filesystem was measured.
+     *
+     * A size without its host states nothing: the same database on a small partition
+     * and on a large one are different problems.
+     */
+    host_name: string;
+    /**
+     * @brief The path whose filesystem the free space describes.
+     */
+    measured_path: string;
+    /**
+     * @brief The database's total size when it was measured, in bytes.
+     */
+    database_bytes: number;
+    /**
+     * @brief The space the host may still write, in bytes, where it was measured.
+     *
+     * Absent when the host could not measure the path, which is not the same fact as
+     * a full disk: the note says which of the two it was.
+     */
+    disk_free_bytes: number | null;
+    /**
+     * @brief The size of the filesystem that was measured, in bytes.
+     */
+    disk_total_bytes: number | null;
+    /**
+     * @brief What the measurement could not do, in the words the panel states.
+     */
+    note: string;
+}
+
+export interface ListCapacitySamplesResponse {
+    success: boolean;
+    message: string;
+    samples: CapacitySample[];
+    /**
+     * @brief The instant the window opens, in ISO-8601 UTC.
+     */
+    from_at: string;
+    /**
+     * @brief The instant the read ran, in ISO-8601 UTC.
+     */
+    to_at: string;
+}
+
 export const subjects = {
     get_job_instances_request: 'scheduler.v1.job_instances.list',
     get_scheduler_status_request: 'scheduler.v1.ops.get_scheduler_status',
     list_store_bounds_request: 'scheduler.v1.store_bounds.list',
     list_store_samples_request: 'scheduler.v1.store_samples.list',
+    list_capacity_samples_request: 'scheduler.v1.capacity.list',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -368,4 +444,5 @@ export const requiresSession = {
     get_scheduler_status_request: true,
     list_store_bounds_request: true,
     list_store_samples_request: true,
+    list_capacity_samples_request: true,
 } as const;

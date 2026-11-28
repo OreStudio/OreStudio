@@ -5429,6 +5429,11 @@ export const LIST_REQUESTS: Readonly<Record<string, ListRequestShape>> = {
         ],
         rows: ['results'],
     },
+    'scheduler.v1.capacity.list': {
+        asOf: false,
+        filter: [],
+        rows: ['samples'],
+    },
     'scheduler.v1.job_definitions.list': {
         asOf: true,
         filter: ['id_one_of'],

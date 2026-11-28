@@ -44,6 +44,7 @@ import {
 import { BUS_QUERY_KEY } from '../operations/BusPage.js';
 import { GRID_QUERY_KEY } from '../operations/GridPage.js';
 import { HOUSEKEEPING_STORES_QUERY_KEY } from '../operations/HousekeepingPage.js';
+import type { CapacitySample } from '@ores/wire-protocol/browser';
 import { AUDIT_ACCOUNTS_QUERY_KEY, AUDIT_SESSIONS_QUERY_KEY } from './AuditPage.js';
 import { HomePage } from './HomePage.js';
 
@@ -253,6 +254,42 @@ function seedHealthy(client: QueryClient): void {
         read_at: '2026-10-10 12:00:00Z',
         rows: [storeBound()],
     });
+    client.setQueryData(['operations', 'housekeeping', 'capacity', '24h'], capacityView());
+}
+
+/** The installation's own series: a gigabyte a day gone, with room to spare. */
+function capacityView(): {
+    samples: readonly CapacitySample[];
+    from_at: string;
+    to_at: string;
+} {
+    const GiB = 1024 * 1024 * 1024;
+    return {
+        samples: [
+            {
+                sampled_at: '2026-10-10 10:00:00.000000Z',
+                database_name: 'ores_dev_solid_dirac',
+                host_name: 'Wiener',
+                measured_path: '/',
+                database_bytes: 1800 * 1024 * 1024,
+                disk_free_bytes: 502 * GiB,
+                disk_total_bytes: 906 * GiB,
+                note: '',
+            },
+            {
+                sampled_at: '2026-10-10 11:00:00.000000Z',
+                database_name: 'ores_dev_solid_dirac',
+                host_name: 'Wiener',
+                measured_path: '/',
+                database_bytes: 1810 * 1024 * 1024,
+                disk_free_bytes: 501 * GiB,
+                disk_total_bytes: 906 * GiB,
+                note: '',
+            },
+        ],
+        from_at: '2026-10-09 12:00:00.000000Z',
+        to_at: '2026-10-10 12:00:00.000000Z',
+    };
 }
 
 function serviceRow(name: string, state: 'running' | 'lost' | 'missing'): ServiceRosterRow {
@@ -336,10 +373,17 @@ describe("the system administrator's home", () => {
         expect(html).not.toContain('href="/organisation/people"');
     });
 
-    it('has a Tenants, a Services, a Grid, a Message queue and a Housekeeping panel', () => {
+    it('has a Tenants, a Services, a Grid, a Message queue, a Housekeeping and a Capacity panel', () => {
         const html = home('system-administration', quiet, undefined, seedHealthy);
 
-        for (const title of ['Tenants', 'Services', 'Grid', 'Message queue', 'Housekeeping']) {
+        for (const title of [
+            'Tenants',
+            'Services',
+            'Grid',
+            'Message queue',
+            'Housekeeping',
+            'Capacity',
+        ]) {
             expect(html).toContain(`>${title}</h2>`);
         }
     });
@@ -357,6 +401,19 @@ describe("the system administrator's home", () => {
 
         expect(occurrences(html, `>${ALL_CLEAR}<`)).toBe(1);
         expect(occurrences(html, `aria-label="${ALL_CLEAR}"`)).toBe(4);
+    });
+
+    it("states the database's size against the space its host has left", () => {
+        const html = home('system-administration', quiet, undefined, seedHealthy);
+
+        expect(html).toContain('Database size');
+        expect(html).toContain('1.8 GiB');
+        expect(html).toContain('Free space');
+        expect(html).toContain('501.0 GiB');
+        expect(html).toContain('Free space lasts');
+        /* A gibibyte an hour is 24 GiB a day, so 501 GiB lasts about three weeks. */
+        expect(html).toContain('21 days');
+        expect(html).toContain('Wiener');
     });
 
     it('states the stores nothing bounds, and opens the housekeeping screen', () => {
@@ -422,7 +479,7 @@ describe("the system administrator's home", () => {
         const html = home('system-administration', quiet, undefined, seedHealthy);
 
         expect(html).toContain('>v0.0.27<');
-        expect(occurrences(html, '>Sampled<')).toBe(3);
+        expect(occurrences(html, '>Sampled<')).toBe(4);
         expect(html).toContain('12:00:00 UTC');
     });
 

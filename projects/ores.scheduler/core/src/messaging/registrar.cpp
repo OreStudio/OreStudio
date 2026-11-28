@@ -115,6 +115,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             list_store_samples_request::nats_subject, queue_group, [sbh](ores::nats::message msg) {
                 sbh->samples(std::move(msg));
             }));
+        subs.push_back(nats.queue_subscribe(
+            list_capacity_samples_request::nats_subject,
+            queue_group,
+            [sbh](ores::nats::message msg) { sbh->capacity(std::move(msg)); }));
     }
 
     // The housekeeping data arrives as datasets, which the workflow engine

@@ -26,11 +26,11 @@ A person can answer one question from the home: is the database about to fill th
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-28                               |
 
 * Acceptance
@@ -45,9 +45,31 @@ A person can answer one question from the home: is the database about to fill th
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The circle is the design. No SQL can ask a filesystem how much room it has, and
+no host can state the size of a database it does not hold. So the row is written
+in one place: =ores_scheduler_record_capacity_fn= reads the database's own size
+and takes the free space from its caller, and the caller is a scheduler action
+that runs on the host and measures a named path. A caller can therefore state the
+free space and never the size.
+
+The series lives in =ores_scheduler_capacity_samples_tbl=, a hypertable chunked
+on the day, holding the system tenant's rows so every session reads them and only
+the installation writes them. The read is =scheduler.v1.capacity.list=, which
+answers the window it covered beside the points, like the store's series.
+
+The host cannot always be measured. A path that is not there answers null rather
+than zero, the row records the database's size and a note, and the panel states
+the note instead of a verdict: an unreadable disk and a full one are different
+facts.
+
+The measurement is the platform's: =ores.platform= gained =get_filesystem_space=
+and =get_host_name=, each with a POSIX and a Windows branch, because a scheduler
+has no business holding either.
+
+On the screen the figures read as the free space's share of the filesystem, so
+the verdict says the same thing at 500 GB free of 2 TB and 50 GB of 200 GB. The
+thresholds are stated where the code states them: warn below 20% free, alarm
+below 10%.
 
 * Measurements
 
@@ -61,7 +83,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Live capacity read | 200, 10 points over 24h; db 1.94 GB, free 529 GB of 972 GB, host =Wiener=, path =/= | =curl '/api/operations/housekeeping/capacity?range=24h'= against =localhost:21001= | this branch |
+| Capacity sampler | one row a minute while the job's cadence was one a minute; the database's size and the host's free space on every row | =select * from ores_scheduler_capacity_samples_tbl= | this branch |
+| pgTAP suite for the record function | 6 assertions pass | =compass sql -- -f projects/ores.sql/test/scheduler_capacity_samples_test.sql= | this branch |
+| Affected web suites | 55 tests, all pass | =npx vitest run src/operations/capacity.test.ts src/pages/HomePage.test.tsx= | this branch |
+| Scheduler, gateway and platform suites | pass | =.compass.sh test run -- -R 'scheduler|http.scheduler|platform'= | this branch |
 
 * Notes
 
@@ -89,3 +115,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The installation measures itself: every hour a scheduler action asks the host for
+the free space of the filesystem it names and the database for its own size, and
+writes both beside the database and host they describe. The system
+administrator's home states the database's size, the free space, the share it is
+of the filesystem, and the days the free space lasts at the rate it is falling,
+with the trend beneath.
+
+Proved on this environment: the reads answer 200 over the three horizons, the
+sampler fired once a minute while its cadence was a minute, and the rows hold
+real figures (1.94 GB database, 529 GB free of 972 GB, host =Wiener=). A fresh
+recreate grants the scheduler service its tables by prefix, which covers the new
+one.
+
+Two things the work did not do. The tenant's own slice is
+[[id:166B2434-D3DF-4DED-B59E-1AF449EE3D03][its own task]], because a tenant is a
+share of every store and not a store. And the series has no bound of its own: the
+catalogue does not name it, so it grows for ever until the task that accounts for
+every relation puts it there — the capture states the gap.

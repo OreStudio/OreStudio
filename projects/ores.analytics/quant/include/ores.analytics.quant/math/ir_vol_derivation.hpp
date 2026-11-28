@@ -142,14 +142,20 @@ struct swaption_pillar final {
 /**
  * @brief The factor a short rate's level is carried by, from today to a swaption's ATM.
  *
- * The rate's variance accumulates over the option's life as (1 - exp(-2 a T)) / (2 a), and the swap
- * rate averages the short rate over the swap's tenor, which damps the swing by
- * (1 - exp(-a tau)) / (a tau). The product's square root is one: the projection. Both factors have
- * the limit the driftless model states as a tends to zero, so a curve that runs no mean reversion
- * is read through the limit and not refused.
+ * The factor is the bond-option approximation, not an exact swaption volatility. Its first term is
+ * the variance of the short rate at the option's expiry, (1 - exp(-2 a T)) / (2 a), rooted; its
+ * second is the damping a swap's tenor imposes by averaging the short rate over the swap's own
+ * length, (1 - exp(-a tau)) / (a tau). The product is the projection.
+ *
+ * As a tends to zero the first term tends to sqrt(T) and the second to one, so a curve that runs no
+ * mean reversion is read through the limit and not refused. That limit is the short rate's spread,
+ * not the spread of the rate averaged over the tenor, whose driftless value would be
+ * sqrt(T + tau / 3): the approximation understates a long tenor where mean reversion is small, and
+ * a model fitted with no reversion should be read with that in mind.
  *
  * Refused for a pillar that is not positive, because neither factor means anything without a
- * length.
+ * length, and for a negative mean reversion: the expression is continuous through it, but a rate
+ * that diverges from its target is not a model this platform projects through.
  */
 ORES_ANALYTICS_QUANT_EXPORT std::expected<double, std::string>
 projection_factor(swaption_pillar pillar, short_rate_projection model);

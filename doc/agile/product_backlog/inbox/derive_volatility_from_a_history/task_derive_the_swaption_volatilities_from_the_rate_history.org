@@ -89,8 +89,12 @@ task and name that file in the Command column.
 - The projection reads the model's mean reversion and the pillar's two lengths, and nothing else. The
   level is what the measurement read, so the model's volatility and the history's level are one
   number stated twice.
-- The driftless limit is =sqrt(T)=. A curve whose mean reversion is below 1e-8 reads the limit, which
-  keeps the expression finite without a branch a reader has to trust.
+- The driftless limit is =sqrt(T)=, read where the mean reversion lies between zero and 1e-8. A
+  negative mean reversion is refused: the expression is continuous through it, but a rate that
+  diverges from its target is not a model this platform projects through.
+- The projection is the bond-option approximation, and the page says so. Its driftless limit is the
+  short rate's spread, not the tenor-averaged rate's, so a long tenor is understated where mean
+  reversion is small.
 - A pillar the sample does not cover is refused alone and states that the sample is shorter than the
   window; the rest of the ladder stands.
 - The matrix is in whatever unit the caller keeps its changes in, so the store's basis points are the

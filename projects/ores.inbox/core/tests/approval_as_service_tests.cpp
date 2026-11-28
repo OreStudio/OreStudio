@@ -51,29 +51,6 @@ using ores::inbox::service::approval_lifecycle;
 using ores::inbox::service::notification_center;
 using ores::platform::environment::environment;
 
-/**
- * @brief The context the inbox service runs a request in: its own database
- * user, scoped to the test tenant, acting as its service account.
- */
-ores::database::context as_inbox_service(ores::testing::scoped_database_helper& h) {
-    const ores::database::database_options options{
-        .user = environment::get_value_or_throw("ORES_INBOX_SERVICE_DB_USER"),
-        .password = environment::get_value_or_throw("ORES_INBOX_SERVICE_DB_PASSWORD"),
-        .host = environment::get_value_or_default("ORES_INBOX_SERVICE_DB_HOST", "localhost"),
-        .database = environment::get_value_or_throw("ORES_INBOX_SERVICE_DB_DATABASE"),
-        .port = environment::get_int_value_or_default("ORES_INBOX_SERVICE_DB_PORT", 5432),
-        .tenant = h.tenant_id().to_string()};
-    const ores::database::context_factory::configuration config{.database_options = options,
-                                                                .pool_min = 2,
-                                                                .pool_max = 2,
-                                                                .pool_idle_seconds = 30,
-                                                                .num_attempts = 3,
-                                                                .wait_time_in_seconds = 1,
-                                                                .service_account = options.user};
-    const auto base = ores::database::context_factory::make_context(config);
-    return base.with_tenant(base.tenant_id(), base.service_account());
-}
-
 }
 
 TEST_CASE("the_inbox_service_user_reads_a_request_and_tells_the_person_who_asked",
@@ -87,7 +64,7 @@ TEST_CASE("the_inbox_service_user_reads_a_request_and_tells_the_person_who_asked
     REQUIRE(lifecycle.decide(id, raised.version, "approve", decider.id, "").state_code ==
             "approved");
 
-    const auto service = as_inbox_service(h);
+    const auto service = h.as_service("ORES_INBOX_SERVICE_DB_USER");
     approval_lifecycle as_service(service);
     const auto request = as_service.request(id);
     REQUIRE(request);
@@ -118,7 +95,8 @@ TEST_CASE("the_inbox_service_user_closes_an_overdue_request_in_the_expiry_sweep"
     ores::inbox::repository::approval_request_repository repo;
     repo.write(acting(h), lapsed);
 
-    const auto closed = approval_lifecycle(as_inbox_service(h)).expire_overdue();
+    const auto closed =
+        approval_lifecycle(h.as_service("ORES_INBOX_SERVICE_DB_USER")).expire_overdue();
 
     CHECK(std::ranges::any_of(closed, [&](const auto& e) { return e.request_id == id; }));
     CHECK(lifecycle.request(id)->state_code == "expired");
@@ -135,8 +113,8 @@ TEST_CASE("the_inbox_service_user_lists_an_approved_request_whose_apply_has_not_
     REQUIRE(lifecycle.decide(id, raised.version, "approve", decider.id, "").state_code ==
             "approved");
 
-    const auto stalled =
-        approval_lifecycle(as_inbox_service(h)).stalled_applies(std::chrono::system_clock::now());
+    const auto stalled = approval_lifecycle(h.as_service("ORES_INBOX_SERVICE_DB_USER"))
+                             .stalled_applies(std::chrono::system_clock::now());
 
     CHECK(std::ranges::any_of(stalled, [&](const auto& s) { return s.request_id == id; }));
 }
@@ -147,12 +125,13 @@ TEST_CASE("the_inbox_service_user_runs_the_reminder_sweep", "[approval][as_servi
     // The reminder reads across tenants and raises a notice only for a request
     // close to its deadline. An error from the database is thrown and not
     // swallowed, so a missing right fails the call.
-    CHECK_NOTHROW(approval_lifecycle(as_inbox_service(h)).remind_expiring(std::chrono::hours(48)));
+    CHECK_NOTHROW(approval_lifecycle(h.as_service("ORES_INBOX_SERVICE_DB_USER"))
+                      .remind_expiring(std::chrono::hours(48)));
 }
 
 TEST_CASE("the_inbox_service_user_reads_who_holds_a_permission", "[approval][as_service]") {
     ores::testing::scoped_database_helper h;
-    notification_center center(as_inbox_service(h));
+    notification_center center(h.as_service("ORES_INBOX_SERVICE_DB_USER"));
 
     CHECK_NOTHROW(center.holders_of("inbox::approvals:decide_operations"));
 }

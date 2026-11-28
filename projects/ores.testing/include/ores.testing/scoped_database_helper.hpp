@@ -20,10 +20,15 @@
 #ifndef ORES_TESTING_SCOPED_DATABASE_HELPER_HPP
 #define ORES_TESTING_SCOPED_DATABASE_HELPER_HPP
 
+#include "ores.database/domain/database_options.hpp"
+#include "ores.database/service/context_factory.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <string>
+#include <string_view>
 
 namespace ores::testing {
 
@@ -85,6 +90,42 @@ public:
      */
     void set_party(const boost::uuids::uuid& party_id) {
         helper_.set_party(party_id);
+    }
+
+    /**
+     * @brief A context that acts as a service, with that service's own grants.
+     *
+     * The deployment keeps a login beside each service role, named after it
+     * with @c _test appended, that starts as the service. This signs in with
+     * that fixture, so a statement runs under the service's grants while no
+     * service password reaches the test process. The fixture holds the
+     * deployment's test password, which the environment file carries.
+     *
+     * @param service_user_variable The environment variable that names the
+     * service's database user, such as =ORES_INBOX_SERVICE_DB_USER=.
+     * @param tenant The tenant to scope to; empty means the test's own.
+     */
+    database::context as_service(std::string_view service_user_variable,
+                                 std::string_view tenant = {}) {
+        using ores::platform::environment::environment;
+        const std::string service_user =
+            environment::get_value_or_throw(std::string(service_user_variable));
+        const database::database_options options{
+            .user = service_user + "_test",
+            .password = environment::get_value_or_throw("ORES_TEST_DB_PASSWORD"),
+            .host = environment::get_value_or_default("ORES_TEST_DB_HOST", "localhost"),
+            .database = environment::get_value_or_throw("ORES_TEST_DB_DATABASE"),
+            .port = environment::get_int_value_or_default("ORES_TEST_DB_PORT", 5432),
+            .tenant = tenant.empty() ? tenant_id().to_string() : std::string(tenant)};
+        const database::context_factory::configuration config{.database_options = options,
+                                                              .pool_min = 2,
+                                                              .pool_max = 2,
+                                                              .pool_idle_seconds = 30,
+                                                              .num_attempts = 3,
+                                                              .wait_time_in_seconds = 1,
+                                                              .service_account = service_user};
+        const auto base = database::context_factory::make_context(config);
+        return base.with_tenant(base.tenant_id(), service_user);
     }
 
 private:

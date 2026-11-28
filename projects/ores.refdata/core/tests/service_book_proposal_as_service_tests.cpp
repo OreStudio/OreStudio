@@ -44,21 +44,7 @@ using ores::platform::environment::environment;
  */
 ores::database::context as_refdata_service(ores::testing::scoped_database_helper& h,
                                            const world& w) {
-    const ores::database::database_options options{
-        .user = environment::get_value_or_throw("ORES_REFDATA_SERVICE_DB_USER"),
-        .password = environment::get_value_or_throw("ORES_REFDATA_SERVICE_DB_PASSWORD"),
-        .host = environment::get_value_or_default("ORES_REFDATA_SERVICE_DB_HOST", "localhost"),
-        .database = environment::get_value_or_throw("ORES_REFDATA_SERVICE_DB_DATABASE"),
-        .port = environment::get_int_value_or_default("ORES_REFDATA_SERVICE_DB_PORT", 5432),
-        .tenant = h.tenant_id().to_string()};
-    const ores::database::context_factory::configuration config{.database_options = options,
-                                                                .pool_min = 2,
-                                                                .pool_max = 2,
-                                                                .pool_idle_seconds = 30,
-                                                                .num_attempts = 3,
-                                                                .wait_time_in_seconds = 1,
-                                                                .service_account = options.user};
-    const auto base = ores::database::context_factory::make_context(config);
+    const auto base = h.as_service("ORES_REFDATA_SERVICE_DB_USER");
     return base.with_party(base.tenant_id(), w.party_id, {w.party_id}, w.ctx.actor());
 }
 

@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-846 tables in 23 groups.
+847 tables in 23 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -767,6 +767,7 @@ Message Queue
 end note
 
 entity "scheduler" as scheduler {
+  ores_scheduler_capacity_samples_tbl
   ores_scheduler_job_definitions_tbl
   ores_scheduler_job_instances_tbl
   ores_scheduler_retained_store_samples_tbl
@@ -776,7 +777,7 @@ entity "scheduler" as scheduler {
 }
 note bottom of scheduler
 Job Scheduler
-6 tables — ores_schema.scheduler.puml
+7 tables — ores_schema.scheduler.puml
 end note
 
 entity "reporting" as reporting {

@@ -111,6 +111,8 @@ import {
     storeBoundsViewSchema,
     storeSamplesViewSchema,
     storeBoundResultSchema,
+    capacityViewSchema,
+    type CapacityView,
     type StoreBoundsView,
     type StoreRange,
     type StoreSamplesView,
@@ -4238,6 +4240,21 @@ export const api = {
                 `/api/operations/housekeeping/stores/${encodeURIComponent(storeCode)}/samples?${query.toString()}`,
                 { method: 'GET' },
             ),
+        );
+    },
+
+    /**
+     * The installation's size and the space its host has left, over a horizon.
+     *
+     * The answer states the window it covered, so a panel that says how fast the
+     * disk is filling is stating the deployment's window and not the browser's.
+     */
+    async housekeepingCapacity(range: StoreRange): Promise<CapacityView> {
+        const query = new URLSearchParams({ range });
+        return capacityViewSchema.parse(
+            await request(`/api/operations/housekeeping/capacity?${query.toString()}`, {
+                method: 'GET',
+            }),
         );
     },
 

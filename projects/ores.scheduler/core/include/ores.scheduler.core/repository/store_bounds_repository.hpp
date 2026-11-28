@@ -48,6 +48,17 @@ struct store_sample_series {
 };
 
 /**
+ * @brief The installation's capacity over a window, and the window the read used.
+ */
+struct capacity_sample_series {
+    std::vector<messaging::capacity_sample> samples;
+    /** The instant the window opens, in ISO-8601 UTC. */
+    std::string from_at;
+    /** The instant the read ran, in ISO-8601 UTC. */
+    std::string to_at;
+};
+
+/**
  * @brief The housekeeping reads: what bounds each store, and one store's series.
  *
  * Both are views over state three tables hold, and the screen reads them as the
@@ -75,6 +86,17 @@ public:
      */
     [[nodiscard]] store_sample_series read_samples(const std::string& store_code,
                                                    const std::string& range);
+
+    /**
+     * @brief The installation's size and free space over a range, oldest first.
+     *
+     * One series answers both halves of the disk question: the database's size
+     * and the space the host has left, at the same instant, so a screen can say
+     * how long the space lasts at the rate the database grows.
+     *
+     * @param range =1h=, =24h= or =7d=; anything else answers the day.
+     */
+    [[nodiscard]] capacity_sample_series read_capacity(const std::string& range);
 
 private:
     const ores::database::context& ctx_;

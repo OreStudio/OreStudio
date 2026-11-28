@@ -178,6 +178,41 @@ codec now answers for, and =compass-check.yml= runs every one of those codecs
 on each push to main, so a defect that escapes the local gate still shows on
 main the moment it lands.
 
+** The steps the workflows share
+
+A build leg runs on three operating systems and in two tiers, and the steps
+between the checkout and the test run are the same on every one of them: the
+pinned compass release, PostgreSQL, the environment, NATS, the database and the
+compiler cache. GitHub offers two ways to share a step, and the shapes are not
+interchangeable. A composite action, =.github/actions/<name>/action.yml=, is a
+list of steps that runs inside the caller's job, on the caller's runner, with
+the caller's environment; it cannot choose =runs-on= and every one of its steps
+must state its own =shell=. A reusable workflow, one that declares =on:
+workflow_call=, is a whole job: it carries its own runner and matrix, and
+receives =inputs= rather than the caller's =env=.
+
+A step group is therefore a composite, and a job is a reusable workflow.
+
+| Action | What it does | Called by |
+|--------+--------------+-----------|
+| =install-compass= | the pinned release: a tar.gz on Linux and macOS, a zip on Windows | the four build workflows, =compass-check.yml=, =site-cdash.yml= |
+| =setup-postgres= | the password, then the image's server on Linux and a marketplace action elsewhere | the four build workflows |
+| =init-environment= | =compass env configure=, and its settings into the job | the four build workflows |
+| =setup-nats= | the vendored binary on PATH | the four build workflows |
+| =start-nats= | the generated configuration, and a wait for the monitor | the four build workflows |
+| =create-database= | =compass db recreate= against the CI database | the four build workflows |
+| =save-sccache= | the whole save: room, a still server, a retry, a prune | the two Linux workflows |
+| =relevance-guard= | whether a scheduled run has anything to build | =continuous-linux.yml=, =nightly-macos.yml=, =nightly-windows.yml= |
+| =attach-package.yml=, called as a job | downloads the packages and attaches them to the release | the three workflows that build a package |
+
+The guard is a composite for a reason worth stating: it asks the API for the
+last successful run of =GITHUB_WORKFLOW_REF=, which inside a called workflow
+would name the called workflow and not its caller, so every caller would
+compare its history against another's. =build/scripts/check_ci_actions.py=
+reads the YAML for the two rules the platform enforces silently and late: a
+composite step that runs a command must state its shell, and a local =uses:=
+must name an action or a called workflow that exists.
+
 ** The compiler cache has a budget
 
 GitHub gives a repository 10 GB of cache and the Linux legs keep one sccache
@@ -188,8 +223,10 @@ build takes long enough to hit the step's own time limit.
 Three rules keep it inside the budget, and all three exist because the obvious
 order fails:
 
-- Each variant is capped, =SCCACHE_CACHE_SIZE: '2G'. sccache's own default is
-  10 GB, which is the entire allowance for one variant.
+- Each variant is capped, by the =max-size= key of the cache action: 4000 MB
+  for a debug variant, 1600 MB for a release one, and 1800 MB for the one
+  variant only the nightly builds. sccache's own default is 10 GB, which is the
+  entire allowance for one variant.
 - Space is freed *before* the save, oldest entries of this variant first. The
   older order saved first and pruned after verifying the save, so once the
   allowance filled the save could not fit, the verification found no new entry,

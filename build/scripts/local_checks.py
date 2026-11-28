@@ -331,6 +331,14 @@ CATALOGUE: tuple[Check, ...] = (
             " and the key itself lives only in .env.",
     ),
     Check(
+        id="ci-actions",
+        title="The CI YAML names only what exists, and every composite step states its shell",
+        argv=(SYSTEM_PY, "build/scripts/check_ci_actions.py"),
+        classes=("ci",),
+        fix="Add the shell, action or workflow the report names, or point the"
+            " call at the one that exists.",
+    ),
+    Check(
         id="audience",
         title="Every page's audience declaration is well formed",
         argv=("python3", "build/scripts/check_audience.py"),
@@ -544,7 +552,7 @@ CATALOGUE: tuple[Check, ...] = (
         id="build-script-tests",
         title="The build-script suite passes",
         argv=(CODEGEN_TESTS_PY, "-m", "pytest", "build/scripts/tests", "-q"),
-        classes=("tooling",),
+        classes=("tooling", "ci"),
     ),
     Check(
         id="compass-tests",

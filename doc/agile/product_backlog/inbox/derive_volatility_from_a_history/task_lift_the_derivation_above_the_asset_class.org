@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: CF9584EA-D1D8-42B2-B3EC-5934AEAC330B
+:END:
+#+title: Task: Lift the derivation above the asset class
+#+description: The measurement an asset class's volatility is derived by -- a window as long as the pillar, the moments of a return series, the level multiplier, the shape shrunk to a prior, the reach a sample supports, the method and its version -- is the same for every asset class. Only the transform, the coordinates a quote is named by, and the smile model differ. Make those three the parameters of one engine, and prove the lift by the FX quotes coming out as they were.
+#+type: task
+#+level: s1
+#+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The FX derivation already holds every piece of the measurement: a window as long
+as the pillar, the moments of a return series, a level multiplier, a shape shrunk to a
+prior, the reach a sample supports, and the method and version a series is stamped with.
+None of it is FX. Make the transform, the coordinates and the smile model the only
+per-class inputs, and prove the lift by the FX quotes coming out as they were.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- The derivation is one engine. Its inputs are a series, a transform, a coordinate set and a smile model; nothing else in it names an asset class, a pair, a currency or a label.
+- The engine keeps the rules it already has: the window is the pillar's own length and never shorter than a stated minimum, the level is a realized volatility times an authored multiplier, the shape is shrunk to a prior and clamped, and the reach states what the sample does not cover.
+- The FX quotes are unchanged. The same history produces the same ATM, risk-reversal and butterfly values before and after the lift, cell for cell, and the existing derivation tests pass with their expected values unaltered.
+- A stored series still states the method and the version that computed it, and the version rises when the computation changes.
+- A class that supplies a transform and no coordinates is refused at the call, so an incomplete class cannot write a quote with a missing axis.
+
+* Notes
+
+- =fx_derivation.hpp= and =derived_fx_vol.hpp= hold the pieces: =fx_derivation_window=, the moments and the shrink to the prior, =level_multiplier= for the volatility risk premium, the reach, and =derived_fx_derivation_kind= with =derived_fx_method_version=.
+- =derive_grid= is the batched form of the same model, and it must stay cell-for-cell equal to the day-at-a-time answer through the lift.
+- The FX case stays the regression: its tests carry literal expected values, so a lift that changes a number fails a test rather than passing a new one.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

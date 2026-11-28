@@ -107,6 +107,16 @@ owner of a value until the store can hold a producer that is not its publisher.
   series, and =demo= names a fictional publisher for exercises. Neither makes a
   value of its own, so neither belongs in the producer column.
 
+- *The derived quotes serve one role, and it is internal.* They drive the
+  simulated surface's generation. They are not a quote source for a party, they
+  keep a stored series for their evolution, and no non-system party may read them.
+- *The platform's own arithmetic is produced by =orestudio=.* A producer is not a
+  publisher, so the mechanism-named =derived= retires and no item is re-filed to
+  an owner it does not have.
+- *A party with no system-level quotes authors its own surface.* The platform never
+  manufactures one for a party. Generation needs a spot and two curves; without
+  them there is nothing to quote, and the party calibrates and publishes its own.
+
 * Out of scope
 
 - The standing of the fixings a run states, and the fixing a wide spot book

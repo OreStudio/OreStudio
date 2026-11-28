@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 9756E44E-AC5F-4BC7-AA3A-C4C05DFDBF9B
+:END:
+#+title: Task: Simulate the interest rate volatility cube and its vendor views
+#+description: A latent cube per currency, over expiry, term and strike, whose ATM level starts from the derived volatilities and whose smile evolves on its own. Three or four contributors quote it with noise of their own, so a party's adapters receive several views of one market.
+#+type: task
+#+level: s1
+#+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A latent cube for each currency, and the vendor views of it, so that a party has
+quotes to calibrate from and the difference between two vendors is the noise each one
+adds.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- A latent cube per currency exists over expiry and term (the ATM matrix) and over strike (the smile), and its ATM cell at the as-of equals the derived volatility for that expiry and term.
+- The cube evolves: each step moves its level and its smile parameters by a stated process, and the derived level is where it starts.
+- Each contributor quotes the cube with noise of its own, and the difference between a contributor's quote and the latent cell is the noise the run recorded.
+- The quotes travel as swaption and cap/floor series under each contributor's own ids, mapped to the =oresmd= items their keys name, as the FX surfaces' ids are mapped.
+- The latent series is stored under the system provider =latent= and no tenant reads it.
+
+* Notes
+
+- The FX precedent is =fx_vol_surface_feed= with =fx_vol_contributor= and =fx_vol_view=: a latent surface, contributors with noise of their own, and an adapter per vendor. The clean contributor =demo= records the latent surface itself as market ticks, so a test compares a view against the truth.
+- The seed of the cube is the derivation, not a vendor quote: this task is the first place the platform quotes an interest rate volatility it made itself.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

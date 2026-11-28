@@ -22,6 +22,7 @@
 set(files
     "codec_wire_bytes_tests.cpp"
     "configuration_type_seed_tests.cpp"
+    "conventions_calendar_names_tests.cpp"
     "conventions_fx_conventions_tests.cpp"
     "conventions_package_tests.cpp"
     "domain_pinned_script_library_tests.cpp"

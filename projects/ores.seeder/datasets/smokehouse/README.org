@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 4C7B1E02-9A46-4D18-8F3B-2E5A7C9D1F60
+:END:
+#+title: Smokehouse dataset generator
+#+description: Why a third dataset set exists, what it carries, and how its populate SQL is generated.
+
+Smokehouse is the smallest tenant that exercises the publishing lifecycle. It
+exists so a gate check can watch a curve, a forward set and a volatility surface
+publish, be superseded and announce, and then watch three trades price against
+them, without paying for a demonstration tenant. ACME Corporation does all of
+that, and takes a quarter of an hour to do it because it also loads four legal
+entities, forty-five staff, eleven hundred trades and a photograph per person.
+
+* What the tenant holds
+
+| Row | Count | Why it is there |
+|-----+-------+-----------------|
+| Legal entities | 1 | One party, so the books and their approval matrix hang from a company and not from the tenant's administrative System Party |
+| Business units | 1 | A book's approval inherits through its desk, so the chain from the party down has every link |
+| Portfolios | 1 | Books hang from a portfolio |
+| Books | 3 | One per product: a forward, an option and a swap |
+| Book product types | 3 | The approval matrix, stated on the book that permits it |
+| Counterparties | 4 | A trade picks one, and they are the GLEIF LEIs every deployment publishes |
+| Configuration documents | 6 | The pricing engines, today's market, curve configuration, run settings, engine settings and report definition a valuation reads |
+
+The books are =GBP FX Book=, =GBP FX Options Book= and =GBP Rates Book=. A book
+permits one product type and refuses the others, so one book cannot carry both
+the forward and the option: the approval is the book's, and the planner refuses
+a product the book's matrix does not permit. That is why the count is three and
+not one.
+
+* The report documents
+
+The six documents a valuation reads are the template's, cut to the market this
+tenant prices: the discount curve of each currency it prices on, the volatility
+surface of the pair it trades, and one run settings document scoped to its one
+portfolio. The pair is cut by hand where the template lacks its spot, because the
+template's bank crosses it through the dollar.
+
+The cut matters more than the copying. A document that names every currency the
+installation knows makes the run read a market the tenant never publishes, and
+the engine fails on the first missing quote rather than valuing what it holds.
+The recipe names the three ways it still fails, and each is a gap in the
+reporting layer rather than in this directory.
+
+* The legal entity
+
+The company is fictional, so its LEI is synthetic: the =9695= test prefix ACME
+uses, with ISO 17442 mod-97 check digits computed by the generator. A fictional
+company has no entry in the public register, and the party has to come from
+somewhere. The party is created by publishing the company's LEI entities, which
+is the same road every tenant's legal entities travel.
+
+The counterparties are the other way round. They are real GLEIF records, read
+from the Acme dataset rather than restated here, so the two sets cannot drift
+apart. Only four are linked: one trade per book draws from them, and a longer
+list would make the dataset harder to read without making the check stronger.
+
+* What the profile adds, and what this directory does not state
+
+This directory states the reference data. It states no market data, no trades
+and no reports: those are the working of a running system, and the seed profile
+that provisions the tenant orders the steps that make them. The profile is
+hand-written, in =projects/ores.sql/populate/iam/iam_seed_profiles_populate.sql=,
+and it is the place to look for what the tenant does rather than what it holds.
+
+In short: the profile imports the legal entity, gives the party its conventions
+and this directory's datasets, subscribes it to one vendor for the rates ladders
+and the G4 spots and to the derived source for the volatility quotes, copies the
+system's curve and surface blueprints into the party, and then publishes the
+curves, the forward sets and the surfaces. Last, it books one trade per book,
+each stating the one product its book permits.
+
+* Regenerating
+
+#+begin_src sh
+cd projects/ores.seeder/datasets/smokehouse
+python3 generate_sql.py
+#+end_src
+
+The generator rewrites every file in =projects/ores.sql/populate/smokehouse/=
+and nothing else. Do not edit that directory by hand.

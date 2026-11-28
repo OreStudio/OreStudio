@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 537E5CFC-4B41-468B-9B38-C931E489A683
+:END:
+#+title: Task: Route a party only to the classes its feed serves
+#+description: The subscription step takes the asset classes of a route from the provider's catalogue, but a provider may serve several classes through different feeds and a feed serves only its own scopes, so the step asks for an interest rate route on an FX feed and the store refuses it.
+#+type: task
+#+level: s1
+#+filetags: :publish_every_kind_of_derived_market_object_through_one_lifecycle:sprint_31:v0:
+#+owner: marco
+#+branch: feature/provision-a-smokehouse-tenant
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A party that subscribes to a provider is routed to exactly the asset classes the
+feed it reaches actually serves, so a subscription step never asks for a route the
+store refuses and finishes without a warning.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E130B7A6-A7D1-444C-A25D-6117A009CF7C][Publish every kind of derived market object through one lifecycle]] |
+| Now          | Done. A fresh tenant completes every step with no warning. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-11-27                               |
+
+* Acceptance
+
+- [X] The subscription step asks for a route only for an asset class the chosen
+  feed serves, and the run records no warning.
+- [X] A provider that serves interest rates through one feed and FX through
+  another gets both routes, each on the feed that serves it: each feed is routed
+  by its own scope, which the cases over =routed_asset_classes= state one feed at
+  a time.
+- [X] A test covers the case: a provider whose catalogue holds two classes, reached
+  through a feed whose scope holds one.
+
+* Plan
+
+1. *Reproduce.* Provision the smokehouse tenant. The step ends
+   =completed_with_warnings= and the warning is the store's own refusal:
+   =Invalid route: feed afd34349-1c6c-56b2-a686-97b623ee051a serves no ir scope=.
+2. *Read the cause.* The step took the asset class from the authority of every
+   =oresmd= address the provider maps. A provider's catalogue is not a feed's
+   scope: =derived= maps the FX volatility quotes and, since the term indices
+   became ours, interest rate fixing items too, while the feed =derived-fx-vol=
+   serves FX alone.
+3. *Fix.* The route's class is the catalogue's, kept to the classes the feed
+   states when it states any. A feed that states no scope serves whatever its
+   publisher maps, and a feed whose scope matches none of the mapped classes is
+   routed by its own scope, because the store refuses a class the feed disowns.
+   The decision is =app::routed_asset_classes=, a function of two sets.
+4. *Prove.* Four cases over the function, and a fresh tenant that completes every
+   step with no warning.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Warning the step records, before | 1: the =ir= route refused for feed =derived-fx-vol= | the provisioning log of tenant =smokehouse= | =8614711adc= |
+| Warning the step records, after | 0; all fourteen steps complete | the provisioning log of tenant =Smokehouse Three= | =5118ff3313= |
+| Routes the tenant holds | bloomberg =fx= and =ir=, ice =fx= and =ir=, lseg =fx=, derived =fx= | a grouped select over the tenant's routes | =5118ff3313= |
+| Provisioning after the fix | 212 s | =provision tenant --tenant-code smokehouse3 --profile smokehouse= | =5118ff3313= |
+| The new test | 4 cases, 4 assertions, all pass | =ores.marketdata.service.tests "[routed_asset_classes]"= | =5118ff3313= |
+
+* Notes
+
+- The warning cost the tenant nothing today: the party does not read the derived
+  term indices, and its surface published from the FX route. It is still a defect,
+  because every future provision records it and a reader cannot tell a harmless
+  warning from a load-bearing one.
+- The route table enforces the rule, so the store was right and the step was
+  wrong. The refusal is on =ores_marketdata_routes_insert_fn=.
+- A feed that states no scope is not an oversight: the simulated feeds serve
+  whatever demand asks of them, so their class comes from the catalogue alone.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Done on 2026-11-27. The classes are =app::routed_asset_classes=, four cases cover
+it, and a fresh tenant provisions in 212 s with all fourteen steps complete and no
+warning. Its routes are bloomberg =fx= and =ir=, ice =fx= and =ir=, lseg =fx=, and
+derived =fx= alone.

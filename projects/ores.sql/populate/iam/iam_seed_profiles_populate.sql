@@ -154,6 +154,36 @@ on conflict (code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
 
+
+-- Smokehouse: the smallest tenant that still exercises the publishing
+-- lifecycle. One legal entity, one feed, and the four market-data steps, so a
+-- check can prove that curves, forwards and surfaces publish, supersede and
+-- announce without paying for a demonstration tenant. It is not a cut-down
+-- ACME: it orders no staff, no photographs and no report documents. It books one
+-- trade per book, each against the derived data that trade reads, because a
+-- publish that nothing prices proves half the lifecycle.
+insert into ores_iam_seed_profiles_tbl (
+    id, code, name, summary, audience, bullets_json,
+    tenant_type, tenant_name, tenant_code, tenant_hostname, admin_username, admin_email,
+    inherits_admin_password, force_password_change, display_order,
+    version, modified_by, performed_by, change_reason_code, change_commentary
+) values (
+    gen_random_uuid(),
+    'smokehouse',
+    'Smokehouse',
+    'One legal entity, one feed, the publishing lifecycle end to end',
+    'For gate checks and smoke tests',
+    '["One legal entity and one synthetic feed", "Publishes its curves, forwards and surfaces", "Provisions in minutes rather than a quarter of an hour"]'::jsonb,
+    'evaluation', 'Smokehouse', 'smokehouse', 'smokehouse',
+    'tenant_admin', 'admin@smokehouse',
+    false, false, 27,
+    0, current_user, current_user, 'system.initial_load',
+    'Initial population of seed profiles'
+)
+on conflict (code)
+where valid_to = ores_utility_infinity_timestamp_fn()
+do nothing;
+
 -- The ordered step kinds. The arguments are the step kind's own: the kind
 -- fixes their shape in code and the profile supplies the values. The bundles
 -- differ between the two profiles, which is what makes them data.
@@ -185,6 +215,85 @@ cross join (values
     ('gleif_entity', 'build_calendars', 15, '{}'::jsonb),
     ('gleif_entity', 'import_lei_hierarchy', 20, '{"bundles": ["lei_hierarchy"]}'::jsonb),
     ('gleif_entity', 'provision_party', 30, '{"bundles": ["party_essentials", "party_reporting"]}'::jsonb),
+    -- The floor: the smallest tenant this build can make. Then the legal entity,
+    -- its books and the one feed, and the four market-data steps in the order
+    -- the lifecycle states them: subscribe, copy the blueprints, bootstrap the
+    -- curves, build the forward sets, calibrate the surfaces. The trades come
+    -- last because each one reads the data published above it.
+    ('smokehouse', 'system_provision', 5, '{}'::jsonb),
+    ('smokehouse', 'publish_system_curves', 6, '{}'::jsonb),
+    ('smokehouse', 'start_auto_approval', 8, '{}'::jsonb),
+    ('smokehouse', 'publish_bundle', 10, '{"bundles": ["tenant_defaults", "lei_counterparties"], "opted_in_datasets": ["gleif.lei_counterparties.tiny"]}'::jsonb),
+    ('smokehouse', 'build_calendars', 15, '{}'::jsonb),
+    -- The legal entity is the smokehouse dataset's own, on a synthetic LEI, so
+    -- the party the books hang from is a company rather than the tenant's
+    -- administrative System Party.
+    ('smokehouse', 'import_lei_hierarchy', 20, '{"bundles": ["smokehouse_lei_import"], "root_lei": "9695SMOKEHOUSE000081"}'::jsonb),
+    ('smokehouse', 'provision_party', 30, '{"bundles": ["party_essentials"]}'::jsonb),
+    -- The step publishes a party's own bundles. No staff are involved: the
+    -- smokehouse dataset carries no accounts, and the tenant administrator is
+    -- the only person the run needs.
+    ('smokehouse', 'load_staff', 40, '{"parties": [
+        {"name": "Smokehouse Trading Ltd", "bundles": ["smokehouse"], "default": true}
+    ]}'::jsonb),
+    -- A curve blueprint names the provider whose quotes its pillars read, so the
+    -- party takes that provider and no other for its curves. The derived source
+    -- carries the volatility quotes a surface calibrates from.
+    -- The swap's overnight coupon reads the fixing of its index for the day before
+    -- the valuation date. Every fixing now sits under the administrator that sets
+    -- it, and no source states the overnight indices whose administrator also has
+    -- a public adapter: the Bank of England's is not installed. So the party takes
+    -- no fixing source, and the run says so when the swap does not price.
+    ('smokehouse', 'subscribe_market_data', 50, '{"provider": "bloomberg", "source": "bloomberg-a", "parties": [
+        {"party": "Smokehouse Trading Ltd", "provider": "bloomberg", "source": "bloomberg-a"},
+        {"party": "Smokehouse Trading Ltd", "provider": "ice", "source": "ice-a"},
+        {"party": "Smokehouse Trading Ltd", "provider": "lseg", "source": "lseg-a"},
+        {"party": "Smokehouse Trading Ltd", "provider": "derived", "source": "derived-fx-vol"}
+    ]}'::jsonb),
+    -- The two curves and the one pair this tenant quotes, stated rather than
+    -- inherited. Copying the whole catalogue costs every curve the installation
+    -- holds, and a surface per pair the tenant never trades, each one waiting out
+    -- its patience for quotes that never arrive. The pairs a trade may use follow
+    -- from the curves: the population books only a pair whose two currencies it
+    -- can price, so these two curves leave EUR/GBP and nothing else.
+    ('smokehouse', 'give_party_surface_blueprints', 55, '{"parties": [
+        "Smokehouse Trading Ltd"
+    ], "pairs": ["EURGBP"]}'::jsonb),
+    ('smokehouse', 'publish_party_curves', 60, '{"parties": [
+        "Smokehouse Trading Ltd"
+    ], "curves": ["EUR-ESTR", "GBP-SONIA", "GBP-LIBOR-3M"]}'::jsonb),
+    ('smokehouse', 'publish_party_forwards', 65, '{"parties": [
+        "Smokehouse Trading Ltd"
+    ]}'::jsonb),
+    ('smokehouse', 'publish_party_surfaces', 70, '{"parties": [
+        "Smokehouse Trading Ltd"
+    ]}'::jsonb),
+    -- One trade per book, and each config states the one product its book is
+    -- approved for, so the planner books exactly what the smokehouse watches.
+    ('smokehouse', 'generate_trades', 80, '{"configs": [
+        {"party": "Smokehouse Trading Ltd", "name": "Smokehouse FX forwards",
+         "description": "The one forward the smokehouse books, against the forward set the party publishes.",
+         "asset_class_code": "fx", "book": "GBP FX Book",
+         "min_tenor_code": "3M", "max_tenor_code": "1Y",
+         "min_notional": "1000000", "max_notional": "10000000", "seed": 31,
+         "trades_per_book": 1, "structures_per_book": 0,
+         "trade_type_codes": ["FxForward"]},
+        {"party": "Smokehouse Trading Ltd", "name": "Smokehouse FX options",
+         "description": "The one option the smokehouse books, against the surface the party calibrates.",
+         "asset_class_code": "fx", "book": "GBP FX Options Book",
+         "min_tenor_code": "3M", "max_tenor_code": "1Y",
+         "min_notional": "1000000", "max_notional": "10000000", "seed": 32,
+         "trades_per_book": 1, "structures_per_book": 0,
+         "trade_type_codes": ["FxOption"]},
+        {"party": "Smokehouse Trading Ltd", "name": "Smokehouse interest rate swaps",
+         "description": "The one swap the smokehouse books, against the curve the party bootstraps.",
+         "asset_class_code": "interest_rates", "book": "GBP Rates Book",
+         "min_tenor_code": "1Y", "max_tenor_code": "5Y",
+         "min_notional": "1000000", "max_notional": "10000000", "seed": 33,
+         "trades_per_book": 1, "structures_per_book": 0,
+         "trade_type_codes": ["Swap"]}
+    ]}'::jsonb),
+    ('smokehouse', 'end_auto_approval', 9000, '{}'::jsonb),
     ('acme_demo', 'system_provision', 5, '{}'::jsonb),
     ('acme_demo', 'publish_system_curves', 6, '{}'::jsonb),
     ('acme_demo', 'start_auto_approval', 8, '{}'::jsonb),

@@ -181,7 +181,7 @@ void housekeeping_routes::register_routes(
             .operation_catalogue("scheduler", "store_samples", "store_samples_read")
             .auth_required()
             .query_param(
-                "range", "string", "7d", false, "How far back the series reaches: 24h, 7d or 30d")
+                "range", "string", "24h", false, "How far back the series reaches: 1h, 24h or 7d")
             .handler([&session](const http_request& req) { return handle_samples(req, session); });
     const auto samples_route = samples.build();
     router->add_route(samples_route);

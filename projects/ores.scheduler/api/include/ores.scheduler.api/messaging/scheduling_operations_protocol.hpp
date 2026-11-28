@@ -398,13 +398,14 @@ struct list_store_samples_request {
      */
     std::string store_code;
     /**
-     * @brief How far back the series reaches: =24h=, =7d= or =30d=.
+     * @brief How far back the series reaches: =1h=, =24h= or =7d=.
      *
      * The screen picks a horizon and not a count of points, because the sampler
      * writes one point an hour and a count would move the window every time the
-     * sampler's cadence changed. A range the read does not state answers the week.
+     * sampler's cadence changed. A range the read does not state answers the day,
+     * which is the horizon the screen opens on.
      */
-    std::string range = "7d";
+    std::string range = "24h";
 
     friend bool operator==(const list_store_samples_request&,
                            const list_store_samples_request&) = default;

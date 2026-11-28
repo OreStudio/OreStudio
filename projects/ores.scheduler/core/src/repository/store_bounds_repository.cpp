@@ -97,11 +97,11 @@ std::vector<messaging::store_bound> store_bounds_repository::read_bounds() {
 }
 
 int range_hours(const std::string& range) {
-    if (range == "24h")
-        return 24;
-    if (range == "30d")
-        return 30 * 24;
-    return 7 * 24;
+    if (range == "1h")
+        return 1;
+    if (range == "7d")
+        return 7 * 24;
+    return 24;
 }
 
 store_sample_series store_bounds_repository::read_samples(const std::string& store_code,

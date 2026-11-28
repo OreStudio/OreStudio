@@ -1981,9 +1981,9 @@ const pt: SourceCatalogue = {
                 measuredAt: 'Medido',
                 rangeLabel: 'Horizonte',
                 ranges: {
+                    hour: 'Última hora',
                     day: 'Último dia',
                     week: 'Última semana',
-                    month: 'Último mês',
                 },
                 onePoint: 'Uma só medição neste horizonte. Uma segunda desenha uma linha.',
                 noneInWindow:

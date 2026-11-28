@@ -190,7 +190,7 @@ function withProviders(element: React.ReactNode, path: string): string {
         rows: STORES,
     });
     client.setQueryData(
-        ['operations', 'housekeeping', 'samples', 'marketdata.delivery_counts', '7d'],
+        ['operations', 'housekeeping', 'samples', 'marketdata.delivery_counts', '24h'],
         SAMPLES,
     );
     return renderToStaticMarkup(
@@ -418,8 +418,14 @@ describe("a store's own page", () => {
         /* The axis states the window the read answered, not one the browser guessed. */
         expect(details).toContain('11-27 00:00');
         expect(details).toContain('11-27 04:00');
+        expect(details).toContain('Last hour');
+        expect(details).toContain('Last day');
         expect(details).toContain('Last week');
         expect(details).toContain('227.1 KiB a week, rising');
+    });
+
+    it('opens on the last day, not on the last week', () => {
+        expect(details).toMatch(/aria-pressed="true"[^>]*>Last day</);
     });
 
     it('states the bound only on its own tab', () => {

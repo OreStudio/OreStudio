@@ -227,11 +227,13 @@ TEST_CASE("a store no policy bounds opens on the defaults the catalogue ships wi
 }
 
 TEST_CASE("a samples read states the hours its range covers", "[repository][bounds]") {
+    CHECK(range_hours("1h") == 1);
     CHECK(range_hours("24h") == 24);
     CHECK(range_hours("7d") == 7 * 24);
-    CHECK(range_hours("30d") == 30 * 24);
 
-    // A range nobody stated answers the week rather than opening the whole history.
-    CHECK(range_hours("") == 7 * 24);
-    CHECK(range_hours("all") == 7 * 24);
+    // A range nobody stated answers the day, which is the horizon the screen opens on.
+    CHECK(range_hours("") == 24);
+    CHECK(range_hours("all") == 24);
+    // A horizon the screen used to offer answers the day rather than a month.
+    CHECK(range_hours("30d") == 24);
 }

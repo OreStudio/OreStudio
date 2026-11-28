@@ -41,7 +41,7 @@ salt
   <b>SIZE</b>     How large the store is, and how it moved over the horizon the read covered.
   Size now 17.0 MiB        Contents 28,799 rows        Measured 28 Nov 2026, 09:15
   ------------------------------------------------------------------------------
-                     [ Last day ]   [ Last week ]   [ Last month ]
+                   Last hour      **[ Last day ]**      Last week
   .
   17.0 MiB  !                                 *     *     *     *     *     *
             !                    *     *     *     *     *     *     *     *
@@ -53,7 +53,7 @@ salt
   Each mark is one measurement, oldest first. The time axis states the window the
   read covered, in UTC, and the value axis the size.
   --
-  2.1 MiB to 17.0 MiB over 7.0 days - 14.9 MiB a week, rising
+  16.1 MiB to 17.0 MiB over 1.0 day - 6.3 MiB a week, rising
   --
   <b>THE BOUND</b>  the page's second tab
   Bounded: a scheduled sweep deletes the rows past the period, on the policy's own

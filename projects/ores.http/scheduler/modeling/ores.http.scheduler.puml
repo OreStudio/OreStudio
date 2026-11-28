@@ -1,0 +1,18 @@
+@startuml
+title ores.http.scheduler — the HTTP surface of the schedule
+
+package "ores.web" {
+  [housekeeping screen] as screen
+}
+package "ores.http" {
+  [ores.http.scheduler] as routes
+  [ores.http.nats] as forwarding
+}
+package "ores.scheduler" {
+  [scheduler service] as scheduler
+}
+
+screen --> routes : GET stores, GET samples, PUT policy
+routes --> forwarding : the caller's token, one request
+forwarding --> scheduler : scheduler.v1.store_bounds.list / store_samples.list /\nretention_policies.put
+@enduml

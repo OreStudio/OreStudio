@@ -986,10 +986,10 @@ against the answer the BFF gives.
 | composed view | grid | get | =/api/operations/grid/usage= | bff | projects/ores.web/packages/bff/src/operations.ts:540 | Who uses the grid, the results grouped by tenant or by party with each group's share, the results read and the party names beside them. |
 | composed view | grid | get | =/api/operations/grid/usage= | ores.http | projects/ores.http/compute/src/routes/compute/grid_composed_routes.cpp:500 | The grid usage answered by ores.http at the address and in the shape the BFF answered: a group for each tenant, read by entering each in turn, or for each of the caller's parties, with each group's share and a tenant that could not be read carried as unavailable. |
 |  |  | get | =/api/operations/housekeeping/stores= | bff | projects/ores.web/packages/bff/src/housekeeping.ts:130 |  |
-|  |  | get | =/api/operations/housekeeping/stores= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:151 |  |
+|  |  | get | =/api/operations/housekeeping/stores= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:152 |  |
 |  |  | put | =/api/operations/housekeeping/stores/:code/policy= | bff | projects/ores.web/packages/bff/src/housekeeping.ts:158 |  |
 |  |  | get | =/api/operations/housekeeping/stores/:code/samples= | bff | projects/ores.web/packages/bff/src/housekeeping.ts:140 |  |
-|  |  | put | =/api/operations/housekeeping/stores/{code}/policy= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:181 |  |
+|  |  | put | =/api/operations/housekeeping/stores/{code}/policy= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:180 |  |
 |  |  | get | =/api/operations/housekeeping/stores/{code}/samples= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:165 |  |
 | resource | operations | get | =/api/operations/logs= | bff | projects/ores.web/packages/bff/src/operations.ts:640 | One page of telemetry entries a filter selects, with the count of everything it matches. |
 | resource | operations | get | =/api/operations/logs= | ores.http | projects/ores.http/workflow/src/routes/workflow/operations_routes.cpp:369 | One page of telemetry entries at the address and in the shape the BFF answered: the window from a range, the filters combined with and, and the page and its total. |

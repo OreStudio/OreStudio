@@ -246,13 +246,62 @@ function DurationCell({ row }: { readonly row: ReportRowView }): ReactNode {
     return <>{formatDuration(ms, t)}</>;
 }
 
-/** A count of one severity the run recorded, or an absence when nothing was read. */
-function ProblemCount({ value }: { readonly value: number | null }): ReactNode {
+/** One phase's share of a run's problems. */
+interface PhaseShare {
+    readonly phase: string;
+    readonly count: number;
+}
+
+/**
+ * The phases that recorded a problem of one severity, and how many each.
+ *
+ * A run that could not be read states no split, and a phase that recorded
+ * nothing is left out rather than drawn as a zero: the cell says where the
+ * problems came from, and a phase with none did not make any.
+ */
+function phaseShares(
+    byPhase:
+        | readonly { readonly phase: string; readonly errors: number; readonly warnings: number }[]
+        | null,
+    severity: 'errors' | 'warnings',
+): readonly PhaseShare[] {
+    if (byPhase === null) {
+        return [];
+    }
+    return byPhase
+        .filter((one) => one[severity] > 0)
+        .map((one) => ({ phase: one.phase, count: one[severity] }));
+}
+
+/**
+ * A count of one severity the run recorded, or an absence when nothing was read.
+ *
+ * The phases that recorded it are stated under the figure, because the figure
+ * alone says how much went wrong and not where in the run it went wrong.
+ */
+function ProblemCount({
+    value,
+    shares,
+}: {
+    readonly value: number | null;
+    readonly shares: readonly PhaseShare[];
+}): ReactNode {
     const { language } = useTranslation();
     if (value === null) {
         return <Absent />;
     }
-    return <>{formatCount(value, language)}</>;
+    return (
+        <span className="flex flex-col gap-0.5">
+            <span>{formatCount(value, language)}</span>
+            {shares.length > 0 && (
+                <span className="text-xs text-ink-faint">
+                    {shares
+                        .map((one) => `${one.phase} ${formatCount(one.count, language)}`)
+                        .join(' · ')}
+                </span>
+            )}
+        </span>
+    );
 }
 
 /**
@@ -357,14 +406,24 @@ function useColumns(showParty: boolean): readonly ListColumn<ReportRowView>[] {
         {
             id: 'errors',
             header: t('reporting.columns.errors'),
-            cell: (row) => <ProblemCount value={row.latestRun?.errors ?? null} />,
+            cell: (row) => (
+                <ProblemCount
+                    value={row.latestRun?.errors ?? null}
+                    shares={phaseShares(row.latestRun?.errorsByPhase ?? null, 'errors')}
+                />
+            ),
             mono: true,
             numeric: true,
         },
         {
             id: 'warnings',
             header: t('reporting.columns.warnings'),
-            cell: (row) => <ProblemCount value={row.latestRun?.warnings ?? null} />,
+            cell: (row) => (
+                <ProblemCount
+                    value={row.latestRun?.warnings ?? null}
+                    shares={phaseShares(row.latestRun?.errorsByPhase ?? null, 'warnings')}
+                />
+            ),
             mono: true,
             numeric: true,
         },

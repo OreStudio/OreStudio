@@ -50,6 +50,7 @@ domain::report_error_event report_error_event_mapper::map(const report_error_eve
     r.report_instance_id = v.report_instance_id;
     r.party_id = v.party_id;
     r.scope_code = v.scope_code;
+    r.phase_code = v.phase_code;
     r.severity = v.severity;
     r.message = v.message;
     r.subject = v.subject;
@@ -75,6 +76,7 @@ report_error_event_entity report_error_event_mapper::map(const domain::report_er
     r.report_instance_id = v.report_instance_id;
     r.party_id = v.party_id;
     r.scope_code = v.scope_code;
+    r.phase_code = v.phase_code;
     r.severity = v.severity;
     r.message = v.message;
     r.subject = v.subject;

@@ -56,6 +56,7 @@ struct report_error_event_entity {
     boost::uuids::uuid report_instance_id;
     boost::uuids::uuid party_id;
     std::string scope_code = "Report";
+    std::string phase_code;
     std::string severity = "error";
     std::string message;
     std::optional<std::string> subject;
@@ -79,6 +80,7 @@ struct report_error_event_entity {
                query_builder::bind("report_instance_id", &e::report_instance_id) |
                query_builder::bind("party_id", &e::party_id) |
                query_builder::bind("scope_code", &e::scope_code) |
+               query_builder::bind("phase_code", &e::phase_code) |
                query_builder::bind("severity", &e::severity) |
                query_builder::bind("message", &e::message) |
                query_builder::bind("subject", &e::subject) |

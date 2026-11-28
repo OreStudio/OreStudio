@@ -39,6 +39,7 @@ const error = (over: Partial<ReportRunErrorView>): ReportRunErrorView => ({
     id: 'e0000000-0000-4000-8000-000000000001',
     severity: 'error',
     scope: 'Trade',
+    phase: 'engine',
     about: TRADE,
     message: 'Cannot build all required curves!',
     subject: 'trade',
@@ -118,6 +119,8 @@ describe('the errors tab of a run', () => {
         for (const label of [
             'Overview',
             'List',
+            'Phase',
+            'engine',
             'Errors',
             'Warnings',
             'Info',

@@ -370,6 +370,7 @@ function ErrorsHead({ rows }: { readonly rows: readonly ReportRunErrorView[] }):
                         <tr className="border-b border-line text-xs text-ink-muted">
                             <th className="px-2 py-2 font-medium">{t(`${field}.severity`)}</th>
                             <th className="px-2 py-2 font-medium">{t(`${field}.scope`)}</th>
+                            <th className="px-2 py-2 font-medium">{t(`${field}.phase`)}</th>
                             <th className="px-2 py-2 font-medium">{t(`${field}.about`)}</th>
                             <th className="px-2 py-2 font-medium">{t(`${field}.message`)}</th>
                             <th className="px-2 py-2 font-medium">{t(`${field}.filename`)}</th>
@@ -383,6 +384,7 @@ function ErrorsHead({ rows }: { readonly rows: readonly ReportRunErrorView[] }):
                                     <SeverityTag severity={row.severity} />
                                 </td>
                                 <td className="px-2 py-2 text-ink-muted">{row.scope || '—'}</td>
+                                <td className="px-2 py-2 text-ink-muted">{row.phase || '—'}</td>
                                 <td className="px-2 py-2 font-mono text-xs">
                                     <ErrorSubject error={row} />
                                 </td>
@@ -406,9 +408,10 @@ function ErrorsHead({ rows }: { readonly rows: readonly ReportRunErrorView[] }):
 }
 
 /**
- * The rows a run recorded, one row each: how severe it is, the part of the run
- * it belongs to, the one thing it names, what the engine said and where in the
- * engine it said it. A scope in the address narrows the list to it.
+ * The rows a run recorded, one row each: how severe it is, what it is about,
+ * the phase of the run it came from, the one thing it names, what the engine
+ * said and where in the engine it said it. A scope in the address narrows the
+ * list to it.
  *
  * A notice is a row like any other, and the filter is how a reader puts the
  * engine's notices aside when they are looking for a failure.
@@ -497,7 +500,7 @@ export function RunErrorsTable({
                     rows: shown,
                     revision: `${scope ?? ''}:${file ?? ''}:${severity}:${shown.length}`,
                     searchOf: (row) =>
-                        `${row.scope} ${row.about} ${row.message} ${row.filename ?? ''} ${row.location ?? ''}`,
+                        `${row.scope} ${row.phase} ${row.about} ${row.message} ${row.filename ?? ''} ${row.location ?? ''}`,
                 })}
                 plural={t(`${field}.plural`)}
                 keyOf={(row) => row.id}
@@ -508,6 +511,7 @@ export function RunErrorsTable({
                         cell: (row) => <SeverityTag severity={row.severity} />,
                     },
                     { id: 'scope', header: t(`${field}.scope`), cell: (row) => row.scope || '—' },
+                    { id: 'phase', header: t(`${field}.phase`), cell: (row) => row.phase || '—' },
                     {
                         id: 'about',
                         header: t(`${field}.about`),

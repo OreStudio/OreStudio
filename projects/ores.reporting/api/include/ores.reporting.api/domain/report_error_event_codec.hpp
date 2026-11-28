@@ -52,6 +52,7 @@ namespace ores::reporting::domain {
         utility::codec::field{"report_instance_id", &report_error_event::report_instance_id},
         utility::codec::field{"party_id", &report_error_event::party_id},
         utility::codec::field{"scope_code", &report_error_event::scope_code},
+        utility::codec::field{"phase_code", &report_error_event::phase_code},
         utility::codec::field{"severity", &report_error_event::severity},
         utility::codec::field{"message", &report_error_event::message},
         utility::codec::field{"subject", &report_error_event::subject},

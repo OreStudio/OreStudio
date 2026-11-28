@@ -21,6 +21,7 @@
 #include "ores.logging/logger.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.reporting.api/domain/run_phase.hpp"
 #include "ores.reporting.api/generators/report_instance_generator.hpp"
 #include "ores.reporting.api/messaging/report_error_event_protocol.hpp"
 #include "ores.reporting.core/repository/report_instance_kind_repository.hpp"
@@ -36,6 +37,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <string_view>
@@ -132,6 +134,13 @@ TEST_CASE("the problems of a run read as one row split into errors and warnings"
                             .detail = {}});
     }
     REQUIRE(recorder.record_engine_errors(with_problems, problems).failure.empty());
+    // The run also failed a step of its own before any of that: an error of a
+    // second phase, so the split is more than one entry.
+    REQUIRE(recorder
+                .record_run_failure(with_problems,
+                                    "The readiness step found no book to read.",
+                                    ores::reporting::domain::run_phase::preprocess)
+                .empty());
 
     ores::reporting::service::report_error_event_service service(ctx);
     ores::reporting::messaging::get_report_error_counts_request request;
@@ -143,8 +152,37 @@ TEST_CASE("the problems of a run read as one row split into errors and warnings"
     // screen draws the absence as no problems.
     REQUIRE(response.counts.size() == 1);
     CHECK(response.counts[0].report_instance_id == boost::uuids::string_generator()(with_problems));
-    CHECK(response.counts[0].errors == 3);
+    CHECK(response.counts[0].errors == 4);
     CHECK(response.counts[0].warnings == 2);
+
+    // The same problems, split by the phase that recorded them. The engine's
+    // three failures and its two warnings are one entry, the run's own failure
+    // is another, and the phase nothing was recorded in has none: a reader draws
+    // the three phases it knows and a run that got no further than two states two.
+    const auto& by_phase = response.counts[0].by_phase;
+    REQUIRE(by_phase.size() == 2);
+    const auto phase_named = [&by_phase](std::string code) {
+        return std::ranges::find(
+            by_phase, code, &ores::reporting::messaging::report_error_phase_count::phase_code);
+    };
+    const auto engine = phase_named("engine");
+    REQUIRE(engine != by_phase.end());
+    CHECK(engine->errors == 3);
+    CHECK(engine->warnings == 2);
+    const auto preprocess = phase_named("preprocess");
+    REQUIRE(preprocess != by_phase.end());
+    CHECK(preprocess->errors == 1);
+    CHECK(preprocess->warnings == 0);
+    CHECK(phase_named("postprocess") == by_phase.end());
+    // The split is of the same rows the totals count, so it always adds up to them.
+    std::int64_t errors = 0;
+    std::int64_t warnings = 0;
+    for (const auto& one : by_phase) {
+        errors += one.errors;
+        warnings += one.warnings;
+    }
+    CHECK(errors == response.counts[0].errors);
+    CHECK(warnings == response.counts[0].warnings);
 }
 
 TEST_CASE("a log line that is neither an error nor a warning is not a problem",

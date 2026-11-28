@@ -307,6 +307,7 @@ std::string run_error_json(const reporting_domain::report_error_event& event) {
     return "{\"id\":" + json::write(rr::as_text(event.id)) +
            ",\"severity\":" + json::write(event.severity) +
            ",\"scope\":" + json::write(event.scope_code) +
+           ",\"phase\":" + json::write(event.phase_code) +
            ",\"about\":" + json::write(about_of(event)) +
            ",\"message\":" + json::write(event.message) +
            ",\"subject\":" + json::write(event.subject) +

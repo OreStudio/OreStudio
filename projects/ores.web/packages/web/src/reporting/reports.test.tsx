@@ -82,6 +82,10 @@ const DAILY_ROW = {
         completedAt: wireTimestamp('2026-10-17 08:00:12.500000Z'),
         errors: 3,
         warnings: 2,
+        errorsByPhase: [
+            { phase: 'engine' as const, errors: 2, warnings: 2 },
+            { phase: 'preprocess' as const, errors: 1, warnings: 0 },
+        ],
     },
     nextFireAt: wireTimestamp('2026-10-18 09:00:00.000000Z'),
 };
@@ -320,6 +324,10 @@ describe('the list of reports the parties run', () => {
         expect(row).toContain('Completed with errors');
         expect(row).toContain('3');
         expect(row).toContain('2');
+        // The figure says how many failed; the line under it says which part of
+        // the run they came from.
+        expect(row).toContain('engine 2');
+        expect(row).toContain('preprocess 1');
         // The run started at 08:00:00 and completed at 08:00:12.5, stated as a length.
         expect(row).toContain('12.5 s');
     });

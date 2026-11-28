@@ -100,6 +100,13 @@ interface RunView {
     readonly completedAt: string | null;
     readonly errors: number | null;
     readonly warnings: number | null;
+    /**
+     * The same problems split by the phase that recorded them.
+     *
+     * Null when the problems could not be read, which is why the two totals
+     * beside it are null as well.
+     */
+    readonly errorsByPhase: readonly PhaseProblems[] | null;
 }
 
 /**
@@ -227,6 +234,21 @@ const schedulerJobOf = (definition: Record<string, unknown>): string | null =>
     nullableText(definition['scheduler_job_id']);
 
 const countOf = (value: unknown): number => (typeof value === 'number' ? value : 0);
+
+/** The problems of a run split by phase, as the counts read states them. */
+const phasesOf = (value: unknown): PhaseProblems[] => {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+    return value.map((one) => {
+        const entry = one as Record<string, unknown>;
+        return {
+            phase: text(entry['phase_code']),
+            errors: countOf(entry['errors']),
+            warnings: countOf(entry['warnings']),
+        };
+    });
+};
 
 const healthOf = (value: unknown): HealthWord | null => {
     const word = text(value);
@@ -520,11 +542,18 @@ async function readHealth(
     );
 }
 
+/** One phase's share of a run's problems. */
+interface PhaseProblems {
+    readonly phase: string;
+    readonly errors: number;
+    readonly warnings: number;
+}
+
 /** How many of each run's problems are errors and how many are warnings. */
 async function readProblemCounts(
     session: LiveSession,
     instanceIds: readonly string[],
-): Promise<ReadonlyMap<string, { errors: number; warnings: number }>> {
+): Promise<ReadonlyMap<string, { errors: number; warnings: number; byPhase: PhaseProblems[] }>> {
     const reply = await session.client.callAuthenticated(
         errorSubjects.get_report_error_counts_request,
         { report_instance_ids: [...instanceIds] },
@@ -536,7 +565,11 @@ async function readProblemCounts(
     return new Map(
         reply.counts.map((entry) => [
             text(entry['report_instance_id']),
-            { errors: countOf(entry['errors']), warnings: countOf(entry['warnings']) },
+            {
+                errors: countOf(entry['errors']),
+                warnings: countOf(entry['warnings']),
+                byPhase: phasesOf(entry['by_phase']),
+            },
         ]),
     );
 }
@@ -627,7 +660,9 @@ function rowOf(
         readonly runs: ReadonlyMap<string, Record<string, unknown>> | undefined;
         readonly health: ReadonlyMap<string, { health: HealthWord | null; stateName: string }>;
         /** Undefined when the problem counts could not be read. */
-        readonly counts: ReadonlyMap<string, { errors: number; warnings: number }> | undefined;
+        readonly counts:
+            | ReadonlyMap<string, { errors: number; warnings: number; byPhase: PhaseProblems[] }>
+            | undefined;
         /** Undefined when the next fire could not be read. */
         readonly nextFires: ReadonlyMap<string, string | null> | undefined;
     },
@@ -663,6 +698,8 @@ function rowOf(
                       // is the screen's zero.
                       errors: counted?.errors ?? (decorated.counts === undefined ? null : 0),
                       warnings: counted?.warnings ?? (decorated.counts === undefined ? null : 0),
+                      errorsByPhase:
+                          counted?.byPhase ?? (decorated.counts === undefined ? null : []),
                   },
         nextFireAt: decorated.nextFires?.get(id) ?? null,
     };
@@ -699,7 +736,9 @@ async function compose(
 
     const runIds = (runs ?? []).map((run) => text(run['id'])).filter((id) => id !== '');
     let health: ReadonlyMap<string, { health: HealthWord | null; stateName: string }> = new Map();
-    let counts: ReadonlyMap<string, { errors: number; warnings: number }> | undefined;
+    let counts:
+        | ReadonlyMap<string, { errors: number; warnings: number; byPhase: PhaseProblems[] }>
+        | undefined;
     if (runIds.length > 0) {
         [health, counts] = await Promise.all([
             decorate('health', unread, () => readHealth(session, runIds)).then(

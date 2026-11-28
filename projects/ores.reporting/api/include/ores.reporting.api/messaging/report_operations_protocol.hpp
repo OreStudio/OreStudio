@@ -650,6 +650,7 @@ struct fail_report_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
+    std::string phase_code;
     std::string report_instance_id;
     std::string tenant_id;
     std::string correlation_id;
@@ -1540,6 +1541,7 @@ wire_fields(std::type_identity<publish_engine_settings_from_dq_request>) {
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<fail_report_request>) {
     return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"phase_code", &fail_report_request::phase_code},
         ::ores::utility::codec::field{"report_instance_id",
                                       &fail_report_request::report_instance_id},
         ::ores::utility::codec::field{"tenant_id", &fail_report_request::tenant_id},

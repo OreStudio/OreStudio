@@ -274,6 +274,7 @@ describe('GET /api/reporting/runs/:id/errors', () => {
                     {
                         id: ERROR,
                         scope_code: 'Trade',
+                        phase_code: 'engine',
                         severity: 'error',
                         message: 'Cannot build all required curves!',
                         subject: 'trade',
@@ -294,6 +295,7 @@ describe('GET /api/reporting/runs/:id/errors', () => {
                 {
                     id: ERROR,
                     scope: 'Trade',
+                    phase: 'engine',
                     severity: 'error',
                     about: '28e6d1c3-b0aa-55fa-9c14-142e3e34092e',
                     message: 'Cannot build all required curves!',
@@ -318,6 +320,7 @@ describe('GET /api/reporting/runs/:id/errors', () => {
                     {
                         id: ERROR,
                         scope_code: 'Report',
+                        phase_code: 'postprocess',
                         severity: 'error',
                         message: 'The run failed.',
                         subject: null,
@@ -336,6 +339,7 @@ describe('GET /api/reporting/runs/:id/errors', () => {
         const curve = (id: string, message: string) => ({
             id,
             scope_code: 'Curve',
+            phase_code: 'engine',
             severity: 'error',
             message,
             subject: null,

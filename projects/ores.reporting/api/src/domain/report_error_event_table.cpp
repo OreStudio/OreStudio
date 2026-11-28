@@ -46,12 +46,12 @@ std::string convert_to_table(const std::vector<report_error_event>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Report Instance" << "Scope" << "Severity" << "Subject" << "Subject Id"
-          << "Message" << "Event Time" << fort::endr;
+    table << fort::header << "Report Instance" << "Scope" << "Phase" << "Severity" << "Subject"
+          << "Subject Id" << "Message" << "Event Time" << fort::endr;
 
     for ([[maybe_unused]] const auto& ree : v) {
-        table << boost::uuids::to_string(ree.report_instance_id) << ree.scope_code << ree.severity
-              << report_error_event_opt_str(ree.subject)
+        table << boost::uuids::to_string(ree.report_instance_id) << ree.scope_code << ree.phase_code
+              << ree.severity << report_error_event_opt_str(ree.subject)
               << report_error_event_opt_str(ree.subject_id) << ree.message << ree.event_time
               << fort::endr;
     }

@@ -20,6 +20,7 @@
 #ifndef ORES_REPORTING_API_WORKFLOW_REPORT_EXECUTION_WORKFLOW_HPP
 #define ORES_REPORTING_API_WORKFLOW_REPORT_EXECUTION_WORKFLOW_HPP
 
+#include "ores.reporting.api/domain/run_phase.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.utility/codec/json_codec.hpp"
 #include "ores.workflow.api/service/workflow_definition.hpp"
@@ -174,16 +175,24 @@ require_run_request(const std::string& request_json, std::string_view consumer) 
  *
  * The report reads the error of the step that failed, not of the step being
  * rolled back, because the first compensation to run sets the report's message.
+ *
+ * The phase is the one the step being rolled back belongs to, and it is the
+ * closest phase the platform can state here: the engine compensates the steps
+ * that completed and never the step that failed, so the phase of the failure
+ * travels on the failing step's own error row. This one answers a run whose
+ * step stopped without a word.
  */
 template <typename Command>
 [[nodiscard]] inline std::string fail_report_from(const std::string& cmd_json,
-                                                  std::string_view error_message) {
+                                                  std::string_view error_message,
+                                                  domain::run_phase phase) {
     using namespace ores::reporting::messaging;
     auto cmd = ores::utility::codec::json::try_read<Command>(cmd_json);
     if (!cmd)
         return "{}";
     return ores::utility::codec::json::write(
-        fail_report_request{.report_instance_id = cmd->report_instance_id,
+        fail_report_request{.phase_code = std::string(domain::to_code(phase)),
+                            .report_instance_id = cmd->report_instance_id,
                             .tenant_id = cmd->tenant_id,
                             .correlation_id = cmd->correlation_id,
                             .error_message = std::string(error_message)});
@@ -214,7 +223,8 @@ template <typename Command>
     s.build_compensation = [](const std::string& cmd_json,
                               const std::string&,
                               const std::string& failure) -> std::string {
-        return fail_report_from<resolve_market_readiness_request>(cmd_json, failure);
+        return fail_report_from<resolve_market_readiness_request>(
+            cmd_json, failure, domain::run_phase::preprocess);
     };
 
     return s;
@@ -248,7 +258,8 @@ template <typename Command>
     s.build_compensation = [](const std::string& cmd_json,
                               const std::string&,
                               const std::string& failure) -> std::string {
-        return fail_report_from<gather_trades_request>(cmd_json, failure);
+        return fail_report_from<gather_trades_request>(
+            cmd_json, failure, domain::run_phase::preprocess);
     };
 
     return s;
@@ -280,7 +291,8 @@ template <typename Command>
     s.build_compensation = [](const std::string& cmd_json,
                               const std::string&,
                               const std::string& failure) -> std::string {
-        return fail_report_from<gather_market_data_request>(cmd_json, failure);
+        return fail_report_from<gather_market_data_request>(
+            cmd_json, failure, domain::run_phase::preprocess);
     };
 
     return s;
@@ -320,7 +332,8 @@ template <typename Command>
     s.build_compensation = [](const std::string& cmd_json,
                               const std::string&,
                               const std::string& failure) -> std::string {
-        return fail_report_from<assemble_bundle_request>(cmd_json, failure);
+        return fail_report_from<assemble_bundle_request>(
+            cmd_json, failure, domain::run_phase::preprocess);
     };
 
     return s;
@@ -348,7 +361,8 @@ template <typename Command>
     s.build_compensation = [](const std::string& cmd_json,
                               const std::string&,
                               const std::string& failure) -> std::string {
-        return fail_report_from<resolve_prepared_input_request>(cmd_json, failure);
+        return fail_report_from<resolve_prepared_input_request>(
+            cmd_json, failure, domain::run_phase::preprocess);
     };
 
     return s;
@@ -391,7 +405,8 @@ template <typename Command>
     s.build_compensation = [](const std::string& cmd_json,
                               const std::string&,
                               const std::string& failure) -> std::string {
-        return fail_report_from<prepare_ore_package_request>(cmd_json, failure);
+        return fail_report_from<prepare_ore_package_request>(
+            cmd_json, failure, domain::run_phase::preprocess);
     };
 
     return s;
@@ -429,7 +444,8 @@ template <typename Command>
     s.build_compensation = [](const std::string& cmd_json,
                               const std::string&,
                               const std::string& failure) -> std::string {
-        return fail_report_from<submit_compute_request>(cmd_json, failure);
+        return fail_report_from<submit_compute_request>(
+            cmd_json, failure, domain::run_phase::preprocess);
     };
 
     return s;
@@ -461,7 +477,8 @@ template <typename Command>
     s.build_compensation = [](const std::string& cmd_json,
                               const std::string&,
                               const std::string& failure) -> std::string {
-        return fail_report_from<collect_compute_results_request>(cmd_json, failure);
+        return fail_report_from<collect_compute_results_request>(
+            cmd_json, failure, domain::run_phase::postprocess);
     };
 
     return s;
@@ -502,7 +519,8 @@ template <typename Command>
     s.build_compensation = [](const std::string& cmd_json,
                               const std::string&,
                               const std::string& failure) -> std::string {
-        return fail_report_from<post_process_results_request>(cmd_json, failure);
+        return fail_report_from<post_process_results_request>(
+            cmd_json, failure, domain::run_phase::postprocess);
     };
 
     return s;
@@ -537,7 +555,8 @@ template <typename Command>
     s.build_compensation = [](const std::string& cmd_json,
                               const std::string&,
                               const std::string& failure) -> std::string {
-        return fail_report_from<ignore_compute_results_request>(cmd_json, failure);
+        return fail_report_from<ignore_compute_results_request>(
+            cmd_json, failure, domain::run_phase::postprocess);
     };
 
     return s;
@@ -573,7 +592,8 @@ template <typename Command>
     s.build_compensation = [](const std::string& cmd_json,
                               const std::string&,
                               const std::string& failure) -> std::string {
-        return fail_report_from<finalise_report_request>(cmd_json, failure);
+        return fail_report_from<finalise_report_request>(
+            cmd_json, failure, domain::run_phase::postprocess);
     };
 
     return s;

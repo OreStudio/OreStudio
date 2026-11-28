@@ -216,11 +216,12 @@ public:
     void remove(const context& ctx, const std::vector<std::string>& ids);
 
     /**
-     * @brief Counts the errors and the warnings of each run named.
+     * @brief Counts the errors and the warnings of each run named, and again
+     * per phase of the run.
      *
-     * A run that recorded no problem has no entry. The rows of other parties
-     * are not the caller's to read: the policy on the table decides that, not
-     * this method.
+     * A run that recorded no problem has no entry, and neither has a phase the
+     * run recorded nothing in. The rows of other parties are not the caller's
+     * to read: the policy on the table decides that, not this method.
      */
     std::vector<messaging::report_error_count>
     read_counts_by_report_instance_ids(const context& ctx,

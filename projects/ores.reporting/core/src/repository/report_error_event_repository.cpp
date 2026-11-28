@@ -496,26 +496,41 @@ report_error_event_repository::read_counts_by_report_instance_ids(
     const auto rows = query_builder::execute_parameterized_multi_column_query(
         ctx,
         "SELECT report_instance_id::text,"
+        "       phase_code,"
         "       count(*) FILTER (WHERE severity = 'error')::text,"
         "       count(*) FILTER (WHERE severity = 'warning')::text"
         " FROM ores_reporting_report_error_events_tbl"
         " WHERE tenant_id = $1::uuid"
         "   AND report_instance_id = ANY($2::uuid[])"
-        " GROUP BY report_instance_id",
+        " GROUP BY report_instance_id, phase_code"
+        " ORDER BY report_instance_id, phase_code",
         {ctx.tenant_id().to_string(), id_array},
         lg(),
         "Counting the problems of each run");
 
+    // The store answers one row per phase and the caller asked for one per run,
+    // so a run's phases are folded into its own row as they arrive. The order
+    // the statement states is what makes the phases of a run arrive together and
+    // in one order, so the entries of a row read the same way every time; the
+    // index below is what finds the row they belong to.
     std::vector<messaging::report_error_count> counts;
-    counts.reserve(rows.size());
+    std::map<boost::uuids::uuid, std::size_t> row_of_run;
     for (const auto& row : rows) {
-        if (row.size() < 3 || !row[0] || !row[1] || !row[2])
+        if (row.size() < 4 || !row[0] || !row[1] || !row[2] || !row[3])
             continue;
-        messaging::report_error_count count;
-        count.report_instance_id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
-        count.errors = std::stoll(*row[1]);
-        count.warnings = std::stoll(*row[2]);
-        counts.push_back(std::move(count));
+        const auto run_id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
+        const auto [position, is_new] = row_of_run.try_emplace(run_id, counts.size());
+        if (is_new) {
+            messaging::report_error_count count;
+            count.report_instance_id = run_id;
+            counts.push_back(std::move(count));
+        }
+        const auto errors = std::stoll(*row[2]);
+        const auto warnings = std::stoll(*row[3]);
+        auto& count = counts[position->second];
+        count.errors += errors;
+        count.warnings += warnings;
+        count.by_phase.push_back({.phase_code = *row[1], .errors = errors, .warnings = warnings});
     }
     return counts;
 }

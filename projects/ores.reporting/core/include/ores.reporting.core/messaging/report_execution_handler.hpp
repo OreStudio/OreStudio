@@ -26,6 +26,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.reporting.api/domain/run_phase.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.reporting.core/service/engine_log_row.hpp"
 #include "ores.reporting.core/service/run_failure_message.hpp"
@@ -105,9 +106,18 @@ public:
     void fail(ores::nats::delivery delivery);
 
 private:
+    /**
+     * @brief Marks the run failed, and writes the run's own error row.
+     *
+     * The phase is the part of the run the failure is of, and the caller states
+     * it because the caller is the step that failed. A step that reports the
+     * engine's own failure states the engine phase, even though this side of
+     * the wire is what reads it.
+     */
     void mark_instance_failed(const std::string& tenant_id,
                               const std::string& instance_id,
-                              const std::string& error_message);
+                              const std::string& error_message,
+                              domain::run_phase phase);
 
     /**
      * @brief Reads the log rows the node wrote for one compute result.

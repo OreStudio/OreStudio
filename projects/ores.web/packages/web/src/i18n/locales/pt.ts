@@ -8717,6 +8717,7 @@ const pt: SourceCatalogue = {
                 plural: 'linhas',
                 severity: 'Gravidade',
                 scope: 'Âmbito',
+                phase: 'Fase',
                 about: 'Objeto',
                 message: 'Mensagem',
                 location: 'Localização',

@@ -381,6 +381,7 @@ export interface FinaliseReportResult {
 }
 
 export interface FailReportRequest {
+    phase_code: string;
     report_instance_id: string;
     tenant_id: string;
     correlation_id: string;

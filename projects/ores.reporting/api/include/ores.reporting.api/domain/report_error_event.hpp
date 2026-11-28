@@ -37,7 +37,7 @@ namespace ores::reporting::domain {
 /**
  * @brief An error a report run produced, and what it is about.
  *
- * +#+updated: 2026-10-17
+ * +#+updated: 2026-11-27
  *
  * One error a report run produced, held against the run. A report run is one
  * execution of a report definition, and a run whose analytics fail is still a run
@@ -61,13 +61,15 @@ namespace ores::reporting::domain {
  * different facts in one column. A story that needs the engine's instant adds a
  * column for it.
  *
- * A row says four things: how bad the error is, what it is about, what it said,
- * and which subject it names. The first is severity. The second is scope_code,
- * drawn from the engine's own vocabulary, and it is what places the error:
- * Trade on the trade, Analytics on the analytic, Curve on the curve, and
- * Report on the run itself. The third is message, the engine's own words.
+ * A row says five things: how bad the error is, what it is about, which part of
+ * the run produced it, what it said, and which subject it names. The first is
+ * severity. The second is scope_code, drawn from the engine's own vocabulary,
+ * and it is what places the error: Trade on the trade, Analytics on the
+ * analytic, Curve on the curve, and Report on the run itself. The third is
+ * phase_code, the platform's own word for the part of the run that was working,
+ * and the fourth is message, the engine's own words.
  *
- * The fourth is subject and subject_id, a discriminator and a value, holding
+ * The fifth is subject and subject_id, a discriminator and a value, holding
  * the identifier of the thing the error names: trade and a trade id,
  * analytic and an analytic type, curve and a curve id. It is a discriminator
  * and a value rather than one column because the ids are of different kinds — a
@@ -86,6 +88,28 @@ namespace ores::reporting::domain {
  * it; the subject is the particular thing, and it can be narrower than the scope.
  * An Analytics error that names a tradeId is about that trade and not about
  * the analytic as a whole, and its subject says so.
+ *
+ * phase_code is a third question, and it is not the scope either. The phase is
+ * where in the run the error came from: preprocess, the run's own work before
+ * the engine is handed anything; engine, the engine's log; or postprocess,
+ * the reading and loading of what the engine produced. The scope is the engine's
+ * own words about what the error is about; the phase is the platform's word about
+ * which part of the run was working when it failed. A run that fails in
+ * preprocessing has no scope to copy from an engine that never saw it, and states
+ * Report with preprocess; a row that names a trade states engine, because
+ * only the engine names trades. Keeping the two apart is what makes a phase worth
+ * stating: an error a step refused is the run's own failure, and an error the
+ * engine logged is a failure of the valuation, and a reader who cannot tell them
+ * apart reads the second as the first.
+ *
+ * The three phases are the platform's own closed set, as the severity is, so they
+ * are checked in the column rather than drawn from a table as the scope is. The
+ * scope is a vocabulary the engine grows: a new group in the engine's log is a row
+ * to seed, and no platform code changes to read it. The phase is not that. It is
+ * three words of the platform's own, written by the platform's own code, which
+ * names one of the three at every call that writes an error. A check refuses a
+ * value no phase states, exactly as a foreign key to a seeded table would, without
+ * a permission code, a screen and a service for three rows nobody edits.
  *
  * A run that fails before the engine sees it, because a workflow step did not
  * complete, produces a row too, with scope Report. That is why the table is one
@@ -123,6 +147,20 @@ struct report_error_event final {
      * synthesized: the run a trade id belongs to is not a thing a fixture can invent.
      */
     std::string scope_code = "Report";
+
+    /**
+     * @brief Which part of the run produced the error: preprocess, engine or postprocess. It is the
+     * platform's own word and not the engine's, so it stands beside scope_code rather than inside
+     * it: the engine states what an error is about, and the platform states where it was when the
+     * error happened. The column is phase_code rather than phase because it holds a code drawn from
+     * a stated vocabulary, as scope_code does. It is not a filter of the generated read: a screen
+     * reads a run's errors and groups them, and a read of one phase would be a second way to ask a
+     * question the rows already answer.
+     *
+     * A synthetic row states preprocess, which is the phase the Report scope it also states belongs
+     * to.
+     */
+    std::string phase_code;
 
     /**
      * @brief How bad the row is: error, warning or info. The engine states this per message as its

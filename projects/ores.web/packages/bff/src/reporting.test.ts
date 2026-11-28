@@ -258,7 +258,17 @@ function listReplies(): Record<string, Canned> {
         },
         [COUNTS]: {
             result: ok,
-            counts: [{ report_instance_id: DAILY_RUN, errors: 3, warnings: 2 }],
+            counts: [
+                {
+                    report_instance_id: DAILY_RUN,
+                    errors: 3,
+                    warnings: 2,
+                    by_phase: [
+                        { phase_code: 'engine', errors: 2, warnings: 2 },
+                        { phase_code: 'preprocess', errors: 1, warnings: 0 },
+                    ],
+                },
+            ],
         },
         [NEXT_FIRE]: {
             result: ok,
@@ -310,6 +320,12 @@ describe('the list of reports the parties run', () => {
                 completedAt: '2026-10-17 08:00:12.500000Z',
                 errors: 3,
                 warnings: 2,
+                // The same problems split by the phase that recorded them, so a
+                // reader sees where the run's failures came from before opening it.
+                errorsByPhase: [
+                    { phase: 'engine', errors: 2, warnings: 2 },
+                    { phase: 'preprocess', errors: 1, warnings: 0 },
+                ],
             },
             nextFireAt: '2026-10-18 09:00:00.000000Z',
         });

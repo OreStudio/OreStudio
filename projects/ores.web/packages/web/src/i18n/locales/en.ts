@@ -8653,6 +8653,7 @@ export const en: SourceCatalogue = {
                 plural: 'rows',
                 severity: 'Severity',
                 scope: 'Scope',
+                phase: 'Phase',
                 about: 'Subject',
                 message: 'Message',
                 location: 'Location',

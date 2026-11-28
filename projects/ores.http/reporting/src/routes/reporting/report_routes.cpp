@@ -114,7 +114,7 @@ bool has_text(const std::string& text) {
 /// The party a row names, or nothing when the read that names parties failed.
 std::string party_field(const std::optional<std::vector<report_routes::party_name>>& parties,
                         const boost::uuids::uuid& id,
-                        std::string report_routes::party_name::*member) {
+                        std::string report_routes::party_name::* member) {
     if (!parties)
         return std::string();
     for (const auto& party : *parties)
@@ -165,7 +165,7 @@ counted_of_row(const std::optional<std::vector<report_routes::count_row>>& count
     for (const auto& entry : *counts)
         if (entry.run_id == run->id)
             return entry;
-    return report_routes::count_row{run->id, 0, 0};
+    return report_routes::count_row{run->id, 0, 0, {}};
 }
 
 /// The latest run of one definition, or nothing when it never ran.
@@ -201,6 +201,25 @@ struct composed final {
     std::vector<unread_row> unread;
 };
 
+/**
+ * @brief The problems of one run split by the phase that recorded them.
+ *
+ * A run whose counts were not read states null rather than an empty list: the
+ * absence of an entry is the screen's zero, and the two must not read alike.
+ */
+std::string by_phase_json(const std::optional<report_routes::count_row>& counted) {
+    if (!counted)
+        return "null";
+    std::vector<std::string> entries;
+    entries.reserve(counted->by_phase.size());
+    for (const auto& one : counted->by_phase) {
+        entries.push_back("{\"phase\":" + json::write(one.phase_code) +
+                          ",\"errors\":" + json::write(one.errors) +
+                          ",\"warnings\":" + json::write(one.warnings) + "}");
+    }
+    return rr::array_of(entries);
+}
+
 /// One row, as the list draws it.
 std::string row_json(const reporting_domain::report_definition& definition,
                      const composed& decorated) {
@@ -223,7 +242,7 @@ std::string row_json(const reporting_domain::report_definition& definition,
             json::write(counted ? std::optional<std::int64_t>(counted->errors) : std::nullopt) +
             ",\"warnings\":" +
             json::write(counted ? std::optional<std::int64_t>(counted->warnings) : std::nullopt) +
-            "}";
+            ",\"errorsByPhase\":" + by_phase_json(counted) + "}";
     }
 
     return "{\"id\":" + json::write(rr::as_text(definition.id)) +
@@ -430,7 +449,8 @@ composed compose_of(const http_request& req,
         rr::require_done(reply.result);
         std::vector<report_routes::count_row> found;
         for (const auto& entry : reply.counts)
-            found.push_back({entry.report_instance_id, entry.errors, entry.warnings});
+            found.push_back(
+                {entry.report_instance_id, entry.errors, entry.warnings, entry.by_phase});
         decorated.counts = std::move(found);
     });
 

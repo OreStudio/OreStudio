@@ -21,11 +21,11 @@ No store the system keeps grows without bound: each one has a declared policy, h
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-11-24                               |
 
 * Acceptance
@@ -44,7 +44,7 @@ No store the system keeps grows without bound: each one has a declared policy, h
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:093C2CAE-AA56-4317-B10B-9AD0BF1E7593][Scaffold story: Housekeeping: bound every store the system keeps]] | DONE | 2026-11-24 | 2026-11-24 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:B510B5D5-CA8B-4936-B289-508579036354][Implement Housekeeping: bound every store the system keeps]] | BACKLOG | | | Initial task for: Housekeeping: bound every store the system keeps |
+| [[id:B510B5D5-CA8B-4936-B289-508579036354][Implement Housekeeping: bound every store the system keeps]] | DONE | | 2026-11-28 | Initial task for: Housekeeping: bound every store the system keeps |
 | [[id:701FF7D7-23D5-49D0-BE2E-661AFEE24654][Inventory every dimension that grows without bound]] | DONE | 2026-11-24 | 2026-11-24 | Task for: Housekeeping: bound every store the system keeps |
 | [[id:3C41DDF7-AA82-41B7-AFC1-8A5714484E20][Release a job's folder once its output is uploaded]] | DONE | 2026-11-26 | 2026-11-26 | Task for: Housekeeping: bound every store the system keeps |
 | [[id:A7455A2F-DE2D-47F7-9240-5C1F9FA8450E][Document the housekeeping hub and the classes it governs]] | DONE | 2026-11-24 | 2026-11-24 | Task for: Housekeeping: bound every store the system keeps |
@@ -76,6 +76,22 @@ No store the system keeps grows without bound: each one has a declared policy, h
 | [[id:BE55D937-7CC4-4A50-B730-C6C1FEA50D08][Sample the size of every store]] | DONE | | 2026-11-27 | A store's size is a series, not an adjective. The installation measures each store it can reach, keeps the measurements keyed to the store, and reads back the latest size and the history the screen plots. |
 | [[id:1F74AC5C-33D2-420A-9C4E-5AC2D074BFFA][Serve the housekeeping screen its data]] | DONE | | 2026-11-27 | The screen reads what bounds each store and one store's series. Both are computed from the catalogue, the policies and the samples, so they are served as two reads beside the operations model rather than composed from entities by the client. |
 | [[id:9585FFDA-F54F-4DD8-B236-737873FF213D][Make the bounds view state that object expiry runs]] | DONE | 2026-11-28 | 2026-11-28 | The bounds view still calls an object prefix a store that waits on a storage lifecycle, so the screen says unbounded and the alerts pass tells a person to act on a store the sweep now expires. |
+
+* Result
+
+Every store the installation keeps now has a catalogue row that states what
+bounds it, a policy where a period can bound it, and a mechanism that applies
+that policy. The screens read the verdict from one view rather than inferring it,
+a pass tells a person about the stores nothing effective bounds and stops telling
+them when a bound returns, and the object prefixes expire at the period their
+policy states instead of reading as skipped.
+
+Thirty-three tasks delivered it, across the scheduler, the storage service, the
+SQL schema and the web. Two stores stay unbounded by decision: the calendar dates
+cannot be bounded by a period because they are held once and rebuilt on a
+horizon, and a node's scratch folder is released by the node, with the folders of
+failed jobs kept as evidence. The screen states both, and the notice for each is
+the person's cue rather than a silence.
 
 * Decisions
 

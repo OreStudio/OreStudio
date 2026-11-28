@@ -26,11 +26,11 @@ A person reads one store as three questions in three places: what it is, how it 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Nothing; the work is in PR #5231.      |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge #5231, then close this task.     |
+| Next         | Nothing. |
 | Last touched | 2026-11-28                               |
 
 * Acceptance

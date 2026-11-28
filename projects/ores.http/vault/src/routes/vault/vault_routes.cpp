@@ -23,8 +23,10 @@
 #include "ores.platform/credentials/credential_store.hpp"
 #include "ores.security/crypto/sealed_box.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
+#include "ores.vault.api/messaging/consumer_protocol.hpp"
 #include "ores.vault.api/messaging/custody_context.hpp"
 #include "ores.vault.api/messaging/secret_operations_protocol.hpp"
+#include "ores.vault.api/messaging/secret_protocol.hpp"
 #include <boost/json.hpp>
 #include <string>
 #include <utility>
@@ -42,6 +44,21 @@ namespace {
 
 /// The credential the deployment places for the gateway's own key pair.
 constexpr std::string_view gateway_credential = "gateway.transport.key";
+
+/// Reads a paging number from the query string, defaulting when it is absent.
+[[nodiscard]] std::uint32_t number_param(const ores::http::domain::http_request& req,
+                                         std::string_view name,
+                                         std::uint32_t fallback) {
+    const auto raw = req.get_query_param(std::string(name));
+    if (raw.empty()) {
+        return fallback;
+    }
+    try {
+        return static_cast<std::uint32_t>(std::stoul(raw));
+    } catch (const std::exception&) {
+        throw std::runtime_error("The query parameter " + std::string(name) + " is not a number");
+    }
+}
 
 /// Reads one string member of a JSON body, refusing a body that lacks it.
 [[nodiscard]] std::string field(const boost::json::object& body, std::string_view name) {
@@ -81,6 +98,35 @@ void vault_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
     const auto write_built = write_route.build();
     router->add_route(write_built);
     registry->register_route(write_built);
+
+    auto list_route = router->get("/api/v1/vault/secrets")
+                          .summary("List the secrets")
+                          .description("The secrets this tenant keeps, without their values.")
+                          .tags({"vault"})
+                          .entity_catalogue("vault", "secrets", "list")
+                          .no_body()
+                          .auth_required()
+                          .handler([&session](const ores::http::domain::http_request& req) {
+                              return handle_list_secrets(req, session);
+                          });
+    const auto list_built = list_route.build();
+    router->add_route(list_built);
+    registry->register_route(list_built);
+
+    auto consumers_route = router->get("/api/v1/vault/consumers")
+                               .summary("List the consumers")
+                               .description("The services that may receive a secret, and whether "
+                                            "each is enabled.")
+                               .tags({"vault"})
+                               .entity_catalogue("vault", "consumers", "list")
+                               .no_body()
+                               .auth_required()
+                               .handler([&session](const ores::http::domain::http_request& req) {
+                                   return handle_list_consumers(req, session);
+                               });
+    const auto consumers_built = consumers_route.build();
+    router->add_route(consumers_built);
+    registry->register_route(consumers_built);
 
     auto reveal_route =
         router->get("/api/v1/vault/secrets/{name}/value")
@@ -142,6 +188,42 @@ vault_routes::handle_write(const ores::http::domain::http_request& req,
         co_return ores::http::net::record_routes::answer(r);
     } catch (const std::exception& e) {
         ORES_LOG_SEV(lg(), warn) << "Write refused: " << e.what();
+        co_return ores::http::domain::http_response::bad_request(e.what());
+    }
+}
+
+boost::asio::awaitable<ores::http::domain::http_response>
+vault_routes::handle_list_secrets(const ores::http::domain::http_request& req,
+                                  ores::nats::service::nats_client& session) {
+    try {
+        ores::http::forwarding::require_permission(
+            req, session, "vault::secrets:read", "Listing the secrets");
+        ores::vault::messaging::list_secrets_request request;
+        request.offset = number_param(req, "offset", request.offset);
+        request.limit = number_param(req, "limit", request.limit);
+        co_return ores::http::forwarding::respond(req, session, request);
+    } catch (const ores::http::net::record_routes::refusal& r) {
+        co_return ores::http::net::record_routes::answer(r);
+    } catch (const std::exception& e) {
+        ORES_LOG_SEV(lg(), warn) << "List refused: " << e.what();
+        co_return ores::http::domain::http_response::bad_request(e.what());
+    }
+}
+
+boost::asio::awaitable<ores::http::domain::http_response>
+vault_routes::handle_list_consumers(const ores::http::domain::http_request& req,
+                                    ores::nats::service::nats_client& session) {
+    try {
+        ores::http::forwarding::require_permission(
+            req, session, "vault::secrets:read", "Listing the consumers");
+        ores::vault::messaging::list_consumers_request request;
+        request.offset = number_param(req, "offset", request.offset);
+        request.limit = number_param(req, "limit", request.limit);
+        co_return ores::http::forwarding::respond(req, session, request);
+    } catch (const ores::http::net::record_routes::refusal& r) {
+        co_return ores::http::net::record_routes::answer(r);
+    } catch (const std::exception& e) {
+        ORES_LOG_SEV(lg(), warn) << "List refused: " << e.what();
         co_return ores::http::domain::http_response::bad_request(e.what());
     }
 }

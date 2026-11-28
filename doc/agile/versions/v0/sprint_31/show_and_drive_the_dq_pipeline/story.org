@@ -72,6 +72,7 @@ from the shared parts rather than from the prototype markup.
 | [[id:4C516D35-0DAA-47FD-8FC4-BE62E071D3D8][Show what a dataset depends on, and what waits on it]] | BACKLOG | | | A read of the dependency edges over the bus, and the dataset page's Lineage tab drawn from it: what has to publish before a dataset, and what waits on it. |
 | [[id:C764076D-053A-4980-95D2-EC74639C7954][Show a dataset's own row, its provenance and its methodology]] | BACKLOG | | | The dataset page reads the dataset row itself, not only its roster member: description, context, classifications, domain and catalog on Details; provenance fields and the methodology its values are derived under on a Provenance tab. |
 | [[id:D1B5FAF4-BD7A-4740-AC52-A980A0FFE901][Show an artefact row's image, not its id]] | BACKLOG | | | The contents read states an image column's kind and answers the image's code, and a route serves the stored image at its own content type, so a screen draws the flag instead of the uuid. |
+| [[id:92A4AB23-EC6B-4BD4-B617-B2E31F3D1E2C][Plot the size of every bundle, and of the datasets in it]] | BACKLOG | | | A pie of how the staged data divides between bundles on the coverage page, and, for the bundle a person selects, its total size and a bar chart of the datasets in it, measured the way housekeeping already measures a store. |
 
 * Decisions
 

@@ -1,0 +1,188 @@
+:PROPERTIES:
+:ID: 92A4AB23-EC6B-4BD4-B617-B2E31F3D1E2C
+:END:
+#+title: Task: Plot the size of every bundle, and of the datasets in it
+#+description: A pie of how the staged data divides between bundles on the coverage page, and, for the bundle a person selects, its total size and a bar chart of the datasets in it, measured the way housekeeping already measures a store.
+#+type: task
+#+level: s1
+#+filetags: :dq:web:coverage:sprint_31:v0:show_and_drive_the_dq_pipeline:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The coverage page gains two plots. The list's own page draws a pie of how the staged
+data divides between the bundles, so a person sees which one holds the footprint. When
+a bundle is selected, the page states that bundle's total size and draws a bar chart of
+the datasets in it, tallest first, so the one dataset that is most of the weight is
+named rather than inferred.
+
+Sizes are physical bytes, measured the way housekeeping already measures a store:
+=pg_total_relation_size= of the relation, with =reltuples= beside it. Nothing new is
+invented; the method is reused and generalised from a store to a dataset.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
+| Now          | Not started. The prototype is the next step, then the size read. |
+| Waiting on   | A prototype to sign off, as the area requires. |
+| Next         | Draw the two plots in the coverage prototype. |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- The coverage page draws a pie of how the staged data divides between bundles. Every
+  bundle with staged rows is a slice, or folded into the "other" slice as the shared
+  =SharePie= does, and every slice states its size and its share.
+- A bundle selected by the person states that bundle's total size, in both bytes and a
+  human unit, beside the count it already states.
+- The same page draws a bar chart of the datasets in the selected bundle, one bar each,
+  ordered largest first, so the heaviest dataset is named.
+- Both plots state when the sizes were measured. A size is a measurement of a moment,
+  not a live fact, and a plot that hides the moment is a plot a person cannot trust.
+- A dataset with no staged rows has size zero and is left out of the bar chart; a bundle
+  whose datasets hold nothing is stated as empty rather than drawn as a slice.
+- The pie counts a dataset once, in one bundle, and the page states which bundle that is
+  or which slice holds the shared data. Two bundles carrying the same dataset must not
+  both claim its bytes.
+- The figures are the ones the store computes. No screen adds up table sizes of its own.
+- A dataset's size is the bytes of its tables apportioned by its share of the rows those
+  tables hold, because a table can serve several datasets; the page states that the
+  figure is a share of a table rather than a table of its own, and a dataset alone in
+  its tables is exact.
+- A test asserts a dataset that is alone in its tables against =pg_total_relation_size=,
+  and that the bundle total is the sum of its members.
+
+* Plan
+
+The first step is a prototype, as every screen in this area needs one: the pie and the
+bar chart drawn from these measurements, with the bundle selection wired, so the shape
+is signed off before the read is built.
+
+The measurement is housekeeping's, already written and already scheduled:
+
+- =ores_scheduler_sample_retained_stores_fn()= walks the retained stores whose target
+  is a relation, takes =pg_total_relation_size(to_regclass(target))= and the row
+  estimate from =pg_class.reltuples=, and writes one sample per store per run to
+  =ores_scheduler_retained_store_samples_tbl=.
+- =ores_scheduler_store_bounds_vw= reads the latest sample per store, which is how the
+  housekeeping screen states a store's size and when it was measured.
+
+The shapes do not line up as they stand: housekeeping measures a *store*, one relation,
+and a dataset's rows may sit in a family of tables, which one count and one sum per
+dataset can bridge. So:
+
+1. A read of sizes: =ores_dq_dataset_sizes_fn()= answering, per dataset, the bytes its
+   rows occupy and the row estimate. Bytes are apportioned: for each table its artefact
+   type names, the relation's =pg_total_relation_size= times the dataset's share of the
+   rows in that table. The counts are the ones the contents read already takes, so the
+   apportioning adds no scan. It is a read, not a sample writer: the coverage screen
+   needs today's figure for a few dozen datasets, and a series nobody plots yet would be
+   a table to keep for no reader. If a series is wanted later, the sampler's pattern is
+   the one to copy.
+2. The bundle total is computed from the same read, in the store, with the de-duplication
+   rule stated in one place — the first bundle by code claims a shared dataset, and the
+   rest state that it is shared — so the pie cannot disagree with the bar chart.
+3. The operation, =dq.v1.ops.dataset_sizes=, and the route, so one page reads the sizes
+   once and draws both plots.
+4. The screen: =SharePie= for the pie, which already folds a long tail and states each
+   share; a small bar chart component for the datasets, since =SeriesChart= draws bars
+   over time buckets and not over named categories.
+5. Tests: a pgTAP assertion for a dataset's bytes against the relation's own size, and
+   the page's tests for the two plots and the total.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Bundles in the store | 22 | =select count(*) from ores_dq_dataset_bundles_tbl where valid_to=ores_utility_infinity_timestamp_fn()= | c0ba279543 |
+| The largest bundle, by its members' tables | 108 MB (=world=) | sum of =pg_total_relation_size= over the members' artefact tables | c0ba279543 |
+| The heaviest artefact table | 94 MB (=ores_dq_ip2country_artefact_tbl=) | =select pg_total_relation_size('ores_dq_ip2country_artefact_tbl')= | c0ba279543 |
+| The whole database, for scale | 1,252 MB | =select pg_database_size(current_database())= | c0ba279543 |
+| Retained stores housekeeping measures today | 10 | =select count(*) from ores_scheduler_retained_stores_tbl where valid_to=ores_utility_infinity_timestamp_fn()= | c0ba279543 |
+| Datasets | 206 | =select count(*) from ores_dq_datasets_tbl where valid_to=ores_utility_infinity_timestamp_fn()= | c0ba279543 |
+| Distinct table families they map onto | 75 | =select count(distinct at.artefact_table)= over the datasets | c0ba279543 |
+| Families shared by more than one dataset | 30 | grouped count on =at.artefact_table= | c0ba279543 |
+| The most datasets one family serves | 17 | =max(count(distinct d.code)) group by at.artefact_table= | c0ba279543 |
+
+* Notes
+
+Housekeeping's method is worth reusing because it is already the installation's answer
+to "how big is this?": =pg_total_relation_size= counts the table, its indexes and its
+toast, and =pg_class.reltuples= gives a row estimate without a scan. The sampler in
+=scheduler_store_sampler_create.sql= states why it estimates rather than counts — an
+exact count of every store on every run is a cost the household should not add to the
+household — and the same reason holds here: the coverage page must not scan 512,186
+=ip2country= rows to say how big they are.
+
+Three limits are recorded rather than hidden:
+
+- *A size is physical, not per tenant.* =pg_total_relation_size= counts every tenant's
+  rows in the table, so the figure is the installation's footprint, not a tenant's
+  share. A per-tenant size would need a row-by-row sum, which is the scan the estimate
+  exists to avoid. The page must say whose footprint it is drawing.
+- *A table is often shared by several datasets.* 206 datasets map onto 75 table
+  families, and 30 of those families serve between 2 and 17 datasets:
+  =dq_lei_entities_artefact_tbl= holds seventeen datasets' entities, the FX spot and IR
+  curve generation configs ten, and =dq_books_artefact_tbl= seven. So a dataset's bytes
+  cannot be a table's whole size, and summing
+  tables per dataset would count one table many times. The size is apportioned by the
+  dataset's share of the rows, which is an estimate for a shared table and exact for a
+  dataset that is alone in its tables.
+- *Bundles overlap.* 22 bundles share datasets, and =world= alone measures 108 MB
+  because =ip2country= is 94 MB of it. A pie that let two bundles claim one dataset
+  would total more than the store holds, so the de-duplication rule is part of the
+  design and not an implementation detail.
+
+The prototype must settle where the plots sit: on the coverage list above the table, or
+on the dataset's own page beside the details. The list is where a person compares
+bundles, so the pie belongs there; the bar chart belongs to the selected bundle, which
+the librarian layout already holds in the address.
+
+Asked for on 2026-11-28, after the contents work: a person could read the rows of a
+dataset and not see that one dataset is most of the footprint.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

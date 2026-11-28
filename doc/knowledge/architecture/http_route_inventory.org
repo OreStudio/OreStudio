@@ -63,7 +63,7 @@ an API publishes no area, so it is counted under =(none)=.
 
 | Area | Owner components | Routes | Kinds |
 |------+------------------+--------+-------|
-|  | api, fixing-observations, housekeeping, iam, marketdata, refdata, scheduler, series-identity-shapes, synthetic, vault | 32 | unclassified 32 |
+|  | api, fixing-observations, housekeeping, iam, marketdata, refdata, scheduler, series-identity-shapes, synthetic, vault | 34 | unclassified 34 |
 | access | iam, server | 109 | composed view 2, resource 107 |
 | agile | agile-routes | 6 | composed view 2, resource 4 |
 | analytics | analytics, sensitivity-templates | 12 | resource 12 |
@@ -519,7 +519,7 @@ against the answer the BFF gives.
 
 * The inventory
 
-1545 routes: 348 answered by the BFF and 1197 by ores.http.
+1547 routes: 348 answered by the BFF and 1199 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|

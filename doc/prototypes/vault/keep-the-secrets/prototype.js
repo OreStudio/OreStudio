@@ -1,227 +1,323 @@
-/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+/* Keep the installation's secrets prototype. Self-contained: plain JavaScript,
+ * mock data, no framework, no build step, and nothing that outlives the page.
  *
- * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ * Shaped after HashiCorp Vault: the secrets engine's list, the secret view with
+ * a masked value and the version history beside it, and the audit devices' log
+ * for the uses. The four screens come from
+ * doc/knowledge/journeys/vault/journey_keep_the_installations_secrets.org.
  *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 3 of the License, or (at your option) any later
- * version.
- *
- * PROTOTYPE. Mock data, no backend, no build step. The design note beside this
- * file names every value that is fake and the operation each screen would call.
- */
+ * Every screen and every state has its own address. The rows are fixtures: the
+ * gateway has two doors for the vault and neither lists, so the state readout
+ * names the operation each screen would call and the design note beside this
+ * folder says which of them exist. */
 
-const SCREENS = ['secrets', 'secret', 'consumers', 'uses', 'states'];
+(function () {
+    'use strict';
 
-const STATES = {
-    secrets: ['empty', 'full', 'refused'],
-    secret: ['masked', 'revealed', 'refused'],
-    consumers: ['empty', 'full', 'refused'],
-    uses: ['empty', 'full', 'refused'],
-    states: ['full']
-};
+    var SCREENS = ['secrets', 'secret', 'consumers', 'uses', 'states'];
+    var SCREEN_NAMES = {
+        secrets: 'Secrets', secret: 'Secret', consumers: 'Consumers',
+        uses: 'Uses', states: 'States'
+    };
+    var STATES = {
+        secrets: ['empty', 'full', 'refused'],
+        secret: ['masked', 'revealed', 'refused'],
+        consumers: ['empty', 'full', 'refused'],
+        uses: ['empty', 'full', 'refused'],
+        states: ['full']
+    };
 
-const SECRETS = [
-    { name: 'db.marketdata_service.password', owner: 'marketdata_service', version: 3, key: 2, read: '2 hours ago' },
-    { name: 'db.inbox_service.password', owner: 'inbox_service', version: 1, key: 2, read: 'yesterday' },
-    { name: 'ores.marketdata.vendor.api_key', owner: 'marketdata_service', version: 2, key: 2, read: 'never' },
-    { name: 'db.vault_service.password', owner: 'vault_service', version: 4, key: 2, read: '4 days ago' }
-];
+    var REFRESHED_AT = '2026-11-28 14:20 UTC';
+    var KEY_VERSION = 2;
 
-const VERSIONS = [
-    { version: 3, when: '2 hours ago', by: 'vault provision', reason: 'system.update' },
-    { version: 2, when: 'yesterday', by: 'marco', reason: 'rotate the tick writer key' },
-    { version: 1, when: '4 days ago', by: 'vault provision', reason: 'system.initial_load' }
-];
+    var SECRETS = [
+        { name: 'db.marketdata_service.password', owner: 'marketdata_service', version: 3, read: '2 hours ago' },
+        { name: 'db.inbox_service.password', owner: 'inbox_service', version: 1, read: 'yesterday' },
+        { name: 'ores.marketdata.vendor.api_key', owner: 'marketdata_service', version: 2, read: 'never' },
+        { name: 'db.vault_service.password', owner: 'vault_service', version: 4, read: '4 days ago' }
+    ];
 
-const CONSUMERS = [
-    { name: 'marketdata_service', subject: 'marketdata_service@system.ores', key: '8f2c…a1', enabled: true },
-    { name: 'inbox_service', subject: 'inbox_service@system.ores', key: '3d90…7e', enabled: true },
-    { name: 'reporting_service', subject: 'reporting_service@system.ores', key: 'c41b…02', enabled: false }
-];
+    var VERSIONS = [
+        { version: 3, when: '2 hours ago', by: 'vault provision', reason: 'system.update' },
+        { version: 2, when: 'yesterday', by: 'marco', reason: 'rotate the tick writer key' },
+        { version: 1, when: '4 days ago', by: 'vault provision', reason: 'system.initial_load' }
+    ];
 
-const USES = [
-    { when: '2 hours ago', secret: 'db.marketdata_service.password', consumer: 'marketdata_service', actor: 'marketdata_service@system.ores', key: 2 },
-    { when: 'yesterday', secret: 'db.inbox_service.password', consumer: 'inbox_service', actor: 'inbox_service@system.ores', key: 2 },
-    { when: 'yesterday', secret: 'ores.marketdata.vendor.api_key', consumer: 'marketdata_service', actor: 'marco@acme.example', key: 1 }
-];
+    var CONSUMERS = [
+        { name: 'marketdata_service', subject: 'marketdata_service@system.ores', key: '8f2c…a1', enabled: true },
+        { name: 'inbox_service', subject: 'inbox_service@system.ores', key: '3d90…7e', enabled: true },
+        { name: 'reporting_service', subject: 'reporting_service@system.ores', key: 'c41b…02', enabled: false }
+    ];
 
-const FAKE_VALUE = 'f3a9-tyJ_03fl7eLhAn8_fv3fHvRFzhm';
+    var USES = [
+        { when: '2 hours ago', secret: 'db.marketdata_service.password', consumer: 'marketdata_service', actor: 'marketdata_service@system.ores', key: 2 },
+        { when: 'yesterday', secret: 'db.inbox_service.password', consumer: 'inbox_service', actor: 'inbox_service@system.ores', key: 2 },
+        { when: 'yesterday', secret: 'ores.marketdata.vendor.api_key', consumer: 'marketdata_service', actor: 'marco@acme.example', key: 1 }
+    ];
 
-function params() {
-    const q = new URLSearchParams(window.location.search);
-    const screen = SCREENS.includes(q.get('screen')) ? q.get('screen') : 'secrets';
-    const allowed = STATES[screen];
-    const state = allowed.includes(q.get('state')) ? q.get('state') : allowed[0];
-    return { screen, state };
-}
+    var FAKE_VALUE = 'f3a9-tyJ_03fl7eLhAn8_fv3fHvRFzhm';
 
-function href(screen, state) {
-    return `?screen=${screen}&state=${state}`;
-}
+    var OPERATIONS = {
+        secrets: 'GET /api/v1/vault/secrets — missing; the web task adds it',
+        secret: 'GET /api/v1/vault/secrets/{name} — missing; GET …/{name}/value exists for the reveal',
+        consumers: 'GET /api/v1/vault/consumers — missing; the web task adds it',
+        uses: 'none: no operation lists the uses, and no rule draws the screen',
+        states: "none: this page is the prototype's own index"
+    };
 
-function el(html) {
-    const t = document.createElement('template');
-    t.innerHTML = html.trim();
-    return t.content.firstElementChild;
-}
+    var S = { screen: 'secrets', state: 'full', showState: true };
 
-function crumbs(parts) {
-    return `<div class="crumbs">${parts.join(' › ')}</div>`;
-}
+    // ------------------------------------------------------------- helpers
 
-function titleRow(title, lede, actions) {
-    return `
-        <div class="title-row">
-            <div>
-                <h1>${title}</h1>
-                <p class="lede">${lede}</p>
-            </div>
-            <div class="actions">${actions || ''}</div>
-        </div>`;
-}
-
-function listCard(rows) {
-    return `<div class="card"><table>
-        <thead><tr><th>Name</th><th>Consumer</th><th>Current</th><th>Key</th><th>Last read</th></tr></thead>
-        <tbody>${rows.map(r => `
-            <tr>
-                <td class="name"><a href="${href('secret', 'masked')}">${r.name}</a></td>
-                <td>${r.owner}</td>
-                <td>version ${r.version}</td>
-                <td>${r.key}</td>
-                <td>${r.read}</td>
-            </tr>`).join('')}
-        </tbody></table>
-        <div class="pager">Showing 1-${rows.length} of ${rows.length}</div></div>`;
-}
-
-function emptyCard(what, add) {
-    return `<div class="card"><div class="empty">
-        <strong>${what}</strong>
-        Nothing is here yet.${add ? ' Add the first one to begin.' : ''}
-    </div>${add ? `<div style="text-align:center"><button class="primary">Add</button></div>` : ''}</div>`;
-}
-
-function refusedCard(what, detail) {
-    return `<div class="card"><div class="refused"><strong>${what}</strong><br>${detail}</div></div>`;
-}
-
-function screenSecrets(state) {
-    const canWrite = state !== 'refused';
-    const actions = `<button class="quiet">Refresh</button>${canWrite ? '<button class="primary">Add</button>' : ''}`;
-    const head = crumbs(['Home', 'Secrets']) +
-        titleRow('Secrets', 'The values this installation keeps for its own use.', actions);
-    const body = state === 'empty'
-        ? emptyCard('No secrets yet', canWrite)
-        : listCard(SECRETS);
-    const access = canWrite
-        ? ''
-        : '<div class="access">Read only: you hold <code>vault::secrets:read</code> and not the write, so Add is not drawn.</div>';
-    return head + access + body;
-}
-
-function screenSecret(state) {
-    const canWrite = state !== 'refused';
-    const revealed = state === 'revealed';
-    const s = SECRETS[0];
-    const actions = `${canWrite ? '<button>Change</button><button class="danger">Delete</button>' : ''}`;
-    const valueBlock = revealed
-        ? `<div class="value"><span class="secret revealed">${FAKE_VALUE}</span><span class="badge on">revealed</span></div>
-           <div class="note">This reveal was recorded: the vault recorded the gateway's resolve, and the gateway recorded you.</div>`
-        : `<div class="value"><span class="secret">••••••••••••</span>${canWrite ? '<button>Reveal</button>' : ''}</div>
-           <div class="note">The value stays masked until it is asked for, and the ask is recorded.</div>`;
-    const body = canWrite
-        ? valueBlock
-        : `<div class="refused"><strong>No read</strong><br>You do not hold <code>vault::secrets:read</code>, so the reveal is not drawn.</div>`;
-    return crumbs(['Home', 'Secrets', s.name]) +
-        titleRow(s.name, `version ${s.version} · owned by ${s.owner}`, actions) +
-        `<div class="tabs"><span class="on">Overview</span><span>Versions</span><span>Uses</span></div>
-         <div class="card">${body}
-            <div class="meta" style="margin-top:0.75rem">Key version ${s.key} · last rotated 27 Nov 2026</div>
-         </div>
-         <div class="card"><h2>History</h2><table>
-            <thead><tr><th>Version</th><th>When</th><th>By</th><th>Reason</th></tr></thead>
-            <tbody>${VERSIONS.map(v => `<tr><td>${v.version}</td><td>${v.when}</td><td>${v.by}</td><td>${v.reason}</td></tr>`).join('')}</tbody>
-         </table></div>`;
-}
-
-function screenConsumers(state) {
-    const canWrite = state !== 'refused';
-    const actions = `<button class="quiet">Refresh</button>${canWrite ? '<button class="primary">Add</button>' : ''}`;
-    const head = crumbs(['Home', 'Secrets', 'Consumers']) +
-        titleRow('Consumers', 'The services that may receive a secret, and the key each one answers with.', actions);
-    const access = canWrite ? '' : '<div class="access">Read only: Add is not drawn.</div>';
-    if (state === 'empty') return head + access + emptyCard('No consumers yet', canWrite);
-    const rows = CONSUMERS.map(c => `<tr>
-        <td class="name"><a href="${href('consumers', 'full')}">${c.name}</a></td>
-        <td>${c.subject}</td>
-        <td class="name">${c.key}</td>
-        <td><span class="badge ${c.enabled ? 'on' : ''}">${c.enabled ? 'enabled' : 'disabled'}</span></td>
-    </tr>`).join('');
-    return head + access + `<div class="card"><table>
-        <thead><tr><th>Consumer</th><th>Subject</th><th>Key</th><th>Enabled</th></tr></thead>
-        <tbody>${rows}</tbody></table>
-        <div class="pager">Showing 1-${CONSUMERS.length} of ${CONSUMERS.length}</div></div>`;
-}
-
-function screenUses(state) {
-    const head = crumbs(['Home', 'Secrets', 'Uses']) +
-        titleRow('Uses', 'Every time a secret was resolved, and who asked for it.',
-                 '<button class="quiet">Refresh</button>');
-    if (state === 'refused') {
-        return head + refusedCard('No read', 'You do not hold the read this list needs, so it is not drawn.');
+    function esc(value) {
+        return String(value === null || value === undefined ? '' : value)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
-    if (state === 'empty') return head + emptyCard('No uses yet', false);
-    const rows = USES.map(u => `<tr>
-        <td>${u.when}</td>
-        <td class="name">${u.secret}</td>
-        <td>${u.consumer}</td>
-        <td>${u.actor}</td>
-        <td>${u.key}</td>
-    </tr>`).join('');
-    return head + `<div class="card"><table>
-        <thead><tr><th>When</th><th>Secret</th><th>Consumer</th><th>Actor</th><th>Key</th></tr></thead>
-        <tbody>${rows}</tbody></table>
-        <div class="pager">Showing 1-${USES.length} of ${USES.length}</div></div>
-        <div class="note">No rule in the record screen standard draws this list yet; this page is the proposal.</div>`;
-}
 
-function screenStates() {
-    const all = Object.entries(STATES).flatMap(([screen, states]) =>
-        states.map(state => `<div><a href="${href(screen, state)}">?screen=${screen}&amp;state=${state}</a></div>`));
-    return crumbs(['Home', 'States']) +
-        titleRow('Every state, at its own address', 'Each screen of the journey in its empty, full, revealed and refused states.') +
-        `<div class="card"><div class="states-list">${all.join('')}</div></div>`;
-}
+    function tag(tone, text) {
+        return '<span class="tag ' + tone + '">' + esc(text) + '</span>';
+    }
 
-const RENDERERS = {
-    secrets: screenSecrets,
-    secret: screenSecret,
-    consumers: screenConsumers,
-    uses: screenUses,
-    states: screenStates
-};
+    function crumb(text) {
+        return '<div class="strip"><span class="mono">' + esc(text) + '</span></div>';
+    }
 
-function renderNav(screen) {
-    const labels = { secrets: 'Secrets', secret: 'Secret', consumers: 'Consumers', uses: 'Uses', states: 'States' };
-    document.getElementById('nav').innerHTML = SCREENS.map(s =>
-        `<a href="${href(s, STATES[s][0])}" ${s === screen ? 'aria-current="page"' : ''}>${labels[s]}</a>`).join('');
-}
+    function head(title, desc, actions) {
+        return '<div class="phead"><div><h1>' + esc(title) + '</h1>' +
+            '<div class="desc">' + esc(desc) + '</div></div>' +
+            '<div class="actions">' + (actions || '') + '</div></div>';
+    }
 
-function renderStates(screen, state) {
-    document.getElementById('states').innerHTML = STATES[screen].map(s =>
-        `<a href="${href(screen, s)}" ${s === state ? 'aria-current="true"' : ''}>${s}</a>`).join('');
-}
+    function notice(tone, text) {
+        return '<div class="notice ' + tone + '">' + esc(text) + '</div>';
+    }
 
-function render() {
-    const { screen, state } = params();
-    renderNav(screen);
-    renderStates(screen, state);
-    const app = document.getElementById('app');
-    app.innerHTML = '';
-    app.appendChild(el(`<div>${RENDERERS[screen](state)}</div>`));
-}
+    function btn(label, kind, act) {
+        return '<button class="btn ' + (kind || 'secondary') +
+            '" data-act="' + act + '">' + esc(label) + '</button>';
+    }
 
-window.addEventListener('popstate', render);
-render();
+    function href(screen, state) {
+        return '?screen=' + screen + '&state=' + state;
+    }
+
+    function go(screen, state) {
+        window.location.search = href(screen, state).slice(1);
+    }
+
+    // ------------------------------------------------------------- rows
+
+    function secretRow(s) {
+        var unread = s.read === 'never';
+        return '<div class="srow">' +
+            '<span class="client w7"><a href="' + href('secret', 'masked') + '">' +
+            esc(s.name) + '</a><span class="sub">' + esc(s.owner) + '</span></span>' +
+            '<span class="grow">' + tag('neutral', 'version ' + s.version) + ' ' +
+            tag('muted', 'key ' + KEY_VERSION) + '</span>' +
+            '<span class="bytes">' + esc(s.read) + '</span>' +
+            '<span class="act">' + tag(unread ? 'muted' : 'accent',
+                unread ? 'unread' : 'read') + '</span></div>';
+    }
+
+    function consumerRow(c) {
+        return '<div class="srow">' +
+            '<span class="client w7">' + esc(c.name) + '<span class="sub">' +
+            esc(c.subject) + '</span></span>' +
+            '<span class="grow mono">' + esc(c.key) + '</span>' +
+            '<span class="act">' + tag(c.enabled ? 'accent' : 'muted',
+                c.enabled ? 'enabled' : 'disabled') + '</span></div>';
+    }
+
+    function useRow(u) {
+        return '<div class="srow">' +
+            '<span class="client"><span class="sub">' + esc(u.when) + '</span></span>' +
+            '<span class="grow"><span class="mono">' + esc(u.secret) + '</span>' +
+            '<span class="sub">' + esc(u.consumer) + ' · ' + esc(u.actor) + '</span></span>' +
+            '<span class="act">' + tag('neutral', 'key ' + u.key) + '</span></div>';
+    }
+
+    function rows(items, render) {
+        return '<div class="card p4"><div class="srows">' + items.map(render).join('') +
+            '</div><div class="footrow"><span class="tiny">Showing 1-' + items.length +
+            ' of ' + items.length + '</span><span class="end"><span class="tiny">Read ' +
+            esc(REFRESHED_AT) + '</span></span></div></div>';
+    }
+
+    function empty(what, add) {
+        return '<div class="card"><div class="chead"><h2>Nothing here yet</h2>' +
+            '<p>' + esc(what) + '</p></div>' + (add || '') + '</div>';
+    }
+
+    // ------------------------------------------------------------- screens
+
+    function screenSecrets(state) {
+        var canWrite = state !== 'refused';
+        var actions = btn('Refresh', 'secondary', 'refresh') +
+            (canWrite ? btn('Add', 'primary', 'add') : '');
+        var body = state === 'empty'
+            ? empty('The installation holds no secrets yet.',
+                canWrite ? btn('Add', 'primary', 'add') : '')
+            : rows(SECRETS, secretRow);
+        var access = canWrite ? '' : notice('warn',
+            'You hold vault::secrets:read and not the write, so Add is not drawn.');
+        return crumb('Home · Secrets') +
+            head('Secrets', 'The values this installation keeps for its own use.', actions) +
+            access + body;
+    }
+
+    function screenSecret(state) {
+        var canWrite = state !== 'refused';
+        var revealed = state === 'revealed';
+        var s = SECRETS[0];
+        var actions = (canWrite ? btn('Change', 'secondary', 'change') : '') +
+            (canWrite ? btn('Delete', 'danger', 'delete') : '') +
+            (canWrite ? (revealed ? btn('Hide', 'secondary', 'hide')
+                : btn('Reveal', 'primary', 'reveal')) : '');
+        var value = revealed
+            ? '<div class="maskline"><span class="mask revealed">' + esc(FAKE_VALUE) +
+              '</span>' + tag('warn', 'revealed') + '</div>' +
+              notice('info', "This reveal was recorded: the vault recorded the gateway's " +
+                  'resolve, and the gateway recorded you.')
+            : '<div class="maskline"><span class="mask">••••••••••••</span>' +
+              (canWrite ? btn('Reveal', 'primary', 'reveal') : '') + '</div>' +
+              notice('info', 'The value stays masked until it is asked for, and the ask is recorded.');
+        var lostRead = canWrite ? '' : notice('error',
+            'You do not hold vault::secrets:read, so the reveal is not drawn.');
+        var versions = VERSIONS.map(function (v) {
+            return '<div class="vrow"><span class="ver">v' + v.version + '</span>' +
+                '<span class="grow">' + esc(v.by) + ' · ' + esc(v.reason) + '</span>' +
+                '<span class="when">' + esc(v.when) + '</span></div>';
+        }).join('');
+        return crumb('Home · Secrets · ' + s.name) +
+            head(s.name, 'version ' + s.version + ' · owned by ' + s.owner +
+                ' · key ' + KEY_VERSION, actions) +
+            '<div class="stack"><div class="card"><div class="chead"><h2>Value</h2>' +
+            '<p>Masked until it is asked for; the ask needs the read and is recorded twice.</p></div>' +
+            lostRead + value + '</div>' +
+            '<div class="card"><div class="chead"><h2>Versions</h2>' +
+            '<p>Newest first, each with who wrote it and why.</p></div>' + versions + '</div></div>';
+    }
+
+    function screenConsumers(state) {
+        var canWrite = state !== 'refused';
+        var actions = btn('Refresh', 'secondary', 'refresh') +
+            (canWrite ? btn('Add', 'primary', 'add') : '');
+        var body = state === 'empty'
+            ? empty('No service may receive a secret yet.',
+                canWrite ? btn('Add', 'primary', 'add') : '')
+            : rows(CONSUMERS, consumerRow);
+        var access = canWrite ? '' : notice('warn',
+            'You hold the read and not the write, so Add is not drawn.');
+        return crumb('Home · Secrets · Consumers') +
+            head('Consumers', 'The services that may receive a secret, and the key each one answers with.',
+                actions) + access + body;
+    }
+
+    function screenUses(state) {
+        var frame = crumb('Home · Secrets · Uses') +
+            head('Uses', 'Every time a secret was resolved, and who asked for it.',
+                btn('Refresh', 'secondary', 'refresh'));
+        if (state === 'empty')
+            return frame + empty('No secret has been resolved yet.');
+        var refused = state === 'refused'
+            ? notice('error', 'You do not hold the read this list needs, so it is not drawn.') : '';
+        return frame + refused + '<div class="stack">' + rows(USES, useRow) +
+            notice('warn', 'No rule in the record screen standard draws this list yet, and no ' +
+                'operation lists it: the page is the proposal the capture asks for.') + '</div>';
+    }
+
+    function screenStates() {
+        var list = Object.keys(STATES).map(function (screen) {
+            return STATES[screen].map(function (state) {
+                return '<div class="vrow"><span class="ver mono">' + esc(screen) + '</span>' +
+                    '<span class="grow"><a href="' + href(screen, state) + '">?screen=' +
+                    esc(screen) + '&amp;state=' + esc(state) + '</a></span>' +
+                    '<span class="when">' + esc(state) + '</span></div>';
+            }).join('');
+        }).join('');
+        return crumb('Home · States') +
+            head('Every state, at its own address',
+                'Each screen of the journey in its empty, full, revealed and refused states.') +
+            '<div class="card p4">' + list + '</div>';
+    }
+
+    var RENDER = {
+        secrets: screenSecrets, secret: screenSecret, consumers: screenConsumers,
+        uses: screenUses, states: screenStates
+    };
+
+    // ------------------------------------------------------------- chrome
+
+    function readQuery() {
+        var q = new URLSearchParams(window.location.search);
+        var screen = SCREENS.indexOf(q.get('screen')) >= 0 ? q.get('screen') : 'secrets';
+        var allowed = STATES[screen];
+        S.screen = screen;
+        S.state = allowed.indexOf(q.get('state')) >= 0 ? q.get('state') : allowed[0];
+    }
+
+    function renderNote() {
+        document.getElementById('proto-note').textContent =
+            'Prototype · mock data · ' + SCREEN_NAMES[S.screen] + ' · ' + S.state;
+    }
+
+    function renderBar() {
+        var screenButtons = SCREENS.map(function (screen) {
+            return '<button data-screen="' + screen + '" class="' +
+                (screen === S.screen ? 'on' : '') + '">' + esc(SCREEN_NAMES[screen]) +
+                '</button>';
+        }).join('');
+        var stateButtons = STATES[S.screen].map(function (state) {
+            return '<button data-state="' + state + '" class="' +
+                (state === S.state ? 'on' : '') + '">' + esc(state) + '</button>';
+        }).join('');
+        document.getElementById('proto-bar').innerHTML =
+            '<span class="label">Screen</span>' + screenButtons +
+            '<span class="sep">|</span><span class="label">State</span>' + stateButtons +
+            '<span class="sep">|</span><button data-toggle="state">' +
+            (S.showState ? 'Hide state' : 'Show state') + '</button>';
+    }
+
+    function renderState() {
+        var panel = document.getElementById('proto-state');
+        if (!S.showState) { panel.hidden = true; return; }
+        panel.hidden = false;
+        panel.innerHTML = '<div class="facts">' +
+            '<div>Screen <span class="mono">' + esc(S.screen) + '</span></div>' +
+            '<div>State <span class="mono">' + esc(S.state) + '</span></div>' +
+            '<div class="grow">Operation <span class="mono">' + esc(OPERATIONS[S.screen]) +
+            '</span></div></div><div class="none">Every row is a fixture. The mask hides a value ' +
+            'that is not a password and is not the shape of one this deployment issues.</div>';
+    }
+
+    function render() {
+        readQuery();
+        renderNote();
+        renderBar();
+        renderState();
+        document.getElementById('app').innerHTML =
+            '<div class="page">' + RENDER[S.screen](S.state) + '</div>';
+    }
+
+    // ------------------------------------------------------------- events
+
+    document.addEventListener('click', function (e) {
+        var b = e.target.closest('button');
+        if (!b) return;
+        if (b.hasAttribute('data-screen'))
+            return go(b.getAttribute('data-screen'), STATES[b.getAttribute('data-screen')][0]);
+        if (b.hasAttribute('data-state'))
+            return go(S.screen, b.getAttribute('data-state'));
+        if (b.getAttribute('data-toggle') === 'state') {
+            S.showState = !S.showState;
+            renderBar();
+            renderState();
+            return;
+        }
+        if (b.getAttribute('data-act') === 'reveal')
+            return go('secret', 'revealed');
+    });
+
+    render();
+}());

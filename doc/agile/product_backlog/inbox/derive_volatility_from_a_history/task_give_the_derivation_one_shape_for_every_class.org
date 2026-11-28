@@ -8,7 +8,7 @@
 #+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/give-the-derivation-one-shape
-#+pr:
+#+pr: 5236
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
@@ -107,7 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5236][#5236]] | [quant] Declare a derivation kind per class, in one table |
 
 * Review
 

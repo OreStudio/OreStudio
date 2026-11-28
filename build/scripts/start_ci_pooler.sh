@@ -67,21 +67,22 @@ db_port="${db_port:-5432}"
 out="${root}/build/pgbouncer"
 mkdir -p "${out}"
 
-# Every user the environment holds a password for, so the pooler authenticates
-# each service with its own role. A user list is a credential file: it is written
-# under build/, which is not tracked, and read by the pooler alone.
 # Every user the pooler authenticates, with the secret it authenticates them
-# with. The pooler runs scram-sha-256, so a secret is a SCRAM verifier and never
-# a password: a service resolves its own password from the vault at start, and
-# the verifier the server derived from it is the only copy the pooler needs.
-# Verifiers come from two places, because the users do:
+# with. The pooler runs scram-sha-256, so it accepts a SCRAM verifier in place of
+# a password, and a service's password never reaches this file. Two kinds of user
+# are in it, and their secrets come from different places:
 #
-# - the deployment's own accounts, whose secrets stay in the environment file
-#   because they are the deployment's rather than a service's;
+# - the deployment's own accounts, whose password stays in the environment file
+#   because it is the deployment's rather than a service's;
 # - each service account, whose verifier `compass vault provision` reads from the
 #   server after it sets the role's password and writes under build/keys. A
 #   rotation means provisioning again and restarting the pooler, which is the
 #   same step that restarts the services.
+#
+# The pooler reads this file rather than asking the server for a verifier: an
+# account that answers that question may read every verifier in the instance,
+# and a rotation restarts the fleet anyway, because each service resolves its
+# password at start.
 users() {
     local key user pass verifier_dir
     verifier_dir="${root}/build/keys"

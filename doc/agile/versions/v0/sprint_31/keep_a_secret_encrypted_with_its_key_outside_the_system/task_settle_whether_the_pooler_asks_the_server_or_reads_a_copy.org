@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: 794C1BF1-1FEC-40F4-8490-438C53C712E2
+:END:
+#+title: Task: Delete the pooler lookup function nothing calls
+#+description: A lookup function nothing calls, beside a pooler that reads copies of verifiers: wire the one or remove the other.
+#+type: task
+#+level: s1
+#+filetags: :keep_a_secret_encrypted_with_its_key_outside_the_system:sprint_31:v0:
+#+owner: marco
+#+branch: feature/delete-the-pooler-lookup-function
+#+pr: 5226
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores_utility_pooler_auth_lookup_fn= existed so a transaction pooler could ask
+the server for a client's verifier instead of holding a copy of it. Nothing
+called it, so the choice was to wire it or to remove it. This task removes it,
+and states why the copies stay.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- The function, its drop script and both entry-point lines are gone, so a fresh
+  database holds no mechanism nothing calls.
+- Nothing in a configuration or a script sets =auth_query= or =auth_user=, so the
+  pooler's configuration is the path it actually runs.
+- The reason the pooler reads verifiers rather than asking the server is written
+  where a reader of the pooler looks, so the decision is not re-opened as an
+  oversight.
+
+* Plan
+
+The capture left two ways, and one of them had to be taken. This task takes the
+second: the function goes and the verifier copies stay.
+
+Wiring the pooler to ask the server costs a database role that the pooler logs
+in as, and the file stays: it holds that role's one entry instead of one per
+account. The role may read every verifier in the instance, which is a wider view
+than the pooler's own — it serves a named set of accounts, not the deployment.
+Wiring also costs a lookup function installed in each database the pooler
+fronts.
+
+What wiring buys is a pooler restart saved after a rotation. Each service
+resolves its password at start, so a rotation restarts the services, and the
+pooler's restart rides along in the same step.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Configurations that ask the server for a verifier | 0 | =git grep -n "auth_query\|auth_user" -- '*.sql' '*.sh' '*.py' '*.ini'= | 62cc0110f9 |
+| Role creations under the name the grant used | 0 | =git grep -n "create role ores_pooler_auth\|create user ores_pooler_auth" -- '*.sql' '*.sh' '*.py'= | 62cc0110f9 |
+
+* Notes
+
+- 2026-11-28 — The function, its drop twin and both =\\ir= lines are removed. A
+  database built before this change keeps the function until it is recreated.
+- 2026-11-28 — The grant the file carried named =ores_pooler_auth=, a role nothing
+  creates. It went with the file.
+- 2026-11-28 — Why the pooler holds verifiers rather than asking for them is in
+  [[id:929A4722-8F06-4DEF-B759-D0800D4AC6D5][Connection pooling for shared
+  database instances]].
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5226][#5226]] | [sql] Delete the pooler lookup function nothing calls |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The measurements do not reproduce: the recorded grep returns the function's own definition and its grant | task | Fixed | Both rows record a command that returns 0 at 62cc0110f9 |
+| 2 | "No password at all" is contradicted by the deployment accounts, whose password the user file carries | pooling page, script | Fixed | The claim is scoped to service accounts, and the script says which account carries what |
+| 3 | "Read by the pooler alone" | task, pooling page, script | Fixed | Provisioning writes the verifiers and the script generates the file from them; both are named |
+| 4 | The promoted capture recommends wiring, which is the opposite of the decision | task | Fixed | The superseded recommendation is gone, and the pooling page owns the reason |
+| 5 | The new knowledge section carries no citation | pooling page | Fixed | The prose names the two files that carry the mechanism |
+| 6 | No diagram for the authentication step | pooling page | Declined | The page carries no other figure, and the section states a single step rather than a lifecycle or a structure |
+| 7 | The notes are undated | task | Fixed | The log is dated |
+| 8 | The deleted drop script leaves the function in a database built earlier | sql | Accepted | Recreating the database removes it, and it was dead there as it was here |
+
+* Result
+
+- The function, its drop script and both =\\ir= lines are gone. No configuration
+  and no script sets =auth_query= or =auth_user=, and nothing creates the role the
+  grant named.
+- The pooling page says how the pooler authenticates a client, and why it reads
+  verifiers instead of asking the server. The story's Decisions link it.
+- =start_ci_pooler.sh= says the same beside the function that builds the user
+  file, and no longer claims a verifier where a deployment account puts a
+  password.
+- A database built before this change keeps the function until it is recreated.
+- =./compass.sh check --exclude-heavy= passed 6/6 on the branch, and =compass
+  generate= had nothing to write.
+
+* Promoted from capture
+
+Captured 2026-11-28 in the product backlog; promoted preserving the UUID.
+
+** What
+
+=ores_utility_pooler_auth_lookup_fn= existed so a transaction pooler could ask
+the server for a client's verifier instead of holding a copy of it. Nothing
+called it.
+
+2026-11-28 — The capture this task came from recommended wiring the function. The
+plan above settles it the other way, and the pooling page carries the reason.
+
+** References
+
+- =projects/ores.sql/create/utility/utility_create.sql= — the entry point that no
+  longer runs the function, and its drop twin.
+- =build/scripts/start_ci_pooler.sh= — the configuration, and the user file it
+  builds.
+- [[id:DBF20EC5-63BB-4DE5-957C-5322DE0E487F][Secrets Register]] — what the
+  verifier copies are for.
+
+** See also
+
+- [[id:9ED04F4B-C488-4AD6-BD85-5056E9D30135][Take the credentials out of the
+  environment file]] — the task that left this open, and said so.

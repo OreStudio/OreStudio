@@ -21,6 +21,12 @@
 -- includes jobs; a chunk drop executed here runs on either edition, and records
 -- which path ran.
 --
+-- The sweep performs the actions SQL can perform: a row delete, a chunk drop.
+-- An object prefix is performed by the object expiry action, which reaches the
+-- storage service, and a job's folder is released by the node that holds it.
+-- Each of those records its own run, so this function leaves their policies
+-- alone rather than writing a second account of the same store.
+--
 -- A policy states a cadence, and the ledger states when it last ran. A policy is
 -- due once its cadence has passed since the last row the ledger holds for it, so
 -- an installation states a different cadence per store and one sweep honours
@@ -111,6 +117,12 @@ begin
         where p."enabled"
           and p."tenant_id" = ores_utility_system_tenant_id_fn()
           and p."valid_to" = ores_utility_infinity_timestamp_fn()
+          -- The sweep performs the actions SQL can perform. An object prefix is
+          -- the object expiry action's, and a job's folder is the node's own
+          -- release; each records its own run, so a row here would be a second
+          -- and contradictory account of the same policy.
+          and (p."action" in ('drop_chunks', 'delete_rows')
+               or s."target_kind" is null)
           and not exists (
               select 1 from "ores_scheduler_retention_runs_tbl" r
               where r."tenant_id" = p."tenant_id"
@@ -200,18 +212,6 @@ begin
             exception when others then
                 failure := sqlerrm;
                 outcome := 'failed';
-            end;
-        elsif policy."action" in ('expire_prefix', 'release_directory') then
-            -- Neither action is reachable from SQL: an object prefix lives in
-            -- the object store and a job's folder on a node's disk. The sweep
-            -- says who owns it instead of pretending to have bounded the store.
-            outcome := 'skipped';
-            target := coalesce(policy.store_target, policy."target");
-            failure := case policy."action"
-                when 'expire_prefix' then
-                    'the storage lifecycle expires an object prefix; the sweep cannot reach the object store'
-                else
-                    'a node releases a job''s folder when it uploads the output; the sweep cannot reach a host''s disk'
             end;
         else
             outcome := 'skipped';

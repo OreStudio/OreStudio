@@ -167,7 +167,7 @@ record the counts before and after.
   are already over on =origin/main=.
 - The analysis above, with the two mechanisms the codegen refuses and the defect
   that makes the third costly.
-- A codegen prototype in =stash@{0}= that groups the change audit in the row
+- A codegen prototype, parked in =stash@{0}= of =jolly_knuth=, that groups the change audit in the row
   struct, with the four counts it produces: =party= 16, =party_entity= 18,
   =business_unit= 12 and =business_unit_entity= 14.
 
@@ -228,9 +228,9 @@ before any change: =party= 19, =party_entity= 20, =business_unit_entity= 16, and
 come to fifteen or under rather than join the list.
 
 The codegen prototype — =change_audit= in =ores.database=, the entity template
-and mapper changes, the flag on the two models — is parked in =stash@{0}= on this
-branch, so option A costs a =git stash pop= plus a compass-ng fix rather than a
-rewrite. The four counts it generates are =party= 16, =party_entity= 18,
+and mapper changes, the flag on the two models — is parked in =stash@{0}= of
+=jolly_knuth=, so option A costs a =git stash pop= plus a compass-ng fix rather
+than a rewrite. The four counts it generates are =party= 16, =party_entity= 18,
 =business_unit= 12 and =business_unit_entity= 14.
 
 Two mechanisms this task tried and dropped, recorded so the next reader does not
@@ -333,6 +333,7 @@ rather than from the type that happened to trip the check. The four counts are
 already over on =origin/main=, so this branch changes nothing: no ceiling row
 moves, no generated file changes, and the approval chain behaves as it did.
 
-The analysis, the measurements and the prototype stay in this record. The
-prototype is parked as =stash@{0}= so the story can revive it in minutes if the
-data favours grouping the audit everywhere.
+The analysis and the measurements stay in this record. The prototype is parked
+as =stash@{0}= of this environment so the story can revive it in minutes if the
+data favours grouping the audit everywhere; a reader in another worktree will
+not find it there, which is why the analysis above states what it changed.

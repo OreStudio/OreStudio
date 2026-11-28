@@ -63,7 +63,7 @@ dropped, and the six options that were weighed are recorded on
 decision and raised this story.
 
 The analysis left one option ready to take: the codegen prototype that groups
-the change audit in the row struct, parked as a stash on that branch. It is not
+the change audit in the row struct, parked as a stash on that branch in the =jolly_knuth= environment. It is not
 part of this story's premise, but it is the cheapest shape if the decisions here
 turn out to favour grouping the audit everywhere.
 

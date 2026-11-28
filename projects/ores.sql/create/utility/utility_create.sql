@@ -23,4 +23,3 @@
 \ir ./utility_system_tenant_create.sql
 \ir ./utility_whimsical_names_create.sql
 \ir ./utility_cleanup_functions_create.sql
-\ir ./utility_pooler_auth_create.sql

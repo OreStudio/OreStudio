@@ -8,7 +8,7 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch: feature/sample-the-capacity-every-quarter-hour
-#+pr:
+#+pr: 5245
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5245][#5245]] | [scheduler] Sample the capacity every quarter hour |
 
 * Review
 

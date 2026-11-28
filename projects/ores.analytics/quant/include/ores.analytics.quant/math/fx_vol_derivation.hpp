@@ -22,6 +22,7 @@
 #include "ores.analytics.quant/export.hpp"
 #include "ores.analytics.quant/math/fx_smile_quotes.hpp"
 #include "ores.analytics.quant/math/return_moments.hpp"
+#include "ores.analytics.quant/math/volatility_measurement.hpp"
 #include <expected>
 #include <span>
 #include <string>
@@ -47,6 +48,16 @@ struct fx_derivation_settings final {
     /// The shortest window the level is read over, in returns.
     int minimum_window = 21;
 };
+
+/**
+ * @brief The FX derivation's settings, in the measurement engine's terms.
+ *
+ * The transform is the log return, which is what makes a pair's quotes a volatility. The mapping
+ * is public because the synthetic layer reports a pair's reach with the engine's window rule, and
+ * the reach and the level must not disagree.
+ */
+[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT measurement_settings
+measurement_of(const fx_derivation_settings& settings);
 
 /**
  * @brief The returns an expiry's level is read over: its length in trading days, and never

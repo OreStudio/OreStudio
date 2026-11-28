@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: CDD317B2-65AA-4133-8B0E-E52C4229BBBB
+:END:
+#+title: Story: Review the wide types from their data
+#+description: Every type over the fifteen-field ceiling gets a decision backed by the data: what it holds, which columns the data never fills, and which of them belong together.
+#+type: story
+#+level: s2
+#+filetags: :refdata:codegen:design:data:sprint_31:v0:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The check that keeps C++ types small lists 596 types over its ceiling of fifteen members, and it asks one thing of each: group the fields that belong together. Nothing has yet answered that question with evidence. The list is worked down by whoever trips over a type, one type at a time, which is how a party and a desk came to cross it for a single boolean and how four types then stood one member over with no decision recorded about any of them.
+
+This story decides them from data rather than from taste. Every type over the ceiling is inventoried: the layer it lives in, its count, and how much of that count is one value shape that every entity carries - the change audit, the identity, or the transaction-time window. Then the data speaks for each type: how many rows the dataset holds, how often a row changes, which columns are never filled, and which fields are written together and read together. A column the data never fills and no reader asks for is a deletion, not a group. A block that changes together and is read together is a value shape, and grouping it is what the rule asks. A fact that belongs to another concept - the approval state of a party, say, which is a fact about an approval and not about a party - moves to the table that owns it.
+
+The work is cross-cutting by nature: it touches the models, the codegen and the schema, and it must not make a common path more expensive to satisfy a count on an edge one. The two codegen constraints this story inherits are the measure of that: a Domain groups table requires every column of the entity to belong to a group, so grouping one block decomposes the whole type, and the domain_audit_group flag suppresses the entity's history-provider registrar, so the cheapest shape silently removes a history surface.
+
+The outcome is a ceiling list that is either lowered to what each type really holds or excused with a reason, an approver and an expiry, and a set of recorded decisions a reviewer can check against the data.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-11-28                               |
+
+* Acceptance
+
+- Every type in the check's * Ceilings table carries a decision from a closed set: group a value shape, decompose into parts, move a fact to the table that owns it, delete a column no data fills and no reader asks for, or record an exception with a reason and an expiry.
+- Each decision states the data behind it: the rows the dataset holds, how often the row changes, the columns no row fills, and which fields are written and read together, with the query that measured it and the commit.
+- The four types the approval flag crossed are decided first - party, party_entity, business_unit and business_unit_entity - from the analysis the task recorded, and the decision says whether the flag stays on the row or moves to the approval.
+- The two codegen constraints are either fixed in compass-ng or recorded where the decisions respect them: a Domain groups table requires every column of the entity to belong to a group, and domain_audit_group suppresses the entity's history-provider registrar.
+- No ceiling row rises: every row is either lowered to the count its type has or excused with a reason, an approver and an expiry, and the check reports no type over its recorded count.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+** The four crossed types stay over their rows until this story decides them
+
+2026-11-28. The approval chain added one boolean to a party and to a desk, and
+that boolean put =party=, =party_entity=, =business_unit= and
+=business_unit_entity= one member over their recorded ceilings. The owner chose
+to allow the growth rather than reshape the two most used refdata types to pay
+for an edge-case fact, and to decide those four with data here rather than one
+at a time. The measurement, the two codegen mechanisms that were tried and
+dropped, and the six options that were weighed are recorded on
+[[id:6EF48536-68CE-43B7-B629-7EC4D679C602][Group the approval state of a party and a desk]], which closed with this
+decision and raised this story.
+
+The analysis left one option ready to take: the codegen prototype that groups
+the change audit in the row struct, parked as a stash on that branch in the =jolly_knuth= environment. It is not
+part of this story's premise, but it is the cheapest shape if the decisions here
+turn out to favour grouping the audit everywhere.
+
+* Out of scope
+
+- The choice of where the approval flag lives. This story decides it, but the
+  schema change that follows is its own task, because it rewrites the product
+  approval functions, their triggers and their pgTAP files.

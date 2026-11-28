@@ -28,9 +28,9 @@ A person reading a curve learns how it was made, in the same words the fixings s
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
-| Now          | Not yet started.                       |
+| Now          | The kind, the stamp and the record line are built and proven on a fresh database. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing: the record says how the curve was made and each kind names one table. |
 | Last touched | 2026-11-28                               |
 
 * Acceptance
@@ -41,9 +41,23 @@ A person reading a curve learns how it was made, in the same words the fixings s
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. *The kind.* The catalogue gains =IR_TERM_FIXING=, and the three computed
+   term indices are relabelled with it. =IR_CURVE_BOOTSTRAP= stays what it says:
+   a curve bootstrapped from an instrument grid, whose config id resolves to a
+   refdata blueprint.
+2. *The stamp.* A layout script stamps every seeded blueprint's output series
+   =IR_CURVE_BOOTSTRAP= with its config and version once the blueprints exist, so
+   a fresh installation states the derivation before anything republishes. The
+   republish service keeps stamping an unclaimed series as the fallback for a
+   blueprint created later.
+3. *The record.* =published_curve_set= gains =derivation_kind= and
+   =derivation_config_name=; the reader joins the output series and the blueprint;
+   the record page prints "How it was made" beside the curve configuration.
+4. *Proof.* A pgTAP suite asserts the two invariants a kind implies — every
+   =IR_CURVE_BOOTSTRAP= id resolves to a blueprint, every =IR_TERM_FIXING= id to a
+   generation config — and that a seeded curve states its derivation before any
+   republish. The reader's own test asserts the record carries the kind and the
+   blueprint's name; the record page's test asserts the line.
 
 * Measurements
 
@@ -57,7 +71,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Seeded curves that state their derivation before any republish | 38 of 38 | =select count(*) from ores_refdata_ir_curve_bootstrap_configs_tbl c join ores_marketdata_market_series_tbl s on s.id=c.output_series_id where c.valid_to=ores_utility_infinity_timestamp_fn() and s.derivation_kind<>'IR_CURVE_BOOTSTRAP';= | 432d56a941 |
+| Series whose config id does not resolve under its kind | 0 | =ores.sql/test/marketdata_derivation_kinds_resolve_test.sql= | 432d56a941 |
+| Derivation kinds the catalogue holds | 6, =IR_TERM_FIXING= among them | =select count(*) from ores_refdata_derivation_kinds_tbl where valid_to=ores_utility_infinity_timestamp_fn();= | 432d56a941 |
+| Computed fixing series labelled =IR_TERM_FIXING= | 3 | =select count(*) from ores_marketdata_market_series_tbl where derivation_kind='IR_TERM_FIXING' and valid_to=ores_utility_infinity_timestamp_fn();= | 432d56a941 |
 
 * Notes
 
@@ -85,3 +102,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A curve now says how it was made, in the words a person reads rather than by an
+id. The published curve record carries the derivation: =derivation_kind= is
+=IR_CURVE_BOOTSTRAP= and the blueprint's name travels beside it, so the Details
+tab reads "How it was made: IR_CURVE_BOOTSTRAP, built by USD-SOFR-FOMC" where it
+used to show only a bare uuid labelled *Curve configuration*. A series no
+derivation produced says *observed*, because that is a fact about the curve and
+not the absence of one.
+
+The derivation is now stated when the curve is created. A layout script stamps
+every seeded blueprint's output series with the kind, the config and its version
+once the blueprints exist, so a fresh installation states it before anything
+republishes: 38 of 38 on the database the gate rebuilt, against none before the
+script ran. The republish service keeps its own stamp as the fallback for a
+blueprint created later, and the record now has a fact to show for those curves
+too.
+
+The kind became its own. =IR_TERM_FIXING= joins the catalogue, and the three
+computed term indices carry it, because compounding a term rate from an overnight
+curve is not bootstrapping a curve from an instrument grid. That also repairs the
+half of the previous task this exposed: an =IR_CURVE_BOOTSTRAP= config id
+resolves to a refdata blueprint, and the three fixing series had pointed at a
+synthetic generation config under the same kind, so one kind named two tables. A
+pgTAP suite asserts both halves — every =IR_CURVE_BOOTSTRAP= id resolves to a
+blueprint, every =IR_TERM_FIXING= id to a generation config — and that a seeded
+curve states its derivation before any republish.
+
+What this does not do: the analytics and evolution screens, which draw a curve's
+points, say nothing about how the points were made. Each point already carries
+that in =observation_lineage=, which distinguishes a derived point from one keyed
+by hand, and that is a read and a surface of its own rather than a line on the
+record. It is not part of this task's ask, and the record is where a person meets
+the curve.

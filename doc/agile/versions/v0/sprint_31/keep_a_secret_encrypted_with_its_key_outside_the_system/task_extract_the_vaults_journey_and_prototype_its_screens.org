@@ -8,7 +8,7 @@
 #+filetags: :vault:ux:user_journey:prototype:keep_a_secret_encrypted_with_its_key_outside_the_system:sprint_31:v0:
 #+owner: marco
 #+branch: feature/draw-the-vaults-screens
-#+pr: 5244
+#+pr: 5246
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-26
@@ -192,6 +192,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5246][#5246]] | [docs] Draw the vault's screens, and make its journey meet the contract |
 | [[https://github.com/OreStudio/OreStudio/pull/5244][#5244]] | [agile] Write the journey a person walks through the vault |
 
 * Review

@@ -120,16 +120,36 @@ inside the leg.
 * Phases
 
 1. =install-compass= as a composite. It is the step that broke twice this week,
-   and it is the clearest demonstration: one file, three OS branches.
-2. =start-nats=, =setup-database= and =init-environment= composites.
+   and it is the clearest demonstration: one file, three OS branches. *Landed.*
+2. =start-nats=, =setup-database= and =init-environment= composites. *Landed*,
+   as =setup-postgres=, =init-environment=, =setup-nats=, =start-nats= and
+   =create-database=: the reference password and the server start before the
+   environment, and the database is created after it, so one composite could
+   not hold all three in the order every caller needs.
 3. =save-sccache= composite, retiring 99 duplicated lines per Linux workflow.
+   *Landed*: 184 lines of the continuous workflow and 181 of the nightly, for
+   one call in each.
 4. =build-leg.yml=, with the four callers reduced to trigger, guard, matrix and
-   call.
+   call. *Next.* A reusable workflow cannot take the caller's =container=, and
+   the two Linux legs need the CI image, so the leg's steps may land as a
+   composite with the job's runner, container and permissions left in the
+   caller. That is a smaller cut than the one proposed here, and the phase
+   decides which with the tree in front of it.
 5. =check-changes= composite and =attach-package= workflow, which the same four
-   files repeat.
+   files repeat. *Landed* as =relevance-guard= and =attach-package.yml=. The
+   guard stays a composite for a reason the census did not have: it asks for the
+   last successful run of =GITHUB_WORKFLOW_REF=, which a called workflow would
+   answer for itself, and every caller would then compare against a history that
+   is not its own.
 
 Each phase is a morning's work and lands behind a nightly, in that order, so a
 regression names one phase.
+
+The platform does not catch either mistake a composite introduces, so the same
+change adds =build/scripts/check_ci_actions.py=: a step that runs a command
+must state its shell, and a local =uses:= must name an action or a called
+workflow that exists. =./compass.sh check= runs it on any change under
+=.github=.
 
 * Risks and constraints
 

@@ -37,12 +37,13 @@ import type { TimeValue } from '../ui/TimeChart.js';
  * The horizon a range states, in the word the screen labels it with.
  *
  * The screen offers the same three horizons the read holds, and names them by
- * what they cover rather than by the code the wire carries.
+ * what they cover rather than by the code the wire carries. The month is gone
+ * because a store measured hourly over thirty days is a line nobody reads.
  */
-export const RANGE_WORD: Readonly<Record<StoreRange, 'day' | 'week' | 'month'>> = {
+export const RANGE_WORD: Readonly<Record<StoreRange, 'hour' | 'day' | 'week'>> = {
+    '1h': 'hour',
     '24h': 'day',
     '7d': 'week',
-    '30d': 'month',
 };
 
 /**

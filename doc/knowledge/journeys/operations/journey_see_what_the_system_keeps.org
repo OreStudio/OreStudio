@@ -87,11 +87,13 @@ how long]].
    mark is one measurement, so a reader can see the sampler's cadence as well
    as the store's movement. The window is the read's own answer and never the
    browser's subtraction, so the axis cannot claim a horizon the installation
-   did not measure. A person chooses the horizon — the last day, the last week
-   or the last month — because a week shows a policy's nightly drop and a day
-   shows the store regrowing into it. A store nothing measures says so in
-   place of the plot, and a horizon with no measurement in it says that, with
-   when the store was last measured, because those are different facts.
+   did not measure. A person chooses the horizon — the last hour, the last day
+   or the last week — because a week shows a policy's nightly drop and a day
+   shows the store regrowing into it. The page opens on the last day, and a
+   month is not offered: thirty days of hourly measurements is a line nobody
+   reads as a shape. A store nothing measures says so in place of the plot, and
+   a horizon with no measurement in it says that, with when the store was last
+   measured, because those are different facts.
 7. *Follow the store to its runs.* The detail links to the housekeeping log
    filtered to that store, so the administrator can read what the sweep did
    and why it says what it says, in
@@ -184,9 +186,10 @@ a series of samples that point at the store, and the screen shows it as such.
 | 5 | The latest activity that names one store | (no subject) | missing |
 | 7 | The runs of one policy | (no subject) | missing |
 
-The samples read names a horizon — the last day, the last week or the last month
-— and answers the window it covered beside the points. The axis is therefore the
-installation's own window and not a subtraction the browser makes.
+The samples read names a horizon — the last hour, the last day or the last week,
+and the day when nobody states one — and answers the window it covered beside the
+points. The axis is therefore the installation's own window and not a subtraction
+the browser makes.
 
 * What is missing
 

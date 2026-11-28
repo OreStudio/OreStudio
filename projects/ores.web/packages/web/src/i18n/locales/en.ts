@@ -1968,9 +1968,9 @@ export const en: SourceCatalogue = {
                 measuredAt: 'Measured',
                 rangeLabel: 'Horizon',
                 ranges: {
+                    hour: 'Last hour',
                     day: 'Last day',
                     week: 'Last week',
-                    month: 'Last month',
                 },
                 onePoint: 'One measurement in this horizon. A second one draws a line.',
                 noneInWindow:

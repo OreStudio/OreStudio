@@ -69,7 +69,13 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
                                        const std::map<std::string, std::string>* environment) {
     using ores::service::config::standard_service_options;
 
-    const auto od(standard_service_options::make_options_description("ores.vault.service.log"));
+    options_description own("Provisioning");
+    own.add_options()("provision",
+                      boost::program_options::value<std::string>()->default_value(""),
+                      "Write the consumers and secrets a JSON document names, then exit; \"-\" "
+                      "reads standard input");
+    const auto od(
+        standard_service_options::make_options_description("ores.vault.service.log", own));
     // No environment means this process's; a stated one is all the caller allows.
     const auto vm(
         environment == nullptr ?
@@ -91,6 +97,7 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
     r.logging = std_opts.logging;
     r.nats = std_opts.nats;
     r.database = std_opts.database;
+    r.provision = vm["provision"].as<std::string>();
     return r;
 }
 

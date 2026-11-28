@@ -136,3 +136,7 @@
 
 -- Admin utilities (helper functions for administrative tasks)
 \ir ./iam_admin_utilities_create.sql
+
+-- Credential rotation (needs the account and credential tables, so it comes
+-- after every table it writes)
+\ir ./iam_service_account_credential_set_create.sql

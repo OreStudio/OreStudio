@@ -32,17 +32,27 @@ from system credentials, wires the database and the bus, and serves the five
 operations to callers that pass the runner's token check. The unit is the only
 process that opens a stored secret.
 
+It also carries the deployment's own write. Run with =--provision=, it reads one
+document from a file or a pipe, registers the consumers the deployment states and
+stores the values it states for them, then exits without opening a subscription.
+That is the one act on the vault no caller authenticates, and it exists because
+the first value a deployment stores is the password of the service that issues
+the tokens a write would otherwise need.
+
 * Inputs
 
 - NATS requests on =vault.v1.ops.*=, carrying the caller's token.
 - The two system credentials, which the unit reads at start.
 - The database, through the pool.
+- The provisioning document, on standard input or in a file, when =--provision=
+  is given.
 
 * Outputs
 
 - Responses, in which only a resolve carries a value and only in sealed form.
 - The audit rows, through =ores.vault.core=.
 - A heartbeat on the fleet's controller.
+- One line per provisioned entry, and a non-zero exit when one failed.
 
 * Entry points
 
@@ -52,10 +62,33 @@ process that opens a stored secret.
   carries.
 - The five custody subjects join them with a registrar of their own, which the
   serve task adds beside these.
+- =include/ores.vault.service/app/provisioning.hpp= — the deployment's write:
+  the document it reads and the act that applies it.
 
 * Dependencies
 
 - =ores.vault.core=, =ores.nats=, =ores.service=, =ores.database=.
+
+* Options
+:PROPERTIES:
+:group: Provisioning
+:END:
+
+The options this service takes beyond logging, NATS and the database. Codegen
+writes the member, its wire field, its command-line declaration and its
+assignment from each entry.
+
+** provision
+:PROPERTIES:
+:cpp_type: std::string
+:option: provision
+:default: ""
+:help: Write the consumers and secrets a JSON document names, then exit; "-" reads standard input
+:END:
+
+The document a deployment writes once, before any service holds a token: the
+consumers whose keys it registers and the values it stores for them. Empty
+starts the service as usual.
 
 * See also
 
@@ -65,5 +98,16 @@ process that opens a stored secret.
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.eventing.core.lib)
+        ores.eventing.core.lib
+        # The provisioning document is JSON, read once by the deployment's own
+        # step rather than carried by the bus.
+        Boost::json)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        # The document reader's cases build their documents in memory, so the
+        # suite needs the parser the reader uses and nothing else.
+        Boost::json)
 #+end_src

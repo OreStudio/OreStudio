@@ -53,7 +53,10 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.eventing.core.lib)
+        ores.eventing.core.lib
+        # The provisioning document is JSON, read once by the deployment's own
+        # step rather than carried by the bus.
+        Boost::json)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

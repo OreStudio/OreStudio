@@ -20,11 +20,15 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "client/credential_bootstrap.cpp"
+    "client/service_password.cpp"
     "domain/stub.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.client/client/credential_bootstrap.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.client/client/service_password.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.client/domain/stub.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.client/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.vault.client/ores.vault.client.hpp"

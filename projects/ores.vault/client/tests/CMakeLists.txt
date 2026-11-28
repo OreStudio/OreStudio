@@ -44,7 +44,13 @@ target_link_libraries(${tests_target_name}
 # a scoped temporary file, a compression helper -- so the component declares
 # them here rather than the profile carrying every component's needs.
 
-
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        # The test stands in for the vault: it seals the nonce and the value
+        # with the transport key, so the exchange is proved against a party
+        # that answers the protocol rather than against a mock.
+        ores.security.lib
+        ores.nats.lib)
 
 add_custom_target(test_${tests_target_name}
     COMMENT "Testing ${tests_target_name}" VERBATIM

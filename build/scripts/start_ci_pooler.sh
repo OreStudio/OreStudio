@@ -70,12 +70,33 @@ mkdir -p "${out}"
 # Every user the environment holds a password for, so the pooler authenticates
 # each service with its own role. A user list is a credential file: it is written
 # under build/, which is not tracked, and read by the pooler alone.
+# Every user the pooler authenticates, with the secret it authenticates them
+# with. The pooler runs scram-sha-256, so a secret is a SCRAM verifier and never
+# a password: a service resolves its own password from the vault at start, and
+# the verifier the server derived from it is the only copy the pooler needs.
+# Verifiers come from two places, because the users do:
+#
+# - the deployment's own accounts, whose secrets stay in the environment file
+#   because they are the deployment's rather than a service's;
+# - each service account, whose verifier `compass vault provision` reads from the
+#   server after it sets the role's password and writes under build/keys. A
+#   rotation means provisioning again and restarting the pooler, which is the
+#   same step that restarts the services.
 users() {
-    local key user pass
+    local key user pass verifier_dir
+    verifier_dir="${root}/build/keys"
     for key in $(sed -n 's/^\([A-Z0-9_]*_DB_USER\)=.*/\1/p' "${env_file}"); do
         user="$(sed -n "s/^${key}=//p" "${env_file}" | head -1)"
+        [ -n "${user}" ] || continue
         pass="$(sed -n "s/^${key%_USER}_PASSWORD=//p" "${env_file}" | head -1)"
-        [ -n "${user}" ] && [ -n "${pass}" ] && printf '"%s" "%s"\n' "${user}" "${pass}"
+        if [ -z "${pass}" ]; then
+            # ORES_DQ_SERVICE_DB_USER names the verifier of dq_service.
+            local stem
+            stem="$(printf '%s' "${key}" | sed -e 's/^ORES_//' -e 's/_DB_USER$//' | tr 'A-Z' 'a-z')"
+            [ -f "${verifier_dir}/${stem}.db-verifier" ] && \
+                pass="$(cat "${verifier_dir}/${stem}.db-verifier")"
+        fi
+        [ -n "${pass}" ] && printf '"%s" "%s"\n' "${user}" "${pass}"
     done
 }
 
@@ -126,7 +147,7 @@ write_config() {
 [pgbouncer]
 listen_addr = ${listen_addr}
 listen_port = ${port}
-auth_type = plain
+auth_type = scram-sha-256
 auth_file = ${auth_path}
 pool_mode = transaction
 max_prepared_statements = 200

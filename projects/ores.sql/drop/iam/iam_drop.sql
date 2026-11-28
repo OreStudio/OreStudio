@@ -35,6 +35,7 @@
 \ir ./iam_role_grant_request_role_drop.sql
 \ir ./iam_role_grant_requests_notify_trigger_drop.sql
 \ir ./iam_role_grant_requests_drop.sql
+\ir ./iam_service_account_credential_set_drop.sql
 \ir ./iam_account_party_functions_drop.sql
 \ir ./iam_account_parties_notify_trigger_drop.sql
 \ir ./iam_account_party_drop.sql

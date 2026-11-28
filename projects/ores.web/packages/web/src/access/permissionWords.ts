@@ -70,6 +70,10 @@ const WORDS = {
     [PERMISSION.cutKindsRead]: 'permissionWords.cutKindsRead',
     [PERMISSION.cutKindsWrite]: 'permissionWords.cutKindsWrite',
     [PERMISSION.cutKindsDelete]: 'permissionWords.cutKindsDelete',
+    [PERMISSION.vaultSecretsRead]: 'permissionWords.vaultSecretsRead',
+    [PERMISSION.vaultSecretsWrite]: 'permissionWords.vaultSecretsWrite',
+    [PERMISSION.vaultSecretsResolve]: 'permissionWords.vaultSecretsResolve',
+    [PERMISSION.vaultSecretsDelete]: 'permissionWords.vaultSecretsDelete',
 } as const satisfies Record<Permission, string>;
 
 /** The translation key for what a permission allows. */

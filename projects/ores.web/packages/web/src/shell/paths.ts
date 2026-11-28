@@ -94,6 +94,23 @@ export const PATHS = {
     dataQualityDatasets: '/data-quality/datasets',
 } as const;
 
+/**
+ * The addresses of the vault's screens.
+ *
+ * The vault has no page of cards: like the requests queue, its list is where
+ * the menu arrives, so its screens are not members of {@link PATHS}, which
+ * names the screens of an area's page. The list is the area's own address.
+ */
+export const VAULT = {
+    list: '/secrets',
+    consumers: '/secrets/consumers',
+} as const;
+
+/** The address of one secret's record page, under the list. */
+export function secretPath(name: string): string {
+    return `${VAULT.list}/${encodeURIComponent(name)}`;
+}
+
 /** The address of one dataset's page, under the coverage area. */
 export function datasetPath(code: string): string {
     return `${PATHS.dataQualityDatasets}/${encodeURIComponent(code)}`;

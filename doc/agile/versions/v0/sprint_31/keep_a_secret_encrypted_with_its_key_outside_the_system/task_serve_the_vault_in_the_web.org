@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :keep_a_secret_encrypted_with_its_key_outside_the_system:sprint_31:v0:
 #+owner: marco
-#+branch: feature/serve-the-vault-in-the-web
-#+pr: 5250
+#+branch: feature/serve-the-vault-screens
+#+pr: 5253
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
@@ -33,11 +33,11 @@ shell now serves all of that; the web serves none of it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] |
-| Now          | The gateway lists the secrets and the consumers; the screens come next. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Build the vault area in ores.web against the four doors. |
+| Next         | Nothing. |
 | Last touched | 2026-11-28                               |
 
 * Acceptance
@@ -52,29 +52,40 @@ shell now serves all of that; the web serves none of it.
 
 * Plan
 
-Not yet started. Two questions decide the shape and are worth answering before the
-first screen:
+(The questions this task opened with, and how the tree answered them.)
 
-- *Who seals a value a person types?* The shell takes an already-sealed value and
-  the client hides it before it leaves. A browser has no X25519 in the platform it
-  can rely on, so either the web gets a sealing library, or the gateway accepts the
-  value over the authenticated session and seals it as the consumer it already is
-  for a reveal. The second is smaller and keeps the decision where the audit is.
-- *Which doors are missing?* The gateway has =POST /api/v1/vault/secrets= and
-  =GET /api/v1/vault/secrets/{name}/value=. A list needs =GET /api/v1/vault/secrets=
-  and =GET /api/v1/vault/consumers=, a history needs the versions door, and a
-  delete needs its own, each with the permission the custody service already
-  enforces.
+- *Who seals a value a person types?* The gateway does, and did before this task:
+  =POST /api/v1/vault/secrets= takes the plain value and seals it to the vault's
+  transport key under =custody_context::write=, so the bus carries ciphertext and
+  the vault never accepts a plain value. A browser therefore needs no sealing
+  library, and the decision stays where the audit already is.
+- *Which doors were missing?* Two of the four a screen needs: one secret's
+  metadata and the delete. Both exist on the bus and neither had a route, so the
+  gateway gained =GET /api/v1/vault/secrets/{name}= (the describe operation) and
+  =DELETE /api/v1/vault/secrets/{name}= (the remove operation), each on the
+  permission the vault itself enforces. The list and the consumers landed first,
+  in #5250.
 
-The screens follow the vault's journey, which is designed and not built
+The screens follow the journey the previous task designed
 ([[id:5B2D332C-7480-40E4-A989-CC8B1D2124D5][Extract the vault's journey and
-prototype its screens]]).
+prototype its screens]]) and the prototype it settled. The vault has no page of
+cards: like Requests, its list is where the menu arrives, so its addresses are a
+constant beside the paths and not members of them, which name the screens of an
+area's page.
 
 * Plan
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+- The two doors land first, so the list, the record and the delete can be drawn
+  against routes that answer.
+- The screens are the list, the record with its masked value and its one control,
+  and the consumers. A control a person may not use is not drawn at all
+  (*RS-FEEDBACK-01*), because a control drawn disabled asks them to wonder.
+- A web test seeds the reads and the person's access, draws each screen, and
+  states what it shows and what it refuses.
 
 * Measurements
 
@@ -88,9 +99,39 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The vault routes the gateway serves | 6 | =grep -c 'api/v1/vault' doc/knowledge/architecture/http_route_inventory.org= | 4579b7d1a7 |
+| Tests in the web package | 2786, all passing | =npx vitest run=, in =projects/ores.web/packages/web= | a425d0ca4d |
+| Tests the vault screens add | 10 | =npx vitest run src/vault= | a425d0ca4d |
+| Type errors in the web package | 0 | =npx tsc --noEmit -p packages/web/tsconfig.json=, in =projects/ores.web= | a425d0ca4d |
+| Secrets the live vault holds | 16 | =GET /api/v1/vault/secrets= as the system administrator | 69e118a13a |
+| Consumers the live vault knows | 16 | =GET /api/v1/vault/consumers= as the system administrator | 69e118a13a |
 
 * Notes
+
+*The gateway seals a plain write, and did before this task.* A browser needs no
+X25519 to write a secret: =POST /api/v1/vault/secrets= reads the vault's
+published key, seals the value under =custody_context::write=, and forwards
+ciphertext. The vault never accepts a plain value, and the person's plaintext
+touches one process rather than the bus. The trade is that the plaintext crosses
+the gateway over the session's connection, which is the same connection every
+other write uses.
+
+*The vault has no page of cards.* Its list is where the menu arrives, as the
+requests queue is. So the list's trail is Home and Secrets, a record is the step
+below it, and its addresses are a constant beside the paths rather than members
+of them: a member states the screens of an area's page.
+
+*A permission a person lacks is not drawn.* Add, Change, Delete and Reveal are
+absent for a person without the permission each needs, and never drawn disabled.
+The screens say what is missing in words where a person would otherwise wonder
+why a value cannot be asked for.
+
+*What a browser is told about the vault's ciphertext.* The list door forwards the
+vault's own rows, and a row holds the value sealed under the key encryption key.
+The screen shows none of it, and the browser can open none of it, but the read
+that answers a screen should not carry it at all
+([[id:658F3BAE-4E9F-467D-A554-A78E5E6FE525][The list of secrets carries each
+value's ciphertext]]).
 
 * Test Scenarios
 
@@ -107,6 +148,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5253][#5253]] | [web] Serve the vault in the browser |
 | [[https://github.com/OreStudio/OreStudio/pull/5250][#5250]] | [http] Serve the vault's secrets and consumers as lists |
 | [[https://github.com/OreStudio/OreStudio/pull/5242][#5242]] | [agile] Scope the vault's web support |
 
@@ -117,3 +159,55 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The vault is served in the web. Three screens stand on six gateway doors, and
+the permission a person holds decides what each one offers.
+
+- *Secrets* lists what the installation holds: the name, the consumer that owns
+  it, the key version that protects it and when it was written. It carries no
+  value and says so.
+- *A secret* states the record and keeps the value masked. Reveal asks the vault
+  for it, and the screen states that the ask was recorded rather than offering a
+  copy. Change writes a new version; Delete removes the value and leaves the use
+  record that describes the delete.
+- *Consumers* lists the services the vault may seal a value to and whether each
+  is enabled. It cannot add one: the vault registers a consumer when the workload
+  asks, and no door registers one on somebody's behalf.
+
+The gateway gained the two doors the screens needed:
+=GET /api/v1/vault/secrets/{name}= forwards the describe operation on
+=vault::secrets:read=, and =DELETE /api/v1/vault/secrets/{name}= forwards the
+remove operation on =vault::secrets:delete=. Both carry the person's own token,
+so the vault checks the permission and records them as the actor.
+
+*Proven.* The web package's tests: 2786 passing, ten of them the vault's, each
+drawing a screen from seeded reads and a seeded access and stating what it shows
+and what it does not. The type check is clean. The route inventory regenerates
+with six vault routes. The local gate is green.
+
+*Proven live*, against the gateway built from this branch and signed in as the
+system administrator: the list answered 16 secrets and 16 consumers in the shape
+the screens parse; the write stored =web.task.probe= and answered its key
+version; the record answered the owner and =written_at= in the wire's own form;
+the delete removed it and the record then answered that no such secret exists.
+The probe was the only row written and it is gone.
+
+*Not proven, and not true yet.* A person cannot reveal a secret a service owns.
+The reveal door resolves as the gateway, and the vault refuses because the
+secret's owner names a service: =GET .../web.task.probe/value= answered 404,
+"This secret belongs to another consumer", although the probe's owner was a
+consumer and the caller held the resolve permission. The screen draws the
+control and shows the vault's answer, and the gap is captured
+([[id:269D12F7-BDC0-4667-A825-912C4B83AC76][A person cannot reveal a secret a
+service owns]]). The vault's rule is documented and the fix is a decision about
+which side yields, so it is not taken here.
+
+*Not built, and captured.* A secret's versions (the record shows the current key
+version and no history), key rotation, consumer registration, and the uses
+screen. The list door also still forwards each value's stored ciphertext, which
+no screen needs
+([[id:658F3BAE-4E9F-467D-A554-A78E5E6FE525][The list of secrets carries each
+value's ciphertext]]). And the reveal itself is refused for every secret a
+service owns
+([[id:269D12F7-BDC0-4667-A825-912C4B83AC76][A person cannot reveal a secret a
+service owns]]), which the live pass found and no test could.

@@ -128,6 +128,39 @@ void vault_routes::register_routes(std::shared_ptr<ores::http::net::router> rout
     router->add_route(consumers_built);
     registry->register_route(consumers_built);
 
+    auto describe_route = router->get("/api/v1/vault/secrets/{name}")
+                              .summary("Read one secret's metadata")
+                              .description("The record a screen shows: the consumer that owns the "
+                                           "secret, the key version that protects it and when it "
+                                           "was last written. Never its value, which is a separate "
+                                           "ask.")
+                              .tags({"vault"})
+                              .entity_catalogue("vault", "secrets", "describe")
+                              .no_body()
+                              .auth_required()
+                              .handler([&session](const ores::http::domain::http_request& req) {
+                                  return handle_describe(req, session);
+                              });
+    const auto describe_built = describe_route.build();
+    router->add_route(describe_built);
+    registry->register_route(describe_built);
+
+    auto remove_route = router->delete_("/api/v1/vault/secrets/{name}")
+                            .summary("Delete one secret")
+                            .description("Forwards the removal with the person's own token. The "
+                                         "vault records the ask, so the secret keeps a use record "
+                                         "after the row is gone.")
+                            .tags({"vault"})
+                            .entity_catalogue("vault", "secrets", "delete")
+                            .no_body()
+                            .auth_required()
+                            .handler([&session](const ores::http::domain::http_request& req) {
+                                return handle_remove(req, session);
+                            });
+    const auto remove_built = remove_route.build();
+    router->add_route(remove_built);
+    registry->register_route(remove_built);
+
     auto reveal_route =
         router->get("/api/v1/vault/secrets/{name}/value")
             .summary("Reveal one secret")
@@ -224,6 +257,48 @@ vault_routes::handle_list_consumers(const ores::http::domain::http_request& req,
         co_return ores::http::net::record_routes::answer(r);
     } catch (const std::exception& e) {
         ORES_LOG_SEV(lg(), warn) << "List refused: " << e.what();
+        co_return ores::http::domain::http_response::bad_request(e.what());
+    }
+}
+
+boost::asio::awaitable<ores::http::domain::http_response>
+vault_routes::handle_describe(const ores::http::domain::http_request& req,
+                              ores::nats::service::nats_client& session) {
+    try {
+        const auto name = req.get_path_param("name");
+        if (name.empty()) {
+            co_return ores::http::domain::http_response::bad_request("The path names no secret");
+        }
+
+        ores::http::forwarding::require_permission(
+            req, session, "vault::secrets:read", "Reading a secret's metadata");
+        co_return ores::http::forwarding::respond(
+            req, session, ores::vault::messaging::describe_secret_request{.name = name});
+    } catch (const ores::http::net::record_routes::refusal& r) {
+        co_return ores::http::net::record_routes::answer(r);
+    } catch (const std::exception& e) {
+        ORES_LOG_SEV(lg(), warn) << "Describe refused: " << e.what();
+        co_return ores::http::domain::http_response::bad_request(e.what());
+    }
+}
+
+boost::asio::awaitable<ores::http::domain::http_response>
+vault_routes::handle_remove(const ores::http::domain::http_request& req,
+                            ores::nats::service::nats_client& session) {
+    try {
+        const auto name = req.get_path_param("name");
+        if (name.empty()) {
+            co_return ores::http::domain::http_response::bad_request("The path names no secret");
+        }
+
+        ores::http::forwarding::require_permission(
+            req, session, "vault::secrets:delete", "Deleting a secret");
+        co_return ores::http::forwarding::respond(
+            req, session, ores::vault::messaging::remove_secret_request{.name = name});
+    } catch (const ores::http::net::record_routes::refusal& r) {
+        co_return ores::http::net::record_routes::answer(r);
+    } catch (const std::exception& e) {
+        ORES_LOG_SEV(lg(), warn) << "Delete refused: " << e.what();
         co_return ores::http::domain::http_response::bad_request(e.what());
     }
 }

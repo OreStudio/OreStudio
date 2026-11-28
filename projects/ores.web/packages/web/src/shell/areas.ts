@@ -22,7 +22,7 @@
 import type { SessionMode } from '@ores/wire-protocol/browser';
 import { DEPLOYMENT_READ } from '@ores/contracts';
 import { PERMISSION } from '../access/permissions.js';
-import { PATHS } from './paths.js';
+import { PATHS, VAULT } from './paths.js';
 
 /** One entry of the shell's menu: an area, named for what a person does there. */
 export interface MenuItem {
@@ -104,6 +104,15 @@ export const MENU: readonly MenuItem[] = [
         nameKey: 'shell.menu.dataquality',
         to: PATHS.dataQuality,
         permission: 'dq::datasets:read',
+    },
+    {
+        // The area holds the installation's own values, which is a question about
+        // the tenant's data and not about the process, which is why it is not a
+        // folder inside Operations. Every card asks for the one read the vault's
+        // list doors demand.
+        nameKey: 'shell.menu.secrets',
+        to: VAULT.list,
+        permission: 'vault::secrets:read',
     },
     { nameKey: 'shell.menu.development', to: '/development' },
     { nameKey: 'shell.menu.api', to: '/swagger', external: true },

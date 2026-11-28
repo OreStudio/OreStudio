@@ -27,11 +27,11 @@ Then the store is modelled, served, wired into the provider registry and proven 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
-| Now           | The vault holds the deployment's secrets and the fleet resolves them from it: the store, the sealed delivery, the phase-2 migration and the database bootstrap landed. What is missing is what a person uses: the shell component exists and is not wired, and no screen does. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Wire the vault into the shell, then serve it in the web: the list and write doors the gateway does not yet expose, and the screens the journey describes. |
+| Next          | Nothing. The gaps the story leaves are captured, not carried. |
 | Last touched  | 2026-11-28                             |
 
 * Acceptance
@@ -62,7 +62,7 @@ Then the store is modelled, served, wired into the provider registry and proven 
 | [[id:794C1BF1-1FEC-40F4-8490-438C53C712E2][Delete the pooler lookup function nothing calls]] | DONE | 2026-11-28 | 2026-11-28 | A lookup function nothing calls, beside a pooler that reads copies of verifiers: wire the one or remove the other. |
 | [[id:42992A4D-BBFF-42CD-BA1C-89E09553EE60][Build a database without the service passwords]] | DONE | 2026-11-28 | 2026-11-28 | Environment format 39 removed the service passwords, but compass db recreate still demands them, so a fresh checkout cannot build a database and the fleet has nothing to authenticate against until provisioning runs. |
 | [[id:60A42D7D-B6CE-40B0-ABE8-D02A6851663D][Expose the vault in the shell]] | DONE | 2026-11-28 | 2026-11-28 | The vault's shell component exists, builds and is tested, and the shell never registers its menus, so a person cannot reach the vault from the command line. |
-| [[id:050BEC49-2581-4D6E-A404-75186205EF09][Serve the vault in the web]] | STARTED | 2026-11-28 | | The vault has two HTTP doors and no screen: a person cannot list, write, rotate or read a secret from ores.web, and the gateway does not expose the list doors a screen needs. |
+| [[id:050BEC49-2581-4D6E-A404-75186205EF09][Serve the vault in the web]] | DONE | 2026-11-28 | 2026-11-28 | The vault has two HTTP doors and no screen: a person cannot list, write, rotate or read a secret from ores.web, and the gateway does not expose the list doors a screen needs. |
 | [[id:286579D9-05BE-4D83-897C-1E77A9BA39DE][Provision the deployment's secrets after a recreate]] | DONE | | 2026-11-28 | A recreate leaves every service role without a password, and the fresh smoke path and the operator's next step did not say so: the fleet came up against roles it could not authenticate as. |
 
 * Decisions
@@ -162,6 +162,36 @@ Then the store is modelled, served, wired into the provider registry and proven 
   neither a rule nor an operation answers it. See
   [[id:B14B2A74-CA0D-4A83-9C0A-46CAB79F6E8B][Keep the installation's secrets]] and
   [[id:2E7B5F1C-9A84-4C36-8D02-6F1B3A5E7C90][the prototype's design note]].
+
+* Result
+
+The vault holds the deployment's secrets and every surface a person uses to
+reach them exists.
+
+- *The store and its custody.* A value is sealed with AES-256-GCM and sealed
+  boxes, under a key that lives outside the database, and the vault keeps the
+  rows, the versions and the use record.
+- *Delivered to the services.* Each service fetches its own password through a
+  challenge it answers with a key only it holds, so the environment file states
+  no service password and a rebuild provisions the vault in place of one.
+- *Served to a person.* The shell has its =secrets= menu and the web has three
+  screens: the list, one secret's record with its masked value, and the
+  consumers. The gateway serves six vault doors, each on the permission the
+  vault itself enforces.
+- *Designed before built.* The journey, the four wireframes and the prototype
+  were signed off before the first screen, and the tree now agrees with them:
+  the menu structure, the journey's coverage and the prototype's design note
+  each state what exists and what does not.
+
+Three gaps are captured rather than carried: a person cannot yet reveal a secret
+a service owns
+([[id:269D12F7-BDC0-4667-A825-912C4B83AC76][A person cannot reveal a secret a
+service owns]]), a secret's versions have no door
+([[id:BD0CFC52-82B1-4F07-AD12-5D732BE52E55][The versions of a secret have no
+door]]), and the list door still forwards each value's stored ciphertext
+([[id:658F3BAE-4E9F-467D-A554-A78E5E6FE525][The list of secrets carries each
+value's ciphertext]]). The uses screen has no operation and no rule, which is
+its own capture.
 
 * Out of scope
 

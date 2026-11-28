@@ -32,7 +32,7 @@ import { enFlat } from '../i18n/locales/en.js';
 import type { BootstrapState } from '../session/BootstrapProvider.js';
 import { MENU } from './areas.js';
 import { AREA_CARDS, AREA_PAGE, CARDS, cardOf, screenAreaOf, type CardId } from './cards.js';
-import { PATHS, takeCutPath } from './paths.js';
+import { PATHS, VAULT, takeCutPath } from './paths.js';
 
 const party = {
     id: '3f1e2d4c-0000-4000-8000-000000000010',
@@ -185,6 +185,18 @@ describe('walking every screen', () => {
         expect(trailAt('/where-i-work')).toBe(trail(en('membership.where.title')));
     });
 
+    it('gives the consumers list the trail through the secrets list', () => {
+        expect(trailAt(VAULT.consumers)).toBe(
+            trail(en('shell.menu.secrets'), en('vault.consumers.title')),
+        );
+    });
+
+    it('gives a secret record the trail through the secrets list', () => {
+        expect(trailAt(`${VAULT.list}/db.marketdata_service.password`)).toBe(
+            trail(en('shell.menu.secrets'), 'db.marketdata_service.password'),
+        );
+    });
+
     it('gives a dataset page the trail through the coverage list', () => {
         expect(trailAt('/data-quality/datasets/iso.countries')).toBe(
             trail(en('shell.menu.dataquality'), en('dq.coverage.title'), 'iso.countries'),
@@ -227,6 +239,11 @@ describe('the routes of the application', () => {
                     (_, name: string) => PATHS[name as keyof typeof PATHS],
                 )
                 .replace(/^PATHS\.(\w+)$/, (_, name: string) => PATHS[name as keyof typeof PATHS])
+                .replace(/^VAULT\.(\w+)$/, (_, name: string) => VAULT[name as keyof typeof VAULT])
+                .replace(
+                    /\$\{VAULT\.(\w+)\}/g,
+                    (_, name: string) => VAULT[name as keyof typeof VAULT],
+                )
                 // An address the paths module builds, so the route and the link a
                 // button follows are one name and not two spellings of it.
                 .replace(/^takeCutPath\(\)$/, () => takeCutPath())
@@ -260,6 +277,8 @@ describe('the routes of the application', () => {
         // Opened from the housekeeping page's own link, and walked by the tables
         // list's test.
         PATHS.housekeepingTables,
+        // Opened from the secrets list's own button, so no card leads to it.
+        VAULT.consumers,
     ]);
 
     /**

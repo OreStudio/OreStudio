@@ -86,6 +86,20 @@ inline constexpr double maximum_pillar_years = 50.0;
 ORES_ANALYTICS_QUANT_EXPORT dated_returns returns_of(std::span<const dated_level> levels,
                                                      volatility_transform transform);
 
+/**
+ * @brief Whether a level of @p transform's series is an observation.
+ *
+ * A level that is not finite is no observation, and neither is a level that is not positive when
+ * the transform takes a logarithm. The one rule returns_of applies, exposed so a caller that
+ * streams a series -- a batch that walks it once from the newest level -- reads the same series.
+ */
+[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT bool
+reads_as_observation(double level, volatility_transform transform) noexcept;
+
+/// The return of @p value from @p previous, by @p transform. Both must be observations.
+[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT double
+return_of(double value, double previous, volatility_transform transform) noexcept;
+
 /// The authored choices of a measurement.
 ///
 /// The transform is not one of them: it is the argument of returns_of, because a setting a caller
@@ -109,6 +123,20 @@ struct measurement_settings final {
  */
 [[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT int
 measurement_window(double years, const measurement_settings& settings);
+
+/// Refused for settings no measurement can read: a year with no periods, or one that is not finite.
+ORES_ANALYTICS_QUANT_EXPORT std::expected<void, std::string>
+validate_settings(const measurement_settings& settings);
+
+/**
+ * @brief The level a sample variance states: its root over the periods in a year, times the
+ * settings' multiplier.
+ *
+ * The one rule that turns a variance into a level, so the window a batch reads from the sums of a
+ * series and the window the engine reads from the sample itself cannot disagree.
+ */
+[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT double
+level_of_variance(double variance, const measurement_settings& settings) noexcept;
 
 /// What a series says about its own shape, once, however many pillars are measured from it.
 struct series_measurement final {

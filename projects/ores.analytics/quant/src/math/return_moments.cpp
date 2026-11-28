@@ -59,6 +59,29 @@ std::expected<return_moments, std::string> moments_of(std::span<const double> re
                           .excess_kurtosis = m4 / (m2 * m2) - 3.0};
 }
 
+std::expected<return_moments, std::string> moments_from_power_sums(int count,
+                                                                   double sum,
+                                                                   double sum_of_squares,
+                                                                   double sum_of_cubes,
+                                                                   double sum_of_fourth_powers) {
+    if (count < 4)
+        return std::unexpected("the moments of a sample need at least four returns");
+    const double n = count;
+    const double mean = sum / n;
+    const double m2 = sum_of_squares / n - mean * mean;
+    // The test moments_of makes, on the same number: a constant sample leaves rounding residue.
+    if (!std::isfinite(m2) || !(m2 > 1e-30 + 1e-24 * mean * mean))
+        return std::unexpected("the returns have no spread");
+    const double m3 = sum_of_cubes / n - 3.0 * mean * sum_of_squares / n + 2.0 * mean * mean * mean;
+    const double m4 = sum_of_fourth_powers / n - 4.0 * mean * sum_of_cubes / n +
+                      6.0 * mean * mean * sum_of_squares / n - 3.0 * mean * mean * mean * mean;
+    return return_moments{.count = count,
+                          .mean = mean,
+                          .stdev = std::sqrt(m2 * n / (n - 1.0)),
+                          .skewness = m3 / (m2 * std::sqrt(m2)),
+                          .excess_kurtosis = m4 / (m2 * m2) - 3.0};
+}
+
 return_shape shrink(const return_moments& sample, const shape_prior& prior) noexcept {
     const double n = sample.count;
     const double w = prior.weight > 0.0 ? n / (n + prior.weight) : 1.0;

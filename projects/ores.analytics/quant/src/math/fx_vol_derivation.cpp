@@ -120,25 +120,14 @@ std::expected<void, std::string> derive_grid(std::span<const double> returns,
     // same refusal moments_of makes.
     const auto moments_between = [&](std::size_t from,
                                      std::size_t to) -> std::optional<return_moments> {
-        const auto count = static_cast<double>(to - from);
-        if (count < 4.0)
+        const auto sums = moments_from_power_sums(static_cast<int>(to - from),
+                                                  prefix[to][0] - prefix[from][0],
+                                                  prefix[to][1] - prefix[from][1],
+                                                  prefix[to][2] - prefix[from][2],
+                                                  prefix[to][3] - prefix[from][3]);
+        if (!sums)
             return std::nullopt;
-        const double s1 = prefix[to][0] - prefix[from][0];
-        const double s2 = prefix[to][1] - prefix[from][1];
-        const double s3 = prefix[to][2] - prefix[from][2];
-        const double s4 = prefix[to][3] - prefix[from][3];
-        const double mean = s1 / count;
-        const double m2 = s2 / count - mean * mean;
-        if (!std::isfinite(m2) || !(m2 > 1e-30 + 1e-24 * mean * mean))
-            return std::nullopt;
-        const double m3 = s3 / count - 3.0 * mean * s2 / count + 2.0 * mean * mean * mean;
-        const double m4 = s4 / count - 4.0 * mean * s3 / count + 6.0 * mean * mean * s2 / count -
-                          3.0 * mean * mean * mean * mean;
-        return return_moments{.count = static_cast<int>(count),
-                              .mean = mean,
-                              .stdev = std::sqrt(m2 * count / (count - 1.0)),
-                              .skewness = m3 / (m2 * std::sqrt(m2)),
-                              .excess_kurtosis = m4 / (m2 * m2) - 3.0};
+        return *sums;
     };
 
     for (std::size_t count = 1; count <= n; ++count) {

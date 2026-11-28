@@ -44,6 +44,18 @@ struct return_moments final {
 ORES_ANALYTICS_QUANT_EXPORT std::expected<return_moments, std::string>
 moments_of(std::span<const double> returns);
 
+/**
+ * @brief The same moments, from the sums of a sample's first four powers.
+ *
+ * A caller that walks a long sample once, or that holds prefix sums so a window costs a
+ * subtraction, cannot hand the engine the sample itself. It hands the four sums instead, and the
+ * answer is the one moments_of gives, up to the rounding the two arrangements move.
+ *
+ * Refused for the same two samples moments_of refuses: fewer than four returns, and no spread.
+ */
+ORES_ANALYTICS_QUANT_EXPORT std::expected<return_moments, std::string> moments_from_power_sums(
+    int count, double sum, double sum_of_squares, double sum_of_cubes, double sum_of_fourth_powers);
+
 /// The skewness and excess kurtosis of a return.
 struct return_shape final {
     double skewness;

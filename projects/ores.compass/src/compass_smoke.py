@@ -294,6 +294,18 @@ def ticks(args, root: Path, env_file: Path | None = None) -> int:
                 print(result.stderr, file=sys.stderr)
                 return 1
             time.sleep(10)
+
+        # A recreate leaves every service role without a password: the
+        # environment file no longer carries one, and the run that invents them
+        # is this one. Without it the fleet starts against roles it cannot
+        # authenticate as, which reads as a pooler or a service fault.
+        result = _run(["./compass.sh", "vault", "provision"], root)
+        if result.returncode != 0:
+            print(result.stdout, file=sys.stderr)
+            print(result.stderr, file=sys.stderr)
+            print("error: the deployment's secrets were not provisioned, so the "
+                  "fleet has no password to start with", file=sys.stderr)
+            return 1
         args.start_services = True
 
     if args.start_services:

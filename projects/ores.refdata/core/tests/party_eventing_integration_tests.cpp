@@ -111,7 +111,7 @@ TEST_CASE("write_party_publishes_an_event", "[eventing][integration]") {
     // 3. Write -- triggers the entity's notify trigger -> pg_notify ->
     // the chain wired above -> NATS.
     auto v = generate_synthetic_party(ctx);
-    v.change_reason_code = "system.test";
+    v.audit.change_reason_code = "system.test";
     const auto id_str = boost::uuids::to_string(v.id);
     ORES_LOG_SEV(lg, debug) << "Party: " << v;
 
@@ -178,12 +178,12 @@ TEST_CASE("write_party_publishes_an_event", "[eventing][integration]") {
     {
         const auto& crud_ctx = party_ctx;
         ores::refdata::service::party_service svc(crud_ctx);
-        v.change_commentary = "updated-by-crud-round-trip";
+        v.audit.change_commentary = "updated-by-crud-round-trip";
         repo.write(crud_ctx, v);
 
         auto versions = svc.get_party_history(v.short_code);
         REQUIRE(versions.size() >= 2);
-        REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
+        REQUIRE(versions.front().audit.change_commentary == "updated-by-crud-round-trip");
 
         svc.delete_party(v.id);
         // Delete soft-closes the active row (the instead-of delete

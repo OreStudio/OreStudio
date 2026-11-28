@@ -22,6 +22,7 @@
  * Template: cpp_domain_type_codec_roundtrip_tests.cpp.mustache
  * To modify, update the template and regenerate.
  */
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.refdata.api/domain/business_unit_codec.hpp"
 #include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/sample.hpp"

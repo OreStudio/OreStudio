@@ -57,11 +57,11 @@ domain::party party_mapper::map(const party_entity& v) {
     r.image_id = v.image_id;
     r.is_registration_default = v.is_registration_default;
     r.restricts_product_types = v.restricts_product_types;
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
-    r.recorded_at = v.valid_from;
+    r.audit.modified_by = v.audit.modified_by;
+    r.audit.performed_by = v.audit.performed_by;
+    r.audit.change_reason_code = v.audit.change_reason_code;
+    r.audit.change_commentary = v.audit.change_commentary;
+    r.audit.recorded_at = v.valid_from;
 
     ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -86,10 +86,10 @@ party_entity party_mapper::map(const domain::party& v) {
     r.image_id = v.image_id;
     r.is_registration_default = v.is_registration_default;
     r.restricts_product_types = v.restricts_product_types;
-    r.modified_by = v.modified_by;
-    r.performed_by = v.performed_by;
-    r.change_reason_code = v.change_reason_code;
-    r.change_commentary = v.change_commentary;
+    r.audit.modified_by = v.audit.modified_by;
+    r.audit.performed_by = v.audit.performed_by;
+    r.audit.change_reason_code = v.audit.change_reason_code;
+    r.audit.change_commentary = v.audit.change_commentary;
 
     ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

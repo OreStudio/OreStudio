@@ -186,10 +186,10 @@ domain::{{entity_singular}}
 {{/sql_only}}
 {{/columns}}
 {{#has_audit_columns}}
-    r.{{{audit_prefix}}}modified_by = v.modified_by;
-    r.{{{audit_prefix}}}performed_by = v.performed_by;
-    r.{{{audit_prefix}}}change_reason_code = v.change_reason_code;
-    r.{{{audit_prefix}}}change_commentary = v.change_commentary;
+    r.{{{audit_prefix}}}modified_by = v.{{#has_audit_group}}audit.{{/has_audit_group}}modified_by;
+    r.{{{audit_prefix}}}performed_by = v.{{#has_audit_group}}audit.{{/has_audit_group}}performed_by;
+    r.{{{audit_prefix}}}change_reason_code = v.{{#has_audit_group}}audit.{{/has_audit_group}}change_reason_code;
+    r.{{{audit_prefix}}}change_commentary = v.{{#has_audit_group}}audit.{{/has_audit_group}}change_commentary;
     r.{{{audit_prefix}}}recorded_at = v.valid_from;
 {{/has_audit_columns}}
 
@@ -332,10 +332,10 @@ domain::{{entity_singular}}
 {{/sql_only}}
 {{/columns}}
 {{#has_audit_columns}}
-    r.modified_by = v.{{{audit_prefix}}}modified_by;
-    r.performed_by = v.{{{audit_prefix}}}performed_by;
-    r.change_reason_code = v.{{{audit_prefix}}}change_reason_code;
-    r.change_commentary = v.{{{audit_prefix}}}change_commentary;
+    r.{{#has_audit_group}}audit.{{/has_audit_group}}modified_by = v.{{{audit_prefix}}}modified_by;
+    r.{{#has_audit_group}}audit.{{/has_audit_group}}performed_by = v.{{{audit_prefix}}}performed_by;
+    r.{{#has_audit_group}}audit.{{/has_audit_group}}change_reason_code = v.{{{audit_prefix}}}change_reason_code;
+    r.{{#has_audit_group}}audit.{{/has_audit_group}}change_commentary = v.{{{audit_prefix}}}change_commentary;
 {{/has_audit_columns}}
 
     ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

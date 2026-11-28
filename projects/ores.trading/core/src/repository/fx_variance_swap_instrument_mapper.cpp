@@ -63,10 +63,10 @@ fx_variance_swap_instrument_mapper::map(const fx_variance_swap_instrument_entity
     r.calendar = v.calendar;
     r.add_past_dividends = v.add_past_dividends;
     r.description = v.description.value_or("");
-    r.audit.modified_by = v.modified_by;
-    r.audit.performed_by = v.performed_by;
-    r.audit.change_reason_code = v.change_reason_code;
-    r.audit.change_commentary = v.change_commentary;
+    r.audit.modified_by = v.audit.modified_by;
+    r.audit.performed_by = v.audit.performed_by;
+    r.audit.change_reason_code = v.audit.change_reason_code;
+    r.audit.change_commentary = v.audit.change_commentary;
     r.audit.recorded_at = v.valid_from;
 
     ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
@@ -95,10 +95,10 @@ fx_variance_swap_instrument_mapper::map(const domain::fx_variance_swap_instrumen
     r.calendar = v.calendar;
     r.add_past_dividends = v.add_past_dividends;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
-    r.modified_by = v.audit.modified_by;
-    r.performed_by = v.audit.performed_by;
-    r.change_reason_code = v.audit.change_reason_code;
-    r.change_commentary = v.audit.change_commentary;
+    r.audit.modified_by = v.audit.modified_by;
+    r.audit.performed_by = v.audit.performed_by;
+    r.audit.change_reason_code = v.audit.change_reason_code;
+    r.audit.change_commentary = v.audit.change_commentary;
 
     ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

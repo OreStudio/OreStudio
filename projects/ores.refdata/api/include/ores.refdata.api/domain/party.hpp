@@ -25,6 +25,7 @@
 #ifndef ORES_REFDATA_API_DOMAIN_PARTY_HPP
 #define ORES_REFDATA_API_DOMAIN_PARTY_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -167,39 +168,7 @@ struct party final {
      */
     bool restricts_product_types = false;
 
-    /**
-     * @brief Username of the person who last modified this party.
-     */
-    std::string modified_by;
-
-    /**
-     * @brief Username of the account that performed this action.
-     */
-    std::string performed_by;
-
-    /**
-     * @brief Code identifying the reason for the change.
-     *
-     * References change_reasons table (soft FK).
-     */
-    std::string change_reason_code;
-
-    /**
-     * @brief Free-text commentary explaining the change.
-     */
-    std::string change_commentary;
-
-    /**
-     * @brief Timestamp when this version of the record was recorded.
-     *
-     * The transaction-time window's start, which the store sets from its own
-     * clock. It travels with the audit members because it is only ever read
-     * with them: the history builder takes a version type that carries an
-     * actor *and* this timestamp, so an entity without the actor has no use
-     * for the timestamp either.
-     */
-    std::chrono::system_clock::time_point recorded_at;
-
+    ores::dq::domain::audit_record audit;
     /**
      * @brief Value equality.
      *

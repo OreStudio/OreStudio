@@ -25,6 +25,7 @@
 #ifndef ORES_REFDATA_API_DOMAIN_BUSINESS_UNIT_CODEC_HPP
 #define ORES_REFDATA_API_DOMAIN_BUSINESS_UNIT_CODEC_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.refdata.api/domain/business_unit.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
@@ -58,11 +59,7 @@ namespace ores::refdata::domain {
         utility::codec::field{"unit_type_id", &business_unit::unit_type_id},
         utility::codec::field{"status", &business_unit::status},
         utility::codec::field{"restricts_product_types", &business_unit::restricts_product_types},
-        utility::codec::field{"modified_by", &business_unit::modified_by},
-        utility::codec::field{"performed_by", &business_unit::performed_by},
-        utility::codec::field{"change_reason_code", &business_unit::change_reason_code},
-        utility::codec::field{"change_commentary", &business_unit::change_commentary},
-        utility::codec::field{"recorded_at", &business_unit::recorded_at},
+        utility::codec::field{"audit", &business_unit::audit},
     };
 }
 

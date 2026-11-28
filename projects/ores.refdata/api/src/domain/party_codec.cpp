@@ -23,6 +23,7 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.refdata.api/domain/party_codec.hpp"
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.utility/codec/struct_codec.hpp"
 
 namespace ores::utility::codec {

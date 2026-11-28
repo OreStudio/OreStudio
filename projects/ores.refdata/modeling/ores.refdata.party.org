@@ -509,6 +509,7 @@ Everything below is consumed by the C++ codegen pipeline only.
 :service_find_by_code_column: short_code
 :cached_by:                   iam
 :cache_aux_type:              children_map
+:domain_audit_group:          ores.dq.audit_record
 :END:
 
 ** Repository
@@ -1072,6 +1073,17 @@ section.
         return result;
     }
 #+end_src
+
+* Physical space
+
+The history provider is registered although the audit is one member: the
+provider renders the entity's own field list, and the group changes only where
+those members sit.
+
+| Address                             | Enabled |
+|-------------------------------------+---------|
+| ores.cpp.history-provider-registrar | true    |
+| ores.cpp.no-such-facet              | false   |
 
 * See also
 

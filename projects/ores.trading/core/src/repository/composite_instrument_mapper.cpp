@@ -72,10 +72,10 @@ composite_instrument_mapper::map(const composite_instrument_entity& v) {
     r.underlying_basket_name = v.underlying_basket_name;
     r.underlying_index_quantity = v.underlying_index_quantity;
     r.underlying_price_is_per_unit = v.underlying_price_is_per_unit;
-    r.audit.modified_by = v.modified_by;
-    r.audit.performed_by = v.performed_by;
-    r.audit.change_reason_code = v.change_reason_code;
-    r.audit.change_commentary = v.change_commentary;
+    r.audit.modified_by = v.audit.modified_by;
+    r.audit.performed_by = v.audit.performed_by;
+    r.audit.change_reason_code = v.audit.change_reason_code;
+    r.audit.change_commentary = v.audit.change_commentary;
     r.audit.recorded_at = v.valid_from;
 
     ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
@@ -115,10 +115,10 @@ composite_instrument_mapper::map(const domain::composite_instrument& v) {
     r.underlying_basket_name = v.underlying_basket_name;
     r.underlying_index_quantity = v.underlying_index_quantity;
     r.underlying_price_is_per_unit = v.underlying_price_is_per_unit;
-    r.modified_by = v.audit.modified_by;
-    r.performed_by = v.audit.performed_by;
-    r.change_reason_code = v.audit.change_reason_code;
-    r.change_commentary = v.audit.change_commentary;
+    r.audit.modified_by = v.audit.modified_by;
+    r.audit.performed_by = v.audit.performed_by;
+    r.audit.change_reason_code = v.audit.change_reason_code;
+    r.audit.change_commentary = v.audit.change_commentary;
 
     ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

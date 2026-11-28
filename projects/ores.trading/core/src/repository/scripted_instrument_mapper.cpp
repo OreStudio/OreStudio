@@ -56,10 +56,10 @@ domain::scripted_instrument scripted_instrument_mapper::map(const scripted_instr
     r.script_tenant_id = v.script_tenant_id;
     r.script_version = v.script_version;
     r.script_hash = v.script_hash;
-    r.audit.modified_by = v.modified_by;
-    r.audit.performed_by = v.performed_by;
-    r.audit.change_reason_code = v.change_reason_code;
-    r.audit.change_commentary = v.change_commentary;
+    r.audit.modified_by = v.audit.modified_by;
+    r.audit.performed_by = v.audit.performed_by;
+    r.audit.change_reason_code = v.audit.change_reason_code;
+    r.audit.change_commentary = v.audit.change_commentary;
     r.audit.recorded_at = v.valid_from;
 
     ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
@@ -84,10 +84,10 @@ scripted_instrument_entity scripted_instrument_mapper::map(const domain::scripte
     r.script_tenant_id = v.script_tenant_id;
     r.script_version = v.script_version;
     r.script_hash = v.script_hash;
-    r.modified_by = v.audit.modified_by;
-    r.performed_by = v.audit.performed_by;
-    r.change_reason_code = v.audit.change_reason_code;
-    r.change_commentary = v.audit.change_commentary;
+    r.audit.modified_by = v.audit.modified_by;
+    r.audit.performed_by = v.audit.performed_by;
+    r.audit.change_reason_code = v.audit.change_reason_code;
+    r.audit.change_commentary = v.audit.change_commentary;
 
     ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

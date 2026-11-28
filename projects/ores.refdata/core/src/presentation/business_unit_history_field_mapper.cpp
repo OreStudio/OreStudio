@@ -54,13 +54,15 @@ render_business_unit_fields(const domain::business_unit& v) {
     fields.push_back(
         {.name = "Restricts Product Types", .value = v.restricts_product_types ? "true" : "false"});
     using ores::history::domain::provenance_fields;
-    fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
-    fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});
+    fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
+    fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});
     fields.push_back(
-        {.name = provenance_fields::change_reason_code, .value = v.change_reason_code});
-    fields.push_back({.name = provenance_fields::change_commentary, .value = v.change_commentary});
-    fields.push_back({.name = provenance_fields::recorded_at,
-                      .value = ores::platform::time::datetime::to_iso8601_utc(v.recorded_at)});
+        {.name = provenance_fields::change_reason_code, .value = v.audit.change_reason_code});
+    fields.push_back(
+        {.name = provenance_fields::change_commentary, .value = v.audit.change_commentary});
+    fields.push_back(
+        {.name = provenance_fields::recorded_at,
+         .value = ores::platform::time::datetime::to_iso8601_utc(v.audit.recorded_at)});
 
     return fields;
 }

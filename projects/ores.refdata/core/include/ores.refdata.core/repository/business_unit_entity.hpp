@@ -26,6 +26,7 @@
 #define ORES_REFDATA_CORE_REPOSITORY_BUSINESS_UNIT_ENTITY_HPP
 
 #include "ores.database/query_builder/columns.hpp"
+#include "ores.database/repository/change_audit.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -46,6 +47,10 @@ using db_timestamp = ores::database::repository::db_timestamp;
  * in the binary format and the mapper copies it to the domain member. A column
  * whose type the layer has no codec for keeps its text, and the mapper converts
  * it.
+ *
+ * The change audit is one member rather than four, because the model states
+ * those columns as a group: =change_audit= holds the same four in their column
+ * types, and the mapper copies each to the domain's audit record.
  */
 struct business_unit_entity {
     constexpr static const char* schema = "public";
@@ -65,10 +70,7 @@ struct business_unit_entity {
     std::optional<boost::uuids::uuid> unit_type_id;
     std::string status;
     bool restricts_product_types = false;
-    std::string modified_by;
-    std::string performed_by;
-    std::string change_reason_code;
-    std::string change_commentary;
+    ores::database::repository::change_audit audit;
     db_timestamp valid_from = db_timestamp::max();
     db_timestamp valid_to = db_timestamp::max();
 
@@ -89,10 +91,10 @@ struct business_unit_entity {
                query_builder::bind("unit_type_id", &e::unit_type_id) |
                query_builder::bind("status", &e::status) |
                query_builder::bind("restricts_product_types", &e::restricts_product_types) |
-               query_builder::bind("modified_by", &e::modified_by) |
-               query_builder::bind("performed_by", &e::performed_by) |
-               query_builder::bind("change_reason_code", &e::change_reason_code) |
-               query_builder::bind("change_commentary", &e::change_commentary) |
+               query_builder::bind("modified_by", &e::audit.modified_by) |
+               query_builder::bind("performed_by", &e::audit.performed_by) |
+               query_builder::bind("change_reason_code", &e::audit.change_reason_code) |
+               query_builder::bind("change_commentary", &e::audit.change_commentary) |
                query_builder::bind("valid_from", &e::valid_from) |
                query_builder::bind("valid_to", &e::valid_to);
     }

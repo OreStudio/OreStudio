@@ -58,11 +58,11 @@ domain::party generate_synthetic_party(utility::generation::generation_context& 
     r.image_id = std::nullopt;
     r.is_registration_default = false;
     r.restricts_product_types = false;
-    r.modified_by = modified_by;
-    r.performed_by = modified_by;
-    r.change_reason_code = "system.test";
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
+    r.audit.modified_by = modified_by;
+    r.audit.performed_by = modified_by;
+    r.audit.change_reason_code = "system.test";
+    r.audit.change_commentary = "Synthetic test data";
+    r.audit.recorded_at = ctx.past_timepoint();
     return r;
 }
 

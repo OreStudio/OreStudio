@@ -25,6 +25,7 @@
 #ifndef ORES_REFDATA_API_DOMAIN_PARTY_CODEC_HPP
 #define ORES_REFDATA_API_DOMAIN_PARTY_CODEC_HPP
 
+#include "ores.dq.api/domain/audit_record.hpp"
 #include "ores.refdata.api/domain/party.hpp"
 #include "ores.refdata.api/export.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
@@ -62,11 +63,7 @@ namespace ores::refdata::domain {
         utility::codec::field{"image_id", &party::image_id},
         utility::codec::field{"is_registration_default", &party::is_registration_default},
         utility::codec::field{"restricts_product_types", &party::restricts_product_types},
-        utility::codec::field{"modified_by", &party::modified_by},
-        utility::codec::field{"performed_by", &party::performed_by},
-        utility::codec::field{"change_reason_code", &party::change_reason_code},
-        utility::codec::field{"change_commentary", &party::change_commentary},
-        utility::codec::field{"recorded_at", &party::recorded_at},
+        utility::codec::field{"audit", &party::audit},
     };
 }
 

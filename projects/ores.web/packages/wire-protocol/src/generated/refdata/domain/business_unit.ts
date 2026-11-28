@@ -22,6 +22,7 @@
  * Template: domain_types.ts.mustache
  * To modify, update the template and regenerate.
  */
+import type { AuditRecord } from '../../dq/domain/audit_record.js';
 /**
  * The business unit wire shape.
  *
@@ -42,9 +43,5 @@ export interface BusinessUnit {
     unit_type_id: string | null;
     status: string;
     restricts_product_types: boolean;
-    modified_by: string;
-    performed_by: string;
-    change_reason_code: string;
-    change_commentary: string;
-    recorded_at: string;
+    audit: AuditRecord;
 }

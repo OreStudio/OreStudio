@@ -305,6 +305,7 @@ The import carries =unit_type_code=, a natural key; =ores_refdata_publish_busine
 :service_find_by_uuid:               true
 :service_find_by_code_column:        unit_name
 :service_find_by_code_parent_column: party_id
+:domain_audit_group:                 ores.dq.audit_record
 :END:
 
 Note: the plan this flag traces to (task_apply_safe_drift.org) named

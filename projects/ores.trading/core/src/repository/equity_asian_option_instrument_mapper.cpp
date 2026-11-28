@@ -66,10 +66,10 @@ equity_asian_option_instrument_mapper::map(const equity_asian_option_instrument_
     r.settlement = v.settlement;
     r.strike_currency = v.strike_currency;
     r.description = v.description.value_or("");
-    r.audit.modified_by = v.modified_by;
-    r.audit.performed_by = v.performed_by;
-    r.audit.change_reason_code = v.change_reason_code;
-    r.audit.change_commentary = v.change_commentary;
+    r.audit.modified_by = v.audit.modified_by;
+    r.audit.performed_by = v.audit.performed_by;
+    r.audit.change_reason_code = v.audit.change_reason_code;
+    r.audit.change_commentary = v.audit.change_commentary;
     r.audit.recorded_at = v.valid_from;
 
     ORES_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
@@ -101,10 +101,10 @@ equity_asian_option_instrument_mapper::map(const domain::equity_asian_option_ins
     r.settlement = v.settlement;
     r.strike_currency = v.strike_currency;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
-    r.modified_by = v.audit.modified_by;
-    r.performed_by = v.audit.performed_by;
-    r.change_reason_code = v.audit.change_reason_code;
-    r.change_commentary = v.audit.change_commentary;
+    r.audit.modified_by = v.audit.modified_by;
+    r.audit.performed_by = v.audit.performed_by;
+    r.audit.change_reason_code = v.audit.change_reason_code;
+    r.audit.change_commentary = v.audit.change_commentary;
 
     ORES_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

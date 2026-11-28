@@ -34,6 +34,9 @@ The full template source. Edit here and re-tangle with
 #include <ostream>
 #include <chrono>
 #include "ores.database/repository/db_types.hpp"
+{{#has_audit_group}}
+#include "ores.database/repository/change_audit.hpp"
+{{/has_audit_group}}
 #include "ores.database/query_builder/columns.hpp"
 #include "ores.{{component_core}}/export.hpp"
 {{#has_uuid_columns}}
@@ -60,6 +63,12 @@ using db_timestamp = ores::database::repository::db_timestamp;
  * in the binary format and the mapper copies it to the domain member. A column
  * whose type the layer has no codec for keeps its text, and the mapper converts
  * it.
+{{#has_audit_group}}
+ *
+ * The change audit is one member rather than four, because the model states
+ * those columns as a group: =change_audit= holds the same four in their column
+ * types, and the mapper copies each to the domain's audit record.
+{{/has_audit_group}}
  */
 {{#wide_type_exception}}
 {{{wide_type_exception}}}
@@ -179,10 +188,15 @@ struct {{entity_singular}}_entity {
 {{/is_simple}}
 {{/columns}}
 {{#has_audit_columns}}
+{{#has_audit_group}}
+    ores::database::repository::change_audit audit;
+{{/has_audit_group}}
+{{^has_audit_group}}
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
+{{/has_audit_group}}
 {{/has_audit_columns}}
 {{^current_state}}
     db_timestamp valid_from = db_timestamp::max();
@@ -224,10 +238,18 @@ struct {{entity_singular}}_entity {
 {{/sql_only}}
 {{/columns}}
 {{#has_audit_columns}}
+{{#has_audit_group}}
+            | query_builder::bind("modified_by", &e::audit.modified_by)
+            | query_builder::bind("performed_by", &e::audit.performed_by)
+            | query_builder::bind("change_reason_code", &e::audit.change_reason_code)
+            | query_builder::bind("change_commentary", &e::audit.change_commentary)
+{{/has_audit_group}}
+{{^has_audit_group}}
             | query_builder::bind("modified_by", &e::modified_by)
             | query_builder::bind("performed_by", &e::performed_by)
             | query_builder::bind("change_reason_code", &e::change_reason_code)
             | query_builder::bind("change_commentary", &e::change_commentary)
+{{/has_audit_group}}
 {{/has_audit_columns}}
 {{^current_state}}
 {{#sql.store_stamps_valid_from}}

@@ -72,6 +72,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/query_builder/execute.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/query_builder/json.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/query_builder/query.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/change_audit.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/db_types.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/document_operations.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/repository/entity_write_observer.hpp"

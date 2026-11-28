@@ -117,11 +117,12 @@ TEST_CASE("write_business_unit_publishes_an_event", "[eventing][integration]") {
     // 3. Write -- triggers the entity's notify trigger -> pg_notify ->
     // the chain wired above -> NATS.
     auto v = generate_synthetic_business_unit(ctx);
-    v.change_reason_code = "system.test";
+    v.audit.change_reason_code = "system.test";
     // Seed the active party row ores_refdata_parties_tbl references:
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto party_id_parent = ores::refdata::generators::generate_synthetic_party(ctx);
+    party_id_parent.audit.change_reason_code = "system.test";
     // Only one root party (parent_party_id null) is allowed per tenant:
     // attach to the existing root party instead of creating a second one.
     auto party_id_existing = ores::refdata::repository::party_repository().read_latest(party_ctx);
@@ -206,12 +207,12 @@ TEST_CASE("write_business_unit_publishes_an_event", "[eventing][integration]") {
         const auto crud_ctx =
             party_ctx.with_party(party_ctx.tenant_id(), crud_party, {crud_party}, h.db_user());
         ores::refdata::service::business_unit_service svc(crud_ctx);
-        v.change_commentary = "updated-by-crud-round-trip";
+        v.audit.change_commentary = "updated-by-crud-round-trip";
         repo.write(crud_ctx, v);
 
         auto versions = svc.get_business_unit_history(v.unit_code);
         REQUIRE(versions.size() >= 2);
-        REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
+        REQUIRE(versions.front().audit.change_commentary == "updated-by-crud-round-trip");
 
         svc.delete_business_unit(v.id);
         // Delete soft-closes the active row (the instead-of delete

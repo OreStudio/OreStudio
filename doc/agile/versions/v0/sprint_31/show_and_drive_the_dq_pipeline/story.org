@@ -69,6 +69,7 @@ from the shared parts rather than from the prototype markup.
 | [[id:51142B17-6F3F-4610-A810-BEBFF0142A3E][Serve concurrent reads through the gateway]] | BACKLOG | | | Four DQ reads sent together are dropped by the gateway as end of stream, so the screen serialises them to work at all; the gateway's HTTP session layer must serve them concurrently. |
 | [[id:99F3E780-6AA0-4879-8F6F-2A1321ACDB85][See the rows a dataset has staged]] | STARTED | 2026-11-28 | | The rows an artefact table holds, read over the bus and drawn on the dataset's page, so a person reads what a publish would write instead of trusting a count. |
 | [[id:0338170F-FDB0-48F5-BCBE-D3F559ED98E3][Say which party a bundle publishes for]] | BACKLOG | | | A bundle states its scope and, when it is party-scoped, the party whose rows it writes; the coverage list says which bundles are the party's own, so a person acting as one party reads their data and not every party's. |
+| [[id:4C516D35-0DAA-47FD-8FC4-BE62E071D3D8][Show what a dataset depends on, and what waits on it]] | BACKLOG | | | A read of the dependency edges over the bus, and the dataset page's Lineage tab drawn from it: what has to publish before a dataset, and what waits on it. |
 
 * Decisions
 

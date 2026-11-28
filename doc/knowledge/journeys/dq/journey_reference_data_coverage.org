@@ -130,7 +130,7 @@ and table, and the dataset on a page of its own.
 | =dataset_bundle_member= | The member table's order and the optional mark | =dataset_code=, =display_order=, =optional= |
 | =dataset= | The member table's identity | =code=, =name=, =artefact_type= |
 | =artefact_type= | The member table's destination | =artefact_table=, =target_table=, =target_subject= |
-| =publication= | The dataset page's Publications tab. The run log it models has no writer and no outcome column, so the tab is designed and not served | =published_at=, =published_by=, =dataset_code=, =mode=, =target_table=, the four counts, and the outcome with what the run said |
+| =publication= | The dataset page's Publications tab, served by the publish path's own recorder | =published_at=, =published_by=, =dataset_code=, =mode=, =target_table=, the four counts, and the outcome with what the run said |
 
 The published count is not a field of any of these. It is read from the
 provenance each published row carries, which names the dataset that wrote it; the
@@ -165,32 +165,17 @@ view.
 
 - *A preview operation.* =ores_dq_bundle_preview_fn= exists in the database and
   has no subject, so step 4 is the one read of the screen that is not served.
-- *A view of the rows a dataset holds.* The dataset's page states a count of
-  staged rows and never one of them, so a person cannot tell a correct catalogue
-  from a plausible one. A dataset stages into a table or a family of tables, and
-  each family carries its own columns, so the view lists the tables first and
-  opens one to read its rows; the read must carry the columns with the rows. This
-  is [[id:99F3E780-6AA0-4879-8F6F-2A1321ACDB85][See the rows a dataset has
-  staged]].
-
-- *A written and worded publication log.* The log has no writer and no column for
-  an outcome or a message, so a dataset's Publications tab has nothing to draw and
-  a failed run has nowhere to say why. Both halves are recorded in
-  [[id:5C20BEF9-13CA-48B5-8221-E83C1D6345DD][The publication run log has no
-  writer]].
+- *A read of the dependency edges.* =ores_dq_dataset_dependencies_tbl= holds one
+  row per edge — 196 in the provisioned environment, at most six out of one
+  dataset and as many as thirty-two into one — and the publish order resolves them,
+  but no subject answers them for a screen. Until one does, the dataset's Lineage
+  tab is designed and not served.
 - *A published-row count per dataset.* The provenance names the dataset on every
   published row, and nothing counts by it. Without the count the screen can say
   a bundle was published and cannot say how much of it landed.
-- *A writer for the run log.* =ores_dq_dataset_publications_tbl= and its CRUD
-  subject both exist, and nothing on the publish path writes a row, so the
-  history is empty however the screen is built. This is captured as
-  [[id:5C20BEF9-13CA-48B5-8221-E83C1D6345DD][The publication run log has no
-  writer, so the history screen is always empty]]. It is a precondition for any
-  history screen, not for this journey's first five steps.
-- *A read of an artefact table over the bus.* No subject reads
-  =ores_dq_<plural>_artefact_tbl=, so the staged count and the preview are only
-  reachable through the coverage operation above. DQ publishes artefact types and
-  datasets, not the rows they stage.
+- *A published count per dataset and per bundle.* A published row names the
+  dataset that wrote it, and nothing counts by it, so the roster shows the staged
+  count alone.
 - *A published count per bundle.* Step 1 says for each bundle whether it was
   published, is partly published, or was never published. Nothing serves that
   today, so the screen groups the roster by level and states the absence of the

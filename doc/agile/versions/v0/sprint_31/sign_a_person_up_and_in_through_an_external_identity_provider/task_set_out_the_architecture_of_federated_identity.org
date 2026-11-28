@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :sign_a_person_up_and_in_through_an_external_identity_provider:sprint_31:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/set-out-the-architecture-of-federated-identity
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,12 +26,12 @@ Write the architecture as knowledge notes before the code: how ORE Studio relies
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Sign a person up and in through an external identity provider]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-25                               |
+| Now          | Completed 2026-11-28.                  |
+| Waiting on   | None.                                  |
+| Next         | None.                                  |
+| Last touched | 2026-11-28                               |
 
 * Acceptance
 
@@ -42,9 +42,22 @@ Write the architecture as knowledge notes before the code: how ORE Studio relies
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Five notes and one structure note, ordered by where a person's identity is
+decided: what ORE trusts, what it writes down, what it creates the first time,
+what it records when the session opens, and what it hands to a client that asks
+to act for somebody. The structure note states that order and is linked from the
+knowledge index and from the Identity and Access structure note, so the cluster
+is reachable from both.
+
+The pages state the architecture the story decided on 2026-11-25 and carry its
+reasoning, not a status report: the tasks that build the flow are still in the
+backlog, and a reader who wants the state reads the story. Every page that
+describes an interaction or a structure carries a diagram, and each cites the
+standard it applies rather than paraphrasing it.
+
+Written after the decision task and the two entity models, so the vocabulary is
+theirs: the provider row's fields, the link's issuer and subject, the registration
+policy, the session, the authentication event, and the grant an agent key creates.
 
 * Measurements
 
@@ -58,9 +71,19 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Pages in the cluster | 6 | =ls doc/knowledge/security/federated_identity.org doc/knowledge/security/ore_as_a_relying_party.org doc/knowledge/security/the_identity_link_is_issuer_and_subject.org doc/knowledge/security/a_first_sign_in_registers_through_the_policy.org doc/knowledge/security/a_session_names_the_method_it_was_opened_with.org doc/knowledge/security/ore_as_an_authorization_server_for_its_clients.org= | this branch |
+| Diagrams rendered to PNG | 5 | =ls doc/knowledge/security/*.png= | this branch |
 
 * Notes
+
+- 2026-11-28 — The cluster hangs from two places: the knowledge index and the
+  Identity and Access structure note. One of them alone leaves the reader who
+  arrives from the other without a route.
+- 2026-11-28 — The session note describes the method the later task adds to the
+  session and the event. A note written after the code would have had to describe
+  what was built; written before it, it can state what the design requires.
+- 2026-11-28 — Every page names at least one alternative it rejects and why, which
+  is the difference between a design note and a summary of what exists.
 
 * Test Scenarios
 
@@ -86,3 +109,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- Six notes: a structure note, ORE as a relying party, the identity link as the
+  issuer and subject, a first sign-in registering through the policy, a session
+  that names its method, and ORE as an authorization server for its clients.
+- Five PlantUML diagrams, rendered to PNG and embedded with a caption and the
+  command that made them: the flow, the link's structure, the registration's
+  branch, the session's claims, and the consent flow.
+- The structure note is linked from the knowledge index and from the Identity and
+  Access structure note, so the cluster is reachable from the section it belongs
+  to and from the index.
+- Every page names the alternatives it rejects — matching an address, a broker
+  beside IAM, refusing an unknown subject, holding the provider's tokens as the
+  session, a consent with no grant behind it — and cites the standard it applies
+  instead of restating it.

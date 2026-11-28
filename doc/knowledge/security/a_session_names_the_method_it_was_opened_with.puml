@@ -1,0 +1,56 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title A session names the method it was opened with, and the token carries it
+
+skinparam classAttributeIconSize 0
+
+class "session" as session {
+    account
+    method: a password, or the provider that proved it
+    amr: the methods the provider asserted
+    idp: the issuer, when a provider proved it
+    opened, last seen, ended
+}
+
+class "authentication event" as event {
+    account
+    method
+    provider
+    outcome
+    when
+}
+
+class "token" as token {
+    sub: the account
+    amr
+    idp
+    ...
+}
+
+session "1" -- "1" token : carried as claims
+session "1" -- "0..*" event : recorded as
+note bottom of event
+  The event is the record a person reads when
+  the question is "how did this session come to
+  be", and the reason a session ending has an
+  account of what it was worth.
+end note
+
+@enduml

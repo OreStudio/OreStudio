@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: CC8358E9-DC1F-4983-ADF8-CA6938918884
+:END:
+#+title: A blueprint created in the app states no derivation until it is republished
+#+description: The population script stamps every seeded curve's output series, so an installed curve says IR_CURVE_BOOTSTRAP before anything republishes. A blueprint created in the application is created with an output series that reads OBSERVED, and only the republish service stamps it, on its first republish. Until then the record states its builder from the publish row and the series claims to be observed, so the two disagree in the store even though the screen reports the builder.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:derivation:tech_debt:capture:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Stamp a blueprint's output series when the blueprint is created, so the series
+states its derivation from the first moment and the republish service stops
+being the first thing to say how a curve was made.
+
+* Why
+
+The population script stamps every seeded blueprint's output series
+=IR_CURVE_BOOTSTRAP=, so an installed curve states its derivation before
+anything republishes. A blueprint created in the application is different: the
+creator writes an output series that reads =OBSERVED=, and the only thing that
+changes it is the republish service, on its first republish, in
+=curve_republish_service.cpp=.
+
+Until that republish the store holds two statements about the same curve. The
+publish record names the blueprint it was built from, and the series says it was
+observed. The published curve screen reads the builder from the record, so it
+reports the truth, and the disagreement stays invisible there. Any other reader
+of the series — the fixing screens, a lineage query — sees the wrong claim.
+
+Nothing writes the series on the creation path today: refdata holds no market
+series repository use at all, so the series is minted by whoever creates the
+config (the provisioning step, or the client that saves the pair). That is what
+makes this more than a one-line change, and why it was captured rather than
+added to the task that introduced the kinds.
+
+* References
+
+- =projects/ores.marketdata/service/src/app/curve_republish_service.cpp= — the
+  stamp, and the comment that says nothing stamps the series at creation.
+- =projects/ores.sql/populate/marketdata/marketdata_ir_curve_output_series_derivation_populate.sql=
+  — the population script that stamps the seeded curves.
+- =projects/ores.marketdata/service/include/ores.marketdata.service/messaging/provisioning_step_handler.hpp=
+  — where a series is written from a provisioning request, and inherits the
+  derivation that request states.
+
+* See also
+
+- [[id:B1597117-3C42-4294-90D4-9022D644A85F][State how a curve was made, and name the kind a computed fixing is]] — the
+  task that introduced the kinds and the stamp.
+- [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] — the story it belongs to.

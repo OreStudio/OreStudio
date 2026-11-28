@@ -71,10 +71,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Seeded curves that state their derivation before any republish | 38 of 38 | =select count(*) from ores_refdata_ir_curve_bootstrap_configs_tbl c join ores_marketdata_market_series_tbl s on s.id=c.output_series_id where c.valid_to=ores_utility_infinity_timestamp_fn() and s.derivation_kind<>'IR_CURVE_BOOTSTRAP';= | 432d56a941 |
-| Series whose config id does not resolve under its kind | 0 | =ores.sql/test/marketdata_derivation_kinds_resolve_test.sql= | 432d56a941 |
-| Derivation kinds the catalogue holds | 6, =IR_TERM_FIXING= among them | =select count(*) from ores_refdata_derivation_kinds_tbl where valid_to=ores_utility_infinity_timestamp_fn();= | 432d56a941 |
-| Computed fixing series labelled =IR_TERM_FIXING= | 3 | =select count(*) from ores_marketdata_market_series_tbl where derivation_kind='IR_TERM_FIXING' and valid_to=ores_utility_infinity_timestamp_fn();= | 432d56a941 |
+| Seeded curves that state their derivation before any republish | 38 of 38 | =select count(*) from ores_refdata_ir_curve_bootstrap_configs_tbl c join ores_marketdata_market_series_tbl s on s.id=c.output_series_id and s.derivation_kind='IR_CURVE_BOOTSTRAP' where c.valid_to=ores_utility_infinity_timestamp_fn();= | f1f46044f6 |
+| Seeded curves that still read as observed after the script | 0 | =select count(*) from ores_refdata_ir_curve_bootstrap_configs_tbl c join ores_marketdata_market_series_tbl s on s.id=c.output_series_id where c.valid_to=ores_utility_infinity_timestamp_fn() and s.derivation_kind<>'IR_CURVE_BOOTSTRAP';= | f1f46044f6 |
+| Series whose config id does not resolve under its kind | 0 | =ores.sql/test/marketdata_derivation_kinds_resolve_test.sql= | f1f46044f6 |
+| Derivation kinds the catalogue holds | 6, =IR_TERM_FIXING= among them | =select count(*) from ores_refdata_derivation_kinds_tbl where valid_to=ores_utility_infinity_timestamp_fn();= | f1f46044f6 |
+| Computed fixing series labelled =IR_TERM_FIXING= | 3 | =select count(*) from ores_marketdata_market_series_tbl where derivation_kind='IR_TERM_FIXING' and valid_to=ores_utility_infinity_timestamp_fn();= | f1f46044f6 |
 
 * Notes
 
@@ -97,27 +98,51 @@ via its "Verifies task" field.
 
 * Review
 
+Self-review of the branch before the merge, on the standards axis and the spec
+axis. Every finding is recorded with what was done about it.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A new doc comment was inserted between an existing one and its code, in two places: the record page's tab lost its comment and the zod schema's comment described the new nested schema | =PublishedCurvePage.tsx=, =client.ts= | Fixed | Each comment now sits above the code it describes |
+| 2 | The kind came from the output series while the name came from the publish row's config, so a curve whose series was not stamped would state one builder and another | =published_curve_reader.cpp= | Fixed | The kind now follows the blueprint the record names; the series' claim is the fallback |
+| 3 | The record printed the raw kind code, where the fixing screens print it in the reader's words | =PublishedCurvePage.tsx= | Fixed | One shared =methodOf= module replaces the two copies the fixing screens held |
+| 4 | The pgTAP suite matched config ids without their tenant, and its third assertion inner-joined the series, so a blueprint with no series passed | =marketdata_derivation_kinds_resolve_test.sql= | Fixed | Tenants added; the join is outer and a missing series now fails the assertion |
+| 5 | The population script's update was not scoped by tenant | =marketdata_ir_curve_output_series_derivation_populate.sql= | Fixed | Tenant predicate added |
+| 6 | The reader's test asserted a name prefix, which passes if the join picks a sibling blueprint | =app_published_curves_tests.cpp= | Fixed | The name is now asserted against the id the record states |
+| 7 | A measurement row paired 38 of 38 with a query that counts the curves still unstated, which is 0 | this page | Fixed | The two numbers are now separate rows, each with the query that produced it |
+| 8 | The script and =populate.sql= printed the same heading twice | =populate.sql= | Fixed | =populate.sql= states it; the script no longer echoes it |
+| 9 | The plan said the record gains two flat fields; it delivers a nested =curve_derivation= that replaces =bootstrap_config_id=. That is a breaking shape change on the =v1= subject, and the page did not say so | this page | Accepted, recorded | The fields were grouped to stay under the type's field ceiling, and a removed field is what the =v1= rule permits a change for. The Result states it |
+| 10 | Only the seeded curves are stamped at creation; a blueprint created in the application stays =OBSERVED= until its first republish | =curve_republish_service.cpp= | Captured | [[id:CC8358E9-DC1F-4983-ADF8-CA6938918884][A blueprint created in the app states no derivation until it is republished]] |
 
 * Result
 
 A curve now says how it was made, in the words a person reads rather than by an
-id. The published curve record carries the derivation: =derivation_kind= is
+id. The published curve record carries the derivation: the kind is
 =IR_CURVE_BOOTSTRAP= and the blueprint's name travels beside it, so the Details
-tab reads "How it was made: IR_CURVE_BOOTSTRAP, built by USD-SOFR-FOMC" where it
-used to show only a bare uuid labelled *Curve configuration*. A series no
+tab reads "How it was made: ir curve bootstrap, built by USD-SOFR-FOMC" where it
+used to show only a bare uuid labelled *Curve configuration*. A curve no
 derivation produced says *observed*, because that is a fact about the curve and
-not the absence of one.
+not the absence of one. The kind follows the blueprint the record names rather
+than the series' own claim, so the two cannot disagree: a series that is not yet
+stamped, under a record that names a blueprint, still states how the curve was
+made.
 
-The derivation is now stated when the curve is created. A layout script stamps
-every seeded blueprint's output series with the kind, the config and its version
-once the blueprints exist, so a fresh installation states it before anything
-republishes: 38 of 38 on the database the gate rebuilt, against none before the
-script ran. The republish service keeps its own stamp as the fallback for a
-blueprint created later, and the record now has a fact to show for those curves
-too.
+For the seeded curves, the derivation is stated when the curve is created. A
+layout script stamps every seeded blueprint's output series with the kind, the
+config and its version once the blueprints exist, so a fresh installation states
+it before anything republishes: 38 of 38 on the database the gate rebuilt, and
+none left reading observed. A blueprint created later in the application is
+stamped by the republish service on its first republish, and
+[[id:CC8358E9-DC1F-4983-ADF8-CA6938918884][the gap that leaves]] is captured. The
+record reports such a curve correctly in the meantime, because it reads the
+builder from the publish row.
+
+The record's fields are grouped into a =curve_derivation= message rather than
+left flat, which keeps =published_curve_set= inside its field ceiling, and the
+grouping replaced =bootstrap_config_id=, so the =v1= subject changed shape. The
+rule that =v1= changes only for a breaking shape change permits it, because a
+field was removed rather than renamed in place, and the provisioning handlers
+read the same value from its new home.
 
 The kind became its own. =IR_TERM_FIXING= joins the catalogue, and the three
 computed term indices carry it, because compounding a term rate from an overnight

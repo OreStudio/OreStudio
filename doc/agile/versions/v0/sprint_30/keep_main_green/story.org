@@ -66,6 +66,7 @@ carries the remaining work from sprint 30's close. This story ships
 | [[id:B62B29DB-6D90-43FC-9428-CAFB70F8D851][Trace a fatal signal in a suite]] | DONE | 2026-11-27 | 2026-11-27 | Task for: Keep main green |
 | [[id:911AB04F-DFFB-4DB8-926C-AC8D192CACF9][Install the crash trace where every suite runs]] | DONE | 2026-11-27 | 2026-11-27 | Task for: Keep main green |
 | [[id:6CCF02BC-0A3B-4BBB-A13B-222D2EE5E63D][Split the cases on every leg]] | DONE | 2026-11-27 | 2026-11-27 | Task for: Keep main green |
+| [[id:8F207C01-92A9-43BA-BD42-4C2CC0E87F83][Cap the size of a submitted part]] | DONE | 2026-11-28 | 2026-11-28 | Task for: Keep main green |
 
 * Decisions
 

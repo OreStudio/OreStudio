@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: B1597117-3C42-4294-90D4-9022D644A85F
+:END:
+#+title: Task: State how a curve was made, and name the kind a computed fixing is
+#+description: A curve screen shows the bootstrap config as a raw id and no word about how the curve was made, while the series already carries derivation_kind; and the three computed term indices are labelled IR_CURVE_BOOTSTRAP, a kind that names a curve and points at another table.
+#+type: task
+#+level: s1
+#+filetags: :derive_term_indices_from_their_overnight_curves:sprint_31:v0:
+#+owner: marco
+#+branch: feature/state-how-a-curve-was-made
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person reading a curve learns how it was made, in the same words the fixings screen uses: the curve's own series says IR_CURVE_BOOTSTRAP and names the blueprint that bootstrapped it, and a computed term fixing says IR_TERM_FIXING, because compounding a term rate from an overnight curve is not a bootstrap. Each derivation kind names one kind of config, so an id resolves to one table.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- A curve's output series states its derivation when the curve is created, not on its first republish.
+- The published curve record says how the curve was made, by the blueprint's name rather than its id.
+- The three computed term indices are labelled with a kind that names their computation, and no kind resolves to two tables.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

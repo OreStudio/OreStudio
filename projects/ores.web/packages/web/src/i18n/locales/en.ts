@@ -1420,6 +1420,22 @@ export const en: SourceCatalogue = {
                     unmeasured: 'Not measured',
                     held: 'Held',
                 },
+                capacity: {
+                    title: 'Capacity',
+                    noSample: 'Nothing has measured the database yet',
+                    unmeasured: 'The disk was not readable',
+                    roomToSpare: 'Room to spare',
+                    filling: 'The disk is filling',
+                    nearlyFull: 'The disk is nearly full',
+                    database: 'Database size',
+                    free: 'Free space',
+                    unknown: 'Not measured',
+                    days: '{days} days',
+                    notMeasurable: 'Not stated',
+                    lasts: 'Free space lasts',
+                    measuredOn: 'Measured on',
+                    note: 'The measurement states a problem: {note}',
+                },
                 queue: {
                     title: 'Message queue',
                     noSample: 'No sample yet',
@@ -1910,6 +1926,7 @@ export const en: SourceCatalogue = {
             period: '{days} days',
             cadence: 'every {hours} h',
             measure: '{count} {unit}',
+            seeTables: 'The largest tables, by size',
             legend: {
                 summary: 'What these verdicts mean',
                 verdicts: 'The verdicts',
@@ -2021,6 +2038,44 @@ export const en: SourceCatalogue = {
                 remoteBody:
                     'An object prefix and a folder on a compute host are measured by the component that writes them, and neither reports a size yet. Those stores read as not measured.',
             },
+        },
+        tables: {
+            title: 'Tables by size',
+            description:
+                'The largest relations this installation holds, whether or not the housekeeping catalogue names them.',
+            figures: {
+                database: 'Database',
+                relations: 'Relations',
+                named: 'Named by a store',
+                namedValue: '{count} of {rows}',
+                namedNote: 'The catalogue names none of the largest tables',
+                readAt: 'Measured',
+                noRead: 'Not stated',
+            },
+            pie: {
+                title: 'The largest {count}, and everything else',
+                lead: 'Each slice is a relation the read measured; the last is everything the database holds that the head does not name.',
+                label: 'Slices',
+                caption: 'The {count} largest relations, and everything else in a {size} database.',
+            },
+            list: {
+                title: 'Largest relations',
+                lead: 'Biggest first, with the store the catalogue calls each one. A table nothing names is measured by nothing and bound by nothing.',
+                label: 'Rows',
+                more: 'Showing {shown} of {total} relations the read answered.',
+            },
+            columns: {
+                table: 'Relation',
+                named: 'Named by',
+                size: 'Size',
+                share: 'Share',
+            },
+            named: {
+                byNothing: 'not named',
+            },
+            rest: 'Everything else',
+            footnote:
+                "The read measures the relations when the page asks, so it states what is large now. What grew is the capacity panel's question, and the housekeeping list is the catalogue's.",
         },
         feeds: {
             title: 'Market data feeds',

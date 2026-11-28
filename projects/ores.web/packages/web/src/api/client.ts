@@ -111,6 +111,10 @@ import {
     storeBoundsViewSchema,
     storeSamplesViewSchema,
     storeBoundResultSchema,
+    capacityViewSchema,
+    largestRelationsViewSchema,
+    type CapacityView,
+    type LargestRelationsView,
     type StoreBoundsView,
     type StoreRange,
     type StoreSamplesView,
@@ -4238,6 +4242,36 @@ export const api = {
                 `/api/operations/housekeeping/stores/${encodeURIComponent(storeCode)}/samples?${query.toString()}`,
                 { method: 'GET' },
             ),
+        );
+    },
+
+    /**
+     * The installation's size and the space its host has left, over a horizon.
+     *
+     * The answer states the window it covered, so a panel that says how fast the
+     * disk is filling is stating the deployment's window and not the browser's.
+     */
+    async housekeepingCapacity(range: StoreRange): Promise<CapacityView> {
+        const query = new URLSearchParams({ range });
+        return capacityViewSchema.parse(
+            await request(`/api/operations/housekeeping/capacity?${query.toString()}`, {
+                method: 'GET',
+            }),
+        );
+    },
+
+    /**
+     * The largest relations the installation holds, with the store that names each.
+     *
+     * The read starts from the relations, so a table the catalogue does not name
+     * answers beside one that it does: that is the question the screen asks.
+     */
+    async housekeepingTables(limit: number): Promise<LargestRelationsView> {
+        const query = new URLSearchParams({ limit: String(limit) });
+        return largestRelationsViewSchema.parse(
+            await request(`/api/operations/housekeeping/tables?${query.toString()}`, {
+                method: 'GET',
+            }),
         );
     },
 

@@ -24,6 +24,8 @@
 \ir ./scheduler_job_instances_drop.sql
 \ir ./scheduler_job_definitions_notify_trigger_drop.sql
 \ir ./scheduler_job_definitions_drop.sql
+\ir ./scheduler_capacity_record_drop.sql
+\ir ./scheduler_capacity_samples_drop.sql
 \ir ./scheduler_object_expiry_drop.sql
 \ir ./scheduler_retention_runs_drop.sql
 \ir ./scheduler_retention_sweep_drop.sql

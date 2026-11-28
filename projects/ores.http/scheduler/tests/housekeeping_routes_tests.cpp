@@ -58,7 +58,7 @@ std::vector<expected_route> registered_routes(nats_client& session) {
 
 }
 
-TEST_CASE("the housekeeping unit registers the screen's three routes", "[housekeeping]") {
+TEST_CASE("the housekeeping unit registers the screen's five routes", "[housekeeping]") {
     auto lg(make_logger(test_suite));
     nats_client session;
 
@@ -74,6 +74,8 @@ TEST_CASE("the housekeeping unit registers the screen's three routes", "[houseke
 
     CHECK(holds(http_method::get, "/api/operations/housekeeping/stores"));
     CHECK(holds(http_method::get, "/api/operations/housekeeping/stores/{code}/samples"));
+    CHECK(holds(http_method::get, "/api/operations/housekeeping/capacity"));
+    CHECK(holds(http_method::get, "/api/operations/housekeeping/tables"));
     CHECK(holds(http_method::put, "/api/operations/housekeeping/stores/{code}/policy"));
 
     ORES_LOG_SEV(lg, debug) << "Registered " << routes.size() << " housekeeping routes";

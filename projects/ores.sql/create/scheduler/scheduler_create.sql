@@ -44,3 +44,8 @@
 -- The SQL side of object expiry: which object policies are due, and the ledger
 -- row a run writes.
 \ir ./scheduler_object_expiry_create.sql
+
+-- The installation's own capacity, as a series: a table, and the one function
+-- that writes a row into it.
+\ir ./scheduler_capacity_samples_create.sql
+\ir ./scheduler_capacity_record_create.sql

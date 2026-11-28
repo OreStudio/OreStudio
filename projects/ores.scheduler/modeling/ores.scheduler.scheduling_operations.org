@@ -870,6 +870,314 @@ next unit of the scheduler clean-up.
  */
 #+end_src
 
+** list_capacity_samples_request
+:PROPERTIES:
+:subject: scheduler.v1.capacity.list
+:response: list_capacity_samples_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the installation's size and free space over a horizon.
+ *
+ * The database's size and the space left on the host are one question asked of
+ * two places, and only a series of both answers whether the disk is filling.
+ */
+#+end_src
+
+*** range
+:PROPERTIES:
+:cpp_type: std::string
+:default:  "24h"
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How far back the series reaches: =1h=, =24h= or =7d=.
+ *
+ * The same three horizons the store's plot offers, because the capacity panel
+ * asks the same question of the same measurements. A range the read does not
+ * state answers the day.
+ */
+#+end_src
+
+** capacity_sample
+:PROPERTIES:
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One measurement of the installation's capacity.
+ */
+#+end_src
+
+*** sampled_at
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief When the measurement was taken, in ISO-8601 UTC.
+ */
+#+end_src
+
+*** database_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The database the size describes, as the server names it.
+ */
+#+end_src
+
+*** host_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The host whose filesystem was measured.
+ *
+ * A size without its host states nothing: the same database on a small partition
+ * and on a large one are different problems.
+ */
+#+end_src
+
+*** measured_path
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The path whose filesystem the free space describes.
+ */
+#+end_src
+
+*** database_bytes
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The database's total size when it was measured, in bytes.
+ */
+#+end_src
+
+*** disk_free_bytes
+:PROPERTIES:
+:cpp_type: std::optional<std::int64_t>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The space the host may still write, in bytes, where it was measured.
+ *
+ * Absent when the host could not measure the path, which is not the same fact as
+ * a full disk: the note says which of the two it was.
+ */
+#+end_src
+
+*** disk_total_bytes
+:PROPERTIES:
+:cpp_type: std::optional<std::int64_t>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The size of the filesystem that was measured, in bytes.
+ */
+#+end_src
+
+*** note
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the measurement could not do, in the words the panel states.
+ */
+#+end_src
+
+** list_capacity_samples_response
+:PROPERTIES:
+:END:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  true
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** samples
+:PROPERTIES:
+:cpp_type: std::vector<capacity_sample>
+:END:
+
+*** from_at
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The instant the window opens, in ISO-8601 UTC.
+ */
+#+end_src
+
+*** to_at
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The instant the read ran, in ISO-8601 UTC.
+ */
+#+end_src
+
+** list_largest_relations_request
+:PROPERTIES:
+:subject: scheduler.v1.tables.list
+:response: list_largest_relations_response
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Asks for the largest relations the installation holds.
+ *
+ * The catalogue names ten stores and the database holds hundreds of relations, so
+ * a person asking what fills the disk reads a list that ends before the answer
+ * does. This read starts from the relations themselves and says which of them the
+ * catalogue names.
+ */
+#+end_src
+
+*** limit
+:PROPERTIES:
+:cpp_type: std::uint32_t
+:default:  200
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many of the largest relations to answer.
+ *
+ * A screen draws a table and a pie, so it needs the head of the list and not all
+ * of it; the read states how many relations there are beside the rows it returns,
+ * so a screen can say what it left out.
+ */
+#+end_src
+
+** largest_relation
+:PROPERTIES:
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief One relation, its size, and the store the catalogue calls it.
+ */
+#+end_src
+
+*** relation_name
+:PROPERTIES:
+:cpp_type: std::string
+:end:
+
+*** size_bytes
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The relation's size with its indexes and its toast, in bytes.
+ */
+#+end_src
+
+*** store_code
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The store the catalogue names this relation by, where it names one.
+ *
+ * Absent means the catalogue does not name it, which is the fact the screen
+ * exists to show: a relation nothing names is not measured, not bounded, and not
+ * on the housekeeping list.
+ */
+#+end_src
+
+** list_largest_relations_response
+:PROPERTIES:
+:end:
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default:  true
+:end:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:end:
+
+*** rows
+:PROPERTIES:
+:cpp_type: std::vector<largest_relation>
+:end:
+
+*** database_bytes
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The database's total size, which is what a share is a share of.
+ */
+#+end_src
+
+*** relation_count
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How many relations the installation holds, of which the rows are the head.
+ */
+#+end_src
+
+*** read_at
+:PROPERTIES:
+:cpp_type: std::string
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The instant the read ran, in ISO-8601 UTC.
+ */
+#+end_src
+
 * See also
 
 

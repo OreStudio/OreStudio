@@ -285,6 +285,62 @@ export const storeSamplesViewSchema = z.object({
 export type StoreSamplesView = z.infer<typeof storeSamplesViewSchema>;
 
 /**
+ * One measurement of the installation's own capacity.
+ *
+ * The size is the database's, the free space is the filesystem's, and both travel
+ * with the database and host they describe: the same database on a small
+ * partition and on a large one are different problems.
+ */
+export const capacitySampleSchema = z.object({
+    sampled_at: wireTimestampSchema,
+    database_name: text,
+    host_name: text,
+    measured_path: text,
+    database_bytes: z.int().nonnegative().default(0),
+    disk_free_bytes: z.int().nonnegative().nullable().default(null),
+    disk_total_bytes: z.int().nonnegative().nullable().default(null),
+    note: text,
+});
+
+export type CapacitySample = z.infer<typeof capacitySampleSchema>;
+
+/** The installation's capacity over a window, and the window the read covered. */
+export const capacityViewSchema = z.object({
+    samples: z.array(capacitySampleSchema).default([]),
+    from_at: nullableWireTimestampSchema.default(null),
+    to_at: nullableWireTimestampSchema.default(null),
+});
+
+export type CapacityView = z.infer<typeof capacityViewSchema>;
+
+/**
+ * One relation the installation holds, its size, and the store that names it.
+ *
+ * A relation with no store code is one the catalogue does not name: nothing
+ * measures it, nothing bounds it, and the housekeeping list does not carry it.
+ * That is the fact this read exists to state.
+ */
+export const largestRelationSchema = z.object({
+    relation_name: text,
+    size_bytes: z.int().nonnegative().default(0),
+    store_code: z.string().nullable().default(null),
+});
+
+export type LargestRelation = z.infer<typeof largestRelationSchema>;
+
+/** The largest relations, and what the read covered: the database and the count. */
+export const largestRelationsViewSchema = z.object({
+    success: z.boolean().default(true),
+    message: text,
+    rows: z.array(largestRelationSchema).default([]),
+    database_bytes: z.int().nonnegative().default(0),
+    relation_count: z.int().nonnegative().default(0),
+    read_at: nullableWireTimestampSchema.default(null),
+});
+
+export type LargestRelationsView = z.infer<typeof largestRelationsViewSchema>;
+
+/**
  * What a person sends to change a store's bound, beside the reason for it.
  *
  * The three numbers are the decision; the reason is the audit trail. The store,

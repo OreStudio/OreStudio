@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keep the installation's secrets — Vault prototypes</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  The vault's four screens, shaped after HashiCorp Vault's secrets engine, its
+  secret view with the masked value and the version history, and its audit log.
+  The journey is
+  doc/knowledge/journeys/vault/journey_keep_the_installations_secrets.org and the
+  design note is beside this folder.
+
+  Every screen and state has its own address:
+    ?screen=secrets&state=empty|full|refused
+    ?screen=secret&state=masked|revealed|refused
+    ?screen=consumers&state=empty|full|refused
+    ?screen=uses&state=empty|full|refused
+    ?screen=states            all of them, listed
+
+  Nothing here reads a service: every row is a fixture, and the state readout
+  names the operation the screen would call.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-state" id="proto-state" hidden></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

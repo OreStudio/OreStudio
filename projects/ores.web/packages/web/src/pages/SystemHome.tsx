@@ -36,6 +36,7 @@ import { BUS_QUERY_KEY, sampleTime } from '../operations/BusPage.js';
 import { GRID_QUERY_KEY } from '../operations/GridPage.js';
 import { useHousekeepingStores } from '../operations/HousekeepingPage.js';
 import { formatSize, summarise } from '../operations/housekeeping.js';
+import { daysOfSpaceLeft, freeSpacePoints, latestOf, verdictOf } from '../operations/capacity.js';
 import {
     DEFAULT_HEALTH_RANGE,
     InstallationFigures,
@@ -72,6 +73,9 @@ type Translator = ReturnType<typeof useTranslation>;
 /** The range the bus is read over on the dashboard. */
 const BUS_DASHBOARD_RANGE = '15m';
 
+/** The horizon the capacity panel reads the installation's size over. */
+const CAPACITY_RANGE = '24h' as const;
+
 const TABS = ['dashboard', 'active', 'upcoming'] as const;
 
 /**
@@ -100,7 +104,16 @@ function useDashboardData() {
      * screen state the same numbers from one read.
      */
     const housekeeping = useHousekeepingStores();
-    return { overview, types, tenantStatuses, health, grid, bus, housekeeping };
+    /*
+     * The installation's own size, over the range the panel states. The day is
+     * the horizon the housekeeping plot opens on, so the two panels answer over
+     * the same window.
+     */
+    const capacity = useQuery({
+        queryKey: ['operations', 'housekeeping', 'capacity', CAPACITY_RANGE],
+        queryFn: () => api.housekeepingCapacity(CAPACITY_RANGE),
+    });
+    return { overview, types, tenantStatuses, health, grid, bus, housekeeping, capacity };
 }
 
 type DashboardData = ReturnType<typeof useDashboardData>;
@@ -181,6 +194,37 @@ function housekeepingStatus(data: DashboardData, tr: Translator): PanelStatus {
           };
 }
 
+/**
+ * The capacity panel's status: how much of the disk the installation has left.
+ *
+ * The verdict is the free space's share of the filesystem, so it says the same
+ * thing at 500 GB free on a 2 TB disk and at 50 GB on a 200 GB one. A run of
+ * measurements the host could not take states no verdict rather than a good one.
+ */
+function capacityStatus(data: DashboardData, tr: Translator): PanelStatus {
+    const { t } = tr;
+    const view = data.capacity.data;
+    if (view === undefined) {
+        return {
+            tone: 'pending',
+            text: t(data.capacity.isError ? 'home.system.panels.unread' : 'common.loading'),
+        };
+    }
+    if (view.samples.length === 0) {
+        return { tone: 'quiet', text: t('home.system.panels.capacity.noSample') };
+    }
+    switch (verdictOf(view.samples)) {
+        case 'ok':
+            return { tone: 'ok', text: t('home.system.panels.capacity.roomToSpare') };
+        case 'warn':
+            return { tone: 'attention', text: t('home.system.panels.capacity.filling') };
+        case 'alarm':
+            return { tone: 'attention', text: t('home.system.panels.capacity.nearlyFull') };
+        default:
+            return { tone: 'quiet', text: t('home.system.panels.capacity.unmeasured') };
+    }
+}
+
 function queueStatus(data: DashboardData, tr: Translator): PanelStatus {
     const { t, plural } = tr;
     const view = data.bus.data;
@@ -215,6 +259,7 @@ export function SystemHome({ name }: { readonly name: string }): ReactNode {
         gridStatus(data, translator),
         queueStatus(data, translator),
         housekeepingStatus(data, translator),
+        capacityStatus(data, translator),
     ];
     const verdict = installationVerdict(statuses.map((status) => status.tone));
 
@@ -262,6 +307,7 @@ function Dashboard({
             <GridPanel data={data} translator={translator} />
             <QueuePanel data={data} translator={translator} />
             <HousekeepingPanel data={data} translator={translator} />
+            <CapacityPanel data={data} translator={translator} />
         </div>
     );
 }
@@ -462,6 +508,79 @@ function HousekeepingPanel({ data: reads, translator }: PanelProps): ReactNode {
                         label={t('home.system.panels.housekeeping.held')}
                     />
                 </div>
+            )}
+        </Panel>
+    );
+}
+
+/**
+ * The installation's size against the disk it sits on.
+ *
+ * Two figures and the time the free space lasts at the rate it is falling. The
+ * trend draws the free space and not the database's size, because the free space
+ * is the number that reaches zero.
+ */
+function CapacityPanel({ data: reads, translator }: PanelProps): ReactNode {
+    const { t } = translator;
+    const view = reads.capacity.data;
+    const latest = view === undefined ? null : latestOf(view.samples);
+    const days = view === undefined ? null : daysOfSpaceLeft(view.samples);
+    const points = view === undefined ? [] : freeSpacePoints(view.samples);
+    const sampled = latest === null ? undefined : sampleTime(latest.sampled_at);
+
+    return (
+        <Panel
+            title={t('home.system.panels.capacity.title')}
+            to="/operations/housekeeping"
+            status={capacityStatus(reads, translator)}
+            footer={
+                sampled === undefined ? undefined : (
+                    <>
+                        <span>{t('home.system.panels.sampled')}</span>
+                        <span className="font-mono text-ink">{sampled}</span>
+                    </>
+                )
+            }
+        >
+            {latest !== null && (
+                <>
+                    <div className="grid grid-cols-2 gap-3">
+                        <Metric
+                            value={formatSize(latest.database_bytes)}
+                            label={t('home.system.panels.capacity.database')}
+                        />
+                        <Metric
+                            value={
+                                latest.disk_free_bytes === null
+                                    ? t('home.system.panels.capacity.unknown')
+                                    : formatSize(latest.disk_free_bytes)
+                            }
+                            label={t('home.system.panels.capacity.free')}
+                            tone={latest.disk_free_bytes === null ? 'warn' : 'neutral'}
+                        />
+                        <Metric
+                            value={
+                                days === null
+                                    ? t('home.system.panels.capacity.notMeasurable')
+                                    : t('home.system.panels.capacity.days', {
+                                          days: days >= 1000 ? '1000+' : String(Math.round(days)),
+                                      })
+                            }
+                            label={t('home.system.panels.capacity.lasts')}
+                            tone={days !== null && days < 30 ? 'bad' : 'neutral'}
+                        />
+                        <Metric
+                            value={`${latest.host_name} ${latest.measured_path}`}
+                            label={t('home.system.panels.capacity.measuredOn')}
+                        />
+                    </div>
+                    {points.length > 1 && <Sparkline points={points} />}
+                    {latest.note !== '' && (
+                        <Notice tone="warn">
+                            {t('home.system.panels.capacity.note', { note: latest.note })}
+                        </Notice>
+                    )}
+                </>
             )}
         </Panel>
     );

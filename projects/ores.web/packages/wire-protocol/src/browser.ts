@@ -244,6 +244,10 @@ export {
     storeBoundResultSchema,
     storeBoundsViewSchema,
     storeSamplesViewSchema,
+    capacitySampleSchema,
+    capacityViewSchema,
+    largestRelationSchema,
+    largestRelationsViewSchema,
     STORE_RANGES,
 } from './housekeeping.js';
 export type {
@@ -251,6 +255,10 @@ export type {
     StoreBoundResult,
     StoreBoundWrite,
     StoreBoundsView,
+    CapacitySample,
+    CapacityView,
+    LargestRelation,
+    LargestRelationsView,
     StoreRange,
     StoreSample,
     StoreSamplesView,

@@ -37,6 +37,7 @@ compass-ng's =prototypes= check enforces it.
 | [[file:membership/][Membership]] | Which parties a person works in, and who they report to | 2 |
 | [[file:directory/][Directory]] | The account roster, and bringing accounts in | 1 |
 | [[file:tenancy/][Tenancy]] | The tenant itself, its lifecycle, and the lookups that classify things | 2 |
+| [[file:vault/][Vault]] | The secrets an installation keeps for its own use, the consumers that may receive them, and the record of who asked for what | 1 |
 | [[file:data_exchange/][Data exchange]] | Importing and exporting a party, a dataset or a whole environment, and what a run leaves behind | 5 |
 | [[file:dq/][DQ]] | Staged reference data and its publication: whether the installation holds what its valuations read, publishing a dataset and a bundle, correcting one artefact, and tracing a published value to the trade it belongs to | 5 |
 | [[file:operations/][Operations]] | The installation's own life: the services running, the compute grid, the message bus, the logs, the versions and database under them, and the housekeeping that bounds what they keep | 8 |

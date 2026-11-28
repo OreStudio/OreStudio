@@ -44,6 +44,8 @@ std::int64_t kernel_mem_total_mb() {
 
 } // namespace
 
+using ores::platform::system::get_filesystem_space;
+using ores::platform::system::get_host_name;
 using ores::platform::system::get_system_info;
 
 TEST_CASE("system_info_reports_at_least_one_processor", "[system]") {
@@ -70,4 +72,25 @@ TEST_CASE("system_info_agrees_with_the_kernel_about_memory", "[system]") {
 #else
     SKIP("The kernel memory total is read from /proc/meminfo, which only Linux has.");
 #endif
+}
+
+TEST_CASE("the_root_filesystem_reports_more_space_than_it_has_free", "[system]") {
+    const auto space = get_filesystem_space("/");
+    REQUIRE(space.has_value());
+
+    // A gigabyte of total space at the least: a unit mistake understates it by
+    // the ratio between the fragment size and the byte.
+    CHECK(space->total_bytes > 1024ULL * 1024 * 1024);
+    CHECK(space->free_bytes <= space->total_bytes);
+}
+
+TEST_CASE("a_path_that_is_not_there_reports_no_space", "[system]") {
+    // Nothing rather than a zero: a zero would read as a full disk.
+    CHECK_FALSE(get_filesystem_space("/no/such/path/on/this/host").has_value());
+}
+
+TEST_CASE("the_computer_names_itself", "[system]") {
+    const auto name = get_host_name();
+    CHECK_FALSE(name.empty());
+    CHECK(name != "unknown host");
 }

@@ -145,6 +145,10 @@ export type {
 export { readPartiesPage } from './party-page.js';
 export {
     STORE_RANGES,
+    capacitySampleSchema,
+    capacityViewSchema,
+    largestRelationSchema,
+    largestRelationsViewSchema,
     readStoreBounds,
     readStoreSamples,
     saveStoreBound,
@@ -156,6 +160,10 @@ export {
     storeSamplesViewSchema,
 } from './housekeeping.js';
 export type {
+    CapacitySample,
+    CapacityView,
+    LargestRelation,
+    LargestRelationsView,
     StoreBoundChange,
     StoreBoundResult,
     StoreBoundWrite,

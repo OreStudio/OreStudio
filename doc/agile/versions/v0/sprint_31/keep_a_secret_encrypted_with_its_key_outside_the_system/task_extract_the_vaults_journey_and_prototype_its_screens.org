@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :vault:ux:user_journey:prototype:keep_a_secret_encrypted_with_its_key_outside_the_system:sprint_31:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/draw-the-vaults-screens
+#+pr: 5249
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-26
@@ -31,12 +31,12 @@ its own address.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-26                               |
+| Now          | Completed 2026-11-28.                  |
+| Waiting on   | None.                                  |
+| Next         | None.                                  |
+| Last touched | 2026-11-28                               |
 
 * Acceptance
 
@@ -149,6 +149,16 @@ task and name that file in the Command column.
 
 * Notes
 
+- 2026-11-28 — The journey sits in a new group, [[id:51DB7CD9-8F93-4EB0-8BC4-A660AC3EF826][Vault journeys]], because no
+  existing group answers "what does this installation hold". The group page states
+  why the area is the vault's own rather than a part of Operations.
+- 2026-11-28 — Every step carries its judgement, and the one gap — a uses screen
+  with no rule and no operation — is
+  [[id:AB30FE64-5790-4942-A1CB-30CB7AE17530][a capture]], not an assumption.
+- 2026-11-28 — The journey stops here, as the plan says it must: the prototype is
+  drawn after the owner signs the steps off, because a prototype over an unjudged
+  journey hides its gaps.
+
 - Read [[id:F9F1A2BA-94C2-4DAA-8689-F0871AA56801][Secret Custody in the
   Vault]] for what the store is and where its key lives, and [[id:4F28F755-7DA1-4EDD-9983-256622B6088A][Sealed
   Delivery of a Secret to Its Consumer]] for how a reveal reaches the screen and
@@ -182,7 +192,9 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5249][#5249]] | [docs] Rebuild the vault prototype in the house idiom |
+| [[https://github.com/OreStudio/OreStudio/pull/5246][#5246]] | [docs] Draw the vault's screens, and make its journey meet the contract |
+| [[https://github.com/OreStudio/OreStudio/pull/5244][#5244]] | [agile] Write the journey a person walks through the vault |
 
 * Review
 
@@ -191,3 +203,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- The journey follows the user_journey contract: goal, actor and trigger, eight
+  judged steps, four salt wireframes rendered to PNG, the entities composed, the
+  operations and their subjects, a coverage table with a status per step, what is
+  missing, and the related journeys and knowledge.
+- The prototype sits at =doc/prototypes/vault/keep-the-secrets/= and holds four
+  screens at thirteen addresses: =?screen=secrets|secret|consumers|uses= with
+  =&state=empty|full|refused=, the secret's own states =masked|revealed|refused=,
+  and =?screen=states= listing every one.
+- The design note beside it cites the record screen standard's rule for every
+  part (RS-LIST-01, -02, -03, -15, RS-HIST-01, RS-ADDR-01, RS-WRITE-08,
+  RS-FEEDBACK-01, -02), names the operation each screen would call with its
+  status, and lists every value that is fake.
+- Two gaps are captures or tasks, not assumptions: the uses screen has neither a
+  rule nor an operation, and the gateway's list, versions, delete, rotate and
+  consumers doors are the web task's.
+- The owner signed the journey off by asking for the prototype, and the two
+  decisions — the area of its own, and the reveal as a kind's own action — are on
+  the story.
+- The pages are listed from the journey group, the journeys index, the prototypes
+  inventory, the menu structure's new area, and the group page.

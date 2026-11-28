@@ -446,6 +446,171 @@ struct list_store_samples_response {
 };
 
 /**
+ * @brief Asks for the installation's size and free space over a horizon.
+ *
+ * The database's size and the space left on the host are one question asked of
+ * two places, and only a series of both answers whether the disk is filling.
+ */
+struct list_capacity_samples_request {
+    using response_type = struct list_capacity_samples_response;
+    static constexpr std::string_view nats_subject = "scheduler.v1.capacity.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief How far back the series reaches: =1h=, =24h= or =7d=.
+     *
+     * The same three horizons the store's plot offers, because the capacity panel
+     * asks the same question of the same measurements. A range the read does not
+     * state answers the day.
+     */
+    std::string range = "24h";
+
+    friend bool operator==(const list_capacity_samples_request&,
+                           const list_capacity_samples_request&) = default;
+};
+
+/**
+ * @brief One measurement of the installation's capacity.
+ */
+struct capacity_sample {
+    /**
+     * @brief When the measurement was taken, in ISO-8601 UTC.
+     */
+    std::string sampled_at;
+    /**
+     * @brief The database the size describes, as the server names it.
+     */
+    std::string database_name;
+    /**
+     * @brief The host whose filesystem was measured.
+     *
+     * A size without its host states nothing: the same database on a small partition
+     * and on a large one are different problems.
+     */
+    std::string host_name;
+    /**
+     * @brief The path whose filesystem the free space describes.
+     */
+    std::string measured_path;
+    /**
+     * @brief The database's total size when it was measured, in bytes.
+     */
+    std::int64_t database_bytes = 0;
+    /**
+     * @brief The space the host may still write, in bytes, where it was measured.
+     *
+     * Absent when the host could not measure the path, which is not the same fact as
+     * a full disk: the note says which of the two it was.
+     */
+    std::optional<std::int64_t> disk_free_bytes;
+    /**
+     * @brief The size of the filesystem that was measured, in bytes.
+     */
+    std::optional<std::int64_t> disk_total_bytes;
+    /**
+     * @brief What the measurement could not do, in the words the panel states.
+     */
+    std::string note;
+
+    friend bool operator==(const capacity_sample&, const capacity_sample&) = default;
+};
+
+struct list_capacity_samples_response {
+    bool success = true;
+    std::string message;
+    std::vector<capacity_sample> samples;
+    /**
+     * @brief The instant the window opens, in ISO-8601 UTC.
+     */
+    std::string from_at;
+    /**
+     * @brief The instant the read ran, in ISO-8601 UTC.
+     */
+    std::string to_at;
+
+    friend bool operator==(const list_capacity_samples_response&,
+                           const list_capacity_samples_response&) = default;
+};
+
+/**
+ * @brief Asks for the largest relations the installation holds.
+ *
+ * The catalogue names ten stores and the database holds hundreds of relations, so
+ * a person asking what fills the disk reads a list that ends before the answer
+ * does. This read starts from the relations themselves and says which of them the
+ * catalogue names.
+ */
+struct list_largest_relations_request {
+    using response_type = struct list_largest_relations_response;
+    static constexpr std::string_view nats_subject = "scheduler.v1.tables.list";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /**
+     * @brief How many of the largest relations to answer.
+     *
+     * A screen draws a table and a pie, so it needs the head of the list and not all
+     * of it; the read states how many relations there are beside the rows it returns,
+     * so a screen can say what it left out.
+     */
+    std::uint32_t limit = 200;
+
+    friend bool operator==(const list_largest_relations_request&,
+                           const list_largest_relations_request&) = default;
+};
+
+/**
+ * @brief One relation, its size, and the store the catalogue calls it.
+ */
+struct largest_relation {
+    std::string relation_name;
+    /**
+     * @brief The relation's size with its indexes and its toast, in bytes.
+     */
+    std::int64_t size_bytes = 0;
+    /**
+     * @brief The store the catalogue names this relation by, where it names one.
+     *
+     * Absent means the catalogue does not name it, which is the fact the screen
+     * exists to show: a relation nothing names is not measured, not bounded, and not
+     * on the housekeeping list.
+     */
+    std::optional<std::string> store_code;
+
+    friend bool operator==(const largest_relation&, const largest_relation&) = default;
+};
+
+struct list_largest_relations_response {
+    bool success = true;
+    std::string message;
+    std::vector<largest_relation> rows;
+    /**
+     * @brief The database's total size, which is what a share is a share of.
+     */
+    std::int64_t database_bytes = 0;
+    /**
+     * @brief How many relations the installation holds, of which the rows are the head.
+     */
+    std::int64_t relation_count = 0;
+    /**
+     * @brief The instant the read ran, in ISO-8601 UTC.
+     */
+    std::string read_at;
+
+    friend bool operator==(const list_largest_relations_response&,
+                           const list_largest_relations_response&) = default;
+};
+
+/**
  * @brief The members of get_job_instances_request, named as the wire names them and in the order
  * the type declares them.
  *
@@ -714,6 +879,110 @@ struct list_store_samples_response {
     };
 }
 
+/**
+ * @brief The members of list_capacity_samples_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_capacity_samples_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"range", &list_capacity_samples_request::range},
+    };
+}
+
+/**
+ * @brief The members of capacity_sample, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<capacity_sample>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"sampled_at", &capacity_sample::sampled_at},
+        ::ores::utility::codec::field{"database_name", &capacity_sample::database_name},
+        ::ores::utility::codec::field{"host_name", &capacity_sample::host_name},
+        ::ores::utility::codec::field{"measured_path", &capacity_sample::measured_path},
+        ::ores::utility::codec::field{"database_bytes", &capacity_sample::database_bytes},
+        ::ores::utility::codec::field{"disk_free_bytes", &capacity_sample::disk_free_bytes},
+        ::ores::utility::codec::field{"disk_total_bytes", &capacity_sample::disk_total_bytes},
+        ::ores::utility::codec::field{"note", &capacity_sample::note},
+    };
+}
+
+/**
+ * @brief The members of list_capacity_samples_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_capacity_samples_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &list_capacity_samples_response::success},
+        ::ores::utility::codec::field{"message", &list_capacity_samples_response::message},
+        ::ores::utility::codec::field{"samples", &list_capacity_samples_response::samples},
+        ::ores::utility::codec::field{"from_at", &list_capacity_samples_response::from_at},
+        ::ores::utility::codec::field{"to_at", &list_capacity_samples_response::to_at},
+    };
+}
+
+/**
+ * @brief The members of list_largest_relations_request, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_largest_relations_request>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"limit", &list_largest_relations_request::limit},
+    };
+}
+
+/**
+ * @brief The members of largest_relation, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<largest_relation>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"relation_name", &largest_relation::relation_name},
+        ::ores::utility::codec::field{"size_bytes", &largest_relation::size_bytes},
+        ::ores::utility::codec::field{"store_code", &largest_relation::store_code},
+    };
+}
+
+/**
+ * @brief The members of list_largest_relations_response, named as the wire names them and in the
+ * order the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<list_largest_relations_response>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"success", &list_largest_relations_response::success},
+        ::ores::utility::codec::field{"message", &list_largest_relations_response::message},
+        ::ores::utility::codec::field{"rows", &list_largest_relations_response::rows},
+        ::ores::utility::codec::field{"database_bytes",
+                                      &list_largest_relations_response::database_bytes},
+        ::ores::utility::codec::field{"relation_count",
+                                      &list_largest_relations_response::relation_count},
+        ::ores::utility::codec::field{"read_at", &list_largest_relations_response::read_at},
+    };
+}
+
 }
 namespace ores::utility::codec {
 
@@ -881,6 +1150,82 @@ struct ORES_SCHEDULER_API_EXPORT
     static std::string
     write_msgpack(const ores::scheduler::messaging::list_store_samples_response& v);
     static ores::scheduler::messaging::list_store_samples_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::list_capacity_samples_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::list_capacity_samples_request& v);
+    static ores::scheduler::messaging::list_capacity_samples_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::list_capacity_samples_request& v);
+    static ores::scheduler::messaging::list_capacity_samples_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT wire_traits<ores::scheduler::messaging::capacity_sample> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::capacity_sample& v);
+    static ores::scheduler::messaging::capacity_sample read_json(std::string_view text);
+    static std::string write_msgpack(const ores::scheduler::messaging::capacity_sample& v);
+    static ores::scheduler::messaging::capacity_sample
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::list_capacity_samples_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::list_capacity_samples_response& v);
+    static ores::scheduler::messaging::list_capacity_samples_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::list_capacity_samples_response& v);
+    static ores::scheduler::messaging::list_capacity_samples_response
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::list_largest_relations_request> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::list_largest_relations_request& v);
+    static ores::scheduler::messaging::list_largest_relations_request
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::list_largest_relations_request& v);
+    static ores::scheduler::messaging::list_largest_relations_request
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT wire_traits<ores::scheduler::messaging::largest_relation> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::scheduler::messaging::largest_relation& v);
+    static ores::scheduler::messaging::largest_relation read_json(std::string_view text);
+    static std::string write_msgpack(const ores::scheduler::messaging::largest_relation& v);
+    static ores::scheduler::messaging::largest_relation
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_SCHEDULER_API_EXPORT
+    wire_traits<ores::scheduler::messaging::list_largest_relations_response> {
+    static constexpr bool is_generated = true;
+
+    static std::string
+    write_json(const ores::scheduler::messaging::list_largest_relations_response& v);
+    static ores::scheduler::messaging::list_largest_relations_response
+    read_json(std::string_view text);
+    static std::string
+    write_msgpack(const ores::scheduler::messaging::list_largest_relations_response& v);
+    static ores::scheduler::messaging::list_largest_relations_response
     read_msgpack(std::span<const std::byte> data);
 };
 }

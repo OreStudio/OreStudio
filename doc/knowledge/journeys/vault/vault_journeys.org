@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 51DB7CD9-8F93-4EB0-8BC4-A660AC3EF826
+:END:
+#+title: Vault journeys
+#+description: The secrets an installation keeps for its own use, the consumers that may receive them, and the record of who asked for what.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:security:vault:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+
+The vault is the one place a value ORE must present to somebody else is kept, and
+almost nothing a person does with it is routine. A deployment puts the values
+there; a person looks when a rotation is due, when a consumer has to be given a
+key, or when something asked for a secret it should not have.
+
+That shapes the area: it is small, it is read-mostly, and the one act that writes
+a value is rare and heavy. The screens follow the
+[[id:CF052805-2B7A-46B9-B14C-EF8BCF810C44][record screen standard]] because what
+they list are records — a secret, a consumer, a use — and the standard already
+settles how a record is listed, opened, written and read through its versions.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:B14B2A74-CA0D-4A83-9C0A-46CAB79F6E8B][Keep the installation's secrets]] | tenant administrator | See what the vault holds, reveal a value once and have it recorded, replace it, register the consumers that may receive it, and read who asked for what |
+
+* The area
+
+The screens take an area of their own rather than joining *Operations*.
+*Operations* gathers the installation's own life — the services running, the
+grid, the bus, the logs — and every screen there answers a question about the
+process. The vault answers a question about a tenant's data, and its one
+sensitive act is a read of a value, which belongs beside the data and not beside
+the runtime. The
+[[id:339F0405-43AE-4049-B6B3-EB12E5A38CA4][menu structure]] page carries the
+area once the owner has signed the journey off.
+
+* Related
+
+- [[file:../../prototypes/vault/keep-the-secrets/index.html][The prototype]] — the four
+  screens of the journey, each state at its own address, with its design note.
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index this
+  group belongs to.
+- [[id:F9F1A2BA-94C2-4DAA-8689-F0871AA56801][Secret Custody in the Vault]] — what
+  the vault is and what it decides.
+- [[id:4F28F755-7DA1-4EDD-9983-256622B6088A][Sealed Delivery of a Secret to Its
+  Consumer]] — why a reveal is a request and a record.
+- [[id:DBF20EC5-63BB-4DE5-957C-5322DE0E487F][Secrets Register]] — which values
+  the installation holds.

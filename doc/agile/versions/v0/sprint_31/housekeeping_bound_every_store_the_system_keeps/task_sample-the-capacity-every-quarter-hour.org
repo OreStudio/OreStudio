@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 96E3F2AF-9458-4744-B970-8F98CD7DCE21
+:END:
+#+title: Task: Sample the capacity every quarter hour
+#+description: The capacity sampler runs once an hour, which makes the last-hour horizon on the store's plot hold at most one point and hides a disk that fills between firings. The measurement costs about eleven milliseconds: fifty calls of pg_database_size on this database take 540 ms, and the rest is one statvfs and one insert. Run it every fifteen minutes, which is the shortest horizon the dashboard and the plot already offer.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: feature/sample-the-capacity-every-quarter-hour
+#+pr: 5245
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The capacity series is dense enough for the shortest horizon the screen offers, and a disk that fills inside an hour is seen inside fifteen minutes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- The seeded capacity job runs every fifteen minutes
+- The cost is stated as a measurement, not an impression
+- A deployment that wants another cadence changes the job definition, and the seed is only a default
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Cost of one firing | about 11 ms of database time, plus one statvfs and one insert | =select count(pg_database_size(current_database())) from generate_series(1,50)= took 540 ms | this branch |
+| Rows a day at a quarter hour | 96 | arithmetic | this branch |
+| The schedule in force | =*/15 * * * *= | =select schedule_expression from ores_scheduler_job_definitions_tbl where job_name=''ores.scheduler.capacity_sampler''= | this branch |
+| A quarter-hour firing, observed | 2026-11-28 14:00:04, 2634 MB database, 494 GB free | =select sampled_at, database_bytes from ores_scheduler_capacity_samples_tbl order by sampled_at desc= | this branch |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5245][#5245]] | [scheduler] Sample the capacity every quarter hour |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The capacity sampler runs every fifteen minutes. One firing costs about eleven
+milliseconds of database time, one statvfs and one insert, so the density is
+bought for nothing: the shortest horizon on the screens now has four points an
+hour instead of one, and a disk that fills between two firings is seen inside a
+quarter of an hour.
+
+Applied to this environment and observed: a row at 14:00:04 with 2634 MB held and
+494 GB free, after the hourly 13:05 row. The seed carries the new cadence, so a
+recreated database gets it, and the definition stays editable for a deployment
+that wants another.
+
+The first hours of the series already earned their keep: the database grew from
+1.85 GB to 2.63 GB between 12:42 and 14:00 on this freshly provisioned
+environment, with the top relations unchanged — so the growth is spread across
+versioned rows the provisioning wrote, not one store. Nothing bounds most of
+those tables yet, which is the catalogue's gap and its capture.

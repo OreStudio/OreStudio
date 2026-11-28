@@ -29,6 +29,11 @@ namespace ores::scheduler::repository {
 
 namespace {
 
+/** The instant the read ran, in the shape the wire states a timestamp. */
+std::string now_on_the_wire() {
+    return ores::platform::time::datetime::to_iso8601_utc(std::chrono::system_clock::now());
+}
+
 auto& lg() {
     static auto instance =
         ores::logging::make_logger("ores.scheduler.repository.store_bounds_repository");
@@ -136,6 +141,96 @@ store_sample_series store_bounds_repository::read_samples(const std::string& sto
         sample.sampled_at = column(row, 0, "sampled_at");
         sample.size_bytes = to_int64(row.size() > 1 ? row[1] : std::nullopt);
         sample.measure_count = to_int64(row.size() > 2 ? row[2] : std::nullopt);
+        series.samples.push_back(std::move(sample));
+    }
+    return series;
+}
+
+largest_relation_page store_bounds_repository::read_largest_relations(std::uint32_t limit) {
+    /*
+     * One query answers the head of the list, how many relations there are and
+     * the database's total size. The size of the database is an uncorrelated
+     * scalar subquery, so the server takes it once for the whole statement
+     * instead of once a row.
+     */
+    const std::string sql =
+        "with rel as ("
+        "  select c.relname as relation_name, pg_total_relation_size(c.oid) as size_bytes"
+        "  from pg_class c"
+        "  join pg_namespace n on n.oid = c.relnamespace"
+        "  where n.nspname = 'public' and c.relkind in ('r', 'p')"
+        "), totals as ("
+        "  select count(*) as relation_count,"
+        "         (select pg_database_size(current_database())) as database_bytes"
+        "  from rel"
+        ")"
+        " select r.relation_name, r.size_bytes::text, coalesce(s.code, ''),"
+        "        t.relation_count::text, t.database_bytes::text"
+        " from rel r"
+        " cross join totals t"
+        " left join ores_scheduler_retained_stores_tbl s"
+        "   on 'public.' || r.relation_name = s.target"
+        "  and s.valid_to = ores_utility_infinity_timestamp_fn()"
+        "  and s.target_kind in ('table', 'chunked_table')"
+        " order by r.size_bytes desc, r.relation_name"
+        " limit $1::bigint";
+
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx_, sql, {std::to_string(limit)}, lg(), "Reading the largest relations");
+
+    largest_relation_page page;
+    page.read_at = now_on_the_wire();
+    page.rows.reserve(rows.size());
+    for (const auto& row : rows) {
+        messaging::largest_relation relation;
+        relation.relation_name = column(row, 0, "relation_name");
+        relation.size_bytes = to_int64(row.size() > 1 ? row[1] : std::nullopt);
+        relation.store_code = absent_if_empty(row.size() > 2 ? row[2] : std::nullopt);
+        // The totals repeat on every row; the last row states them as well as any.
+        page.relation_count = to_int64(row.size() > 3 ? row[3] : std::nullopt);
+        page.database_bytes = to_int64(row.size() > 4 ? row[4] : std::nullopt);
+        page.rows.push_back(std::move(relation));
+    }
+    return page;
+}
+
+capacity_sample_series store_bounds_repository::read_capacity(const std::string& range) {
+    const auto to = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
+    const auto from = to - std::chrono::hours(range_hours(range));
+
+    const std::string sql =
+        "select to_char(sampled_at at time zone 'UTC', 'YYYY-MM-DD HH24:MI:SS.US') || 'Z',"
+        " database_name, host_name, measured_path, database_bytes::text,"
+        " coalesce(disk_free_bytes::text, ''), coalesce(disk_total_bytes::text, ''), note"
+        " from ores_scheduler_capacity_samples_tbl"
+        " where sampled_at >= $1::timestamptz"
+        "   and sampled_at <= $2::timestamptz"
+        " order by sampled_at";
+
+    const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx_,
+        sql,
+        {ores::platform::time::datetime::to_iso8601_utc(from),
+         ores::platform::time::datetime::to_iso8601_utc(to)},
+        lg(),
+        "Reading the installation's capacity");
+
+    capacity_sample_series series;
+    series.from_at = ores::platform::time::datetime::to_iso8601_utc(from);
+    series.to_at = ores::platform::time::datetime::to_iso8601_utc(to);
+    series.samples.reserve(rows.size());
+    for (const auto& row : rows) {
+        messaging::capacity_sample sample;
+        sample.sampled_at = column(row, 0, "sampled_at");
+        sample.database_name = column(row, 1, "database_name");
+        sample.host_name = column(row, 2, "host_name");
+        sample.measured_path = column(row, 3, "measured_path");
+        sample.database_bytes = to_int64(row.size() > 4 ? row[4] : std::nullopt);
+        if (row.size() > 5 && row[5] && !row[5]->empty())
+            sample.disk_free_bytes = to_int64(row[5]);
+        if (row.size() > 6 && row[6] && !row[6]->empty())
+            sample.disk_total_bytes = to_int64(row[6]);
+        sample.note = column(row, 7, "note");
         series.samples.push_back(std::move(sample));
     }
     return series;

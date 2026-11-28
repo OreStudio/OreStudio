@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: F65DAA98-A55D-4367-ADFF-91D21AA32388
+:END:
+#+title: Task: Bound the telemetry tables by age
+#+description: The four chunked telemetry tables declare a Timescale retention policy of 30 days, and no job drops their chunks: add_retention_policy is skipped on the Apache licence, and timescaledb_information.jobs holds only the server's own job-history retention. The housekeeping catalogue names none of them, so the sweep never visits them either. ores_telemetry_logs_tbl held 17,492 rows in the 7.7 hours this environment ran today, and the tables grow with every log line and every sample the fleet writes.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: feature/bound-the-telemetry-tables
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A telemetry table has the same bound as every other store: a row in the catalogue, a policy the sweep applies on the installation's own licence, and a screen that states what it last removed.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- The catalogue names every chunked telemetry table, with its time column, its measure and its default period
+- The sweep drops the telemetry chunks past the period on the Apache licence, as it does for the report tables
+- A test proves a chunk past the period is dropped and a chunk inside it is kept
+- The housekeeping screens state the telemetry stores beside the rest, with their sizes
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

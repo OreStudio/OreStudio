@@ -8,7 +8,7 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch: feature/manage-the-dynamics-of-the-data
-#+pr:
+#+pr: 5251
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5251][#5251]] | [web,scheduler] Manage the dynamics of the data, not only its size |
 
 * Review
 

@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-11-28
 #+updated: 2026-11-28
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Have the script library generator call the shell as a parser, not as a client, s
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -40,24 +40,27 @@ Have the script library generator call the shell as a parser, not as a client, s
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Reproduce the failure before touching the generator, with the variable the
+workflow exports:
 
+#+begin_src sh
+ORES_SHELL_LOGIN_USERNAME=tenant_admin@acme_corporation \
+  python3 external/ore/tools/generate_script_library.py --check \
+  --shell ./build/output/linux-clang-release-ninja/publish/bin/ores.shell
+#+end_src
+
+It answers "error: the shell refused a script: Usage error: Login username
+provided but password is missing!" — the same two lines Continuous Linux has
+printed since 2026-11-27.
+
+Then drop the login from the environment the generator hands the shell.
 * Measurements
-
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
-
+| Continuous Linux runs red on the check | 5, from 2026-11-27 | =gh api .../workflows/continuous-linux.yml/runs= | main at 46090052047 |
+| The check with the login variable exported, before this change | exit 1 | see the Plan command, on =origin/main= | ea11b8ec3d |
+| The same, after | exit 0 | as above, on this branch | this branch |
 * Notes
 
 * Test Scenarios
@@ -84,3 +87,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The generator calls the shell to parse scripts, and the shell refuses to start
+when it carries a login name and no password. Since environment format version
+38 took the demo password out of =.env= while the username stayed, the workflows
+that export the file hand the shell exactly that pair: a username with nothing
+beside it. Continuous Linux has been red on the step since 2026-11-27 for this
+reason, and the suites never were: the failure is the check's own shell call.
+
+The generator now removes every =ORES_SHELL_LOGIN_= variable from the
+environment it gives the shell, which is what a parser needs and what a client
+does not. A developer who exported only the username, as the file's own comment
+suggests, was hitting the same wall in =./compass.sh check=.

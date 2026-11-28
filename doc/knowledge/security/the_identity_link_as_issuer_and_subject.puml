@@ -17,40 +17,45 @@
 '
 @startuml
 
-title A session names the method it was opened with, and the token carries it
+title The identity link: the issuer and subject, and the address as evidence
 
 skinparam classAttributeIconSize 0
 
-class "session" as session {
-    account
-    method: a password, or the provider that proved it
-    amr: the methods the provider asserted
-    idp: the issuer, when a provider proved it
-    opened, last seen, ended
+package "a tenant's identity rows" {
+    class "identity provider" as provider {
+        tenant
+        issuer
+        client id
+        client secret: a name, never a value
+        enabled
+    }
+
+    class "account" as account {
+        username
+        email address
+        tenant, party, roles
+    }
+
+    class "identity link" as link {
+        provider
+        subject
+        account
+    }
 }
 
-class "authentication event" as event {
-    account
-    method
-    provider
-    outcome
-    when
+class "the address\nthe provider sent" as address {
+    evidence of nothing on its own
 }
 
-class "token" as token {
-    sub: the account
-    amr
-    idp
-    ...
-}
-
-session "1" -- "1" token : carried as claims
-session "1" -- "0..*" event : recorded as
-note bottom of event
-  The event is the record a person reads when
-  the question is "how did this session come to
-  be", and the reason a session ending has an
-  account of what it was worth.
+provider "1" -- "0..*" link : enables
+link "0..*" -- "1" account : names
+provider ..> address : reports
+address ..> account : never matches
+note bottom of address
+  A workspace administrator can mint any
+  address in the domain the workspace holds,
+  so two equal addresses are two claims and
+  not one person.
 end note
 
 @enduml

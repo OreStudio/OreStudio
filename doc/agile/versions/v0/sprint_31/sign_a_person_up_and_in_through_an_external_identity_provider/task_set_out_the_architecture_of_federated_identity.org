@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
-#+updated: 2026-11-25
+#+updated: 2026-11-28
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -42,22 +42,8 @@ Write the architecture as knowledge notes before the code: how ORE Studio relies
 
 * Plan
 
-Five notes and one structure note, ordered by where a person's identity is
-decided: what ORE trusts, what it writes down, what it creates the first time,
-what it records when the session opens, and what it hands to a client that asks
-to act for somebody. The structure note states that order and is linked from the
-knowledge index and from the Identity and Access structure note, so the cluster
-is reachable from both.
-
-The pages state the architecture the story decided on 2026-11-25 and carry its
-reasoning, not a status report: the tasks that build the flow are still in the
-backlog, and a reader who wants the state reads the story. Every page that
-describes an interaction or a structure carries a diagram, and each cites the
-standard it applies rather than paraphrasing it.
-
-Written after the decision task and the two entity models, so the vocabulary is
-theirs: the provider row's fields, the link's issuer and subject, the registration
-policy, the session, the authentication event, and the grant an agent key creates.
+The plan is distilled into the story's =* Decisions=; what it cost is in the
+Result below.
 
 * Measurements
 
@@ -71,19 +57,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Pages in the cluster | 6 | =ls doc/knowledge/security/federated_identity.org doc/knowledge/security/ore_as_a_relying_party.org doc/knowledge/security/the_identity_link_is_issuer_and_subject.org doc/knowledge/security/a_first_sign_in_registers_through_the_policy.org doc/knowledge/security/a_session_names_the_method_it_was_opened_with.org doc/knowledge/security/ore_as_an_authorization_server_for_its_clients.org= | this branch |
-| Diagrams rendered to PNG | 5 | =ls doc/knowledge/security/*.png= | this branch |
+| Pages in the cluster | 6 | =ls doc/knowledge/security/\{federated_identity_hub,ore_as_a_relying_party,the_identity_link_as_issuer_and_subject,the_registration_of_a_first_external_sign_in,the_authentication_method_of_a_session,ore_as_an_authorization_server_for_its_clients\}.org \| wc -l= | 3ffdd872ee |
+| Diagrams rendered to PNG | 6 | the same list with =.png= | 3ffdd872ee |
 
 * Notes
 
-- 2026-11-28 — The cluster hangs from two places: the knowledge index and the
-  Identity and Access structure note. One of them alone leaves the reader who
-  arrives from the other without a route.
-- 2026-11-28 — The session note describes the method the later task adds to the
-  session and the event. A note written after the code would have had to describe
-  what was built; written before it, it can state what the design requires.
-- 2026-11-28 — Every page names at least one alternative it rejects and why, which
-  is the difference between a design note and a summary of what exists.
+- 2026-11-28 — Written before the flow, so the session page describes the method
+  the later task adds. A note written after the code could only describe what was
+  built.
 
 * Test Scenarios
 

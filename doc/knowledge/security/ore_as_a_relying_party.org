@@ -2,7 +2,7 @@
 :ID: DC393929-BB21-4D0A-A334-EA93E1045DCF
 :END:
 #+title: ORE as a relying party to an external identity provider
-#+description: The authorization code flow with PKCE, the state and the nonce, the exact redirect match and the ID token validated by kid: what ORE checks before it believes a provider, and why the gateway serves the browser end of it.
+#+description: The code flow with PKCE, state and nonce, the exact redirect match, and the ID token checked by kid.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:security:identity:oidc:federation:
@@ -46,8 +46,10 @@ attacks that matter here: a code replayed from somebody else's browser, and a
 code intercepted without the verifier.
 
 The client secret is the provider row's *name* for a value, never the value: the
-deployment places it in the vault and the gateway resolves it at the exchange,
-which is what makes a provider's credential the same kind of secret as a service's
+row states the environment variable or configuration key the deployment sets, and
+the gateway resolves that name when it starts and keeps the value in memory. The
+place the value is kept is the deployment's decision, and the register records
+where ORE is taking it
 ([[id:DBF20EC5-63BB-4DE5-957C-5322DE0E487F][Secrets Register]]).
 
 ** What the ID token has to prove
@@ -65,7 +67,7 @@ Validation is done with jwt-cpp and OpenSSL, both already linked, so the flow
 adds no HTTP client and no JWT library: outbound calls use the transport the
 official market data adapter already uses.
 
-#+caption: The gateway mints the state, the nonce and the PKCE verifier, keeps them for one attempt, and asks the provider for a code; IAM is asked only once the ID token has been validated.
+#+caption: The gateway mints the state, the nonce and the PKCE verifier and keeps them for one attempt, asks the provider for a code, and asks IAM to sign the person in only once the ID token has been validated.
 [[file:ore_as_a_relying_party.png][file:ore_as_a_relying_party.png]]
 
 Source: [[file:ore_as_a_relying_party.puml][ore_as_a_relying_party.puml]], rendered with =plantuml -tpng ore_as_a_relying_party.puml=.
@@ -74,16 +76,16 @@ Source: [[file:ore_as_a_relying_party.puml][ore_as_a_relying_party.puml]], rende
 
 The *implicit* flow is rejected because it puts tokens in a URL the browser keeps
 and the network can log, and OpenID Connect's own guidance is to prefer the code
-flow ([OpenID Foundation 2014](https://openid.net/specs/openid-connect-core-1_0.html)).
+flow (OpenID Foundation, 2014).
 The *resource owner password* grant against the provider is rejected because it
 would have ORE ask a person for their provider password, which is the pressure a
 provider's own sign-in page exists to avoid
-([RFC 9700, section 2.4](https://www.rfc-editor.org/rfc/rfc9700)).
+(RFC 9700, 2025, section 2.4).
 
 Running an identity broker beside IAM — Keycloak, or an equivalent — is rejected
-for the reason the whole cluster is one component: it would put the provider
-rows, the links and the consent somewhere other than where the grant, the audit
-and the second pair of eyes already are
+for the reason the cluster gives once, where the server side of it is described:
+it would put the provider rows, the links and the consent somewhere other than
+where the grant, the audit and the second pair of eyes already are
 ([[id:09B79B9C-507B-4C9F-8FFC-B1CC572FBB3D][ORE as an authorization server for
 its own clients]]).
 
@@ -108,12 +110,9 @@ contents would then be whatever the network said they were.
 
 - [[id:B008A2C9-BAF5-49F7-AC79-B136AF9DAAE5][Federated identity]] — the
   structure note that orders this cluster.
-- [[id:359CFBD3-E8FD-47CF-96CD-D11D0AF09685][The identity link is the provider's
-  issuer and subject]] — what ORE does with the issuer and subject this flow
+- [[id:359CFBD3-E8FD-47CF-96CD-D11D0AF09685][The identity link as the provider's issuer and subject]] — what ORE does with the issuer and subject this flow
   returns.
-- [[id:8408B333-FE16-4D3C-AB31-DCB3400C1D07][A first sign-in registers through
-  the policy]] — the case where the pair is one ORE has never seen.
-- [[id:6DAE22AE-31F6-4EC5-810B-66AF27AB66DE][A session names the method it was
-  opened with]] — what the session records about this flow having run.
+- [[id:8408B333-FE16-4D3C-AB31-DCB3400C1D07][The registration of a first external sign-in]] — the case where the pair is one ORE has never seen.
+- [[id:6DAE22AE-31F6-4EC5-810B-66AF27AB66DE][The authentication method of a session]] — what the session records about this flow having run.
 - [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] —
   the identity lifecycle this flow feeds.

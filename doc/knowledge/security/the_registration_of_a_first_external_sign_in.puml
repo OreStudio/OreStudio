@@ -17,7 +17,7 @@
 '
 @startuml
 
-title A first external sign-in registers through the policy, never by matching an address
+title The registration of a first external sign-in
 
 skinparam activityDiamondBackgroundColor #F7F7F7
 

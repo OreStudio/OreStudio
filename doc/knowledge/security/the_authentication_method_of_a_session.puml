@@ -17,45 +17,40 @@
 '
 @startuml
 
-title The link ORE keeps is the provider's issuer and subject, not the address
+title The authentication method a session records, and the claims that carry it
 
 skinparam classAttributeIconSize 0
 
-package "a tenant's identity rows" {
-    class "identity provider" as provider {
-        tenant
-        issuer
-        client id
-        client secret: a name, never a value
-        enabled
-    }
-
-    class "account" as account {
-        username
-        email address
-        tenant, party, roles
-    }
-
-    class "identity link" as link {
-        provider
-        subject
-        account
-    }
+class "session" as session {
+    account
+    method: a password, or the provider that proved it
+    amr: the methods the provider asserted
+    idp: the issuer, when a provider proved it
+    opened, last seen, ended
 }
 
-class "the address\nthe provider sent" as address {
-    evidence of nothing on its own
+class "authentication event" as event {
+    account
+    method
+    provider
+    outcome
+    when
 }
 
-provider "1" -- "0..*" link : enables
-link "0..*" -- "1" account : names
-provider ..> address : reports
-address ..> account : never matches
-note bottom of address
-  A workspace administrator can mint any
-  address in the domain the workspace holds,
-  so two equal addresses are two claims and
-  not one person.
+class "token" as token {
+    sub: the account
+    amr
+    idp
+    ...
+}
+
+session "1" -- "1" token : carried as claims
+session "1" -- "0..*" event : recorded as
+note bottom of event
+  The event is the record a person reads when
+  the question is "how did this session come to
+  be", and the reason a session ending has an
+  account of what it was worth.
 end note
 
 @enduml

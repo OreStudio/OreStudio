@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 8408B333-FE16-4D3C-AB31-DCB3400C1D07
 :END:
-#+title: A first sign-in registers through the policy
-#+description: An external account ORE has never seen registers as a first sign-in through the same policy a password sign-up goes through, which decides the tenant, the party and the first role; it is never attached to a lookalike address.
+#+title: The registration of a first external sign-in
+#+description: An external account ORE has never seen registers through the policy, never by matching an address.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:security:identity:registration:federation:
@@ -22,8 +22,7 @@ Two rules make that safe. The link is written in the same act as the account, so
 half-registration cannot leave a provider account unlinked while the ORE account
 exists; and nothing is ever attached to an existing account by comparing
 addresses, which is the rule
-[[id:359CFBD3-E8FD-47CF-96CD-D11D0AF09685][The identity link is the provider's
-issuer and subject]] states and this page applies.
+[[id:359CFBD3-E8FD-47CF-96CD-D11D0AF09685][The identity link as the provider's issuer and subject]] states and this page applies.
 
 * Detail
 
@@ -54,9 +53,9 @@ administrator somewhere, it does not choose a party from the address, and it doe
 not skip a step because the provider said the address was verified.
 
 #+caption: A validated issuer and subject either names a live link or goes through the registration policy; the account and its link are written in one act, and the session follows.
-[[file:a_first_sign_in_registers_through_the_policy.png][file:a_first_sign_in_registers_through_the_policy.png]]
+[[file:the_registration_of_a_first_external_sign_in.png][file:the_registration_of_a_first_external_sign_in.png]]
 
-Source: [[file:a_first_sign_in_registers_through_the_policy.puml][a_first_sign_in_registers_through_the_policy.puml]], rendered with =plantuml -tpng a_first_sign_in_registers_through_the_policy.puml=.
+Source: [[file:the_registration_of_a_first_external_sign_in.puml][the_registration_of_a_first_external_sign_in.puml]], rendered with =plantuml -tpng the_registration_of_a_first_external_sign_in.puml=.
 
 ** The alternatives this rejects
 
@@ -76,8 +75,7 @@ that registers again on the next attempt.
 
 *Attaching to the account whose address matches* is the takeover this cluster
 exists to preclude; it is rejected in full in
-[[id:359CFBD3-E8FD-47CF-96CD-D11D0AF09685][The identity link is the provider's
-issuer and subject]].
+[[id:359CFBD3-E8FD-47CF-96CD-D11D0AF09685][The identity link as the provider's issuer and subject]].
 
 ** What the person is told
 
@@ -92,9 +90,9 @@ conversation start from the right end
 - OpenID Foundation, [[https://openid.net/specs/openid-connect-core-1_0.html][OpenID
   Connect Core 1.0]] — the ID token a registration is decided on, and =sub= as the
   identifier it carries.
-- [[https://www.rfc-editor.org/rfc/rfc9700#section-4.15][RFC 9700, section 4.15]] —
-  why a provider's stated address is not evidence for attaching a sign-in to an
-  existing account.
+- OpenID Foundation, [[https://openid.net/specs/openid-connect-core-1_0.html#Claims][OpenID
+  Connect Core 1.0, sections 2 and 5.7]] — =sub= as the identifier a provider
+  never reassigns, which is what a registration is decided on.
 
 * See also
 
@@ -103,9 +101,7 @@ conversation start from the right end
 - [[id:DC393929-BB21-4D0A-A334-EA93E1045DCF][ORE as a relying party to an
   external identity provider]] — the flow that establishes the issuer and the
   subject.
-- [[id:359CFBD3-E8FD-47CF-96CD-D11D0AF09685][The identity link is the provider's
-  issuer and subject]] — why the address never chooses the account.
-- [[id:6DAE22AE-31F6-4EC5-810B-66AF27AB66DE][A session names the method it was
-  opened with]] — what is recorded once the registration has finished.
+- [[id:359CFBD3-E8FD-47CF-96CD-D11D0AF09685][The identity link as the provider's issuer and subject]] — why the address never chooses the account.
+- [[id:6DAE22AE-31F6-4EC5-810B-66AF27AB66DE][The authentication method of a session]] — what is recorded once the registration has finished.
 - [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding
   Defaults]] — the policy itself.

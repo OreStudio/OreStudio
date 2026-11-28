@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 6DAE22AE-31F6-4EC5-810B-66AF27AB66DE
 :END:
-#+title: A session names the method it was opened with
-#+description: A session records how the person proved themselves — a password, or the provider that proved them — and the token carries the standard amr and idp claims, so the audit, the sessions screen, a step-up and a revocation can each ask a question the session can answer.
+#+title: The authentication method of a session
+#+description: A session records how the person proved themselves, and the token carries amr and ORE's idp.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:security:identity:session:federation:
@@ -13,8 +13,8 @@
 
 A session is not only a claim that somebody signed in; it is a claim about how.
 ORE records the method on the session, carries it into the token as the standard
-=amr= claim, and names the provider in =idp= when a provider is what proved the
-person. The session is ORE's own either way: the provider's tokens are used at the
+=amr= claim, and names the provider in an =idp= claim of its own when a provider
+is what proved the person. The session is ORE's own either way: the provider's tokens are used at the
 exchange and not kept, so a provider outage is a reason a *new* session cannot
 open, never a reason an open one stops working.
 
@@ -32,10 +32,12 @@ used a password and a one-time code contributes both, and ORE does not upgrade o
 invent what the provider did not state. A password sign-in contributes =pwd= from
 ORE's own knowledge of what it did.
 
-The =idp= claim carries the issuer when a provider is what proved the person. It is
-absent on a password sign-in, because there is no provider to name, and it is what
-lets a relying party downstream see that the person arrived through federation
-without ORE having to describe its own session.
+The =idp= claim is ORE's own, and carries the issuer when a provider is what
+proved the person. It is absent on a password sign-in, because there is no
+provider to name, and it is what lets a resource server see that the person
+arrived through federation without ORE having to describe its own session. =amr=
+is the standard claim here; =idp= is ORE's spelling, and a client that reads it
+reads it as ORE's.
 
 ** What the method makes possible
 
@@ -59,9 +61,9 @@ the narrower one: disabling the provider stops new sign-ins through it and leave
 everything else working.
 
 #+caption: The session carries the method, the token repeats it as amr and idp, and the authentication event is the record a person or an operator reads afterwards.
-[[file:a_session_names_the_method_it_was_opened_with.png][file:a_session_names_the_method_it_was_opened_with.png]]
+[[file:the_authentication_method_of_a_session.png][file:the_authentication_method_of_a_session.png]]
 
-Source: [[file:a_session_names_the_method_it_was_opened_with.puml][a_session_names_the_method_it_was_opened_with.puml]], rendered with =plantuml -tpng a_session_names_the_method_it_was_opened_with.puml=.
+Source: [[file:the_authentication_method_of_a_session.puml][the_authentication_method_of_a_session.puml]], rendered with =plantuml -tpng the_authentication_method_of_a_session.puml=.
 
 ** The alternatives this rejects
 
@@ -101,8 +103,7 @@ leaves the tenant's own vocabulary to be inferred from a vendor's name.
 - [[id:DC393929-BB21-4D0A-A334-EA93E1045DCF][ORE as a relying party to an
   external identity provider]] — the flow that produces the methods and the
   issuer.
-- [[id:8408B333-FE16-4D3C-AB31-DCB3400C1D07][A first sign-in registers through
-  the policy]] — the session a first sign-in opens.
+- [[id:8408B333-FE16-4D3C-AB31-DCB3400C1D07][The registration of a first external sign-in]] — the session a first sign-in opens.
 - [[id:09B79B9C-507B-4C9F-8FFC-B1CC572FBB3D][ORE as an authorization server for
   its own clients]] — the token described here, read by a client of ORE's API.
 - [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] —

@@ -52,7 +52,7 @@ A report values the trades whose market data the system can answer, and states p
 | [[id:E6B29704-7BEF-4C2A-B95F-32623AF49200][State the phase of every error a run records]] | DONE | 2026-11-27 | 2026-11-27 | An error a run records carries the phase that produced it, the preprocessing of the run, the engine, or the postprocessing of its results, beside the scope the engine names. |
 | [[id:110CE18D-C64C-4C40-8E8E-D0664176707C][Name the trades a book did not value]] | BACKLOG | | | A report states, for each of its books, the trades that were left out and the cause of each, and shows the run's errors by the phase that produced them. |
 | [[id:2AF1ED6D-FD86-48FF-B194-B00E108C08ED][Narrow the approval at the desk]] | DONE | 2026-11-25 | 2026-11-26 | The chain gains the business unit between the party and the book: a desk states a set equal to or narrower than its party's, a book narrows its desk's, and the triggers hold both links. |
-| [[id:6EF48536-68CE-43B7-B629-7EC4D679C602][Group the approval state of a party and a desk]] | STARTED | 2026-11-28 | | The approval flag pushed two wide types past their recorded ceiling; grouping it into its own type brings both back under, and the rule allows no other way out. |
+| [[id:6EF48536-68CE-43B7-B629-7EC4D679C602][Group the approval state of a party and a desk]] | DONE | 2026-11-28 | 2026-11-28 | The approval flag pushed four types past their recorded ceiling. Every codegen mechanism that brings them back costs more than the count, so the growth is allowed and the wide types are decided from data by a story of their own. |
 
 * Decisions
 
@@ -118,6 +118,18 @@ Settled on 2026-11-25, when the story was formed.
     record of it are one type, because they are one fact. The read is exactly as
     strict as the export, taking the export's own age limit from the same
     constant, so a trade the run calls complete is a trade the body carries.
+
+12. *A wide type is decided from its data, not to satisfy a count.* The approval
+    flag put =party=, =party_entity=, =business_unit= and
+    =business_unit_entity= one member over their ceilings. The codegen offers no
+    cheap way back: a group table requires every column of the entity to belong
+    to a group, and the audit-group flag suppresses the entity's history
+    provider. Reshaping the two most used refdata types to pay for one edge-case
+    boolean is the wrong trade, so the four stay over for now and
+    [[id:CDD317B2-65AA-4133-8B0E-E52C4229BBBB][Review the wide types from their data]] decides them, and the other 592
+    rows, from what the data says each field is for. The measurement, the
+    analysis and a parked prototype are on
+    [[id:6EF48536-68CE-43B7-B629-7EC4D679C602][Group the approval state of a party and a desk]].
 
 * Out of scope
 

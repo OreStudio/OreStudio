@@ -2,7 +2,7 @@
 :ID: 6EF48536-68CE-43B7-B629-7EC4D679C602
 :END:
 #+title: Task: Group the approval state of a party and a desk
-#+description: The approval flag pushed two wide types past their recorded ceiling; grouping it into its own type brings both back under, and the rule allows no other way out.
+#+description: The approval flag pushed four types past their recorded ceiling; every codegen mechanism that brings them back costs more than the count, so the growth is allowed and the wide types are decided from data by a story of their own.
 #+type: task
 #+level: s1
 #+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-26
-#+updated: 2026-11-26
+#+updated: 2026-11-28
 #+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -32,18 +32,33 @@ generation carry it, which returns all four to what their rows state.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | The analysis is done; the mechanism is a decision between the two options that meet the acceptance. |
-| Waiting on   | A decision between option A and option B under =* Plan=. |
-| Next         | Take the chosen option; the codegen prototype is parked in =stash@{0}=. |
-| Last touched | 2026-11-26                               |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-28                               |
 
 * Acceptance
 
-Re-cut on 2026-11-26, twice. The first re-cut assumed a field group could be
-declared for the audit alone; the second found what that costs. What is
-accepted is not settled until the owner picks from the options under =* Plan=;
+Re-cut three times, and the third cut is the one that held. The first two
+assumed a mechanism that the codegen does not offer at a price worth paying;
+the third records the owner's decision of 2026-11-28 instead of a code outcome.
+What is accepted:
+
+- The four counts are measured and recorded, with the command and the commit,
+  and the fact that they were already over on =origin/main= is recorded too, so
+  no reader mistakes this branch for the cause.
+- The mechanisms are analysed and their costs are written down, including the
+  two the codegen refuses and the codegen defect that makes the cheapest shape
+  costly.
+- The decision is recorded where the work will happen: the growth is allowed for
+  now, and the four types are decided with data by
+  [[id:CDD317B2-65AA-4133-8B0E-E52C4229BBBB][Review the wide types from their data]].
+- Nothing in the tree moves: no ceiling row rises, no generated file changes,
+  and the approval chain's behaviour is untouched.
+
+* Plan=;
 whichever is picked, the acceptance is:
 
 - =party=, =party_entity=, =business_unit= and =business_unit_entity= hold no
@@ -125,16 +140,36 @@ reads. Nesting the audit (A) is the more general fix, but it changes what every
 consumer of a party sees, which is a common-path cost of exactly the kind this
 task is meant to avoid.
 
-** The plan once the owner picks
+** What the owner decided, and why the plan stops here
 
-1. Take the chosen option on this branch, and record the decision here with its
-   cost.
-2. Regenerate and lower the three ceiling rows to the counts the types then have,
-   leaving =business_unit= off the list. No row rises and none is added.
-3. Run the two approval pgTAP files, the refdata C++ suites, the wire roundtrip
-   tests and the web typecheck and format: the chain's rules must not move, only
-   the shape that carries them.
-4. Record the four counts before and after, with the command that measured them.
+The owner took none of A to F on 2026-11-28. The growth is allowed for now, and
+the four types are decided with data by a story of their own,
+[[id:CDD317B2-65AA-4133-8B0E-E52C4229BBBB][Review the wide types from their data]], because the same question is open for
+the other 592 rows of the ceiling table and answering it one type at a time is
+how this task came to exist.
+
+The reasoning is worth keeping. Every option that lands the four counts reshapes
+a common path to pay for an edge case: A nests the audit block in the party's
+wire shape, C regenerates 550 entity headers across every worktree, and B moves
+a boolean off the party so that every reader of the approval reads a row instead
+of a column. None of them is wrong, but none should be chosen to satisfy a count
+before the data says which fields belong together. The task's own premise — that
+a party and a desk needed reshaping — turned out to be a question about every
+type.
+
+The plan's remaining steps therefore belong to the story: measure with data,
+decide, lower the rows, run the approval pgTAP files and the refdata suites, and
+record the counts before and after.
+
+** What this task leaves behind
+
+- The measurement in =* Measurements=, including the proof that the four types
+  are already over on =origin/main=.
+- The analysis above, with the two mechanisms the codegen refuses and the defect
+  that makes the third costly.
+- A codegen prototype in =stash@{0}= that groups the change audit in the row
+  struct, with the four counts it produces: =party= 16, =party_entity= 18,
+  =business_unit= 12 and =business_unit_entity= 14.
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
@@ -183,6 +218,7 @@ task and name that file in the Command column.
 | Ceiling rows for row mirrors, of all rows | 237 of 596 | =awk= over the =* Ceilings= table | =0c91ae4d65= |
 | Row mirrors a grouping would clear outright | 83 | =awk= over the =* Ceilings= table | =0c91ae4d65= |
 | Models carrying =domain_audit_group=, none with a history provider | 48 | =grep -rln domain_audit_group projects/*/modeling/*.org= | =0c91ae4d65= |
+| The four types already over on main | 19 warnings, the same four among them | =compass-ng check --codec wide_types --commit origin/main= | =origin/main= |
 
 * Notes
 
@@ -245,6 +281,7 @@ task and name that file in the Command column.
 | Ceiling rows for row mirrors, of all rows | 237 of 596 | =awk= over the =* Ceilings= table | =0c91ae4d65= |
 | Row mirrors a grouping would clear outright | 83 | =awk= over the =* Ceilings= table | =0c91ae4d65= |
 | Models carrying =domain_audit_group=, none with a history provider | 48 | =grep -rln domain_audit_group projects/*/modeling/*.org= | =0c91ae4d65= |
+| The four types already over on main | 19 warnings, the same four among them | =compass-ng check --codec wide_types --commit origin/main= | =origin/main= |
 
 * Notes
 
@@ -272,3 +309,30 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Closed on 2026-11-28 without a code change, by the owner's decision.
+
+The task set out to bring four types back under the ceiling the approval chain
+pushed them over. It measured them — each exactly one member over, all four
+crossing on the same boolean — and then found that every mechanism the codegen
+offers costs more than the count it fixes:
+
+- a =** Domain groups= table requires every column of the entity to belong to a
+  group, so grouping one block decomposes the whole type and renames every party
+  and desk accessor in the tree;
+- =:domain_audit_group:= nests only the audit, which lands all four counts with
+  room, but the generator then stops emitting the entity's history-provider
+  registrar, so the party and the desk lose their =history.v1.get= surface;
+- teaching the row struct to group, keyed on anything but that flag, regenerates
+  550 entity headers and 550 mappers across every component.
+
+The owner allowed the growth instead, and gave the question to
+[[id:CDD317B2-65AA-4133-8B0E-E52C4229BBBB][Review the wide types from their data]], because the same question is open for
+every one of the 596 ceiling rows and the answer should come from the data
+rather than from the type that happened to trip the check. The four counts are
+already over on =origin/main=, so this branch changes nothing: no ceiling row
+moves, no generated file changes, and the approval chain behaves as it did.
+
+The analysis, the measurements and the prototype stay in this record. The
+prototype is parked as =stash@{0}= so the story can revive it in minutes if the
+data favours grouping the audit everywhere.

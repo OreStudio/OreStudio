@@ -31,7 +31,7 @@ Value the portfolio against ORE's own numbers, and finish the screens that read 
 | Waiting on     | Nothing.                               |
 | Next           | Decide how an external identity signs a person up and in. |
 | Release Notes  | Added at end of sprint.                |
-| Last touched   | 2026-11-25                               |
+| Last touched   | 2026-11-28                               |
 
 * Stories
 
@@ -58,6 +58,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:2DAFF099-4C46-470A-ACA7-D81FCBBFA757][Story: Attribute a break on main to its owner]] | DONE | 2026-11-25 | 2026-11-25 | A session that meets someone else's break names the commit, the pull request and the environment, proves the mechanism, and says whether to fix it inline or hand it back. |
 | [[id:0D2294A4-873A-47FE-908A-60BC21F7AAA9][Story: Sign a person up and in through an external identity provider]] | STARTED | | | A person signs up and signs in with a Google account or another provider, through ORE's own pages, and the same identity layer makes ORE an OAuth 2.1 authorization server for its API. |
 | [[id:9636A24B-639F-4088-8A6D-F84CA7A974B9][Story: Show the identity doors, the links and the consent]] | BACKLOG | | | The sign-in screen offers the providers, Security shows and manages the links, every session says how it was signed in, and a client is approved on a consent screen. |
+| [[id:CDD317B2-65AA-4133-8B0E-E52C4229BBBB][Story: Review the wide types from their data]] | BACKLOG | | | Every type over the fifteen-field ceiling gets a decision backed by the data: what it holds, which columns the data never fills, and which of them belong together. |
 
 ** Hotfixes
 

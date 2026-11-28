@@ -38,23 +38,13 @@ VAULT = {
     "env_key": "VAULT_SERVICE",
     "email": "vault_service@system.ores",
 }
-ENV = {
-    "ORES_IAM_SERVICE_DB_PASSWORD": "the-iam-password",
-    "ORES_REFDATA_SERVICE_DB_PASSWORD": "the-refdata-password",
-    "ORES_DQ_SERVICE_DB_PASSWORD": "the-dq-password",
-    "ORES_VAULT_SERVICE_DB_PASSWORD": "the-vault-password",
-}
-
-
-def build(services, tmp_path, env=ENV):
-    return vault_provision.build_document(
-        services, env, tmp_path, announce=lambda _: None)
+def build(services, tmp_path):
+    return vault_provision.build_document(services, tmp_path, announce=lambda _: None)
 
 
 def test_one_consumer_and_one_secret_per_resolving_service(tmp_path):
     document, skipped = build([REFDATA, DQ], tmp_path)
 
-    assert skipped == []
     assert document["consumers"] == [
         {"name": "refdata_service@system.ores",
          "actor": "refdata_service@system.ores",
@@ -81,35 +71,33 @@ def test_each_consumer_carries_a_public_key_of_the_length_the_box_takes(tmp_path
     assert len(raw) == KEY_LEN
 
 
-def test_the_value_is_the_one_the_environment_file_holds(tmp_path):
-    document, _ = build([REFDATA, DQ], tmp_path)
+def test_each_role_is_given_the_value_its_secret_holds(tmp_path):
+    document, roles = build([REFDATA, DQ], tmp_path)
 
-    assert [s["value"] for s in document["secrets"]] == [
-        "the-refdata-password",
-        "the-dq-password",
+    assert [r["value"] for r in roles] == [s["value"] for s in document["secrets"]]
+    assert [r["user"] for r in roles] == [
+        "{ORES_REFDATA_SERVICE_DB_USER}",
+        "{ORES_DQ_SERVICE_DB_USER}",
     ]
+    assert all(len(r["value"]) >= 32 for r in roles)
 
 
-def test_a_service_the_file_omits_is_skipped_and_named(tmp_path):
-    document, skipped = build(
-        [REFDATA, DQ], tmp_path,
-        env={"ORES_REFDATA_SERVICE_DB_PASSWORD": "the-refdata-password"})
+def test_a_run_invents_a_new_password_every_time(tmp_path):
+    first, _ = build([REFDATA], tmp_path)
+    second, _ = build([REFDATA], tmp_path)
 
-    assert skipped == ["ores.dq.service"]
-    assert [s["name"] for s in document["secrets"]] == ["db.refdata_service.password"]
-    # A consumer without the value it owns would be a key nothing answers for.
-    assert [c["name"] for c in document["consumers"]] == ["refdata_service@system.ores"]
+    assert first["secrets"][0]["value"] != second["secrets"][0]["value"]
 
 
-def test_the_two_that_cannot_ask_are_given_a_credential_instead(tmp_path):
-    document, skipped = build([IAM, REFDATA, VAULT], tmp_path)
+def test_the_two_that_cannot_ask_are_roles_but_not_secrets(tmp_path):
+    document, roles = build([IAM, REFDATA, VAULT], tmp_path)
 
-    assert skipped == []
     assert [c["name"] for c in document["consumers"]] == ["refdata_service@system.ores"]
     assert [s["name"] for s in document["secrets"]] == ["db.refdata_service.password"]
-    assert (tmp_path / "iam_service.db-password").read_text() == "the-iam-password"
-    assert (tmp_path / "vault_service.db-password").read_text() == "the-vault-password"
-    assert (tmp_path / "iam_service.db-password").stat().st_mode & 0o777 == 0o600
+    # Their value is written where the unit reads it, by the caller, and never
+    # becomes a vault entry they could not ask for.
+    assert [r["psql_var"] for r in roles] == [
+        "iam_service", "refdata_service", "vault_service"]
     assert not (tmp_path / "iam_service.vault.key").exists()
     assert not (tmp_path / "vault_service.vault.key").exists()
 

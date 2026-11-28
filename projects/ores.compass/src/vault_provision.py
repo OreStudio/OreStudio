@@ -28,6 +28,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import secrets
 import subprocess
 import sys
 from pathlib import Path
@@ -84,37 +85,51 @@ def ensure_consumer_key(keys_dir: Path, psql_var: str, announce) -> Path:
     return public
 
 
-def build_document(services, env: dict, keys_dir: Path,
-                   announce) -> tuple[dict, list[str]]:
-    """The document the vault writes, and the services it could not describe.
+def invent_password() -> str:
+    """A database password, made by the step that puts it in both places.
 
-    The value is the one the environment file holds, so the vault and the
-    database role agree without this step changing either. A service is left out
-    when the file holds no password for it, because provisioning a value that is
-    not the role's password would lock the service out of its own database.
+    The environment file names the vault's entry and not its value, so the value
+    has to be made where it can reach every place that checks it: the role, the
+    IAM credential that the same value signs a service in with, and the vault.
+    """
+    return secrets.token_urlsafe(24)
 
-    The two services that cannot ask the vault still get their value written
-    where the deployment places credentials, so a unit can read it once the file
-    stops carrying one.
+
+def build_document(services, keys_dir: Path, announce) -> tuple[dict, list[dict]]:
+    """The document the vault writes, and the roles it belongs with.
+
+    Each service gets a fresh password, so a run rotates them all. Rotation and
+    provisioning are one act on purpose: two steps would leave the vault, the
+    role and the IAM credential disagreeing if one of them failed, and the next
+    run is what repairs any of them.
+
+    The second list is what the caller needs to set the same values on the
+    database roles, which is the half this module cannot do itself.
     """
     consumers: list[dict] = []
     secrets: list[dict] = []
-    skipped: list[str] = []
+    roles: list[dict] = []
 
     for service in services:
         psql_var = service.get("psql_var", "")
-        if not psql_var:
-            continue
-
         env_key = service.get("env_key", "")
         account = service.get("email", "")
-        password = env.get(f"ORES_{env_key}_DB_PASSWORD", "")
-        if not env_key or not account or not password:
-            skipped.append(service["name"])
+        if not psql_var or not env_key or not account:
             continue
 
+        password = invent_password()
+        roles.append({
+            "name": account,
+            "psql_var": psql_var,
+            "user": f"{{ORES_{env_key}_DB_USER}}",
+            "username": f"{{ORES_{env_key}_DB_USER}}",
+            "value": password,
+        })
+
         if psql_var in SELF_PROVISIONING:
-            write_password_credential(keys_dir, psql_var, password)
+            # A service that cannot ask the vault still needs a value, and the
+            # environment file no longer carries one. It goes where the
+            # deployment places credentials, by the name the runner looks for.
             continue
 
         public = ensure_consumer_key(keys_dir, psql_var, announce)
@@ -129,7 +144,79 @@ def build_document(services, env: dict, keys_dir: Path,
             "value": password,
         })
 
-    return {"consumers": consumers, "secrets": secrets}, skipped
+    return {"consumers": consumers, "secrets": secrets}, roles
+
+
+def apply_roles(env: dict, roles: list[dict]) -> None:
+    """Puts one value into every place that checks it, for every role.
+
+    A service proves the same value twice: it logs in to its database role, and
+    it signs in to IAM, which compares it against the account's stored hash. The
+    two must move together, so they move in one statement list. The pooler also
+    needs the value, but only as the verifier the server derived from it, which
+    is read back after the rotation and written where the pooler looks.
+    """
+    import subprocess
+
+    host = env.get("ORES_DB_HOST", "localhost")
+    database = env.get("ORES_TEST_DB_DATABASE", "")
+    password = env.get("PGPASSWORD", "")
+    if not password:
+        print("error: PGPASSWORD is set neither in the environment nor in .env",
+              file=sys.stderr)
+        raise SystemExit(1)
+
+    child = os.environ.copy()
+    child.update(env)
+    child["PGPASSWORD"] = password
+
+    def psql(*args):
+        done = subprocess.run(
+            ["psql", "-h", host, "-U", "postgres", "-d", database, "-v", "ON_ERROR_STOP=1"]
+            + list(args), text=True, capture_output=True, env=child)
+        if done.returncode != 0:
+            print(f"error: {done.stderr.strip()}", file=sys.stderr)
+            raise SystemExit(done.returncode)
+        return done.stdout
+
+    accounts = {
+        line.strip() for line in
+        psql("-t", "-A", "-c",
+             "select username from ores_iam_accounts_tbl "
+             "where valid_to = ores_utility_infinity_timestamp_fn()").splitlines()
+        if line.strip()
+    }
+
+    statements = []
+    for role in roles:
+        user = env.get(role["user"].strip("{}"), "")
+        if not user:
+            continue
+        value = role["value"].replace("'", "''")
+        statements.append(f"ALTER ROLE \"{user}\" WITH PASSWORD '{value}';")
+        if user in accounts:
+            statements.append(
+                f"select ores_iam_service_account_credential_set_fn('{user}', '{value}');")
+    if statements:
+        psql("-q", "-c", "\n".join(statements))
+    print(f"  roles   {len(statements)} statement(s) applied")
+
+    # The verifier the server derived, which is what the pooler authenticates a
+    # client with. It is not a password: without the plaintext it is useless.
+    users = [env.get(r["user"].strip("{}"), "") for r in roles]
+    users = [u for u in users if u]
+    if not users:
+        return
+    listed = ", ".join(f"'{u}'" for u in users)
+    rows = psql("-t", "-A", "-F", "|", "-c",
+                f"select usename, passwd from pg_shadow where usename in ({listed})")
+    verifiers = {}
+    for line in rows.splitlines():
+        if "|" in line:
+            name, verifier = line.split("|", 1)
+            verifiers[name.strip()] = verifier.strip()
+    print(f"  pooler  {len(verifiers)} verifier(s) read")
+    return verifiers
 
 
 def _child_environment(env: dict, keys_dir: Path) -> dict:
@@ -186,13 +273,11 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
         print(message)
 
     services = load_service_registry(project_root)
-    document, skipped = build_document(services, env, keys_dir, announce)
-    for name in skipped:
-        print(f"  skip    {name}: the environment file holds no password for it")
+    document, roles = build_document(services, keys_dir, announce)
 
     if not document["consumers"]:
-        print("error: nothing to provision — the environment file holds no "
-              "service password", file=sys.stderr)
+        print("error: nothing to provision — the registry names no database "
+              "service", file=sys.stderr)
         return 1
 
     if args.dry_run:
@@ -201,6 +286,8 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
             "secrets": [{"name": s["name"], "owner": s["owner"],
                          "value": f"<{len(s['value'])} characters>"}
                         for s in document["secrets"]],
+            "roles": [{"user": r["user"], "value": f"<{len(r['value'])} characters>"}
+                      for r in roles],
         }
         print(json.dumps(shown, indent=2))
         return 0
@@ -217,6 +304,22 @@ def run(argv, project_root: Path, env_file: Path | None = None) -> int:
               file=sys.stderr)
         return 1
 
+    # The roles and the IAM credentials first, in one statement list, because a
+    # vault that holds a value the role does not is a service that resolves a
+    # password the database refuses.
+    verifiers = apply_roles(env, roles) or {}
+    for role in roles:
+        user = env.get(role["user"].strip("{}"), "")
+        if role["psql_var"] in SELF_PROVISIONING:
+            path = keys_dir / f"{role['psql_var']}.db-password"
+            path.write_text(role["value"], encoding="utf-8")
+            path.chmod(0o600)
+        if user in verifiers:
+            path = keys_dir / f"{role['psql_var']}.db-verifier"
+            path.write_text(verifiers[user], encoding="utf-8")
+            path.chmod(0o600)
+
+    print(f"  keys    {len(verifiers)} verifier(s) and the two placed passwords")
     print(f"  vault   {len(document['consumers'])} consumers, "
           f"{len(document['secrets'])} secrets")
     run_vault = subprocess.run(

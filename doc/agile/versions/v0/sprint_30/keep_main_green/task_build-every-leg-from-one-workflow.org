@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 7BBECFF1-DA14-4CF5-9121-8524ECB2E65E
+:END:
+#+title: Task: Build every leg from one workflow
+#+description: Task for: Keep main green
+#+type: task
+#+level: s1
+#+filetags: :keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch: feature/build-every-leg-from-one-workflow
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Define the steps of a build leg once, so the four build jobs differ only in their runner, their matrix entry and their tier.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- One definition holds the steps between the checkout and the artifact uploads, for every operating system and tier.
+- Each build job states its runner, its container and its matrix, and calls that definition.
+- Every leg keeps the steps it had, in the order it had them.
+- actionlint and the CI YAML check report nothing new.
+
+* Plan
+
+One composite action holds what a leg does after its platform is prepared:
+bring up the services, build and test, publish what the leg produces, and keep
+the compiler cache. The four callers keep their runner, their container, their
+matrix entry, their permissions, their platform preparation and a single call.
+
+A called workflow was the proposal, and it cannot take the caller's container,
+which the two Linux legs run in. The steps that are genuinely per-platform —
+freeing disk, selecting Xcode, the developer prompt, the Visual Studio Clang —
+are not duplicated anywhere either, so they stay in the caller where they read
+as platform preparation rather than as branches of one file.
+
+Verification without a runner: expand the calls into the steps they hold under
+each leg's platform, compiler, build type and tier, and diff that list against
+the previous revision. Then lint with actionlint and the repository's own CI YAML
+check.
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Lines in the four build workflows | 1,128 to 820 | =wc -l=.github/workflows/{continuous,nightly}-{linux,macos,windows}.yml= | this branch |
+| Lines of run bodies in the four build workflows | 190 to 95 | expand each =run= and count its non-empty lines | this branch |
+| Lines of run bodies that repeat across them | 67 to 19 | count the lines that appear in more than one of the four files | this branch |
+| Steps in each of the eight legs | unchanged, same order | expand and diff against =origin/main= | this branch |
+| The leg itself | 312 lines, once | =wc -l .github/actions/build-leg/action.yml= | this branch |
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Four build jobs became four calls. What a leg does is defined once, in
+=.github/actions/build-leg=, and each job now states its runner, its container,
+its matrix, its platform preparation and the call. Of the 820 lines left in the
+four workflows, most is the matrix, the preparation and the jobs around the
+build.
+
+The proposal was a called workflow. The container decided against it: a called
+workflow cannot take the caller's =container=, and the two Linux legs run in the
+CI image. The second reason came from the tree: the steps that differ per
+platform are not copies of each other, so a single file would have moved them
+into branches rather than shared them.
+
+Eight legs were diffed against their previous revision, one per matrix entry and
+build type. Two classes of difference remain, both intended: a run body that
+names the preset now reads it from the action's inputs, because a composite has
+no matrix, and =sccache --show-stats= no longer reddens the two hosted legs,
+which is what its own comment always claimed. On Windows three preparation steps
+swap places, because the setup that used to sit between them now lives in the
+leg.
+
+What this does not prove: no leg ran before the merge. The dispatch that follows
+on the branch is the first statement about a real one.

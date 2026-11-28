@@ -201,9 +201,16 @@ A step group is therefore a composite, and a job is a reusable workflow.
 | =setup-nats= | the vendored binary on PATH | the four build workflows |
 | =start-nats= | the generated configuration, and a wait for the monitor | the four build workflows |
 | =create-database= | =compass db recreate= against the CI database | the four build workflows |
+| =setup-sccache= | the compiler cache of a variant, restored when the leg keeps it | the four build workflows |
 | =save-sccache= | the whole save: room, a still server, a retry, a prune | the two Linux workflows |
+| =build-leg= | the services, the build and its suites, the artifacts, the cache | the four build workflows |
 | =relevance-guard= | whether a scheduled run has anything to build | =continuous-linux.yml=, =nightly-macos.yml=, =nightly-windows.yml= |
 | =attach-package.yml=, called as a job | downloads the packages and attaches them to the release | the three workflows that build a package |
+
+A build job is therefore the runner, the container, the matrix entry, its own
+platform preparation, and one call to =build-leg=: what a leg does is the same
+on every platform, and what it does *to* the platform is not. Adding a leg is a
+matrix entry and a call.
 
 The guard is a composite for a reason worth stating: it asks the API for the
 last successful run of =GITHUB_WORKFLOW_REF=, which inside a called workflow

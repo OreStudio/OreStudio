@@ -149,6 +149,20 @@ jobs:
     assert "no-such-workflow" in findings[0]
 
 
+def test_a_key_a_composite_does_not_accept_is_a_finding(tmp_path):
+    path = write_action(tmp_path, PREAMBLE + """    - name: Build
+      timeout-minutes: 350
+      shell: bash
+      run: |
+        echo hello
+""")
+
+    findings = check_ci_actions.check_action(path)
+
+    assert len(findings) == 1
+    assert "timeout-minutes" in findings[0]
+
+
 def test_a_job_that_calls_a_local_action_without_a_checkout_is_a_finding(tmp_path):
     path = tmp_path / "caller.yml"
     path.write_text("""---

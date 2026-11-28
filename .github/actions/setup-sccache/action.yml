@@ -1,0 +1,83 @@
+# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# yamllint disable rule:line-length
+---
+name: Set up sccache
+description: >-
+  Start the compiler cache for this variant, restoring what a previous run left
+  when this leg keeps it.
+
+inputs:
+  variant:
+    description: >-
+      The cache key stem of this leg, as <family>-<compiler>-<buildtype>-ninja.
+    required: true
+  max-size:
+    description: >-
+      The cap on this variant's cache. The action starts the sccache server with
+      it and ignores SCCACHE_CACHE_SIZE, so it is the only place that limits the
+      cache.
+    required: true
+  restore:
+    description: >-
+      'true' when the leg keeps its cache between runs, which is the two Linux
+      workflows; 'false' when it starts cold on every run.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Restore sccache
+      if: inputs.restore == 'true'
+      uses: actions/cache/restore@v6
+      with:
+        path: ${{ env.SCCACHE_DIR }}
+        # Saves use a run-unique key, pruned to the newest entry per variant, so
+        # restore by prefix and take that entry. The key is deliberately not
+        # scoped to a workflow, because the Continuous and Nightly Linux builds
+        # compile the same variants with the same settings, so one entry serves
+        # both.
+        #
+        # The two tiers do differ, and none of the differences reaches a compile
+        # line:
+        #   - build_group names the CDash track, not a CMake input.
+        #   - with_memcheck runs valgrind in the test step; valgrind appears
+        #     nowhere in the build, so it cannot change a flag.
+        #   - a run that does not pass package=0 builds the package target, which
+        #     compiles the same objects and only adds cpack.
+        # code_coverage is the one input that does change the compile line, and
+        # both tiers pass it on the same variants: on for debug, absent for
+        # release.
+        key: sccache-${{ inputs.variant }}-${{ github.run_id }}
+        restore-keys: |
+          sccache-${{ inputs.variant }}-
+
+    - name: Ccache for gh actions
+      uses: hendrikmuhs/ccache-action@v1.2.26
+      with:
+        variant: sccache
+        key: ${{ inputs.variant }}
+        # A cache smaller than the build gives almost no hits. The build reads
+        # the objects in the same order each time and the oldest go first, so a
+        # cache a quarter of the build gave 2.5% hits. Give each variant the
+        # whole of what it needs, in the 9000 MB the repository keeps for
+        # sccache:
+        #   clang debug 4000, clang release 1600, gcc release 1800, macOS 2000,
+        #   Windows 1000, and the rest left free. The two Linux workflows share
+        #   the clang entries and must use the same caps, or each workflow cuts
+        #   the other's entry down when it saves.
+        max-size: ${{ inputs.max-size }}
+        save: false

@@ -10,7 +10,10 @@ three of its rules are broken silently:
   workflow that declares `workflow_call`;
 - the job that calls a local action must check the repository out first, and
   without a condition, because a local action is read from the workspace and a
-  skipped checkout leaves it missing.
+  skipped checkout leaves it missing;
+- a step states only the keys a composite accepts, because the platform refuses
+  the whole file over any other, which reaches the run as a job that failed
+  without starting.
 
 None of these fails the pull request, or the merge: all fail hours later, in the
 nightly, on the platform that happens to take the branch. This is the check
@@ -37,6 +40,15 @@ KEY = re.compile(r"^(?P<indent> *)(?P<key>[A-Za-z_][A-Za-z0-9_-]*):(?P<value>.*)
 LOCAL_ACTION = re.compile(r"\./\.github/actions/([A-Za-z0-9_.-]+)")
 LOCAL_WORKFLOW = re.compile(r"\./\.github/workflows/([A-Za-z0-9_.-]+)")
 STEP_REFERENCE = re.compile(r"steps\.([A-Za-z0-9_-]+)\.outputs")
+
+# The keys a step of a composite action may state. The list is short because the
+# platform rejects the file outright on any other, which reads as a job that
+# failed without running: timeout-minutes is the one that costs a rebuild to
+# learn, and the leg states its own cap with timeout(1) instead.
+COMPOSITE_STEP_KEYS = frozenset({
+    "name", "id", "if", "uses", "run", "shell", "env", "with",
+    "working-directory",
+})
 
 
 def display(path: Path) -> str:
@@ -123,6 +135,11 @@ def check_action(path: Path) -> list[str]:
             findings.append(
                 f"{relative}: step {number} runs a command but states no shell;"
                 " the caller's defaults do not reach into an action")
+        unknown = set(keys) - COMPOSITE_STEP_KEYS
+        if unknown:
+            findings.append(
+                f"{relative}: step {number} states {sorted(unknown)}, which a"
+                " composite action does not accept")
         if "id" in keys:
             ids.add(keys["id"])
         uses = keys.get("uses", "")

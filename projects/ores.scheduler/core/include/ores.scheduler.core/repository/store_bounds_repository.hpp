@@ -32,6 +32,22 @@
 namespace ores::scheduler::repository {
 
 /**
+ * @brief One store's measurements over a window, and the window the read used.
+ *
+ * The window travels with the points because the plot draws both: the line says
+ * how fast the store moved and the axis says over what. A read that stated only
+ * the points would leave the screen to guess the horizon from its own clock, and
+ * a screen is not the installation.
+ */
+struct store_sample_series {
+    std::vector<messaging::store_sample> samples;
+    /** The instant the window opens, in ISO-8601 UTC. */
+    std::string from_at;
+    /** The instant the read ran, in ISO-8601 UTC: where the window closes. */
+    std::string to_at;
+};
+
+/**
  * @brief The housekeeping reads: what bounds each store, and one store's series.
  *
  * Both are views over state three tables hold, and the screen reads them as the
@@ -49,17 +65,29 @@ public:
     [[nodiscard]] std::vector<messaging::store_bound> read_bounds();
 
     /**
-     * @brief The most recent measurements of one store, oldest first.
+     * @brief The measurements of one store over a range, oldest first.
      *
      * The plot reads its points from here. A store nothing measures answers with
-     * no points, which is the honest answer and not a flat line at zero.
+     * no points, which is the honest answer and not a flat line at zero, and it
+     * still answers with the window the read covered.
+     *
+     * @param range =1h=, =24h= or =7d=; anything else answers the day.
      */
-    [[nodiscard]] std::vector<messaging::store_sample> read_samples(const std::string& store_code,
-                                                                    std::uint32_t limit);
+    [[nodiscard]] store_sample_series read_samples(const std::string& store_code,
+                                                   const std::string& range);
 
 private:
     const ores::database::context& ctx_;
 };
+
+/**
+ * @brief How many hours a range covers.
+ *
+ * The screen offers three horizons and the read holds them as hours, so the
+ * period is one decision in one place and a range nobody stated cannot widen the
+ * read past the month.
+ */
+[[nodiscard]] ORES_SCHEDULER_CORE_EXPORT int range_hours(const std::string& range);
 
 /**
  * @brief One row of the bounds view, as the columns the read selects them.

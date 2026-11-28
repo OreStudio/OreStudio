@@ -39,45 +39,19 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
-      should_build: ${{ steps.check.outputs.should_build }}
+      should_build: ${{ steps.guard.outputs.should_build }}
     steps:
       - uses: actions/checkout@v7
-        # Manual and tag runs always build; only scheduled comparisons need a checkout.
-        if: github.event_name == 'schedule'
+        # The guard is a local action, and a local action is read from the
+        # workspace: skip this checkout and the job fails before its first step
+        # with "Can't find 'action.yml'". Only a scheduled run reads the tree,
+        # so the shallow clone of a manual or tag run is wasted work, but the
+        # job cannot tell its action apart without it.
         with:
           fetch-depth: 0
-      - name: Check if code changed since last successful run
-        id: check
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          echo "should_build=true" >> "$GITHUB_OUTPUT"
-          if [[ "${{ github.event_name }}" != "schedule" ]]; then
-            exit 0
-          fi
-          workflow_file=$(basename "${GITHUB_WORKFLOW_REF%%@*}")
-          last_sha=$(gh api \
-            "repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow_file}/runs?branch=main&status=success&per_page=1" \
-            --jq '.workflow_runs[0].head_sha // empty')
-          if [[ -z "$last_sha" ]]; then
-            echo "No prior successful run — building"
-            exit 0
-          fi
-          if [[ "$last_sha" == "$GITHUB_SHA" ]]; then
-            echo "No new commits since last run — skipping"
-            echo "should_build=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          non_doc=$(git diff --name-only "$last_sha" "$GITHUB_SHA" \
-            | { grep -vE '^(doc/|assets/|\.claude/|\.gemini/|projects/ores\.codegen/)' || true; } \
-            | { grep -vE '\.(md|org)$' || true; } \
-            | { grep -vE '^projects/([^/]*/)*modeling/' || true; })
-          if [[ -n "$non_doc" ]]; then
-            echo "Code changes found — building"
-          else
-            echo "Doc-only changes — skipping"
-            echo "should_build=false" >> "$GITHUB_OUTPUT"
-          fi
+
+      - uses: ./.github/actions/relevance-guard
+        id: guard
 
   image:
     name: ci-image-ref
@@ -223,88 +197,17 @@ jobs:
           max-size: ${{ matrix.buildtype == 'debug' && '4000M' || '1600M' }}
           save: false
 
-      - name: Generate postgres password
-        id: pg_password
-        run: |
-          PG_PASS="$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')"
-          echo "admin_password=${PG_PASS}" >> $GITHUB_OUTPUT
-          echo "PGPASSWORD=${PG_PASS}" >> $GITHUB_ENV
+      - uses: ./.github/actions/setup-postgres
 
-      - name: Start PostgreSQL
-        run: |
-          pg_major="$(sed -n 's/^PG_MAJOR=//p' build/docker/ci/versions.env)"
-          ./build/scripts/start_ci_postgres.sh "${pg_major}" oresdb
-          {
-            echo "PGHOST=localhost"
-            echo "PGPORT=5432"
-            echo "PGUSER=postgres"
-          } >> "$GITHUB_ENV"
+      - uses: ./.github/actions/install-compass
 
-      - name: Install the pinned compass release
-        # compass env configure writes .env with compass-ng, so every job that
-        # configures an environment needs the build the pin names on PATH.
-        run: |
-          tag=$(sed -n 's/^release: *//p' build/scripts/compass_ng.pin)
-          if [ -z "$tag" ]; then
-              echo "build/scripts/compass_ng.pin names no release" >&2
-              exit 1
-          fi
-          asset="compass-${tag#v}-Linux-x86_64.tar.gz"
-          base="https://github.com/MASD-Project/compass/releases/download/${tag}"
-          cd "$RUNNER_TEMP"
-          curl -fsSLO "${base}/${asset}"
-          curl -fsSLO "${base}/${asset}.sha256"
-          sha256sum -c "${asset}.sha256"
-          tar -xzf "${asset}"
-          dir=$(dirname "$(find "$RUNNER_TEMP/${asset%.tar.gz}" -type f -name compass | head -1)")
-          chmod +x "${dir}/compass"
-          # compass env configure looks for the tool under its release name.
-          ln -sf compass "${dir}/compass-ng"
-          echo "${dir}" >> "$GITHUB_PATH"
+      - uses: ./.github/actions/init-environment
 
-      - name: Init environment
-        env:
-          ORES_DATABASE_NAME: ores_ci
-        run: |
-          # The services dial PostgreSQL directly here: no pooler fronts
-          # them, so their port must be PostgreSQL's.
-          ./projects/ores.compass/compass.sh --no-deps env configure -y --no-pooler
-          grep -v '^[[:space:]]*#' .env | grep -v '^[[:space:]]*$' \
-            | grep -v 'ORES_IAM_SERVICE_JWT_PRIVATE_KEY' >> $GITHUB_ENV
+      - uses: ./.github/actions/setup-nats
 
-      - name: Setup NATS server
-        # Same setup on every CI platform: unpack the vendored nats-server
-        # release (external/nats, pinned v2.14.3) and put it on PATH, so
-        # every platform runs the same binary instead of its package
-        # manager's version -- no brew, no apt, no GitHub download.
-        run: ./build/scripts/setup_nats_server.sh
+      - uses: ./.github/actions/start-nats
 
-      - name: Start NATS server
-        # env configure already generated the per-checkout TLS certs and
-        # nats-<label>.conf (compass nats certs / compass nats init) --
-        # start it with that config, matching local dev exactly, so tests
-        # that need a live NATS (eventing integration tests) don't hang or
-        # fail with a connection error.
-        run: |
-          nats_conf="$(ls build/config/nats-*.conf | head -n1)"
-          nats-server --config "$nats_conf" &
-          monitor_port="$(grep '^ORES_NATS_MONITOR_PORT=' .env | cut -d= -f2- | tr -d '"')"
-          ready=false
-          for i in $(seq 1 30); do
-            if curl -sf "http://localhost:${monitor_port}/varz" > /dev/null; then
-              ready=true
-              break
-            fi
-            sleep 1
-          done
-          if [ "$ready" != "true" ]; then
-            echo "::error::nats-server did not become ready within 30s"
-            exit 1
-          fi
-
-      - name: Setup Database
-        run: |
-          ./projects/ores.compass/compass.sh db recreate -y -D ores_ci
+      - uses: ./.github/actions/create-database
 
       - name: Cache vcpkg binary packages
         uses: actions/cache@v6
@@ -398,209 +301,22 @@ jobs:
           df -h .
           du -sh .git llvm .sccache vcpkg-cache build/output "$RUNNER_TEMP" 2>/dev/null || true
 
-      - name: Check the compiler cache is worth saving
-        id: sccache_worth
-        # A job that hits the six-hour limit is cancelled. The old guard,
-        # !cancelled(), then skipped both steps below, so every object the run
-        # compiled was thrown away and the cache could never warm: the next run
-        # restored the same stale entry, missed, and timed out again. Run this
-        # after any build that produced a cache worth keeping, and leave the
-        # existing entry alone when it did not.
+      - uses: ./.github/actions/save-sccache
         if: ${{ always() && steps.ctest.outcome != 'skipped' }}
-        run: |
-          size_mb=$(du -sm "${SCCACHE_DIR}" 2>/dev/null | cut -f1)
-          size_mb=${size_mb:-0}
-          echo "local compiler cache: ${size_mb} MB"
-          echo "size_mb=${size_mb}" >> "$GITHUB_OUTPUT"
-          if [ "$size_mb" -ge 1000 ]; then
-            echo "worth_saving=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "worth_saving=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Show sccache statistics
-        # Read before the cache is stopped: a stopped server reports nothing,
-        # and these numbers are what says whether the cache is warming.
-        # ccache-action installs sccache. If no build ran, it is absent, and
-        # the statistics are not worth a second red step.
-        if: ${{ always() && steps.ctest.outcome != 'skipped' }}
-        run: sccache --show-stats
-
-      - name: Make room in the repository cache
-        # The repository gets 10 GB of cache and this project needs three sccache
-        # variants in it. A run-unique key means every save adds an entry, and
-        # the prune that removes the old ones ran only after a save that was
-        # itself waiting for the room: once the allowance filled, the save was
-        # rejected, the prune saw no new entry and deleted nothing, and every
-        # later run restored the same stale entry, missed and timed out. Free
-        # the space before saving, which is the only order that can.
-        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          prefix="sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-"
-          size_mb=${{ steps.sccache_worth.outputs.size_mb }}
-          # Below the real 10 GB allowance, because the vcpkg caches and the
-          # cmake caches share it and this step sees only the sccache entries.
-          budget_mb=9000
-          list="${RUNNER_TEMP}/sccache-caches.tsv"
-          gh api --paginate "/repos/${GITHUB_REPOSITORY}/actions/caches?per_page=100" \
-            --jq '.actions_caches[]
-                  | select(.key | startswith("sccache-"))
-                  | [.id, (.size_in_bytes / 1048576 | floor), .created_at, .key]
-                  | @tsv' > "${list}"
-          total_mb=$(awk -F'\t' '{ s += $2 } END { print s + 0 }' "${list}")
-          echo "stored ${total_mb} MB in $(wc -l < "${list}") sccache entries; this run holds ${size_mb} MB"
-
-          deleted="${RUNNER_TEMP}/sccache-deleted.txt"
-          : > "${deleted}"
-          delete_until_it_fits() {
-            while IFS=$'\t' read -r id mb created key; do
-              [ -n "${id}" ] || continue
-              if [ $((total_mb + size_mb)) -le "${budget_mb}" ]; then
-                return 0
-              fi
-              if grep -qxF "${id}" "${deleted}"; then
-                continue
-              fi
-              echo "Deleting ${key} (${mb} MB, ${created}) to make room."
-              gh api --method DELETE "/repos/${GITHUB_REPOSITORY}/actions/caches/${id}" >/dev/null || true
-              echo "${id}" >> "${deleted}"
-              total_mb=$((total_mb - mb))
-            done
-          }
-
-          if [ $((total_mb + size_mb)) -le "${budget_mb}" ]; then
-            echo "Fits in the allowance; nothing to delete."
-            exit 0
-          fi
-
-          # This variant's own entries go first, oldest first: the run has
-          # already replaced them with what it just compiled, and leaving them
-          # in place is what doubles the variant's footprint at save time.
-          # Process substitution, not a pipe: a pipe would run the loop in a
-          # subshell and the running total would not survive it.
-          delete_until_it_fits < <(
-            awk -F'\t' -v p="${prefix}" 'index($4, p) == 1' "${list}" | sort -t$'\t' -k3
-          )
-
-          # Still short: the oldest entries of any variant, so the allowance is
-          # honoured rather than silently rejecting the upload.
-          delete_until_it_fits < <(sort -t$'\t' -k3 "${list}")
-
-      - name: Stop the compiler cache
-        # actions/cache tars the cache directory, and a tar that reads a file
-        # while sccache writes it exits non-zero. actions/cache reports that tar
-        # failure as a warning and still exits zero, so the Save step below
-        # passes while storing nothing. --stop-server returns before the server
-        # has finished writing, so wait for the process to exit and for the
-        # directory to go quiet before the tar starts.
-        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
-        run: |
-          sccache --stop-server || true
-          for _ in $(seq 1 120); do
-            if ! pgrep -x sccache >/dev/null \
-               && [ -z "$(find "${SCCACHE_DIR}" -type f -newermt '-3 seconds' -print -quit)" ]; then
-              break
-            fi
-            sleep 1
-          done
-          if pgrep -x sccache >/dev/null; then
-            echo "::warning::sccache was still running when the save began."
-          fi
-
-      - name: Save sccache
-        id: save_sccache
-        # The key is unique per run, so the save never collides.
-        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
-        uses: actions/cache/save@v6
         with:
-          path: ${{ env.SCCACHE_DIR }}
-          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
-
-      - name: Check the compiler cache was stored
-        id: sccache_stored
-        # The save step exits zero when its tar fails or the upload is
-        # rejected, so ask the service. The answer decides the retry below.
-        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          keep="sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}"
-          if gh api --paginate "/repos/${GITHUB_REPOSITORY}/actions/caches?per_page=100" \
-               --jq '.actions_caches[].key' | grep -qxF "${keep}"; then
-            echo "stored=true" >> "${GITHUB_OUTPUT}"
-          else
-            echo "stored=false" >> "${GITHUB_OUTPUT}"
-          fi
-
-      - name: Wait for the compiler cache to be still
-        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' && steps.sccache_stored.outputs.stored == 'false' }}
-        run: |
-          pkill -x sccache || true
-          for _ in $(seq 1 120); do
-            if ! pgrep -x sccache >/dev/null \
-               && [ -z "$(find "${SCCACHE_DIR}" -type f -newermt '-3 seconds' -print -quit)" ]; then
-              break
-            fi
-            sleep 1
-          done
-
-      - name: Save sccache again
-        # One retry. The old entry of this variant is already gone, so a save
-        # that fails twice leaves the next run cold.
-        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' && steps.sccache_stored.outputs.stored == 'false' }}
-        uses: actions/cache/save@v6
-        with:
-          path: ${{ env.SCCACHE_DIR }}
-          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
-
-      - name: Verify the compiler cache was stored, and prune the older entries
-        # actions/cache turns a rejected upload into a warning and exits zero, so
-        # the save step cannot be trusted on its own. Ask the service whether
-        # this run's key is really there, and prune only when it is. A cache
-        # that was not stored is a warning, not a red build: the build it
-        # describes has already passed, and reddening the job only hides that.
-        #
-        # One entry per variant is the goal, and both tiers prune the same
-        # prefix, so whichever runs last leaves the newest entry for both.
-        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          prefix="sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-"
-          keep="${prefix}${{ github.run_id }}"
-          if ! gh api --paginate "/repos/${GITHUB_REPOSITORY}/actions/caches?per_page=100" \
-               --jq '.actions_caches[].key' | grep -qxF "${keep}"; then
-            echo "::warning::${keep} was not stored, so the older entries are left alone."
-            exit 0
-          fi
-          echo "Stored ${keep}."
-          gh api --paginate "/repos/${GITHUB_REPOSITORY}/actions/caches?per_page=100" \
-            --jq ".actions_caches[] | select(.key | startswith(\"${prefix}\")) | select(.key != \"${keep}\") | .id" \
-          | while read -r id; do
-              [ -n "$id" ] && gh api --method DELETE \
-                "/repos/${GITHUB_REPOSITORY}/actions/caches/${id}" >/dev/null || true
-            done
+          variant: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
 
   attach_package:
     name: Attach packages to the release
     needs: build
     # Attach what passed, so one failed build does not cost the others.
     if: ${{ !cancelled() && github.ref_type == 'tag' && needs.build.result != 'skipped' }}
-    runs-on: ubuntu-24.04
+    # A called workflow can only downgrade the token its caller passes, so the
+    # caller grants what the attachment asks for. Without this line the platform
+    # refuses the whole workflow at start, before any job runs.
     permissions:
       contents: write
       actions: read
-    steps:
-      - name: Download the packages of this run
-        uses: actions/download-artifact@v8
-        with:
-          pattern: linux-*-release-ninja
-          path: packages
-          merge-multiple: true
-
-      - name: Attach the packages to the release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release upload "$GITHUB_REF_NAME" packages/* --clobber --repo "$GITHUB_REPOSITORY"
+    uses: ./.github/workflows/attach-package.yml
+    with:
+      pattern: linux-*-release-ninja

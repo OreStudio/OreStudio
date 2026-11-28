@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 8F207C01-92A9-43BA-BD42-4C2CC0E87F83
+:END:
+#+title: Task: Cap the size of a submitted part
+#+description: Task for: Keep main green
+#+type: task
+#+level: s1
+#+filetags: :keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch: hotfix/cap-the-size-of-a-submitted-part
+#+pr: 5227
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Stop CDash dropping a whole component's cases by keeping every submitted part under a bounded number of cases.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- No submitted part holds more than the bounded number of cases, and every part is listed.
+
+* Plan
+
+Write each subproject's cases in parts of at most =MAX_CASES_PER_FILE=, named
+=Test-<component>-<n>.xml= only when there is more than one part, so a
+component that fits keeps the name it has.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Passed cases CDash holds for the release build, against the 38,073 the script writes | 32,318 across its subprojects, with =ores.trading.api= (5,690) and =ores.workflow.core= (70) absent | =api/v1/index.php?project=OreStudio&date=2026-11-28&subproject=<= each part | a50053 |
+| Largest part the old split wrote | 5,779,430 bytes (=ores.refdata.api=) | the upload lines of job 140809028563 | a50053 |
+| Largest part the new split writes, for 30,000 cases in one component | 1,073,721 bytes, in 15 parts | =expand_catch2_cases.py= on a synthetic component | HEAD |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5227][#5227]] | [ci] Cap the size of a submitted part |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Result
+
+A submitted part now holds at most two thousand cases, and a component that
+needs more is written as =Test-<component>-1.xml=, =-2.xml= and so on. A
+component that fits in one part keeps the name it had.
+
+The evidence that this matters: the two continuous legs expand the same 38,073
+cases, and CDash holds all of them for the debug build, while the release build
+is missing =ores.trading.api= (5,690 cases) and =ores.workflow.core= (70). The
+parts it did accept were up to 5.8 MB.
+
+Verified locally: the script's tests pass, including two new ones for the parts
+and for the name a component keeps; a synthetic component of 30,000 cases is
+written as fifteen parts whose largest is 1.05 MB.

@@ -1,0 +1,111 @@
+# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# yamllint disable rule:line-length
+---
+name: Install the pinned compass release
+description: >-
+  Unpack the compass release that build/scripts/compass_ng.pin names and put it
+  on PATH under both of the names the toolchain calls it.
+
+# compass env configure writes .env with compass-ng, so every job that
+# configures an environment needs the pinned release on PATH. Each platform
+# ships it in a different archive, under a different binary name: a tar.gz with
+# compass on Linux and macOS, a zip with compass.exe on Windows. The branch
+# lives here once instead of in every workflow that needs the tool.
+
+runs:
+  using: composite
+  steps:
+    - name: Install the pinned compass release
+      shell: bash
+      run: |
+        tag=$(sed -n 's/^release: *//p' build/scripts/compass_ng.pin)
+        if [ -z "${tag}" ]; then
+            echo "build/scripts/compass_ng.pin names no release" >&2
+            exit 1
+        fi
+        base="https://github.com/MASD-Project/compass/releases/download/${tag}"
+        version="${tag#v}"
+        case "${RUNNER_OS}" in
+            Linux) asset="compass-${version}-Linux-x86_64.tar.gz" ;;
+            macOS) asset="compass-${version}-Darwin-arm64.tar.gz" ;;
+            Windows) asset="compass-${version}-Windows-AMD64.zip" ;;
+            *)
+                echo "the compass release builds no ${RUNNER_OS} archive" >&2
+                exit 1
+                ;;
+        esac
+
+        cd "$RUNNER_TEMP"
+        curl -fsSLO "${base}/${asset}"
+        curl -fsSLO "${base}/${asset}.sha256"
+        # shasum is the tool macOS ships; the Windows runner's bash has the
+        # GNU one, as Linux does.
+        if [ "${RUNNER_OS}" = "macOS" ]; then
+            shasum -a 256 -c "${asset}.sha256"
+        else
+            sha256sum -c "${asset}.sha256"
+        fi
+
+        # Git Bash carries no unzip and its tar is GNU tar, which cannot read a
+        # zip, and its PATH does not reach powershell. Windows states where it
+        # keeps that interpreter, and Python is the second way in, since every
+        # runner has one of the two.
+        if [ "${RUNNER_OS}" = "Windows" ]; then
+            mkdir -p compass-ng
+            powershell="$(cygpath -u "${WINDIR:-C:\\Windows}")/System32/WindowsPowerShell/v1.0/powershell.exe"
+            if [ -x "${powershell}" ]; then
+                "${powershell}" -NoProfile -NonInteractive -Command \
+                    "Expand-Archive -LiteralPath '$(cygpath -w "${asset}")' -DestinationPath '$(cygpath -w compass-ng)' -Force"
+            elif command -v python > /dev/null 2>&1; then
+                python -m zipfile -e "${asset}" compass-ng
+            else
+                echo "neither powershell nor python expands ${asset}" >&2
+                exit 1
+            fi
+            root="${RUNNER_TEMP}/compass-ng"
+            binary=compass.exe
+        else
+            tar -xzf "${asset}"
+            root="${RUNNER_TEMP}/${asset%.tar.gz}"
+            binary=compass
+        fi
+
+        # Process substitution, not a pipe or -quit: the archive holds a
+        # directory whose name says the platform, and macOS ships a find that
+        # has no -quit.
+        matches=()
+        while IFS= read -r match; do
+            matches+=("${match}")
+        done < <(find "${root}" -type f -name "${binary}")
+        binary_path="${matches[0]:-}"
+        if [ -z "${binary_path}" ]; then
+            echo "${asset} holds no ${binary}" >&2
+            exit 1
+        fi
+        dir=$(dirname "${binary_path}")
+        chmod +x "${binary_path}"
+        # env configure looks for the tool under its release name: a symlink
+        # carries that name on Linux and macOS, and a shim runs the binary
+        # under the name it was built with on Windows.
+        if [ "${RUNNER_OS}" = "Windows" ]; then
+            printf '@echo off\r\n"%%~dp0compass.exe" %%*\r\n' > "${dir}/compass-ng.cmd"
+            cygpath -w "${dir}" >> "$GITHUB_PATH"
+        else
+            ln -sf compass "${dir}/compass-ng"
+            echo "${dir}" >> "$GITHUB_PATH"
+        fi
+        "${binary_path}" --version

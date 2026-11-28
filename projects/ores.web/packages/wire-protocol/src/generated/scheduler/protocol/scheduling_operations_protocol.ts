@@ -313,9 +313,14 @@ export interface ListStoreSamplesRequest {
      */
     store_code: string;
     /**
-     * @brief How many of the most recent points to return.
+     * @brief How far back the series reaches: =1h=, =24h= or =7d=.
+     *
+     * The screen picks a horizon and not a count of points, because the sampler
+     * writes one point an hour and a count would move the window every time the
+     * sampler's cadence changed. A range the read does not state answers the day,
+     * which is the horizon the screen opens on.
      */
-    limit: number;
+    range: string;
 }
 
 /**
@@ -334,6 +339,17 @@ export interface ListStoreSamplesResponse {
     success: boolean;
     message: string;
     samples: StoreSample[];
+    /**
+     * @brief The instant the window opens, in ISO-8601 UTC.
+     *
+     * The read states its own window so the plot draws the horizon that was asked
+     * for and not the one this browser's clock would have guessed.
+     */
+    from_at: string;
+    /**
+     * @brief The instant the read ran, in ISO-8601 UTC: where the window closes.
+     */
+    to_at: string;
 }
 
 export const subjects = {

@@ -69,15 +69,26 @@ struct store_bounds_body {
 }
 static_assert(ores::utility::codec::names_every_member<store_bounds_body>());
 
+/**
+ * @brief One store's series, and the window the read covered.
+ *
+ * The window is what the plot draws its axis from, so it travels with the
+ * points: a screen that computed the horizon from its own clock would state the
+ * browser's time and not the installation's.
+ */
 struct store_samples_body {
     std::string store_code;
     std::vector<scheduling::store_sample> samples;
+    std::string from_at;
+    std::string to_at;
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<store_samples_body>) {
     return ores::utility::codec::field_list{
         ores::utility::codec::field{"store_code", &store_samples_body::store_code},
-        ores::utility::codec::field{"samples", &store_samples_body::samples}};
+        ores::utility::codec::field{"samples", &store_samples_body::samples},
+        ores::utility::codec::field{"from_at", &store_samples_body::from_at},
+        ores::utility::codec::field{"to_at", &store_samples_body::to_at}};
 }
 static_assert(ores::utility::codec::names_every_member<store_samples_body>());
 
@@ -170,7 +181,7 @@ void housekeeping_routes::register_routes(
             .operation_catalogue("scheduler", "store_samples", "store_samples_read")
             .auth_required()
             .query_param(
-                "limit", "integer", "500", false, "How many of the most recent points to return")
+                "range", "string", "24h", false, "How far back the series reaches: 1h, 24h or 7d")
             .handler([&session](const http_request& req) { return handle_samples(req, session); });
     const auto samples_route = samples.build();
     router->add_route(samples_route);
@@ -211,16 +222,16 @@ boost::asio::awaitable<http_response> housekeeping_routes::handle_samples(const 
     try {
         scheduling::list_store_samples_request msg;
         msg.store_code = store_code_of(req);
-        const auto limit = req.get_query_param("limit");
-        if (!limit.empty())
-            msg.limit = static_cast<std::uint32_t>(std::stoul(limit));
+        const auto range = req.get_query_param("range");
+        if (!range.empty())
+            msg.range = range;
 
         const auto reply = forwarding::forward(req, session, msg);
         if (!reply.success) {
             co_return http_response::error(http_status::bad_gateway, reply.message);
         }
         co_return http_response::json(ores::utility::codec::object::write_json(
-            store_samples_body{msg.store_code, reply.samples}));
+            store_samples_body{msg.store_code, reply.samples, reply.from_at, reply.to_at}));
     } catch (const std::exception& e) {
         co_return http_response::error(http_status::bad_request, e.what());
     }

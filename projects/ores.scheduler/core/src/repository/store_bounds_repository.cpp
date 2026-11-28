@@ -20,7 +20,9 @@
 #include "ores.scheduler.core/repository/store_bounds_repository.hpp"
 #include "ores.database/query_builder/execute.hpp"
 #include "ores.logging/logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <charconv>
+#include <chrono>
 #include <stdexcept>
 
 namespace ores::scheduler::repository {
@@ -94,37 +96,49 @@ std::vector<messaging::store_bound> store_bounds_repository::read_bounds() {
     return bounds;
 }
 
-std::vector<messaging::store_sample>
-store_bounds_repository::read_samples(const std::string& store_code, std::uint32_t limit) {
+int range_hours(const std::string& range) {
+    if (range == "1h")
+        return 1;
+    if (range == "7d")
+        return 7 * 24;
+    return 24;
+}
+
+store_sample_series store_bounds_repository::read_samples(const std::string& store_code,
+                                                          const std::string& range) {
+    const auto to = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
+    const auto from = to - std::chrono::hours(range_hours(range));
+
     const std::string sql =
         "select to_char(sampled_at at time zone 'UTC', 'YYYY-MM-DD HH24:MI:SS.US') || 'Z',"
         " size_bytes::text, measure_count::text"
-        " from ("
-        "   select sampled_at, size_bytes, measure_count"
-        "   from ores_scheduler_retained_store_samples_tbl"
-        "   where store_code = $1"
-        "   order by sampled_at desc"
-        "   limit $2::bigint"
-        " ) recent"
+        " from ores_scheduler_retained_store_samples_tbl"
+        " where store_code = $1"
+        "   and sampled_at >= $2::timestamptz"
+        "   and sampled_at <= $3::timestamptz"
         " order by sampled_at";
 
     const auto rows = ores::database::query_builder::execute_parameterized_multi_column_query(
         ctx_,
         sql,
-        {store_code, std::to_string(limit)},
+        {store_code,
+         ores::platform::time::datetime::to_iso8601_utc(from),
+         ores::platform::time::datetime::to_iso8601_utc(to)},
         lg(),
         "Reading the measurements of " + store_code);
 
-    std::vector<messaging::store_sample> samples;
-    samples.reserve(rows.size());
+    store_sample_series series;
+    series.from_at = ores::platform::time::datetime::to_iso8601_utc(from);
+    series.to_at = ores::platform::time::datetime::to_iso8601_utc(to);
+    series.samples.reserve(rows.size());
     for (const auto& row : rows) {
         messaging::store_sample sample;
         sample.sampled_at = column(row, 0, "sampled_at");
         sample.size_bytes = to_int64(row.size() > 1 ? row[1] : std::nullopt);
         sample.measure_count = to_int64(row.size() > 2 ? row[2] : std::nullopt);
-        samples.push_back(std::move(sample));
+        series.samples.push_back(std::move(sample));
     }
-    return samples;
+    return series;
 }
 
 messaging::store_bound store_bound_from_row(const std::vector<std::optional<std::string>>& row) {

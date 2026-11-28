@@ -20,19 +20,23 @@
  */
 
 /**
- * One store the installation keeps: its record, its size and growth, the bound
- * that governs it, and the form that changes that bound.
+ * One store the installation keeps, in the two questions a person asks of it.
  *
- * The page is the one a row of the list opens, as the signed-off prototype drew
- * it (doc/prototypes/operations/housekeeping/index.html?variant=A): the list
- * keeps the comparison the person came for, and the page gives one store the room
- * its record, its plot and its bound need.
+ * The Details tab answers what the store is and how it moves: its catalogue row
+ * and the plot of its size over a horizon the person picks. The Bound tab answers
+ * what governs it: the mechanism that removes from it, the last run, and the form
+ * that changes the period.
+ *
+ * The tabs exist because the two questions are asked at different times and the
+ * plot needs the width the form was taking. The prototype
+ * (doc/prototypes/operations/housekeeping/index.html?variant=A) argued the store's
+ * page as one scroll; a plot with axes and a horizon does not fit one.
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router';
-import type { StoreBound } from '@ores/wire-protocol/browser';
+import { STORE_RANGES, type StoreBound, type StoreRange } from '@ores/wire-protocol/browser';
 import { covers, grantedBy } from '../access/catalogue.js';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
@@ -41,19 +45,25 @@ import { AreaTrail } from '../shell/AreaTrail.js';
 import { PATHS, housekeepingStorePath } from '../shell/paths.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { Button, Detail, Field, Input, Notice, Select, Tag } from '../ui/Primitives.js';
+import { PresetBar } from '../ui/Presets.js';
 import { RelativeTime, formatDateTime } from '../ui/Time.js';
-import { Sparkline } from '../ui/Sparkline.js';
+import { TimeChart } from '../ui/TimeChart.js';
 import { toast } from '../ui/Toasts.js';
+import { useTabs } from '../ui/Tabs.js';
 import { GapPanel, type ScreenGap } from './OperationsParts.js';
 import { actionLabel, targetKindName, useHousekeepingStores } from './HousekeepingPage.js';
 import {
-    STORE_SAMPLES_FOR_PLOT,
+    RANGE_WORD,
     formatSize,
     measureUnit,
-    plotPoints,
+    mechanismOf,
+    sizeSeries,
     trendOf,
     verdictOf,
 } from './housekeeping.js';
+
+/** The two questions a store answers, in the order they are asked. */
+const STORE_TABS = ['details', 'bound'] as const;
 
 /** What the page does not show, and the journey that records why. */
 function gapsOf(t: (key: string) => string): readonly ScreenGap[] {
@@ -133,21 +143,49 @@ function StoreRecord({ store }: { readonly store: StoreBound }): ReactNode {
     );
 }
 
-/** What the store holds now, and how it moved over the measurements read. */
+/**
+ * What the store holds now, and how it moved over the horizon the person picked.
+ *
+ * The horizon is asked of the read rather than taken from the clock, so the axis
+ * states the window the installation covered. A store that has never been
+ * measured says so; one whose horizon holds no measurement says that instead, and
+ * names when it was last measured, because "no measurements" and "none in the
+ * last day" are different facts.
+ */
 function StoreSize({ store }: { readonly store: StoreBound }): ReactNode {
-    const { t } = useTranslation();
-    const { language } = useTranslation();
+    const { t, language } = useTranslation();
+    const [range, setRange] = useState<StoreRange>('24h');
     const samples = useQuery({
-        queryKey: ['operations', 'housekeeping', 'samples', store.code],
-        queryFn: () => api.housekeepingSamples(store.code, STORE_SAMPLES_FOR_PLOT),
+        queryKey: ['operations', 'housekeeping', 'samples', store.code, range],
+        queryFn: () => api.housekeepingSamples(store.code, range),
     });
     const unit = measureUnit(store.measure_kind);
-    const points = plotPoints(samples.data?.samples ?? []);
+    const points = sizeSeries(samples.data?.samples ?? []);
     const trend = trendOf(samples.data?.samples ?? []);
+    const from = samples.data?.from_at ?? null;
+    const to = samples.data?.to_at ?? null;
 
     return (
         <section className="card space-y-4 p-4">
-            <h2 className="text-sm font-medium">{t('operations.housekeeping.size.title')}</h2>
+            <header className="flex flex-wrap items-baseline justify-between gap-3">
+                <div className="space-y-1">
+                    <h2 className="text-sm font-medium">
+                        {t('operations.housekeeping.size.title')}
+                    </h2>
+                    <p className="text-xs text-ink-faint">
+                        {t('operations.housekeeping.size.lead')}
+                    </p>
+                </div>
+                <PresetBar
+                    label={t('operations.housekeeping.size.rangeLabel')}
+                    presets={STORE_RANGES}
+                    value={range}
+                    labelOf={(preset) =>
+                        t(`operations.housekeeping.size.ranges.${RANGE_WORD[preset]}`)
+                    }
+                    onChange={setRange}
+                />
+            </header>
             {store.size.sampled_at === null ? (
                 <Notice tone="warn">{t('operations.housekeeping.size.noSample')}</Notice>
             ) : (
@@ -169,40 +207,54 @@ function StoreSize({ store }: { readonly store: StoreBound }): ReactNode {
                             value={formatDateTime(store.size.sampled_at, language)}
                         />
                     </dl>
-                    {samples.isError ? (
-                        <Notice tone="error">{samples.error.message}</Notice>
-                    ) : points.length < 2 ? (
+                    {samples.isError && <Notice tone="error">{samples.error.message}</Notice>}
+                    {samples.isPending && (
+                        <p className="text-sm text-ink-muted">{t('common.loading')}</p>
+                    )}
+                    {from !== null && to !== null && points.length > 1 && (
+                        <TimeChart
+                            window={{ from, to }}
+                            points={points}
+                            format={formatSize}
+                            caption={t('operations.housekeeping.size.plotCaption', {
+                                name: store.display_name,
+                                size: formatSize(store.size.size_bytes),
+                            })}
+                        />
+                    )}
+                    {points.length === 1 && (
                         <p className="text-sm text-ink-muted">
                             {t('operations.housekeeping.size.onePoint')}
                         </p>
-                    ) : (
-                        <div className="space-y-2">
-                            <Sparkline points={points} />
-                            <p className="text-xs text-ink-faint">
-                                {t('operations.housekeeping.size.plot')}
-                            </p>
-                            {trend !== null && (
-                                <p className="text-sm text-ink-muted">
-                                    {t('operations.housekeeping.size.trend', {
-                                        from: formatSize(trend.from),
-                                        to: formatSize(trend.to),
-                                        days: trend.days.toFixed(1),
+                    )}
+                    {samples.data !== undefined && points.length === 0 && (
+                        <p className="text-sm text-ink-muted">
+                            {t('operations.housekeeping.size.noneInWindow')}
+                        </p>
+                    )}
+                    <p className="text-xs text-ink-faint">
+                        {t('operations.housekeeping.size.plot')}
+                    </p>
+                    {trend !== null && (
+                        <p className="text-sm text-ink-muted">
+                            {t('operations.housekeeping.size.trend', {
+                                from: formatSize(trend.from),
+                                to: formatSize(trend.to),
+                                days: trend.days.toFixed(1),
+                            })}
+                            {trend.perWeek !== null && (
+                                <>
+                                    {' · '}
+                                    {t('operations.housekeeping.size.perWeek', {
+                                        rate: formatSize(Math.abs(trend.perWeek)),
+                                        direction:
+                                            trend.perWeek >= 0
+                                                ? t('operations.housekeeping.size.rising')
+                                                : t('operations.housekeeping.size.falling'),
                                     })}
-                                    {trend.perWeek !== null && (
-                                        <>
-                                            {' · '}
-                                            {t('operations.housekeeping.size.perWeek', {
-                                                rate: formatSize(Math.abs(trend.perWeek)),
-                                                direction:
-                                                    trend.perWeek >= 0
-                                                        ? t('operations.housekeeping.size.rising')
-                                                        : t('operations.housekeeping.size.falling'),
-                                            })}
-                                        </>
-                                    )}
-                                </p>
+                                </>
                             )}
-                        </div>
+                        </p>
                     )}
                 </>
             )}
@@ -223,6 +275,7 @@ function StoreBoundBlock({
     const { t } = useTranslation();
     const [editing, setEditing] = useState(false);
     const bound = store.bound;
+    const mechanism = mechanismOf(store);
     /*
      * A store the catalogue states no action for cannot be bounded by a period:
      * the calendar dates need a delete by range, and a form that wrote a period
@@ -242,6 +295,11 @@ function StoreBoundBlock({
                 )}
             </header>
             <BoundVerdict store={store} />
+            {mechanism !== null && (
+                <p className="text-sm text-ink-muted">
+                    {t(`operations.housekeeping.mechanisms.${mechanism}`)}
+                </p>
+            )}
             <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-3">
                 <Detail
                     label={t('operations.housekeeping.bound.fields.action')}
@@ -460,6 +518,11 @@ export function HousekeepingStorePage(): ReactNode {
     const stores = useHousekeepingStores();
     const queries = useQueryClient();
     const mayChange = useMayChangeBound();
+    const { tab, bar } = useTabs({
+        label: t('operations.housekeeping.store.tabs.label'),
+        tabs: STORE_TABS,
+        titleOf: (candidate) => t(`operations.housekeeping.store.tabs.${candidate}`),
+    });
     const store = stores.data?.rows.find((candidate) => candidate.code === code);
 
     const trail = (
@@ -512,17 +575,24 @@ export function HousekeepingStorePage(): ReactNode {
                     </Link>{' '}
                     · {housekeepingStorePath(store.code)}
                 </p>
-                <StoreRecord store={store} />
-                <StoreSize store={store} />
-                <StoreBoundBlock
-                    store={store}
-                    mayChange={mayChange}
-                    onChanged={async () => {
-                        await queries.invalidateQueries({
-                            queryKey: ['operations', 'housekeeping', 'stores'],
-                        });
-                    }}
-                />
+                {bar}
+                {tab === 'details' && (
+                    <>
+                        <StoreRecord store={store} />
+                        <StoreSize store={store} />
+                    </>
+                )}
+                {tab === 'bound' && (
+                    <StoreBoundBlock
+                        store={store}
+                        mayChange={mayChange}
+                        onChanged={async () => {
+                            await queries.invalidateQueries({
+                                queryKey: ['operations', 'housekeeping', 'stores'],
+                            });
+                        }}
+                    />
+                )}
                 <GapPanel gaps={gapsOf(t)} />
             </div>
         </ScreenFrame>

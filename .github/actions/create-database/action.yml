@@ -1,0 +1,31 @@
+# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# yamllint disable rule:line-length
+---
+name: Create the CI database
+description: >-
+  Drop the schema this run found and build it from the tree.
+
+# The environment the previous step wrote names the database, and PGPASSWORD
+# carries the account that may recreate it, so the run rebuilds ores_ci from
+# scratch instead of inheriting whatever a cached image left behind.
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Database
+      shell: bash
+      run: ./projects/ores.compass/compass.sh db recreate -y -D ores_ci

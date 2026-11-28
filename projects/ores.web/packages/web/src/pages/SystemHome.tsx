@@ -34,6 +34,8 @@ import { useTranslation } from '../i18n/Provider.js';
 
 import { BUS_QUERY_KEY, sampleTime } from '../operations/BusPage.js';
 import { GRID_QUERY_KEY } from '../operations/GridPage.js';
+import { useHousekeepingStores } from '../operations/HousekeepingPage.js';
+import { formatSize, summarise } from '../operations/housekeeping.js';
 import {
     DEFAULT_HEALTH_RANGE,
     InstallationFigures,
@@ -93,7 +95,12 @@ function useDashboardData() {
         queryKey: [BUS_QUERY_KEY, BUS_DASHBOARD_RANGE],
         queryFn: () => api.bus(BUS_DASHBOARD_RANGE),
     });
-    return { overview, types, tenantStatuses, health, grid, bus };
+    /*
+     * The housekeeping read is the store list's own query, so the panel and the
+     * screen state the same numbers from one read.
+     */
+    const housekeeping = useHousekeepingStores();
+    return { overview, types, tenantStatuses, health, grid, bus, housekeeping };
 }
 
 type DashboardData = ReturnType<typeof useDashboardData>;
@@ -145,6 +152,35 @@ function gridStatus(data: DashboardData, tr: Translator): PanelStatus {
         : { tone: 'attention', text: plural('home.system.panels.grid.needAttention', offline) };
 }
 
+/**
+ * The housekeeping panel's status: whether any store the installation keeps grows
+ * with nothing to stop it.
+ *
+ * The status reads the count the same way the housekeeping screen does, from
+ * `summarise`, so the two cannot disagree about how many stores are unbounded. A
+ * store nothing measures counts as unbounded there, and it does here.
+ */
+function housekeepingStatus(data: DashboardData, tr: Translator): PanelStatus {
+    const { t, plural } = tr;
+    const view = data.housekeeping.data;
+    if (view === undefined) {
+        return {
+            tone: 'pending',
+            text: t(data.housekeeping.isError ? 'home.system.panels.unread' : 'common.loading'),
+        };
+    }
+    if (view.rows.length === 0) {
+        return { tone: 'quiet', text: t('home.system.panels.housekeeping.noCatalogue') };
+    }
+    const figures = summarise(view.rows);
+    return figures.unbounded === 0
+        ? { tone: 'ok', text: t('home.system.panels.housekeeping.allClear') }
+        : {
+              tone: 'attention',
+              text: plural('home.system.panels.housekeeping.needAttention', figures.unbounded),
+          };
+}
+
 function queueStatus(data: DashboardData, tr: Translator): PanelStatus {
     const { t, plural } = tr;
     const view = data.bus.data;
@@ -178,6 +214,7 @@ export function SystemHome({ name }: { readonly name: string }): ReactNode {
         servicesStatus(data, translator),
         gridStatus(data, translator),
         queueStatus(data, translator),
+        housekeepingStatus(data, translator),
     ];
     const verdict = installationVerdict(statuses.map((status) => status.tone));
 
@@ -224,6 +261,7 @@ function Dashboard({
             <ServicesPanel data={data} translator={translator} />
             <GridPanel data={data} translator={translator} />
             <QueuePanel data={data} translator={translator} />
+            <HousekeepingPanel data={data} translator={translator} />
         </div>
     );
 }
@@ -364,6 +402,64 @@ function GridPanel({ data: reads, translator }: PanelProps): ReactNode {
                                 ? 'bad'
                                 : 'neutral'
                         }
+                    />
+                </div>
+            )}
+        </Panel>
+    );
+}
+
+/**
+ * What the installation keeps, in the numbers the housekeeping screen opens on.
+ *
+ * The panel is the width of the dashboard because the five figures need the room
+ * and because it is the one panel whose news is a count that should reach zero.
+ */
+function HousekeepingPanel({ data: reads, translator }: PanelProps): ReactNode {
+    const { t } = translator;
+    const view = reads.housekeeping.data;
+    const figures = view === undefined ? undefined : summarise(view.rows);
+    const readAt = sampleTime(view?.read_at ?? null);
+
+    return (
+        <Panel
+            title={t('home.system.panels.housekeeping.title')}
+            to="/operations/housekeeping"
+            status={housekeepingStatus(reads, translator)}
+            wide
+            footer={
+                readAt === undefined ? undefined : (
+                    <>
+                        <span>{t('home.system.panels.sampled')}</span>
+                        <span className="font-mono text-ink">{readAt}</span>
+                    </>
+                )
+            }
+        >
+            {figures !== undefined && (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+                    <Metric
+                        value={String(figures.stores)}
+                        label={t('home.system.panels.housekeeping.stores')}
+                    />
+                    <Metric
+                        value={String(figures.bounded)}
+                        label={t('home.system.panels.housekeeping.bounded')}
+                        tone={figures.bounded > 0 ? 'good' : 'neutral'}
+                    />
+                    <Metric
+                        value={String(figures.unbounded)}
+                        label={t('home.system.panels.housekeeping.unbounded')}
+                        tone={figures.unbounded > 0 ? 'bad' : 'good'}
+                    />
+                    <Metric
+                        value={String(figures.unmeasured)}
+                        label={t('home.system.panels.housekeeping.unmeasured')}
+                        tone={figures.unmeasured > 0 ? 'warn' : 'neutral'}
+                    />
+                    <Metric
+                        value={formatSize(figures.bytes)}
+                        label={t('home.system.panels.housekeeping.held')}
                     />
                 </div>
             )}

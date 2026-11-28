@@ -27,6 +27,7 @@
 // an absent one is worth. The tests state a row the way the view does, which is
 // the only way to see that a missing sample does not become a size of zero.
 
+using ores::scheduler::repository::range_hours;
 using ores::scheduler::repository::store_bound_from_row;
 using row_type = std::vector<std::optional<std::string>>;
 
@@ -223,4 +224,16 @@ TEST_CASE("a store no policy bounds opens on the defaults the catalogue ships wi
     CHECK(*bound.bound.policy_description ==
           "A job's folder is scratch once its output is uploaded");
     CHECK_FALSE(bound.bound.bounded_now);
+}
+
+TEST_CASE("a samples read states the hours its range covers", "[repository][bounds]") {
+    CHECK(range_hours("1h") == 1);
+    CHECK(range_hours("24h") == 24);
+    CHECK(range_hours("7d") == 7 * 24);
+
+    // A range nobody stated answers the day, which is the horizon the screen opens on.
+    CHECK(range_hours("") == 24);
+    CHECK(range_hours("all") == 24);
+    // A horizon the screen used to offer answers the day rather than a month.
+    CHECK(range_hours("30d") == 24);
 }

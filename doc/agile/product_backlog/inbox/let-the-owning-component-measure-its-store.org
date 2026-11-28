@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: AB5A72D3-3C4F-4898-81C9-B3FDA3974C16
+:END:
+#+title: Let the owning component measure an object prefix or a host folder
+#+description: The sampler measures only the stores the database can see, so the four stores that live outside a relation read as not measured: compute.job_inputs, compute.job_outputs, compute.node_scratch and compute.package_cache. The object prefixes belong to ores.storage and the folders to the compute wrapper, and neither reports a size. A person opening one of those stores reads that nothing measures it and cannot tell growth from a single sample.
+#+type: capture
+#+level: cross
+#+filetags: :housekeeping:storage:compute:measurement:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Let the component that owns a store report the store's size, and write it as a
+sample the housekeeping screen can plot.
+
+Today =ores_scheduler_sample_retained_stores_fn()= measures only the stores the
+database can see: it reads =pg_total_relation_size= for the two relation shapes,
+and skips every other store. Four of the ten catalogue rows are that other
+shape — =compute.job_inputs= and =compute.job_outputs= are object prefixes, and
+=compute.node_scratch= and =compute.package_cache= are folders on a compute
+host — so they read as not measured, and the screen says so in as many words:
+"Nothing measures this store yet, so its size and its growth are unknown."
+
+The size is knowable where the store lives. =ores.storage= walks its own bucket
+directory, and the compute wrapper walks a node's folder. What is missing is a
+way for either to say what it found and have it land in
+=ores_scheduler_retained_store_samples_tbl= beside the database's own samples.
+
+* Why
+
+A store nobody measures is a store nobody can bound by evidence. The retention
+policies for =compute.job_inputs= and =compute.job_outputs= expire objects by
+age, and no screen can say whether the policy is holding the prefix at a size or
+whether the prefix grows faster than the policy removes. The two folders carry
+the same gap: =compute.package_cache= is bounded by its content keying and its
+size is the whole argument for that design.
+
+The measurement cannot move into the sampler. A listing of one prefix is a read
+of the object store through NATS, paged a hundred keys at a time, and a folder on
+a node is not reachable from the database at all. The sampler would have to ask
+each component for every store on every run.
+
+* References
+
+- The screen that states the gap: =operations.housekeeping.size.noSample= in
+  =projects/ores.web/packages/web/src/i18n/locales/en.ts=, and the "The stores a
+  component owns" panel on the same page.
+- The sampler and what it skips:
+  =projects/ores.sql/create/scheduler/scheduler_store_sampler_create.sql=.
+- The catalogue rows that are unmeasured:
+  =projects/ores.sql/populate/scheduler/scheduler_retained_stores_artefact_populate.sql=.
+- The read that would carry a report: =ores.storage= serves
+  =storage.v1.objects.list= with a size per object, and no read states the size
+  of a prefix.
+- The journey that owns the subject:
+  [[id:F7C1E75E-9F08-437B-80C0-7D50B945CA52][See what the system keeps]].
+
+* See also
+
+- [[id:AB5A72D3-3C4F-4898-81C9-B3FDA3974C16][This capture]] belongs to the
+  housekeeping story's sampling task,
+  [[id:BE55D937-7CC4-4A50-B730-C6C1FEA50D08][Sample the size of every store]],
+  which closed the database half of the problem.

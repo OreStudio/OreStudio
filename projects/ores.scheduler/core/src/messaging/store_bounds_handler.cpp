@@ -110,7 +110,10 @@ void store_bounds_handler::samples(ores::nats::message msg) {
     list_store_samples_response resp;
     try {
         repository::store_bounds_repository repo(ctx);
-        resp.samples = repo.read_samples(request->store_code, request->limit);
+        auto series = repo.read_samples(request->store_code, request->range);
+        resp.samples = std::move(series.samples);
+        resp.from_at = std::move(series.from_at);
+        resp.to_at = std::move(series.to_at);
     } catch (const std::exception& e) {
         ORES_LOG_SEV(store_bounds_handler_lg(), error)
             << "Reading the measurements failed: " << e.what();

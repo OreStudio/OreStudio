@@ -775,15 +775,20 @@ next unit of the scheduler clean-up.
  */
 #+end_src
 
-*** limit
+*** range
 :PROPERTIES:
-:cpp_type: std::uint32_t
-:default:  500
+:cpp_type: std::string
+:default:  "24h"
 :END:
 
 #+begin_src cpp :name comment
 /**
- * @brief How many of the most recent points to return.
+ * @brief How far back the series reaches: =1h=, =24h= or =7d=.
+ *
+ * The screen picks a horizon and not a count of points, because the sampler
+ * writes one point an hour and a count would move the window every time the
+ * sampler's cadence changed. A range the read does not state answers the day,
+ * which is the horizon the screen opens on.
  */
 #+end_src
 
@@ -839,6 +844,31 @@ next unit of the scheduler clean-up.
 :PROPERTIES:
 :cpp_type: std::vector<store_sample>
 :END:
+
+*** from_at
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The instant the window opens, in ISO-8601 UTC.
+ *
+ * The read states its own window so the plot draws the horizon that was asked
+ * for and not the one this browser's clock would have guessed.
+ */
+#+end_src
+
+*** to_at
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The instant the read ran, in ISO-8601 UTC: where the window closes.
+ */
+#+end_src
 
 * See also
 

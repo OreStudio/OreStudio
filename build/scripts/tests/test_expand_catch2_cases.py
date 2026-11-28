@@ -202,6 +202,45 @@ def test_split_writes_one_file_per_subproject(tmp_path):
     assert (tests, declared) == (["ores.loose.tests"], [])
 
 
+def big_results(path, cases):
+    body = "".join(
+        f'<TestCase name="case_{i}" tags="[a]" filename="a.cpp" line="{i}">'
+        f'<OverallResult success="true" skips="0" durationInSeconds="0.1"/>'
+        f'</TestCase>'
+        for i in range(cases))
+    path.write_text(f'<?xml version="1.0"?><Catch2TestRun name="ores.big.tests">'
+                    f'{body}</Catch2TestRun>')
+    return path
+
+
+def test_a_component_larger_than_a_part_is_written_in_parts(tmp_path, monkeypatch):
+    monkeypatch.setattr(expand_catch2_cases, "MAX_CASES_PER_FILE", 2)
+    tree = ctest_xml(("ores.big.tests", "passed",
+                      big_results(tmp_path / "big.xml", 5), "big"),
+                     subprojects=("big",))
+    expand_catch2_cases.expand(tree)
+    files = expand_catch2_cases.split(tree, tmp_path / "split")
+    assert [f.name for f in files] == ["Test-big-1.xml", "Test-big-2.xml",
+                                       "Test-big-3.xml"]
+    counts = [len(list(ET.parse(f).getroot().iterfind("Testing/Test")))
+              for f in files]
+    assert counts == [2, 2, 1]
+    listed = [len(list(ET.parse(f).getroot().iterfind("Testing/TestList/Test")))
+              for f in files]
+    assert listed == counts
+    assert (tmp_path / "split" / "files.txt").read_text().split() == [str(f) for f in files]
+
+
+def test_a_component_within_one_part_keeps_its_name(tmp_path, monkeypatch):
+    monkeypatch.setattr(expand_catch2_cases, "MAX_CASES_PER_FILE", 2)
+    tree = ctest_xml(("ores.demo.tests", "passed",
+                      results_file(tmp_path, ALL_PASS)),
+                     subprojects=("demo",))
+    expand_catch2_cases.expand(tree)
+    files = expand_catch2_cases.split(tree, tmp_path / "split")
+    assert [f.name for f in files] == ["Test-demo.xml"]
+
+
 def test_main_splits_when_asked(tmp_path):
     tree = ctest_xml(("ores.demo.tests", "passed", results_file(tmp_path, ALL_PASS)),
                      subprojects=("demo",))

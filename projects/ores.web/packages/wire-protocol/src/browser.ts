@@ -244,13 +244,14 @@ export {
     storeBoundResultSchema,
     storeBoundsViewSchema,
     storeSamplesViewSchema,
-    STORE_SAMPLES_LIMIT,
+    STORE_RANGES,
 } from './housekeeping.js';
 export type {
     StoreBound,
     StoreBoundResult,
     StoreBoundWrite,
     StoreBoundsView,
+    StoreRange,
     StoreSample,
     StoreSamplesView,
 } from './housekeeping.js';

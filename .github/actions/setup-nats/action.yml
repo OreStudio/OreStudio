@@ -1,0 +1,38 @@
+# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# yamllint disable rule:line-length
+---
+name: Setup NATS server
+description: >-
+  Unpack the vendored nats-server release and put it on PATH.
+
+# Same setup on every CI platform: unpack the vendored nats-server release
+# (external/nats, pinned v2.14.3) and put it on PATH, so every platform runs the
+# same binary instead of its package manager's version -- no brew, no apt, no
+# GitHub download.
+
+runs:
+  using: composite
+  steps:
+    - name: Setup NATS server
+      if: runner.os != 'Windows'
+      shell: bash
+      run: ./build/scripts/setup_nats_server.sh
+
+    - name: Setup NATS server
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: ./build/scripts/setup_nats_server.ps1

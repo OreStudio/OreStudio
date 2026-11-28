@@ -17,7 +17,9 @@ no repeated measurements, because a run has tens of thousands of cases. With
 =--split <dir>=, the script also writes one Test.xml per CDash subproject
 into =<dir>=, each with the Site header and its own Subproject, and lists
 them in =<dir>/files.txt=. One file for every case is too large for CDash
-to process; one file per component is not.
+to process, and so is one file for a whole component: a part holds at most
+=MAX_CASES_PER_FILE= cases, so a part CDash drops costs that many cases and
+not a component's worth.
 
 A suite entry stays as it is when its results cannot account for it: the
 results file is missing, unreadable or older than the run (the binary
@@ -190,6 +192,11 @@ def expand(tree: ET.ElementTree) -> tuple[int, int]:
 
 UNASSIGNED = "unassigned"
 
+#: The most cases one written file holds. CDash drops a part it cannot
+#: process, and a component of some ten thousand cases makes a file of
+#: several megabytes, which it has done.
+MAX_CASES_PER_FILE = 2000
+
 
 def subproject_of(test: ET.Element, labels: dict[str, str]) -> str:
     for label in test.iterfind("Labels/Label"):
@@ -199,7 +206,10 @@ def subproject_of(test: ET.Element, labels: dict[str, str]) -> str:
 
 
 def split(tree: ET.ElementTree, out_dir: Path) -> list[Path]:
-    """Write one Test.xml per subproject; return the files in name order."""
+    """Write a Test.xml per subproject, in parts of MAX_CASES_PER_FILE cases.
+
+    Return the files in name order.
+    """
     site = tree.getroot()
     testing = site.find("Testing")
     if testing is None:
@@ -218,19 +228,24 @@ def split(tree: ET.ElementTree, out_dir: Path) -> list[Path]:
     out_dir.mkdir(parents=True, exist_ok=True)
     files: list[Path] = []
     for name in sorted(groups):
-        out = ET.Element(site.tag, site.attrib)
-        if name in subprojects:
-            out.append(copy.deepcopy(subprojects[name]))
-        part = ET.SubElement(out, "Testing")
-        part.extend(copy.deepcopy(c) for c in head)
-        test_list = ET.SubElement(part, "TestList")
-        for test in groups[name]:
-            ET.SubElement(test_list, "Test").text = test.findtext("FullName")
-        part.extend(groups[name])
-        part.extend(copy.deepcopy(c) for c in tail)
-        path = out_dir / f"Test-{name}.xml"
-        ET.ElementTree(out).write(path, encoding="UTF-8", xml_declaration=True)
-        files.append(path)
+        tests = groups[name]
+        chunks = [tests[i:i + MAX_CASES_PER_FILE]
+                  for i in range(0, len(tests), MAX_CASES_PER_FILE)]
+        for index, chunk in enumerate(chunks, start=1):
+            out = ET.Element(site.tag, site.attrib)
+            if name in subprojects:
+                out.append(copy.deepcopy(subprojects[name]))
+            part = ET.SubElement(out, "Testing")
+            part.extend(copy.deepcopy(c) for c in head)
+            test_list = ET.SubElement(part, "TestList")
+            for test in chunk:
+                ET.SubElement(test_list, "Test").text = test.findtext("FullName")
+            part.extend(chunk)
+            part.extend(copy.deepcopy(c) for c in tail)
+            suffix = f"-{index}" if len(chunks) > 1 else ""
+            path = out_dir / f"Test-{name}{suffix}.xml"
+            ET.ElementTree(out).write(path, encoding="UTF-8", xml_declaration=True)
+            files.append(path)
     (out_dir / "files.txt").write_text("".join(f"{f}\n" for f in files))
     return files
 
@@ -250,7 +265,7 @@ def main(argv: list[str]) -> int:
     print(f"expand_catch2_cases: {suites} suites expanded into {cases} cases")
     if out_dir is not None:
         files = split(tree, out_dir)
-        print(f"expand_catch2_cases: {len(files)} subproject files in {out_dir}")
+        print(f"expand_catch2_cases: {len(files)} test files in {out_dir}")
     return 0
 
 

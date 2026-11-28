@@ -38,55 +38,19 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
-      should_build: ${{ steps.check.outputs.should_build }}
+      should_build: ${{ steps.guard.outputs.should_build }}
     steps:
       - uses: actions/checkout@v7
+        # The guard is a local action, and a local action is read from the
+        # workspace: skip this checkout and the job fails before its first step
+        # with "Can't find 'action.yml'". Only a scheduled run reads the tree,
+        # so the shallow clone of a manual or tag run is wasted work, but the
+        # job cannot tell its action apart without it.
         with:
           fetch-depth: 0
-      - name: Check if code changed since last successful run
-        id: check
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          echo "should_build=true" >> "$GITHUB_OUTPUT"
-          if [[ "${{ github.event_name }}" != "schedule" ]]; then
-            exit 0
-          fi
-          workflow_file=$(basename "${GITHUB_WORKFLOW_REF%%@*}")
-          last_sha=$(gh api \
-            "repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow_file}/runs?branch=main&status=success&per_page=1" \
-            --jq '.workflow_runs[0].head_sha // empty')
-          if [[ -z "$last_sha" ]]; then
-            echo "No prior successful run — building"
-            exit 0
-          fi
-          if [[ "$last_sha" == "$GITHUB_SHA" ]]; then
-            echo "No new commits since last run — skipping"
-            echo "should_build=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          non_doc=$(git diff --name-only "$last_sha" "$GITHUB_SHA" \
-            | { grep -vE '^(doc/|assets/|\.claude/|\.gemini/|projects/ores\.codegen/)' || true; } \
-            | { grep -vE '\.(md|org)$' || true; } \
-            | { grep -vE '^projects/([^/]*/)*modeling/' || true; })
-          if [[ -n "$non_doc" ]]; then
-            echo "Code changes found — building"
-          else
-            echo "Doc-only changes — skipping"
-            echo "should_build=false" >> "$GITHUB_OUTPUT"
-          fi
 
-      - name: Annotate when the build matrix is skipped
-        if: steps.check.outputs.should_build == 'false'
-        run: |
-          {
-            echo "### :warning: macOS build matrix skipped"
-            echo
-            echo "No relevant code changes since the last build — the"
-            echo "\`build\` job did not run. This workflow's overall"
-            echo "**Success** reflects the guard's decision to skip, not"
-            echo "a verified macOS build."
-          } | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: ./.github/actions/relevance-guard
+        id: guard
 
   build:
     needs: guard
@@ -181,89 +145,17 @@ jobs:
           max-size: 2000M
           save: false
 
-      - name: Generate postgres password
-        id: pg_password
-        run: |
-          PG_PASS="$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')"
-          echo "admin_password=${PG_PASS}" >> $GITHUB_OUTPUT
-          echo "PGPASSWORD=${PG_PASS}" >> $GITHUB_ENV
+      - uses: ./.github/actions/setup-postgres
 
-      - name: Setup postgres
-        uses: ikalnytskyi/action-setup-postgres@v9
-        with:
-          username: postgres
-          password: ${{ steps.pg_password.outputs.admin_password }}
-          database: oresdb
-          port: 5432
-          postgres-version: "18"
-        id: postgres
+      - uses: ./.github/actions/install-compass
 
-      - name: Install the pinned compass release
-        # compass env generate writes .env with compass-ng, so every job that
-        # configures an environment needs the build the pin names on PATH.
-        run: |
-          tag=$(sed -n 's/^release: *//p' build/scripts/compass_ng.pin)
-          if [ -z "$tag" ]; then
-              echo "build/scripts/compass_ng.pin names no release" >&2
-              exit 1
-          fi
-          asset="compass-${tag#v}-Darwin-arm64.tar.gz"
-          base="https://github.com/MASD-Project/compass/releases/download/${tag}"
-          cd "$RUNNER_TEMP"
-          curl -fsSLO "${base}/${asset}"
-          curl -fsSLO "${base}/${asset}.sha256"
-          shasum -a 256 -c "${asset}.sha256"
-          tar -xzf "${asset}"
-          dir=$(dirname "$(find "$RUNNER_TEMP/${asset%.tar.gz}" -type f -name compass | head -1)")
-          chmod +x "${dir}/compass"
-          # compass env generate looks for the tool under its release name.
-          ln -sf compass "${dir}/compass-ng"
-          echo "${dir}" >> $GITHUB_PATH
+      - uses: ./.github/actions/init-environment
 
-      - name: Init environment
-        env:
-          ORES_DATABASE_NAME: ores_ci
-          PGPASSWORD: ${{ steps.pg_password.outputs.admin_password }}
-        run: |
-          # The services dial PostgreSQL directly here: no pooler fronts
-          # them, so their port must be PostgreSQL's.
-          ./projects/ores.compass/compass.sh --no-deps env configure -y --no-pooler
-          grep -v '^[[:space:]]*#' .env | grep -v '^[[:space:]]*$' \
-            | grep -v 'ORES_IAM_SERVICE_JWT_PRIVATE_KEY' >> $GITHUB_ENV
+      - uses: ./.github/actions/setup-nats
 
-      - name: Setup NATS server
-        # Same setup on every CI platform: unpack the vendored nats-server
-        # release (external/nats, pinned v2.14.3) and put it on PATH, so
-        # every platform runs the same binary instead of its package
-        # manager's version -- no brew, no apt, no GitHub download.
-        run: ./build/scripts/setup_nats_server.sh
+      - uses: ./.github/actions/start-nats
 
-      - name: Start NATS server
-        # env configure already generated the per-checkout TLS certs and
-        # nats-<label>.conf (compass nats certs / compass nats init) --
-        # start it with that config, matching local dev exactly, so tests
-        # that need a live NATS (eventing integration tests) don't hang or
-        # fail with a connection error.
-        run: |
-          nats_conf="$(ls build/config/nats-*.conf | head -n1)"
-          nats-server --config "$nats_conf" &
-          monitor_port="$(grep '^ORES_NATS_MONITOR_PORT=' .env | cut -d= -f2- | tr -d '"')"
-          ready=false
-          for i in $(seq 1 30); do
-            if curl -sf "http://localhost:${monitor_port}/varz" > /dev/null; then
-              ready=true
-              break
-            fi
-            sleep 1
-          done
-          if [ "$ready" != "true" ]; then
-            echo "::error::nats-server did not become ready within 30s"
-            exit 1
-          fi
-
-      - name: Setup Database
-        run: |
-          ./projects/ores.compass/compass.sh db recreate -y -D ores_ci
+      - uses: ./.github/actions/create-database
 
       - name: get-cmake
         uses: lukka/get-cmake@v4.5.0
@@ -317,19 +209,12 @@ jobs:
     needs: build
     # Attach what passed, so one failed build does not cost the others.
     if: ${{ !cancelled() && github.ref_type == 'tag' && needs.build.result != 'skipped' }}
-    runs-on: ubuntu-24.04
+    # A called workflow can only downgrade the token its caller passes, so the
+    # caller grants what the attachment asks for. Without this line the platform
+    # refuses the whole workflow at start, before any job runs.
     permissions:
       contents: write
       actions: read
-    steps:
-      - name: Download the packages of this run
-        uses: actions/download-artifact@v8
-        with:
-          pattern: macos-*-release-ninja
-          path: packages
-          merge-multiple: true
-
-      - name: Attach the packages to the release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release upload "$GITHUB_REF_NAME" packages/* --clobber --repo "$GITHUB_REPOSITORY"
+    uses: ./.github/workflows/attach-package.yml
+    with:
+      pattern: macos-*-release-ninja

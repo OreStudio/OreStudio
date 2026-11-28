@@ -139,11 +139,13 @@ describe('readStoreBounds', () => {
 });
 
 describe('readStoreSamples', () => {
-    it('names the store and the number of points, and answers them oldest first', async () => {
+    it('names the store and the horizon, and answers the window it covered', async () => {
         const { caller, calls } = callerAnswering({
             'scheduler.v1.store_samples.list': {
                 success: true,
                 message: '',
+                from_at: '2026-11-27 00:00:00.000000Z',
+                to_at: '2026-11-27 04:00:00.000000Z',
                 samples: [
                     {
                         sampled_at: '2026-11-27 02:15:00.000000Z',
@@ -159,10 +161,12 @@ describe('readStoreSamples', () => {
             },
         });
 
-        const samples = await readStoreSamples(caller, 'marketdata.delivery_counts', 168);
+        const series = await readStoreSamples(caller, 'marketdata.delivery_counts', '24h');
 
-        expect(calls[0]?.body).toEqual({ store_code: 'marketdata.delivery_counts', limit: 168 });
-        expect(samples.map((sample) => sample.size_bytes)).toEqual([31000, 32768]);
+        expect(calls[0]?.body).toEqual({ store_code: 'marketdata.delivery_counts', range: '24h' });
+        expect(series.samples.map((sample) => sample.size_bytes)).toEqual([31000, 32768]);
+        expect(series.fromAt).toBe('2026-11-27 00:00:00.000000Z');
+        expect(series.toAt).toBe('2026-11-27 04:00:00.000000Z');
     });
 });
 

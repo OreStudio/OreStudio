@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 8F3C5759-4A02-4ED4-82F7-60C41061DDB6
+:END:
+#+title: The catalogue names ten stores and the database holds 846 relations
+#+description: The housekeeping catalogue names ten stores and the database holds 846 relations in 1672 MB. Twenty-six of those relations are TimescaleDB hypertables and twenty-two of them are not in the catalogue, including the four telemetry tables, the IAM session and token tables, the compute and grid samples, the market fixings and observations, and the scheduler's own job instances and retained-store samples. No Timescale retention job runs on any hypertable, so a table that declares add_retention_policy drops nothing on the Apache licence and the sweep does not visit it either.
+#+type: capture
+#+level: cross
+#+filetags: :housekeeping:retention:sql:telemetry:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Account for every relation the installation holds, and not only the ten the
+catalogue names.
+
+Measured on this environment on 2026-11-28 with =compass sql=:
+
+| What | Figure |
+|------+--------|
+| The database | 1672 MB |
+| Relations in =public= | 846 |
+| Stores in the housekeeping catalogue | 10 |
+| Catalogue stores that are relations | 6 (five chunked tables, one table) |
+| TimescaleDB hypertables | 26 |
+| Hypertables the catalogue does not name | 22 |
+| Bytes the catalogued relations hold | about 380 MB of the 1672 MB |
+
+The twenty-two are not stragglers: they are the four telemetry tables, the IAM
+session and token tables, =ores_compute_grid_samples_tbl= and its node and work
+totals, =ores_marketdata_market_fixings_tbl= and its observations, and the
+scheduler's own job instances and retained-store samples.
+
+The largest relations the catalogue does not name are plain tables rather than
+hypertables, and static: the IP-to-country map holds 96 MB, its DQ artefact
+another 94 MB, the legal entities 41 MB, the images 34 MB and the counterparties
+32 MB.
+
+* Why
+
+The story's acceptance said an installation ships no store without a default
+bound. Ten stores do not make that true: most of the bytes sit in relations no
+catalogue row names, so the screen's "8 of 10 bounded" is a statement about a
+tenth of the database.
+
+Nothing else bounds them. =timescaledb_information.jobs= holds one job on this
+environment and it is the server's own job-history retention: the
+=add_retention_policy= calls in the telemetry and report schemas run only under
+the paid licence and are skipped otherwise, and the sweep visits only the
+catalogue's rows. A hypertable that is not a store is therefore kept for ever.
+
+* References
+
+- The catalogue: =ores_scheduler_retained_stores_tbl=, populated by
+  =projects/ores.sql/populate/scheduler/scheduler_retained_stores_artefact_populate.sql=.
+- The declared-but-unrun retention:
+  =projects/ores.sql/create/telemetry/telemetry_logs_create.sql=, and the same
+  block in the three sample tables and the report tables.
+- The sampler, which sees relations only where a catalogue row points it:
+  =projects/ores.sql/create/scheduler/scheduler_store_sampler_create.sql=.
+- The journey the gap misstates:
+  [[id:F7C1E75E-9F08-437B-80C0-7D50B945CA52][See what the system keeps]].
+
+* See also
+
+- [[id:AB5A72D3-3C4F-4898-81C9-B3FDA3974C16][Let the owning component measure
+  an object prefix or a host folder]] — the same gap for the stores outside the
+  database.

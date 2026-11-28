@@ -398,9 +398,14 @@ struct list_store_samples_request {
      */
     std::string store_code;
     /**
-     * @brief How many of the most recent points to return.
+     * @brief How far back the series reaches: =1h=, =24h= or =7d=.
+     *
+     * The screen picks a horizon and not a count of points, because the sampler
+     * writes one point an hour and a count would move the window every time the
+     * sampler's cadence changed. A range the read does not state answers the day,
+     * which is the horizon the screen opens on.
      */
-    std::uint32_t limit = 500;
+    std::string range = "24h";
 
     friend bool operator==(const list_store_samples_request&,
                            const list_store_samples_request&) = default;
@@ -424,6 +429,17 @@ struct list_store_samples_response {
     bool success = true;
     std::string message;
     std::vector<store_sample> samples;
+    /**
+     * @brief The instant the window opens, in ISO-8601 UTC.
+     *
+     * The read states its own window so the plot draws the horizon that was asked
+     * for and not the one this browser's clock would have guessed.
+     */
+    std::string from_at;
+    /**
+     * @brief The instant the read ran, in ISO-8601 UTC: where the window closes.
+     */
+    std::string to_at;
 
     friend bool operator==(const list_store_samples_response&,
                            const list_store_samples_response&) = default;
@@ -660,7 +676,7 @@ struct list_store_samples_response {
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_store_samples_request>) {
     return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"store_code", &list_store_samples_request::store_code},
-        ::ores::utility::codec::field{"limit", &list_store_samples_request::limit},
+        ::ores::utility::codec::field{"range", &list_store_samples_request::range},
     };
 }
 
@@ -693,6 +709,8 @@ struct list_store_samples_response {
         ::ores::utility::codec::field{"success", &list_store_samples_response::success},
         ::ores::utility::codec::field{"message", &list_store_samples_response::message},
         ::ores::utility::codec::field{"samples", &list_store_samples_response::samples},
+        ::ores::utility::codec::field{"from_at", &list_store_samples_response::from_at},
+        ::ores::utility::codec::field{"to_at", &list_store_samples_response::to_at},
     };
 }
 

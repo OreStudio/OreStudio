@@ -30,16 +30,44 @@
  * bound and is the one case the screen exists to expose.
  */
 
-import type { StoreBound, StoreSample } from '@ores/wire-protocol/browser';
+import type { StoreBound, StoreRange, StoreSample } from '@ores/wire-protocol/browser';
+import type { TimeValue } from '../ui/TimeChart.js';
 
 /**
- * How many of a store's measurements the page plots.
+ * The horizon a range states, in the word the screen labels it with.
  *
- * The sampler writes one point an hour, so a week is 168 points: enough to see a
- * run that happened, a policy that drops and the store that regrows into it, and
- * few enough that the line stays a shape rather than a smear.
+ * The screen offers the same three horizons the read holds, and names them by
+ * what they cover rather than by the code the wire carries. The month is gone
+ * because a store measured hourly over thirty days is a line nobody reads.
  */
-export const STORE_SAMPLES_FOR_PLOT = 168;
+export const RANGE_WORD: Readonly<Record<StoreRange, 'hour' | 'day' | 'week'>> = {
+    '1h': 'hour',
+    '24h': 'day',
+    '7d': 'week',
+};
+
+/**
+ * The mechanisms a bound can name, as the bounds view states them.
+ *
+ * The list is the screen's, not the server's: the wire carries the word as text,
+ * so a mechanism this list does not hold still reaches the screen as its own word
+ * and is described by nothing.
+ */
+export type BoundMechanism = 'sweep' | 'node_release' | 'content_keying' | 'policy_off' | 'none';
+
+const MECHANISMS: readonly BoundMechanism[] = [
+    'sweep',
+    'node_release',
+    'content_keying',
+    'policy_off',
+    'none',
+];
+
+/** The mechanism a store's bound names, or null when nobody has described it. */
+export function mechanismOf(store: StoreBound): BoundMechanism | null {
+    const named = store.bound.mechanism;
+    return (MECHANISMS as readonly string[]).includes(named) ? (named as BoundMechanism) : null;
+}
 
 /** How a store reads at a glance: bounded by something, by its own keying, or not at all. */
 export type BoundVerdict = 'bounded' | 'keyed' | 'unbounded';
@@ -273,7 +301,7 @@ export function trendOf(samples: readonly StoreSample[]): StoreTrend | null {
     };
 }
 
-/** The sizes of one store's series, oldest first, for the plot. */
-export function plotPoints(samples: readonly StoreSample[]): readonly number[] {
-    return samples.map((sample) => sample.size_bytes);
+/** One store's series as a plot reads it: each size beside the instant it was taken. */
+export function sizeSeries(samples: readonly StoreSample[]): readonly TimeValue[] {
+    return samples.map((sample) => ({ at: sample.sampled_at, value: sample.size_bytes }));
 }

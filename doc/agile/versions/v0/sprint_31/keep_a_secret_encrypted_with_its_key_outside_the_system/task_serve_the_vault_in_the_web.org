@@ -33,11 +33,11 @@ shell now serves all of that; the web serves none of it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] |
-| Now          | Scoped; the two questions the plan names are open. |
+| Now          | The gateway lists the secrets and the consumers; the screens come next. |
 | Waiting on   | Nothing.                               |
-| Next         | Settle who seals a browser's value, then the doors. |
+| Next         | Build the vault area in ores.web against the four doors. |
 | Last touched | 2026-11-28                               |
 
 * Acceptance

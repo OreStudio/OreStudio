@@ -26,11 +26,11 @@ Every question the disk asks has a task that states what is missing, the measure
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Nothing.                               |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge the captures, then size the tasks. |
+| Next         | Nothing. |
 | Last touched | 2026-11-28                               |
 
 * Acceptance

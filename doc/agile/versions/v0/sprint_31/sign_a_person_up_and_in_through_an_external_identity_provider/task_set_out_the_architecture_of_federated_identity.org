@@ -8,7 +8,7 @@
 #+filetags: :sign_a_person_up_and_in_through_an_external_identity_provider:sprint_31:v0:
 #+owner: marco
 #+branch: feature/set-out-the-architecture-of-federated-identity
-#+pr:
+#+pr: 5237
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5237][#5237]] | [docs] Set out the architecture of federated identity |
 
 * Review
 

@@ -121,6 +121,8 @@
 #include "ores.shell/app/commands/synthetic_commands.hpp"
 #include "ores.shell/app/commands/trading/trading_commands.hpp"
 #include "ores.shell/app/commands/variability/system_setting_commands.hpp"
+#include "ores.shell/app/commands/vault/consumer_commands.hpp"
+#include "ores.shell/app/commands/vault/secret_commands.hpp"
 #include "ores.shell/app/commands/workflow/workflow_instance_commands.hpp"
 #include "ores.shell/app/commands/workflow/workflow_operations_commands.hpp"
 #include "ores.shell/app/commands/workflow/workflow_run_commands.hpp"
@@ -174,6 +176,8 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     refdata_commands::register_commands(*root, session_);
     analytics_commands::register_commands(*root, session_);
     storage_commands::register_commands(*root, session_);
+    secret_commands::register_commands(*root, session_);
+    consumer_commands::register_commands(*root, session_);
     accounts_commands::register_commands(*root, session_, pagination_);
     system_setting_commands::register_commands(*root, session_);
     concurrency_policy_commands::register_commands(*root, session_);

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keep the installation's secrets — Vault journeys</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  The vault's four screens for the journey
+  doc/knowledge/journeys/vault/journey_keep_the_installations_secrets.org:
+  the secrets list, a secret's record, the consumers, and the uses.
+
+  Each state has its own address:
+    ?screen=secrets&state=empty|full|refused
+    ?screen=secret&state=masked|revealed|refused
+    ?screen=consumers&state=empty|full|refused
+    ?screen=uses&state=empty|full|refused
+    ?screen=states            all of them, listed
+
+  Nothing here reads a service. The operations each screen would call are named
+  in the design note beside this file.
+-->
+
+<header class="proto-head">
+  <nav class="proto-nav" id="nav"></nav>
+  <div class="proto-states" id="states"></div>
+</header>
+
+<main class="proto-body" id="app"></main>
+
+<script src="prototype.js"></script>
+</body>
+</html>

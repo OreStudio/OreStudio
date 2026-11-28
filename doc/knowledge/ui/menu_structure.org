@@ -198,6 +198,25 @@ person has their own requests, so the entry is drawn for everyone.
 Tenants is last because it serves only the installation, and it is drawn only
 for a person who holds the read of the deployment (see [[*The deployment read][The deployment read]]).
 
+*** Secrets
+
+Secrets is its own area. It holds the values the installation keeps for its own
+use and the consumers that may receive them, and its one heavy act is a read: a
+value is masked until a person asks for it, the ask needs
+=vault::secrets:read=, and it is recorded twice. That is a question about the
+tenant's data, not about the process, which is why the area is not a folder
+inside Operations.
+
+It holds four screens: Secrets, the list; a secret's own record with its versions
+and its value; Consumers; and Uses. The last one has no rule and no operation yet,
+so it is drawn as a proposal and the area gains it when both land
+([[id:AB30FE64-5790-4942-A1CB-30CB7AE17530][The vault's uses have no screen and
+no operation]]).
+
+Each card is drawn for a person who holds
+=vault::secrets:read=, and Add, Change, Delete and Reveal are not drawn at all
+for a person who does not hold the write or the read they need.
+
 *** Market data
 
 Market data is its own area. It holds data that changes by the minute: the feeds

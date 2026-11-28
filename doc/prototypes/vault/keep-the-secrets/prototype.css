@@ -1,0 +1,288 @@
+/*
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * PROTOTYPE. Mock data, no backend, no build step. The design note beside this
+ * file names every value that is fake.
+ */
+
+:root {
+    --ink: #1d1d1f;
+    --muted: #6b6b70;
+    --line: #d9d9de;
+    --surface: #ffffff;
+    --page: #f6f6f8;
+    --accent: #1f5fbf;
+    --warn: #8a5a00;
+    --warn-bg: #fff6e0;
+    --stop: #a3242b;
+    --stop-bg: #fdecec;
+    --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink);
+    background: var(--page);
+}
+
+.proto-head {
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.proto-nav a {
+    color: var(--muted);
+    text-decoration: none;
+    margin-right: 1rem;
+    padding: 0.25rem 0;
+    border-bottom: 2px solid transparent;
+}
+
+.proto-nav a[aria-current="page"] {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+}
+
+.proto-states {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.proto-states a {
+    color: var(--muted);
+    text-decoration: none;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.1rem 0.6rem;
+}
+
+.proto-states a[aria-current="true"] {
+    color: var(--surface);
+    background: var(--ink);
+    border-color: var(--ink);
+}
+
+.proto-body {
+    max-width: 68rem;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+.crumbs {
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0.25rem 0 0.25rem;
+}
+
+.lede {
+    margin: 0;
+    color: var(--muted);
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-left: auto;
+}
+
+.title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+button {
+    font: inherit;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.3rem 0.8rem;
+    cursor: pointer;
+}
+
+button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+button.quiet {
+    border-color: transparent;
+    color: var(--muted);
+}
+
+button.danger {
+    color: var(--stop);
+}
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-top: 1rem;
+}
+
+.card h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+}
+
+.meta {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+th, td {
+    text-align: left;
+    padding: 0.5rem 0.5rem;
+    border-bottom: 1px solid var(--line);
+}
+
+th {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-transform: none;
+}
+
+tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+td.name {
+    font-family: var(--mono);
+    font-size: 0.9rem;
+}
+
+.pager {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+}
+
+.value {
+    font-family: var(--mono);
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.value .secret {
+    background: var(--page);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 0.2rem 0.6rem;
+}
+
+.revealed {
+    color: var(--stop);
+}
+
+.note {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--muted);
+}
+
+.empty strong {
+    display: block;
+    color: var(--ink);
+    margin-bottom: 0.25rem;
+}
+
+.access,
+.refused {
+    border-radius: 8px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
+}
+
+.access {
+    background: var(--page);
+    color: var(--muted);
+}
+
+.refused {
+    background: var(--stop-bg);
+    color: var(--stop);
+}
+
+.tabs {
+    display: flex;
+    gap: 1rem;
+    border-bottom: 1px solid var(--line);
+    margin-top: 1rem;
+}
+
+.tabs span {
+    padding: 0.4rem 0;
+    color: var(--muted);
+}
+
+.tabs span.on {
+    color: var(--ink);
+    border-bottom: 2px solid var(--accent);
+}
+
+.badge {
+    font-size: 0.8rem;
+    border-radius: 999px;
+    padding: 0.05rem 0.5rem;
+    background: var(--page);
+    color: var(--muted);
+}
+
+.badge.on {
+    background: #e6f0ff;
+    color: var(--accent);
+}
+
+.states-list {
+    columns: 2;
+    font-family: var(--mono);
+    font-size: 0.9rem;
+}
+
+.states-list a {
+    color: var(--accent);
+}

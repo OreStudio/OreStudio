@@ -40,6 +40,8 @@ area once the owner has signed the journey off.
 
 * Related
 
+- [[file:../../prototypes/vault/keep-the-secrets/index.html][The prototype]] — the four
+  screens of the journey, each state at its own address, with its design note.
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index this
   group belongs to.
 - [[id:F9F1A2BA-94C2-4DAA-8689-F0871AA56801][Secret Custody in the Vault]] — what

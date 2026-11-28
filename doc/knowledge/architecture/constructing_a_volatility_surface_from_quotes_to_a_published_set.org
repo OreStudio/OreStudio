@@ -213,6 +213,31 @@ Surfaces of other asset classes are not changes to this construction: an equity
 or commodity surface quotes by strike or moneyness and an IR cube adds the swap
 tenor, and each is a blueprint and a template of its own over the same steps.
 
+* The parts that are per kind
+
+The construction above is stated for a pair, and most of it is not about a pair at
+all. Its parts divide into those that serve any kind of derived market object and
+those that a kind supplies, and the division is what decides how a second asset
+class reaches the same path.
+
+| Part | Whose it is |
+|------+-------------|
+| The datum schema, the key grammar, the URI and the classification | shared: an instrument type is a row, and a swaption's quote is nameable without a change |
+| The ingest | shared: it parses through the key grammar and writes the series it reads |
+| The publish record, the withdrawal, the approvals and the supersession | shared in shape and keyed to the kind's subject, so a kind copies the record rather than sharing one row shape |
+| The blueprint and its pillars | the kind's: the grid, the convention and the smile model are the shape of the object |
+| The calibration and its checks | the kind's: the model and the arbitrage conditions are the object's own |
+| The rendering the export writes | the kind's: ORE reads a surface from its own block and its own configuration |
+| The state the generator holds | the kind's: a latent surface is the class's own model |
+
+A part belongs to the kind when it holds a coordinate, a model or a convention of
+the asset class, and is shared otherwise. The rule has a consequence for the
+lifecycle. Its steps are shared, and a kind is a declaration of its subject, its
+subject table, its publish kind and its withdrawal kind. A new kind costs an
+enumerator, a switch case and an implementation, and no step of the lifecycle
+changes; the declaration's public comment states less than that, and a planner who
+reads it will size the work wrong.
+
 * Conclusion
 
 In the target state a surface is constructed, not observed, and the construction

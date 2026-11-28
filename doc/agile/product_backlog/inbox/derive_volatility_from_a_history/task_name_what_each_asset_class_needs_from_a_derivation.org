@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/name-what-the-surface-path-assumes
+#+pr: 5223
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
@@ -29,11 +29,11 @@ served now, which wait on a history, and it is the list the engine is built agai
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-28                               |
 
 * Acceptance
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5223][#5223]] | [agile] Survey what the surface path assumes, and what each class needs |
 
 * Review
 
@@ -96,3 +96,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The survey is [[id:F1E7B79A-A96D-47C0-AFFD-330ABF7B9513][What each asset class needs from a
+derivation]], written on 2026-11-28 at =819a1245ee=.
+
+It answers the question the engine cannot: FX and interest rates can be served now, and the other
+five classes fail on a history first -- inflation, equity, commodity and bond on the series alone,
+credit on the series and, for a single name, on a datum. Inflation is the nearest third class, one
+adapter away.
+
+What a class supplies to the engine is on
+[[id:099697A6-8526-48E0-A63D-DB3932C06468][Deriving FX volatility quotes from historical fixings]],
+not here.

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
 #+owner: marco
-#+branch:
-#+pr: 5217
+#+branch: feature/name-what-the-surface-path-assumes
+#+pr: 5223
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
@@ -28,11 +28,11 @@ what it replaces and what it adds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-28                               |
 
 * Acceptance
@@ -40,7 +40,7 @@ what it replaces and what it adds.
 - Every stage is named and given a verdict: the datum and the key grammar, the ingest, the series identity and its classification, the blueprint and its convention, the calibration, the checks, the publish, the withdrawal, the approval kinds, the export and the package, the simulator, and the page.
 - A part named generic names the evidence that it is: the test, the table or the call site. A part named FX only names what a second asset class needs instead.
 - The verdicts are checked against the claim the kind table makes: that a kind is a row and a declaration of its four parts.
-- The page ends with the split of the remaining tasks, and states where the story's scope is decided.
+- The page states which of the story's tasks the verdicts confirm, and any the verdicts change.
 
 * Notes
 
@@ -87,6 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5223][#5223]] | [agile] Survey what the surface path assumes, and what each class needs |
 | [[https://github.com/OreStudio/OreStudio/pull/5217][#5217]] | [agile] Plan the derivation and the view of volatility |
 
 * Review
@@ -96,3 +97,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The survey is [[id:259D09B0-F37F-4ADC-9C71-148634FB2773][What the surface path assumes about FX]],
+written on 2026-11-28 at =819a1245ee=.
+
+It sizes the story's work in one line: eight of the sixteen parts take a swaption quote today, five
+are FX only, one needs a seed row, one is closed in code and one is not built. The verdicts confirm
+the story's tasks and change none of them.
+
+The durable rule the survey produced is on
+[[id:53D14F31-EE32-493E-BBEB-140AA4906BE4][Constructing a volatility surface from quotes to a
+published set]], not here.

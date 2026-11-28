@@ -76,6 +76,37 @@ service rather than through the ingest, whose age gate admits the current day on
 The quotes it sends as ticks are the current day's, so a subscriber sees the
 same values the series keeps.
 
+** What a class supplies to the measurement
+
+A volatility is measured from a history of the thing it describes, and the
+measurement is the same work in every asset class: a window as long as the pillar,
+the moments of a return series, a level scaled for the volatility risk premium no
+free source publishes, a shape shrunk toward a prior, and the reach the sample
+supports. =volatility_measurement= in =ores.analytics.quant= holds that work, and
+the derived source above is one of its callers.
+
+A class supplies three things, and past them the engine names no asset class.
+
+| Input | What it states | FX, as the class that exists today |
+|-------+----------------+------------------------------------|
+| The transform | how a level series becomes returns | the change of the logarithm of the pair's spot |
+| The coordinates | what names one quote | a pair, an expiry and a delta label |
+| The smile model | how a level and a shape become quotes | the Backus, Foresi, Li and Wu smile, in the pair's convention |
+
+The transform is an argument of the function that builds the returns and never a
+setting, because a caller that states a transform the measurement does not use has
+described work it did not do. A series whose level keeps a sign takes the
+difference of its logarithms; a series that may cross zero takes the difference of
+its levels, so a rate and a spread are measured in their own units while a price
+is measured as a return. A level that is not positive is no observation of a
+log-return series, and the return spans the gap rather than reading a substituted
+value.
+
+The window rule is the engine's, so the reach a source reports and the level it
+reads cannot disagree. The method and the version are the class's, because a
+different computation is a different method; a stored series states the method
+that wrote it.
+
 ** Its own identity
 
 A derived quote is the output of our computation, and the system presents it as

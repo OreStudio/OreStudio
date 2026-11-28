@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: B06E240E-D25A-4E31-B602-7259279F2B20
+:END:
+#+title: Share the CI setup across the platform workflows
+#+description: Census of the duplication between the platform workflows, the sharing mechanisms GitHub Actions offers, and the structure that fits.
+#+type: capture
+#+level: cross
+#+filetags: :ci:github:workflows:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The four workflows that build and test the tree — =nightly-linux=,
+=continuous-linux=, =nightly-macos= and =nightly-windows= — carry the same setup
+steps in four copies. Move the step groups into composite actions, and the leg
+itself into one reusable workflow, so a change to the setup lands once and not
+once per operating system.
+
+* Why
+
+Every CI fix this week had to be reasoned about in more than one file, and two
+of them had to be fixed twice. A change to how the pinned compass release is
+unpacked, how the test results are split, or how the cache is saved is not a
+change to Linux, or to Windows: it is a change to how a leg is prepared, and it
+should have one home.
+
+The test, split and submit logic already has one home, and it is not YAML: it
+lives in =CTest.cmake= and =build/scripts/expand_catch2_cases.py=. That is why
+today's splitting fix reached every leg at once. The YAML is the part that has
+not caught up.
+
+* Census
+
+Measured at commit =a50053=, with =yaml.safe_load= over =.github/workflows/*.yml=.
+
+| Measure | Value |
+|---------+-------|
+| Workflows | 19 |
+| Lines of YAML | 3,336 |
+| Lines in the four build workflows | 1,950 (58%) |
+| Run steps | 143 |
+| Distinct run-step bodies | 97 |
+| Bodies shared by two or more workflows | 25 |
+| Lines inside run blocks | 643 |
+| Those lines that repeat another workflow's block | 306 (48%) |
+
+The largest repeats, by lines wasted:
+
+| Block | Lines | Copies |
+|-------+-------+--------|
+| =Check if code changed since last successful run= | 27 | 3 |
+| =Make room in the repository cache= | 49 | 2 |
+| =Start NATS server= | 15 | 4 |
+| =Install the pinned compass release= | 17 | 3 |
+| =Init environment= | 5 | 5 |
+
+The cache dance alone — restore, make room, stop, save, check, wait, save
+again, verify and prune — is 99 lines, copied in both Linux workflows.
+
+Of the 18 to 32 steps in each build job, 10 appear in all four: cache vcpkg,
+generate the postgres password, init the environment, install compass, run
+CTest, set up and start NATS, set up the database, and the sccache statistics.
+
+What genuinely differs by operating system is small and can be named:
+
+- Linux: the container image, =Trust the workspace=, =Point the caches at the
+  container workspace=, =Use clang for the C ports=, the staged images.
+- macOS: =Free disk space=, =Select Xcode 26=, =Report the C++ library features=,
+  and the postgres action.
+- Windows: NSIS, the developer command prompt, the clang Visual Studio ships,
+  the WiX log.
+
+* What GitHub Actions offers
+
+Two mechanisms, and they are not interchangeable.
+
+**Composite action** — =action.yml= in a directory under =.github/actions=,
+called with =uses: ./.github/actions/<name>=. It is a list of steps that run
+inside the caller's job, on the caller's runner, with the caller's workspace and
+environment. It cannot choose =runs-on=, cannot carry a =strategy= or a matrix,
+and cannot contain another workflow. Every step inside it must state its own
+=shell=, because =defaults= does not reach into it. Secrets arrive as inputs.
+
+**Reusable workflow** — a workflow with =on: workflow_call=, called at job level
+with =uses: ./.github/workflows/<name>.yml=. It carries its own =runs-on=,
+timeout, matrix and jobs. The caller does not hand it its =env=: inputs and
+=secrets: inherit= are the channel. It can call further reusable workflows, to a
+depth of four.
+
+The idiomatic split follows from the shapes: a **leg** is a job, so it is a
+reusable workflow; a **step group** is not a job, so it is a composite action.
+
+* Shape proposed
+
+#+begin_src text
+.github/
+  actions/
+    install-compass/action.yml      tar.gz on Linux and macOS, zip on Windows
+    start-nats/action.yml           fetch, configure, start
+    setup-database/action.yml       password, postgres, create the database
+    init-environment/action.yml    compass env configure, .env
+    save-sccache/action.yml         the whole save, verify and prune dance
+    check-changes/action.yml        the guard both Linux workflows carry
+  workflows/
+    build-leg.yml                   workflow_call: one leg
+    nightly-linux.yml               guard, matrix, call build-leg
+    continuous-linux.yml            guard, matrix, call build-leg
+    nightly-macos.yml               call build-leg
+    nightly-windows.yml             call build-leg
+#+end_src
+
+The caller keeps what is its own: the trigger, the guard, the matrix, and the
+publishing jobs. Everything between =checkout= and =Run CTest workflow= moves
+into =build-leg.yml=, with the OS branches inside the composites rather than
+inside the leg.
+
+* Phases
+
+1. =install-compass= as a composite. It is the step that broke twice this week,
+   and it is the clearest demonstration: one file, three OS branches.
+2. =start-nats=, =setup-database= and =init-environment= composites.
+3. =save-sccache= composite, retiring 99 duplicated lines per Linux workflow.
+4. =build-leg.yml=, with the four callers reduced to trigger, guard, matrix and
+   call.
+5. =check-changes= composite and =attach-package= workflow, which the same four
+   files repeat.
+
+Each phase is a morning's work and lands behind a nightly, in that order, so a
+regression names one phase.
+
+* Risks and constraints
+
+- Composite actions must state =shell= on every step: the steps here are bash
+  on all three platforms, and =defaults.run.shell= does not apply.
+- Job-level =env= reaches composite steps but not a called workflow; the leg
+  takes its differences as inputs.
+- The matrix stays in the caller, because =runs-on= is the caller's choice.
+- Cache keys already include the platform; they move unchanged.
+- A local action needs the repository checked out first, which every leg does.
+
+* References
+
+- [[id:1E08BE17-D216-4CE6-8EE3-BE761DB9D551][Prebuild the CI image]]
+- [[id:E3BF90FE-43DF-4A30-9F2C-FF5E20128C88][Move codegen and the gates to compass-ng]]
+- =.github/workflows/nightly-linux.yml=, =continuous-linux.yml=,
+  =nightly-macos.yml=, =nightly-windows.yml=
+- =CTest.cmake= and =build/scripts/expand_catch2_cases.py=, the logic that is
+  already shared
+
+* See also
+
+- [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]]

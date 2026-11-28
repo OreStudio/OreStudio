@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: B52EA22E-8C3E-4E25-AA60-797B369175E0
+:END:
+#+title: Task: Give the derivation one shape for every class
+#+description: One descriptor and one module per class, so the emitter and the page never branch on it.
+#+type: task
+#+level: s1
+#+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A class is a descriptor and a module behind it, so the emitter, the batch runner and the page are
+written once. A second class is a descriptor, a module and its note, and nothing else changes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- A derivation kind is a descriptor and a module. The descriptor states the method and its version, the transform, the coordinates a quote is named by, the smile model, the projection and the method note.
+- The emitter, the batch runner and the page take the descriptor and never branch on the asset class. A class with no descriptor cannot be derived, and the refusal names the piece it lacks.
+- The FX derivation and the interest rate derivation both register a descriptor, and neither is special-cased in the runner, the emitter or the page.
+- Adding a class is a descriptor and a module, and the task measures the pattern with two numbers: the files outside the class's own module that name it, and the places that branch on it. Both are counted before and after, and neither grows with the class.
+- The pattern does not pretend the methodology is shared: each module keeps its own projection and its own smile, and the descriptor only says which they are.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The lift merged as =f306a1152c= cut the engine where the class stops being named, with three parameters: the transform, the coordinates and the smile model. This task makes those three a declared shape rather than a convention each caller keeps.
+- The stored method and version already exist as an identity for a series; the descriptor is where the emitter reads them, so the two cannot disagree.
+- The FX derivation is the first descriptor to write, because it exists and its tests pin its numbers. A pattern with one implementation behind it is a guess, so the interest rate descriptor is written in the same task and the pattern is stated only when both fit.
+* Test Scenarios
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

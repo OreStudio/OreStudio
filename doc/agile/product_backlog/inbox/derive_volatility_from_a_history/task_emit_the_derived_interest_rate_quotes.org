@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 74CAFA8B-016A-4775-A7AD-0503F82FEB9B
+:END:
+#+title: Task: Emit the derived interest rate quotes
+#+description: The adapter that stores the derived quotes under orestudio, stamped and internal.
+#+type: task
+#+level: s1
+#+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The derived interest rate quotes exist in the store, under the producer =orestudio=, stamped with the
+method and the version that wrote them, and held internal: no non-system party reads them and no
+meter counts them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- The adapter reads each currency's term histories, calls the batch derivation once over all of them, and writes one quote per pillar and per strike of the ladder, so the strike axis is emitted and the cube has a producer.
+- Every series it writes states the method and the version that computed it, and every value names the series, the window and the model it read, so a stored value says how it was made without reading the code.
+- The quotes are internal: a non-system party cannot read one, and no meter counts one. The refusal and the read are both stated in the task, not left to the entitlement layer to imply.
+- A currency or term with no history is refused by name, with the series it lacks, and the rest of the run continues.
+- The run is idempotent: a second run over the same histories writes the same series and the same observations, and a day already written is not written again.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The emitter is the interest rate counterpart of =derived_fx_vol_adapter= and its feed, and it is built on the descriptor of the pattern task and the batch of the pass task, so it names no asset class.
+- The producer is =orestudio=, the producer of the platform's own arithmetic, and it replaces the mechanism-named =derived= for this class. The catalogue row for =derived= is FX-named and is renamed when that class moves.
+- Internal standing is the story's decision: stored, versioned, visible to the system tenant and the debugger, never entitled to a non-system party, never metered. If the entitlement layer cannot express it yet, the task states what it does instead and records the gap rather than widening a read.
+* Test Scenarios
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

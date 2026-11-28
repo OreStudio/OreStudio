@@ -49,6 +49,7 @@ set(files
     "gjr_garch_variance_process_tests.cpp"
     "heath_jarrow_morton_process_tests.cpp"
     "hull_white_process_tests.cpp"
+    "ir_vol_derivation_tests.cpp"
     "keyed_brownian_path_tests.cpp"
     "latent_market_config_tests.cpp"
     "latent_market_tests.cpp"

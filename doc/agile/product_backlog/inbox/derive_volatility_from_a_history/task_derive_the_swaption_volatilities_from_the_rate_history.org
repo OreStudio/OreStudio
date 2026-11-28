@@ -7,9 +7,9 @@
 #+level: s1
 #+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
 #+owner: marco
-#+branch:
-#+pr:
-#+blocked_on:
+#+branch: feature/derive-the-swaption-volatilities
+#+pr: 5229
+#+blocked_on: review
 #+blocked_since:
 #+created: 2026-11-28
 #+updated: 2026-11-28
@@ -30,11 +30,11 @@ coordinates and the smile model. The values are the platform's own arithmetic, p
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | In review on PR #5229: the derivation, with the emission in its own task. |
+| Waiting on   | review                                 |
+| Next         | The review of PR #5229.                |
 | Last touched | 2026-11-28                               |
 
 * Acceptance
@@ -45,20 +45,27 @@ coordinates and the smile model. The values are the platform's own arithmetic, p
 - The level is a realized volatility in basis points a year, times an authored multiplier, and the multiplier is data and not a constant in the code.
 - The projection to an expiry and a term is the closed form of the short-rate model the currency's curve runs. The derivation names the model and refuses a process with no closed form instead of approximating it.
 - The smile across strikes is a parametric model over the shape of the same returns, and the derivation names the model and its parameters.
-- Every value carries the method and the version that computed it, and is stored under =orestudio= with internal standing: no non-system party reads it and no meter counts it.
-
-* Notes
-
-- The series: the overnight fixing history for the short end, and the history of the term's own rate for a term. A term the curves do not carry is refused, never interpolated from the short end.
-- The pieces the engine reuses: =fx_derivation_window=, the moments and the shrink to the prior, =level_multiplier=, the reach, and the method and version a series is stamped with.
-- The seeded curves carry a per-currency =kappa= and =sigma= calibrated to the public rates (=synthetic_ir_curve_generation_configs=). The derivation reads the history; the process is what carries the measurement across expiry and term.
-- The smokehouse package carries 520 =GBP-LIBOR-12M= fixings, which is the kind of history a term reads, and the public overnight fixings give the short end.
+- Every value states the model that projected it and the parameters the smile was read from, so a value says how it was made. The stamp of the method and the version on the series, and the internal standing, are the emitter's task, because a value cannot be stored before there is something to store it in.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The task is the derivation alone: a rate history and a model's pillars to ATM normal volatilities
+and a smile, with no store and no feed. The emission is a task of its own, because it must be built
+on the pattern that declares a class and on the batch that derives a whole class at once; building
+it before either would mean writing the interest rate emitter twice.
+
+The derivation is cut where the measurement stops. =ir_vol_derivation= holds three things, and none
+of them is a measurement: the projection, the smile, and the matrix that reads each expiry through
+the engine. The projection is a product of two closed-form factors -- the variance a one-factor
+Gaussian short rate accumulates over the option's life, and the damping a swap's tenor imposes by
+averaging that rate over its own length -- and it is read through its driftless limit rather than
+refused when a curve runs no mean reversion. A process this formula is not (Cox-Ingersoll-Ross, a
+two-factor Gaussian, Black-Karasinski) is refused by name, because approximating it with the wrong
+formula would produce a number nobody could audit.
+
+The smile claims only what the shape supports: the first-order Gram-Charlier slope, the skewness
+over six, in the standardised strike. It fits no curvature, and the header says so, because a smile
+that pretends to a convexity it does not fit is worse than a line that admits it is one.
 
 * Measurements
 
@@ -72,9 +79,33 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Quant suite, cases | 773 | =./build/output/linux-clang-release-ninja/publish/bin/ores.analytics.quant.tests= | ff4e275f73 |
+| Quant suite, assertions | 2277009 | the same | ff4e275f73 |
+| Derivation cases added | 8 | =ores.analytics.quant.tests "[ir_vol_derivation]"= | ff4e275f73 |
+| Build, quant tests | 1m 24s | =compass build ores.analytics.quant.tests= | ff4e275f73 |
 
 * Notes
+
+- The projection reads the model's mean reversion and the pillar's two lengths, and nothing else. The
+  level is what the measurement read, so the model's volatility and the history's level are one
+  number stated twice.
+- The driftless limit is =sqrt(T)=, read where the mean reversion lies between zero and 1e-8. A
+  negative mean reversion is refused: the expression is continuous through it, but a rate that
+  diverges from its target is not a model this platform projects through.
+- The projection is the bond-option approximation, and the page says so. Its driftless limit is the
+  short rate's spread, not the tenor-averaged rate's, so a long tenor is understated where mean
+  reversion is small.
+- A pillar the sample does not cover is refused alone and states that the sample is shorter than the
+  window; the rest of the ladder stands.
+- The matrix is in whatever unit the caller keeps its changes in, so the store's basis points are the
+  caller's to state. The engine does not convert between units.
+- =latent_market_tests.cpp= carried an undeclared =math= alias that another file in its unity batch
+  happened to provide. The new test file changed the batching and the alias went missing, so the
+  file now states it.
+- The series: the overnight fixing history for the short end, and the history of the term's own rate for a term. A term the curves do not carry is refused, never interpolated from the short end.
+- The pieces the engine reuses: =fx_derivation_window=, the moments and the shrink to the prior, =level_multiplier=, the reach, and the method and version a series is stamped with.
+- The seeded curves carry a per-currency =kappa= and =sigma= calibrated to the public rates (=synthetic_ir_curve_generation_configs=). The derivation reads the history; the process is what carries the measurement across expiry and term.
+- The smokehouse package carries 520 =GBP-LIBOR-12M= fixings, which is the kind of history a term reads, and the public overnight fixings give the short end.
 
 * Test Scenarios
 
@@ -91,7 +122,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5229][#5229]] | [quant] Project a rate history to swaption volatilities |
 
 * Review
 
@@ -100,3 +131,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Committed at =ff4e275f73=, then extended with the arc's pattern work. =ir_vol_derivation= projects
+a term's measured level to a swaption's ATM normal volatility, states the smile the return shape
+supports, and reads a term's matrix over an expiry ladder through the measurement engine.
+
+The emission moved to [[id:74CAFA8B-016A-4775-A7AD-0503F82FEB9B][Emit the derived interest rate
+quotes]] when the review of the arc asked for one shape across classes and a batch over every
+series. Building the adapter here would have written it twice.

@@ -54,6 +54,8 @@ using ores::analytics::quant::math::series_key;
 using ores::analytics::quant::math::standard_normal_at;
 using ores::analytics::quant::service::ornstein_uhlenbeck_process;
 
+namespace math = ores::analytics::quant::math;
+
 namespace {
 
 constexpr double latent_hour = 3600.0;

@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :dq:sql:web:coverage:sprint_31:v0:show_and_drive_the_dq_pipeline:
 #+owner: marco
-#+branch:
+#+branch: feature/see-the-rows-a-dataset-has-staged
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-26
-#+updated: 2026-11-26
+#+updated: 2026-11-28
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,45 +20,80 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A dataset's page gains a Contents view: the rows its artefact table holds, paged,
-so a person reads the data a publish would write instead of trusting a count of
-it. The Qt Data Librarian never offered this: it read a dataset's own row and its
-metadata, and left the staged rows to psql.
+A dataset's page gains a Contents view: the tables its artefact type names, each
+with its own columns and its own staged count, and the rows of whichever table a
+person opens. It answers the question the coverage screen raises but cannot
+settle. A member says "512,186 rows staged", and a person who has never seen one
+of those rows cannot tell a correct catalogue from a plausible one.
 
-The view answers the question the coverage screen raises but cannot settle. A
-member says "512,186 rows staged", and a person who has never seen one of those
-rows cannot tell a correct catalogue from a plausible one.
+The view is a list of tables rather than one grid, because a dataset does not sit
+in one table: its artefact type names a table or a family of them — =conventions=
+names thirty-four — and every family carries its own columns. The Qt Data
+Librarian never offered either: it read a dataset's own row and its metadata, and
+left the staged rows to psql.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
-| Now          | Not yet started.                       |
+| Now          | Built and verified end to end; the gate and the PR are next. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-26                               |
+| Next         | Run the check gate, then raise the PR. |
+| Last touched | 2026-11-28                             |
 
 * Acceptance
 
-- A read over the bus answers the rows of one dataset's artefact table, paged,
-  with the dataset named rather than the table: the caller does not know, and must
-  not need to know, that a dataset's rows live in =ores_<artefact type>_artefact_tbl=.
-- The read states the columns it answers as well as the rows, because every
-  artefact family has its own columns and the screen cannot know them.
-- The dataset's page draws them as a table with that heading, paged, so a family
-  of half a million rows reads like one of twelve.
+- A read over the bus answers the tables one dataset stages into, in its
+  artefact type's own order, each with its own columns and the rows it holds for
+  the dataset. The caller names the dataset, never the tables.
+- The same read answers one page of one table's rows when a table is named, with
+  the columns the rows carry, because every artefact family carries different
+  ones and the screen cannot know them in advance.
+- The table is checked against the dataset's own artefact type, so one generic
+  read serves every family and a caller cannot read another family's rows.
+- The rows state neither =dataset_id= nor =tenant_id=: the request already states
+  both, and a screen that drew them would report the row's bookkeeping, not its
+  content.
+- The dataset's page draws the Contents tab as a list of tables, each with its
+  columns and staged count, and opening one table draws its rows under the
+  columns' own names. Paging is stated: how many of how many the page holds.
 - The view is a read. Changing a row is
   [[id:88F9E5B4-20FF-4EEC-B8A0-97B35970E120][its own task]].
-- A test reads the rows of a seeded dataset and asserts a known row and its
-  column names.
+- A test reads the contents of a seeded dataset and asserts a table, its columns
+  and a known row.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The shape of the answer was the hard part and the prototype settled it before any
+code: a list of the family's tables, then the rows of the one opened. The
+prototype and its sign off are in
+[[file:doc/prototypes/dq/reference-data-coverage.org][the coverage prototype note]].
+
+1. The store reads. Two functions beside the DQ roster, because that file already
+   owns the discovery functions and their grants:
+   - =ores_dq_dataset_tables_fn(p_dataset_code)= answers the family's tables with
+     =information_schema='s columns, minus the two every family shares, and one
+     count per table against the dataset's own id. A family's sum cannot say
+     which table is empty, which is the reason the count is per table.
+   - =ores_dq_dataset_rows_fn(p_dataset_code, p_table_name, p_limit, p_offset)=
+     answers ={columns, rows, total}= as JSON. It resolves the dataset's artefact
+     type and refuses any table the family does not name, so the read is one
+     generic function rather than thirty-four of them. The rows drop
+     =dataset_id= and =tenant_id=.
+2. The operation. =dq.v1.ops.dataset_contents= is declared in a model so both
+   languages get the request and the response from one statement: tables as
+   messages, rows as JSON.
+3. The service and the handler. =publish_service::read_dataset_contents= wraps
+   both functions and turns the store's ={error}= answer into a failed response;
+   =dataset_contents_handler= owns the =dq::datasets:read= gate.
+4. The route. =GET /api/v1/dq/dataset_contents= forwards the named dataset, the
+   optional table and the page.
+5. The screen. A Contents tab between Publications and History, holding the open
+   table in the address so a link reopens the rows and Back returns to the list.
+6. Tests: a pgTAP suite for the two functions and their refusals, a handler suite
+   through the bus, and the dataset page's tests for both the list and the rows.
 
 * Measurements
 
@@ -72,7 +107,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Tables a dataset stages into | 34 for =refdata.conventions= | =select count(*) from ores_dq_dataset_tables_fn('refdata.conventions')= | 60e8f51364 |
+| Rows in the first of them | 1,040 | =select staged_count from ores_dq_dataset_tables_fn('refdata.conventions') limit 1= | 60e8f51364 |
+| pgTAP assertions | 8 | =pg_prove -d <db> test/dq_dataset_contents_test.sql= | 60e8f51364 |
+| Handler assertions | 166 in 4 cases | =ores.dq.core.tests "[contents]"= | 60e8f51364 |
 
 * Notes
 

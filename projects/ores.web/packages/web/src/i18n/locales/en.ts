@@ -8586,7 +8586,16 @@ export const en: SourceCatalogue = {
             tabs: {
                 details: 'Details',
                 publications: 'Publications',
+                contents: 'Contents',
             },
+            contentsTitle: 'Contents',
+            contentsLead:
+                'The tables this dataset stages into: {count} of them. A dataset names one artefact type, and the type names a table or a family of them, so each table carries its own columns. Open one to read its rows.',
+            table: 'Table',
+            columns: 'Columns',
+            allTables: 'All tables',
+            rowsLead: 'Showing {shown} of {count} rows staged for {code}.',
+            rowsNone: 'This table holds no row for {code}.',
             level: '{level} level',
             name: 'Name',
             code: 'Code',

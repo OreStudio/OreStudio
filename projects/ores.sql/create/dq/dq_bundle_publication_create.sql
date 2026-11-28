@@ -435,8 +435,11 @@ begin
     execute format('select count(*) from %I where dataset_id = $1', p_table_name)
         into v_total using v_dataset_id;
 
+    -- The two columns every family shares are dropped from the rows too: they
+    -- say which dataset and tenant wrote a row, and the request states both.
     execute format(
-        'select coalesce(jsonb_agg(to_jsonb(t)), ''[]''::jsonb) from ('
+        'select coalesce(jsonb_agg(to_jsonb(t) - ''dataset_id'' - ''tenant_id''), ''[]''::jsonb) '
+        'from ('
         '  select * from %I where dataset_id = $1 order by 1 limit $2 offset $3'
         ') t', p_table_name)
         into v_rows using v_dataset_id, greatest(1, least(coalesce(p_limit, 50), 200)),

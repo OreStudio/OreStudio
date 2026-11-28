@@ -49,6 +49,8 @@ function member(code: string, extra: Record<string, unknown> = {}) {
     };
 }
 
+const TABLE = 'dq_currencies_artefact_tbl';
+
 const WORLD: readonly BundleRosterBundle[] = [
     {
         code: 'world',
@@ -65,10 +67,18 @@ function render(
     path: string,
     code = 'iso.currencies',
     runs: readonly unknown[] = [],
+    tables: readonly unknown[] = [],
+    page: unknown = null,
 ): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['dq-roster', 'dataset', code], roster);
     client.setQueryData(['dq-publications', code], runs);
+    if (tables.length > 0) {
+        client.setQueryData(['dq-tables', code], tables);
+    }
+    if (page !== null) {
+        client.setQueryData(['dq-rows', code, TABLE], page);
+    }
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -140,6 +150,68 @@ describe('the dataset page', () => {
         expect(html).toContain('tenant_admin');
         expect(html).toContain('Published with warnings');
         expect(html).toContain('2 row(s) were skipped');
+    });
+
+    it('lists the tables the dataset stages into, with their columns and counts', () => {
+        const html = render(
+            WORLD,
+            '/data-quality/datasets/iso.currencies?tab=contents',
+            'iso.currencies',
+            [],
+            [
+                {
+                    table_name: 'dq_currencies_artefact_tbl',
+                    display_order: 1,
+                    columns: 'iso_code, numeric_code, name',
+                    staged_count: 160,
+                },
+                {
+                    table_name: 'dq_currency_aliases_artefact_tbl',
+                    display_order: 2,
+                    columns: 'iso_code, alias, locale',
+                    staged_count: 12,
+                },
+            ],
+        );
+
+        // The artefact type is the family's name, so the list states it once.
+        expect(html).toContain('currencies');
+        expect(html).toContain('dq_currencies_artefact_tbl');
+        expect(html).toContain('iso_code, numeric_code, name');
+        expect(html).toContain('dq_currency_aliases_artefact_tbl');
+        expect(html).toContain('12');
+    });
+
+    it("draws one table's rows with the columns the rows carry", () => {
+        const html = render(
+            WORLD,
+            `/data-quality/datasets/iso.currencies?tab=contents&table=${TABLE}`,
+            'iso.currencies',
+            [],
+            [
+                {
+                    table_name: TABLE,
+                    display_order: 1,
+                    columns: 'iso_code, name',
+                    staged_count: 160,
+                },
+            ],
+            {
+                columns: [
+                    { name: 'iso_code', type: 'text' },
+                    { name: 'name', type: 'text' },
+                ],
+                rows: [
+                    { iso_code: 'GBP', name: 'Pound Sterling' },
+                    { iso_code: 'USD', name: 'US Dollar' },
+                ],
+                total: 160,
+            },
+        );
+
+        expect(html).toContain('GBP');
+        expect(html).toContain('Pound Sterling');
+        expect(html).toContain('Showing 2 of 160 rows staged for iso.currencies.');
     });
 
     it('says so when no bundle carries the dataset', () => {

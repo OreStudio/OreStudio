@@ -20,12 +20,20 @@
 
 import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { useParams } from 'react-router';
+import { useParams, useSearchParams } from 'react-router';
 import type {
     BundleRosterBundle,
     BundleRosterMember,
 } from '@ores/wire-protocol/generated/dq/protocol/bundle_roster_protocol';
-import { readBundleRoster, readDatasetPublications, reasonOf } from '../api/dq.js';
+import {
+    readBundleRoster,
+    readDatasetPublications,
+    readDatasetRows,
+    readDatasetTables,
+    reasonOf,
+    type DatasetRowsPage,
+} from '../api/dq.js';
+import type { DatasetTable } from '@ores/wire-protocol/generated/dq/protocol/dataset_contents_protocol';
 import { OWNER_KEY, REASON_KEY } from './readiness.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
@@ -62,7 +70,7 @@ export function DatasetPage(): ReactNode {
     });
     const { tab, bar } = useTabs({
         label: code,
-        tabs: ['details', 'publications'],
+        tabs: ['details', 'publications', 'contents'],
         titleOf: (one) => t(`dq.dataset.tabs.${one}`),
     });
 
@@ -112,12 +120,14 @@ export function DatasetPage(): ReactNode {
             {bar}
             {tab === 'details' ? (
                 <Details bundle={bundle} member={member} runs={runs.data ?? []} />
-            ) : (
+            ) : tab === 'publications' ? (
                 <Publications
                     runs={runs.data}
                     failed={runs.isError}
                     message={runs.error?.message}
                 />
+            ) : (
+                <Contents code={code} artefactType={member.artefact_type} />
             )}
         </div>
     );
@@ -355,4 +365,232 @@ function messagesOf(run: DatasetPublication): readonly string[] {
     } catch {
         return [];
     }
+}
+
+/**
+ * What a dataset has staged: the tables its artefact type names, and the rows of
+ * one of them.
+ *
+ * A dataset does not sit in one table. Its artefact type names a table or a
+ * family of them, and every family carries its own columns, so the tab lists the
+ * tables first — each with its own columns and its own staged count — and a
+ * table is opened to read its rows. The open table is held in the address, so a
+ * link reopens the same rows and Back returns to the list.
+ */
+function Contents({
+    code,
+    artefactType,
+}: {
+    readonly code: string;
+    readonly artefactType: string;
+}): ReactNode {
+    const { t } = useTranslation();
+    const [search, setSearch] = useSearchParams();
+    const table = search.get('table') ?? '';
+    const tables = useQuery({
+        queryKey: ['dq-tables', code],
+        queryFn: () => readDatasetTables(code),
+    });
+    const rows = useQuery({
+        queryKey: ['dq-rows', code, table],
+        queryFn: () => readDatasetRows(code, table),
+        enabled: table !== '',
+    });
+
+    if (tables.isError) {
+        return <Notice tone="error">{tables.error.message}</Notice>;
+    }
+    if (tables.data === undefined) {
+        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
+    }
+    if (table !== '') {
+        return (
+            <TableRows
+                code={code}
+                table={table}
+                rows={rows.data}
+                failed={rows.isError}
+                message={rows.error?.message}
+                onBack={() => setSearch({ tab: 'contents' })}
+            />
+        );
+    }
+    return (
+        <TableList
+            code={code}
+            artefactType={artefactType}
+            tables={tables.data}
+            onOpen={(name) => setSearch({ tab: 'contents', table: name })}
+        />
+    );
+}
+
+/** The tables a dataset stages into, as the one list a person picks from. */
+function TableList({
+    code,
+    artefactType,
+    tables,
+    onOpen,
+}: {
+    readonly code: string;
+    readonly artefactType: string;
+    readonly tables: readonly DatasetTable[];
+    readonly onOpen: (table: string) => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <section className="overflow-x-auto rounded-md border border-line bg-surface-raised">
+            <div className="p-4">
+                <h2 className="text-sm font-medium">
+                    {t('dq.dataset.contentsTitle')}
+                    {artefactType === '' ? null : (
+                        <span className="ml-2 font-mono text-xs text-ink-muted">
+                            {artefactType}
+                        </span>
+                    )}
+                </h2>
+                <p className="mt-1 text-xs text-ink-muted">
+                    {t('dq.dataset.contentsLead', { count: tables.length, code })}
+                </p>
+            </div>
+            <table className="w-full text-left text-sm">
+                <thead>
+                    <tr className="border-b border-line text-xs text-ink-muted">
+                        <th className="px-4 py-2 font-medium">{t('dq.dataset.table')}</th>
+                        <th className="px-4 py-2 font-medium">{t('dq.dataset.columns')}</th>
+                        <th className="px-4 py-2 text-right font-medium">
+                            {t('dq.dataset.staged')}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {tables.map((one) => (
+                        <tr
+                            key={one.table_name}
+                            className="cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover"
+                            tabIndex={0}
+                            role="button"
+                            onClick={() => onOpen(one.table_name)}
+                            onKeyDown={(event) => {
+                                if (event.key === 'Enter' || event.key === ' ') {
+                                    event.preventDefault();
+                                    onOpen(one.table_name);
+                                }
+                            }}
+                        >
+                            <td className="px-4 py-2 font-mono text-xs">{one.table_name}</td>
+                            <td className="px-4 py-2 text-xs text-ink-muted">
+                                {one.columns === '' ? '—' : one.columns}
+                            </td>
+                            <td className="px-4 py-2 text-right font-mono text-xs">
+                                {one.staged_count.toLocaleString()}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </section>
+    );
+}
+
+/** One table's rows, drawn as the columns the rows carry state them. */
+function TableRows({
+    code,
+    table,
+    rows,
+    failed,
+    message,
+    onBack,
+}: {
+    readonly code: string;
+    readonly table: string;
+    readonly rows: DatasetRowsPage | undefined;
+    readonly failed: boolean;
+    readonly message: string | undefined;
+    readonly onBack: () => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    const back = (
+        <button type="button" className="text-xs text-accent underline" onClick={onBack}>
+            {t('dq.dataset.allTables')}
+        </button>
+    );
+    if (failed) {
+        return (
+            <section className="rounded-md border border-line bg-surface-raised">
+                <div className="space-y-3 p-4">
+                    {back}
+                    <Notice tone="error">{message ?? ''}</Notice>
+                </div>
+            </section>
+        );
+    }
+    if (rows === undefined) {
+        return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
+    }
+    return (
+        <section className="overflow-x-auto rounded-md border border-line bg-surface-raised">
+            <div className="p-4">
+                {back}
+                <h2 className="mt-2 font-mono text-sm font-medium">{table}</h2>
+                <p className="mt-1 text-xs text-ink-muted">
+                    {t('dq.dataset.rowsLead', {
+                        code,
+                        count: rows.total.toLocaleString(),
+                        shown: rows.rows.length.toLocaleString(),
+                    })}
+                </p>
+            </div>
+            {rows.rows.length === 0 ? (
+                <p className="px-4 pb-4 text-sm text-ink-muted">
+                    {t('dq.dataset.rowsNone', { code })}
+                </p>
+            ) : (
+                <table className="w-full text-left text-sm">
+                    <thead>
+                        <tr className="border-b border-line text-xs text-ink-muted">
+                            {rows.columns.map((column) => (
+                                <th
+                                    key={column.name}
+                                    className="px-4 py-2 font-medium"
+                                    title={column.type}
+                                >
+                                    {column.name}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {rows.rows.map((row, i) => (
+                            <tr key={i} className="border-b border-line-subtle last:border-b-0">
+                                {rows.columns.map((column) => (
+                                    <td
+                                        key={column.name}
+                                        className="px-4 py-2 font-mono text-xs"
+                                        title={cellText(row[column.name])}
+                                    >
+                                        {cellText(row[column.name])}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
+        </section>
+    );
+}
+
+/** One cell of a row, as the store's JSON holds it. */
+function cellText(value: unknown): string {
+    if (value === null || value === undefined) {
+        return '—';
+    }
+    if (typeof value === 'string') {
+        return value;
+    }
+    if (typeof value === 'number' || typeof value === 'boolean') {
+        return String(value);
+    }
+    return JSON.stringify(value);
 }

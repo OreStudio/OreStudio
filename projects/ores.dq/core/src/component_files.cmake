@@ -237,6 +237,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/dataset_bundle_member_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/dataset_bundle_member_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/dataset_bundle_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/dataset_contents_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/dataset_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/dataset_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.dq.core/messaging/dataset_registrar.hpp"

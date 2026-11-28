@@ -8646,7 +8646,16 @@ const pt: SourceCatalogue = {
             tabs: {
                 details: 'Detalhes',
                 publications: 'Publicações',
+                contents: 'Conteúdo',
             },
+            contentsTitle: 'Conteúdo',
+            contentsLead:
+                'As tabelas em que este conjunto de dados coloca as suas linhas: {count}. Um conjunto de dados nomeia um único tipo de artefacto, e esse tipo nomeia uma tabela ou uma família de tabelas, pelo que cada tabela tem as suas próprias colunas. Abra uma para ler as suas linhas.',
+            table: 'Tabela',
+            columns: 'Colunas',
+            allTables: 'Todas as tabelas',
+            rowsLead: '{shown} de {count} linhas em espera para {code}.',
+            rowsNone: 'Esta tabela não tem nenhuma linha para {code}.',
             title: 'Conjunto de dados',
             level: 'Nível {level}',
             name: 'Nome',

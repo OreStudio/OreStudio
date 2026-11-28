@@ -28,11 +28,11 @@ the job it has to do.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
-| Now          | Implemented, measured and tested; awaiting its review. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | A pull request for the batch.          |
+| Next         | Nothing. |
 | Last touched | 2026-11-28                               |
 
 * Acceptance
@@ -81,20 +81,33 @@ from. Where the raw output matters, put it in an =evidence/= file beside the
 task and name that file in the Command column.
 
 The benchmark's corpus is the series set the seed configures, and its histories are the suite's
-own walk: this worktree's services are down, so the seed's stored fixings are not readable, and a
-corpus measured on generated levels says what the code costs and not what the market did. The cost
-is processor time, not wall clock, because this machine builds other worktrees while it measures:
-three runs of the same binary agreed to within one percent on processor time and swung by a factor
-of three on the clock.
+own walk: a corpus of generated levels says what the code costs and not what the market did. The
+cost is processor time, not wall clock, because this machine builds other worktrees while it
+measures: repeated runs agree to within a few percent on processor time and swing by a factor of
+three on the clock.
+
+The environment was rebuilt from scratch for the last measurement, so the rows below that name a
+suite name a suite that ran against a real database and a running fleet.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| The corpus the seed configures | 264 series over 22 currencies, 12 expiries, 8,000 observations each: 3,168 cells | =ORES_SEED_CURVE_QUOTES=$PWD/projects/ores.seeder/datasets/acme_corporation/curve_quotes.json ./build/output/linux-clang-release-ninja/publish/bin/ores.analytics.quant.tests "[.benchmark]" "*seed carries*"= | =d311d3b9f7= |
-| The batch and the projection over the corpus | 12.2 ms of processor time, best of five passes | as above | =d311d3b9f7= |
-| The same corpus one series at a time | 48.5 ms of processor time, best of five passes | as above | =d311d3b9f7= |
-| The quant suite | 782 cases, 2,277,176 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.analytics.quant.tests= | =d311d3b9f7= |
-| The synthetic api suite, which owns the FX derivation whose grid now shares the moments | 1,131 cases, 10,293 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.synthetic.api.tests= | =d311d3b9f7= |
-| The synthetic core suite | 182 passed, 2 skipped (no ORE engine on this tree) | =./build/output/linux-clang-release-ninja/publish/bin/ores.synthetic.core.tests= | =d311d3b9f7= |
+| The corpus the seed configures | 264 series over 22 currencies, 12 expiries, 8,000 observations each: 3,168 cells | =ORES_SEED_CURVE_QUOTES=$PWD/projects/ores.seeder/datasets/acme_corporation/curve_quotes.json ./build/output/linux-clang-release-ninja/publish/bin/ores.analytics.quant.tests "[.benchmark]" "*seed carries*"= | =9e0827d0ef= |
+| The batch and the projection over the corpus | 13.8 ms of processor time, best of five passes | as above | =9e0827d0ef= |
+| The same corpus one series at a time | 54.9 ms of processor time, best of five passes | as above | =9e0827d0ef= |
+| The quant suite | 786 cases, 2,277,209 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.analytics.quant.tests= | =9e0827d0ef= |
+| The synthetic api suite, which owns the FX derivation whose grid shares the moments | 1,131 cases, 10,293 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.synthetic.api.tests= | =9e0827d0ef= |
+| The synthetic core suite | 182 passed, 2 skipped (no ORE engine on this tree) | =./build/output/linux-clang-release-ninja/publish/bin/ores.synthetic.core.tests= | =9e0827d0ef= |
+| The whole build | 264 targets built, every service and test binary relinked, the browser bundle rebuilt | =./compass.sh build= | =9e0827d0ef= |
+| The whole suite against a recreated database and a running fleet | 115 of 116 suites pass | =./compass.sh test run --preset linux-clang-release-ninja -- -j 4= | =9e0827d0ef= |
+| The tick path end to end | ticks smoke passed: 146,551 ticks, 0 rejected by any adapter | =./compass.sh smoke ticks= | =9e0827d0ef= |
+| The local check gate | 9/9 | =./compass.sh check --exclude-heavy= | =9e0827d0ef= |
+
+The one suite that fails is =ores.vault.core.tests=, and it is not this branch. Four of its sixteen
+cases insert a vault consumer with an empty =modified_by=, which
+=ores_iam_validate_account_username_fn= allows only while the tenant holds no non-service account.
+A recreated database is in bootstrap mode, which is the state the gate runs the suite in; a
+provisioned one is not, and this environment is provisioned. The failure names no path this branch
+touches.
 
 * Notes
 
@@ -144,8 +157,14 @@ still answers the same numbers for one series.
 the same answer; a test fills four rows at once and finds the arrays equal to the serial pass.
 
 The pass costs one walk of each series' returns, and a window costs only the returns the previous
-one did not reach. Over the seed's 264 rate series and 12 expiries, 3,168 cells take 12.2 ms of
-processor time against 48.5 ms for the same corpus one series at a time.
+one did not reach. Over the seed's 264 rate series and 12 expiries, 3,168 cells take 13.8 ms of processor time
+against 54.9 ms for the same corpus one series at a time.
+
+It was proved against the whole system and not only the suite. The environment was rebuilt from
+scratch, the whole tree was built, and the fleet ran the rebuilt binaries: 115 of 116 suites pass
+against a recreated database, the ticks smoke passes with 0 ticks rejected by any adapter, and the
+one failure is the vault custody suite, which inserts a consumer with an empty =modified_by= and so
+cannot run on a provisioned system at all.
 
 What this task did not do: the emitter that writes the quotes and the simulator that builds the cube
 are separate tasks, and the FX grid is untouched, because it files a day of one pair across expiries

@@ -119,10 +119,15 @@ delete from ores_scheduler_retention_runs_tbl;
 create temp table t_before on commit drop as
 select id from ores_inbox_notifications_tbl;
 
+-- The stores the pass will tell about, by the rule it tells them by: every store
+-- the view states unbounded, but not one its own keying bounds. The catalogue
+-- gains and loses a mechanism, so the number is read rather than stated.
 select is(
     (select raised from ores_scheduler_raise_housekeeping_alerts_fn()
      where case_name = 'store'),
-    4::bigint,
+    (select count(*)::bigint
+     from ores_scheduler_store_bounds_vw
+     where "bound_kind" <> 'keying' and not "bounded_now"),
     'the pass raises one notice per store nothing effective bounds');
 
 create temp table t_raised on commit drop as
@@ -134,7 +139,11 @@ select is(
      where kind_code = 'scheduler.store_unbounded'
      order by link_id
      limit 1),
-    'compute.job_inputs',
+    (select code
+     from ores_scheduler_store_bounds_vw
+     where "bound_kind" <> 'keying' and not "bounded_now"
+     order by code
+     limit 1),
     'the notice links to the store it is about');
 
 select is(

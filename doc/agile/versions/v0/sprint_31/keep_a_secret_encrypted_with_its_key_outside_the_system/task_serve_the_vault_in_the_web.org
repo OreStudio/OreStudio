@@ -8,7 +8,7 @@
 #+filetags: :keep_a_secret_encrypted_with_its_key_outside_the_system:sprint_31:v0:
 #+owner: marco
 #+branch: feature/serve-the-vault-screens
-#+pr: 5255
+#+pr: 5256
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
@@ -148,6 +148,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5256][#5256]] | [agile] Remember to prove a new door against the running gateway |
 | [[https://github.com/OreStudio/OreStudio/pull/5255][#5255]] | [agile] Mark the vault story done in the sprint |
 | [[https://github.com/OreStudio/OreStudio/pull/5253][#5253]] | [web] Serve the vault in the browser |
 | [[https://github.com/OreStudio/OreStudio/pull/5250][#5250]] | [http] Serve the vault's secrets and consumers as lists |

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: EB27FD0B-7C72-45FC-9462-F066A0A1F806
+:END:
+#+title: Prove a new HTTP door live before merging it
+#+description: Call a new HTTP door against the running gateway, as somebody who holds its permission, before merging it: the tests cannot see the service's own authorization rule.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+
+Call every new HTTP door against the running gateway before merging it, signed in as somebody who holds the permission it demands.
+
+*Why:* A route test proves the codec and the crypto, and a screen test proves the markup. Neither sees the service's own authorization rule, because the forwarding is mocked or skipped. On the vault's reveal the tests passed while the door refused every real secret: the gateway resolves as itself, and the service requires the secret's owner. A live call found that in one request.
+
+*How to apply:* After the local gate, restart the service on the new binary and call the door with a session cookie: sign in through POST /api/v1/auth/sessions, send X-Ores-Request and an Origin header on a write, and read the answer against the shape the client parses. Record on the task what it answered, and capture what it refused.

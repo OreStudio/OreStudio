@@ -689,7 +689,7 @@ private:
                 throw std::runtime_error("The published curves of party " + party_text +
                                          " were not read: " + page.message);
             for (const auto& set : page.sets)
-                out.insert(set.bootstrap_config_id);
+                out.insert(set.derivation.config_id);
             if (page.sets.size() < page_size)
                 break;
         }

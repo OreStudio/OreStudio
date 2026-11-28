@@ -1065,6 +1065,22 @@ next unit of the scheduler clean-up.
  */
 #+end_src
 
+*** range
+:PROPERTIES:
+:cpp_type: std::string
+:default:  "7d"
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The window the growth is read over: =24h=, =7d= or =30d=.
+ *
+ * A table's size is not a fact a person acts on; its movement is. The window is
+ * the span the growth of each relation is measured across, and the read states it
+ * beside the rows so the screen can say what it is a growth of.
+ */
+#+end_src
+
 *** limit
 :PROPERTIES:
 :cpp_type: std::uint32_t
@@ -1105,6 +1121,20 @@ next unit of the scheduler clean-up.
 #+begin_src cpp :name comment
 /**
  * @brief The relation's size with its indexes and its toast, in bytes.
+ */
+#+end_src
+
+*** growth_bytes
+:PROPERTIES:
+:cpp_type: std::optional<std::int64_t>
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How much the relation changed over the window, in bytes.
+ *
+ * Absent when the window holds no earlier measurement of the relation, which is
+ * not the same fact as no growth: the screen says which.
  */
 #+end_src
 
@@ -1175,6 +1205,28 @@ next unit of the scheduler clean-up.
 #+begin_src cpp :name comment
 /**
  * @brief The instant the read ran, in ISO-8601 UTC.
+ */
+#+end_src
+
+*** from_at
+:PROPERTIES:
+:cpp_type: std::string
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The instant the growth window opens, in ISO-8601 UTC.
+ */
+#+end_src
+
+*** to_at
+:PROPERTIES:
+:cpp_type: std::string
+:end:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The instant the read ran: where the growth window closes.
  */
 #+end_src
 

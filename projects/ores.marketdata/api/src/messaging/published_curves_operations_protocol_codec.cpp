@@ -49,6 +49,27 @@ wire_traits<ores::marketdata::messaging::published_curve_point>::read_msgpack(
     return object::read_msgpack<ores::marketdata::messaging::published_curve_point>(data);
 }
 
+std::string wire_traits<ores::marketdata::messaging::curve_derivation>::write_json(
+    const ores::marketdata::messaging::curve_derivation& v) {
+    return object::write_json(v);
+}
+
+ores::marketdata::messaging::curve_derivation
+wire_traits<ores::marketdata::messaging::curve_derivation>::read_json(std::string_view text) {
+    return object::read_json<ores::marketdata::messaging::curve_derivation>(text);
+}
+
+std::string wire_traits<ores::marketdata::messaging::curve_derivation>::write_msgpack(
+    const ores::marketdata::messaging::curve_derivation& v) {
+    return object::write_msgpack(v);
+}
+
+ores::marketdata::messaging::curve_derivation
+wire_traits<ores::marketdata::messaging::curve_derivation>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::marketdata::messaging::curve_derivation>(data);
+}
+
 std::string wire_traits<ores::marketdata::messaging::published_curve_set>::write_json(
     const ores::marketdata::messaging::published_curve_set& v) {
     return object::write_json(v);

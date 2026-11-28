@@ -69,6 +69,10 @@ struct largest_relation_page {
     std::int64_t relation_count = 0;
     /** The instant the read ran, in ISO-8601 UTC. */
     std::string read_at;
+    /** The instant the growth window opens, in ISO-8601 UTC. */
+    std::string from_at;
+    /** The instant the read ran, where the growth window closes, in ISO-8601 UTC. */
+    std::string to_at;
 };
 
 /**
@@ -108,9 +112,15 @@ public:
      * rarely one of them. A relation the catalogue does not name answers with no
      * store code, which is the fact the screen states.
      *
+     * Each row also states how much the relation grew over the window, taken from
+     * the relation-size series: a table's size is not a fact a person acts on and
+     * its movement is.
+     *
      * @param limit How many of the largest relations to answer.
+     * @param range =24h=, =7d= or =30d=; anything else answers the week.
      */
-    [[nodiscard]] largest_relation_page read_largest_relations(std::uint32_t limit);
+    [[nodiscard]] largest_relation_page read_largest_relations(std::uint32_t limit,
+                                                               const std::string& range);
 
     /**
      * @brief The installation's size and free space over a range, oldest first.

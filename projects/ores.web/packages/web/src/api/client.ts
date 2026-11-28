@@ -268,6 +268,13 @@ const publishedCurvePointSchema = z.object({
     observation_datetime: wireTimestampSchema,
 });
 
+/** The recipe behind a curve: how it was made, and the blueprint that built it. */
+const curveDerivationSchema = z.object({
+    kind: z.string().default('OBSERVED'),
+    config_name: z.string().default(''),
+    config_id: z.string().default(''),
+});
+
 /**
  * One published set, or the candidate that waits to become one.
  *
@@ -281,13 +288,17 @@ const publishedCurveSetSchema = z.object({
     curve: z.string().default(''),
     series_id: z.string().default(''),
     series_uri: z.string().default(''),
-    bootstrap_config_id: z.string().default(''),
     party: z.string().default(''),
     party_id: z.string().default(''),
     as_of: wireTimestampSchema,
     published_by: z.string().default(''),
     published_at: nullableWireTimestampSchema,
     state_code: z.string().default(''),
+    derivation: curveDerivationSchema.default({
+        kind: 'OBSERVED',
+        config_name: '',
+        config_id: '',
+    }),
     point_count: z.int().nonnegative().default(0),
     withdrawn_by: z.string().default(''),
     withdrawn_at: nullableWireTimestampSchema,
@@ -4266,8 +4277,11 @@ export const api = {
      * The read starts from the relations, so a table the catalogue does not name
      * answers beside one that it does: that is the question the screen asks.
      */
-    async housekeepingTables(limit: number): Promise<LargestRelationsView> {
-        const query = new URLSearchParams({ limit: String(limit) });
+    async housekeepingTables(
+        limit: number,
+        range: StoreRange = '7d',
+    ): Promise<LargestRelationsView> {
+        const query = new URLSearchParams({ limit: String(limit), range });
         return largestRelationsViewSchema.parse(
             await request(`/api/operations/housekeeping/tables?${query.toString()}`, {
                 method: 'GET',

@@ -50,7 +50,10 @@ values
      4, current_user, current_user, 'system.initial_load', 'Initial population of derivation kinds'),
     (ores_utility_system_tenant_id_fn(), 'FX_VOL_SURFACE_CALIBRATION', 0, 'FX Volatility Surface Calibration',
      'Series produced by calibrating a smile model to the FX option quotes a surface blueprint names.',
-     5, current_user, current_user, 'system.initial_load', 'Initial population of derivation kinds')
+     5, current_user, current_user, 'system.initial_load', 'Initial population of derivation kinds'),
+    (ores_utility_system_tenant_id_fn(), 'IR_TERM_FIXING', 0, 'IR Term Fixing',
+     'Series produced by stating a term rate from its currency''s overnight curve: the compounded overnight forward over the term, or the overnight rate plus the spread the index states.',
+     6, current_user, current_user, 'system.initial_load', 'Initial population of derivation kinds')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

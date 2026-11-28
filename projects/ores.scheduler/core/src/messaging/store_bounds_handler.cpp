@@ -21,6 +21,7 @@
 #include "ores.logging/logger.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <exception>
 
 namespace ores::scheduler::messaging {
@@ -137,6 +138,16 @@ void store_bounds_handler::tables(ores::nats::message msg) {
         return;
     }
 
+    /*
+     * The installation's relations are the system tenant's to read: a tenant sees
+     * the stores and the sizes the catalogue names for it, and never the shape of
+     * the whole database.
+     */
+    if (ctx.tenant_id() != ores::utility::uuid::tenant_id::system()) {
+        error_reply(nats_, msg, ores::service::error_code::forbidden);
+        return;
+    }
+
     const auto request = decode<list_largest_relations_request>(msg);
     if (!request) {
         ORES_LOG_SEV(store_bounds_handler_lg(), warn) << "Failed to decode the request";
@@ -150,11 +161,13 @@ void store_bounds_handler::tables(ores::nats::message msg) {
     list_largest_relations_response resp;
     try {
         repository::store_bounds_repository repo(ctx);
-        auto page = repo.read_largest_relations(request->limit);
+        auto page = repo.read_largest_relations(request->limit, request->range);
         resp.rows = std::move(page.rows);
         resp.database_bytes = page.database_bytes;
         resp.relation_count = page.relation_count;
         resp.read_at = std::move(page.read_at);
+        resp.from_at = std::move(page.from_at);
+        resp.to_at = std::move(page.to_at);
     } catch (const std::exception& e) {
         ORES_LOG_SEV(store_bounds_handler_lg(), error)
             << "Reading the largest relations failed: " << e.what();

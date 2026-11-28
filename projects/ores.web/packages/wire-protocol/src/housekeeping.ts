@@ -324,6 +324,7 @@ export const largestRelationSchema = z.object({
     relation_name: text,
     size_bytes: z.int().nonnegative().default(0),
     store_code: z.string().nullable().default(null),
+    growth_bytes: z.int().nullable().default(null),
 });
 
 export type LargestRelation = z.infer<typeof largestRelationSchema>;
@@ -336,6 +337,8 @@ export const largestRelationsViewSchema = z.object({
     database_bytes: z.int().nonnegative().default(0),
     relation_count: z.int().nonnegative().default(0),
     read_at: nullableWireTimestampSchema.default(null),
+    from_at: nullableWireTimestampSchema.default(null),
+    to_at: nullableWireTimestampSchema.default(null),
 });
 
 export type LargestRelationsView = z.infer<typeof largestRelationsViewSchema>;

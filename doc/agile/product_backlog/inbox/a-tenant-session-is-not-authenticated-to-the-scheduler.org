@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 385C6B9E-F9F6-4C9F-BC14-8D0317272141
+:END:
+#+title: A tenant's session is not authenticated to the scheduler, so every housekeeping read answers 401
+#+description: A signed-in tenant administrator asks the gateway for /api/operations/housekeeping/stores and is answered 401 not-authenticated, not 403 forbidden. The tenant's session works for the rest of the application, and the scheduler's own read requires a permission a tenant administrator may hold, so the refusal comes from the request context the scheduler builds rather than from its permission check. Every housekeeping read is affected, which is why the tenant's housekeeping page is empty, and the status says the person is not signed in when they are.
+#+type: capture
+#+level: cross
+#+filetags: :housekeeping:tenant:scheduler:http:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the scheduler answer a tenant's signed-in session with the truth: forbidden,
+not unauthenticated.
+
+Reproduced on 2026-11-28 with a tenant administrator of =acme_corporation= signed
+in through the gateway:
+
+| Read | Answer |
+|------+--------|
+| =/api/operations/housekeeping/stores= | 401 =not-authenticated=, =unauthorized= |
+| =/api/operations/housekeeping/capacity?range=24h= | 401 =not-authenticated=, =unauthorized= |
+| =/api/operations/housekeeping/tables?limit=3= | 401 =not-authenticated=, =unauthorized= |
+
+The same session reads the rest of the application, and the scheduler's reads ask
+for =scheduler::job_instances:read=, which a tenant administrator holds. So the
+refusal is not the permission check: it is the request context the scheduler
+builds from the delegated token, which the tenant's session does not satisfy.
+
+* Why
+
+Two things are wrong with the answer, and only one of them is cosmetic.
+
+- The status says the person is not signed in when they are. A screen cannot tell
+  "ask your administrator" from "sign in again", and the browser may take a 401
+  as a reason to drop a session that is perfectly good.
+- Because every housekeeping read is refused, a tenant's housekeeping page is
+  empty and reads as an installation with nothing to keep. That empty page has
+  been read as a design decision — the catalogue is the installation's — when at
+  least part of it is this refusal.
+
+The fix decides the design question with it: what a tenant may read of the
+installation's housekeeping, and what answer it gets when the answer is nothing.
+
+* References
+
+- The refusal path: =projects/ores.http/nats/include/ores.http.nats/forwarding.hpp=
+  raises =request_refused_error= for a service that refused, and the route answers
+  the code it names.
+- The scheduler's read permission:
+  =projects/ores.scheduler/core/src/messaging/store_bounds_handler.cpp=.
+- The context the service builds:
+  =projects/ores.service/include/ores.service/service/request_context.hpp=.
+- The screen that shows the hole: =HousekeepingPage= answers an empty list for a
+  tenant, and =HousekeepingTablesPage= now states that the relations are the
+  system administrator's to read.
+
+* See also
+
+- [[id:C42C8275-2A07-4D31-BD24-46200D090566][Capture the sizing work the screens need]] — the
+  sizing tasks this refusal blocks for a tenant.

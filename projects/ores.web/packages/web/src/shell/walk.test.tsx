@@ -274,7 +274,8 @@ describe('the routes of the application', () => {
         `${PATHS.pricingEngines}/import`,
         // Opened from the setup report notice, so no card leads to it.
         '/setup-report',
-        // Opened from the housekeeping list's own button, so no card leads to it.
+        // Opened from the housekeeping page's own link, and walked by the tables
+        // list's test.
         PATHS.housekeepingTables,
         // Opened from the secrets list's own button, so no card leads to it.
         VAULT.consumers,

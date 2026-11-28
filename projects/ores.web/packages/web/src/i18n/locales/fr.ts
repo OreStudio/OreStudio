@@ -1455,6 +1455,8 @@ const fr: SourceCatalogue = {
                     lasts: 'L’espace libre dure',
                     measuredOn: 'Mesuré sur',
                     note: 'La mesure signale un problème : {note}',
+                    largest: 'Les plus grandes tables',
+                    allTables: 'Toutes les tables, par taille',
                 },
                 queue: {
                     title: 'File de messages',
@@ -1882,6 +1884,9 @@ const fr: SourceCatalogue = {
                 unboundedNote: 'Le travail restant',
                 size: 'Taille totale',
                 unmeasured: 'Non mesurés',
+                boundedSize: 'Taille bornée',
+                database: 'Base de données',
+                databaseShare: '{share}% de la base',
             },
             filter: {
                 all: 'Tous les magasins',
@@ -2084,7 +2089,7 @@ const fr: SourceCatalogue = {
             },
             list: {
                 title: 'Plus grandes relations',
-                lead: 'Les plus grosses d’abord, avec le magasin que le catalogue nomme pour chacune. Une table que rien ne nomme n’est mesurée par rien et bornée par rien.',
+                lead: 'Les plus grosses d’abord, avec le magasin que le catalogue nomme pour chacune et son évolution sur les {days} derniers jours. Une table que rien ne nomme n’est mesurée par rien et bornée par rien.',
                 label: 'Lignes',
                 more: '{shown} des {total} relations que la lecture a renvoyées.',
             },
@@ -2093,10 +2098,16 @@ const fr: SourceCatalogue = {
                 named: 'Nommée par',
                 size: 'Taille',
                 share: 'Part',
+                growth: 'Évolution',
+            },
+            growth: {
+                unknown: 'pas encore mesurée',
             },
             named: {
                 byNothing: 'non nommée',
             },
+            systemOnly:
+                'Les relations de l’installation sont réservées à l’administrateur système. Un tenant voit les magasins que le catalogue nomme pour lui.',
             rest: 'Tout le reste',
             footnote:
                 'La lecture mesure les relations au moment où la page la demande, donc elle indique ce qui est gros maintenant. Ce qui a grossi est la question du panneau de capacité, et la liste d’entretien est celle du catalogue.',
@@ -6659,6 +6670,9 @@ const fr: SourceCatalogue = {
                 asOf: 'Date d’arrêté publiée',
                 series: 'Série de sortie',
                 config: 'Configuration de la courbe',
+                derivation: 'Comment elle a été faite',
+                builtBy: '{method}, construite par {name}',
+                observed: 'Constatée',
                 publisher: 'Publié par',
                 publishedAt: 'Publié le',
                 request: 'Demande d’autorisation',

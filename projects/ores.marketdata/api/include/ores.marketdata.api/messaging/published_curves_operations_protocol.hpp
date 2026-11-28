@@ -60,6 +60,14 @@ struct published_curve_point {
     friend bool operator==(const published_curve_point&, const published_curve_point&) = default;
 };
 
+struct curve_derivation {
+    std::string kind = "OBSERVED";
+    std::string config_name;
+    std::string config_id;
+
+    friend bool operator==(const curve_derivation&, const curve_derivation&) = default;
+};
+
 /**
  * @brief One published set, or the candidate that waits to become one.
  *
@@ -79,7 +87,7 @@ struct published_curve_set {
     std::string curve;
     std::string series_id;
     std::string series_uri;
-    std::string bootstrap_config_id;
+    curve_derivation derivation;
     std::string party;
     std::string party_id;
     std::chrono::system_clock::time_point as_of;
@@ -321,6 +329,22 @@ struct withdraw_curve_response {
 }
 
 /**
+ * @brief The members of curve_derivation, named as the wire names them and in the order
+ * the type declares them.
+ *
+ * This is the one statement of the message's shape. The carriers find it by
+ * argument-dependent lookup, so no caller passes a list, and a message that
+ * holds another message or a domain type encodes it as its own object.
+ */
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<curve_derivation>) {
+    return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"kind", &curve_derivation::kind},
+        ::ores::utility::codec::field{"config_name", &curve_derivation::config_name},
+        ::ores::utility::codec::field{"config_id", &curve_derivation::config_id},
+    };
+}
+
+/**
  * @brief The members of published_curve_set, named as the wire names them and in the order
  * the type declares them.
  *
@@ -335,8 +359,7 @@ struct withdraw_curve_response {
         ::ores::utility::codec::field{"curve", &published_curve_set::curve},
         ::ores::utility::codec::field{"series_id", &published_curve_set::series_id},
         ::ores::utility::codec::field{"series_uri", &published_curve_set::series_uri},
-        ::ores::utility::codec::field{"bootstrap_config_id",
-                                      &published_curve_set::bootstrap_config_id},
+        ::ores::utility::codec::field{"derivation", &published_curve_set::derivation},
         ::ores::utility::codec::field{"party", &published_curve_set::party},
         ::ores::utility::codec::field{"party_id", &published_curve_set::party_id},
         ::ores::utility::codec::field{"as_of", &published_curve_set::as_of},
@@ -512,6 +535,16 @@ struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::publi
     static ores::marketdata::messaging::published_curve_point read_json(std::string_view text);
     static std::string write_msgpack(const ores::marketdata::messaging::published_curve_point& v);
     static ores::marketdata::messaging::published_curve_point
+    read_msgpack(std::span<const std::byte> data);
+};
+template <>
+struct ORES_MARKETDATA_API_EXPORT wire_traits<ores::marketdata::messaging::curve_derivation> {
+    static constexpr bool is_generated = true;
+
+    static std::string write_json(const ores::marketdata::messaging::curve_derivation& v);
+    static ores::marketdata::messaging::curve_derivation read_json(std::string_view text);
+    static std::string write_msgpack(const ores::marketdata::messaging::curve_derivation& v);
+    static ores::marketdata::messaging::curve_derivation
     read_msgpack(std::span<const std::byte> data);
 };
 template <>

@@ -85,7 +85,7 @@ values
      'ores.scheduler.capacity_sampler',
      'Measure the database''s size and the free space of the disk it sits on',
      '',
-     '5 * * * *',
+     '*/15 * * * *',
      'sample_capacity',
      '{"path": "/"}'::jsonb,
      true),

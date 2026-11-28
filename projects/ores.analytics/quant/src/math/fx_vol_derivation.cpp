@@ -17,6 +17,7 @@
  *
  */
 #include "ores.analytics.quant/math/fx_vol_derivation.hpp"
+#include "ores.analytics.quant/math/volatility_measurement.hpp"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -29,16 +30,20 @@ namespace ores::analytics::quant::math {
 
 namespace {
 
-/// The longest expiry quoted: past it no history held covers the window.
-constexpr double maximum_years = 50.0;
+/// The FX derivation's settings, in the measurement engine's terms. The transform is the log
+/// return, which is what makes a pair's quotes a volatility.
+measurement_settings measurement_of(const fx_derivation_settings& settings) {
+    return {.transform = volatility_transform::log_return,
+            .prior = settings.prior,
+            .level_multiplier = settings.level_multiplier,
+            .periods_per_year = settings.trading_days_per_year,
+            .minimum_window = settings.minimum_window};
+}
 
 }
 
 int fx_derivation_window(double years, const fx_derivation_settings& settings) {
-    // A level is a sample variance, which needs two returns whatever the settings say.
-    return std::max({2,
-                     settings.minimum_window,
-                     static_cast<int>(std::lround(years * settings.trading_days_per_year))});
+    return measurement_window(years, measurement_of(settings));
 }
 
 std::expected<fx_derivation, std::string>
@@ -47,30 +52,21 @@ derive_fx_quotes(std::span<const double> daily_log_returns,
                  const fx_derivation_settings& settings) {
     if (!(settings.trading_days_per_year > 0.0) || !std::isfinite(settings.trading_days_per_year))
         return std::unexpected("the trading days in a year must be positive and finite");
-    const auto moments = moments_of(daily_log_returns);
-    if (!moments)
-        return std::unexpected(moments.error());
-    fx_derivation out{
-        .moments = *moments, .shape = shrink(*moments, settings.prior), .expiries = {}};
+    const auto measurement = measurement_of(settings);
+    const auto series = measure_series(daily_log_returns, measurement);
+    if (!series)
+        return std::unexpected(series.error());
+    fx_derivation out{.moments = series->moments, .shape = series->shape, .expiries = {}};
     out.expiries.reserve(expiries.size());
     for (const auto& expiry : expiries) {
-        if (!(expiry.years > 0.0) || !(expiry.years <= maximum_years)) {
-            out.expiries.emplace_back(std::unexpect,
-                                      expiry.label + ": the expiry must be positive and at most " +
-                                          std::to_string(static_cast<int>(maximum_years)) +
-                                          " years");
+        const auto pillar = measure_pillar(daily_log_returns, expiry.years, measurement);
+        if (!pillar) {
+            out.expiries.emplace_back(std::unexpect, expiry.label + ": " + pillar.error());
             continue;
         }
-        const double days = expiry.years * settings.trading_days_per_year;
-        const int window = fx_derivation_window(expiry.years, settings);
-        const auto level =
-            realised_volatility(daily_log_returns, window, settings.trading_days_per_year);
-        if (!level) {
-            out.expiries.emplace_back(std::unexpect, expiry.label + ": " + level.error());
-            continue;
-        }
-        const auto shape = hold_in_gram_charlier_region(over_days(out.shape, days));
-        const gram_charlier_smile smile{.sigma = *level * settings.level_multiplier,
+        const auto shape = hold_in_gram_charlier_region(
+            over_days(out.shape, expiry.years * settings.trading_days_per_year));
+        const gram_charlier_smile smile{.sigma = pillar->level,
                                         .skewness = shape.skewness,
                                         .excess_kurtosis = shape.excess_kurtosis,
                                         .years = expiry.years};
@@ -80,7 +76,7 @@ derive_fx_quotes(std::span<const double> daily_log_returns,
             continue;
         }
         out.expiries.emplace_back(derived_fx_expiry{
-            .label = expiry.label, .quotes = *quotes, .smile = smile, .window = window});
+            .label = expiry.label, .quotes = *quotes, .smile = smile, .window = pillar->window});
     }
     return out;
 }
@@ -113,7 +109,7 @@ std::expected<void, std::string> derive_grid(std::span<const double> returns,
         const auto count = fx_derivation_window(expiry.years, settings);
         windows.push_back({.returns = static_cast<std::size_t>(count),
                            .days = days,
-                           .usable = expiry.years > 0.0 && expiry.years <= maximum_years});
+                           .usable = expiry.years > 0.0 && expiry.years <= maximum_pillar_years});
     }
 
     // Prefix sums of the returns and of their second, third and fourth powers: one pass, and

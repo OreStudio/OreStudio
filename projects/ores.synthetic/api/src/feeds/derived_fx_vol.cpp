@@ -17,6 +17,7 @@
  *
  */
 #include "ores.synthetic.api/feeds/derived_fx_vol.hpp"
+#include "ores.analytics.quant/math/volatility_measurement.hpp"
 #include "ores.analytics.quant/service/fx_expiry_dates.hpp"
 #include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -32,16 +33,6 @@ namespace ores::synthetic::feed {
 namespace {
 
 namespace qm = analytics::quant::math;
-
-/// The pair's log level on each date, oldest first.
-std::map<std::chrono::year_month_day, double> log_levels(const dated_series& series) {
-    std::map<std::chrono::year_month_day, double> out;
-    const auto n = std::min(series.dates.size(), series.values.size());
-    for (std::size_t i = 0; i < n; ++i)
-        if (series.values[i] > 0.0 && std::isfinite(series.values[i]))
-            out.insert_or_assign(series.dates[i], std::log(series.values[i]));
-    return out;
-}
 
 }
 
@@ -128,17 +119,25 @@ std::string fx_option_convention_id(const derived_fx_pair& pair) {
 }
 
 pair_returns pair_log_returns(const dated_series& levels) {
-    const auto level = log_levels(levels);
+    // One level a day, oldest first: a value that is not positive is no observation, so the
+    // transform's return spans the gap rather than reading a substituted level.
+    std::map<std::chrono::year_month_day, double> level;
+    const auto n = std::min(levels.dates.size(), levels.values.size());
+    for (std::size_t i = 0; i < n; ++i)
+        if (levels.values[i] > 0.0 && std::isfinite(levels.values[i]))
+            level.insert_or_assign(levels.dates[i], levels.values[i]);
+
+    std::vector<qm::dated_level> observed;
+    observed.reserve(level.size());
+    for (const auto& [date, value] : level)
+        observed.push_back({.date = date, .level = value});
+
+    const auto returns = qm::returns_of(observed, qm::volatility_transform::log_return);
     pair_returns out;
-    out.returns.reserve(level.empty() ? 0 : level.size() - 1);
-    out.dates.reserve(out.returns.capacity());
-    for (auto it = level.begin(); it != level.end(); ++it)
-        if (const auto next = std::next(it); next != level.end()) {
-            out.returns.push_back(next->second - it->second);
-            out.dates.push_back(next->first);
-        }
-    if (!level.empty())
-        out.last = level.rbegin()->first;
+    out.returns = returns.returns;
+    out.dates = returns.dates;
+    out.last = level.empty() ? std::nullopt :
+                               std::optional<std::chrono::year_month_day>{level.rbegin()->first};
     return out;
 }
 

@@ -28,18 +28,11 @@
 
 namespace ores::analytics::quant::math {
 
-namespace {
-
-/// The FX derivation's settings, in the measurement engine's terms. The transform is the log
-/// return, which is what makes a pair's quotes a volatility.
 measurement_settings measurement_of(const fx_derivation_settings& settings) {
-    return {.transform = volatility_transform::log_return,
-            .prior = settings.prior,
+    return {.prior = settings.prior,
             .level_multiplier = settings.level_multiplier,
             .periods_per_year = settings.trading_days_per_year,
             .minimum_window = settings.minimum_window};
-}
-
 }
 
 int fx_derivation_window(double years, const fx_derivation_settings& settings) {

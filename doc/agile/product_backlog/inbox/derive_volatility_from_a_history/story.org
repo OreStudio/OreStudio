@@ -98,7 +98,13 @@ is the second instance of both.
   positive, a difference for a rate that may be negative), the coordinates a quote is named
   by (a pair with an expiry and a delta label; or a currency with an expiry, a term and a
   strike), and the smile model. The window rule, the moments, the multiplier, the shrink to
-  a prior, the reach, the method and its version belong to the engine and name no class.
+  a prior and the reach belong to the engine and name no class. The method and its version
+  belong to the class's computation, because a different computation is a different method;
+  the stamping of a series with them is the store's and is generic.
+- *The batched pass is kept, and pinned.* One pass over a grid writes the same rules a second
+  time over prefix sums, because a day of a grid must cost the same whether its window is a
+  week or ten years. The test that the grid equals the day-at-a-time answer is what holds the
+  two together, and folding the pass into the engine would trade that test for a slower read.
 - *The lift comes before any interest rate value exists.* A second copy of the measurement
   is the fault this story exists to avoid, so the FX derivation is lifted first, and its
   values must come out as they were. The lift is also the cheaper half: the FX derivation

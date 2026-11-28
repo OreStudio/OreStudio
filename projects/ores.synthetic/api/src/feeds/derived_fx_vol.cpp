@@ -25,6 +25,7 @@
 #include <cmath>
 #include <format>
 #include <map>
+#include <optional>
 #include <ranges>
 #include <tuple>
 
@@ -56,14 +57,19 @@ std::vector<derived_fx_expiry> derived_fx_ladder(const std::set<std::string>& la
 derived_fx_reach derived_fx_reach_of(std::span<const derived_fx_expiry> ladder,
                                      std::size_t returns,
                                      const qm::fx_derivation_settings& settings) {
+    std::vector<double> years;
+    years.reserve(ladder.size());
+    for (const auto& expiry : ladder)
+        years.push_back(expiry.years);
+
+    const auto reach = qm::reach_of(years, returns, qm::measurement_of(settings));
     derived_fx_reach out;
-    for (const auto& e : ladder) {
-        const auto needs = qm::fx_derivation_window(e.years, settings);
-        if (static_cast<std::size_t>(needs) <= returns)
-            out.reached.push_back(e);
-        else
-            out.unreached.push_back({.expiry = e, .needs = needs});
-    }
+    out.reached.reserve(reach.reached.size());
+    for (const auto place : reach.reached)
+        out.reached.push_back(ladder[place]);
+    out.unreached.reserve(reach.unreached.size());
+    for (const auto& [place, needs] : reach.unreached)
+        out.unreached.push_back({.expiry = ladder[place], .needs = needs});
     return out;
 }
 
@@ -119,13 +125,12 @@ std::string fx_option_convention_id(const derived_fx_pair& pair) {
 }
 
 pair_returns pair_log_returns(const dated_series& levels) {
-    // One level a day, oldest first: a value that is not positive is no observation, so the
-    // transform's return spans the gap rather than reading a substituted level.
+    // One value a day, oldest first. Which of them is an observation is the transform's to say,
+    // so a level that is not positive is left to it and a return spans the gap.
     std::map<std::chrono::year_month_day, double> level;
     const auto n = std::min(levels.dates.size(), levels.values.size());
     for (std::size_t i = 0; i < n; ++i)
-        if (levels.values[i] > 0.0 && std::isfinite(levels.values[i]))
-            level.insert_or_assign(levels.dates[i], levels.values[i]);
+        level.insert_or_assign(levels.dates[i], levels.values[i]);
 
     std::vector<qm::dated_level> observed;
     observed.reserve(level.size());
@@ -136,8 +141,9 @@ pair_returns pair_log_returns(const dated_series& levels) {
     pair_returns out;
     out.returns = returns.returns;
     out.dates = returns.dates;
-    out.last = level.empty() ? std::nullopt :
-                               std::optional<std::chrono::year_month_day>{level.rbegin()->first};
+    out.last = returns.dates.empty() ?
+                   std::nullopt :
+                   std::optional<std::chrono::year_month_day>{returns.dates.back()};
     return out;
 }
 

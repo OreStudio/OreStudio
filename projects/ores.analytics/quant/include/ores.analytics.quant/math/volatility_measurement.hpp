@@ -27,6 +27,7 @@
 #include <expected>
 #include <span>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace ores::analytics::quant::math {
@@ -86,8 +87,10 @@ ORES_ANALYTICS_QUANT_EXPORT dated_returns returns_of(std::span<const dated_level
                                                      volatility_transform transform);
 
 /// The authored choices of a measurement.
+///
+/// The transform is not one of them: it is the argument of returns_of, because a setting a caller
+/// states and nothing reads is a setting that lies about what it looked at.
 struct measurement_settings final {
-    volatility_transform transform = volatility_transform::log_return;
     shape_prior prior{.shape = {.skewness = 0.0, .excess_kurtosis = 1.0}, .weight = 500.0};
     /// Scales the measured level, for the volatility risk premium no free source publishes.
     double level_multiplier = 1.0;
@@ -142,6 +145,26 @@ struct pillar_measurement final {
  */
 ORES_ANALYTICS_QUANT_EXPORT std::expected<pillar_measurement, std::string>
 measure_pillar(std::span<const double> returns, double years, const measurement_settings& settings);
+
+/// Which of a ladder's pillars a sample covers, by the pillar's place in the ladder.
+struct pillar_reach final {
+    /// The places of the pillars the sample covers, in the order asked for.
+    std::vector<std::size_t> reached;
+    /// Each pillar the sample does not cover: its place, and the returns its window needs.
+    std::vector<std::pair<std::size_t, int>> unreached;
+};
+
+/**
+ * @brief The pillars of @p pillar_years that a sample of @p returns covers.
+ *
+ * A pillar is reached when its window holds no more returns than the sample, so a longer sample
+ * reaches at least as far. The reach is read from the sample a caller holds and never from a
+ * constant, so a source can say which pillars it can quote from the history it has.
+ */
+[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT pillar_reach
+reach_of(std::span<const double> pillar_years,
+         std::size_t returns,
+         const measurement_settings& settings);
 
 }
 

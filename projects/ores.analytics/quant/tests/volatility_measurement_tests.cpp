@@ -105,22 +105,16 @@ TEST_CASE("a pillar's level is the annualised spread of its window, scaled",
     for (int i = 1; i < 400; ++i)
         rates.push_back(rates.back() + (i % 2 == 0 ? 0.0001 : -0.0001));
     const auto returns = returns_of(levels_of(rates), volatility_transform::difference);
-    const auto measured =
-        measure_pillar(returns.returns,
-                       1.0,
-                       {.transform = volatility_transform::difference, .level_multiplier = 1.0});
+    const auto measured = measure_pillar(returns.returns, 1.0, {.level_multiplier = 1.0});
     REQUIRE(measured);
     CHECK(measured->window == 252);
-    const auto expected = *realised_volatility(returns.returns, measured->window, 252.0);
-    CHECK(measured->level == Catch::Approx(expected).epsilon(1e-15));
-    CHECK(measured->level == Catch::Approx(0.0001 * std::sqrt(252.0)).epsilon(5e-3));
+    // 252 alternating changes of one basis point: a mean of zero, so the sample stdev is
+    // sqrt(252 * (1e-4)^2 / 251), and the annualised level multiplies it by sqrt(252).
+    CHECK(measured->level == Catch::Approx(0.001590609895806464).epsilon(1e-12));
 
-    const auto scaled =
-        measure_pillar(returns.returns,
-                       1.0,
-                       {.transform = volatility_transform::difference, .level_multiplier = 1.5});
+    const auto scaled = measure_pillar(returns.returns, 1.0, {.level_multiplier = 1.5});
     REQUIRE(scaled);
-    CHECK(scaled->level == Catch::Approx(1.5 * expected).epsilon(1e-15));
+    CHECK(scaled->level == Catch::Approx(1.5 * 0.001590609895806464).epsilon(1e-12));
 }
 
 TEST_CASE("a pillar the sample does not cover is refused, and one past the maximum with it",
@@ -139,12 +133,13 @@ TEST_CASE("a series' shape is its moments shrunk toward the prior", "[volatility
     const shape_prior prior{.shape = {.skewness = 0.0, .excess_kurtosis = 1.0}, .weight = 500.0};
     const auto measured = measure_series(returns, {.prior = prior});
     REQUIRE(measured);
-    const auto moments = moments_of(returns);
-    REQUIRE(moments);
-    CHECK(measured->moments.stdev == moments->stdev);
-    const auto expected = shrink(*moments, prior);
-    CHECK(measured->shape.skewness == expected.skewness);
-    CHECK(measured->shape.excess_kurtosis == expected.excess_kurtosis);
+    // The sample's own moments, then the same shape moved 8 / 508 of the way from the prior.
+    CHECK(measured->moments.mean == Catch::Approx(-0.004375).epsilon(1e-15));
+    CHECK(measured->moments.stdev == Catch::Approx(0.019353386562267892).epsilon(1e-14));
+    CHECK(measured->moments.skewness == Catch::Approx(-0.08517799327190881).epsilon(1e-14));
+    CHECK(measured->moments.excess_kurtosis == Catch::Approx(-1.5835953182246305).epsilon(1e-14));
+    CHECK(measured->shape.skewness == Catch::Approx(-0.0013413857208174616).epsilon(1e-14));
+    CHECK(measured->shape.excess_kurtosis == Catch::Approx(0.9593134595555176).epsilon(1e-14));
 
     CHECK_FALSE(measure_series(std::vector<double>{0.1, 0.2, 0.3}, {}));
 }

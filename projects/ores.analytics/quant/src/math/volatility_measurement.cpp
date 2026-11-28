@@ -69,6 +69,20 @@ measure_series(std::span<const double> returns, const measurement_settings& sett
     return series_measurement{.moments = *moments, .shape = shrink(*moments, settings.prior)};
 }
 
+pillar_reach reach_of(std::span<const double> pillar_years,
+                      std::size_t returns,
+                      const measurement_settings& settings) {
+    pillar_reach out;
+    for (std::size_t i = 0; i < pillar_years.size(); ++i) {
+        const int needs = measurement_window(pillar_years[i], settings);
+        if (static_cast<std::size_t>(needs) <= returns)
+            out.reached.push_back(i);
+        else
+            out.unreached.emplace_back(i, needs);
+    }
+    return out;
+}
+
 std::expected<pillar_measurement, std::string> measure_pillar(
     std::span<const double> returns, double years, const measurement_settings& settings) {
     if (!(settings.periods_per_year > 0.0) || !std::isfinite(settings.periods_per_year))

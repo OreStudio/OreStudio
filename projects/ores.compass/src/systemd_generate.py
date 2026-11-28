@@ -44,6 +44,7 @@ from pathlib import Path
 
 import systemctl_bus
 from compass_db import load_env
+from service_registry import SELF_PROVISIONING as SELF_PROVISIONING_SERVICES
 from service_registry import load_service_registry
 
 # Same namespace UUID process_supervisor::build_args uses for {host_id}
@@ -225,11 +226,9 @@ SERVICE_CREDENTIALS = {
 CONSUMER_KEY_CREDENTIAL = "vault-consumer.key"
 TRANSPORT_KEY_CREDENTIAL = "vault-transport.pub"
 
-# The services that cannot resolve their own password. The vault would have to
-# answer its own request, and IAM has to exist before the vault does: the vault
-# fetches the keys that verify tokens from IAM before it subscribes. Both keep
-# the credential file the deployment places for them.
-SELF_PROVISIONING = {"vault_service", "iam_service"}
+# The services that cannot resolve their own password, and so read it from the
+# credential the deployment placed.
+SELF_PROVISIONING = SELF_PROVISIONING_SERVICES
 
 
 def _vault_credential_lines(def_row, checkout_root):
@@ -242,10 +241,19 @@ def _vault_credential_lines(def_row, checkout_root):
     """
     psql_var = def_row.get("psql_var", "")
     email = def_row.get("email", "")
-    if not psql_var or not email or psql_var in SELF_PROVISIONING:
+    if not psql_var or not email:
         return "", ""
 
     keys_dir = Path(checkout_root) / "build" / "keys"
+
+    if psql_var in SELF_PROVISIONING:
+        # A unit that cannot ask the vault reads its password from the file the
+        # deployment placed, by the name the runner looks for.
+        password_file = keys_dir / f"{psql_var}.db-password"
+        if not password_file.is_file():
+            return "", ""
+        return f"LoadCredential=db-password:{password_file}\n", ""
+
     private = keys_dir / f"{psql_var}.vault.key"
     transport = keys_dir / "vault.transport.pub"
     if not private.is_file() or not transport.is_file():
@@ -305,7 +313,10 @@ def render_singleton_unit(def_row, deps_on, checkout_root, env_name, target_name
     # so the vault goes before it. Ordering only: the resolver waits for the
     # vault and falls back to the configuration when it does not answer, so a
     # failed vault must not stop the fleet from starting.
-    if vault_credentials:
+    # Only a unit that asks the vault is ordered after it. The two that read a
+    # placed file are not: IAM comes first and the vault comes after IAM, so
+    # ordering IAM after the vault is a cycle the manager refuses.
+    if CONSUMER_KEY_CREDENTIAL + ":" in vault_credentials:
         after.append(_unit_basename("ores.vault.service", env_name) + ".service")
     after_line = " ".join(after)
 

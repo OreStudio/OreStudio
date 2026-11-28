@@ -12,6 +12,14 @@ from pathlib import Path
 
 SERVICE_REGISTRY_PATH = "projects/modeling/service_registry.org"
 
+# The services that cannot take their database password from the vault, and so
+# keep a credential file the deployment places for them. The vault would have to
+# answer its own request. IAM has to exist before the vault does, because the
+# vault fetches the keys that verify tokens from IAM before it subscribes. The
+# two modules that act on this fact read it here, so they cannot disagree about
+# which services it covers.
+SELF_PROVISIONING = ("vault_service", "iam_service")
+
 _SCALARS = (
     "psql_var", "env_key", "iam_role", "description", "display_name", "summary",
     "account_var", "role", "email", "runtime", "entry_point",

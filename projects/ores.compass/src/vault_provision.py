@@ -33,14 +33,12 @@ import sys
 from pathlib import Path
 
 import vault_credentials
+from service_registry import SELF_PROVISIONING as SELF_PROVISIONING_SERVICES
 from service_registry import load_service_registry
 
-# The service whose password never enters the vault, because it would have to
-# answer its own request. IAM is provisioned here like any other service, even
-# though its unit does not resolve yet: it has to start before the vault, because
-# the vault fetches its token keys from IAM, so the value waits in the vault for
-# the day that order changes. systemd_generate holds the other half of that fact.
-SELF_PROVISIONING = {"vault_service"}
+# The services whose password never enters the vault: they cannot ask for it, so
+# each gets a credential file instead.
+SELF_PROVISIONING = SELF_PROVISIONING_SERVICES
 
 # The vault's key encryption key, transport key and the version that says which
 # key a write uses. The service reads them from here, and so does provisioning.
@@ -49,6 +47,24 @@ KEYS_DIRECTORY = "build/keys"
 # How a service's own key pair is named under the keys directory.
 KEY_SUFFIX = ".vault.key"
 PUBLIC_SUFFIX = ".vault.pub"
+
+
+# The credential a unit that cannot resolve reads its own password from.
+PASSWORD_CREDENTIAL = "db-password"
+
+
+def write_password_credential(keys_dir: Path, psql_var: str, password: str) -> Path:
+    """Places the password of a service that cannot ask the vault for it.
+
+    Only the two that have to start before the vault answers reach this: the
+    vault itself, and IAM, which the vault waits for. The file is read-only to
+    its owner, and the unit is given it as a credential rather than through the
+    environment file, which no longer carries a value.
+    """
+    path = keys_dir / f"{psql_var}.db-password"
+    path.write_text(password, encoding="utf-8")
+    path.chmod(0o600)
+    return path
 
 
 def consumer_key_paths(keys_dir: Path, psql_var: str) -> tuple[Path, Path]:
@@ -68,12 +84,18 @@ def ensure_consumer_key(keys_dir: Path, psql_var: str, announce) -> Path:
     return public
 
 
-def build_document(services, env: dict, keys_dir: Path, announce) -> tuple[dict, list[str]]:
+def build_document(services, env: dict, keys_dir: Path,
+                   announce) -> tuple[dict, list[str]]:
     """The document the vault writes, and the services it could not describe.
 
-    A service is left out when the environment file holds no password for it,
-    because provisioning a value that is not the role's password would lock the
-    service out of its own database.
+    The value is the one the environment file holds, so the vault and the
+    database role agree without this step changing either. A service is left out
+    when the file holds no password for it, because provisioning a value that is
+    not the role's password would lock the service out of its own database.
+
+    The two services that cannot ask the vault still get their value written
+    where the deployment places credentials, so a unit can read it once the file
+    stops carrying one.
     """
     consumers: list[dict] = []
     secrets: list[dict] = []
@@ -81,7 +103,7 @@ def build_document(services, env: dict, keys_dir: Path, announce) -> tuple[dict,
 
     for service in services:
         psql_var = service.get("psql_var", "")
-        if not psql_var or psql_var in SELF_PROVISIONING:
+        if not psql_var:
             continue
 
         env_key = service.get("env_key", "")
@@ -89,6 +111,10 @@ def build_document(services, env: dict, keys_dir: Path, announce) -> tuple[dict,
         password = env.get(f"ORES_{env_key}_DB_PASSWORD", "")
         if not env_key or not account or not password:
             skipped.append(service["name"])
+            continue
+
+        if psql_var in SELF_PROVISIONING:
+            write_password_credential(keys_dir, psql_var, password)
             continue
 
         public = ensure_consumer_key(keys_dir, psql_var, announce)
@@ -116,6 +142,14 @@ def _child_environment(env: dict, keys_dir: Path) -> dict:
     child = os.environ.copy()
     child.update(env)
     child["CREDENTIALS_DIRECTORY"] = str(keys_dir)
+
+    # The vault's own password is not in the environment file any more: it is the
+    # file the deployment places, and the unit reads it as a credential. This
+    # invocation is not the unit, so it is handed the same value the way the
+    # option mapper reads it.
+    own = keys_dir / "vault_service.db-password"
+    if own.is_file() and not child.get("ORES_VAULT_SERVICE_DB_PASSWORD"):
+        child["ORES_VAULT_SERVICE_DB_PASSWORD"] = own.read_text(encoding="utf-8").strip()
     return child
 
 

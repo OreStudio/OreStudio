@@ -20,6 +20,7 @@
 #ifndef ORES_SERVICE_SERVICE_HOST_RUNNER_IMPL_HPP
 #define ORES_SERVICE_SERVICE_HOST_RUNNER_IMPL_HPP
 
+#include "ores.platform/credentials/credential_store.hpp"
 #include "ores.telemetry.core/log/lifecycle_manager.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.vault.client/client/service_password.hpp"
@@ -63,6 +64,36 @@ void log_host_command(ores::logging::logger_t& lg,
  * The fallback goes when the environment file stops carrying a password to fall
  * back to.
  */
+/**
+ * @brief Takes this unit's database password from the credential the deployment
+ * placed, for the units that cannot ask the vault.
+ *
+ * Two services have to exist before the vault answers: the vault, and IAM, which
+ * the vault fetches its token keys from. The environment file no longer states
+ * their password, so the deployment places it as a credential and this reads it.
+ * A unit with no such credential and a password in its configuration is left
+ * alone, which is what a checkout and a test run look like.
+ */
+template <typename Config>
+void take_database_password_from_credential(Config& cfg, ores::logging::logger_t& lg) {
+    using namespace ores::logging;
+
+    if constexpr (requires { cfg.database; }) {
+        if (!cfg.database.password.empty())
+            return;
+
+        try {
+            const auto placed = ores::platform::credentials::credential_store::read("db-password");
+            cfg.database.password.assign(placed.begin(), placed.end());
+            ORES_LOG_SEV(lg, info) << "Took the database password from the credential placed "
+                                      "for this unit";
+        } catch (const std::exception&) {
+            // No credential: the unit's configuration is expected to carry a
+            // password, and if it does not the pool says so.
+        }
+    }
+}
+
 template <typename Config>
 void take_database_password_from_vault(Config& cfg, ores::logging::logger_t& lg) {
     using namespace ores::logging;
@@ -134,6 +165,7 @@ boost::asio::awaitable<int> run_host_async(const std::vector<std::string>& args,
     auto cfg(*ocfg);
     lifecycle_manager lm(cfg.logging);
 
+    detail::take_database_password_from_credential(cfg, lg);
     detail::take_database_password_from_vault(cfg, lg);
     detail::log_host_command(lg, args, cfg, opts);
 

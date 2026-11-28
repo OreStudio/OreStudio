@@ -45,22 +45,7 @@ jobs:
       - name: Install the ores.web dependencies
         run: npm ci --no-audit --no-fund
         working-directory: projects/ores.web
-      - name: Install the pinned compass release
-        run: |
-          tag=$(sed -n 's/^release: *//p' build/scripts/compass_ng.pin)
-          if [ -z "$tag" ]; then
-              echo "build/scripts/compass_ng.pin names no release" >&2
-              exit 1
-          fi
-          asset="compass-${tag#v}-Linux-x86_64.tar.gz"
-          base="https://github.com/MASD-Project/compass/releases/download/${tag}"
-          cd "$RUNNER_TEMP"
-          curl -fsSLO "${base}/${asset}"
-          curl -fsSLO "${base}/${asset}.sha256"
-          sha256sum -c "${asset}.sha256"
-          tar -xzf "${asset}"
-          bin=$(find "$RUNNER_TEMP/${asset%.tar.gz}" -type f -path '*/bin/compass')
-          echo "$(dirname "$bin")" >> "$GITHUB_PATH"
+      - uses: ./.github/actions/install-compass
       - name: Show the compass version
         run: compass --version
       - name: Run compass check

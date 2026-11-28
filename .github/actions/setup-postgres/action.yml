@@ -1,0 +1,59 @@
+# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# yamllint disable rule:line-length
+---
+name: Set up PostgreSQL
+description: >-
+  Generate the password this run knows, start a PostgreSQL server, and export
+  PGPASSWORD for the steps that follow.
+
+# Linux builds run in the CI image, which carries PostgreSQL, so the job starts
+# the server the image holds. macOS and Windows run on hosted images, where a
+# marketplace action starts one. The password is generated here either way,
+# because the schema has to be recreated with the account the workflow knows.
+
+runs:
+  using: composite
+  steps:
+    - name: Generate postgres password
+      id: password
+      shell: bash
+      run: |
+        PG_PASS="$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')"
+        echo "admin_password=${PG_PASS}" >> "$GITHUB_OUTPUT"
+        echo "PGPASSWORD=${PG_PASS}" >> "$GITHUB_ENV"
+
+    - name: Start PostgreSQL
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        pg_major="$(sed -n 's/^PG_MAJOR=//p' build/docker/ci/versions.env)"
+        ./build/scripts/start_ci_postgres.sh "${pg_major}" oresdb
+        {
+          echo "PGHOST=localhost"
+          echo "PGPORT=5432"
+          echo "PGUSER=postgres"
+        } >> "$GITHUB_ENV"
+
+    - name: Setup postgres
+      if: runner.os != 'Linux'
+      uses: ikalnytskyi/action-setup-postgres@v9
+      with:
+        username: postgres
+        password: ${{ steps.password.outputs.admin_password }}
+        database: oresdb
+        port: 5432
+        postgres-version: "18"

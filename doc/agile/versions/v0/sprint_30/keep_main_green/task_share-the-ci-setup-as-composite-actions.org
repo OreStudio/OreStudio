@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 68FF3AAC-9008-4DCE-860F-6F7B426154A7
+:END:
+#+title: Task: Move the CI setup steps into shared composite actions
+#+description: Task for: Keep main green
+#+type: task
+#+level: s1
+#+filetags: :keep_main_green:sprint_30:v0:
+#+owner: marco
+#+branch: feature/share-the-ci-setup-as-composite-actions
+#+pr: 5230
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Define each step group the four build workflows repeat once, under .github/actions, and call it from every workflow that needs it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4FCC628C-551E-4F7C-B1D7-69546174A9CD][Keep main green]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- The pinned compass release is installed by one action that unpacks a tar.gz on Linux and macOS and a zip on Windows.
+- The Postgres, environment, NATS, database, compiler-cache and guard steps each have one definition.
+- The four build jobs keep their steps and their order.
+- actionlint reports nothing new.
+
+* Plan
+
+One composite action per step group, and one reusable workflow per repeated
+job. The caller keeps what is its own — trigger, guard, matrix, runner,
+container, permissions — and the operating-system branch lives inside the
+action, so a platform fix is one file.
+
+The guard stays a composite rather than becoming a called workflow: it asks the
+API for the last successful run of =GITHUB_WORKFLOW_REF=, and a called workflow
+would answer for itself, so every caller would compare against a history that is
+not its own.
+
+Verification without a runner: expand every call into the steps it holds, and
+diff the resulting list of run bodies against the previous revision, so a
+dropped or reordered step shows as a diff line. Then lint the YAML with
+actionlint, and add the check that reads it for the two rules the platform
+enforces only at run time.
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Lines in the four build workflows | 1,950 to 1,128 | =wc -l=.github/workflows/{continuous,nightly}-{linux,macos,windows}.yml= | 01ea5e86c6 |
+| Lines of run bodies in the four build workflows | 672 to 190 | expand each =run= and count its non-blank lines | 01ea5e86c6 |
+| Lines of run bodies that repeat across them | 519 (77%) to 67 (35%) | count the lines that appear in more than one of the four files | 01ea5e86c6 |
+| YAML lines under =.github= | 3,336 to 3,176 | =cat .github/workflows/*.yml .github/actions/*/action.yml | wc -l= | 01ea5e86c6 |
+| Steps in each build job | unchanged, same order | expand the calls and diff against =origin/main= | 01ea5e86c6 |
+| Copies of the pinned release install | 6 to 1 | =grep -l compass_ng.pin .github/workflows/*.yml= | 01ea5e86c6 |
+
+Six hundred and ninety-seven lines of new action and workflow files come from
+the change, and each of them is defined once. The run-body measurement parses
+every =run= under each job, splits it into non-blank lines, and counts the lines
+that appear in more than one of the four files.
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5230][#5230]] | [ci] Share the CI setup steps between the platform workflows |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The four build workflows lost 822 lines and the tree gained nine composite
+actions and one called workflow. Every step that ran before runs now, in the
+same order: expanding the calls and diffing each build job against the previous
+revision gives the same sequence of run bodies, and the three intended
+differences are the guard annotation reaching Continuous Linux, the version
+check running on every platform, and the compiler-cache save warning rather
+than reddening a job when sccache is absent.
+
+Two things the census did not have became clear while implementing. The guard
+cannot be a called workflow, because the API query is about the caller. And the
+reference password, the server and the database cannot share one composite,
+because the environment is written between them and has to be: the password and
+the server come first, the database after =env configure= has named it.
+
+The platform does not check either of the mistakes a composite introduces, so
+=build/scripts/check_ci_actions.py= reads the YAML for them and
+=./compass.sh check= runs it on any change under =.github=.
+
+What this does not prove: no step of the change ran on a runner before it
+merged. The first statement about a real leg comes from the continuous run on
+main, and from tonight's two nightlies for macOS and Windows.

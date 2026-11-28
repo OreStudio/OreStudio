@@ -1,0 +1,52 @@
+# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# yamllint disable rule:line-length
+---
+name: Attach packages to the release
+
+# One release carries the packages of three platforms, and each of the three
+# workflows that build them attaches its own. The only thing that differs is the
+# artifact pattern, so that is the input.
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      pattern:
+        description: >-
+          The artifact names of this platform's packages, as a glob, for
+          example linux-*-release-ninja.
+        required: true
+        type: string
+
+jobs:
+  attach:
+    name: Attach packages to the release
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Download the packages of this run
+        uses: actions/download-artifact@v8
+        with:
+          pattern: ${{ inputs.pattern }}
+          path: packages
+          merge-multiple: true
+
+      - name: Attach the packages to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$GITHUB_REF_NAME" packages/* --clobber --repo "$GITHUB_REPOSITORY"

@@ -457,7 +457,9 @@ if(configure_result EQUAL 0 AND build_result EQUAL 0)
     #
     # One Test.xml with every case is tens of megabytes, and CDash drops it
     # while processing it. The script therefore also writes one file per
-    # subproject, and the final submit sends those instead.
+    # subproject, in parts of bounded case count, and the final submit sends
+    # those instead: a part CDash drops then costs that many cases and not a
+    # whole component's worth.
     find_program(ores_python NAMES python3 python)
     file(STRINGS "${CTEST_BINARY_DIRECTORY}/Testing/TAG" testing_tag LIMIT_COUNT 1)
     set(test_xml "${CTEST_BINARY_DIRECTORY}/Testing/${testing_tag}/Test.xml")

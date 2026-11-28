@@ -62,6 +62,7 @@ Then the store is modelled, served, wired into the provider registry and proven 
 | [[id:794C1BF1-1FEC-40F4-8490-438C53C712E2][Delete the pooler lookup function nothing calls]] | DONE | 2026-11-28 | 2026-11-28 | A lookup function nothing calls, beside a pooler that reads copies of verifiers: wire the one or remove the other. |
 | [[id:42992A4D-BBFF-42CD-BA1C-89E09553EE60][Build a database without the service passwords]] | DONE | 2026-11-28 | 2026-11-28 | Environment format 39 removed the service passwords, but compass db recreate still demands them, so a fresh checkout cannot build a database and the fleet has nothing to authenticate against until provisioning runs. |
 | [[id:60A42D7D-B6CE-40B0-ABE8-D02A6851663D][Expose the vault in the shell]] | DONE | 2026-11-28 | 2026-11-28 | The vault's shell component exists, builds and is tested, and the shell never registers its menus, so a person cannot reach the vault from the command line. |
+| [[id:050BEC49-2581-4D6E-A404-75186205EF09][Serve the vault in the web]] | BACKLOG | 2026-11-28 | | The vault has two HTTP doors and no screen: a person cannot list, write, rotate or read a secret from ores.web, and the gateway does not expose the list doors a screen needs. |
 
 * Decisions
 

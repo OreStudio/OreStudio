@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 050BEC49-2581-4D6E-A404-75186205EF09
+:END:
+#+title: Task: Serve the vault in the web
+#+description: The vault has two HTTP doors and no screen: a person cannot list, write, rotate or read a secret from ores.web, and the gateway does not expose the list doors a screen needs.
+#+type: task
+#+level: s1
+#+filetags: :keep_a_secret_encrypted_with_its_key_outside_the_system:sprint_31:v0:
+#+owner: marco
+#+branch: feature/serve-the-vault-in-the-web
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The vault has two HTTP doors — a write and a reveal — and no screen. A person
+cannot list the secrets their tenant keeps, cannot see a consumer, cannot rotate or
+delete either, and cannot read a value back except by hand-rolling a request. The
+shell now serves all of that; the web serves none of it.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] |
+| Now          | Scoped; the two questions the plan names are open. |
+| Waiting on   | Nothing.                               |
+| Next         | Settle who seals a browser's value, then the doors. |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- =ores.web= has a vault area: a list of the tenant's secrets, a list of its
+  consumers, a write flow, a reveal that is an audited act, and a delete.
+- The gateway exposes the doors those screens need, with the permission each one
+  requires, and the route inventory states them.
+- The screens state what the vault is and is not: a value is sealed end to end,
+  and the screen shows the reveal as a recorded act rather than a copy.
+- A web test covers each screen's refusal, and the gate passes.
+
+* Plan
+
+Not yet started. Two questions decide the shape and are worth answering before the
+first screen:
+
+- *Who seals a value a person types?* The shell takes an already-sealed value and
+  the client hides it before it leaves. A browser has no X25519 in the platform it
+  can rely on, so either the web gets a sealing library, or the gateway accepts the
+  value over the authenticated session and seals it as the consumer it already is
+  for a reveal. The second is smaller and keeps the decision where the audit is.
+- *Which doors are missing?* The gateway has =POST /api/v1/vault/secrets= and
+  =GET /api/v1/vault/secrets/{name}/value=. A list needs =GET /api/v1/vault/secrets=
+  and =GET /api/v1/vault/consumers=, a history needs the versions door, and a
+  delete needs its own, each with the permission the custody service already
+  enforces.
+
+The screens follow the vault's journey, which is designed and not built
+([[id:5B2D332C-7480-40E4-A989-CC8B1D2124D5][Extract the vault's journey and
+prototype its screens]]).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

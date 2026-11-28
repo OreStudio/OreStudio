@@ -20,8 +20,10 @@
 #ifndef ORES_SERVICE_SERVICE_HOST_RUNNER_IMPL_HPP
 #define ORES_SERVICE_SERVICE_HOST_RUNNER_IMPL_HPP
 
+#include "ores.platform/credentials/credential_store.hpp"
 #include "ores.telemetry.core/log/lifecycle_manager.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.vault.client/client/service_password.hpp"
 #include <boost/exception/diagnostic_information.hpp>
 #include <cstdlib>
 
@@ -44,6 +46,76 @@ void log_host_command(ores::logging::logger_t& lg,
 
     ORES_LOG_SEV(lg, info) << "Command line arguments: " << args;
     ORES_LOG_SEV(lg, debug) << "Configuration: " << cfg;
+}
+
+/**
+ * @brief Takes this unit's database password from the vault, when one was placed.
+ *
+ * The first secret a workload resolves is its own database password, and it has
+ * to be resolved before the pool opens, which is before any token can exist. A
+ * deployment states the unit's consumer and the secret to ask for; the platform
+ * places the key pair; the vault seals a challenge to the public half. See
+ * =doc/knowledge/security/secure_introduction_of_a_workload_to_the_vault.org=.
+ *
+ * A configuration that states neither name is left alone, so a checkout, a test
+ * run and a tool that links this runner still start from their own options.
+ */
+/**
+ * @brief Takes this unit's database password from the credential the deployment
+ * placed, for the units that cannot ask the vault.
+ *
+ * Two of them cannot: the vault, which would have to answer its own request, and
+ * IAM, which the vault fetches its token keys from and which therefore starts
+ * first. The deployment places their password as a credential, and this reads it.
+ *
+ * A unit with no such credential keeps whatever password its configuration
+ * states, which is what a checkout and a test run look like.
+ */
+template <typename Config>
+void take_database_password_from_credential(Config& cfg, ores::logging::logger_t& lg) {
+    using namespace ores::logging;
+
+    if constexpr (requires { cfg.database; }) {
+        if (!cfg.database.password.empty())
+            return;
+
+        try {
+            const auto placed = ores::platform::credentials::credential_store::read("db-password");
+            cfg.database.password.assign(placed.begin(), placed.end());
+            ORES_LOG_SEV(lg, info) << "Took the database password from the credential placed "
+                                      "for this unit";
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(lg, debug)
+                << "No database password was placed for this unit: " << e.what();
+        }
+    }
+}
+
+template <typename Config>
+void take_database_password_from_vault(Config& cfg, ores::logging::logger_t& lg) {
+    using namespace ores::logging;
+
+    if constexpr (requires {
+                      cfg.database;
+                      cfg.nats;
+                  }) {
+        try {
+            const auto placed = ores::vault::client::placed_credential_from_environment();
+            if (!placed)
+                return;
+
+            const auto resolved = ores::vault::client::resolve_placed_password(cfg.nats, *placed);
+            if (!resolved)
+                return;
+
+            cfg.database.password = *resolved;
+            ORES_LOG_SEV(lg, info)
+                << "Took the database password from the vault as " << placed->consumer;
+        } catch (const std::exception& e) {
+            ORES_LOG_SEV(lg, error)
+                << "The vault did not answer for " << cfg.database.user << ": " << e.what();
+        }
+    }
 }
 
 /**
@@ -85,9 +157,13 @@ boost::asio::awaitable<int> run_host_async(const std::vector<std::string>& args,
     if (!ocfg)
         co_return EXIT_SUCCESS;
 
-    const auto& cfg(*ocfg);
+    // A copy, because the database password may be replaced below and the
+    // application is handed the resolved one rather than the file's.
+    auto cfg(*ocfg);
     lifecycle_manager lm(cfg.logging);
 
+    detail::take_database_password_from_credential(cfg, lg);
+    detail::take_database_password_from_vault(cfg, lg);
     detail::log_host_command(lg, args, cfg, opts);
 
     try {

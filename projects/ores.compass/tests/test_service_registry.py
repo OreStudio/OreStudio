@@ -88,7 +88,21 @@ def test_db_grant_prefixes_still_round_trip(services):
     syn = services["ores.synthetic.service"]
     assert {"prefix": "ores_synthetic_"} in syn["dml_prefixes"]
     assert {"prefix": "ores_synthetic_publish_"} in syn["execute_prefixes"]
-    assert len(syn["select_prefixes"]) == 9
+    # The reads the simulator needs, and no others: a prefix it does not use is
+    # a grant it does not need. Naming the set rather than counting it makes the
+    # failure say which prefix moved.
+    assert {p["prefix"] for p in syn["select_prefixes"]} == {
+        "ores_iam_",
+        "ores_marketdata_",
+        "ores_dq_",
+        "ores_trading_",
+        "ores_variability_",
+        "ores_assets_",
+        "ores_reporting_",
+        "ores_scheduler_",
+        "ores_compute_",
+        "ores_telemetry_",
+    }
 
 
 def test_every_entry_says_what_it_does(services):

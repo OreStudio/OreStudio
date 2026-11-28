@@ -145,6 +145,21 @@ the request, and a consumer that asks for another's entry is refused as one that
 holds no such secret. The exchange is therefore a narrower power than a token,
 not a wider one, and it cannot be used as a general login.
 
+Step 3 needs the vault's transport public key before the workload holds a
+session, and the read that publishes it (=vault.v1.ops.public_key=) requires
+one. The deployment therefore places it as a second credential beside the unit's
+own key: a public key is not a secret, and placing it costs one more entry in the
+unit's declaration while keeping the exchange free of a call it cannot make.
+
+Sealing the answer rather than sending the nonce in clear does one thing, and the
+one thing is enough. A nonce is good for a single redemption, so whoever presents
+it first is served, and a delivery sealed to the consumer's registered key means
+the one served is not necessarily the one who can read it. Had the nonce
+travelled in clear, any listener could present it first and leave the real
+workload holding a spent challenge, unable to start until the next attempt. The
+seal keeps the capability off the bus, and the delivery's own seal keeps the
+value from the listener either way.
+
 ** Where the platform's own secrets live
 
 The exchange answers in one tenant, and it is the system tenant, because what it
@@ -166,6 +181,88 @@ secret, registers under the tenant whose request it makes, and the vault
 resolves it in that tenant through the verified token. The two paths do not
 overlap: a token path for what belongs to a tenant, the bootstrap path for what
 belongs to the deployment.
+
+** Who writes a credential before any token exists
+
+The exchange solves the workload's secret zero and leaves the provisioner's in
+plain sight. A value reaches the vault through =vault.v1.ops.write=, the write
+is sealed to the vault's transport key, and the vault records the actor the
+verified token carries. A provisioner holding no token cannot write, and the
+first thing it has to write is the password of the service that issues tokens.
+The circle is the same one the exchange breaks, one step earlier in the boot.
+
+Two arrangements break it, and the boot order chooses between them.
+
+- *The vault writes, from its own keys.* Provisioning runs the vault's binary
+  with a write verb, hands it the values on standard input, and the vault seals
+  each one under the key encryption key it already holds and stores it in the
+  system tenant, owned by the actor the value belongs to. The writer needs no
+  token because it is the store, and no new identity exists to bootstrap. What
+  the audit records is the vault, acting for the deployment, which is true. The
+  costs are a verb on the vault's command line that writes any value, and the
+  values passing through a process that is not the one that generated them.
+- *The gateway writes, as an account a person holds.* Provisioning signs in
+  with the shell account, which the developer already holds, and writes each
+  value through the route a person uses. The audit names that account and the
+  path is the sanctioned one. The cost is the boot order: tokens come from IAM,
+  so IAM must be up before anything is written, which means IAM's own password
+  cannot come from the vault and stays a credential file forever — the exception
+  the vault holds must then be granted to a second process, and the provisioning
+  step needs a person's credential on a machine that runs unattended.
+
+ORE Studio takes the first. The vault is the only process that must exist before
+any other, its keys are already the ones that would seal the value, and the
+alternative turns *the vault cannot hold its own key* into *two services cannot
+hold their own passwords* while adding a person's login to the cold start.
+
+The verb is =ores.vault.service --provision=, and it reads one JSON document
+naming the consumers to register and the values to store:
+
+#+begin_src json
+{"consumers": [{"name": "iam_service@system.ores",
+                "actor": "iam_service@system.ores",
+                "public_key": "<base64, 32 bytes>"}],
+ "secrets":   [{"name": "db.iam_service.password",
+                "owner": "iam_service@system.ores",
+                "value": "<the generated password>"}]}
+#+end_src
+
+Consumers are written before secrets, so a value's owner is a consumer the vault
+knows by the time the value arrives. The document is read from a pipe or from a
+file the deployment keeps nowhere: a file of plaintext passwords is the shape
+this step exists to remove. Each entry is reported as it is written and a failure
+stops the run with a non-zero exit, so a deployment that provisions half of what
+it states hears about it.
+
+Two details make the act safe to repeat and to audit. A secret written twice
+becomes a new version of the same name rather than a second secret, because the
+store is versioned. And the value is sealed to the vault's own transport key and
+then opened by the ordinary write, so provisioning runs the path the bus runs
+instead of a parallel one that could drift from it; the audit records the vault's
+own account as the performer and the consumer as the owner.
+
+** Who asks, and when
+
+The write above puts the material in the vault. The asking happens in the
+service runner, which every compiled service passes through before it builds its
+database context: the deployment states the unit's consumer and the name of the
+secret in the unit itself, the platform placed the unit's key pair, and the
+runner exchanges a challenge for the password.
+
+The order the units start in is what the exchange cannot decide for itself, and
+it has one constraint that is easy to miss. The vault fetches the keys that
+verify tokens from IAM before it subscribes to anything, so IAM must exist
+before the vault, and the vault must exist before every service that resolves.
+The order is therefore nats, IAM, the vault, then the rest; a unit that resolves
+is ordered after the vault without requiring it, because a resolver that cannot
+reach the vault falls back to the password its configuration states and the fleet
+still boots.
+
+That order is also why two processes keep a password in a file rather than
+resolving one: the vault cannot answer its own request, and IAM cannot be asked
+before the process it has to start before. Both exceptions are stated in
+[[id:DBF20EC5-63BB-4DE5-957C-5322DE0E487F][Secrets Register]] rather than left
+to be rediscovered.
 
 ** What it does not do
 

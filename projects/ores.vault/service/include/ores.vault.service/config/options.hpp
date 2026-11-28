@@ -30,8 +30,10 @@
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.utility/codec/member_count.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
+#include <cstdint>
 #include <iosfwd>
 #include <optional>
+#include <string>
 #include <tuple>
 
 namespace ores::vault::service::config {
@@ -52,6 +54,12 @@ struct options final {
      * @brief Configuration related to database operations.
      */
     ores::database::database_options database;
+    /**
+     * @brief The document a deployment writes once, before any service holds a token: the
+     * consumers whose keys it registers and the values it stores for them. Empty
+     * starts the service as usual.
+     */
+    std::string provision;
 };
 
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<options>) {
@@ -59,6 +67,7 @@ struct options final {
         ::ores::utility::codec::field{"logging", &options::logging},
         ::ores::utility::codec::field{"nats", &options::nats},
         ::ores::utility::codec::field{"database", &options::database},
+        ::ores::utility::codec::field{"provision", &options::provision},
     };
 }
 

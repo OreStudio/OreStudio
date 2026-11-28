@@ -44,7 +44,11 @@ target_link_libraries(${tests_target_name}
 # a scoped temporary file, a compression helper -- so the component declares
 # them here rather than the profile carrying every component's needs.
 
-
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        # The document reader's cases build their documents in memory, so the
+        # suite needs the parser the reader uses and nothing else.
+        Boost::json)
 
 add_custom_target(test_${tests_target_name}
     COMMENT "Testing ${tests_target_name}" VERBATIM

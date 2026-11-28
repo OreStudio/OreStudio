@@ -38,6 +38,8 @@ secret without linking the vault's logic or the key encryption key.
 
 * Entry points
 
+- =include/ores.vault.client/client/credential_bootstrap.hpp= — the exchange a
+  workload makes before it holds any token.
 - =include/ores.vault.client/domain/stub.hpp= — the placeholder the generated
   baseline carries.
 - The facade that seals a write and opens a resolve arrives with the serve task.
@@ -47,6 +49,33 @@ secret without linking the vault's logic or the key encryption key.
 - =ores.nats= — the request and reply.
 - =ores.security= — =sealed_box=, to seal a write and open a resolve.
 - =ores.vault.api= — the types.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than hand-edited into
+the generated build file. Each block is spliced into its generated file after
+the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.vault.api.lib
+    PRIVATE
+        ores.nats.lib
+        ores.security.lib
+        ores.logging.lib
+        ores.utility.lib)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        # The test stands in for the vault: it seals the nonce and the value
+        # with the transport key, so the exchange is proved against a party
+        # that answers the protocol rather than against a mock.
+        ores.security.lib
+        ores.nats.lib)
+#+end_src
 
 * See also
 

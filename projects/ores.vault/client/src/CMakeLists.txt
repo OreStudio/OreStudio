@@ -46,6 +46,13 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name} PRIVATE ores.codec.pch)
 
-
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.vault.api.lib
+    PRIVATE
+        ores.nats.lib
+        ores.security.lib
+        ores.logging.lib
+        ores.utility.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

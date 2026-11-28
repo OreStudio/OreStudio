@@ -8212,6 +8212,9 @@ def main():
     if len(sys.argv) >= 2 and sys.argv[1] == "systemd":
         import systemd_generate
         sys.exit(systemd_generate.run(sys.argv[2:], PROJECT_ROOT, env_file=_resolved))
+    if len(sys.argv) >= 2 and sys.argv[1] == "vault":
+        import vault_provision
+        sys.exit(vault_provision.run(sys.argv[2:], PROJECT_ROOT, env_file=_resolved))
     if len(sys.argv) >= 2 and sys.argv[1] == "branches":
         import compass_branches
         sys.exit(compass_branches.run(sys.argv[2:], PROJECT_ROOT))

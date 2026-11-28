@@ -405,3 +405,47 @@ TEST_CASE("a_challenge_answered_by_another_consumer_is_refused", "[vault][custod
         custody.redeem_credential(challenges, asked, issued.challenge_id, secret_name, answer);
     CHECK_FALSE(spent.success);
 }
+
+TEST_CASE("a_deployment_provisions_a_consumer_and_the_value_it_owns",
+          "[vault][custody][integration]") {
+    auto lg(ores::logging::make_logger(test_suite));
+
+    scoped_database_helper h;
+    const auto& ctx = h.context();
+    const auto keys = keys_with({1}, 1);
+    const auto subject = unique_subject();
+    const auto pair = sealed_box::generate();
+    // The name every case in this file writes, so a run leaves one open version
+    // of it rather than a name of its own: the rotation below counts the names
+    // a tenant holds, so a name per run would grow that count.
+    const auto name = secret_name;
+    const auto value = "the password the deployment generated";
+    const auto owner = subject + ".account";
+
+    const auto request = actor_context(ctx, "vault.test.deployment");
+    custody_service custody(request, keys);
+
+    const auto consumer =
+        custody.provision_consumer(subject, owner, base64_converter::convert(pair.public_key));
+    ORES_LOG_SEV(lg, info) << "Provision answered: " << consumer.message;
+    REQUIRE(consumer.success);
+
+    const auto written = custody.provision_secret(request.actor(), name, owner, value);
+    REQUIRE(written.success);
+    CHECK(written.key_version == 1);
+
+    // The value belongs to the account the deployment stated rather than to the
+    // account that wrote it, so the resolve runs as that account: the token path
+    // checks the caller's actor, where the bootstrap path checks the account the
+    // consumer row names.
+    custody_service owner_view(actor_context(ctx, owner), keys);
+    const auto resolved = owner_view.resolve(subject, name);
+    INFO(resolved.message);
+    REQUIRE(resolved.success);
+
+    const auto opened =
+        sealed_box::open(pair.private_key,
+                         resolved.sealed_value,
+                         ores::vault::messaging::custody_context::delivery(subject, name, 1));
+    CHECK(opened == value);
+}

@@ -51,7 +51,16 @@ literal content):
 4. *Entry points* — 3–6 key file paths with a one-line annotation each.
 5. *Dependencies* — =ores.*= slugs from the component's
    =target_link_libraries= block; omit ubiquitous transitive deps.
-6. *See also* — at minimum one id-link to a sibling component; more for
+6. *Build dependencies* — the libraries the shared profile cannot know
+   about, as a =#+begin_src cmake :name extra_dependencies= block, and a
+   =:name extra_test_dependencies= block for the test target. The
+   generator splices each block into the generated
+   =src/CMakeLists.txt= and =tests/CMakeLists.txt= after the profile's
+   baseline, so a dependency is declared here and never hand-edited into
+   the generated file. The header of the generated file names the
+   template that wrote it; a change made there is lost at the next
+   generate.
+7. *See also* — at minimum one id-link to a sibling component; more for
    knowledge docs and recipes. Use =[[id:UUID][label]]=.
 
 Finally, remove the component's =MISSING_OVERVIEW= entry from

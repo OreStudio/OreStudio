@@ -89,8 +89,9 @@ runs:
       # repository builds: debug with coverage, and on the nightly valgrind as
       # well. Uncapped, it ran to exactly 6h0m0s and was killed, leaving the
       # cache steps below roughly thirty seconds, which cannot upload a compiler
-      # cache. Cap the step and leave the rest of the job to them.
-      timeout-minutes: 350
+      # cache. A composite step cannot state timeout-minutes, so the cap is
+      # timeout(1): the step is cut at 350 minutes and the cache steps still run,
+      # because they carry always().
       shell: bash
       run: |
         export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
@@ -131,7 +132,8 @@ runs:
             fi
             timeout_arg=(--timeout ${suite_timeout})
         fi
-        ctest -VV "${timeout_arg[@]}" --preset ${preset} --script "CTest.cmake,${cmake_args}"
+        timeout 21000 ctest -VV "${timeout_arg[@]}" --preset ${preset} \
+            --script "CTest.cmake,${cmake_args}"
 
     - name: Run CTest workflow
       if: runner.os == 'macOS'

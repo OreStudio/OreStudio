@@ -8,7 +8,7 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch: feature/capture-the-sizing-work-the-screens-need
-#+pr:
+#+pr: 5233
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
@@ -99,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5233][#5233]] | [agile] Capture the sizing tasks the screen review asked for |
 
 * Review
 

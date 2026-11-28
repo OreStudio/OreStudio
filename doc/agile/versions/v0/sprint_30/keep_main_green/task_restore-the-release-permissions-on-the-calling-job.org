@@ -8,7 +8,7 @@
 #+filetags: :keep_main_green:sprint_30:v0:
 #+owner: marco
 #+branch: hotfix/restore-the-release-permissions-on-the-calling-job
-#+pr:
+#+pr: 5232
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5232][#5232]] | [ci] Grant the release permissions and check out before the guard |
 
 * Review
 

@@ -87,5 +87,6 @@ set(files
     "two_factor_gaussian_process_tests.cpp"
     "vasicek_process_tests.cpp"
     "vol_batch_tests.cpp"
+    "vol_derivation_kind_tests.cpp"
     "volatility_measurement_tests.cpp"
 )

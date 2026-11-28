@@ -170,7 +170,10 @@ TEST_CASE("a_starved_node_states_no_fixing_and_makes_up_no_day", index_fixing_fe
                 [](const std::string&, year_month_day) {
                     return std::expected<std::set<year_month_day>, std::string>{};
                 },
-            .starved = [&starved] { return starved; }},
+            .starved =
+                [&starved] {
+                    return starved;
+                }},
         market);
 
     market.values().publish_spot(spot, 1.0842, utc_at(a_cut_friday, 14h));

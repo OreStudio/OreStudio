@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 45146EEA-76AA-41F2-8BBD-1D571E9E658E
+:END:
+#+title: Task: Draw the journeys of the volatility production
+#+description: Five journeys that answer what the machinery is doing: watch a surface being produced, explain why a surface has no quotes, compare the truth with the views and the calibration, debug one bad quote, and step through a day. Name the screens, the question each answers and the data each needs.
+#+type: task
+#+level: s1
+#+filetags: :watch_the_fx_volatility_production:inbox:product_backlog:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1EF4F5FE-802A-49C1-A133-B33281BDAA9D][Watch the FX volatility production]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Five journeys state what the machinery is doing and what each screen must answer.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:1EF4F5FE-802A-49C1-A133-B33281BDAA9D][Watch the FX volatility production]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- Each journey names its screen, the question it answers and the data it needs.
+- The journeys cover watching a surface being produced, a surface with no quotes, the truth against the views and the calibration, one bad quote, and a day stepped through.
+- The prototype follows the journeys and no screen exists without one.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

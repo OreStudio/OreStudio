@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :ir:curves:marketdata:sprint_31:v0:
 #+created: 2026-11-24
-#+updated: 2026-11-27
+#+updated: 2026-11-28
 #+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 #+predecessor: 0F936789-FEBE-4330-97B9-DFE0837E4466
@@ -29,12 +29,12 @@ it is.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:C863DD3D-740F-4234-B5AB-BD9F3950E09D][Sprint 31]] |
-| Now           | All three tasks are done: the term indices are derived, the fixings screen lists them, and each index is stated by the administrator that owns it. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Close the story, or say what is left: the FX volatility quotes under =derived= belong to the story that gives a value a producer. |
-| Last touched  | 2026-11-27                               |
+| Next          | Nothing. |
+| Last touched  | 2026-11-28                               |
 
 * Acceptance
 
@@ -61,4 +61,39 @@ it is.
 
 * Out of scope
 
--
+- The FX volatility surfaces the same derivation machinery serves. They are
+  bright_faraday's story, and the series they derive stay under their own
+  derivation kind until that story files them under an owner.
+
+* Result
+
+The goal is met. A currency that serves only an overnight index now prices a
+trade that floats on its term index: the term index's fixings are compounded
+from the overnight curve, stated at each tenor the trades book, and named by the
+index's own oresmd address.
+
+Five tasks, in the order they had to happen. The term indices were derived from
+their overnight curves (=#5143=). The fixings screen then showed every FX and IR
+observation across every source, read only (=#5196=, =#5202=). The simulated
+fixings were split so that each administrator states its own, in its own
+notation (=#5196=). The derived provider was retired: who owns an item and how
+its value was made had been the same word, and the series already carried the
+derivation (=#5214=). And each series now says which kind of derivation made it,
+one kind per table, with the curve record stating the blueprint that built it
+(=#5225=).
+
+What a person sees. The system-level fixings screen lists the derived term
+series beside the overnight series it comes from, and says which of the two each
+is. Three computed term indices — CME's, Banco de la República's and GPW's —
+carry =IR_TERM_FIXING= and 520 fixings each under their administrators' own
+publishers. The curve screen states how the curve was made, by the blueprint's
+name, instead of showing a bare id. Of the 21 fixing addresses an acme
+provisioning asks for, none is unanswered.
+
+What it leaves for later, captured rather than lost: a blueprint created in the
+application states no derivation until its first republish; the FX volatility
+quotes have no owner to file them under; and no test proves a live source
+replaces a computed fixing. Each is an inbox capture, and the analytics and
+evolution screens still say nothing about how the points they draw were made,
+because =observation_lineage= already carries that and the record is where a
+person meets the curve.

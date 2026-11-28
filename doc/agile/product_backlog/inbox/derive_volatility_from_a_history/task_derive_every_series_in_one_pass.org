@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
 #+owner: marco
-#+branch:
+#+branch: feature/derive-every-series-in-one-pass
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -28,11 +28,11 @@ the job it has to do.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented, measured and tested; awaiting its review. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | A pull request for the batch.          |
 | Last touched | 2026-11-28                               |
 
 * Acceptance
@@ -45,9 +45,30 @@ the job it has to do.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two layers, because the first draft put a class in the batch and that is the fault the story exists
+to remove: a class-shaped batch invites a second one for the next class.
+
+- =vol_batch=, in the measurement engine, is many level histories over one ladder of pillars. It
+  names no class: per cell it holds the returns a window read, the level over that window, and the
+  shape of the series' whole sample scaled to the cell's own life, plus a state and a reason. The
+  transform is a parameter, because only the class knows whether a level keeps a sign.
+- =project_ir_vols= turns a measured batch into the rates class's quotes: the model's factor, the
+  ATM normal volatility, and the smile's slope, in arrays keyed by the batch's own layout. An FX
+  projection would be the same function with different arithmetic, and no second batch type.
+- =make_vol_batch= is the one place the layout is decided. =measure_batch= allocates with it and
+  fills the rows in turn; a caller that wants its own threads allocates with it and fills rows
+  itself, which is what the parallel test does.
+- =measure_row= owns exactly one row. It reads the caller's levels and the settings and writes
+  nothing else, which is why the parallel answer equals the serial one and no lock is needed.
+- The pass walks the returns once, newest first, summing the first four powers. Because every
+  pillar reads a tail, the sum of a window is the sum taken so far: a window costs only the returns
+  the previous window did not reach, and no scratch, prefix array or per-cell allocation is needed.
+- Refusals are data, not exceptions: a pillar no measurement can read, a series with no return or no
+  spread, and a window the sample does not cover each mark their own cells with a state and a
+  reason, and the rest of the batch stands. The projection refuses as a whole, because the model is
+  one statement about every cell.
+- The smile's level is the ATM, so the projection stores the slope alone: a second copy of the ATM
+  is a second place the level can be wrong.
 
 * Measurements
 
@@ -59,15 +80,37 @@ code changing, and the reader of a bare number cannot tell which tree it came
 from. Where the raw output matters, put it in an =evidence/= file beside the
 task and name that file in the Command column.
 
+The benchmark's corpus is the series set the seed configures, and its histories are the suite's
+own walk: this worktree's services are down, so the seed's stored fixings are not readable, and a
+corpus measured on generated levels says what the code costs and not what the market did. The cost
+is processor time, not wall clock, because this machine builds other worktrees while it measures:
+three runs of the same binary agreed to within one percent on processor time and swung by a factor
+of three on the clock.
+
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The corpus the seed configures | 264 series over 22 currencies, 12 expiries, 8,000 observations each: 3,168 cells | =ORES_SEED_CURVE_QUOTES=$PWD/projects/ores.seeder/datasets/acme_corporation/curve_quotes.json ./build/output/linux-clang-release-ninja/publish/bin/ores.analytics.quant.tests "[.benchmark]" "*seed carries*"= | =d311d3b9f7= |
+| The batch and the projection over the corpus | 12.2 ms of processor time, best of five passes | as above | =d311d3b9f7= |
+| The same corpus one series at a time | 48.5 ms of processor time, best of five passes | as above | =d311d3b9f7= |
+| The quant suite | 782 cases, 2,277,176 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.analytics.quant.tests= | =d311d3b9f7= |
+| The synthetic api suite, which owns the FX derivation whose grid now shares the moments | 1,131 cases, 10,293 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.synthetic.api.tests= | =d311d3b9f7= |
+| The synthetic core suite | 182 passed, 2 skipped (no ORE engine on this tree) | =./build/output/linux-clang-release-ninja/publish/bin/ores.synthetic.core.tests= | =d311d3b9f7= |
 
 * Notes
 
 - The precedent is =derive_grid= in the FX derivation: prefix sums of the first four powers of the returns make a day cost the same whether its window is a week or ten years, and a test holds it cell for cell equal to the day-at-a-time answer.
 - The corpus is the currencies and terms the seed configures, so the number is about this platform and not a synthetic benchmark. A measurement without the corpus size is not a measurement.
 - The parallel shape is one task per series over immutable inputs. Nothing in the derivation holds a cache, so no series can see another and the result does not depend on the order the tasks finish.
+- =moments_from_power_sums= is the engine's moments read from four sums rather than from a sample, and the FX grid now uses it too: the two places that reconstruct moments from sums were the same arithmetic written twice. The FX tests that hold the grid equal to the day-at-a-time answer pass unchanged, which is what makes that fold safe.
+- The suite was run with the environment's =.env= loaded, because the synthetic tests read their
+  database settings from it and this worktree's services are down: the suites that need a database
+  are outside this task's evidence and could not be run here.
+- The first draft of this task put the class in the batch: =ir_vol_batch= held the series, the
+  factor and the ATM. The review of the arc rejected it for the reason the story exists: a batch
+  whose name and fields are a class's invites a second batch for the next class, which is the
+  duplication being removed. The measured batch is now the platform's, and a class states its
+  quotes as a projection over it.
+
 * Test Scenarios
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
 that verify this task. Link
@@ -90,3 +133,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=measure_batch= takes many level histories over one pillar ladder and answers in flat arrays: a
+state, a window, a level, the shape at the cell's life and the refusals beside them, with an offset
+per row. Nothing in it names a class, so the next class derives into the same batch and writes its
+own projection over it; =project_ir_vols= is that projection for rates, and =derive_term_matrix=
+still answers the same numbers for one series.
+
+=measure_row= fills one row and nothing else, so the batch runs serially or one task per series with
+the same answer; a test fills four rows at once and finds the arrays equal to the serial pass.
+
+The pass costs one walk of each series' returns, and a window costs only the returns the previous
+one did not reach. Over the seed's 264 rate series and 12 expiries, 3,168 cells take 12.2 ms of
+processor time against 48.5 ms for the same corpus one series at a time.
+
+What this task did not do: the emitter that writes the quotes and the simulator that builds the cube
+are separate tasks, and the FX grid is untouched, because it files a day of one pair across expiries
+and not many series across a ladder.

@@ -203,19 +203,27 @@ for a person who holds the read of the deployment (see [[*The deployment read][T
 Secrets is its own area. It holds the values the installation keeps for its own
 use and the consumers that may receive them, and its one heavy act is a read: a
 value is masked until a person asks for it, the ask needs
-=vault::secrets:read=, and it is recorded twice. That is a question about the
+=vault::secrets:resolve=, and it is recorded twice. That is a question about the
 tenant's data, not about the process, which is why the area is not a folder
 inside Operations.
 
-It holds four screens: Secrets, the list; a secret's own record with its versions
-and its value; Consumers; and Uses. The last one has no rule and no operation yet,
-so it is drawn as a proposal and the area gains it when both land
+The area has no page of cards. Like Requests, its list is where the menu arrives:
+the trail of the list is Home and Secrets, a secret's own record is the step below
+it, and the consumers are a screen the list's own button opens.
+
+It holds three screens today: Secrets, the list; a secret's own record, with its
+owner, its protecting key, when it was written and the ask for its value; and
+Consumers. Two of the four the journey designs are still missing. The record's
+version stream has no operation
+([[id:BD0CFC52-82B1-4F07-AD12-5D732BE52E55][The versions of a secret have no
+door]]), and the uses screen has neither an operation nor a rule
 ([[id:AB30FE64-5790-4942-A1CB-30CB7AE17530][The vault's uses have no screen and
 no operation]]).
 
-Each card is drawn for a person who holds
-=vault::secrets:read=, and Add, Change, Delete and Reveal are not drawn at all
-for a person who does not hold the write or the read they need.
+Each screen is drawn for a person who holds =vault::secrets:read=. Add and Change
+are not drawn at all for a person without =vault::secrets:write=, Delete without
+=vault::secrets:delete=, and Reveal without =vault::secrets:resolve=: an action
+somebody may not take is not drawn, and never drawn disabled.
 
 *** Market data
 

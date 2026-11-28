@@ -494,8 +494,8 @@
             var table = Q.get('table') || '';
             var tables = CONTENTS[code] || [];
             body = table === ''
-                ? '<div class="cardhead"><h2>Contents</h2><span class="dim">The tables this ' +
-                  'dataset stages into</span></div>' + tablesOf(code) +
+                ? '<div class="cardhead"><h2>Contents</h2><span class="dim">Artefact type ' +
+                  M.esc(m.type) + ' · the tables it names</span></div>' + tablesOf(code) +
                   '<p class="hint">A dataset stages into the table or the family of tables its ' +
                   'artefact type names. Each table carries its own columns, so a table is opened ' +
                   'to read its rows.</p>'

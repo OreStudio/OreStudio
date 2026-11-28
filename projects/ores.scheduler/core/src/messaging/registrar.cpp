@@ -28,6 +28,7 @@
 #include "ores.scheduler.core/messaging/retained_store_registrar.hpp"
 #include "ores.scheduler.core/messaging/retained_store_sample_registrar.hpp"
 #include "ores.scheduler.core/messaging/retention_policy_registrar.hpp"
+#include "ores.scheduler.core/messaging/retention_run_registrar.hpp"
 #include "ores.scheduler.core/messaging/scheduler_status_handler.hpp"
 #include "ores.scheduler.core/messaging/store_bounds_handler.hpp"
 #include "ores.scheduler.core/service/publish_subject_plan.hpp"
@@ -79,6 +80,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // The samples are generated the same way: the series a screen plots is read
     // over the wire, not by SQL.
     for (auto& sub : register_retained_store_sample_handlers(nats, ctx, verifier))
+        subs.push_back(std::move(sub));
+
+    // What housekeeping last did, in the shape a screen reads it: the ledger
+    // joined to the policy each row names, so a run shows the period and the
+    // state the policy has now.
+    for (auto& sub : register_retention_run_handlers(nats, ctx, verifier))
         subs.push_back(std::move(sub));
 
     // The two operational views are computed, so their handlers are

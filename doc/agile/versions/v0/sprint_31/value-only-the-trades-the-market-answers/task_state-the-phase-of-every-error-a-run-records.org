@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :value-only-the-trades-the-market-answers:sprint_31:v0:
 #+owner: marco
-#+branch: feature/value-only-the-trades-the-market-answers
-#+pr:
+#+branch: feature/state-the-phase-of-every-error
+#+pr: 5211
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-25
-#+updated: 2026-11-25
-#+environment:
+#+updated: 2026-11-27
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A reader of a run's errors can tell where each one came from: the run's own prep
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-25                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-27                               |
 
 * Acceptance
 
@@ -41,9 +41,27 @@ A reader of a run's errors can tell where each one came from: the run's own prep
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- The phase is the platform's own closed set of three words, so it is a checked
+  column beside =severity= and not a lookup table. The scope is a table because
+  the engine grows that vocabulary and a new group is a row; a phase row would
+  be code the platform compiles. The check refuses a value no phase states,
+  exactly as a foreign key to seeded rows would.
+- =report_error_event= gains =phase_code= beside =scope_code=, and the model
+  states why the two answer different questions: the scope is the engine's own
+  word about what an error is about, and the phase is the platform's word about
+  which part of the run was working when it failed.
+- One vocabulary type, =domain::run_phase=, states the three codes and their
+  words, so a writer can only name a phase the store holds, and a code read
+  from a message is parsed once where it enters.
+- One recorder writes every error a run holds, so it states the phase once. The
+  log rows state the engine phase, because every one of them is a line of the
+  engine's own log; a step that refuses its work states the phase it belongs to.
+- The compensation that fails a report states the phase of the step it rolls
+  back. The engine compensates only the steps that completed, so the failing
+  step writes the failure itself and this is the fallback for a step that
+  stopped without a word.
+- A read answers a run's problems per phase, so a screen can open the errors of
+  one phase without reading them all.
 
 * Measurements
 
@@ -57,9 +75,54 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The build of the whole tree | succeeded in 0:09:29 | =compass build= | =441cb29dd4= |
+| The reporting domain, codec and workflow suites | 5264 assertions in 1346 test cases | =ores.reporting.api.tests= | =441cb29dd4= |
+| The reporting core suite, including the recorder and the counts | 1735 assertions in 295 test cases | =ores.reporting.core.tests= | =441cb29dd4= |
+| The reporting shell suite, including the generated =fail-report= command | 1658 assertions in 602 test cases | =ores.shell.reporting.tests= | =441cb29dd4= |
+| The reporting HTTP routes | 731 assertions in 102 test cases | =ores.http.reporting.tests= | =441cb29dd4= |
+| The reporting service suite | 28 assertions in 11 test cases | =ores.reporting.service.tests= | =441cb29dd4= |
+| The errors table of a run, with its phase column | 4 tests | =npm run test --workspace @ores/web -- --run src/reporting/RunErrorsTable.test.tsx= | =441cb29dd4= |
+| The BFF's run-error rows, which serve the phase | 10 tests | =npm run test --workspace @ores/bff -- --run src/grid-report-runs.test.ts= | =441cb29dd4= |
+| The format gate | passed | =compass check --only format= | =441cb29dd4= |
+| The ratchet, which records two new wide-type warnings | 2 new diagnostics, exit 0 | =compass-ng check --ratchet 1fd8150a69= | =441cb29dd4= |
+| The local gate, including the database and the whole suite | 21 of 22 checks passed; 100% of 115 suites; =pgtap= fails in a scheduler test this branch does not touch | =compass check= | =9bd911c298= |
+| The web tree: typecheck, format and every test | 2727 tests in the client, 234 in the BFF, 61 in the wire protocol | =npm test= in =projects/ores.web= | =9bd911c298= |
 
 * Notes
+
+The plan changed in two places once the code was read.
+
+- The phase is a checked column and not a seeded lookup. =severity= is the same
+  kind of fact — a closed set of the platform's own words — and it is a check in
+  this very table; the scope is the one that cannot be, because the engine grows
+  it. A three-row lookup would also owe a permission code, a screen and a
+  service for rows nobody edits.
+- The compensation is built for the steps that completed, in reverse order, and
+  never for the failing step: =workflow_engine::begin_compensation= skips every
+  step whose state is not =completed=. The failing step's handler writes the
+  row itself, so the phase of the failure travels on that row; the compensation
+  states the last phase the run completed, and its row is the fallback for a
+  step that died without writing one.
+
+Two surfaces moved with the column, because both write an error row: the shell's
+=fail-report= command gained the phase as its first positional argument, and the
+agent eval seed states =preprocess= on the run-level row it writes.
+
+The gate's one failure is not this branch's. =pgtap= fails in
+=scheduler_housekeeping_alerts_test.sql=: the pass is expected to raise four
+notices for stores nothing bounds and raises none, and the function warns that
+no account raises them. The same file passed at the base this branch was
+rebased from before the housekeeping work landed, and the branch touches
+neither the test nor the scheduler and inbox SQL. It is captured in
+[[file:../../../product_backlog/inbox/pgtap-housekeeping-alerts-raise-nothing.org][the inbox]].
+
+The ratchet records the column as two new wide-type warnings:
+=report_error_event= and its entity now hold seventeen fields against a recorded
+ceiling of sixteen, which the rule does not raise. The exception the check offers
+is a source comment the entity template emits and the api domain template does
+not, so accepting it would silence one of the two warnings and leave the other;
+the pair is recorded here instead, and grouping the fields that belong together
+is the work the rule asks for.
 
 * Test Scenarios
 
@@ -76,12 +139,46 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5211][#5211]] | [reporting] State the phase of every error a run records |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The per-phase split is answered by the store and dropped by both surfaces, so no screen can read it | =report_error_event.org=, =reporting.ts=, =report_routes.cpp= | Fixed | The split travels on the run a screen lists, and the list states the phases under each count. |
+| 2 | The =phase_code= filters are a public read nobody calls | =report_error_event_protocol.hpp=, =report_error_event_repository.cpp= | Fixed | The column is no longer filterable, the filters are gone, and the model states why a read of one phase is a second way to ask what the rows answer. |
+| 3 | The new domain test does not follow the unit test conventions | =domain_run_phase_tests.cpp= | Fixed | The file states its suite and its tags, logs each case and opens with a =@file= block. |
+| 4 | The phase is typed as any string in the browser | =report-runs.ts=, =reporting.ts= | Fixed | =reportPhaseSchema= is a closed enumeration, and both the error row and the run's split use it. |
+| 5 | The journey claims the summary counts by phase, and it does not | =journey_find_out_why_a_run_went_wrong.org= | Fixed | The step states what the summary counts and what the run states per phase. |
+| 6 | The vocabulary is spelled five times: the model check, the DDL, the enum and two walks of it | =run_phase.cpp=, model, DDL | Partly fixed | The two walks are one table now. The check and the DDL stay codegen's one source, and the enum is the C++ side of it; a lookup table would remove the last copy at the price of a screen, a service and a permission code for three rows. |
+| 7 | The two refusal lambdas default to postprocessing, which contradicts the doc that the caller states the phase | =report_execution_handler.cpp= | Kept | The default is the step's own phase by construction, and a refusal of the collecting or loading step is postprocessing. The comment says so now, and the engine's verdict is the one the caller names. |
+| 8 | Eleven identical =fail_report_from= hunks re-edit one fact per step | =report_execution_workflow.hpp= | Kept | The phase belongs to the reporting step that states it. Putting it on =workflow_step_def= would put this component's vocabulary into =ores.workflow=, for every workflow. |
+| 9 | =mark_instance_failed= takes four parameters that travel together | =report_execution_handler.cpp= | Kept | A private method of one class, and the four are its whole account of a failure. A bundle type would be a name for the same four. |
+| 10 | Two test names state a behaviour the compensation does not have | =workflow_report_execution_tests.cpp= | Fixed | They name what they pin: the phase of the step a compensation rolls back, and the phase of the step that refused. |
+| 11 | The fold comment says the ORDER BY makes the fold a lookup | =report_error_event.org= | Fixed | The order is what makes a run's phases arrive together in one order; the index is what finds the row. |
+| 12 | The design page still says a row states four things, and its date did not move | =report_error_event.org= | Fixed | A row states five things, the phase is the third, and the date moved. |
+| 13 | The reporting schema render is older than the column | =ores_schema.reporting.svg= | Fixed | Redrawn with the build's own PlantUML. |
+| 14 | The compensation's phase is unsound for a step that dies without a word | =report_execution_workflow.hpp=, =workflow_engine.cpp= | Kept | The engine compensates only the steps that completed and states no failing step, so the platform cannot know which one it was. The model, the plan, the Result and the PR's limitations say so. |
 
 * Result
+
+Every error a run records states the phase that produced it, beside the scope
+the engine names. The phases are the platform's own closed vocabulary, and the
+store checks them: =preprocess=, =engine= and =postprocess=.
+
+- The engine's own log rows state =engine= whatever step reads them, because a
+  row is the engine's account of itself and not the account of the step that
+  collected it. The results ingester therefore states the engine's phase, which
+  is what the row's subject already says: only the engine names trades.
+- A step that refuses its work states its own phase. A compute result the
+  engine failed states =engine= even though the collecting step is what reads
+  it, because that failure is the valuation's, and a reader who read it as
+  postprocessing would look in the wrong place for it.
+- The compensation states the phase of the step it rolls back, because the
+  engine compensates only the steps that completed and never the failing one.
+- A read answers a run's problems split by phase beside its totals, and both
+  the row and the run the list draws state it: the row states its phase, and
+  the run states how many of its problems each phase recorded.
+- A phase is not a filter of the generated read. A screen reads a run's errors
+  and groups them, and a read of one phase would be a second way to ask what
+  the rows already answer.

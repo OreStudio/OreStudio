@@ -71,6 +71,14 @@ TEST_CASE("ores::storage::messaging::archive_listing", "[codec][roundtrip][proto
     ores::testing::check_wire_roundtrip<ores::storage::messaging::archive_listing>();
 }
 
+TEST_CASE("ores::storage::messaging::expire_objects_request", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::storage::messaging::expire_objects_request>();
+}
+
+TEST_CASE("ores::storage::messaging::expire_objects_response", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::storage::messaging::expire_objects_response>();
+}
+
 TEST_CASE("ores::storage::messaging::list_archive_entries_request",
           "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::storage::messaging::list_archive_entries_request>();

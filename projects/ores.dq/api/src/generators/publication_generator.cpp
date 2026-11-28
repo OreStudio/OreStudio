@@ -47,6 +47,8 @@ domain::publication generate_synthetic_publication(utility::generation::generati
     r.mode = std::string(faker::word::noun());
     r.target_table = std::string(faker::word::noun());
     r.published_by = std::string(faker::word::noun());
+    r.outcome = std::string(faker::word::noun());
+    r.messages = std::string("[]");
     return r;
 }
 

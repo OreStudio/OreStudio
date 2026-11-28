@@ -490,6 +490,19 @@ describe('the notification bell', () => {
         expect(notificationRoute(notification({ linkId: '' }))).toBe('/requests');
     });
 
+    it('points a housekeeping notice at the store it names', () => {
+        expect(
+            notificationRoute(
+                notification({
+                    kindCode: 'scheduler.store_unbounded',
+                    messageKey: 'notification.scheduler.store_unbounded',
+                    linkRoute: 'operations/housekeeping',
+                    linkId: 'refdata.calendar_dates',
+                }),
+            ),
+        ).toBe('/operations/housekeeping/refdata.calendar_dates');
+    });
+
     /*
      * A scenario notice names the scenario and where it is run. It is the one
      * kind whose link is a screen as a whole, so it carries an empty id: the

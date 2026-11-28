@@ -726,6 +726,19 @@ two items. The values stay decimal text, as they are stored.
  */
 #+end_src
 
+*** derivation_kind
+:PROPERTIES:
+:cpp_type: std::string
+:default:  "OBSERVED"
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief How the value was made, which is OBSERVED for one a source stated and
+ * the derivation's own name for one the run computed.
+ */
+#+end_src
+
 ** list_fixing_series_summaries_request
 :PROPERTIES:
 :subject:  marketdata.v1.ops.list_fixing_series_summaries

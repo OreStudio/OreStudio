@@ -20,6 +20,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
+#include "ores.reporting.api/domain/run_phase.hpp"
 #include "ores.reporting.api/generators/report_instance_generator.hpp"
 #include "ores.reporting.core/repository/report_error_event_repository.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_entity.hpp"
@@ -39,6 +40,7 @@
 #include <chrono>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -392,13 +394,16 @@ TEST_CASE("a run the platform could not complete carries a report-scoped error a
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
-    CHECK(
-        recorder.record_run_failure(instance_id, "Report execution failed during result collection")
-            .empty());
+    CHECK(recorder
+              .record_run_failure(instance_id,
+                                  "Report execution failed during result collection",
+                                  ores::reporting::domain::run_phase::postprocess)
+              .empty());
 
     const auto rows = errors_of(ctx, instance_id);
     REQUIRE(rows.size() == 1);
     CHECK(rows.front().scope_code == "Report");
+    CHECK(rows.front().phase_code == "postprocess");
     CHECK(rows.front().severity == "error");
     CHECK(rows.front().message == "Report execution failed during result collection");
     CHECK_FALSE(rows.front().subject.has_value());
@@ -408,6 +413,52 @@ TEST_CASE("a run the platform could not complete carries a report-scoped error a
     // and it reads this column.
     REQUIRE(ctx.party_id().has_value());
     CHECK(rows.front().party_id == *ctx.party_id());
+}
+
+TEST_CASE("a failure an engine log says nothing about is stated in the phase its step names",
+          "[service][database]") {
+    scoped_database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto ctx = service_report_error_recorder_write_test_party_and_scope_context(h, gen);
+
+    // The three phases the platform has, and the word the store holds for each.
+    // The word is written out here rather than read from the code under test, so
+    // a phase renamed on both sides of the recorder still fails the test.
+    const std::pair<ores::reporting::domain::run_phase, std::string> phases[] = {
+        {ores::reporting::domain::run_phase::preprocess, "preprocess"},
+        {ores::reporting::domain::run_phase::engine, "engine"},
+        {ores::reporting::domain::run_phase::postprocess, "postprocess"}};
+
+    ores::reporting::service::report_error_recorder recorder(ctx);
+    for (const auto& [phase, code] : phases) {
+        const auto instance_id = write_instance(ctx, h.db_user(), gen);
+        CHECK(
+            recorder.record_run_failure(instance_id, "The step refused its work.", phase).empty());
+        const auto rows = errors_of(ctx, instance_id);
+        REQUIRE(rows.size() == 1);
+        CHECK(rows.front().phase_code == code);
+    }
+}
+
+TEST_CASE("an error read from the engine's log states the engine phase", "[service][database]") {
+    scoped_database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+    const auto ctx = service_report_error_recorder_write_test_party_and_scope_context(h, gen);
+    const auto instance_id = write_instance(ctx, h.db_user(), gen);
+
+    ores::reporting::service::report_error_recorder recorder(ctx);
+    const std::vector<ores::reporting::service::engine_log_row> errors{
+        {.severity = "error",
+         .scope = "Trade",
+         .message = "did not find object of type yield curve",
+         .subject = "trade",
+         .subject_id = "033b4053-fe1d-5901-bc2f-7d95afe91f00",
+         .detail = {}}};
+    CHECK(recorder.record_engine_errors(instance_id, errors).failure.empty());
+
+    const auto rows = errors_of(ctx, instance_id);
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().phase_code == "engine");
 }
 
 TEST_CASE("a run that succeeded records no error at all", "[service][database]") {
@@ -481,7 +532,10 @@ TEST_CASE("the run's failure row points at the reasons when they are there",
          .cause = "Yield/GBP/GBP1D",
          .detail = {}}};
     CHECK(recorder.record_engine_errors(instance_id, errors).failure.empty());
-    CHECK(recorder.record_run_failure(instance_id, "The run's compute job failed with outcome 3")
+    CHECK(recorder
+              .record_run_failure(instance_id,
+                                  "The run's compute job failed with outcome 3",
+                                  ores::reporting::domain::run_phase::engine)
               .empty());
 
     const auto rows = errors_of(ctx, instance_id);
@@ -490,6 +544,7 @@ TEST_CASE("the run's failure row points at the reasons when they are there",
     });
     REQUIRE(failure != rows.end());
     CHECK(failure->message == "The run failed. Its reasons are the errors recorded against it.");
+    CHECK(failure->phase_code == "engine");
 }
 
 TEST_CASE("the run's failure row carries the whole reason when it is the only account",
@@ -504,7 +559,9 @@ TEST_CASE("the run's failure row carries the whole reason when it is the only ac
         "The run's compute job failed with outcome 3: The engine's analytic failed. The engine "
         "reported 20 errors; the last 5 are: yield curve building failed for curve(s) "
         "Yield/GBP/GBP1D";
-    CHECK(recorder.record_run_failure(instance_id, account).empty());
+    CHECK(recorder
+              .record_run_failure(instance_id, account, ores::reporting::domain::run_phase::engine)
+              .empty());
 
     const auto rows = errors_of(ctx, instance_id);
     REQUIRE(rows.size() == 1);
@@ -528,7 +585,10 @@ TEST_CASE("the run-level failure is stored beside the engine's own errors", "[se
          .detail = {}}};
 
     CHECK(recorder.record_engine_errors(instance_id, errors).failure.empty());
-    CHECK(recorder.record_run_failure(instance_id, "The run's compute job failed with outcome 3")
+    CHECK(recorder
+              .record_run_failure(instance_id,
+                                  "The run's compute job failed with outcome 3",
+                                  ores::reporting::domain::run_phase::engine)
               .empty());
 
     const auto rows = errors_of(ctx, instance_id);
@@ -617,9 +677,11 @@ TEST_CASE("an error carries the party of its run and not the party of the caller
     const auto mixed = caller_ctx.with_party(
         h.tenant_id(), caller_party_id, {run_party_id, caller_party_id}, h.db_user());
     ores::reporting::service::report_error_recorder recorder(mixed);
-    CHECK(
-        recorder.record_run_failure(instance_id, "Report execution failed during result collection")
-            .empty());
+    CHECK(recorder
+              .record_run_failure(instance_id,
+                                  "Report execution failed during result collection",
+                                  ores::reporting::domain::run_phase::postprocess)
+              .empty());
 
     const auto rows = errors_of(mixed, instance_id);
     REQUIRE(rows.size() == 1);

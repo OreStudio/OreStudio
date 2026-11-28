@@ -55,7 +55,8 @@ void log_in(nats_client& session) {
  */
 } // anonymous namespace
 
-TEST_CASE("scheduler_commands registers its six verbs", "[commands][scheduler]") {
+TEST_CASE("scheduler_commands registers its verbs and the housekeeping view",
+          "[commands][scheduler]") {
     auto lg(make_logger(test_suite));
 
     cli::Menu root_menu("root");
@@ -69,8 +70,15 @@ TEST_CASE("scheduler_commands registers its six verbs", "[commands][scheduler]")
                              std::string{"remove"},
                              std::string{"instances"},
                              std::string{"status"},
-                             std::string{"watch"}})
+                             std::string{"watch"},
+                             std::string{"enable"},
+                             std::string{"disable"},
+                             std::string{"cadence"}})
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
+
+    const auto housekeeping = root_menu.GetCompletions("housekeeping ");
+    for (const auto& verb : {std::string{"policies"}, std::string{"runs"}})
+        CHECK(std::find(housekeeping.begin(), housekeeping.end(), verb) != housekeeping.end());
 }
 
 TEST_CASE("scheduler lists jobs only for a session", "[commands][scheduler]") {
@@ -132,6 +140,54 @@ TEST_CASE("scheduler instances refuses a zero limit", "[commands][scheduler]") {
     scheduler_commands::process_instances(out, session, {"--limit", "0"});
 
     CHECK(out.str().find("must be a positive integer") != std::string::npos);
+}
+
+TEST_CASE("housekeeping reads need a session", "[commands][scheduler]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream policies;
+    std::ostringstream runs;
+    std::ostringstream enable;
+    std::ostringstream disable;
+
+    scheduler_commands::process_housekeeping_policies(policies, session, {});
+    scheduler_commands::process_housekeeping_runs(runs, session, {});
+    scheduler_commands::process_set_active(enable, session, "a-job", true);
+    scheduler_commands::process_set_active(disable, session, "a-job", false);
+
+    CHECK(policies.str().find("must be logged in") != std::string::npos);
+    CHECK(runs.str().find("must be logged in") != std::string::npos);
+    CHECK(enable.str().find("must be logged in") != std::string::npos);
+    CHECK(disable.str().find("must be logged in") != std::string::npos);
+}
+
+TEST_CASE("housekeeping refuses a zero limit before it sends anything", "[commands][scheduler]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session);
+    std::ostringstream policies;
+    std::ostringstream runs;
+
+    scheduler_commands::process_housekeeping_policies(policies, session, {"--limit", "0"});
+    scheduler_commands::process_housekeeping_runs(runs, session, {"--limit", "0"});
+
+    CHECK(policies.str().find("must be a positive integer") != std::string::npos);
+    CHECK(runs.str().find("must be a positive integer") != std::string::npos);
+}
+
+TEST_CASE("scheduler cadence refuses a malformed cron before it sends anything",
+          "[commands][scheduler]") {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session);
+    std::ostringstream out;
+
+    scheduler_commands::process_cadence(out, session, "a-job", "not a cron");
+
+    CHECK(out.str().find("is not a cron expression") != std::string::npos);
 }
 
 TEST_CASE("scheduler status needs a session", "[commands][scheduler]") {

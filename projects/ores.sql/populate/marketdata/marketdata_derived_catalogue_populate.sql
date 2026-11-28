@@ -18,26 +18,25 @@
  *
  */
 /**
- * The Derived Source of Computed Market Data
+ * The Derived Source of the FX Volatility Quotes
  *
- * The derived source is our own computation over data the platform already holds,
- * in two parts:
+ * The derived source is our own computation over data the platform already holds:
+ * the FX volatility quotes of a pair, inferred from the pair's daily reference
+ * fixings, once a day, after the day's fixings.
  *
- *   - The FX volatility quotes of a pair, inferred from the pair's daily
- *     reference fixings, once a day, after the day's fixings.
- *   - The term index fixings of the run, stated from its own overnight curves:
- *     the indices no publisher quotes, and the trades that float on them.
+ * The quotes are published under the provider derived, whose ids the computation
+ * owns, so a vendor of the same items ranked above it replaces it. The quotes
+ * carry no credit of the publishers whose fixings fed them, and the provider
+ * carries no terms of its own.
  *
- * Both are published under the provider derived, whose ids the computation owns,
- * so a vendor of the same items ranked above it replaces it. The quotes carry no
- * credit of the publishers whose fixings fed them, and the provider carries no
- * terms of its own.
+ * The provider is the last mechanism left in the catalogue. It states no fixing:
+ * a computed fixing belongs to the administrator that owns its index, and the
+ * series' derivation_kind says the run computed it. See
+ * doc/knowledge/architecture/synthetic_generation_of_fixings.org.
  *
- * The rows: the provider, the sessions and feeds the synthetic service serves it
- * through, and the system party's subscription and route. The FX volatility quotes
- * it serves are in marketdata_derived_inventory_populate.sql, which reads the
- * blueprints; the fixings are in
- * synthetic_ir_curve_derived_fixing_instruments_populate.sql.
+ * The rows: the provider, its session and its source, its rate card, and the
+ * system party's subscription and route. The quotes it serves are in
+ * marketdata_derived_inventory_populate.sql, which reads the blueprints.
  *
  * This script is idempotent.
  */
@@ -51,7 +50,7 @@ insert into ores_marketdata_providers_tbl (
 )
 values
     (ores_utility_system_tenant_id_fn(), 'derived', 0, 'Derived', 'reference',
-     'The market data our own computation states from data we already hold: the ATM, risk reversal and butterfly quotes of FX pairs inferred from their stored reference fixings, and the term index fixings stated from the run''s own overnight curves. Plausible, not observed.',
+     'The FX volatility quotes our own computation states from data we already hold: the ATM, risk reversal and butterfly quotes of pairs inferred from their stored reference fixings. Plausible, not observed. No fixing is published under this provider: a computed fixing is the administrator''s, and the series says how it was made.',
      30, '', '', true, '',
      current_user, current_user, 'system.initial_load', 'Initial population of the derived source')
 on conflict (tenant_id, code)
@@ -94,30 +93,6 @@ on conflict (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;
 
--- A provider has one default source, and it is the source the simulator serves the
--- provider through: a feed start looks the provider up by it. The stored-data
--- computation of FX volatility is not served by the simulator, so the default is
--- the simulator's source of the computed fixings.
-update ores_marketdata_feeds_tbl
-set is_default = false
-where tenant_id = ores_utility_system_tenant_id_fn()
-  and name = 'derived-fx-vol'
-  and is_default
-  and valid_to = ores_utility_infinity_timestamp_fn();
-
-insert into ores_marketdata_feeds_tbl (
-    id, tenant_id, version, name, publisher_code, session_code, service, provider_key,
-    is_default, description, modified_by, performed_by, change_reason_code, change_commentary
-)
-values
-    ('ca365f97-bfe9-40fe-8e4d-b12fc9f075b2', ores_utility_system_tenant_id_fn(), 0,
-     'derived-a', 'derived', 'synthetic-local', 'real_time', '', true,
-     'The term index fixings the simulator states from the run''s own overnight curves, under the provider that owns the computed ids.',
-     current_user, current_user, 'system.initial_load', 'Initial population of the derived source')
-on conflict (tenant_id, id)
-where valid_to = ores_utility_infinity_timestamp_fn()
-do nothing;
-
 \echo '--- Derived Source: Subscription and Route of the System Party ---'
 
 do $$
@@ -135,7 +110,7 @@ begin
     ) values (
         'aa096fb1-5d92-5b63-a1e7-e1d83ac4a242', ores_utility_system_tenant_id_fn(), 0, v_party,
         'derived', true, true, true, current_user, current_user, 'system.initial_load',
-        'The system party takes the derived quotes and fixings'
+        'The system party takes the derived FX volatility quotes'
     ) on conflict do nothing;
     insert into ores_marketdata_routes_tbl (
         id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
@@ -145,14 +120,5 @@ begin
         'derived', 'fx', 'afd34349-1c6c-56b2-a686-97b623ee051a',
         current_user, current_user, 'system.initial_load',
         'The system party reads the derived FX volatility quotes through the derived source'
-    ) on conflict do nothing;
-    insert into ores_marketdata_routes_tbl (
-        id, tenant_id, version, party_id, publisher_code, asset_class, feed_id,
-        modified_by, performed_by, change_reason_code, change_commentary
-    ) values (
-        '9d2f4a41-6b0e-5c8d-9a17-0e5f2b3c4d5e', ores_utility_system_tenant_id_fn(), 0, v_party,
-        'derived', 'ir', 'ca365f97-bfe9-40fe-8e4d-b12fc9f075b2',
-        current_user, current_user, 'system.initial_load',
-        'The system party reads the derived term index fixings through derived-a'
     ) on conflict do nothing;
 end $$;

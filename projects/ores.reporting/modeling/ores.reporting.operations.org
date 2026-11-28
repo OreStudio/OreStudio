@@ -1121,6 +1121,21 @@ Final step: mark the report instance as completed.
 
 Compensation: mark the report instance as failed.
 
+The message states the phase of the step whose failure it carries, because the
+step is the only part of the workflow that knows it. The engine compensates
+every completed step with the same subject, so the phase cannot be worked out
+where the message is handled: a step that failed in preprocessing and one that
+failed in postprocessing send the same shape, and a reader of the run's errors
+has to tell them apart.
+
+*** phase_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+The phase of the run the failed step belongs to: =preprocess=, =engine= or
+=postprocess=. The handler states it on the run's error row.
+
 *** report_instance_id
 :PROPERTIES:
 :cpp_type: std::string

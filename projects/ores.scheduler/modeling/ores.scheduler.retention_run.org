@@ -1,0 +1,186 @@
+:PROPERTIES:
+:ID: 5E2C8A41-7B93-4D6E-A1F4-3C9D8B72E5A0
+:ores.cpp.wire-codec.enabled: true
+:END:
+#+title: ores.scheduler.retention_run
+#+description: Codegen entity model for the housekeeping run read model: one policy the sweep considered, the store it bounds and what the run removed.
+#+type: ores.codegen.entity
+#+component: scheduler
+#+filetags: :model:entity:scheduler:
+#+brief: One retention policy the sweep applied, with what it removed and when.
+#+entity_singular: retention_run
+#+entity_plural: retention_runs
+#+entity_title: Retention Run
+#+created: 2026-11-25
+#+updated: 2026-11-25
+
+The read model a person reads to see what housekeeping did: one row for each
+policy the sweep considered, carrying the policy's period and whether it is on,
+the store it bounds, what the run removed and its outcome.
+
+The sweep writes the rows and this view reads them. It is a view because the
+ledger answers "what has housekeeping done" and a screen asks it beside the
+policies themselves: the period a policy states now is the policy table's, not
+the ledger's, and joining the two is the view's whole purpose. A policy
+disabled after a run still shows the run, with the state it has now.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     scheduler
+:profile:       read-model
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:primary_key:  true
+:END:
+
+The ledger row this view stands for.
+
+** policy_code
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:filterable:   true
+:END:
+
+The policy the sweep applied or skipped.
+
+** target
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:END:
+
+The store the policy bounds: a schema qualified table name, or a key prefix.
+
+** action
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:END:
+
+What the sweep did to the store: drop its chunks, delete its rows, or expire its
+objects.
+
+** retention_days
+:PROPERTIES:
+:type:         integer
+:cpp_type:     int
+:END:
+
+The period the policy states now, in days.
+
+** enabled
+:PROPERTIES:
+:type:         boolean
+:cpp_type:     bool
+:END:
+
+Whether the policy is on now. A policy turned off after a run keeps its rows,
+so a person sees that it ran and that it no longer will.
+
+** ran_at
+:PROPERTIES:
+:type:         timestamp with time zone
+:cpp_type:     std::chrono::system_clock::time_point
+:END:
+
+When the sweep considered this policy.
+
+** removed
+:PROPERTIES:
+:type:         bigint
+:cpp_type:     std::int64_t
+:END:
+
+The chunks or rows the run removed. A policy that removed nothing is a policy
+worth looking at.
+
+** outcome
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:filterable:   true
+:END:
+
+What happened: =applied=, =skipped= or =failed=.
+
+** detail
+:PROPERTIES:
+:type:         text
+:cpp_type:     std::string
+:END:
+
+Why the run did not apply, when it did not.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_scheduler_retention_runs_vw
+:END:
+
+** View
+
+The ledger, at the policy each row names. A row whose policy has been removed
+from the table keeps the period and state it last stated as empty and false,
+because the run still happened and the ledger is the record of it.
+
+#+begin_src sql :name select
+select r.id,
+       r.policy_code,
+       r.target,
+       r.action,
+       coalesce(p.retention_days, 0) as retention_days,
+       coalesce(p.enabled, false) as enabled,
+       r.ran_at,
+       r.removed,
+       r.outcome,
+       r.detail
+  from ores_scheduler_retention_runs_tbl r
+  left join ores_scheduler_retention_policies_tbl p
+         on p.tenant_id = r.tenant_id
+        and p.code = r.policy_code
+        and p.valid_to = ores_utility_infinity_timestamp_fn()
+#+end_src
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:  api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: run
+:entity_plural_short:   runs
+:entity_singular_words: retention run
+:entity_plural_words:   retention runs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <cstdint>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Table display
+
+| column        | header   |
+|---------------+----------|
+| policy_code   | Policy   |
+| target        | Store    |
+| retention_days | Period  |
+| removed       | Removed  |
+| outcome       | Outcome  |

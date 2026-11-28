@@ -20,7 +20,7 @@
  */
 
 import { z } from 'zod';
-import { reportHealthWordSchema } from './reporting.js';
+import { reportHealthWordSchema, reportPhaseSchema } from './reporting.js';
 import { nullableWireTimestampSchema, wireTimestampSchema } from './time.js';
 
 /**
@@ -85,8 +85,12 @@ export type ReportRunRowView = z.infer<typeof reportRunRowViewSchema>;
  * on the run rather than only in a log file, and the engine's five levels become
  * these three.
  *
- * `scope` is the part of the run the row belongs to: a trade, a curve, an
- * analytic, the report, its configuration or the engine itself. `about` is the
+ * `scope` is what the row is about, in the engine's own words: a trade, a curve,
+ * an analytic, the report, its configuration or the engine itself. `phase` is
+ * where in the run the row came from, in the platform's own words: the run's
+ * preprocessing, its engine, or the postprocessing of its results. The two are
+ * different questions, and a row a step refused is not a valuation that failed.
+ * `about` is the
  * one thing the row names, as a person reads it: the curve a curve failure is
  * about, the trade a trade failure is about, empty when it names nothing.
  * `location` is the place inside the engine that logged the line, such as
@@ -99,6 +103,7 @@ export const reportRunErrorViewSchema = z.object({
     id: z.string(),
     severity: z.string(),
     scope: z.string(),
+    phase: reportPhaseSchema,
     about: z.string(),
     message: z.string(),
     subject: z.string().nullable(),

@@ -122,19 +122,54 @@ const jobInputs = store({
         policy_enabled: true,
         policy_version: 3,
         policy_description: "An input archive is the run's own copy",
-        mechanism: 'storage_lifecycle',
+        mechanism: 'sweep',
+        bounded_now: true,
+    },
+    last_run: {
+        outcome: 'applied',
+        ran_at: '2026-11-27 03:00:00.000000Z',
+        removed: 4,
+        detail: 'the cutoff held 4 object(s) of 2048 byte(s); removed 4 of 2048 byte(s)',
+    },
+    size: { size_bytes: 0, measure_count: 0, sampled_at: null },
+});
+
+/** A store whose bound waits on the node, which is why it is not bounded now. */
+const nodeScratch = store({
+    code: 'compute.node_scratch',
+    display_name: 'Compute node scratch',
+    description: 'The working folder each grid node keeps while it runs a job.',
+    owner_component: 'compute',
+    target_kind: 'directory',
+    target: 'publish/run/wrappers',
+    time_column: null,
+    measure_kind: 'files',
+    bound_kind: 'policy',
+    bound: {
+        action: 'release_directory',
+        retention_days: 1,
+        cadence_hours: 24,
+        policy_code: 'node_scratch_1d',
+        policy_enabled: true,
+        policy_version: 2,
+        policy_description: 'A job folder is scratch once its output is uploaded',
+        mechanism: 'node_release',
         bounded_now: false,
     },
     last_run: {
         outcome: 'skipped',
         ran_at: '2026-11-27 03:00:00.000000Z',
         removed: 0,
-        detail: 'the storage lifecycle expires an object prefix',
+        detail: "a node releases a job's folder when it uploads the output",
     },
-    size: { size_bytes: 0, measure_count: 0, sampled_at: null },
+    size: {
+        size_bytes: 4096,
+        measure_count: 12,
+        sampled_at: '2026-11-27 03:15:00.000000Z',
+    },
 });
 
-const STORES: readonly StoreBound[] = [store(), calendarDates, jobInputs];
+const STORES: readonly StoreBound[] = [store(), calendarDates, jobInputs, nodeScratch];
 
 function withProviders(element: React.ReactNode, path: string): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -170,7 +205,11 @@ describe('the verdict of a store', () => {
     });
 
     it('says a store whose action never runs is not bounded, whatever its policy says', () => {
-        expect(verdictOf(jobInputs)).toEqual({ verdict: 'unbounded', reason: 'notApplied' });
+        expect(verdictOf(nodeScratch)).toEqual({ verdict: 'unbounded', reason: 'notApplied' });
+    });
+
+    it('says an object prefix the sweep expires is bounded', () => {
+        expect(verdictOf(jobInputs)).toEqual({ verdict: 'bounded', reason: null });
     });
 
     it('names the failure when the last sweep failed', () => {
@@ -219,11 +258,11 @@ describe('the verdict of a store', () => {
 describe('what the list states at its head', () => {
     it('counts the stores nothing bounds, and adds up the ground they occupy', () => {
         expect(summarise(STORES)).toEqual({
-            stores: 3,
-            bounded: 1,
+            stores: 4,
+            bounded: 2,
             unbounded: 2,
             unmeasured: 1,
-            bytes: 293601280 + 32768,
+            bytes: 293601280 + 32768 + 4096,
         });
     });
 
@@ -231,8 +270,9 @@ describe('what the list states at its head', () => {
         const arranged = arrange(STORES, 'all', 'attention');
         expect(arranged.map((entry) => entry.code)).toEqual([
             'refdata.calendar_dates',
-            'compute.job_inputs',
+            'compute.node_scratch',
             'marketdata.delivery_counts',
+            'compute.job_inputs',
         ]);
     });
 
@@ -240,7 +280,7 @@ describe('what the list states at its head', () => {
         const arranged = arrange(STORES, 'unbounded', 'name');
         expect(arranged.map((entry) => entry.code)).toEqual([
             'refdata.calendar_dates',
-            'compute.job_inputs',
+            'compute.node_scratch',
         ]);
     });
 
@@ -249,6 +289,7 @@ describe('what the list states at its head', () => {
         expect(arranged.map((entry) => entry.display_name)).toEqual([
             'Calendar dates',
             'Market data delivery counts',
+            'Compute node scratch',
             'Compute job inputs',
         ]);
     });

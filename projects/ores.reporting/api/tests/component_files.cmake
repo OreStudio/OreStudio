@@ -55,6 +55,7 @@ set(files
     "domain_report_definition_tests.cpp"
     "domain_report_instance_tests.cpp"
     "domain_report_type_tests.cpp"
+    "domain_run_phase_tests.cpp"
     "engine_settings_building_codec_roundtrip_tests.cpp"
     "engine_settings_building_protocol_codec_roundtrip_tests.cpp"
     "engine_settings_change_codec_roundtrip_tests.cpp"

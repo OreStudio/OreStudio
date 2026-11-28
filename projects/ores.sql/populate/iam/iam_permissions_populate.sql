@@ -1227,6 +1227,14 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::job_definitions:read',   'View scheduled jobs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::job_definitions:write',  'Schedule and update jobs');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::job_definitions:delete', 'Unschedule jobs');
+    -- The retention policy entity's own codes. The handler and the screen have
+    -- asked for them since the story built them, and a code no seed holds is one
+    -- only a wildcard can grant, so the housekeeping editor was reachable by the
+    -- platform's superuser and by nobody else by accident.
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::retention_policies:read',  'View how long a store is kept');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::retention_policies:write', 'Change how long a store is kept');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::retention_policies:delete', 'Remove a retention policy');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::retention_runs:read',       'View what each housekeeping sweep removed');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'scheduler::*', 'Full access to all scheduler operations');
 
     -- =============================================================================

@@ -118,17 +118,17 @@ select is(
     'the sweep still performs a chunk drop on a chunked store');
 
 select is(
-    (select outcome from t_run where policy_code = 'test_sweep_prefix_7d'),
-    'skipped',
-    'an action the sweep cannot perform is skipped');
+    (select count(*)::bigint
+     from ores_scheduler_retention_runs_tbl
+     where policy_code = 'test_sweep_prefix_7d'),
+    0::bigint,
+    'the sweep writes no row for an action another mechanism owns');
 
-select alike(
-    (select detail from ores_scheduler_retention_runs_tbl
-     where policy_code = 'test_sweep_prefix_7d'
-     order by ran_at desc
-     limit 1),
-    '%storage lifecycle%',
-    'the skipped run names the mechanism that owns the action');
+select is(
+    (select target from ores_scheduler_due_object_policies_fn()
+     where policy_code = 'test_sweep_prefix_7d'),
+    'compute/input/',
+    'the object expiry states the policy the sweep left to it');
 
 select is(
     (select tenant_id from ores_scheduler_retention_runs_tbl
@@ -147,8 +147,8 @@ select is(
 select is(
     (select mechanism || ':' || bounded_now::text from ores_scheduler_store_bounds_vw
      where code = 'test.sweep_prefix'),
-    'storage_lifecycle:false',
-    'the view names the mechanism and says the prefix is not bounded by it yet');
+    'sweep:true',
+    'the view says the sweep applies an object prefix''s policy');
 
 select * from finish();
 

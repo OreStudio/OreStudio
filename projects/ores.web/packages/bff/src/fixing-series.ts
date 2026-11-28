@@ -60,6 +60,7 @@ export function registerFixingSeriesRoutes(
                         oresmd_uri: z.string(),
                         provider_code: z.string(),
                         version: z.number().int().default(0),
+                        derivation_kind: z.string().default('OBSERVED'),
                     })
                     .parse(row),
             )
@@ -144,6 +145,7 @@ export function registerFixingSeriesRoutes(
                 oresmd_uri: series.oresmd_uri,
                 provider_code: series.provider_code,
                 version: series.version,
+                derivation_kind: series.derivation_kind,
             },
             publisher:
                 publisher === undefined ? null : { code: publisher.code, name: publisher.name },

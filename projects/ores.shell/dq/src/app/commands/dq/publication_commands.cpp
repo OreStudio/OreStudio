@@ -140,8 +140,8 @@ void publication_commands::register_commands(cli::Menu& root_menu, nats_client& 
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <dataset_id> <dataset_code> <mode> <target_table> <records_inserted> "
-        "<records_updated> <records_skipped> <records_deleted> <published_by> <published_at> "
-        "<reason> <commentary>");
+        "<records_updated> <records_skipped> <records_deleted> <published_by> <outcome> <messages> "
+        "<published_at> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -149,8 +149,8 @@ void publication_commands::register_commands(cli::Menu& root_menu, nats_client& 
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <dataset_id> <dataset_code> <mode> <target_table> <records_inserted> "
-        "<records_updated> <records_skipped> <records_deleted> <published_by> <published_at> "
-        "<reason> <commentary> [--version <n>]");
+        "<records_updated> <records_skipped> <records_deleted> <published_by> <outcome> <messages> "
+        "<published_at> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -159,7 +159,7 @@ void publication_commands::register_commands(cli::Menu& root_menu, nats_client& 
         },
         "put-many --count <n> <id> <dataset_id> <dataset_code> <mode> <target_table> "
         "<records_inserted> <records_updated> <records_skipped> <records_deleted> <published_by> "
-        "<published_at> <reason> <commentary>");
+        "<outcome> <messages> <published_at> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -346,8 +346,8 @@ void publication_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 10 + 2) {
-            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -369,6 +369,8 @@ void publication_commands::process_add(std::ostream& out,
             req.change.write.records_deleted, parsed->positionals[next++], "records_deleted");
         publication_read_token(
             req.change.write.published_by, parsed->positionals[next++], "published_by");
+        publication_read_token(req.change.write.outcome, parsed->positionals[next++], "outcome");
+        publication_read_token(req.change.write.messages, parsed->positionals[next++], "messages");
         publication_read_token(
             req.change.write.published_at, parsed->positionals[next++], "published_at");
         req.intent.reason_code = parsed->positionals[next++];
@@ -415,8 +417,8 @@ void publication_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 13 + 2) {
+            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -438,6 +440,8 @@ void publication_commands::process_set(std::ostream& out,
             req.change.write.records_deleted, parsed->positionals[next++], "records_deleted");
         publication_read_token(
             req.change.write.published_by, parsed->positionals[next++], "published_by");
+        publication_read_token(req.change.write.outcome, parsed->positionals[next++], "outcome");
+        publication_read_token(req.change.write.messages, parsed->positionals[next++], "messages");
         publication_read_token(
             req.change.write.published_at, parsed->positionals[next++], "published_at");
         req.intent.reason_code = parsed->positionals[next++];
@@ -496,8 +500,8 @@ void publication_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 11 + 2) {
-            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 13 + 2) {
+            fail(out) << "Expected " << (change_count * 13 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -521,6 +525,8 @@ void publication_commands::process_put_many(std::ostream& out,
                 change.write.records_deleted, parsed->positionals[next++], "records_deleted");
             publication_read_token(
                 change.write.published_by, parsed->positionals[next++], "published_by");
+            publication_read_token(change.write.outcome, parsed->positionals[next++], "outcome");
+            publication_read_token(change.write.messages, parsed->positionals[next++], "messages");
             publication_read_token(
                 change.write.published_at, parsed->positionals[next++], "published_at");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;

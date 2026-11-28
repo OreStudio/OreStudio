@@ -8,12 +8,12 @@
 #+filetags: :derive_term_indices_from_their_overnight_curves:sprint_31:v0:
 #+owner: marco
 #+branch: feature/annotate-a-derived-value-instead-of-naming-a-provider
-#+pr:
+#+pr: 5214
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-27
 #+updated: 2026-11-27
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,19 +32,63 @@ This contradicts the page that blesses a derived source of our own (Derivation o
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F2F266AE-8B43-41DD-89AF-7A22D52D1C74][Derive term indices from their overnight curves]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Step 1 of the plan: inventory the 194 series and name the owner of each item. |
+| Now          | Nothing. |
+| Waiting on   | The story that gives a value a producer and a standing, for the FX volatility quotes. |
+| Next         | Nothing. |
 | Last touched | 2026-11-27                               |
 
 * Acceptance
 
-- No provider named derived and no source of it: every derived value sits under the provider that owns its item, and its derivation_kind and observation lineage say how it was made.
-- The 194 series, 2,612 fixings and 2,280 vendor ids filed under derived are re-filed under the owner of their item, or deleted where the item has no owner.
-- A reader of a series, of an observation and of a screen tells whether a value was observed or derived, and which derivation made it, without reading a provider name.
-- A real source of a derived item still replaces it by rank, and a test proves the replacement.
+- No fixing series names a provider called derived: each sits under the
+  administrator that owns its index, and its =derivation_kind= and derivation
+  config say how it was made. *Met* for the three term indices.
+- Every series, fixing and vendor id filed under =derived= is re-filed under the
+  owner of its item, or deleted where the item has no owner. *Met for the
+  fixings; the FX volatility quotes are captured*, because they have no owner in
+  the store: see
+  [[file:doc/agile/product_backlog/inbox/the-fx-volatility-quotes-have-no-owner-to-file-them-under.org][The FX volatility quotes have no owner to file them under]].
+- A reader of a series, of an observation and of a screen tells whether a value
+  was observed or derived, and which derivation made it, without reading a
+  provider name. *Met*: the list prints the method under the provider, and the
+  series page names it beside the publisher.
+- A real source of a derived item still replaces it by rank, and a test proves
+  the replacement. *Not done here*: the rule is the route resolution the store
+  already applies, which no change of this task touches, and no test was written
+  for a computed item. Captured as
+  [[file:doc/agile/product_backlog/inbox/no-test-proves-a-live-source-replaces-a-computed-fixing.org][No test proves a live source of a computed item replaces the simulated one]].
+
+* Decisions
+
+** The three term indices are the administrators', not the run's
+
+USD SOFR 1M is CME Group's index, IBR 3M is Banco de la República's and WIBOR 6M
+is GPW Benchmark's. The catalogue now installs CME and GPW as publishers (GPW
+returns, having left when WIBOR had no source to state it), and each index is
+stated under its administrator by that administrator's simulated source, in the
+administrator's notation. The derivation is the series' =derivation_kind=, which
+says =IR_CURVE_BOOTSTRAP= and names the generation config and version; it is
+seeded before any fixing lands, so a reader never meets the series as observed.
+
+A published collection stands for one provider, so the three indices left the one
+derived dataset for three: =synthetic.feeds.cme=, =synthetic.feeds.banrep= and
+=synthetic.feeds.gpw=.
+
+** The FX volatility quotes stay under =derived=, for now
+
+The 35 series and 2,275 instruments that remain under =derived= are the FX
+volatility quotes inferred from the pairs' stored fixings. No party in the store
+owns the item: it is our inference of a quote no vendor we hold states. Filing it
+under =ore= would be false, because ORE's example files quote other pairs, and
+under =composite= it would be false in another way, because that provider derives
+from quotes rather than from fixings. The architecture is explicit that such a
+value is internal and does not become a series at all, and the store cannot say
+that yet: the producer and the standing are the subject of
+[[id:142FDA27-36E6-4C0D-95F2-6FAE223FC5E3][Split the publisher of a market data value from its producer]],
+which states that this task re-files the items whose owner exists. So the
+provider survives this task for those quotes alone, its fixing source is gone,
+and the re-file of the quotes is a task of that story.
 
 * Plan
 
@@ -86,11 +130,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Series filed under =derived= | 194: 175 FX series, 19 IR fixing series | =select split_part(oresmd_uri,'/',3), case when oresmd_uri like '%type=fixing%' then 'fixing' else 'series' end, count(*) from ores_marketdata_market_series_tbl where valid_to=ores_utility_infinity_timestamp_fn() and provider_code='derived' group by 1,2;= | 99c6d28cd1 |
-| Fixings under =derived= | 2,612 | =select count(f.id) from ores_marketdata_market_fixings_tbl f join ores_marketdata_market_series_tbl s on s.id=f.series_id where s.provider_code='derived' and s.valid_to=ores_utility_infinity_timestamp_fn();= | 99c6d28cd1 |
-| Vendor ids under =derived= | 2,280 | =select count(*) from ores_marketdata_market_data_vendor_instruments_tbl where provider_code='derived' and valid_to=ores_utility_infinity_timestamp_fn();= | 99c6d28cd1 |
-| Sources of =derived= | 2: =derived-a= (real_time), =derived-fx-vol= (end_of_day) | =select name, service from ores_marketdata_feeds_tbl where publisher_code='derived' and valid_to=ores_utility_infinity_timestamp_fn();= | 99c6d28cd1 |
-| Derivation kinds in use | =OBSERVED= 5,492 series, =IR_CURVE_BOOTSTRAP= 407, =FX_VOL_SURFACE_CALIBRATION= 105, =FX_VOL_DERIVATION= 35 | =select derivation_kind, count(*) from ores_marketdata_market_series_tbl where valid_to=ores_utility_infinity_timestamp_fn() group by 1;= | 99c6d28cd1 |
+| Fixing series filed under =derived= | 0, of 3 that were | =select count(*) from ores_marketdata_market_series_tbl where provider_code='derived' and oresmd_uri like 'oresmd://ir/%type=fixing%' and valid_to=ores_utility_infinity_timestamp_fn();= | 5b4f0124e5 |
+| Fixing series that state =IR_CURVE_BOOTSTRAP= | 3: cme, banrep, gpw | =select count(*) from ores_marketdata_market_series_tbl where derivation_kind='IR_CURVE_BOOTSTRAP' and oresmd_uri like 'oresmd://ir/%type=fixing%' and valid_to=ores_utility_infinity_timestamp_fn();= | 5b4f0124e5 |
+| Fixings the computed series hold | 520 each | =select s.provider_code, count(f.id) from ores_marketdata_market_series_tbl s join ores_marketdata_market_fixings_tbl f on f.series_id=s.id where s.provider_code in ('cme','banrep','gpw') and s.oresmd_uri like '%tenor=%' and s.valid_to=ores_utility_infinity_timestamp_fn() group by 1;= | 5b4f0124e5 |
+| Instruments the three administrators state in their notation | 4: =USD SOFR 1M=, =COP IBR 3M=, =PLN WIBOR 6M=, and the =COP IBR= overnight | =select provider_code, external_id from ores_marketdata_market_data_vendor_instruments_tbl where id_scheme='setting' and provider_code in ('cme','banrep','gpw') and valid_to=ores_utility_infinity_timestamp_fn();= | 5b4f0124e5 |
+| What remains under =derived= | 35 FX volatility series, 2,275 =derived_fx_vol= instruments, one source | =select count(*) from ores_marketdata_market_series_tbl where provider_code='derived' and valid_to=ores_utility_infinity_timestamp_fn();= | 5b4f0124e5 |
+
+The counts are of the database a fresh provision built at that commit, with the
+fleet started and the run's first fixings stored.
 
 * Notes
 
@@ -109,7 +156,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5214][#5214]] | [marketdata] State the computed term indices under their administrators |
 
 * Review
 
@@ -118,3 +165,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The fixings no longer name a mechanism. Term SOFR 1M is stated by CME Group, IBR
+3M by Banco de la República and WIBOR 6M by GPW Benchmark, each in the
+administrator's own notation, each from that administrator's simulated source.
+The run computed the values, and the series say so: =derivation_kind= is
+=IR_CURVE_BOOTSTRAP= and the series names the generation config and version
+behind it. A fresh provision shows three such series, 520 fixings each, and no
+fixing series under a provider called =derived=.
+
+The catalogue grew the two publishers the indices needed. CME Group is new, and
+GPW Benchmark returns: it left this catalogue when WIBOR had no source that could
+state it, and it has one now. Because a published collection stands for one
+provider, the three indices left the single derived dataset for three, one for
+each administrator.
+
+The screen is where a reader meets the answer. The observations list prints
+"computed: ir curve bootstrap" under the provider that owns the index, and the
+series page names how the value was made beside the publisher. Both say
+=observed= for a series a source stated, so the two kinds of value are told
+apart without reading a provider name.
+
+What this task could not finish is the other half of =derived=: the thirty-five
+FX volatility series and 2,275 instruments the run infers from stored fixings.
+No party in the store owns those items, and the architecture says such a value is
+internal and never becomes a series, which the store cannot say until a value has
+a producer beside its publisher and a standing. That is captured as
+[[file:doc/agile/product_backlog/inbox/the-fx-volatility-quotes-have-no-owner-to-file-them-under.org][The FX volatility quotes have no owner to file them under]],
+and the provider survives for them alone, with its fixing source gone.
+
+The rank replacement the acceptance asks for was not built: a computed fixing is
+stated by the administrator's simulated source, and a live source of the same
+item would win by the route resolution the store already applies. No test proves
+that for a computed item, which is captured as
+[[file:doc/agile/product_backlog/inbox/no-test-proves-a-live-source-replaces-a-computed-fixing.org][No test proves a live source of a computed item replaces the simulated one]].

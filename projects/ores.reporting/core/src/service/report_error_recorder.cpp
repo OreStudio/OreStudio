@@ -108,6 +108,7 @@ domain::report_error_event make_error(const utility::uuid::tenant_id& tenant_id,
                                       const boost::uuids::uuid& instance_id,
                                       const boost::uuids::uuid& party_id,
                                       std::chrono::system_clock::time_point event_time,
+                                      domain::run_phase phase,
                                       std::string scope,
                                       std::string severity,
                                       std::string message,
@@ -120,6 +121,7 @@ domain::report_error_event make_error(const utility::uuid::tenant_id& tenant_id,
     error.report_instance_id = instance_id;
     error.party_id = party_id;
     error.id = boost::uuids::random_generator()();
+    error.phase_code = std::string(domain::to_code(phase));
     error.scope_code = std::move(scope);
     error.severity = std::move(severity);
     error.message = std::move(message);
@@ -216,6 +218,7 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
                 instance_id,
                 facts.party_id,
                 event_time,
+                domain::run_phase::engine,
                 error.scope,
                 severity,
                 error.message,
@@ -251,6 +254,7 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
                                       instance_id,
                                       facts.party_id,
                                       event_time,
+                                      domain::run_phase::engine,
                                       std::string(scope_report),
                                       "warning",
                                       std::format("The engine reported errors under the scope "
@@ -312,7 +316,8 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
 }
 
 std::string report_error_recorder::record_run_failure(const std::string& report_instance_id,
-                                                      const std::string& reason) {
+                                                      const std::string& reason,
+                                                      domain::run_phase phase) {
     try {
         // The engine's own account repeats what the run's reasons already say.
         // The row points at them when they are there, and carries the account
@@ -330,6 +335,7 @@ std::string report_error_recorder::record_run_failure(const std::string& report_
                                                                       instance_id,
                                                                       party_id,
                                                                       event_time,
+                                                                      phase,
                                                                       std::string(scope_report),
                                                                       "error",
                                                                       failure_text,

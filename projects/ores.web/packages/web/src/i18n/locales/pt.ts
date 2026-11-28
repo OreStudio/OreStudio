@@ -281,7 +281,7 @@ const pt: SourceCatalogue = {
                 held: 'À sua espera',
                 applying: 'A ser feita',
                 applied: 'Feita',
-                failed: 'Não pôde ser feita',
+                failed: 'Falhou',
             },
         },
         autoApproval: {
@@ -549,6 +549,13 @@ const pt: SourceCatalogue = {
 
     'notification.inbox.approval_expiring':
         'Um pedido de {kind} vence em {deadline} e ninguém respondeu.',
+
+    'notification.scheduler.store_unbounded':
+        'O armazém {store} não é limitado por nada que seja executado. Nada remove dele, e o ecrã de manutenção dos dados indica porquê.',
+    'notification.scheduler.store_sweep_failed':
+        'A última passagem ao armazém {store} falhou, por isso o armazém fica sem limite até uma passagem ter sucesso.',
+    'notification.scheduler.sweep_skipped':
+        'Uma passagem deixou {count} políticas por aplicar, por isso os armazéns que elas limitam continuam a crescer. O ecrã de manutenção dos dados indica quais.',
 
     'notification.marketdata.curve_published':
         'A curva {curve} de {party} esta em vigor desde {published_at}, publicada por {publisher} com data de referencia {as_of}. Substitui o conjunto com data de {previous_as_of}, ou nada quando e o primeiro.',
@@ -5360,7 +5367,7 @@ const pt: SourceCatalogue = {
                 tenor: 'Prazo',
                 discountsOff: 'Desconta sobre',
                 neverPublished: 'nunca publicada',
-                published: 'Publicada',
+                published: 'Publicado',
                 stateHeader: 'Estado',
                 empty: 'Nenhuma moeda tem uma curva de taxa.',
                 state: {
@@ -5855,6 +5862,9 @@ const pt: SourceCatalogue = {
                 'Uma série que a plataforma detém e nunca observou: é uma linha, e a contagem é zero.',
             legendEnded:
                 'Uma série que terminou mantém o último dia e a contagem, porque um fixing é um facto sobre uma data.',
+            computed: 'calculada: {method}',
+            legendComputed:
+                'Uma série que a execução calculou em vez de uma fonte ter observado: o fornecedor nomeia o administrador cujo índice é este, e o método nomeia como o valor foi feito.',
         },
         fixingSeries: {
             title: 'Série de fixings',
@@ -5869,6 +5879,7 @@ const pt: SourceCatalogue = {
             backToObservations: 'Voltar às observações de fixings',
             columns: {
                 provider: 'Publisher',
+                derivation: 'Como foi feita',
                 first: 'Primeiro fixing',
                 last: 'Último fixing',
                 count: 'Fixings detidos',
@@ -5879,6 +5890,7 @@ const pt: SourceCatalogue = {
                 session: 'Sessão',
                 supplier: 'Fornecedor',
             },
+            observed: 'Observada',
         },
         curveBlueprints: {
             title: 'Plantas de curva',
@@ -8544,9 +8556,22 @@ const pt: SourceCatalogue = {
             ready: 'Pronto',
             readyHint: 'Todos os factos de que uma publicação precisa estão presentes',
             notCarried: 'Nenhum conjunto transporta {code}.',
+            runWhen: 'Publicado',
+            runBy: 'Por',
+            runMode: 'Modo',
+            runInserted: 'Inseridos',
+            runUpdated: 'Atualizados',
+            runSkipped: 'Ignorados',
+            runDeleted: 'Eliminados',
+            runOutcome: 'Resultado',
+            publicationsNone: 'Nada publicou este conjunto de dados ainda.',
+            outcome: {
+                published: 'Publicado',
+                warnings: 'Publicado com avisos',
+                failed: 'Falhou',
+            },
             lastPublished: 'Última publicação',
-            lastPublishedGap:
-                'Ainda não servido: o registo de execuções não tem escritor, por isso nada regista quando este conjunto de dados foi publicado pela última vez.',
+            lastPublishedGap: 'Nada publicou este conjunto de dados ainda.',
             publicationsTitle: 'Publicações',
             publicationsLead:
                 'Uma linha por cada publicação deste conjunto de dados, com o que a execução escreveu e o que disse.',
@@ -8705,6 +8730,7 @@ const pt: SourceCatalogue = {
                 plural: 'linhas',
                 severity: 'Gravidade',
                 scope: 'Âmbito',
+                phase: 'Fase',
                 about: 'Objeto',
                 message: 'Mensagem',
                 location: 'Localização',

@@ -1085,6 +1085,7 @@ TEST_CASE("report_operations_operations_process_fail_report_requires_a_session",
                                                                    "sample",
                                                                    "sample",
                                                                    "sample",
+                                                                   "sample",
                                                                });
 
     ORES_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
@@ -1107,7 +1108,7 @@ TEST_CASE("report_operations_operations_process_fail_report_reports_the_expected
     report_operations_operations_commands::process_fail_report(out, session, {});
 
     ORES_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
-    CHECK(out.str().find("Expected 4 arguments, got 0.") != std::string::npos);
+    CHECK(out.str().find("Expected 5 arguments, got 0.") != std::string::npos);
     CHECK(command_feedback::failed());
 }
 
@@ -1125,6 +1126,7 @@ TEST_CASE("report_operations_operations_process_fail_report_reaches_the_transpor
     report_operations_operations_commands::process_fail_report(out,
                                                                session,
                                                                std::vector<std::string>{
+                                                                   "sample",
                                                                    "sample",
                                                                    "sample",
                                                                    "sample",

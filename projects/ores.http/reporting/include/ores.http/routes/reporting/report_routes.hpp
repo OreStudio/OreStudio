@@ -25,6 +25,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
+#include "ores.reporting.api/messaging/report_error_event_protocol.hpp"
 #include "ores.utility/codec/wire_fields.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -74,6 +75,9 @@ public:
         boost::uuids::uuid run_id;
         std::int64_t errors{};
         std::int64_t warnings{};
+        /// The same problems split by phase, and no entry for a phase the run
+        /// recorded nothing in.
+        std::vector<ores::reporting::messaging::report_error_phase_count> by_phase;
     };
 
     /// When the scheduler says one definition's job fires next.

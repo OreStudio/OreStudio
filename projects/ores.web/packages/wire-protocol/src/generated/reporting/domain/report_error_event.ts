@@ -36,6 +36,7 @@ export interface ReportErrorEvent {
     report_instance_id: string;
     party_id: string;
     scope_code: string;
+    phase_code: string;
     severity: string;
     message: string;
     subject: string | null;

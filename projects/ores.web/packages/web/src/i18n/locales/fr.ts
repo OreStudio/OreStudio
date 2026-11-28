@@ -279,7 +279,7 @@ const fr: SourceCatalogue = {
                 held: 'En attente de vous',
                 applying: 'En cours',
                 applied: 'Faite',
-                failed: 'N’a pas pu être faite',
+                failed: 'Échec',
             },
         },
         autoApproval: {
@@ -550,6 +550,13 @@ const fr: SourceCatalogue = {
 
     'notification.inbox.approval_expiring':
         "Une demande de {kind} est due avant le {deadline} et personne n'y a répondu.",
+
+    'notification.scheduler.store_unbounded':
+        'Le magasin {store} n’est borné par rien qui s’exécute. Rien n’en supprime, et l’écran d’entretien des données en donne la raison.',
+    'notification.scheduler.store_sweep_failed':
+        'Le dernier passage sur le magasin {store} a échoué, donc le magasin n’est pas borné tant qu’un passage ne réussit pas.',
+    'notification.scheduler.sweep_skipped':
+        'Un passage a laissé {count} politiques non appliquées, donc les magasins qu’elles bornent grandissent encore. L’écran d’entretien des données indique lesquelles.',
 
     'notification.marketdata.curve_published':
         "La courbe {curve} de {party} est en vigueur depuis {published_at}, publiée par {publisher} à la date d'arrêté {as_of}. Elle remplace l'ensemble arrêté au {previous_as_of}, ou rien lorsqu'il s'agit du premier.",
@@ -5398,7 +5405,7 @@ const fr: SourceCatalogue = {
                 tenor: 'Ténor',
                 discountsOff: 'Actualise sur',
                 neverPublished: 'jamais publiée',
-                published: 'Publiée',
+                published: 'Publié',
                 stateHeader: 'État',
                 empty: 'Aucune devise ne tient de courbe de taux.',
                 state: {
@@ -5896,6 +5903,9 @@ const fr: SourceCatalogue = {
                 "Une série que la plateforme détient et n'a jamais constatée : c'est une ligne, et son compte est zéro.",
             legendEnded:
                 "Une série qui s'est arrêtée garde son dernier jour et son compte, car un fixing est un fait sur une date.",
+            computed: 'calculée : {method}',
+            legendComputed:
+                "Une série que l'exécution a calculée plutôt qu'une source constatée : le fournisseur nomme l'administrateur dont l'indice est celui-ci, et la méthode nomme comment la valeur a été faite.",
         },
         fixingSeries: {
             title: 'Série de fixings',
@@ -5910,6 +5920,7 @@ const fr: SourceCatalogue = {
             backToObservations: 'Retour aux observations de fixings',
             columns: {
                 provider: 'Publisher',
+                derivation: 'Comment elle a été faite',
                 first: 'Premier fixing',
                 last: 'Dernier fixing',
                 count: 'Fixings détenus',
@@ -5920,6 +5931,7 @@ const fr: SourceCatalogue = {
                 session: 'Session',
                 supplier: 'Fournisseur',
             },
+            observed: 'Constatée',
         },
         curveBlueprints: {
             title: 'Plans de courbe',
@@ -8612,9 +8624,22 @@ const fr: SourceCatalogue = {
             ready: 'Prêt',
             readyHint: 'Tous les faits nécessaires à une publication sont présents',
             notCarried: 'Aucun ensemble ne porte {code}.',
+            runWhen: 'Publié',
+            runBy: 'Par',
+            runMode: 'Mode',
+            runInserted: 'Insérés',
+            runUpdated: 'Mis à jour',
+            runSkipped: 'Ignorés',
+            runDeleted: 'Supprimés',
+            runOutcome: 'Résultat',
+            publicationsNone: 'Rien n’a encore publié ce jeu de données.',
+            outcome: {
+                published: 'Publié',
+                warnings: 'Publié avec des avertissements',
+                failed: 'Échec',
+            },
             lastPublished: 'Dernière publication',
-            lastPublishedGap:
-                'Pas encore servi : le journal des exécutions n’a pas de script d’écriture, donc rien n’enregistre quand ce jeu de données a été publié pour la dernière fois.',
+            lastPublishedGap: 'Rien n’a encore publié ce jeu de données.',
             publicationsTitle: 'Publications',
             publicationsLead:
                 'Une ligne pour chaque publication de ce jeu de données, avec ce que l’exécution a écrit et ce qu’elle a dit.',
@@ -8773,6 +8798,7 @@ const fr: SourceCatalogue = {
                 plural: 'lignes',
                 severity: 'Gravité',
                 scope: 'Portée',
+                phase: 'Phase',
                 about: 'Objet',
                 message: 'Message',
                 location: 'Emplacement',

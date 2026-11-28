@@ -78,6 +78,7 @@
 #include "ores.dq.core/messaging/nature_dimension_registrar.hpp"
 #include "ores.dq.core/messaging/origin_dimension_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/origin_dimension_registrar.hpp"
+#include "ores.dq.core/messaging/publication_log_handler.hpp"
 #include "ores.dq.core/messaging/publication_registrar.hpp"
 #include "ores.dq.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.dq.core/messaging/publish_handler.hpp"
@@ -296,6 +297,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         bundle_roster_request::nats_subject, queue_group, [rosh](ores::nats::message msg) {
             rosh->bundle_roster(std::move(msg));
+        }));
+
+    // =========================================================================
+    // The dataset publications verb reads the run log of one dataset, which a
+    // dataset's own page needs and the generated list states no filter for.
+    // =========================================================================
+
+    auto publog = std::make_shared<publication_log_handler>(nats, ctx, verifier);
+
+    subs.push_back(nats.queue_subscribe(
+        dataset_publications_request::nats_subject, queue_group, [publog](ores::nats::message msg) {
+            publog->dataset_publications(std::move(msg));
         }));
 
     // =========================================================================

@@ -106,7 +106,7 @@ begin
          'The latent FX volatility surfaces, which no vendor publishes as its own. Each vendor quotes them with noise of its own, and the vendors'' sources hold them.',
          9),
         (v_dataset_id, ores_utility_system_tenant_id_fn(), 'derived', 0, 'Derived', 'reference',
-         'Market data the platform computes from data it already holds: the term indices no publisher quotes in the run, stated from their currency''s overnight curve.',
+         'Market data the platform computes from data it already holds: the FX volatility quotes of a pair, inferred from its stored reference fixings. The term indices it also computes belong to their administrators, not to this provider.',
          10);
 end $$;
 

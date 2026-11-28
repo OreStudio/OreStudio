@@ -21,6 +21,7 @@
 #define ORES_STORAGE_CORE_FILESYSTEM_LOCAL_STORE_HPP
 
 #include "ores.storage.core/export.hpp"
+#include <chrono>
 #include <cstdint>
 #include <filesystem>
 #include <optional>
@@ -67,6 +68,28 @@ public:
     struct entry {
         std::string key;
         std::uintmax_t size_bytes = 0;
+        /**
+         * @brief When the object was last written.
+         *
+         * The store's own record of age: a caller that bounds a prefix by a
+         * period compares this with the instant it cuts off at.
+         */
+        std::chrono::system_clock::time_point last_modified;
+    };
+
+    /**
+     * @brief What one expiry found past its cutoff, and what it did with it.
+     *
+     * =selected= is what the cutoff held, whether or not it was removed, so a
+     * dry run states exactly what a removal of the same call would take.
+     * =remaining= is the part of it the call left because it reached its limit.
+     */
+    struct expiry {
+        std::uintmax_t selected = 0;
+        std::uintmax_t selected_bytes = 0;
+        std::uintmax_t removed = 0;
+        std::uintmax_t removed_bytes = 0;
+        std::uintmax_t remaining = 0;
     };
 
     explicit local_store(std::filesystem::path root);
@@ -166,6 +189,24 @@ public:
      */
     [[nodiscard]] std::vector<entry> list(const std::string& bucket,
                                           const std::string& prefix) const;
+
+    /**
+     * @brief Removes the objects under a prefix whose last write is at or before
+     * a cutoff, or states what it would remove.
+     *
+     * The prefix and the cutoff are the whole rule: which objects are past their
+     * period is a fact about their age, and a caller that has to ask for the
+     * listing first and remove second can remove half of it and report a whole.
+     *
+     * @param limit   The most objects one call removes. A larger set leaves a
+     *                =remaining= count so the caller repeats.
+     * @param dry_run State the selection and remove nothing.
+     */
+    [[nodiscard]] expiry expire(const std::string& bucket,
+                                const std::string& prefix,
+                                std::chrono::system_clock::time_point older_than,
+                                std::size_t limit,
+                                bool dry_run);
 
 private:
     std::filesystem::path root_;

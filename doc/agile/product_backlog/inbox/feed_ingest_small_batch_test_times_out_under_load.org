@@ -32,6 +32,13 @@ On the same day a full =ctest= run after a rebase failed it again, at line
 whose =wait_until= at line 1089 gave up before every tick was republished.
 The load average was about 30. The suite run again alone passed both.
 
+On 2026-11-27 it failed **alone**, on a machine that was busy but not overloaded,
+at =app_feed_ingest_loop_tests.cpp:1306=. The teardown then crashed with =SIGSEGV=
+in =feed_ingest_loop::log_status=, on the status thread. The branch that ran it
+touches neither =feed_ingest_loop.cpp= nor its tests, so both the failure and the
+crash belong to main. The rest of the suite passed: 51 of 52 cases, 277 of 279
+assertions.
+
 * References
 
 -

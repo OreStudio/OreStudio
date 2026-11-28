@@ -311,20 +311,20 @@ report_operations finalise-report __none__ __none__ __none__
 :ID: 6ED51D8C-A161-5075-BB8C-D13A160311DB
 :END:
 
-Sends =fail_report_request= and prints =fail_report_result=, so the shape is the protocol's and the meaning is the service's. It reads =report_instance_id=, =tenant_id=, =correlation_id=, =error_message=, in that order. The caller must have established a session first.
+Sends =fail_report_request= and prints =fail_report_result=, so the shape is the protocol's and the meaning is the service's. It reads =phase_code=, =report_instance_id=, =tenant_id=, =correlation_id=, =error_message=, in that order. The caller must have established a session first.
 
 
 The command is shaped like this:
 
 #+begin_example
-report_operations fail-report <report_instance_id> <tenant_id> <correlation_id> <error_message>
+report_operations fail-report <phase_code> <report_instance_id> <tenant_id> <correlation_id> <error_message>
 #+end_example
 
 It is addressed at =reporting.v1.ops.fail_report=.
 
 #+name: report_operations-fail-report
 #+begin_src ores-shell :tangle report_operations-fail-report.ores :exports none
-report_operations fail-report __none__ __none__ __none__ __none__
+report_operations fail-report __none__ __none__ __none__ __none__ __none__
 #+end_src
 
 ** =resolve-prepared-input=

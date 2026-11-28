@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :housekeeping:retention:inbox:notification:alerting:sprint_31:housekeeping_bound_every_store_the_system_keeps:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/tell-the-administrator-a-store-is-unbounded
+#+pr: 5209
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-26
-#+updated: 2026-11-26
+#+updated: 2026-11-27
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -33,11 +33,11 @@ the policy are.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
@@ -51,9 +51,39 @@ the policy are.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Raising a notification is already a solved problem in the inbox: a kind is a
+seed row, the raise writes four rows in one transaction, and a permission
+audience is resolved to accounts. What housekeeping adds is the *reading of its
+own state*, which the database already states in the bounds view and the ledger.
+
+1. *Three kinds, one per case the screen distinguishes.* =store_unbounded= for a
+   store no policy names, whose policy is off, or whose action the sweep cannot
+   perform; =store_sweep_failed= for a store whose last run failed, because that
+   is an incident and reads differently; and =sweep_skipped= for a sweep that
+   left policies unapplied, raised once per sweep rather than once per policy.
+   A store takes one of the two store kinds and never both, so the open
+   notifications of a tenant follow the unbounded stores of its catalogue.
+2. *A scheduled pass that reads the view, raises what is true and clears what is
+   no longer true.* The sweep applies policies; this pass only looks. It runs as
+   the definer, because it reads across the tenants that hold stores and writes
+   the inbox rows of each of them. The ledger's =ran_at= is =now()=, the
+   transaction's instant, so every policy one sweep applied shares it: that is
+   the key the skipped case groups by, and the reason one sweep tells a person
+   once.
+3. *The audience is the permission to act, in the store's tenant.* The holders of
+   =scheduler::retention_policies:write= — which the catalogue's own write
+   requires — resolved through the IAM's effective-permission function, so a
+   wildcard role counts. A platform store is the system tenant's, and the
+   catalogue states every store's tenant, so a tenant's store is told in its own
+   tenant without a change to the pass.
+4. *The message never carries the numbers.* It names the store and links to its
+   page; the size, the rate and the period are what the page is for. The skipped
+   notice names how many policies a sweep left, because that is the thing a
+   person decides about, and no store has a page for it.
+5. *A pass that fails never fails the sweep.* It is a job of its own, its outcome
+   is the scheduler's own record, and the inbox write is the inbox's business:
+   the pass records what it raised and what it resolved, and a raise that throws
+   costs only its own case.
 
 * Measurements
 
@@ -67,7 +97,14 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| The notices' pgTAP cases | 15 of 15 pass | =projects/ores.sql/test/run_tests.sh scheduler_housekeeping_alerts_test.sql= | 3cbb26f4ec |
+| The whole SQL suite | 1113 assertions in 115 files pass | =compass check --only pgtap= | 3cbb26f4ec |
+| Kinds, job and permissions a recreated installation seeds | 3 kinds, 1 job at =25 * * * *=, 2 permissions | =compass sql -- -c "select ..."= | 3cbb26f4ec |
+| Local checks | 6 of 6 pass | =compass check --only lint --only drift-sweep --only cmake-sources --only component-drift --only format= | 3cbb26f4ec |
+| Web gate | passes, including the bell's route case | =compass check --only web= | 3cbb26f4ec |
+| The job in the running fleet | =succeeded= at 17:25:00, 80 ms, no error | =select ... from ores_scheduler_job_instances_tbl= | 3cbb26f4ec |
+| The notices it raised | 4, each open for one person, each naming its store | =select ... from ores_inbox_notifications_tbl= | 3cbb26f4ec |
+| What the person sees | an inbox of them, with the kind, the route and the message key | =curl /api/me/notifications= | 3cbb26f4ec |
 
 * Notes
 
@@ -86,7 +123,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5209][#5209]] | [docs] Capture the node-scratch reason the screen states wrong |
+| [[https://github.com/OreStudio/OreStudio/pull/5208][#5208]] | [scheduler] Tell the administrator a store has no bound |
 
 * Review
 
@@ -95,3 +133,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The installation now tells the person who can act, and stops telling them once
+there is nothing to act on.
+
+- *Three kinds.* =scheduler.store_unbounded= for a store no policy names, whose
+  policy is off, or whose action the sweep cannot perform; =scheduler.store_sweep_failed=
+  for a store whose last run failed, because that is an incident; and
+  =scheduler.sweep_skipped= for a sweep that left policies unapplied. A store
+  takes one of the two store kinds at a time, so the open notices follow the
+  unbounded stores.
+- *One pass,* =ores_scheduler_raise_housekeeping_alerts_fn()=, run hourly by
+  =ores.scheduler.housekeeping_alerts=. It reads the bounds view and the ledger,
+  raises what is true, clears what is no longer true, and answers one row per case
+  with how many notices it raised and how many it cleared. It is the definer's
+  because it reads every tenant's stores; it states the store's tenant around a
+  raise and restores the job's own afterwards.
+- *The audience is the holder of the permission to act* —
+  =scheduler::retention_policies:write= — resolved through the IAM's
+  effective-permission function, so a wildcard role counts, and restricted to a
+  person, so a service account is never told. Both codes the retention policy
+  handler has always asked for are seeded at last; nothing held them but a
+  wildcard, which is why the editor was reachable only by the superuser.
+- *One sweep, one notice:* the ledger's =ran_at= is the transaction's instant, so
+  the rows one sweep wrote share it, and the skipped notice groups by it. Its
+  arguments state how many policies were left, which is the fact a person decides
+  about, and no store has a page for it.
+- *The notice links to the store's page.* The inbox's bell now appends the id for
+  =/operations/housekeeping=, so a notice opens the store it names rather than the
+  list.
+- *The knowledge page* that owns the subject states the pass, the kinds and why a
+  notice carries no numbers.
+
+Proved by 15 pgTAP assertions on a recreated database — one notice per unbounded
+store, one person told, no size in the arguments, no second notice on a second
+pass, a store that returns under a bound cleared, and one sweep's skips told once
+and cleared by a later sweep — and by the job firing in the running fleet.

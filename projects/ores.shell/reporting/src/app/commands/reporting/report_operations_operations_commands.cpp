@@ -206,7 +206,8 @@ void report_operations_operations_commands::register_commands(cli::Menu& root_me
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_fail_report(std::ref(out), std::ref(session), std::move(args));
         },
-        "fail-report <report_instance_id> <tenant_id> <correlation_id> <error_message>");
+        "fail-report <phase_code> <report_instance_id> <tenant_id> <correlation_id> "
+        "<error_message>");
 
     menu->Insert(
         "resolve-prepared-input",
@@ -1141,7 +1142,7 @@ void report_operations_operations_commands::process_fail_report(
         return;
     }
 
-    constexpr std::size_t positional_count = 4;
+    constexpr std::size_t positional_count = 5;
     if (parsed->positionals.size() != positional_count) {
         fail(out) << "Expected " << positional_count << " arguments, got "
                   << parsed->positionals.size() << "." << std::endl;
@@ -1151,6 +1152,7 @@ void report_operations_operations_commands::process_fail_report(
     request_type req;
     std::size_t next = 0;
     try {
+        req.phase_code = parsed->positionals[next++];
         req.report_instance_id = parsed->positionals[next++];
         req.tenant_id = parsed->positionals[next++];
         req.correlation_id = parsed->positionals[next++];

@@ -171,7 +171,8 @@ public:
 
 
     /**
-     * @brief The problems of each named run, counted apart by severity.
+     * @brief The problems of each named run, counted apart by severity and
+     * again by phase.
      *
      * A run that recorded no problem has no entry, which is what the screen
      * draws as no problems rather than as a row of zeroes.

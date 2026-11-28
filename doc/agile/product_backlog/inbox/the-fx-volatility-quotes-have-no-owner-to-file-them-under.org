@@ -1,0 +1,61 @@
+:PROPERTIES:
+:ID: 2B427A34-3AB0-4BCD-9984-0CC30CDA4A47
+:END:
+#+title: The FX volatility quotes have no owner to file them under
+#+description: Thirty-five series and 2,275 instruments still sit under a provider called derived, because no party in the store owns the item: the architecture says such a value is internal and never becomes a series, and the store cannot say that yet.
+#+type: capture
+#+level: cross
+#+filetags: :marketdata:fixing:derived:producer:
+#+created: 2026-11-27
+#+updated: 2026-11-27
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The provider =derived= still states thirty-five FX volatility series and holds
+2,275 =derived_fx_vol= vendor instruments: the ATM, risk reversal and butterfly
+quotes of each pair, inferred from that pair's stored reference fixings. Retiring
+the provider for the fixings left these where they were, because there is no
+party to move them to.
+
+Three candidates were weighed and each is false:
+
+- =ore= imports the ORE example market data files, and those quote other pairs.
+- =composite= is "the internal provider of the items that the service derives
+  from the quote series of other providers", and these derive from fixings.
+- Deleting them removes the volatility the synthetic FX option pricing reads.
+
+* Why
+
+The architecture already answers the question, and the store cannot hold the
+answer: an internal value is consumed by the generators of the synthetic market
+alone, never becomes a series, and no bill meters it. These quotes are exactly
+that, and they are series today.
+
+The model that can say it is the producer beside the publisher, with a standing
+of internal or external, which
+[[id:142FDA27-36E6-4C0D-95F2-6FAE223FC5E3][Split the publisher of a market data value from its producer]]
+builds. Its acceptance already states that the 194 series, 2,612 fixings and
+2,280 vendor ids filed under =derived= are re-filed by
+[[id:0B9995FC-96D1-4785-AEBD-512397ECA7D5][Annotate a derived value instead of naming a derived provider]];
+that task re-filed the fixings and recorded, in its Decisions, that these quotes
+are the part it cannot finish without the standing.
+
+* References
+
+- =projects/ores.sql/populate/marketdata/marketdata_derived_catalogue_populate.sql=
+  — the provider, its session and its =derived-fx-vol= source.
+- =projects/ores.sql/populate/marketdata/marketdata_derived_inventory_populate.sql=
+  — the 2,275 instruments, from the FX volatility surface blueprints whose
+  pillar contributor is =derived=.
+- =projects/ores.synthetic/service/src/derived_fx_vol_adapter.cpp= — the
+  adapter that infers the quotes and writes its series with
+  =derivation_kind = FX_VOL_DERIVATION=.
+- =doc/knowledge/architecture/market_data_architecture.org= — the internal and
+  external values, and the rule that an internal value never becomes a series.
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]
+- [[id:F24FA489-790A-4065-B8E1-DCC141595356][Synthetic generation of fixings]]

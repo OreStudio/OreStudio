@@ -319,6 +319,28 @@ wire_traits<ores::reporting::messaging::list_by_report_instance_id_report_error_
         ores::reporting::messaging::list_by_report_instance_id_report_error_events_response>(data);
 }
 
+std::string wire_traits<ores::reporting::messaging::report_error_phase_count>::write_json(
+    const ores::reporting::messaging::report_error_phase_count& v) {
+    return object::write_json(v);
+}
+
+ores::reporting::messaging::report_error_phase_count
+wire_traits<ores::reporting::messaging::report_error_phase_count>::read_json(
+    std::string_view text) {
+    return object::read_json<ores::reporting::messaging::report_error_phase_count>(text);
+}
+
+std::string wire_traits<ores::reporting::messaging::report_error_phase_count>::write_msgpack(
+    const ores::reporting::messaging::report_error_phase_count& v) {
+    return object::write_msgpack(v);
+}
+
+ores::reporting::messaging::report_error_phase_count
+wire_traits<ores::reporting::messaging::report_error_phase_count>::read_msgpack(
+    std::span<const std::byte> data) {
+    return object::read_msgpack<ores::reporting::messaging::report_error_phase_count>(data);
+}
+
 std::string wire_traits<ores::reporting::messaging::report_error_count>::write_json(
     const ores::reporting::messaging::report_error_count& v) {
     return object::write_json(v);

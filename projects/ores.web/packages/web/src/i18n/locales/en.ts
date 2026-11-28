@@ -281,7 +281,7 @@ export const en: SourceCatalogue = {
                 held: 'Waiting for you',
                 applying: 'Being made',
                 applied: 'Made',
-                failed: 'Could not be made',
+                failed: 'Failed',
             },
         },
         autoApproval: {
@@ -552,6 +552,13 @@ export const en: SourceCatalogue = {
 
     'notification.inbox.approval_expiring':
         'A request for {kind} is due by {deadline} and nobody has answered it.',
+
+    'notification.scheduler.store_unbounded':
+        'The store {store} is not bounded by anything that runs. Nothing removes from it, and the housekeeping screen states why.',
+    'notification.scheduler.store_sweep_failed':
+        'The last sweep of the store {store} failed, so the store is unbounded until one succeeds.',
+    'notification.scheduler.sweep_skipped':
+        'A sweep left {count} policies unapplied, so the stores they bound are still growing. The housekeeping screen states which.',
 
     'notification.marketdata.curve_published':
         'The curve {curve} of {party} is live from {published_at}, published by {publisher} as of {as_of}. It replaces the set as of {previous_as_of}, or nothing when it is the first.',
@@ -5816,6 +5823,9 @@ export const en: SourceCatalogue = {
                 'A series the platform holds and never stated: it is a row, and its count is zero.',
             legendEnded:
                 'A series that ended keeps its latest day and its count, because a fixing is a fact about a date.',
+            computed: 'computed: {method}',
+            legendComputed:
+                'A series the run computed rather than a source stated: the provider names the administrator whose index it is, and the method names how the value was made.',
         },
         fixingSeries: {
             title: 'Fixing series',
@@ -5833,6 +5843,7 @@ export const en: SourceCatalogue = {
                 first: 'First fixing',
                 last: 'Last fixing',
                 count: 'Fixings held',
+                derivation: 'How it was made',
                 date: 'Date',
                 value: 'Value',
                 feed: 'Feed',
@@ -5840,6 +5851,7 @@ export const en: SourceCatalogue = {
                 session: 'Session',
                 supplier: 'Supplier',
             },
+            observed: 'Observed',
         },
         curveBlueprints: {
             title: 'Curve blueprints',
@@ -8482,9 +8494,22 @@ export const en: SourceCatalogue = {
             ready: 'Ready',
             readyHint: 'Every fact a publish needs is present',
             notCarried: 'No bundle carries {code}.',
+            runWhen: 'Published',
+            runBy: 'By',
+            runMode: 'Mode',
+            runInserted: 'Inserted',
+            runUpdated: 'Updated',
+            runSkipped: 'Skipped',
+            runDeleted: 'Deleted',
+            runOutcome: 'Outcome',
+            publicationsNone: 'Nothing has published this dataset yet.',
+            outcome: {
+                published: 'Published',
+                warnings: 'Published with warnings',
+                failed: 'Failed',
+            },
             lastPublished: 'Last published',
-            lastPublishedGap:
-                'Not served yet: the run log has no writer, so nothing records when this dataset was last published.',
+            lastPublishedGap: 'Nothing has published this dataset yet.',
             publicationsTitle: 'Publications',
             publicationsLead:
                 'One row for each publish of this dataset, with what the run wrote and what it said.',
@@ -8641,6 +8666,7 @@ export const en: SourceCatalogue = {
                 plural: 'rows',
                 severity: 'Severity',
                 scope: 'Scope',
+                phase: 'Phase',
                 about: 'Subject',
                 message: 'Message',
                 location: 'Location',

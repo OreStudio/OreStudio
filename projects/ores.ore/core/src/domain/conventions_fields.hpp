@@ -168,6 +168,7 @@ void put_decimal(record_writer& w, std::string_view name, double value);
 
 void put_decimal(record_writer& w, std::string_view name, const std::optional<double>& value);
 
+
 }
 
 #endif

@@ -204,8 +204,8 @@ export interface StoreBoundAction {
      */
     policy_description: string | null;
     /**
-     * @brief What bounds the store: =sweep=, =storage_lifecycle=, =node_release=,
-     * =content_keying=, =policy_off= or =none=.
+     * @brief What bounds the store: =sweep=, =node_release=, =content_keying=,
+     * =policy_off= or =none=.
      */
     mechanism: string;
     /**

@@ -21,6 +21,7 @@
 #define ORES_REPORTING_CORE_SERVICE_REPORT_ERROR_RECORDER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.reporting.api/domain/run_phase.hpp"
 #include "ores.reporting.core/export.hpp"
 #include "ores.reporting.core/service/engine_log_row.hpp"
 #include "ores.reporting.core/service/run_failure_message.hpp"
@@ -62,6 +63,12 @@ public:
      * is where that account belongs. A notice becomes an @c info row, because
      * the engine has five levels and the store keeps four.
      *
+     * Every row states the engine phase, because every row is a line of the
+     * engine's own log. The reader that collects them states nothing else it
+     * could mean: the same rows read in postprocessing are still the engine's
+     * account of the engine, and calling them postprocessing would name the
+     * step that read them rather than the part of the run that failed.
+     *
      * @return The rows the run holds from this read, or why they were not
      * written.
      */
@@ -75,10 +82,16 @@ public:
      * The reason is about the run and names no subject: the step that did not
      * complete is not a trade, an analytic or a curve.
      *
+     * @param phase The part of the run the failure is of. The caller states it,
+     * because only the caller knows which step failed: an error the engine's
+     * own result reports is the engine phase even though a later step is what
+     * reads it.
+     *
      * @return An empty string on success, or why the error was not written.
      */
     [[nodiscard]] std::string record_run_failure(const std::string& report_instance_id,
-                                                 const std::string& reason);
+                                                 const std::string& reason,
+                                                 domain::run_phase phase);
 
 private:
     ores::database::context ctx_;

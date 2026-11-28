@@ -164,6 +164,26 @@ bool is_curve_input(const std::string& uri) {
            instrument == datum::instrument_type::discount;
 }
 
+/**
+ * @brief Whether @p uri names a conversion an FX trade prices through.
+ *
+ * An FX trade names a pair and not an address: its instruments hold the
+ * currencies it buys and sells, and no column of theirs holds the spot the pair
+ * converts at. So no FX trade states its own spot, and the market would carry
+ * none however many the party holds. The spots travel with every run for that
+ * reason, as the curve quotes do. A volatility surface travels with them
+ * because the option's curve is built from the surface the party publishes and
+ * from nothing a trade names either.
+ */
+bool is_fx_market_input(const std::string& uri) {
+    const auto datum = datum::oresmd_uri_codec::read(uri);
+    if (!datum)
+        return false;
+    const auto instrument = datum->type();
+    return instrument == datum::instrument_type::fx_spot ||
+           instrument == datum::instrument_type::fx_vol_surface;
+}
+
 }
 
 std::vector<const domain::market_series*>
@@ -177,7 +197,7 @@ series_to_export(const std::vector<domain::market_series>& series,
     // built from are an answer to a need no trade states, so they are always carried.
     const auto wanted = [&requirement_uris](const domain::market_series& s) {
         return !requirement_uris || requirement_uris->contains(s.oresmd_uri) ||
-               is_curve_input(s.oresmd_uri);
+               is_curve_input(s.oresmd_uri) || is_fx_market_input(s.oresmd_uri);
     };
     std::vector<const domain::market_series*> out;
     if (!party) {

@@ -413,6 +413,7 @@ export function registerGridReportRunRoutes(
                         id: text(entry['id']),
                         severity: text(entry['severity']),
                         scope: text(entry['scope_code']),
+                        phase: text(entry['phase_code']),
                         about: aboutOf(entry),
                         message: text(entry['message']),
                         subject: nullableText(entry['subject']),

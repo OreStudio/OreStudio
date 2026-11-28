@@ -36,3 +36,11 @@
 \ir ./scheduler_store_sampler_create.sql
 \ir ./scheduler_store_bounds_view_create.sql
 \ir ./scheduler_publish_from_dq_create.sql
+
+-- The view the housekeeping screens read for what each sweep removed. It joins
+-- the ledger to the policies, so it loads after both.
+\ir ./scheduler_retention_runs_create.sql
+
+-- The SQL side of object expiry: which object policies are due, and the ledger
+-- row a run writes.
+\ir ./scheduler_object_expiry_create.sql

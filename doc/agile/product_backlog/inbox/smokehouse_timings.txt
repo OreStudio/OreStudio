@@ -1,0 +1,127 @@
+# Smokehouse provisioning, timed in phases
+# 2026-11-26T20:25:13Z  checkout 8ea24d7d14
+
+database recreate (compass db recreate -y -k): 216.992 s
+services start   (compass services start):     178.177 s
+provisioning     (bootstrap setup ... --profile smokehouse): 122.260 s
+
+The profile at this measurement is the floor: system_provision,
+publish_system_curves, start_auto_approval, publish_bundle, build_calendars,
+provision_party, end_auto_approval. No party bundle and no feed yet.
+
+$ tail of the provisioning run
+      info: System Party: published the bundle party_essentials
+      info: System Party: activated, onboarded, and the administrator given access to it
+  [5/6] end_auto_approval: completed
+      info: Turned auto-approval off: Provisioning is finished, so people decide from here on.
+  [6/6] complete_provisioning: completed
+      info: Marked the tenant active
+      info: Took the tenant out of bootstrap mode
+✓ All 6 step(s) completed.
+✓ System provisioned. Tenant 'Smokehouse'.
+Next: logout, then: login tenant_admin@smokehouse <password>  — the tenant is ready to work in.
+> logout
+✓ Logged out successfully.
+Script complete: 3 commands executed.
+ores-shell> Bye!
+
+# ---------------------------------------------------------------------------
+# The full profile, the same phases, timed 2026-11-26T21:47Z
+# checkout 9c19d5e6f7 + the working tree (see below)
+
+database recreate (compass db recreate -y -k): 239.883 s
+services start   (compass services start):     173.971 s
+provisioning     (bootstrap setup ... --profile smokehouse): 326.623 s
+
+The profile at this measurement is the whole one: fifteen steps, three curves
+(EUR-ESTR, GBP-SONIA, GBP-LIBOR-3M), the surface blueprint of one pair, one feed
+of three vendors, and one trade per book. The run ended with no warnings.
+
+$ what the tenant carried
+  3 curves, 3 curve publishes
+  1 forward set  EUR/GBP
+  1 surface      EURGBP
+  3 trades       FxForward, FxOption, Swap
+
+$ where the provisioning time goes, from the step log
+  the waits for a curve's quotes: the step asks again every ten seconds until
+  the vendor's ticks arrive. The curve set publishes in dependency order, so the
+  projection curve waits for the funding curve rather than entering the same
+  pass, and that is one more round of quotes to wait for.
+  the wait for the surface's quotes: four rounds of ten seconds before they
+  arrive.
+
+# The intermediate measurements, in the order the profile grew. Each was run
+# against a database recreated at that point; the small tenants were provisioned
+# into the same database as the profile grew, so the last is the one to read.
+
+  floor, no party and no feed:                     122.260 s  (6 steps)
+  party, books, one vendor (bloomberg + derived):  270.467 s  (14 steps, 4 warned)
+      no curve published: the blueprints read the quotes of a provider the
+      party had not subscribed to, so 38 curves waited out their patience.
+  curves narrowed to two, pair narrowed to one:    122.572 s  (14 steps, clean)
+      but the interest rate swap was not written: no swap convention named an
+      index a curve served.
+  the same with GBP-LIBOR-3M:                      242.811 s  (warnings: its
+      discount curve was published after it)
+  dependency-ordered curve publish:                326.623 s  (clean)
+
+# The run is one command, and the shell is where the timings above came from:
+#   ./compass.sh shell -l build/scratch/smokehouse_bootstrap.ores --no-login
+
+# ---------------------------------------------------------------------------
+# The report run, same checkout, 2026-11-26T22:39Z
+
+bundle republish into an existing tenant (bundles publish smokehouse): 7.134 s
+engine package upload (compute publish-package ORE 1.8.17.0):          3.295 s
+report trigger   (report_operations trigger-report-instance):         1.174 s
+report run       (trigger to engine refusal):                        ~80 s
+
+The run assembled everything: gather_trades, gather_market_data,
+assemble_bundle, prepare_ore_package and submit_compute all completed, and the
+grid accepted the workunit. The engine then refused the market with three
+errors, which the capture the-report-market-exports-no-fx-spot records. The
+first attempt failed earlier, at collect_compute_results, because the engine
+package had never been uploaded to storage: HTTP 404 on
+ORE-1.8.17.0-x64-linux.tar.gz.
+
+# The republish path is what makes the report iteration cheap: a document change
+# is staged, the bundle is republished into the running tenant in seven seconds,
+# and the report is triggered again. Re-provisioning the tenant for every
+# document change would have cost three and a half minutes a round.
+
+# ---------------------------------------------------------------------------
+# The report run after the FX spot fix, 2026-11-27T00:01Z
+
+The export carried no FX at all: an FX instrument holds the currencies it buys
+and sells and no market address, so no trade names its own spot, and the export
+writes only the series a run's trades name. The export now carries a party's FX
+spots and volatility surfaces with every run, as it already carried the quotes a
+curve is built from.
+
+  before: market_data.txt held 0 FX quotes; run failed with
+          "FXTriangulation: no conversion from 'EUR' to 'GBP' ... quotes ()"
+  after:  market_data.txt holds FX/RATE/EUR/GBP and the pair's FX_OPTION quotes,
+          the run completes, and 1 of the 3 trades prices:
+
+            FxForward  NPV 80,815.55 GBP   (notional 7,966,164.03)
+
+The option records no pricing because ORE drops the FX convention whose
+AdvanceCalendar is "TARGET,UnitedKingdom.Settlement" and then cannot find it.
+The swap records none because the drawn convention indexes GBP-LIBOR-12M and no
+IBOR curve or forwarding entry exists.
+
+# ---------------------------------------------------------------------------
+# Round five, the rebased tree, tenant smokehouse
+# 2026-11-27, checkout 5c7ec4b974
+#
+services start   (compass services start):                     218 s
+provisioning     (bootstrap setup ... --profile smokehouse):   262 s, 14 steps, 1 warning
+compute publish-package:                                         3 s
+report run       (trigger-report-instance to completion):       37 s
+
+# ---------------------------------------------------------------------------
+# Round six, after the route fix, tenant Smokehouse Three
+# 2026-11-27, checkout 5118ff3313
+#
+provisioning     (provision tenant --profile smokehouse):      212 s, 14 steps, no warning

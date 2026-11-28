@@ -31,5 +31,7 @@ set(files
     "retained_store_sample_protocol_codec_roundtrip_tests.cpp"
     "retention_policy_codec_roundtrip_tests.cpp"
     "retention_policy_protocol_codec_roundtrip_tests.cpp"
+    "retention_run_codec_roundtrip_tests.cpp"
+    "retention_run_protocol_codec_roundtrip_tests.cpp"
     "scheduling_operations_protocol_codec_roundtrip_tests.cpp"
 )

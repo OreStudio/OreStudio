@@ -24,19 +24,23 @@
  * The screen reads this view rather than joining three tables itself, and that
  * is the point: whether a store is bounded is a fact about the installation, not
  * an inference a screen makes. A store is bounded now only where the mechanism
- * its bound names exists and runs: the sweep performs a chunk drop and a row
- * delete, so those bound their store today. An object prefix waits on the
- * storage lifecycle and a job's folder on the node's own release, and until
- * either exists the store is not bounded, however clear its policy reads. A
- * sweep whose last attempt failed leaves its store unbounded too: the mechanism
- * exists and did nothing, and nothing bounds a store until something removes
- * from it. A store no sweep has reached yet is bounded by the policy that will
- * be applied.
+ * its bound names exists and runs. The sweep performs a chunk drop, a row delete
+ * and an object prefix's expiry, so those bound their store today; a job's
+ * folder waits on the node's own release, and until that exists the store is not
+ * bounded, however clear its policy reads. A sweep whose last attempt failed
+ * leaves its store unbounded too: the mechanism exists and did nothing, and
+ * nothing bounds a store until something removes from it. A store no sweep has
+ * reached yet is bounded by the policy that will be applied.
  *
  * The size and the moment it was measured come from the latest sample, and a
  * store with no sample reports nothing rather than zero: the sampler measures the
  * stores the database can see, and an object prefix or a folder on a host is
  * measured by the component that owns it.
+ *
+ * The row states the tenant that holds the store, because a reader that acts on
+ * every store rather than on one — the pass that raises the notices — must write
+ * in the tenant that owns it, and a view that left the tenant out would make the
+ * caller join the catalogue to find out what it is already looking at.
  *
  * The bound's own record travels with the answer — its period, its cadence, its
  * version and its words — because the screen that changes one has to send the row
@@ -48,6 +52,7 @@
 
 create or replace view ores_scheduler_store_bounds_vw as
 select
+    s."tenant_id",
     s."code",
     s."display_name",
     s."description",
@@ -69,8 +74,7 @@ select
         when s."bound_kind" = 'none' then 'none'
         when p."code" is null then 'none'
         when not p."enabled" then 'policy_off'
-        when p."action" in ('drop_chunks', 'delete_rows') then 'sweep'
-        when p."action" = 'expire_prefix' then 'storage_lifecycle'
+        when p."action" in ('drop_chunks', 'delete_rows', 'expire_prefix') then 'sweep'
         when p."action" = 'release_directory' then 'node_release'
         else 'none'
     end as "mechanism",
@@ -78,7 +82,7 @@ select
         when s."bound_kind" = 'keying' then true
         when s."bound_kind" = 'none' or p."code" is null then false
         when not p."enabled" then false
-        when p."action" in ('drop_chunks', 'delete_rows')
+        when p."action" in ('drop_chunks', 'delete_rows', 'expire_prefix')
             then l."outcome" is distinct from 'failed'
         else false
     end as "bounded_now",

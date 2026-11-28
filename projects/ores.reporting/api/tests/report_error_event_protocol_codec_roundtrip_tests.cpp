@@ -93,6 +93,10 @@ TEST_CASE("ores::reporting::messaging::list_by_report_instance_id_report_error_e
         ores::reporting::messaging::list_by_report_instance_id_report_error_events_response>();
 }
 
+TEST_CASE("ores::reporting::messaging::report_error_phase_count", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::reporting::messaging::report_error_phase_count>();
+}
+
 TEST_CASE("ores::reporting::messaging::report_error_count", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::reporting::messaging::report_error_count>();
 }

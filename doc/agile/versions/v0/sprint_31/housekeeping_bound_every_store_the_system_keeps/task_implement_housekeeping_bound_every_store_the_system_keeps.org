@@ -8,12 +8,12 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch:
-#+pr: 5156
+#+pr: 5216
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-24
-#+updated: 2026-11-24
-#+environment:
+#+updated: 2026-11-28
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ No store the system keeps grows without bound: each one has a declared policy, h
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-11-24                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-28                               |
 
 * Acceptance
 
@@ -78,6 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/5216][#5216]] | [agile] Close the housekeeping story |
 | [[https://github.com/OreStudio/OreStudio/pull/5156][#5156]] | [agile] Log what the housekeeping validation found |
 
 * Review
@@ -87,3 +88,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story's scaffold is superseded by the tasks it was broken into, and the
+work it named is delivered: task_break-the-story-into-tasks split it, and every
+store the installation keeps now has a catalogue row, a policy where a period
+can bound it, and a mechanism that applies it — the SQL sweep for the tables, the
+object expiry for the prefixes, the node's own release for a job's folder, and
+the keying for a package.
+
+Two stores read unbounded, and both are decisions rather than gaps. The calendar
+dates cannot be bounded by a period: they are held once and rebuilt on a horizon,
+so the screen states that a period is not the mechanism that bounds them
+(task_decide-whether-calendar-dates-are-stored-or-computed). A node's scratch
+folder is released by the node when it uploads a job's output; the folders of
+jobs that failed are kept as evidence and are the capture
+a-node-scratch-store-reads-unbounded-for-a-reason-the-screen-states-wrong, whose
+subject is the screen's wording and not the mechanism.
+
+The screen states every verdict, the notices tell a person about the stores
+nothing effective bounds, and the object prefixes stop reading as unbounded now
+that the sweep expires them (#5215). This task is closed as delivered rather
+than as abandoned: it was the scaffold, and its goal is the story's.

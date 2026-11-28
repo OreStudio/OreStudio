@@ -49,7 +49,8 @@ constexpr std::size_t k_days = 3;
 constexpr std::size_t k_latest_date = 4;
 constexpr std::size_t k_latest_value = 5;
 constexpr std::size_t k_source = 6;
-constexpr std::size_t k_columns = 7;
+constexpr std::size_t k_derivation_kind = 7;
+constexpr std::size_t k_columns = 8;
 
 std::string text_of(const std::optional<std::string>& value) {
     return value.value_or(std::string{});
@@ -160,7 +161,8 @@ select s.id::text,
        count(f.id) as days,
        coalesce(max(f.fixing_date)::text, '') as latest_date,
        coalesce((array_agg(f.value order by f.fixing_date desc))[1], '') as latest_value,
-       coalesce((array_agg(f.source order by f.fixing_date desc))[1], '') as source
+       coalesce((array_agg(f.source order by f.fixing_date desc))[1], '') as source,
+       s.derivation_kind
 from ores_marketdata_market_series_tbl s
 left join ores_marketdata_market_fixings_tbl f
   on f.series_id = s.id
@@ -168,7 +170,7 @@ left join ores_marketdata_market_fixings_tbl f
 where s.valid_to = ores_utility_infinity_timestamp_fn()
   and (s.oresmd_uri like 'oresmd://fx/%type=fixing%'
        or s.oresmd_uri like 'oresmd://ir/%type=fixing%')
-group by s.id, s.oresmd_uri, s.provider_code
+group by s.id, s.oresmd_uri, s.provider_code, s.derivation_kind
 order by s.oresmd_uri)sql",
         fixing_series_summaries_lg(),
         "Reading the fixing series");
@@ -204,6 +206,7 @@ order by s.oresmd_uri)sql",
         summary.latest_value = text_of(row[k_latest_value]);
         summary.latest_date = read_day(text_of(row[k_latest_date]));
         summary.days = static_cast<std::uint32_t>(std::stoul(text_of(row[k_days])));
+        summary.derivation_kind = text_of(row[k_derivation_kind]);
         resp.series.push_back(std::move(summary));
     }
     return resp;

@@ -42,5 +42,7 @@ export interface Publication {
     records_skipped: number;
     records_deleted: number;
     published_by: string;
+    outcome: string;
+    messages: string;
     published_at: string;
 }

@@ -58,10 +58,12 @@ The pooler opens the server connection as the client itself, so it needs what
 the server would accept in the client's place. For a service account it holds
 the SCRAM verifier the server derived from the password, and never the password:
 a verifier cannot be turned back into one, so a copy of it opens nothing on its
-own. The copies live under =build/=, which is not tracked: =compass vault
-provision= reads each verifier back from the server, and
-=build/scripts/start_ci_pooler.sh= generates the one file the pooler reads from
-them.
+own. =build/scripts/start_ci_pooler.sh= asks the server for each verifier and
+writes the one file the pooler reads, because a recreate and a provisioning run
+both rewrite role passwords and a secret written before either of them is a
+pooler that refuses a password the server accepts. A host that builds a
+container's configuration away from the database has no server to ask, and falls
+back to the verifiers provisioning wrote under =build/keys=.
 
 A rotation reads the verifiers back from the server and writes the file again,
 which takes a restart of the fleet — the services are owed one anyway, because

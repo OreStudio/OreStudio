@@ -218,21 +218,31 @@ grid: =conventions= names thirty-four tables, each with its own columns, so a ta
 is listed with its columns and count and opened to read its rows. See
 [[id:99F3E780-6AA0-4879-8F6F-2A1321ACDB85][See the rows a dataset has staged]].
 
-The Details tab and a Provenance tab were drawn on 2026-11-28 and await sign-off,
-on the question the review raised: a dataset's page showed nothing of the dataset
-itself. They were redrawn as cards on the same day, because the first cut laid
-seventeen values in one grid and the reviewer still could not find the dataset in
-its own page; the cards are the Qt dialog's sections, which is what the area is
-measured against. Both readings exist — the row is served by the generated dataset read, and
-the label catalogue already maps the three classifications — except the
-methodology, which has a bus list and no HTTP route. The answer drawn is one joined
-read of the dataset and its methodology, not a catalogue the page sorts through.
+The Details tab and a Provenance tab were drawn on 2026-11-28 and *signed off* the
+same day by Marco. They answer the question the review raised: a dataset's page
+showed nothing of the dataset itself. They were redrawn as cards before the
+sign-off, because the first cut laid seventeen values in one grid and the reviewer
+still could not find the dataset in its own page; the cards are the Qt dialog's
+sections, which is what the area is measured against. Both readings exist — the row
+is served by the generated dataset read, and the label catalogue already maps the
+three classifications — except the methodology, which has a bus list and no HTTP
+route. The answer drawn is one joined read of the dataset and its methodology, not a
+catalogue the page sorts through. See
+[[id:C764076D-053A-4980-95D2-EC74639C7954][its task]].
 
-The Dependencies tab was drawn on 2026-11-28 and awaits sign-off. It is the Qt
-dialog's Dependencies tab under the name the Qt client gave it, and it answers what
-the Qt Data Librarian's lineage graph answered, and its open point is the asymmetry
-above: whether the downstream side is a table, as drawn, or a graph cut to the
-roles a person picks.
+The Dependencies tab was drawn on 2026-11-28 and *signed off* with the two tabs
+above. It is the Qt dialog's Dependencies tab under the name the Qt client gave it,
+and it answers what the Qt Data Librarian's lineage graph answered. Its open point
+was the asymmetry above — a graph upstream, a table downstream — and the sign-off
+keeps it: a dataset needs at most six others, which the graph draws, and is needed
+by as many as thirty-two, which reads as a table. See
+[[id:4C516D35-0DAA-47FD-8FC4-BE62E071D3D8][its task]].
+
+The Contents tab's paging and its image column were drawn on 2026-11-28 as well. The
+paging is the standard =Pager= the record lists use and is built; the image column
+is signed off with the tabs and still awaits its read and its route, so the screen
+prints a uuid until then. See
+[[id:D1B5FAF4-BD7A-4740-AC52-A980A0FFE901][the image task]].
 
 #+caption: The Dependencies tab: one need, drawn as the Qt client drew it, and the
 #+caption: thirty-two dependents read as a table, of which six are shown.

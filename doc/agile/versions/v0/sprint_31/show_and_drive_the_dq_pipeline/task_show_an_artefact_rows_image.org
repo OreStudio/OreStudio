@@ -35,8 +35,8 @@ shows four flags where it showed four uuids.
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
-| Now          | The prototype draws the column; it awaits sign-off. |
-| Waiting on   | Marco's sign-off of the image column.  |
+| Now          | Signed off on 2026-11-28 with the tabs; the read and the route are next. |
+| Waiting on   | Nothing.                               |
 | Next         | Read the image's code with the row, and serve its bytes. |
 | Last touched | 2026-11-28                               |
 

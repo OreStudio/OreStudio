@@ -37,8 +37,8 @@ publish-facing facts and nothing else.
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:FFA463D7-11E0-4232-92B0-B1899CD1614F][Show and drive the DQ pipeline in ores.web]] |
-| Now          | The prototype draws both tabs; they await sign-off. |
-| Waiting on   | Marco's sign-off of Details and Provenance. |
+| Now          | Signed off on 2026-11-28; the joined read and the two tabs are next. |
+| Waiting on   | Nothing.                               |
 | Next         | Read the dataset row with its methodology, and draw it. |
 | Last touched | 2026-11-28                               |
 

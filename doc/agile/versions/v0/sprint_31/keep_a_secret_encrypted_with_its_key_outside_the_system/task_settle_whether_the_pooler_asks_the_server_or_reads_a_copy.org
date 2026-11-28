@@ -29,11 +29,11 @@ and states why the copies stay.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] |
-| Now          | The function and its entry-point lines are gone. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the gate, then merge.              |
+| Next         | Nothing. |
 | Last touched | 2026-11-28                               |
 
 * Acceptance

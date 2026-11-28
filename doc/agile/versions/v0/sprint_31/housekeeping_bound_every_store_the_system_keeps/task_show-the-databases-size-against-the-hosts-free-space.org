@@ -8,7 +8,7 @@
 #+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
 #+owner: marco
 #+branch: feature/show-the-databases-size-against-the-hosts-free-space
-#+pr:
+#+pr: 5243
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
@@ -106,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5243][#5243]] | [scheduler,web] Measure the installation's size against the space it sits on |
 
 * Review
 

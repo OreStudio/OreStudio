@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
 #+owner: marco
-#+branch:
+#+branch: feature/lift-the-derivation-above-the-asset-class
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -30,7 +30,7 @@ per-class inputs, and prove the lift by the FX quotes coming out as they were.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:6DA34BE7-4F67-42B6-9BCB-20D7EDA55783][Derive volatility from a history, and serve it through the lifecycle]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -47,15 +47,30 @@ per-class inputs, and prove the lift by the FX quotes coming out as they were.
 
 * Notes
 
+- The engine's three per-class inputs are stated in its header: the transform is the engine's, the
+  coordinates belong to the instrument type, and the smile belongs to the class.
+- A log return leaves out a level that is not positive, which is what the FX path did before the
+  lift: a missing price spans the gap instead of producing an invented move.
+- A difference keeps a series that crosses zero, which is the transform interest rates needs.
+- =fx_derivation_window= remains as the FX name for the engine's window rule, because the synthetic
+  layer reports a pair's reach with it and the reach and the level must not disagree.
+
 - =fx_derivation.hpp= and =derived_fx_vol.hpp= hold the pieces: =fx_derivation_window=, the moments and the shrink to the prior, =level_multiplier= for the volatility risk premium, the reach, and =derived_fx_derivation_kind= with =derived_fx_method_version=.
 - =derive_grid= is the batched form of the same model, and it must stay cell-for-cell equal to the day-at-a-time answer through the lift.
 - The FX case stays the regression: its tests carry literal expected values, so a lift that changes a number fails a test rather than passing a new one.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The engine was cut where the class stops being named. =volatility_measurement= holds the transform
+that turns a level series into returns, the window rule, a series' shape read once, and a pillar's
+level read over its own window; the FX derivation keeps its coordinates, its convention and its
+smile, and maps its settings onto the engine's. The FX path that built its own log levels and
+differences now calls the engine's transform, so the seam is used and not merely declared.
+
+The batched grid was left where it is. It computes the same rules over prefix sums, because a day
+of a grid must cost the same whether its window is a week or ten years, and it is pinned by the test
+that the grid equals the day-at-a-time answer. Folding it into the engine would trade that test for
+a slower pass.
 
 * Measurements
 
@@ -69,9 +84,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Quant suite, cases | 765 | =ores.analytics.quant.tests= | f306a1152c |
+| Quant suite, assertions | 2276955 | the same | f306a1152c |
+| Measurement cases added | 9 | =ores.analytics.quant.tests "[volatility_measurement]"= | f306a1152c |
+| Synthetic API suite, cases | 1131 | =ores.synthetic.api.tests= | f306a1152c |
+| Synthetic API suite, assertions | 10293 | the same | f306a1152c |
+| Build, two targets | 9m 08s | =compass build ores.analytics.quant.tests ores.synthetic.api.tests= | f306a1152c |
+| The FX derivation tests | pass, expectations unaltered | the quant suite | f306a1152c |
 
 * Notes
+
+- The engine's three per-class inputs are stated in its header: the transform is the engine's, the
+  coordinates belong to the instrument type, and the smile belongs to the class.
+- A log return leaves out a level that is not positive, which is what the FX path did before the
+  lift: a missing price spans the gap instead of producing an invented move.
+- A difference keeps a series that crosses zero, which is the transform interest rates needs.
+- =fx_derivation_window= remains as the FX name for the engine's window rule, because the synthetic
+  layer reports a pair's reach with it and the reach and the level must not disagree.
 
 * Test Scenarios
 
@@ -97,3 +126,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The lift is committed at =f306a1152c=. The engine is =volatility_measurement=, the FX derivation is
+one of its callers, and the FX quotes are the ones it produced before: the derivation tests carry
+literal expectations and none was changed.
+
+What the next class supplies is now exactly three things: a difference instead of a log return, a
+currency with an expiry and a term instead of a pair with an expiry and a delta, and a smile across
+strikes instead of a smile across deltas.
+
+Not done, and deliberately: the batched grid keeps its own arrangement of the same rules. It is the
+one place where the derivation is written twice, and the equality test is what holds the two
+together.

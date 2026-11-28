@@ -2,7 +2,7 @@
 :ID: 40E61A13-B3A9-4EAF-A609-88638D24AF27
 :END:
 #+title: Task: Derive every series in one pass
-#+description: The platform quotes every interest rate series, not one, so a derivation is a batch: many series in, flat contiguous outputs out, no shared mutable state between series, and a measured cost over the whole seed. A refused series or pillar costs its own cell and no more.
+#+description: Many series in, flat arrays out, and a measured cost over every rate series the seed carries.
 #+type: task
 #+level: s1
 #+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
@@ -37,17 +37,11 @@ the job it has to do.
 
 * Acceptance
 
-- The batch takes many series and returns flat, contiguous outputs: one array of levels, one of projections, one of widths, and a status per cell. A caller reads results without an allocation per series and without a variant per cell.
+- The batch takes many series and returns flat, contiguous outputs: one array per coordinate axis (a level, a factor, a window, an ATM volatility and the smile's two parameters), one status per cell, and one offset per series, so a caller reads a series' row without walking another. A caller reads results without an allocation per series and without a variant per cell.
 - No step shares mutable state between series, so the pass can run one series per task with no lock and the parallel answer equals the serial one.
 - The cost is measured over a corpus of every interest rate series the seed carries, with the command and the commit on the task, and the measurement states the corpus size.
 - A refused series or pillar costs its own cell and no more: the rest of the batch stands, and the refusal is a status and a reason per cell.
 - The pass takes the discipline the FX batched grid already uses: prefix sums where a window slides, and one allocation for the whole output.
-
-* Notes
-
-- The precedent is =derive_grid= in the FX derivation: prefix sums of the first four powers of the returns make a day cost the same whether its window is a week or ten years, and a test holds it cell for cell equal to the day-at-a-time answer.
-- The corpus is the currencies and terms the seed configures, so the number is about this platform and not a synthetic benchmark. A measurement without the corpus size is not a measurement.
-- The parallel shape is one task per series over immutable inputs. Nothing in the derivation holds a cache, so no series can see another and the result does not depend on the order the tasks finish.
 
 * Plan
 
@@ -71,13 +65,14 @@ task and name that file in the Command column.
 
 * Notes
 
+- The precedent is =derive_grid= in the FX derivation: prefix sums of the first four powers of the returns make a day cost the same whether its window is a week or ten years, and a test holds it cell for cell equal to the day-at-a-time answer.
+- The corpus is the currencies and terms the seed configures, so the number is about this platform and not a synthetic benchmark. A measurement without the corpus size is not a measurement.
+- The parallel shape is one task per series over immutable inputs. Nothing in the derivation holds a cache, so no series can see another and the result does not depend on the order the tasks finish.
 * Test Scenarios
-
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
 that verify this task. Link
 new ones here as they're created; the scenario doc itself links back
 via its "Verifies task" field.
-
 | Scenario | State | Notes |
 |----------+-------+-------|
 |          |       |       |

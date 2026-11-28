@@ -64,8 +64,17 @@ enum class short_rate_model : std::uint8_t {
     /// dr = a (theta - r) dt + sigma dW, with theta held at one value.
     vasicek,
     /// The same process with a time-dependent theta. The projection is the same function.
-    hull_white
+    hull_white,
+    /// Named and refused: a state-dependent volatility is not this projection's closed form.
+    cox_ingersoll_ross,
+    /// Named and refused: a log-normal short rate is not this projection's closed form.
+    black_karasinski,
+    /// Named and refused: two factors where the projection reads one.
+    two_factor_gaussian
 };
+
+/// Whether the projection is closed form for @p model.
+ORES_ANALYTICS_QUANT_EXPORT bool has_closed_form(short_rate_model model) noexcept;
 
 /// The model's name, as a stored series states it.
 ORES_ANALYTICS_QUANT_EXPORT std::string_view name_of(short_rate_model model);
@@ -87,45 +96,6 @@ struct short_rate_projection final {
     /// Mean reversion, in inverse years. Zero is the driftless limit.
     double mean_reversion = 0.0;
 };
-
-/// One swaption pillar: the option's expiry, and the tenor of the swap it is written on.
-struct swaption_pillar final {
-    double expiry_years;
-    double term_years;
-
-    friend bool operator==(const swaption_pillar&, const swaption_pillar&) = default;
-};
-
-/**
- * @brief The factor a short rate's level is carried by, from today to a swaption's ATM.
- *
- * The rate's variance accumulates over the option's life as (1 - exp(-2 a T)) / (2 a), and the swap
- * rate averages the short rate over the swap's tenor, which damps the swing by
- * (1 - exp(-a tau)) / (a tau). The product's square root is one: the projection. Both factors have
- * the limit the driftless model states as a tends to zero, so a curve that runs no mean reversion
- * is read through the limit and not refused.
- *
- * Refused for a pillar that is not positive, because neither factor means anything without a
- * length.
- */
-ORES_ANALYTICS_QUANT_EXPORT std::expected<double, std::string>
-projection_factor(swaption_pillar pillar, short_rate_projection model);
-
-/// What one pillar's ATM volatility came from.
-struct ir_pillar_vol final {
-    /// The returns the term's level was read over.
-    int window;
-    /// The term's measured level, in the series' unit a year.
-    double level;
-    /// The model's factor for the pillar.
-    double projection;
-    /// The ATM normal volatility: the level carried by the factor.
-    double atm;
-};
-
-/// One pillar's ATM volatility, from the window's level, the window and the model.
-ORES_ANALYTICS_QUANT_EXPORT std::expected<ir_pillar_vol, std::string>
-atm_vol_of(double level, int window, swaption_pillar pillar, short_rate_projection model);
 
 /**
  * @brief The smile across strikes, from the same returns' shape.
@@ -161,6 +131,57 @@ ORES_ANALYTICS_QUANT_EXPORT double smile_at(const normal_skew_smile& smile,
                                             double strike,
                                             double expiry_years) noexcept;
 
+/// One swaption pillar: the option's expiry, and the tenor of the swap it is written on.
+struct swaption_pillar final {
+    double expiry_years;
+    double term_years;
+
+    friend bool operator==(const swaption_pillar&, const swaption_pillar&) = default;
+};
+
+/**
+ * @brief The factor a short rate's level is carried by, from today to a swaption's ATM.
+ *
+ * The rate's variance accumulates over the option's life as (1 - exp(-2 a T)) / (2 a), and the swap
+ * rate averages the short rate over the swap's tenor, which damps the swing by
+ * (1 - exp(-a tau)) / (a tau). The product's square root is one: the projection. Both factors have
+ * the limit the driftless model states as a tends to zero, so a curve that runs no mean reversion
+ * is read through the limit and not refused.
+ *
+ * Refused for a pillar that is not positive, because neither factor means anything without a
+ * length.
+ */
+ORES_ANALYTICS_QUANT_EXPORT std::expected<double, std::string>
+projection_factor(swaption_pillar pillar, short_rate_projection model);
+
+/// What one pillar's ATM volatility came from.
+struct ir_pillar_vol final {
+    /// The returns the term's level was read over.
+    int window;
+    /// The term's measured level, in the series' unit a year.
+    double level;
+    /// The model's dimensionless factor for the pillar.
+    double factor;
+    /// The ATM normal volatility: the level carried by the factor.
+    double atm;
+    /// The smile the shape of a return over the pillar's own life states.
+    normal_skew_smile smile;
+};
+
+/**
+ * @brief One pillar's ATM volatility and smile, from the window's level, the model and a shape.
+ *
+ * @p horizon_shape is the shape of a return over the pillar's own life, which the caller scales
+ * from the daily shape with over_days. A daily shape read at a one-year pillar would inflate the
+ * smile's slope by the root of the periods in a year.
+ */
+ORES_ANALYTICS_QUANT_EXPORT std::expected<ir_pillar_vol, std::string>
+atm_vol_of(double level,
+           int window,
+           swaption_pillar pillar,
+           short_rate_projection model,
+           return_shape horizon_shape);
+
 /// One term's matrix: the shape read once, and one cell per expiry of the ladder.
 struct ir_term_matrix final {
     series_measurement series;
@@ -171,15 +192,19 @@ struct ir_term_matrix final {
 /**
  * @brief One term's ATM matrix across an expiry ladder, from the term's own returns.
  *
- * The level of each cell is read by the measurement engine over the window its expiry states, and
- * the shape is read once over every return held, as the engine states. The model carries the level
- * to the swaption, and the caller states the coordinates the quotes are named by.
+ * The series is a term's levels, and this function applies the class's transform: a difference of
+ * the levels, because a rate may cross zero. The level of each cell is then read by the measurement
+ * engine over the window its expiry states, the shape is read once over every return held, and the
+ * smile is read from the shape of a return over that cell's own life. The model carries the level
+ * to the swaption.
  *
- * The returns are a rate's changes in whatever unit the caller keeps them, so the matrix is in that
- * unit a year: the store's basis points are the caller's to state, and the engine does not convert.
+ * The levels are in whatever unit the caller keeps them, so the matrix is in that unit a year: the
+ * store's basis points are the caller's to state, and the engine does not convert. A cell the
+ * history does not cover is refused alone, with the returns its window needs and the number the
+ * sample holds.
  */
 ORES_ANALYTICS_QUANT_EXPORT std::expected<ir_term_matrix, std::string>
-derive_term_matrix(std::span<const double> returns,
+derive_term_matrix(std::span<const dated_level> levels,
                    double term_years,
                    std::span<const double> expiry_years,
                    const measurement_settings& settings,

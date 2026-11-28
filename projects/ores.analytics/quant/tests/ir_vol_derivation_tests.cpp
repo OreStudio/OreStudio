@@ -20,18 +20,31 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
+#include <string>
 #include <vector>
 
 using namespace ores::analytics::quant::math;
 
 namespace {
 
-/// A rate series whose changes alternate by one basis point, and its changes.
-std::vector<double> alternating_changes(int count) {
-    std::vector<double> out;
+using std::chrono::January;
+using std::chrono::sys_days;
+using std::chrono::year_month_day;
+
+year_month_day rate_observation_day(int day) {
+    return year_month_day{sys_days{std::chrono::year{2026} / January / day}};
+}
+
+/// A rate at four percent whose change alternates by one basis point, as dated levels.
+std::vector<dated_level> alternating_rate(int count) {
+    std::vector<dated_level> out;
     out.reserve(static_cast<std::size_t>(count));
-    for (int i = 0; i < count; ++i)
-        out.push_back(i % 2 == 0 ? 0.0001 : -0.0001);
+    double rate = 0.04;
+    for (int i = 0; i < count; ++i) {
+        if (i > 0)
+            rate += i % 2 == 0 ? 0.0001 : -0.0001;
+        out.push_back({.date = rate_observation_day(i + 1), .level = rate});
+    }
     return out;
 }
 
@@ -39,18 +52,40 @@ short_rate_projection reversion_of(double mean_reversion) {
     return {.model = short_rate_model::hull_white, .mean_reversion = mean_reversion};
 }
 
+return_shape unit_shape() {
+    return {.skewness = -1.0, .excess_kurtosis = 0.5};
 }
 
-TEST_CASE("a model's name and the model round trip, and a process with no closed form has none",
+}
+
+TEST_CASE("a model's name round trips, and the models without a closed form say so",
           "[ir_vol_derivation]") {
     CHECK(name_of(short_rate_model::vasicek) == "vasicek");
     CHECK(name_of(short_rate_model::hull_white) == "hull_white");
     CHECK(short_rate_model_named("vasicek") == short_rate_model::vasicek);
     CHECK(short_rate_model_named("hull_white") == short_rate_model::hull_white);
-    CHECK_FALSE(short_rate_model_named("cox_ingersoll_ross"));
-    CHECK_FALSE(short_rate_model_named("black_karasinski"));
-    CHECK_FALSE(short_rate_model_named("two_factor_gaussian"));
+    CHECK(short_rate_model_named("cox_ingersoll_ross") == short_rate_model::cox_ingersoll_ross);
+    CHECK_FALSE(short_rate_model_named("black"));
     CHECK_FALSE(short_rate_model_named(""));
+
+    CHECK(has_closed_form(short_rate_model::vasicek));
+    CHECK(has_closed_form(short_rate_model::hull_white));
+    CHECK_FALSE(has_closed_form(short_rate_model::cox_ingersoll_ross));
+    CHECK_FALSE(has_closed_form(short_rate_model::black_karasinski));
+    CHECK_FALSE(has_closed_form(short_rate_model::two_factor_gaussian));
+}
+
+TEST_CASE("a model the projection is not closed form for is refused by name, not approximated",
+          "[ir_vol_derivation]") {
+    const swaption_pillar pillar{.expiry_years = 1.0, .term_years = 1.0};
+    const auto refused = projection_factor(
+        pillar, {.model = short_rate_model::cox_ingersoll_ross, .mean_reversion = 0.05});
+    REQUIRE_FALSE(refused);
+    CHECK(refused.error().find("cox_ingersoll_ross") != std::string::npos);
+    CHECK_FALSE(projection_factor(
+        pillar, {.model = short_rate_model::black_karasinski, .mean_reversion = 0.05}));
+    CHECK_FALSE(projection_factor(
+        pillar, {.model = short_rate_model::two_factor_gaussian, .mean_reversion = 0.05}));
 }
 
 TEST_CASE("the projection carries a level over the expiry and averages it over the term",
@@ -86,18 +121,24 @@ TEST_CASE("a pillar with no length, or a negative mean reversion, is refused",
 
 TEST_CASE("a pillar's ATM volatility is its window's level carried by the projection",
           "[ir_vol_derivation]") {
-    const auto vol = atm_vol_of(
-        0.001590609895806464, 252, {.expiry_years = 1.0, .term_years = 1.0}, reversion_of(0.05));
+    const auto vol = atm_vol_of(0.001590609895806464,
+                                252,
+                                {.expiry_years = 1.0, .term_years = 1.0},
+                                reversion_of(0.05),
+                                unit_shape());
     REQUIRE(vol);
     CHECK(vol->window == 252);
     CHECK(vol->level == Catch::Approx(0.001590609895806464).epsilon(1e-15));
-    CHECK(vol->projection == Catch::Approx(0.9515267115656557).epsilon(1e-14));
+    CHECK(vol->factor == Catch::Approx(0.9515267115656557).epsilon(1e-14));
     CHECK(vol->atm == Catch::Approx(0.0015135078035405148).epsilon(1e-13));
+    // The smile states the level at the money, and the shape it was handed.
+    CHECK(vol->smile.alpha == vol->atm);
+    CHECK(vol->smile.skewness == -1.0);
 
-    CHECK_FALSE(
-        atm_vol_of(-0.001, 252, {.expiry_years = 1.0, .term_years = 1.0}, reversion_of(0.05)));
-    CHECK_FALSE(
-        atm_vol_of(0.001, 252, {.expiry_years = 0.0, .term_years = 1.0}, reversion_of(0.05)));
+    CHECK_FALSE(atm_vol_of(
+        -0.001, 252, {.expiry_years = 1.0, .term_years = 1.0}, reversion_of(0.05), unit_shape()));
+    CHECK_FALSE(atm_vol_of(
+        0.001, 252, {.expiry_years = 0.0, .term_years = 1.0}, reversion_of(0.05), unit_shape()));
 }
 
 TEST_CASE("the smile is the level at the money, with the skewness as its slope",
@@ -121,28 +162,32 @@ TEST_CASE("the smile is the level at the money, with the skewness as its slope",
     CHECK(smile_at(smile, forward, forward + 40.0 * root, 1.0) == 0.0);
 }
 
-TEST_CASE("a term's matrix reads each expiry over its own window and projects through the model",
+TEST_CASE("a term's matrix applies the difference, reads each expiry over its own window and "
+          "projects through the model",
           "[ir_vol_derivation]") {
-    const auto changes = alternating_changes(400);
+    const auto levels = alternating_rate(400);
     const std::vector<double> expiries{1.0, 0.25, 3.0};
-    const auto matrix = derive_term_matrix(changes, 1.0, expiries, {}, reversion_of(0.05));
+    const auto matrix = derive_term_matrix(levels, 1.0, expiries, {}, reversion_of(0.05));
     REQUIRE(matrix);
     REQUIRE(matrix->cells.size() == 3);
-    // The whole sample's shape is read once; the level of each cell is read over its own window.
-    CHECK(matrix->series.moments.count == 400);
+    // Four hundred levels are three hundred and ninety-nine changes; the shape is read once over
+    // all of them, and each cell's level over its own window.
+    CHECK(matrix->series.moments.count == 399);
     CHECK(matrix->cells[0]->window == 252);
     CHECK(matrix->cells[1]->window == 63);
-    CHECK(matrix->cells[0]->atm == Catch::Approx(0.0015135078035405148).epsilon(1e-13));
-    // A 63-change window of alternating basis points is an odd count, so its mean is not zero:
-    // its sample stdev is sqrt(63 * (1e-4)^2 / 62), carried by the projection at a quarter year.
-    CHECK(matrix->cells[1]->atm == Catch::Approx(0.0007754774567857565).epsilon(1e-13));
-    // Three years of returns from a sample of four hundred: the window is not covered, and only
-    // that cell is refused.
-    CHECK_FALSE(matrix->cells[2]);
-    CHECK(matrix->cells[2].error() == "the sample is shorter than the window");
+    CHECK(matrix->cells[0]->atm == Catch::Approx(0.0015135078035405582).epsilon(1e-13));
+    CHECK(matrix->cells[1]->atm == Catch::Approx(0.0007754774567857786).epsilon(1e-13));
+    // Each cell's smile is the shape of a return over that cell's own life: the daily skewness
+    // falls as one over the root of the periods the expiry holds.
+    CHECK(matrix->cells[1]->smile.skewness ==
+          Catch::Approx(matrix->series.shape.skewness / std::sqrt(63.0)).epsilon(1e-12));
+    // Three years of returns from four hundred levels: the window is not covered, and only that
+    // cell is refused, in the words that name what it needs.
+    REQUIRE_FALSE(matrix->cells[2]);
+    CHECK(matrix->cells[2].error() ==
+          "the pillar of 3 years needs 756 returns; the sample holds 399");
 
     CHECK_FALSE(
-        derive_term_matrix(changes, 1.0, expiries, {.periods_per_year = 0.0}, reversion_of(0.05)));
-    CHECK_FALSE(derive_term_matrix(
-        std::vector<double>{0.0001, -0.0001, 0.0002}, 1.0, expiries, {}, reversion_of(0.05)));
+        derive_term_matrix(levels, 1.0, expiries, {.periods_per_year = 0.0}, reversion_of(0.05)));
+    CHECK_FALSE(derive_term_matrix({}, 1.0, expiries, {}, reversion_of(0.05)));
 }

@@ -2,7 +2,7 @@
 :ID: D2209924-4F07-40AE-BD0F-477D43356020
 :END:
 #+title: Task: Explain the method behind a derived value
-#+description: A note beside every derived value: the assumptions the method rests on, what it fits and what it does not, and how the set was initialised. It is data, versioned with the method, so the note a value shows cannot drift from the code that wrote it, and a method with no note cannot write a value.
+#+description: A note beside every derived value: its assumptions, what it fits and what it does not.
 #+type: task
 #+level: s1
 #+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
@@ -21,7 +21,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 A person reading a derived value reads how it was made and what it cannot be trusted for, so a
-simulated surface'"'"'s limitations follow from its initialisation in words on the page, not from a code
+simulated surface's limitations follow from its initialisation in words on the page, not from a code
 review.
 
 * Status
@@ -42,12 +42,6 @@ review.
 - The note is shown beside the value wherever a derived set appears, and the generated market data says how the set was initialised as part of the same note.
 - A method with no note cannot write a value: the write is refused, or the seed that declares the method fails to install. A value whose method has no note is a value nobody can read the limits of.
 - The note is short enough to read on the page and links to the durable page for the rest, so the page states the limits and the knowledge page states the method.
-
-* Notes
-
-- The method and version are already stamped on a published series: the FX derived quotes carry a derivation kind and a method version, and the surface publish carries its own. The note is the human half of that stamp and is versioned with it.
-- The notes differ by class and by method, and they are the place a limitation is stated: the FX note says the level is a realised volatility times an authored risk-premium multiplier and the shape is a Gram-Charlier shrunk to a prior, and the interest rate note says the projection is a one-factor Gaussian average and the smile is first-order with no curvature.
-- A note is not a knowledge page and does not replace one. It is the short statement a person reads at the point of use; the page that owns the method is cited from it.
 
 * Plan
 
@@ -71,13 +65,14 @@ task and name that file in the Command column.
 
 * Notes
 
+- The method and version are already stamped on a published series: the FX derived quotes carry a derivation kind and a method version, and the surface publish carries its own. The note is the human half of that stamp and is versioned with it.
+- The notes differ by class and by method, and they are the place a limitation is stated: the FX note says the level is a realised volatility times an authored risk-premium multiplier and the shape is a Gram-Charlier shrunk to a prior, and the interest rate note says the projection is a one-factor Gaussian average and the smile is first-order with no curvature.
+- A note is not a knowledge page and does not replace one. It is the short statement a person reads at the point of use; the page that owns the method is cited from it.
 * Test Scenarios
-
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
 that verify this task. Link
 new ones here as they're created; the scenario doc itself links back
 via its "Verifies task" field.
-
 | Scenario | State | Notes |
 |----------+-------+-------|
 |          |       |       |

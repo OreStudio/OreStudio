@@ -27,6 +27,7 @@
 #include "ores.dq.api/domain/publication_mode.hpp"
 #include "ores.dq.api/domain/publication_result.hpp"
 #include "ores.dq.api/messaging/bundle_roster_protocol.hpp"
+#include "ores.dq.api/messaging/dataset_contents_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_publications_protocol.hpp"
 #include "ores.dq.core/export.hpp"
 #include "ores.dq.core/repository/artefact_type_repository.hpp"
@@ -198,6 +199,32 @@ public:
      */
     std::vector<messaging::dataset_publication>
     list_dataset_publications(const std::string& dataset_code);
+
+    /**
+     * @brief Reads what a dataset has staged: the tables its artefact type
+     * names, and one page of one table's rows.
+     *
+     * A dataset names one artefact type and the type names a table or a family
+     * of them, so the tables are read first and always. The rows are read only
+     * when a table is named, and they carry their own columns, because every
+     * family carries different ones and no caller knows them in advance.
+     *
+     * The table is checked against the dataset's own family by the store: a
+     * caller names a table it was shown, and any other name is refused.
+     *
+     * @param dataset_code The dataset whose contents to read.
+     * @param table_name The table whose rows to read, or empty for the tables
+     *                   alone.
+     * @param limit The most rows to answer.
+     * @param offset How many rows to skip before the ones answered.
+     * @return The tables, and the rows as JSON when one was named. =success= is
+     *         false with the reason when the dataset is unknown or the table is
+     *         not one of its family.
+     */
+    messaging::dataset_contents_response read_dataset_contents(const std::string& dataset_code,
+                                                               const std::string& table_name,
+                                                               int limit,
+                                                               int offset);
 
     /**
      * @brief Reads the bundle that carries a dataset.

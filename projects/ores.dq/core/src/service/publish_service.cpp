@@ -566,6 +566,67 @@ publish_service::list_dataset_publications(const std::string& dataset_code) {
     return runs;
 }
 
+messaging::dataset_contents_response publish_service::read_dataset_contents(
+    const std::string& dataset_code, const std::string& table_name, int limit, int offset) {
+    messaging::dataset_contents_response resp;
+
+    const auto tables_sql = "SELECT table_name, display_order, columns, staged_count "
+                            "FROM ores_dq_dataset_tables_fn($1)";
+    const auto table_rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx_,
+        tables_sql,
+        {dataset_code},
+        lg(),
+        std::format("Reading the tables of dataset {}", dataset_code));
+
+    resp.tables.reserve(table_rows.size());
+    for (const auto& row : table_rows) {
+        messaging::dataset_table table;
+        table.table_name = text_of(row, 0);
+        table.display_order = static_cast<int>(number_of(row, 1));
+        table.columns = text_of(row, 2);
+        table.staged_count = number_of(row, 3);
+        resp.tables.push_back(std::move(table));
+    }
+
+    // A dataset whose artefact type is unknown stages into no table, which is
+    // not the same answer as an empty one and is reported rather than shown.
+    if (resp.tables.empty()) {
+        resp.success = false;
+        resp.error_message =
+            std::format("No dataset called {} stages into any table", dataset_code);
+        return resp;
+    }
+
+    resp.success = true;
+    if (table_name.empty())
+        return resp;
+
+    const auto rows_sql = "SELECT ores_dq_dataset_rows_fn($1, $2, $3, $4)::text";
+    const auto row_rows = ores::database::query_builder::execute_parameterized_multi_column_query(
+        ctx_,
+        rows_sql,
+        {dataset_code, table_name, std::to_string(limit), std::to_string(offset)},
+        lg(),
+        std::format("Reading the rows of {} in dataset {}", table_name, dataset_code));
+
+    if (row_rows.empty() || row_rows.front().empty() || !row_rows.front().front().has_value()) {
+        resp.success = false;
+        resp.error_message = std::format("No rows were read from {}", table_name);
+        return resp;
+    }
+    resp.rows = *row_rows.front().front();
+
+    // The store answers an {error} object for a table its dataset does not
+    // name, rather than raising, so it is turned into an answer here.
+    if (resp.rows.starts_with("{\"error\"")) {
+        resp.success = false;
+        resp.error_message = std::format("{} cannot be read: {}", table_name, resp.rows);
+        resp.rows.clear();
+    }
+    return resp;
+}
+
 std::optional<std::string> publish_service::bundle_of_dataset(const std::string& dataset_code) {
     // No tenant predicate on purpose: a world or platform bundle's membership
     // rows sit in the system tenant, and the read policy admits them. A dataset

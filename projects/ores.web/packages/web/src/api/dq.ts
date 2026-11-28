@@ -25,6 +25,7 @@ import type {
     BundleRosterResponse,
 } from '@ores/wire-protocol/generated/dq/protocol/bundle_roster_protocol';
 import type { DatasetPublication } from '@ores/wire-protocol/generated/dq/protocol/dataset_publications_protocol';
+import type { DatasetTable } from '@ores/wire-protocol/generated/dq/protocol/dataset_contents_protocol';
 import { baseFor } from './servers.js';
 import { request } from './transport.js';
 
@@ -137,4 +138,97 @@ export function reasonOf(member: BundleRosterMember): NotReadyReason | null {
         return 'no staged rows';
     }
     return null;
+}
+
+/**
+ * One column of a table's rows, as the store states it.
+ *
+ * The rows carry their own columns because every artefact family carries
+ * different ones, and no screen knows them in advance.
+ */
+export interface DatasetRowColumn {
+    readonly name: string;
+    readonly type: string;
+}
+
+/** One page of a table's rows, with the columns the rows carry. */
+export interface DatasetRowsPage {
+    readonly columns: readonly DatasetRowColumn[];
+    readonly rows: readonly Readonly<Record<string, unknown>>[];
+    readonly total: number;
+}
+
+/**
+ * The tables a dataset stages into.
+ *
+ * A dataset names one artefact type and the type names a table or a family of
+ * them, so this is the list a person reads before picking one table to open.
+ * Each table states its own columns and its own staged count: the roster's
+ * figure is the family's sum and cannot say which table is empty.
+ */
+export async function readDatasetTables(datasetCode: string): Promise<readonly DatasetTable[]> {
+    const answer = await readContents(datasetCode, '', 0, 0);
+    return answer.tables;
+}
+
+/**
+ * One page of one table's rows.
+ *
+ * The table is named as the list showed it. The server refuses any name the
+ * dataset's own artefact type does not state, so a stale page answers an error
+ * rather than another dataset's rows.
+ */
+export async function readDatasetRows(
+    datasetCode: string,
+    tableName: string,
+    limit = 50,
+    offset = 0,
+): Promise<DatasetRowsPage> {
+    const answer = await readContents(datasetCode, tableName, limit, offset);
+    if (answer.page === null) {
+        throw new Error(`No rows were read from ${tableName}.`);
+    }
+    return answer.page;
+}
+
+/** The two reads above, as the one operation the server serves. */
+async function readContents(
+    datasetCode: string,
+    tableName: string,
+    limit: number,
+    offset: number,
+): Promise<{ readonly tables: readonly DatasetTable[]; readonly page: DatasetRowsPage | null }> {
+    const params = new URLSearchParams({ dataset_code: datasetCode });
+    if (tableName !== '') {
+        params.set('table_name', tableName);
+        params.set('limit', String(limit));
+        params.set('offset', String(offset));
+    }
+    const answer = z
+        .object({
+            success: z.boolean(),
+            error_message: z.string(),
+            tables: z.array(z.looseObject({})),
+            rows: z.string(),
+        })
+        .parse(
+            await request(`${CPP}/api/v1/dq/dataset_contents?${params.toString()}`, {
+                method: 'GET',
+            }),
+        );
+    if (!answer.success) {
+        throw new Error(answer.error_message);
+    }
+    const tables = answer.tables as unknown as readonly DatasetTable[];
+    if (tableName === '') {
+        return { tables, page: null };
+    }
+    const page = z
+        .object({
+            columns: z.array(z.object({ name: z.string(), type: z.string() })),
+            rows: z.array(z.record(z.string(), z.unknown())),
+            total: z.number(),
+        })
+        .parse(JSON.parse(answer.rows)) as DatasetRowsPage;
+    return { tables, page };
 }

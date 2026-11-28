@@ -8602,7 +8602,16 @@ const fr: SourceCatalogue = {
             tabs: {
                 details: 'Détails',
                 publications: 'Publications',
+                contents: 'Contenu',
             },
+            contentsTitle: 'Contenu',
+            contentsLead:
+                'Les tables dans lesquelles ce jeu de données met ses lignes : {count}. Un jeu de données nomme un seul type d’artefact, et ce type nomme une table ou une famille de tables ; chaque table porte donc ses propres colonnes. Ouvrez-en une pour lire ses lignes.',
+            table: 'Table',
+            columns: 'Colonnes',
+            allTables: 'Toutes les tables',
+            rowsLead: '{shown} lignes sur {count} mises en attente pour {code}.',
+            rowsNone: 'Cette table ne porte aucune ligne pour {code}.',
             title: 'Jeu de données',
             level: 'Niveau {level}',
             name: 'Nom',

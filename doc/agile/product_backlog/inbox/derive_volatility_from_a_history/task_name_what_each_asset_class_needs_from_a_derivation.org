@@ -8,7 +8,7 @@
 #+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/name-what-the-surface-path-assumes
-#+pr:
+#+pr: 5223
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5223][#5223]] | [agile] Survey what the surface path assumes, and what each class needs |
 
 * Review
 

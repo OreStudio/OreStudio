@@ -667,9 +667,7 @@ void ensure_package(const fs::path& pkg_cache_dir,
     fs::create_directories(pkg_cache_dir.parent_path());
     const auto cache_key = pkg_cache_dir.filename().string();
     const fs::path lock_path = pkg_cache_dir.parent_path() / (cache_key + ".lock");
-    {
-        std::ofstream create_lock(lock_path, std::ios::app);
-    }
+    { std::ofstream create_lock(lock_path, std::ios::app); }
     boost::interprocess::file_lock file_lock(lock_path.string().c_str());
     boost::interprocess::scoped_lock<boost::interprocess::file_lock> guard(file_lock);
 

@@ -92,6 +92,27 @@ struct store_samples_body {
 }
 static_assert(ores::utility::codec::names_every_member<store_samples_body>());
 
+/**
+ * @brief The installation's capacity over a window, and the window it covered.
+ *
+ * Both figures travel in one series: the database's size and the space the host
+ * has left are one question asked of two places, and a screen that read them
+ * apart could pair a size with a free space measured hours later.
+ */
+struct capacity_body {
+    std::vector<scheduling::capacity_sample> samples;
+    std::string from_at;
+    std::string to_at;
+};
+
+[[nodiscard]] constexpr auto wire_fields(std::type_identity<capacity_body>) {
+    return ores::utility::codec::field_list{
+        ores::utility::codec::field{"samples", &capacity_body::samples},
+        ores::utility::codec::field{"from_at", &capacity_body::from_at},
+        ores::utility::codec::field{"to_at", &capacity_body::to_at}};
+}
+static_assert(ores::utility::codec::names_every_member<capacity_body>());
+
 /** What a person decided about a bound, beside the reason for it. */
 struct store_bound_write {
     bool enabled = false;
@@ -187,6 +208,22 @@ void housekeeping_routes::register_routes(
     router->add_route(samples_route);
     registry->register_route(samples_route);
 
+    auto capacity =
+        router->get("/api/operations/housekeeping/capacity")
+            .summary("The installation's size against the space its host has left")
+            .description("Forwards to scheduler.v1.capacity.list, which answers the "
+                         "database's size and the free space of the filesystem it sits on, "
+                         "over a horizon.")
+            .tags({"housekeeping"})
+            .operation_catalogue("scheduler", "capacity_samples", "capacity_samples_read")
+            .auth_required()
+            .query_param(
+                "range", "string", "24h", false, "How far back the series reaches: 1h, 24h or 7d")
+            .handler([&session](const http_request& req) { return handle_capacity(req, session); });
+    const auto capacity_route = capacity.build();
+    router->add_route(capacity_route);
+    registry->register_route(capacity_route);
+
     auto policy =
         router->put("/api/operations/housekeeping/stores/{code}/policy")
             .summary("Change a store's bound: whether it applies, its period and cadence")
@@ -232,6 +269,25 @@ boost::asio::awaitable<http_response> housekeeping_routes::handle_samples(const 
         }
         co_return http_response::json(ores::utility::codec::object::write_json(
             store_samples_body{msg.store_code, reply.samples, reply.from_at, reply.to_at}));
+    } catch (const std::exception& e) {
+        co_return http_response::error(http_status::bad_request, e.what());
+    }
+}
+
+boost::asio::awaitable<http_response> housekeeping_routes::handle_capacity(const http_request& req,
+                                                                           nats_client& session) {
+    try {
+        scheduling::list_capacity_samples_request msg;
+        const auto range = req.get_query_param("range");
+        if (!range.empty())
+            msg.range = range;
+
+        const auto reply = forwarding::forward(req, session, msg);
+        if (!reply.success) {
+            co_return http_response::error(http_status::bad_gateway, reply.message);
+        }
+        co_return http_response::json(ores::utility::codec::object::write_json(
+            capacity_body{reply.samples, reply.from_at, reply.to_at}));
     } catch (const std::exception& e) {
         co_return http_response::error(http_status::bad_request, e.what());
     }

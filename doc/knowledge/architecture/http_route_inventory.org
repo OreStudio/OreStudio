@@ -63,7 +63,7 @@ an API publishes no area, so it is counted under =(none)=.
 
 | Area | Owner components | Routes | Kinds |
 |------+------------------+--------+-------|
-|  | api, fixing-observations, housekeeping, iam, marketdata, refdata, scheduler, series-identity-shapes, synthetic, vault | 30 | unclassified 30 |
+|  | api, fixing-observations, housekeeping, iam, marketdata, refdata, scheduler, series-identity-shapes, synthetic, vault | 31 | unclassified 31 |
 | access | iam, server | 109 | composed view 2, resource 107 |
 | agile | agile-routes | 6 | composed view 2, resource 4 |
 | analytics | analytics, sensitivity-templates | 12 | resource 12 |
@@ -519,7 +519,7 @@ against the answer the BFF gives.
 
 * The inventory
 
-1543 routes: 348 answered by the BFF and 1195 by ores.http.
+1544 routes: 348 answered by the BFF and 1196 by ores.http.
 
 | Kind | Area | Method | Path | Server | Where | Note |
 |------+------+--------+------+--------+-------+------|
@@ -985,12 +985,13 @@ against the answer the BFF gives.
 | composed view | grid | get | =/api/operations/grid/series= | ores.http | projects/ores.http/compute/src/routes/compute/grid_composed_routes.cpp:415 | The grid series answered by ores.http at the address and in the shape the BFF answered: the counters per bucket, and for an operator one row of buckets per node joined onto the host registry, kept for the interval a page asks again. |
 | composed view | grid | get | =/api/operations/grid/usage= | bff | projects/ores.web/packages/bff/src/operations.ts:540 | Who uses the grid, the results grouped by tenant or by party with each group's share, the results read and the party names beside them. |
 | composed view | grid | get | =/api/operations/grid/usage= | ores.http | projects/ores.http/compute/src/routes/compute/grid_composed_routes.cpp:500 | The grid usage answered by ores.http at the address and in the shape the BFF answered: a group for each tenant, read by entering each in turn, or for each of the caller's parties, with each group's share and a tenant that could not be read carried as unavailable. |
+|  |  | get | =/api/operations/housekeeping/capacity= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:212 |  |
 |  |  | get | =/api/operations/housekeeping/stores= | bff | projects/ores.web/packages/bff/src/housekeeping.ts:125 |  |
-|  |  | get | =/api/operations/housekeeping/stores= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:163 |  |
+|  |  | get | =/api/operations/housekeeping/stores= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:184 |  |
 |  |  | put | =/api/operations/housekeeping/stores/:code/policy= | bff | projects/ores.web/packages/bff/src/housekeeping.ts:158 |  |
 |  |  | get | =/api/operations/housekeeping/stores/:code/samples= | bff | projects/ores.web/packages/bff/src/housekeeping.ts:135 |  |
-|  |  | put | =/api/operations/housekeeping/stores/{code}/policy= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:191 |  |
-|  |  | get | =/api/operations/housekeeping/stores/{code}/samples= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:176 |  |
+|  |  | put | =/api/operations/housekeeping/stores/{code}/policy= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:228 |  |
+|  |  | get | =/api/operations/housekeeping/stores/{code}/samples= | ores.http | projects/ores.http/scheduler/src/routes/scheduler/housekeeping_routes.cpp:197 |  |
 | resource | operations | get | =/api/operations/logs= | bff | projects/ores.web/packages/bff/src/operations.ts:640 | One page of telemetry entries a filter selects, with the count of everything it matches. |
 | resource | operations | get | =/api/operations/logs= | ores.http | projects/ores.http/workflow/src/routes/workflow/operations_routes.cpp:369 | One page of telemetry entries at the address and in the shape the BFF answered: the window from a range, the filters combined with and, and the page and its total. |
 | resource | operations | get | =/api/operations/services= | bff | projects/ores.web/packages/bff/src/operations.ts:386 | Every expected service instance with the age of its last report, read from the telemetry samples. |

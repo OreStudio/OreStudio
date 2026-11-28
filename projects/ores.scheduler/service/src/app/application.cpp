@@ -25,6 +25,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.scheduler.api/messaging/job_definition_protocol.hpp"
 #include "ores.scheduler.core/messaging/registrar.hpp"
+#include "ores.scheduler.core/service/capacity_action_handler.hpp"
 #include "ores.scheduler.core/service/mq_action_handler.hpp"
 #include "ores.scheduler.core/service/nats_publish_action_handler.hpp"
 #include "ores.scheduler.core/service/nats_request_action_handler.hpp"
@@ -110,6 +111,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // half of housekeeping is an action of its own.
     handlers.push_back(
         std::make_unique<ores::scheduler::service::object_expiry_action_handler>(svc_nats));
+    // Only a process on the host can ask a filesystem how much room is left, so
+    // the installation's capacity is measured by an action rather than by SQL.
+    handlers.push_back(std::make_unique<ores::scheduler::service::capacity_action_handler>());
 
     auto loop = std::make_shared<ores::scheduler::service::scheduler_loop>(
         nats, db_ctx, std::move(handlers));

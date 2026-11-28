@@ -22,6 +22,8 @@
 
 #include "ores.platform/export.hpp"
 #include <cstdint>
+#include <optional>
+#include <string>
 
 namespace ores::platform::system {
 
@@ -41,6 +43,34 @@ struct system_info {
      */
     std::int64_t ram_mb = 0;
 };
+
+/**
+ * @brief The space of one filesystem, as the computer states it.
+ *
+ * Both figures are bytes. The free figure is what a write may still use without
+ * touching the reserve the root account keeps, because that is the space a
+ * database can grow into; counting the reserve would report room the server
+ * cannot take.
+ */
+struct filesystem_space {
+    std::uint64_t free_bytes = 0;
+    std::uint64_t total_bytes = 0;
+};
+
+/**
+ * @brief Reads the space of the filesystem that holds a path.
+ *
+ * A path this computer does not hold, or one whose filesystem the process may not
+ * ask about, answers nothing: a zero would read as a full disk, which is a
+ * different fact from a disk that could not be measured.
+ */
+ORES_PLATFORM_EXPORT std::optional<filesystem_space> get_filesystem_space(const std::string& path);
+
+/**
+ * @brief The name the computer gives itself, or a stated placeholder when it
+ * gives none.
+ */
+ORES_PLATFORM_EXPORT std::string get_host_name();
 
 /**
  * @brief Reads the hardware facts of the computer the process runs on.

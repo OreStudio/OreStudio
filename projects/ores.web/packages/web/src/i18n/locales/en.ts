@@ -1406,6 +1406,20 @@ export const en: SourceCatalogue = {
                     activeBatches: 'Active batches',
                     failed: 'Failed results',
                 },
+                housekeeping: {
+                    title: 'Housekeeping',
+                    needAttention: {
+                        one: '{count} store is not bounded',
+                        other: '{count} stores are not bounded',
+                    },
+                    allClear: 'Every store is bounded',
+                    noCatalogue: 'The catalogue has not been read',
+                    stores: 'Stores',
+                    bounded: 'Bounded',
+                    unbounded: 'Unbounded',
+                    unmeasured: 'Not measured',
+                    held: 'Held',
+                },
                 queue: {
                     title: 'Message queue',
                     noSample: 'No sample yet',
@@ -1896,9 +1910,41 @@ export const en: SourceCatalogue = {
             period: '{days} days',
             cadence: 'every {hours} h',
             measure: '{count} {unit}',
+            legend: {
+                summary: 'What these verdicts mean',
+                verdicts: 'The verdicts',
+                mechanisms: 'How a bound acts',
+                bounded:
+                    'Something removes from the store on a schedule, and its last run did not fail.',
+                keyed: 'The keys name their content, so the same content cannot be kept twice. It still grows with every distinct key, and no schedule removes anything.',
+                unbounded:
+                    'Nothing removes from the store, so it grows for as long as the system writes to it.',
+                mechanismNames: {
+                    sweep: 'A scheduled sweep',
+                    node_release: 'The node releases it',
+                    content_keying: 'Content keying',
+                    policy_off: 'A policy that is off',
+                    none: 'No mechanism',
+                },
+            },
+            mechanisms: {
+                sweep: 'A scheduled sweep drops the chunks, deletes the rows or expires the objects past the period, on the policy’s own cadence.',
+                node_release:
+                    'The compute node releases the folder itself when it uploads the job’s output, so no scheduled run applies the period.',
+                content_keying:
+                    'The keys name their content, so one key holds one copy. Nothing removes the bytes and nothing has to: the store cannot hold the same content twice.',
+                policy_off:
+                    'A policy bounds this store and it is switched off. Nothing removes anything until a person turns it on.',
+                none: 'No period can bound this store. It needs an action the catalogue does not state.',
+            },
             store: {
                 title: 'Store',
                 description: 'One store, the bound that governs it, and how large it is.',
+                tabs: {
+                    label: 'The store’s questions',
+                    details: 'Details',
+                    bound: 'Bound',
+                },
                 record: 'The store',
                 notFound: 'This installation keeps no store called {code}.',
                 back: 'Back to housekeeping',
@@ -1914,13 +1960,24 @@ export const en: SourceCatalogue = {
             },
             size: {
                 title: 'Size',
+                lead: 'How large the store is, and how it moved over the horizon the read covered.',
                 noSample:
                     'Nothing measures this store yet, so its size and its growth are unknown. The component that writes it is the one that can measure it.',
                 latest: 'Size now',
                 count: 'Contents',
                 measuredAt: 'Measured',
-                onePoint: 'One measurement so far. A second one makes a plot.',
-                plot: 'The store’s measurements, oldest first. The line shows the shape; the figures above state the size.',
+                rangeLabel: 'Horizon',
+                ranges: {
+                    day: 'Last day',
+                    week: 'Last week',
+                    month: 'Last month',
+                },
+                onePoint: 'One measurement in this horizon. A second one draws a line.',
+                noneInWindow:
+                    'This horizon holds no measurement of the store. The window is the one the read covered, so a longer horizon may hold one.',
+                plot: 'Each mark is one measurement, oldest first. The time axis states the window the read covered, in UTC, and the value axis the size.',
+                plotCaption:
+                    'The size of {name} over the horizon the read covered, {size} at the last measurement.',
                 trend: '{from} to {to} over {days} days',
                 perWeek: '{rate} a week, {direction}',
                 rising: 'rising',

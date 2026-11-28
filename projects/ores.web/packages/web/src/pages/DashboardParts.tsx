@@ -20,7 +20,7 @@
 
 import type { ReactNode } from 'react';
 import { useTranslation } from '../i18n/Provider.js';
-import { LinkButton } from '../ui/Primitives.js';
+import { LinkButton, cx } from '../ui/Primitives.js';
 import type { StatusTone } from './dashboardStatus.js';
 
 /**
@@ -92,18 +92,23 @@ export function Panel({
     to,
     status,
     footer,
+    wide = false,
     children,
 }: {
     readonly title: string;
     readonly to: string;
     readonly status: PanelStatus;
     readonly footer?: ReactNode;
+    /** Whether the panel takes the whole width of the dashboard's two columns. */
+    readonly wide?: boolean;
     readonly children: ReactNode;
 }): ReactNode {
     const { t } = useTranslation();
 
     return (
-        <section className="card flex flex-col justify-between gap-4 p-5">
+        <section
+            className={cx('card flex flex-col justify-between gap-4 p-5', wide && 'lg:col-span-2')}
+        >
             <div className="space-y-4">
                 <header className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">

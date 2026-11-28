@@ -1417,6 +1417,20 @@ const pt: SourceCatalogue = {
                     activeBatches: 'Lotes ativos',
                     failed: 'Resultados falhados',
                 },
+                housekeeping: {
+                    title: 'Manutenção dos dados',
+                    needAttention: {
+                        one: '{count} armazém não está limitado',
+                        other: '{count} armazéns não estão limitados',
+                    },
+                    allClear: 'Todos os armazéns têm limite',
+                    noCatalogue: 'O catálogo não foi lido',
+                    stores: 'Armazéns',
+                    bounded: 'Limitados',
+                    unbounded: 'Sem limite',
+                    unmeasured: 'Não medidos',
+                    held: 'Ocupado',
+                },
                 queue: {
                     title: 'Fila de mensagens',
                     noSample: 'Ainda sem amostra',
@@ -1909,9 +1923,41 @@ const pt: SourceCatalogue = {
             period: '{days} dias',
             cadence: 'a cada {hours} h',
             measure: '{count} {unit}',
+            legend: {
+                summary: 'O que estes veredictos querem dizer',
+                verdicts: 'Os veredictos',
+                mechanisms: 'Como um limite age',
+                bounded:
+                    'Algo remove dados do armazém segundo um calendário, e a sua última passagem não falhou.',
+                keyed: 'As chaves nomeiam o seu conteúdo, por isso o mesmo conteúdo não pode ser guardado duas vezes. O armazém cresce na mesma a cada chave distinta, e nenhum calendário remove nada.',
+                unbounded:
+                    'Nada remove do armazém, por isso cresce enquanto o sistema lá escrever.',
+                mechanismNames: {
+                    sweep: 'Uma varredura agendada',
+                    node_release: 'O nó liberta-a',
+                    content_keying: 'Chave de conteúdo',
+                    policy_off: 'Uma política desligada',
+                    none: 'Nenhum mecanismo',
+                },
+            },
+            mechanisms: {
+                sweep: 'Uma varredura agendada larga os blocos, apaga as linhas ou expira os objetos além do período, na cadência da política.',
+                node_release:
+                    'O nó de cálculo liberta ele próprio a pasta quando envia o resultado da tarefa, por isso nenhuma passagem agendada aplica o período.',
+                content_keying:
+                    'As chaves nomeiam o seu conteúdo, por isso uma chave guarda uma cópia. Nada remove os bytes e nada precisa de o fazer: o armazém não pode guardar o mesmo conteúdo duas vezes.',
+                policy_off:
+                    'Uma política limita este armazém e está desligada. Nada é removido enquanto uma pessoa não a ligar.',
+                none: 'Nenhum período pode limitar este armazém. Precisa de uma ação que o catálogo não declara.',
+            },
             store: {
                 title: 'Armazém',
                 description: 'Um armazém, o limite que o governa e o seu tamanho.',
+                tabs: {
+                    label: 'As perguntas do armazém',
+                    details: 'Detalhes',
+                    bound: 'Limite',
+                },
                 record: 'O armazém',
                 notFound: 'Esta instalação não conserva nenhum armazém chamado {code}.',
                 back: 'Voltar à manutenção dos dados',
@@ -1927,13 +1973,24 @@ const pt: SourceCatalogue = {
             },
             size: {
                 title: 'Tamanho',
+                lead: 'O tamanho do armazém, e como se moveu ao longo do horizonte que a leitura cobriu.',
                 noSample:
                     'Nada mede ainda este armazém, por isso o seu tamanho e o seu crescimento são desconhecidos. O componente que o escreve é o que o pode medir.',
                 latest: 'Tamanho atual',
                 count: 'Conteúdo',
                 measuredAt: 'Medido',
-                onePoint: 'Uma medição até agora. Uma segunda desenha uma curva.',
-                plot: 'As medições do armazém, da mais antiga para a mais recente. A linha mostra a forma; os números acima dizem o tamanho.',
+                rangeLabel: 'Horizonte',
+                ranges: {
+                    day: 'Último dia',
+                    week: 'Última semana',
+                    month: 'Último mês',
+                },
+                onePoint: 'Uma só medição neste horizonte. Uma segunda desenha uma linha.',
+                noneInWindow:
+                    'Este horizonte não contém nenhuma medição do armazém. A janela é a que a leitura cobriu, por isso um horizonte mais longo pode conter uma.',
+                plot: 'Cada marca é uma medição, da mais antiga para a mais recente. O eixo do tempo diz a janela que a leitura cobriu, em UTC, e o eixo dos valores o tamanho.',
+                plotCaption:
+                    'O tamanho de {name} ao longo do horizonte que a leitura cobriu, {size} na última medição.',
                 trend: 'de {from} para {to} em {days} dias',
                 perWeek: '{rate} por semana, {direction}',
                 rising: 'a subir',

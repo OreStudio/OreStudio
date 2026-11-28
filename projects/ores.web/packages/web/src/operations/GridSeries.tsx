@@ -41,6 +41,7 @@ import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import type { Translator } from '../i18n/translate.js';
 import { Notice, cx } from '../ui/Primitives.js';
+import { PresetBar } from '../ui/Presets.js';
 import { gridNodePath } from '../shell/paths.js';
 import {
     SeriesChart,
@@ -300,26 +301,13 @@ export function RangeBar({
 }): ReactNode {
     const { t } = useTranslation();
     return (
-        <div
-            role="group"
-            aria-label={t('operations.grid.series.rangeLabel')}
-            className="inline-flex overflow-hidden rounded-md border border-line"
-        >
-            {SERIES_RANGES.map((preset) => (
-                <button
-                    key={preset}
-                    type="button"
-                    aria-pressed={range === preset}
-                    className={cx(
-                        'px-3 py-1 text-sm',
-                        range === preset ? 'bg-accent text-ink-inverse' : 'text-ink-muted',
-                    )}
-                    onClick={() => onChange(preset)}
-                >
-                    {t(`operations.grid.series.ranges.${RANGE_WORDS[preset]}`)}
-                </button>
-            ))}
-        </div>
+        <PresetBar
+            label={t('operations.grid.series.rangeLabel')}
+            presets={SERIES_RANGES}
+            value={range}
+            labelOf={(preset) => t(`operations.grid.series.ranges.${RANGE_WORDS[preset]}`)}
+            onChange={onChange}
+        />
     );
 }
 

@@ -1,0 +1,185 @@
+:PROPERTIES:
+:ID: 42992A4D-BBFF-42CD-BA1C-89E09553EE60
+:END:
+#+title: Task: Build a database without the service passwords
+#+description: Environment format 39 removed the service passwords, but compass db recreate still demanded them, so a fresh checkout could not build a database and the fleet had nothing to authenticate against until provisioning ran.
+#+type: task
+#+level: s1
+#+filetags: :keep_a_secret_encrypted_with_its_key_outside_the_system:sprint_31:v0:
+#+owner: marco
+#+branch: feature/build-a-database-without-service-passwords
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+At environment format 39 the environment file carries no service password: each
+service resolves its own from the vault before it opens a pool. =compass db
+recreate= still required one per service, so it refused a clean v39 file, and the
+database it built set each service role's password from a value the file no
+longer carried. A fresh checkout therefore could not build a database, and the
+fleet it started had nothing to authenticate against.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its key outside the system]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- =compass db recreate= runs on a file that carries no service password, and the
+  role it creates for a service has none: provisioning is the only writer.
+- The two units that cannot ask for their password still start, because a
+  recreate keeps the value the deployment placed for them.
+- The pooler authenticates a service from the verifier the server holds, so a
+  password a run invented is usable without anybody copying it around by hand.
+- A suite that signs in as a service keeps doing so under that service's own
+  grants, without the environment file carrying a service password.
+
+* Plan
+
+The reported break was one line: the required-variable list. Fixing only that
+leaves a database nothing can log in to, so the plan follows the password from
+where it is invented to where it is checked.
+
+- =compass db recreate= stops asking for a service password and stops writing
+  one. The service role is created without one.
+- The vault and IAM are the exception, because neither can ask: the vault would
+  answer its own request, and IAM has to exist before the vault does. A recreate
+  hands their roles the password the deployment placed as a file, so those two
+  units start on the database it just built.
+- The suites that sign in as a service cannot know its password any more, and
+  weakening them to the read-write account would drop what they prove. A recreate
+  therefore keeps a fixture login beside each service role, named after it with
+  =_test=, which holds the deployment's test password and starts as that role.
+  The suite signs in with the fixture, so the grants it exercises are the
+  service's.
+- Provisioning hands the vault's own process PostgreSQL's address rather than
+  the pooler's, because a run rewrites the passwords the pooler's list was built
+  from and a pooler asked during the run refuses the password it just invented.
+  The run then restarts the pooler itself.
+- The pooler's user file is generated from the verifiers the server holds, with
+  the files under =build/keys= as the fallback for a host that builds a
+  container's configuration away from the database. That removes the class of
+  staleness a recreate creates: a secret written before a rotate names a password
+  the server has replaced.
+- A recreate drops every role the environment created, by pattern rather than by
+  the hand-kept list, which had lost three services.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Units running after recreate, provision and a restart | 26 | =./compass.sh services status= | this branch |
+| Suites that sign in as a service | 4 passed | =./compass.sh test run -- -R "ores.inbox.core.tests\|ores.refdata.core.tests\|ores.workflow.core.tests\|ores.marketdata.service.tests"= | this branch |
+| Service roles holding a password after a recreate | 2 (the vault's and IAM's) | =select rolname from pg_authid where rolname ~ '_service$' and rolpassword is not null= | this branch |
+
+* Notes
+
+- 2026-11-28 — The first recreate proved the reported fix and nothing else: the
+  roles were created, and the fleet could not authenticate.
+- 2026-11-28 — The fixture login was proved before it was built: a role that is
+  a member of a service role and sets =role= at session start reports that
+  service as =current_user= with no password of its own.
+- 2026-11-28 — The pooler's list was the second break, and the harder one: it is
+  built from verifiers, a recreate rewrites the passwords those verifiers came
+  from, and nothing regenerated the list.
+- 2026-11-28 — The three suites and the marketdata service suite pass with the
+  fixture login, and the fleet boots with no service password in the file.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+- =compass db recreate= on a file with no service password: 3m32s, exit 0, and
+  every service role created without one. The two the deployment places keep
+  their value, and the fleet came back to 26 running after a provisioning run
+  and a restart.
+- The pooler's user file is generated from =pg_shadow=: 21 users, every entry a
+  verifier, no plaintext.
+- Provisioning restarts the pooler on the passwords it invented, so a rotation
+  needs no hand-rolled sequence.
+- Four suites that sign in as a service pass under the service's own grants.
+
+* Promoted from capture
+
+Captured 2026-11-28 in the product backlog; promoted preserving the UUID.
+
+** What
+
+At environment format 39 the environment file carries no service password: each
+service resolves its own from the vault before it opens a pool. =compass db
+recreate= still requires one per service, so it refuses a clean v39 file, and a
+database it did build would set each service role's password from a value the
+file no longer carries. A fresh checkout therefore cannot build a database, and
+the fleet it starts has nothing to authenticate against until =compass vault
+provision= has run.
+
+** Why
+
+=cmd_recreate= appends =ORES_{service}_DB_PASSWORD= to its list of required
+variables for every service the registry holds, and passes each one to
+=create/iam/service_users_create.sql=, which runs =alter user ... with password=.
+Both halves were written when the file carried the value. Environment format 39
+removed the value and left both halves alone, so the pair now states a bootstrap
+step that no longer exists.
+
+The order a cold start needs is unchanged and still correct: a database exists
+first, then provisioning writes each role's password, then the fleet starts and
+each service resolves its own. What is missing is the first step's agreement with
+that order: =recreate= either creates each service role without a password and
+leaves it to provisioning, or it invents one, which is the duplication
+provisioning exists to end.
+
+solid dirac reported this on 2026-11-28 and recovered their environment by
+restoring the previous file and declaring it version 39. The fleet runs, but
+against a database built before the change, so that environment cannot recreate
+until this is settled. It blocks every clean-environment request on main, which
+is why it is written down rather than carried privately.
+
+** References
+
+- =projects/ores.compass/src/compass_db.py= — =cmd_recreate= and the required
+  list it builds from the service registry.
+- =projects/ores.sql/create/iam/service_users_create.sql= — the =alter user=
+  statements that take the passwords.
+- =compass/checks/env_format.org= — row 39, which removed the variables and
+  states the replacement.
+- =projects/ores.compass/src/vault_provision.py= — the provisioning run that
+  sets each role's password, and the order it assumes.
+
+** See also
+
+- [[id:9ED04F4B-C488-4AD6-BD85-5056E9D30135][Take the credentials out of the
+  environment file]] — the task that removed the values.
+- [[id:9D20C630-1504-4E5C-9110-C83D00DB03A1][Keep a secret encrypted, with its
+  key outside the system]] — the story the fix belongs to.

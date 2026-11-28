@@ -50,6 +50,7 @@ set(files
     "heath_jarrow_morton_process_tests.cpp"
     "hull_white_process_tests.cpp"
     "ir_vol_derivation_tests.cpp"
+    "ir_vol_projection_tests.cpp"
     "keyed_brownian_path_tests.cpp"
     "latent_market_config_tests.cpp"
     "latent_market_tests.cpp"
@@ -85,6 +86,6 @@ set(files
     "topology_from_sources_tests.cpp"
     "two_factor_gaussian_process_tests.cpp"
     "vasicek_process_tests.cpp"
-    "vol_derivation_kind_tests.cpp"
+    "vol_batch_tests.cpp"
     "volatility_measurement_tests.cpp"
 )

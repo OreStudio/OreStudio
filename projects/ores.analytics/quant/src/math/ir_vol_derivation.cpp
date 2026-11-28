@@ -21,6 +21,8 @@
 #include <array>
 #include <cmath>
 #include <format>
+#include <optional>
+#include <utility>
 
 namespace ores::analytics::quant::math {
 
@@ -164,6 +166,51 @@ std::expected<ir_term_matrix, std::string> derive_term_matrix(std::span<const da
                                           {.expiry_years = years, .term_years = term_years},
                                           model,
                                           horizon));
+    }
+    return out;
+}
+
+std::expected<ir_vol_projection, std::string> project_ir_vols(const vol_batch& measured,
+                                                              std::span<const double> term_years,
+                                                              short_rate_projection model) {
+    if (term_years.size() != measured.series_count())
+        return std::unexpected(std::format("the batch holds {} series and {} tenor(s) were stated",
+                                           measured.series_count(),
+                                           term_years.size()));
+    if (!has_closed_form(model.model))
+        return std::unexpected(std::format("the model {} is not one this projection is closed form "
+                                           "for, and it is not approximated",
+                                           name_of(model.model)));
+
+    // A pillar no batch cell could be measured at is not this projection's to answer; the batch
+    // refused it and says why.
+    const auto cells = measured.states.size();
+    ir_vol_projection out{.factors = std::vector<double>(cells, 0.0),
+                          .atms = std::vector<double>(cells, 0.0),
+                          .smile_skewnesses = std::vector<double>(cells, 0.0)};
+    for (std::size_t series = 0; series < measured.series_count(); ++series) {
+        if (!(term_years[series] > 0.0) || !std::isfinite(term_years[series]))
+            return std::unexpected(
+                std::format("the term of series {} must be positive and finite", series));
+        const std::size_t first = measured.offset_of(series);
+        const std::size_t last = measured.offsets[series + 1];
+        for (std::size_t cell = first; cell < last; ++cell) {
+            if (measured.states[cell] != vol_cell_state::quoted)
+                continue;
+            const double years = measured.pillars[cell - first];
+            const return_shape shape{.skewness = measured.skewnesses[cell],
+                                     .excess_kurtosis = measured.excess_kurtoses[cell]};
+            const auto vol = atm_vol_of(measured.levels[cell],
+                                        measured.windows[cell],
+                                        {.expiry_years = years, .term_years = term_years[series]},
+                                        model,
+                                        shape);
+            if (!vol)
+                return std::unexpected(vol.error());
+            out.factors[cell] = vol->factor;
+            out.atms[cell] = vol->atm;
+            out.smile_skewnesses[cell] = vol->smile.skewness;
+        }
     }
     return out;
 }

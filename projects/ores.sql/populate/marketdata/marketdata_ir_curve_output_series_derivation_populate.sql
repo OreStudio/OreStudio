@@ -24,9 +24,10 @@
  * A curve is bootstrapped, and its output series says so: =derivation_kind= is
  * =IR_CURVE_BOOTSTRAP= and =derivation_config_id= names the refdata blueprint and
  * version that built it. The republish service stamps the same fields on its
- * first republish, but nothing stamps them when the blueprint is created, so a
- * curve that has never been republished reads as observed and a screen that
- * states how the curve was made would say the opposite of the truth.
+ * first republish, and a blueprint created later in the application is stamped
+ * when it is first republished. Nothing stamps a seeded blueprint, so a curve
+ * that has never been republished reads as observed and a screen that states how
+ * the curve was made would say the opposite of the truth.
  *
  * This script stamps every seeded blueprint's output series once the blueprints
  * exist, so a fresh installation states the derivation before anything runs. A
@@ -38,10 +39,8 @@
  * overnight curve is =IR_TERM_FIXING=, which resolves to the synthetic generation
  * config; see marketdata_market_series_computed_fixings_populate.sql.
  *
- * This script is idempotent.
+ * This script is idempotent. populate.sql states the heading this step prints.
  */
-
-\echo '--- Derivation of the Curve Output Series ---'
 
 update ores_marketdata_market_series_tbl s
 set derivation_kind = 'IR_CURVE_BOOTSTRAP',
@@ -54,6 +53,7 @@ set derivation_kind = 'IR_CURVE_BOOTSTRAP',
 from ores_refdata_ir_curve_bootstrap_configs_tbl c
 where c.valid_to = ores_utility_infinity_timestamp_fn()
   and c.output_series_id = s.id
+  and c.tenant_id = s.tenant_id
   and s.valid_to = ores_utility_infinity_timestamp_fn()
   and s.derivation_kind = 'OBSERVED';
 

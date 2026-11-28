@@ -48,6 +48,7 @@ select is(
            select 1
            from ores_refdata_ir_curve_bootstrap_configs_tbl c
            where c.id = s.derivation_config_id
+             and c.tenant_id = s.tenant_id
              and c.valid_to = ores_utility_infinity_timestamp_fn())),
     0::bigint,
     'every IR_CURVE_BOOTSTRAP config id resolves to a blueprint');
@@ -61,6 +62,7 @@ select is(
            select 1
            from ores_synthetic_ir_curve_generation_configs_tbl c
            where c.id = s.derivation_config_id
+             and c.tenant_id = s.tenant_id
              and c.valid_to = ores_utility_infinity_timestamp_fn())),
     0::bigint,
     'every IR_TERM_FIXING config id resolves to a generation config');
@@ -68,13 +70,14 @@ select is(
 select is(
     (select count(*)
      from ores_refdata_ir_curve_bootstrap_configs_tbl c
-     join ores_marketdata_market_series_tbl s
+     left join ores_marketdata_market_series_tbl s
        on s.id = c.output_series_id
+      and s.tenant_id = c.tenant_id
       and s.valid_to = ores_utility_infinity_timestamp_fn()
      where c.valid_to = ores_utility_infinity_timestamp_fn()
-       and s.derivation_kind <> 'IR_CURVE_BOOTSTRAP'),
+       and (s.id is null or s.derivation_kind <> 'IR_CURVE_BOOTSTRAP')),
     0::bigint,
-    'a seeded curve states its derivation before any republish');
+    'a seeded curve states its derivation before any republish, and has a series');
 
 select * from finish();
 

@@ -87,6 +87,11 @@ constexpr std::size_t col_derivation_config_name = 18;
  * The series is joined rather than read per row: its key is the only name a
  * curve has, and the point count is a lateral count over the observations the
  * publish wrote, so neither is a second round trip.
+ *
+ * The kind follows the builder the record names rather than the series' own
+ * claim, so the two cannot disagree: a record that resolves to a blueprint
+ * states IR_CURVE_BOOTSTRAP and that blueprint's name beside it, and only a
+ * record with no blueprint falls back to what its series says.
  */
 constexpr const char* set_columns =
     " cp.id::text, cp.request_id::text, cp.party_id::text, cp.output_series_id::text,"
@@ -102,7 +107,9 @@ constexpr const char* set_columns =
     "     and o.series_id = cp.output_series_id"
     "     and o.observation_datetime = cp.as_of"
     "     and o.valid_to = ores_utility_infinity_timestamp_fn())::text,"
-    " coalesce(s.derivation_kind, ''), coalesce(b.name, '')";
+    " case when b.id is null then coalesce(s.derivation_kind, '')"
+    "      else 'IR_CURVE_BOOTSTRAP' end,"
+    " coalesce(b.name, '')";
 
 constexpr const char* set_from = " from ores_marketdata_curve_publishes_tbl cp"
                                  " left join ores_marketdata_market_series_tbl s"

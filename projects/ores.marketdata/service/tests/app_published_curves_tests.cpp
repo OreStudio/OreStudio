@@ -136,11 +136,12 @@ TEST_CASE("the_list_answers_every_set_with_its_curve_party_publisher_and_state",
     // The list states how many pillars a set holds and not the pillars: the
     // points are the record page's read.
     CHECK(set.points.empty());
-    // How the curve was made travels with the record: the output series says the
-    // kind, and the blueprint that built it is named beside the id.
+    // How the curve was made travels with the record: the kind follows the
+    // blueprint the record names, and the name is that blueprint's.
     CHECK(set.derivation.kind == "IR_CURVE_BOOTSTRAP");
-    // The fixture names its blueprint after the curve family it reads.
-    CHECK(set.derivation.config_name.starts_with("USD-SOFR-"));
+    // The fixture names its blueprint after the curve family it reads and the
+    // config it wrote, so the name and the id the record states must agree.
+    CHECK(set.derivation.config_name == "USD-SOFR-" + set.derivation.config_id.substr(0, 8));
     REQUIRE_FALSE(set.derivation.config_id.empty());
 }
 

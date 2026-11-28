@@ -34,6 +34,7 @@ import { useTabs } from '../ui/Tabs.js';
 import { formatDateTime } from '../ui/Time.js';
 import { PublishedCompareTab } from './PublishedCompareTab.js';
 import { PublishedPointsTab } from './PublishedPointsTab.js';
+import { methodOf } from './derivationKind.js';
 import { PersonCell } from '../access/PersonRef.js';
 import {
     DEFAULT_OVERLAY_SETS,
@@ -211,28 +212,29 @@ function relativeOrExact(set: PublishedCurveSet, language: string): string {
     return formatDateTime(lastChangedAt(set) ?? set.as_of, language);
 }
 
-/** The subject the request authorised, the act that published it, and its state. */
 /**
- * How the curve was made, in the words a person reads: the kind the output
- * series states, and the blueprint that built it. A series no derivation
+ * How the curve was made, in the words the fixing screens use: the kind the
+ * record states, and the blueprint that built it. A curve no derivation
  * produced says so, because "observed" is a fact about the curve and not the
  * absence of one.
  */
-function derivationOf(
+function derivationLabel(
     t: (key: string, values?: Readonly<Record<string, string | number>>) => string,
     set: PublishedCurveSet,
 ): string {
-    if (!set.derivation.kind || set.derivation.kind === 'OBSERVED') {
+    const { kind, config_name } = set.derivation;
+    if (kind === '' || kind === 'OBSERVED') {
         return t('marketdata.published.details.observed');
     }
-    return set.derivation.config_name === ''
-        ? set.derivation.kind
+    return config_name === ''
+        ? methodOf(kind)
         : t('marketdata.published.details.builtBy', {
-              method: set.derivation.kind,
-              name: set.derivation.config_name,
+              method: methodOf(kind),
+              name: config_name,
           });
 }
 
+/** The subject the request authorised, the act that published it, and its state. */
 function DetailsTab({
     record,
     sets,
@@ -263,7 +265,7 @@ function DetailsTab({
                         </Link>
                     </Fact>
                     <Fact label={t('marketdata.published.details.derivation')}>
-                        {derivationOf(t, record)}
+                        {derivationLabel(t, record)}
                     </Fact>
                     <Fact label={t('marketdata.published.details.config')}>
                         <span className="break-all">{record.derivation.config_id}</span>

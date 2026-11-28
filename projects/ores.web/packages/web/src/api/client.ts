@@ -268,13 +268,6 @@ const publishedCurvePointSchema = z.object({
     observation_datetime: wireTimestampSchema,
 });
 
-/**
- * One published set, or the candidate that waits to become one.
- *
- * The state is the record's own: `published`, `superseded`, `withdrawn` or
- * `candidate`. A set read for the list carries its point count and no points; a
- * set read for one curve carries the pillars it holds.
- */
 /** The recipe behind a curve: how it was made, and the blueprint that built it. */
 const curveDerivationSchema = z.object({
     kind: z.string().default('OBSERVED'),
@@ -282,6 +275,13 @@ const curveDerivationSchema = z.object({
     config_id: z.string().default(''),
 });
 
+/**
+ * One published set, or the candidate that waits to become one.
+ *
+ * The state is the record's own: `published`, `superseded`, `withdrawn` or
+ * `candidate`. A set read for the list carries its point count and no points; a
+ * set read for one curve carries the pillars it holds.
+ */
 const publishedCurveSetSchema = z.object({
     publish_id: z.string().default(''),
     request_id: z.string().default(''),

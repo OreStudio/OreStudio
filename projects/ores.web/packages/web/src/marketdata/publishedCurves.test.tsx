@@ -367,7 +367,7 @@ describe('the published curve record', () => {
         );
 
         expect(html).toContain('How it was made');
-        expect(html).toContain('IR_CURVE_BOOTSTRAP, built by USD-SOFR-FOMC');
+        expect(html).toContain('ir curve bootstrap, built by USD-SOFR-FOMC');
     });
 
     it('says a curve no derivation produced is observed', () => {

@@ -17,6 +17,7 @@
  *
  */
 #include "ores.synthetic.api/feeds/derived_fx_vol.hpp"
+#include "ores.analytics.quant/math/volatility_measurement.hpp"
 #include "ores.analytics.quant/service/fx_expiry_dates.hpp"
 #include "ores.refdata.core/mapping/fx_option_convention_mapping.hpp"
 #include <boost/uuid/string_generator.hpp>
@@ -24,6 +25,7 @@
 #include <cmath>
 #include <format>
 #include <map>
+#include <optional>
 #include <ranges>
 #include <tuple>
 
@@ -32,16 +34,6 @@ namespace ores::synthetic::feed {
 namespace {
 
 namespace qm = analytics::quant::math;
-
-/// The pair's log level on each date, oldest first.
-std::map<std::chrono::year_month_day, double> log_levels(const dated_series& series) {
-    std::map<std::chrono::year_month_day, double> out;
-    const auto n = std::min(series.dates.size(), series.values.size());
-    for (std::size_t i = 0; i < n; ++i)
-        if (series.values[i] > 0.0 && std::isfinite(series.values[i]))
-            out.insert_or_assign(series.dates[i], std::log(series.values[i]));
-    return out;
-}
 
 }
 
@@ -65,14 +57,19 @@ std::vector<derived_fx_expiry> derived_fx_ladder(const std::set<std::string>& la
 derived_fx_reach derived_fx_reach_of(std::span<const derived_fx_expiry> ladder,
                                      std::size_t returns,
                                      const qm::fx_derivation_settings& settings) {
+    std::vector<double> years;
+    years.reserve(ladder.size());
+    for (const auto& expiry : ladder)
+        years.push_back(expiry.years);
+
+    const auto reach = qm::reach_of(years, returns, qm::measurement_of(settings));
     derived_fx_reach out;
-    for (const auto& e : ladder) {
-        const auto needs = qm::fx_derivation_window(e.years, settings);
-        if (static_cast<std::size_t>(needs) <= returns)
-            out.reached.push_back(e);
-        else
-            out.unreached.push_back({.expiry = e, .needs = needs});
-    }
+    out.reached.reserve(reach.reached.size());
+    for (const auto place : reach.reached)
+        out.reached.push_back(ladder[place]);
+    out.unreached.reserve(reach.unreached.size());
+    for (const auto& [place, needs] : reach.unreached)
+        out.unreached.push_back({.expiry = ladder[place], .needs = needs});
     return out;
 }
 
@@ -128,17 +125,25 @@ std::string fx_option_convention_id(const derived_fx_pair& pair) {
 }
 
 pair_returns pair_log_returns(const dated_series& levels) {
-    const auto level = log_levels(levels);
+    // One value a day, oldest first. Which of them is an observation is the transform's to say,
+    // so a level that is not positive is left to it and a return spans the gap.
+    std::map<std::chrono::year_month_day, double> level;
+    const auto n = std::min(levels.dates.size(), levels.values.size());
+    for (std::size_t i = 0; i < n; ++i)
+        level.insert_or_assign(levels.dates[i], levels.values[i]);
+
+    std::vector<qm::dated_level> observed;
+    observed.reserve(level.size());
+    for (const auto& [date, value] : level)
+        observed.push_back({.date = date, .level = value});
+
+    const auto returns = qm::returns_of(observed, qm::volatility_transform::log_return);
     pair_returns out;
-    out.returns.reserve(level.empty() ? 0 : level.size() - 1);
-    out.dates.reserve(out.returns.capacity());
-    for (auto it = level.begin(); it != level.end(); ++it)
-        if (const auto next = std::next(it); next != level.end()) {
-            out.returns.push_back(next->second - it->second);
-            out.dates.push_back(next->first);
-        }
-    if (!level.empty())
-        out.last = level.rbegin()->first;
+    out.returns = returns.returns;
+    out.dates = returns.dates;
+    out.last = returns.dates.empty() ?
+                   std::nullopt :
+                   std::optional<std::chrono::year_month_day>{returns.dates.back()};
     return out;
 }
 

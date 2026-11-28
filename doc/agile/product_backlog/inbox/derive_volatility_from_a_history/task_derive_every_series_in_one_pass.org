@@ -80,34 +80,42 @@ code changing, and the reader of a bare number cannot tell which tree it came
 from. Where the raw output matters, put it in an =evidence/= file beside the
 task and name that file in the Command column.
 
-The benchmark's corpus is the series set the seed configures, and its histories are the suite's
-own walk: a corpus of generated levels says what the code costs and not what the market did. The
-cost is processor time, not wall clock, because this machine builds other worktrees while it
-measures: repeated runs agree to within a few percent on processor time and swing by a factor of
-three on the clock.
+The benchmark's corpus is the series set the seed configures: 264 distinct =IR_SWAP/RATE/= quote
+keys over 22 currencies, each measured on a ladder of the seed's own twelve tenors, with 8,000
+generated observations per series. The series are the seed's set and the levels are not its stored
+fixings, so the number says what the code costs and not what the market did.
 
-The environment was rebuilt from scratch for the last measurement, so the rows below that name a
-suite name a suite that ran against a real database and a running fleet.
+The cost is processor time, not wall clock, because this machine builds other worktrees while it
+measures: two consecutive runs at the measured tree agreed to 11.44 and 11.91 ms, four percent
+apart, where the clock swung by a factor of three. An earlier pair of numbers, 12.2 and 48.5 ms,
+was taken on the tree before it was rebased onto main and is not carried here, because a tree that
+moved is a different tree.
+
+The environment was rebuilt from scratch before these measurements, so every row that names a suite
+names one that ran against a real database and a running fleet.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| The corpus the seed configures | 264 series over 22 currencies, 12 expiries, 8,000 observations each: 3,168 cells | =ORES_SEED_CURVE_QUOTES=$PWD/projects/ores.seeder/datasets/acme_corporation/curve_quotes.json ./build/output/linux-clang-release-ninja/publish/bin/ores.analytics.quant.tests "[.benchmark]" "*seed carries*"= | =9e0827d0ef= |
-| The batch and the projection over the corpus | 13.8 ms of processor time, best of five passes | as above | =9e0827d0ef= |
-| The same corpus one series at a time | 54.9 ms of processor time, best of five passes | as above | =9e0827d0ef= |
-| The quant suite | 786 cases, 2,277,209 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.analytics.quant.tests= | =9e0827d0ef= |
-| The synthetic api suite, which owns the FX derivation whose grid shares the moments | 1,131 cases, 10,293 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.synthetic.api.tests= | =9e0827d0ef= |
-| The synthetic core suite | 182 passed, 2 skipped (no ORE engine on this tree) | =./build/output/linux-clang-release-ninja/publish/bin/ores.synthetic.core.tests= | =9e0827d0ef= |
-| The whole build | 264 targets built, every service and test binary relinked, the browser bundle rebuilt | =./compass.sh build= | =9e0827d0ef= |
-| The whole suite against a recreated database and a running fleet | 115 of 116 suites pass | =./compass.sh test run --preset linux-clang-release-ninja -- -j 4= | =9e0827d0ef= |
-| The tick path end to end | ticks smoke passed: 146,551 ticks, 0 rejected by any adapter | =./compass.sh smoke ticks= | =9e0827d0ef= |
-| The local check gate | 9/9 | =./compass.sh check --exclude-heavy= | =9e0827d0ef= |
+| The corpus the seed configures | 264 swap quote keys over 22 currencies, a 12-rung ladder of the seed's tenors, 8,000 observations each: 3,168 cells | =ORES_SEED_CURVE_QUOTES=$PWD/projects/ores.seeder/datasets/acme_corporation/curve_quotes.json ./build/output/linux-clang-release-ninja/publish/bin/ores.analytics.quant.tests "[.benchmark]" "*seed carries*"= | =e891bcfe27= |
+| The batch and the projection over the corpus | 11.4 ms of processor time, best of five passes, two runs within four percent | as above | =e891bcfe27= |
+| The same corpus one series at a time | 52.3 ms of processor time, best of five passes | as above | =e891bcfe27= |
+| The quant suite | 789 cases, 2,277,223 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.analytics.quant.tests= | =e891bcfe27= |
+| The synthetic api suite, which owns the FX derivation whose grid shares the moments | 1,131 cases, 10,293 assertions | =./build/output/linux-clang-release-ninja/publish/bin/ores.synthetic.api.tests= | =e891bcfe27= |
+| The synthetic core suite | 182 passed, 2 skipped (no ORE engine on this tree) | =./build/output/linux-clang-release-ninja/publish/bin/ores.synthetic.core.tests= | =e891bcfe27= |
+| The whole build | 264 targets built, every service and test binary relinked, the browser bundle rebuilt | =./compass.sh build= | =e891bcfe27= |
+| The whole suite against a recreated database and a running fleet | 114 of 116 suites pass | =./compass.sh test run --preset linux-clang-release-ninja -- -j 4= | =e891bcfe27= |
+| The tick path end to end | ticks smoke passed: 146,551 ticks, 0 rejected by any adapter | =./compass.sh smoke ticks= | =e891bcfe27= |
+| The local check gate | 9/9 | =./compass.sh check --exclude-heavy= | =e891bcfe27= |
 
-The one suite that fails is =ores.vault.core.tests=, and it is not this branch. Four of its sixteen
-cases insert a vault consumer with an empty =modified_by=, which
-=ores_iam_validate_account_username_fn= allows only while the tenant holds no non-service account.
-A recreated database is in bootstrap mode, which is the state the gate runs the suite in; a
-provisioned one is not, and this environment is provisioned. The failure names no path this branch
-touches.
+Two suites fail, and neither names a path this branch touches.
+
+- =ores.vault.core.tests=: four of its sixteen cases insert a vault consumer with an empty
+  =modified_by=, which =ores_iam_validate_account_username_fn= allows only while the tenant holds
+  no non-service account. A recreated database is in bootstrap mode, which is the state the gate
+  runs the suite in; a provisioned one is not, and this environment is provisioned.
+- =ores.web.tests=: the route walk reports =/operations/housekeeping/tables= declared and walked by
+  no case. The route and the test were last changed by the web component's own commits, which this
+  branch does not touch; the failure came in with the rebase onto main.
 
 * Notes
 
@@ -115,9 +123,9 @@ touches.
 - The corpus is the currencies and terms the seed configures, so the number is about this platform and not a synthetic benchmark. A measurement without the corpus size is not a measurement.
 - The parallel shape is one task per series over immutable inputs. Nothing in the derivation holds a cache, so no series can see another and the result does not depend on the order the tasks finish.
 - =moments_from_power_sums= is the engine's moments read from four sums rather than from a sample, and the FX grid now uses it too: the two places that reconstruct moments from sums were the same arithmetic written twice. The FX tests that hold the grid equal to the day-at-a-time answer pass unchanged, which is what makes that fold safe.
-- The suite was run with the environment's =.env= loaded, because the synthetic tests read their
-  database settings from it and this worktree's services are down: the suites that need a database
-  are outside this task's evidence and could not be run here.
+- The synthetic suites read their database settings from the environment's =.env=, so they were run
+  with it loaded. The environment was recreated and provisioned before the last measurements, so
+  the suites that need a database ran rather than being left out.
 - The first draft of this task put the class in the batch: =ir_vol_batch= held the series, the
   factor and the ATM. The review of the arc rejected it for the reason the story exists: a batch
   whose name and fields are a class's invites a second batch for the next class, which is the
@@ -141,9 +149,29 @@ via its "Verifies task" field.
 
 * Review
 
+Two axes, run as separate reviews: the repo's standards with the smell baseline, and the spec this
+task states. Every finding is below with what was done about it.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The branch flips two completed tasks back to STARTED/BACKLOG | story.org | Fixed | A bad conflict resolution during the rebase: the resolved rows took this branch's copy instead of main's. Both restored to DONE with their dates. |
+| 2 | A comment narrates what the code replaced | tests/ir_vol_projection_tests.cpp | Fixed | The comment now describes the baseline only. |
+| 3 | The benchmark dereferences a batch before checking it | tests/ir_vol_projection_tests.cpp | Fixed | The checks precede the use, as in the other cases. |
+| 4 | The mean reversion is read only through a quoted cell, so an all-refused batch accepts a model it cannot carry | src/math/ir_vol_derivation.cpp | Fixed | The model is read before any cell; a case pins it. |
+| 5 | A series-wide refusal overwrites a cause a cell already states | src/math/vol_batch.cpp | Fixed | A cell that states its own cause keeps it; a case pins a long pillar beside a series with no returns. |
+| 6 | An unfilled row reads as =unreached=, a state that means something else | include/math/vol_batch.hpp | Fixed | An allocated cell starts =unstated=, which a filled batch can never leave behind. |
+| 7 | The record contradicts itself on whether the database-backed suites ran | this page | Fixed | The stale note was left from before the environment was recreated; the numbers were re-taken at the tree under review. |
+| 8 | The corpus is mislabelled: tenors called expiries, generated histories implied to be the seed's | this page | Fixed | The corpus is now stated as quote keys, a ladder of the seed's tenors, and generated observations. |
+| 9 | "One allocation for the whole output" is nine, one per axis | include/math/vol_batch.hpp | Accepted | One array per axis is the shape the task asked for; a single allocation would mean one padded cell struct, which is the per-cell variant the batch exists to avoid. Recorded rather than changed. |
+| 10 | "Prefix sums where a window slides" is running sums | src/math/vol_batch.cpp | Accepted | The same property on a streamed series: a window costs only the returns the previous one did not reach, and no prefix array is allocated. The plan states the difference. |
+| 11 | One smile parameter is stored, not two | include/math/ir_vol_derivation.hpp | Accepted | The smile's level is the ATM the projection already holds; a second copy is a second place the level can be wrong. |
+| 12 | The FX grid's moment reconstruction was folded in, unasked | src/math/fx_vol_derivation.cpp | Accepted | The same arithmetic in two places. The FX suite still holds the grid equal to the day-at-a-time answer, and that is what makes the fold safe. |
+| 13 | The batch re-implements the engine's observation rule, its return, its level and its settings guard | src/math/vol_batch.cpp | Fixed | =reads_as_observation=, =return_of=, =level_of_variance= and =validate_settings= are the engine's, and =measure_pillar= and =derive_term_matrix= read them too. |
+| 14 | The cell clearing is written twice | src/math/vol_batch.cpp | Fixed | One =clear_cell=, called by both refusals. |
+| 15 | The two new suites carry the same fixtures under two prefixes | tests | Fixed | One =vol_test_data.hpp=, which both include. |
+| 16 | =windows= holds a count of returns | include/math/vol_batch.hpp | Fixed | Renamed =window_returns=. |
+| 17 | The projection reaches through seven of the batch's arrays | src/math/ir_vol_derivation.cpp | Accepted | The batch is the only holder of that layout and the projection its only reader; an accessor for one caller is the generality the other axis warns about. |
+| 18 | The refusal slots reserve one per cell though a series refusal shares one text | include/math/vol_batch.hpp | Rejected | A per-cell refusal uses one slot per refused cell, which the batch needs; the series refusal is the extra one. |
 
 * Result
 
@@ -157,14 +185,14 @@ still answers the same numbers for one series.
 the same answer; a test fills four rows at once and finds the arrays equal to the serial pass.
 
 The pass costs one walk of each series' returns, and a window costs only the returns the previous
-one did not reach. Over the seed's 264 rate series and 12 expiries, 3,168 cells take 13.8 ms of processor time
-against 54.9 ms for the same corpus one series at a time.
+one did not reach. Over the seed's 264 rate series and 12 expiries, 3,168 cells take 11.4 ms of processor time
+against 52.3 ms for the same corpus one series at a time.
 
 It was proved against the whole system and not only the suite. The environment was rebuilt from
-scratch, the whole tree was built, and the fleet ran the rebuilt binaries: 115 of 116 suites pass
+scratch, the whole tree was built, and the fleet ran the rebuilt binaries: 114 of 116 suites pass
 against a recreated database, the ticks smoke passes with 0 ticks rejected by any adapter, and the
-one failure is the vault custody suite, which inserts a consumer with an empty =modified_by= and so
-cannot run on a provisioned system at all.
+two failures are outside this branch — the vault custody suite, which cannot run on a provisioned
+system at all, and a web route that main declares and walks by no case.
 
 What this task did not do: the emitter that writes the quotes and the simulator that builds the cube
 are separate tasks, and the FX grid is untouched, because it files a day of one pair across expiries

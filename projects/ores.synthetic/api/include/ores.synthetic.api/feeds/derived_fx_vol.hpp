@@ -52,8 +52,7 @@ inline constexpr std::string_view derived_fx_field = "rate_lnvol";
  */
 /// The FX derivation's declaration: its code, its version, its transform, its coordinates and its
 /// smile, as the engine states them. The derived source reads it instead of stating its own copy.
-ORES_SYNTHETIC_API_EXPORT const analytics::quant::math::vol_derivation_kind&
-fx_vol_derivation();
+ORES_SYNTHETIC_API_EXPORT const analytics::quant::math::vol_derivation_kind& fx_vol_derivation();
 
 /// The identifier a derived FX series records as its derivation configuration.
 ORES_SYNTHETIC_API_EXPORT boost::uuids::uuid derived_fx_method_id();

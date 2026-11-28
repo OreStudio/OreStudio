@@ -8,7 +8,7 @@
 #+filetags: :derive_volatility_from_a_history:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/derive-every-series-in-one-pass
-#+pr:
+#+pr: 5252
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-11-28
@@ -137,7 +137,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/5252][#5252]] | [quant] Measure every series in one batch, and project a class over it |
 
 * Review
 

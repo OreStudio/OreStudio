@@ -66,6 +66,17 @@ export function pieSlices(
     return slices;
 }
 
+/**
+ * How a relation moved, in the words a person acts on.
+ *
+ * The growth is stated over the window the read covered, so it is a movement and
+ * not a rate; a relation with no earlier measurement states that nothing is known
+ * about its movement, which is not the same as a table that did not grow.
+ */
+export function growthOf(row: LargestRelation): number | null {
+    return row.growth_bytes;
+}
+
 /** One relation's share of the database, from 0 to 1. */
 export function relationShare(sizeBytes: number, databaseBytes: number): number {
     if (!Number.isFinite(sizeBytes) || !Number.isFinite(databaseBytes) || databaseBytes <= 0) {

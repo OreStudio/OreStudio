@@ -40,7 +40,7 @@ import { PATHS, housekeepingStorePath } from '../shell/paths.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { Metric } from '../ui/Metric.js';
-import { Button, Notice, Tag } from '../ui/Primitives.js';
+import { Button, LinkButton, Notice, Tag } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
 import {
     arrange,
@@ -167,6 +167,19 @@ export function HousekeepingPage(): ReactNode {
     const [filter, setFilter] = useState<StoreFilter>('all');
     const [order, setOrder] = useState<StoreOrder>('attention');
     const stores = useHousekeepingStores();
+    /*
+     * The database's own size, so the summary can state what the catalogued
+     * stores are a part of. It is a second read, and its failure leaves the figure
+     * unstated rather than the page unread.
+     */
+    const capacity = useQuery({
+        queryKey: ['operations', 'housekeeping', 'capacity', '24h'],
+        queryFn: () => api.housekeepingCapacity('24h'),
+    });
+    const databaseBytes =
+        capacity.data === undefined || capacity.data.samples.length === 0
+            ? null
+            : (capacity.data.samples[capacity.data.samples.length - 1]?.database_bytes ?? null);
     const trail = <AreaTrail area="operations" screen={t('operations.screens.housekeeping')} />;
 
     if (stores.isPending || stores.isError) {
@@ -195,7 +208,7 @@ export function HousekeepingPage(): ReactNode {
             title={t('operations.housekeeping.title')}
             description={t('operations.housekeeping.description')}
         >
-            <section className="card grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-5">
+            <section className="card grid gap-4 p-4 sm:grid-cols-3 lg:grid-cols-6">
                 <Metric
                     label={t('operations.housekeeping.summary.stores')}
                     value={String(figures.stores)}
@@ -214,8 +227,19 @@ export function HousekeepingPage(): ReactNode {
                         : {})}
                 />
                 <Metric
-                    label={t('operations.housekeeping.summary.size')}
+                    label={t('operations.housekeeping.summary.boundedSize')}
                     value={formatSize(figures.bytes)}
+                />
+                <Metric
+                    label={t('operations.housekeeping.summary.database')}
+                    value={databaseBytes === null ? '—' : formatSize(databaseBytes)}
+                    {...(databaseBytes === null
+                        ? {}
+                        : {
+                              note: t('operations.housekeeping.summary.databaseShare', {
+                                  share: ((figures.bytes / databaseBytes) * 100).toFixed(0),
+                              }),
+                          })}
                 />
                 <Metric
                     label={t('operations.housekeeping.summary.unmeasured')}
@@ -241,20 +265,25 @@ export function HousekeepingPage(): ReactNode {
                         </Button>
                     ))}
                 </div>
-                <label className="flex items-center gap-2 text-xs text-ink-muted">
-                    {t('operations.housekeeping.order.label')}
-                    <select
-                        className="cursor-pointer rounded-md border border-line bg-surface-base px-2 py-1 text-sm"
-                        value={order}
-                        onChange={(event) => setOrder(event.target.value as StoreOrder)}
-                    >
-                        {(['attention', 'size', 'name'] as const).map((candidate) => (
-                            <option key={candidate} value={candidate}>
-                                {t(`operations.housekeeping.order.${candidate}`)}
-                            </option>
-                        ))}
-                    </select>
-                </label>
+                <div className="flex items-center gap-3">
+                    <LinkButton to={PATHS.housekeepingTables} size="sm">
+                        {t('operations.housekeeping.seeTables')}
+                    </LinkButton>
+                    <label className="flex items-center gap-2 text-xs text-ink-muted">
+                        {t('operations.housekeeping.order.label')}
+                        <select
+                            className="cursor-pointer rounded-md border border-line bg-surface-base px-2 py-1 text-sm"
+                            value={order}
+                            onChange={(event) => setOrder(event.target.value as StoreOrder)}
+                        >
+                            {(['attention', 'size', 'name'] as const).map((candidate) => (
+                                <option key={candidate} value={candidate}>
+                                    {t(`operations.housekeeping.order.${candidate}`)}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                </div>
             </div>
 
             {shown.length === 0 ? (
@@ -409,15 +438,7 @@ export function HousekeepingPage(): ReactNode {
 
             <BoundLegend />
 
-            <p className="text-xs text-ink-faint">
-                {t('operations.housekeeping.footnote')}{' '}
-                <Link
-                    to={PATHS.housekeepingTables}
-                    className="text-accent hover:text-accent-bright"
-                >
-                    {t('operations.housekeeping.seeTables')}
-                </Link>
-            </p>
+            <p className="text-xs text-ink-faint">{t('operations.housekeeping.footnote')}</p>
         </ScreenFrame>
     );
 }

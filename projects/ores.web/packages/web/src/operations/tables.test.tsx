@@ -40,7 +40,7 @@ const GiB = 1024 * 1024 * 1024;
 const MiB = 1024 * 1024;
 
 function relation(name: string, size: number, storeCode: string | null = null): LargestRelation {
-    return { relation_name: name, size_bytes: size, store_code: storeCode };
+    return { relation_name: name, size_bytes: size, store_code: storeCode, growth_bytes: null };
 }
 
 const ROWS: readonly LargestRelation[] = [
@@ -62,12 +62,14 @@ function view(rows: readonly LargestRelation[] = ROWS): LargestRelationsView {
         database_bytes: 2 * GiB,
         relation_count: 847,
         read_at: '2026-11-28 14:10:00.000000Z',
+        from_at: '2026-11-21 14:10:00.000000Z',
+        to_at: '2026-11-28 14:10:00.000000Z',
     };
 }
 
 function withProviders(path: string, answer: LargestRelationsView = view()): string {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    client.setQueryData(['operations', 'housekeeping', 'tables', 200], answer);
+    client.setQueryData(['operations', 'housekeeping', 'tables', 200, '7d'], answer);
     return renderToStaticMarkup(
         <QueryClientProvider client={client}>
             <TranslationProvider>
@@ -144,6 +146,17 @@ describe('the tables screen', () => {
 
     it('states when the read ran, because the figures are of that instant', () => {
         expect(html).toContain('Measured');
+    });
+
+    it('states how much each table moved over the window, and says when it cannot', () => {
+        const grown = view([
+            { ...relation('ores_refdata_legal_entities_tbl', 43 * MiB), growth_bytes: 5 * MiB },
+        ]);
+        const page = withProviders('/operations/housekeeping/tables', grown);
+        expect(page).toContain('+5.0 MiB');
+        expect(page).toContain('over the last 7 days');
+        /* The default fixtures hold no history, so the screen says so. */
+        expect(html).toContain('not measured yet');
     });
 
     it('says what the read answered when no relation is named by a store', () => {

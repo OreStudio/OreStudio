@@ -24,6 +24,7 @@
 \ir ./scheduler_job_instances_drop.sql
 \ir ./scheduler_job_definitions_notify_trigger_drop.sql
 \ir ./scheduler_job_definitions_drop.sql
+\ir ./scheduler_relation_sizes_drop.sql
 \ir ./scheduler_capacity_record_drop.sql
 \ir ./scheduler_capacity_samples_drop.sql
 \ir ./scheduler_object_expiry_drop.sql

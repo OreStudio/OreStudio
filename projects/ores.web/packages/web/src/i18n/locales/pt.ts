@@ -1446,6 +1446,8 @@ const pt: SourceCatalogue = {
                     lasts: 'O espaço livre dura',
                     measuredOn: 'Medido em',
                     note: 'A medição indica um problema: {note}',
+                    largest: 'As maiores tabelas',
+                    allTables: 'Todas as tabelas, por tamanho',
                 },
                 queue: {
                     title: 'Fila de mensagens',
@@ -1872,6 +1874,9 @@ const pt: SourceCatalogue = {
                 unboundedNote: 'O trabalho que resta',
                 size: 'Tamanho total',
                 unmeasured: 'Não medidos',
+                boundedSize: 'Tamanho limitado',
+                database: 'Base de dados',
+                databaseShare: '{share}% da base',
             },
             filter: {
                 all: 'Todos os armazéns',
@@ -2073,7 +2078,7 @@ const pt: SourceCatalogue = {
             },
             list: {
                 title: 'Maiores relações',
-                lead: 'As maiores primeiro, com o armazém que o catálogo nomeia para cada uma. Uma tabela que nada nomeia não é medida por nada nem limitada por nada.',
+                lead: 'As maiores primeiro, com o armazém que o catálogo nomeia para cada uma e a sua evolução nos últimos {days} dias. Uma tabela que nada nomeia não é medida por nada nem limitada por nada.',
                 label: 'Linhas',
                 more: '{shown} das {total} relações que a leitura devolveu.',
             },
@@ -2082,10 +2087,16 @@ const pt: SourceCatalogue = {
                 named: 'Nomeada por',
                 size: 'Tamanho',
                 share: 'Parte',
+                growth: 'Evolução',
+            },
+            growth: {
+                unknown: 'ainda não medida',
             },
             named: {
                 byNothing: 'não nomeada',
             },
+            systemOnly:
+                'As relações da instalação são do administrador de sistema. Um tenant vê os armazéns que o catálogo nomeia para ele.',
             rest: 'Todo o resto',
             footnote:
                 'A leitura mede as relações quando a página a pede, por isso indica o que é grande agora. O que cresceu é a pergunta do painel de capacidade, e a lista de manutenção é a do catálogo.',

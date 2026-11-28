@@ -106,6 +106,8 @@ int range_hours(const std::string& range) {
         return 1;
     if (range == "7d")
         return 7 * 24;
+    if (range == "30d")
+        return 30 * 24;
     return 24;
 }
 
@@ -146,7 +148,11 @@ store_sample_series store_bounds_repository::read_samples(const std::string& sto
     return series;
 }
 
-largest_relation_page store_bounds_repository::read_largest_relations(std::uint32_t limit) {
+largest_relation_page store_bounds_repository::read_largest_relations(std::uint32_t limit,
+                                                                      const std::string& range) {
+    const auto to = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
+    const auto from = to - std::chrono::hours(range_hours(range));
+
     /*
      * One query answers the head of the list, how many relations there are and
      * the database's total size. The size of the database is an uncorrelated
@@ -180,6 +186,8 @@ largest_relation_page store_bounds_repository::read_largest_relations(std::uint3
 
     largest_relation_page page;
     page.read_at = now_on_the_wire();
+    page.from_at = ores::platform::time::datetime::to_iso8601_utc(from);
+    page.to_at = ores::platform::time::datetime::to_iso8601_utc(to);
     page.rows.reserve(rows.size());
     for (const auto& row : rows) {
         messaging::largest_relation relation;
@@ -189,6 +197,10 @@ largest_relation_page store_bounds_repository::read_largest_relations(std::uint3
         // The totals repeat on every row; the last row states them as well as any.
         page.relation_count = to_int64(row.size() > 3 ? row[3] : std::nullopt);
         page.database_bytes = to_int64(row.size() > 4 ? row[4] : std::nullopt);
+        // The growth is the size now less the size the window opened on; a window
+        // with no earlier measurement states no growth at all.
+        if (row.size() > 5 && row[5] && !row[5]->empty())
+            relation.growth_bytes = relation.size_bytes - to_int64(row[5]);
         page.rows.push_back(std::move(relation));
     }
     return page;

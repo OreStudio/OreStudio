@@ -437,6 +437,14 @@ export interface ListCapacitySamplesResponse {
  */
 export interface ListLargestRelationsRequest {
     /**
+     * @brief The window the growth is read over: =24h=, =7d= or =30d=.
+     *
+     * A table's size is not a fact a person acts on; its movement is. The window is
+     * the span the growth of each relation is measured across, and the read states it
+     * beside the rows so the screen can say what it is a growth of.
+     */
+    range: string;
+    /**
      * @brief How many of the largest relations to answer.
      *
      * A screen draws a table and a pie, so it needs the head of the list and not all
@@ -455,6 +463,13 @@ export interface LargestRelation {
      * @brief The relation's size with its indexes and its toast, in bytes.
      */
     size_bytes: number;
+    /**
+     * @brief How much the relation changed over the window, in bytes.
+     *
+     * Absent when the window holds no earlier measurement of the relation, which is
+     * not the same fact as no growth: the screen says which.
+     */
+    growth_bytes: number | null;
     /**
      * @brief The store the catalogue names this relation by, where it names one.
      *
@@ -481,6 +496,14 @@ export interface ListLargestRelationsResponse {
      * @brief The instant the read ran, in ISO-8601 UTC.
      */
     read_at: string;
+    /**
+     * @brief The instant the growth window opens, in ISO-8601 UTC.
+     */
+    from_at: string;
+    /**
+     * @brief The instant the read ran: where the growth window closes.
+     */
+    to_at: string;
 }
 
 export const subjects = {

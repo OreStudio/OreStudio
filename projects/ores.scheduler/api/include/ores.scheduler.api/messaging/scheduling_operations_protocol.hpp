@@ -556,6 +556,14 @@ struct list_largest_relations_request {
      */
     static constexpr bool requires_session = true;
     /**
+     * @brief The window the growth is read over: =24h=, =7d= or =30d=.
+     *
+     * A table's size is not a fact a person acts on; its movement is. The window is
+     * the span the growth of each relation is measured across, and the read states it
+     * beside the rows so the screen can say what it is a growth of.
+     */
+    std::string range = "7d";
+    /**
      * @brief How many of the largest relations to answer.
      *
      * A screen draws a table and a pie, so it needs the head of the list and not all
@@ -577,6 +585,13 @@ struct largest_relation {
      * @brief The relation's size with its indexes and its toast, in bytes.
      */
     std::int64_t size_bytes = 0;
+    /**
+     * @brief How much the relation changed over the window, in bytes.
+     *
+     * Absent when the window holds no earlier measurement of the relation, which is
+     * not the same fact as no growth: the screen says which.
+     */
+    std::optional<std::int64_t> growth_bytes;
     /**
      * @brief The store the catalogue names this relation by, where it names one.
      *
@@ -605,6 +620,14 @@ struct list_largest_relations_response {
      * @brief The instant the read ran, in ISO-8601 UTC.
      */
     std::string read_at;
+    /**
+     * @brief The instant the growth window opens, in ISO-8601 UTC.
+     */
+    std::string from_at;
+    /**
+     * @brief The instant the read ran: where the growth window closes.
+     */
+    std::string to_at;
 
     friend bool operator==(const list_largest_relations_response&,
                            const list_largest_relations_response&) = default;
@@ -942,6 +965,7 @@ struct list_largest_relations_response {
  */
 [[nodiscard]] constexpr auto wire_fields(std::type_identity<list_largest_relations_request>) {
     return ::ores::utility::codec::field_list{
+        ::ores::utility::codec::field{"range", &list_largest_relations_request::range},
         ::ores::utility::codec::field{"limit", &list_largest_relations_request::limit},
     };
 }
@@ -958,6 +982,7 @@ struct list_largest_relations_response {
     return ::ores::utility::codec::field_list{
         ::ores::utility::codec::field{"relation_name", &largest_relation::relation_name},
         ::ores::utility::codec::field{"size_bytes", &largest_relation::size_bytes},
+        ::ores::utility::codec::field{"growth_bytes", &largest_relation::growth_bytes},
         ::ores::utility::codec::field{"store_code", &largest_relation::store_code},
     };
 }
@@ -980,6 +1005,8 @@ struct list_largest_relations_response {
         ::ores::utility::codec::field{"relation_count",
                                       &list_largest_relations_response::relation_count},
         ::ores::utility::codec::field{"read_at", &list_largest_relations_response::read_at},
+        ::ores::utility::codec::field{"from_at", &list_largest_relations_response::from_at},
+        ::ores::utility::codec::field{"to_at", &list_largest_relations_response::to_at},
     };
 }
 

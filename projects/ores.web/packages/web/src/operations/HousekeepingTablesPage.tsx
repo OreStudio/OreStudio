@@ -47,10 +47,12 @@ import { PresetBar } from '../ui/Presets.js';
 import { Notice } from '../ui/Primitives.js';
 import { PieChart } from '../ui/PieChart.js';
 import { formatDateTime } from '../ui/Time.js';
+import { useOptionalSession } from '../session/SessionProvider.js';
 import { formatSize } from './housekeeping.js';
 import {
     TABLE_ROWS,
     TOP_SLICES,
+    growthOf,
     pieSlices,
     relationShare,
     type TableRowCount,
@@ -60,13 +62,28 @@ import {
 /** The rows the read asks for: enough for the longest table the screen shows. */
 const READ_LIMIT = 200;
 
+/**
+ * The window the growth column states: a week, because a table's movement is read
+ * over days and the sampler writes once a day.
+ */
+const GROWTH_RANGE = '7d' as const;
+
 export function HousekeepingTablesPage(): ReactNode {
     const { t, language } = useTranslation();
     const [top, setTop] = useState<TopSliceCount>(5);
     const [shown, setShown] = useState<TableRowCount>(25);
+    /*
+     * The installation's relations are the system administrator's to read, and
+     * the server refuses them to a tenant. The screen says so rather than
+     * offering a read it knows will fail.
+     */
+    const session = useOptionalSession();
+    const mode = session?.state.status === 'authenticated' ? session.state.session.mode : undefined;
+    const system = mode === undefined || mode === 'system-administration';
     const tables = useQuery({
-        queryKey: ['operations', 'housekeeping', 'tables', READ_LIMIT],
-        queryFn: () => api.housekeepingTables(READ_LIMIT),
+        queryKey: ['operations', 'housekeeping', 'tables', READ_LIMIT, GROWTH_RANGE],
+        queryFn: () => api.housekeepingTables(READ_LIMIT, GROWTH_RANGE),
+        enabled: system,
     });
 
     const trail = (
@@ -78,6 +95,18 @@ export function HousekeepingTablesPage(): ReactNode {
             ]}
         />
     );
+
+    if (!system) {
+        return (
+            <ScreenFrame
+                trail={trail}
+                title={t('operations.tables.title')}
+                description={t('operations.tables.description')}
+            >
+                <Notice tone="warn">{t('operations.tables.systemOnly')}</Notice>
+            </ScreenFrame>
+        );
+    }
 
     if (tables.isPending || tables.isError) {
         return (
@@ -164,7 +193,22 @@ export function HousekeepingTablesPage(): ReactNode {
                 <header className="flex flex-wrap items-baseline justify-between gap-3">
                     <div className="space-y-1">
                         <h2 className="text-sm font-medium">{t('operations.tables.list.title')}</h2>
-                        <p className="text-xs text-ink-faint">{t('operations.tables.list.lead')}</p>
+                        <p className="text-xs text-ink-faint">
+                            {t('operations.tables.list.lead', {
+                                days: String(
+                                    view.from_at === null || view.to_at === null
+                                        ? 0
+                                        : Math.max(
+                                              1,
+                                              Math.round(
+                                                  (Date.parse(view.to_at.replace(' ', 'T')) -
+                                                      Date.parse(view.from_at.replace(' ', 'T'))) /
+                                                      86_400_000,
+                                              ),
+                                          ),
+                                ),
+                            })}
+                        </p>
                     </div>
                     <PresetBar
                         label={t('operations.tables.list.label')}
@@ -185,6 +229,9 @@ export function HousekeepingTablesPage(): ReactNode {
                             </th>
                             <th className="py-1 text-right font-normal">
                                 {t('operations.tables.columns.size')}
+                            </th>
+                            <th className="py-1 text-right font-normal">
+                                {t('operations.tables.columns.growth')}
                             </th>
                             <th className="py-1 text-right font-normal">
                                 {t('operations.tables.columns.share')}
@@ -216,6 +263,24 @@ export function HousekeepingTablesPage(): ReactNode {
                                 </td>
                                 <td className="py-2 pr-3 text-right tabular-nums">
                                     {formatSize(row.size_bytes)}
+                                </td>
+                                <td className="py-2 pr-3 text-right tabular-nums">
+                                    {growthOf(row) === null ? (
+                                        <span className="text-ink-faint">
+                                            {t('operations.tables.growth.unknown')}
+                                        </span>
+                                    ) : (
+                                        <span
+                                            className={
+                                                (growthOf(row) ?? 0) > 0
+                                                    ? 'text-warn'
+                                                    : 'text-ink-muted'
+                                            }
+                                        >
+                                            {((growthOf(row) ?? 0) > 0 ? '+' : '') +
+                                                formatSize(growthOf(row) ?? 0)}
+                                        </span>
+                                    )}
                                 </td>
                                 <td className="py-2 text-right tabular-nums text-ink-muted">
                                     {(

@@ -19,6 +19,7 @@
 #include "ores.http/routes/scheduler/housekeeping_routes.hpp"
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
+#include "ores.http.api/net/record_routes.hpp"
 #include "ores.http.api/net/router.hpp"
 #include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.http.nats/forwarding.hpp"
@@ -235,6 +236,11 @@ void housekeeping_routes::register_routes(
             .auth_required()
             .query_param(
                 "limit", "integer", "200", false, "How many of the largest relations to return")
+            .query_param("range",
+                         "string",
+                         "7d",
+                         false,
+                         "The window the growth is read over: 24h, 7d or 30d")
             .handler([&session](const http_request& req) { return handle_tables(req, session); });
     const auto tables_route = tables.build();
     router->add_route(tables_route);
@@ -265,6 +271,8 @@ boost::asio::awaitable<http_response> housekeeping_routes::handle_stores(const h
         }
         co_return http_response::json(ores::utility::codec::object::write_json(
             store_bounds_body{now_on_the_wire(), reply.stores}));
+    } catch (const ores::http::net::record_routes::refusal& r) {
+        co_return ores::http::net::record_routes::answer(r);
     } catch (const std::exception& e) {
         co_return http_response::error(http_status::bad_request, e.what());
     }
@@ -285,6 +293,8 @@ boost::asio::awaitable<http_response> housekeeping_routes::handle_samples(const 
         }
         co_return http_response::json(ores::utility::codec::object::write_json(
             store_samples_body{msg.store_code, reply.samples, reply.from_at, reply.to_at}));
+    } catch (const ores::http::net::record_routes::refusal& r) {
+        co_return ores::http::net::record_routes::answer(r);
     } catch (const std::exception& e) {
         co_return http_response::error(http_status::bad_request, e.what());
     }
@@ -304,6 +314,8 @@ boost::asio::awaitable<http_response> housekeeping_routes::handle_capacity(const
         }
         co_return http_response::json(ores::utility::codec::object::write_json(
             capacity_body{reply.samples, reply.from_at, reply.to_at}));
+    } catch (const ores::http::net::record_routes::refusal& r) {
+        co_return ores::http::net::record_routes::answer(r);
     } catch (const std::exception& e) {
         co_return http_response::error(http_status::bad_request, e.what());
     }
@@ -316,12 +328,17 @@ boost::asio::awaitable<http_response> housekeeping_routes::handle_tables(const h
         const auto limit = req.get_query_param("limit");
         if (!limit.empty())
             msg.limit = static_cast<std::uint32_t>(std::stoul(limit));
+        const auto range = req.get_query_param("range");
+        if (!range.empty())
+            msg.range = range;
 
         const auto reply = forwarding::forward(req, session, msg);
         if (!reply.success) {
             co_return http_response::error(http_status::bad_gateway, reply.message);
         }
         co_return http_response::json(ores::utility::codec::object::write_json(reply));
+    } catch (const ores::http::net::record_routes::refusal& r) {
+        co_return ores::http::net::record_routes::answer(r);
     } catch (const std::exception& e) {
         co_return http_response::error(http_status::bad_request, e.what());
     }
@@ -374,6 +391,8 @@ boost::asio::awaitable<http_response> housekeeping_routes::handle_policy(const h
         }
         co_return http_response::json(
             ores::utility::codec::object::write_json(store_bound_answer{}));
+    } catch (const ores::http::net::record_routes::refusal& r) {
+        co_return ores::http::net::record_routes::answer(r);
     } catch (const std::exception& e) {
         co_return http_response::bad_request(e.what());
     }

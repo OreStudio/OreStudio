@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: CA6DD3E5-3892-43EB-97CE-6573CFE91386
+:END:
+#+title: Task: Manage the dynamics of the data
+#+description: A size is a fact and a movement is a decision. The screens stated what each store holds and nothing stated what a table is doing, so a person could not tell which table needs a period, whether a clean-up held, or how much of the database a working policy covers. This task measures every relation once a day and keeps the series, states each table's growth beside its size, makes the tables screen reachable and visible, states the database's size beside the size the catalogue bounds, refuses the relation list to a tenant, and puts the largest tables on the dashboard.
+#+type: task
+#+level: s1
+#+filetags: :housekeeping_bound_every_store_the_system_keeps:sprint_31:v0:
+#+owner: marco
+#+branch: feature/manage-the-dynamics-of-the-data
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-11-28
+#+updated: 2026-11-28
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person can answer, from the screens, what is growing, by how much, whether anything bounds it, and what that leaves on the disk — and can say which tables need a policy next.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8D2AD473-21AE-4999-A6D0-BBF31BEE4E6F][Housekeeping: bound every store the system keeps]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-11-28                               |
+
+* Acceptance
+
+- Every relation is measured once a day and the series is kept, so a table's growth can be read and not only its size
+- The tables screen states each table's growth over the window it read, and says when it has no history to state
+- The housekeeping summary states the database's size beside the size the catalogue bounds, and the former 'Total size' no longer reads as the whole
+- The tables screen is reached from a control on the housekeeping screen and from the dashboard, and the dashboard states the largest tables
+- A tenant administrator cannot read the installation's relations, and the screen says so rather than failing
+- The series is itself a store in the catalogue with a period, so measuring everything does not create the thing nothing bounds
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Cost of one sampler firing | 848 relations in 189 ms | =select ores_scheduler_sample_relation_sizes_fn()= with =\timing on= | this branch |
+| Rows a day | 848, and 81,000 at a quarter hour, which is why the cadence is daily | arithmetic | this branch |
+| pgTAP suite for the sampler | 4 assertions pass | =compass sql -- -f projects/ores.sql/test/scheduler_relation_sizes_test.sql= | this branch |
+| Live tables read with growth | 200; window 2026-11-21 to 2026-11-28; 848 relations, database 3844396735 bytes | =curl '/api/operations/housekeeping/tables?limit=5&range=7d'= | this branch |
+| A tenant's read of the relations | 401 =not-authenticated= (the refusal precedes the gate) | =curl= as =tenant_admin@acme_corporation= | this branch |
+| Web suites | 557 tests across =operations=, =pages= and =ui=, all pass | =npx vitest run src/operations src/pages src/ui= | this branch |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The screens now state what the data is doing and not only what it holds. Every
+relation is measured once a day into a series that is itself a catalogue store
+with a 90-day period; the tables page states each table's growth over a week,
+its size, its share, and the store that names it; the housekeeping summary states
+the database's size beside the size the catalogue bounds; and the dashboard
+states the largest tables beside the disk they fill.
+
+Three things the work found and did not settle.
+
+- A tenant's session is answered 401 =not-authenticated= by every housekeeping
+  read, before the gate this task added is reached. That is captured: the status
+  misleads a screen and hides the design question behind a defect.
+- The growth column states nothing until the first two daily firings exist, and
+  it says so rather than stating a zero.
+- What a table's *kind* of growth means — reference data kept by design, a series
+  that needs a period, a versioned table whose growth is churn, scratch to be
+  released — is the vocabulary a person needs before a policy can be proposed
+  from a table. That is the next task, not this one.

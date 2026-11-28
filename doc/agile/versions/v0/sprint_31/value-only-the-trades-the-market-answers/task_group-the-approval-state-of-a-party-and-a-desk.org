@@ -34,55 +34,78 @@ generation carry it, which returns all four to what their rows state.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8C516DC6-F0BC-43F6-8DF4-4CE64DFCB9BF][Value only the trades the market can answer]] |
-| Now          | Measuring the four types and choosing the mechanism that brings each to its row. |
+| Now          | Teaching the row struct to group the change audit, which is the one saving available to all four types. |
 | Waiting on   | Nothing.                               |
-| Next         | The measurement, then the group in the two models. |
+| Next         | The shared audit type, the entity template, the two models. |
 | Last touched | 2026-11-26                               |
 
 * Acceptance
 
-- The approval flag lives in a type of its own in =ores.refdata.party.org= and
-  =ores.refdata.business_unit.org=, generated through codegen, so the entity, the
-  wire protocol and the web types each state it once rather than four times.
+The premise was re-cut on 2026-11-26, after the measurement below showed that
+a group member alone cannot bring the two row structs back. What is accepted
+now:
+
+- The change audit — the four columns =modified_by=, =performed_by=,
+  =change_reason_code= and =change_commentary= — is one member, =audit=, in
+  both the domain type and the row struct of a party and of a business unit.
+  The model states the block once, as a field group, and codegen writes each
+  layer from it.
+- The row struct can group, which it could not before: every other template
+  already honours the audit group, and the entity template was the one that
+  did not. The capability is the task's deliverable, not a party-only edit.
 - =party=, =party_entity=, =business_unit= and =business_unit_entity= hold no
   more fields than their =* Ceilings= rows state, and =business_unit= is at or
-  under fifteen so it joins no row.
-- No ceiling in =compass/checks/wide_types.org= rises: every row is the count its
-  type has.
-- The wire roundtrip tests, the web typecheck and the approval pgTAP files pass
-  unchanged, because the chain's behaviour does not move.
+  under fifteen so it joins no row. The three rows that exist come down to the
+  counts these types then have.
+- No ceiling in =compass/checks/wide_types.org= rises: every row is the count
+  its type has, and no row is added.
+- The approval chain's behaviour does not move: the two approval pgTAP files,
+  the refdata C++ suites, the wire roundtrip tests and the web typecheck pass.
+  The party's and the desk's wire shape changes only in that the audit columns
+  nest, which every generated type on the path mirrors.
 
 * Plan
 
-The plan's shape is settled; the mechanism is what the first step decides.
+The plan's shape was settled by the measurement; the mechanism it records is
+the one the counts left open.
 
-1. Count the four types as they stand, with the check's own command, and record
-   the numbers. The task's premise is four counts — =party= 20, =party_entity=
-   21, =business_unit= 17 and =business_unit_entity= 16 — and a plan that
-   starts from a remembered count is a plan that may be shaping the wrong type.
-2. Choose the mechanism by what the counts say, from the two the models offer:
-   - a =field_group= member, which is how =ores.refdata.convention= carries its
-     identity, payload and audit: the entity's domain struct gains one member
-     and the group states the flag once. This is the mechanism the task's
-     acceptance names, and it shrinks the domain type by one per type it
-     replaces;
-   - a state row of its own, which shrinks the entity as well, and is the
-     honest answer if the entity count is what stands over its ceiling, because
-     a group member is a C++ shape and not a column.
-   The measurement decides which of the two each of the four types needs; a mix
-   is possible, and if it is, the plan says so rather than forcing one shape.
-3. State the group, or the row, in =ores.refdata.party.org= and
-   =ores.refdata.business_unit.org=, and let codegen write the entity, the
-   protocol, the table and the web types.
-4. No ceiling in =compass/checks/wide_types.org= rises: if a count cannot come
-   down without moving a fact the chain needs, the task stops and says why
-   instead of raising a row.
-5. Run the two approval pgTAP files, the refdata C++ suites and the web
-   typecheck and format: the chain's rules must not move, only the shape that
-   carries them. The flag's two states stay distinct — false permits everything,
-   true with no junction rows permits nothing — because that distinction is the
-   chain's whole point.
-4. Record the four counts before and after, with the command that measured them.
+1. Count the four types with the check's own command and record the numbers.
+   *Done*: =compass-ng check --codec wide_types= at =0c91ae4d65= reports
+   =party= 20 against a row of 19, =party_entity= 21 against 20,
+   =business_unit= 16 with no row, and =business_unit_entity= 17 against 16.
+   All four are exactly one field over, and all four crossed on
+   =restricts_product_types=.
+2. Choose the mechanism by what the counts say. A field group composes into the
+   domain type alone — =convention_entity= is flat although =convention=
+   declares three groups — so a group member cannot bring a row struct back.
+   The two mechanisms left are moving the flag out of both tables, which
+   rewrites the product approval SQL, or teaching the row struct to group the
+   columns the model already groups. The owner chose the second on 2026-11-26:
+   no schema change, the flag stays where it belongs, and the saving applies to
+   every entity, not to these four.
+3. Add the shared row type the group needs: the four change-audit columns as
+   one struct in =ores.database=, beside =db_timestamp=, because every entity's
+   audit block holds the same four columns in the same layer.
+4. Teach the entity template to use it. =has_audit_group= is already in the
+   model context and every other template that reads the audit block honours
+   it; the entity template states the four columns flat and binds them one by
+   one. It emits one member, =audit=, when the model declares the group, and
+   stays flat when it does not, so no other entity's generated code moves.
+5. Point the mapper at the nested member on the entity side. The domain side
+   already goes through =audit_prefix=; the entity side is written flat in four
+   places.
+6. Declare =| audit | ores.dq.audit_record |= in =ores.refdata.party.org= and
+   =ores.refdata.business_unit.org=, so both layers group from one statement in
+   the model, and let codegen write the domain type, the row struct, the
+   protocol, the schema documentation and the web types.
+7. Lower the three ceiling rows to the counts their types then have, and leave
+   =business_unit= off the list. No row rises and none is added.
+8. Run the two approval pgTAP files, the refdata C++ suites, the wire roundtrip
+   tests and the web typecheck and format: the chain's rules must not move, only
+   the shape that carries them. The flag's two states stay distinct — false
+   permits everything, true with no junction rows permits nothing — because
+   that distinction is the chain's whole point.
+9. Record the four counts before and after, with the command that measured them.
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
@@ -95,11 +118,28 @@ before any change: =party= 19, =party_entity= 20, =business_unit_entity= 16, and
 =business_unit= carries no row at all, which is the rule's way of saying it must
 come to fifteen or under rather than join the list.
 
-The task's premise is therefore four counts, and the mechanism cannot be a group
-member alone: replacing one boolean field with one struct member leaves the count
-where it was. Something has to move out of the type, or several facts have to
-become one member. That is what the plan's first step measures, and it may mean
-the acceptance is re-cut rather than met.
+The measurement the plan's first step asked for is in =* Measurements=. It
+shows that the task's premise was wrong in one place and incomplete in another.
+Wrong, because a group member cannot bring a row struct back: the entity
+template states one member per column by design, and =convention_entity= is
+flat although its model declares three groups, so the group reaches the domain
+type alone. Incomplete, because the four types were not four different
+problems: each was exactly one field over its row, and all four crossed on the
+same boolean.
+
+So the saving had to be one the row struct could take, and the audit block is
+the only one it holds that the model can state as a group: four of
+=party_entity='s 21 members and four of =business_unit_entity='s 17. Making the
+row struct group it takes =party= to 16, =party_entity= to 18, =business_unit=
+to 12 and =business_unit_entity= to 14 — every one under its row, and
+=business_unit= well clear of the fifteen it may not exceed.
+
+The alternative was to move =restricts_product_types= out of both tables into a
+table of its own, which also lands all four on their rows. It lost on cost and
+on reach: it rewrites the product approval SQL, the junction triggers that
+maintain the permitted sets, the publish path that restricts a book, the shell
+recipes and both pgTAP files, inside a story another environment is working,
+and it leaves the next wide entity exactly as stuck as before.
 
 * Measurements
 
@@ -113,7 +153,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =party= fields, before | 20 (row: 19) | =compass-ng check --codec wide_types= | =0c91ae4d65= |
+| =party_entity= fields, before | 21 (row: 20) | =compass-ng check --codec wide_types= | =0c91ae4d65= |
+| =business_unit= fields, before | 16 (no row; ceiling 15) | =compass-ng check --codec wide_types= | =0c91ae4d65= |
+| =business_unit_entity= fields, before | 17 (row: 16) | =compass-ng check --codec wide_types= | =0c91ae4d65= |
 
 * Notes
 

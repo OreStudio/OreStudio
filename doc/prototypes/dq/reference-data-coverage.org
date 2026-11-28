@@ -119,11 +119,14 @@ The page answers the questions a list cannot:
 - *History.* The versions of the dataset row, which the design defers: the entity
   is versioned and this prototype draws none of it.
 
-A fourth view is designed and not drawn here: the rows the dataset has staged.
-The page counts them today and never shows one, and the table they sit in has its
-own columns for every artefact family, so it is
-[[id:99F3E780-6AA0-4879-8F6F-2A1321ACDB85][a task of its own]] rather than a tab
-this prototype can draw from mock data.
+- *Contents.* The tables the dataset stages into, and the rows of one of them. A
+  dataset does not sit in one table: its artefact type names a table or a family,
+  and every family carries its own columns beside the two all of them share,
+  =dataset_id= and =tenant_id=. So the tab lists the tables first — each with its
+  own column list and its own staged count — and a table is opened to read its
+  rows. The read that serves it must carry the columns with the rows, which is
+  why [[id:99F3E780-6AA0-4879-8F6F-2A1321ACDB85][its task]] owns that decision.
+  The rows here are mock data and the page says so.
 
 The list keeps the state column *and* the page exists, because they answer
 different questions: the list says which datasets need attention, and the page

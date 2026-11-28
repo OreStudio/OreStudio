@@ -302,6 +302,97 @@
         return M.badge('ok', 'published');
     }
 
+
+    /* The tables a dataset stages into. An artefact type names a table or a family
+     * of them, and every family carries its own columns beside the two all of them
+     * share, dataset_id and tenant_id. So the tab lists the tables first, and a
+     * table's rows are drawn when one is opened. */
+    var CONTENTS = {
+        'refdata.countries': [
+            {
+                table: 'dq_countries_artefact_tbl',
+                rows: [
+                    ['GB', 'GBR', '826', 'United Kingdom', 'United Kingdom of Great Britain and Northern Ireland'],
+                    ['US', 'USA', '840', 'United States', 'United States of America'],
+                    ['JP', 'JPN', '392', 'Japan', 'Japan'],
+                    ['CH', 'CHE', '756', 'Switzerland', 'Swiss Confederation']
+                ],
+                columns: ['alpha2_code', 'alpha3_code', 'numeric_code', 'name', 'official_name'],
+                staged: 249
+            }
+        ],
+        'refdata.currencies': [
+            {
+                table: 'dq_currencies_artefact_tbl',
+                columns: ['iso_code', 'numeric_code', 'name', 'minor_unit', 'is_spot'],
+                rows: [
+                    ['GBP', '826', 'Pound Sterling', '2', 'yes'],
+                    ['USD', '840', 'US Dollar', '2', 'yes'],
+                    ['JPY', '392', 'Yen', '0', 'yes'],
+                    ['XAU', '959', 'Gold', '0', 'no']
+                ],
+                staged: 160
+            },
+            {
+                table: 'dq_currency_aliases_artefact_tbl',
+                columns: ['iso_code', 'alias', 'locale'],
+                rows: [
+                    ['GBP', 'sterling', 'en-GB'],
+                    ['USD', 'greenback', 'en-US']
+                ],
+                staged: 12
+            }
+        ],
+        'refdata.calendars': [
+            {
+                table: 'dq_calendars_artefact_tbl',
+                columns: ['calendar_code', 'name', 'business_day_convention', 'holidays'],
+                rows: [
+                    ['GBLO', 'London', 'Modified Following', '8'],
+                    ['USNY', 'New York', 'Following', '10'],
+                    ['JPTO', 'Tokyo', 'Following', '16']
+                ],
+                staged: 35
+            }
+        ]
+    };
+
+    /** The tables one dataset stages into, or the state a family holds no mock for. */
+    function tablesOf(code) {
+        var held = CONTENTS[code];
+        if (!held) {
+            return '<p class="tblstate">The tables of ' + M.esc(code) + ' are not drawn. Its ' +
+                'artefact type names a family, and this prototype holds mock rows for three ' +
+                'datasets.</p>';
+        }
+        var html = '<table class="rows"><thead><tr><th>Table</th><th>Columns</th>' +
+            '<th class="num">Staged</th></tr></thead><tbody>';
+        held.forEach(function (t) {
+            html += '<tr class="pick" tabindex="0" data-table="' + M.esc(t.table) + '">' +
+                '<td><span class="key">' + M.esc(t.table) + '</span></td>' +
+                '<td class="dim">' + M.esc(t.columns.join(', ')) + '</td>' +
+                '<td class="num">' + t.staged + '</td></tr>';
+        });
+        return html + '</tbody></table>';
+    }
+
+    /** The rows of one table, drawn as its own columns state them. */
+    function rowsOfTable(code, table) {
+        var held = (CONTENTS[code] || []).filter(function (t) { return t.table === table; })[0];
+        if (!held) {
+            return '<p class="tblstate">No table of ' + M.esc(code) + ' is named ' +
+                M.esc(table) + '.</p>';
+        }
+        var head = '<table class="rows"><thead><tr>' +
+            held.columns.map(function (c) { return '<th>' + M.esc(c) + '</th>'; }).join('') +
+            '</tr></thead><tbody>';
+        var body = held.rows.map(function (r) {
+            return '<tr>' + r.map(function (v) { return '<td class="mono">' + M.esc(v) + '</td>'; })
+                .join('') + '</tr>';
+        }).join('');
+        return head + body + '</tbody></table>';
+    }
+
     function publicationsTable(rows) {
         if (rows.length === 0) {
             return '<p class="tblstate">None yet. Nothing has published this dataset.</p>';
@@ -392,13 +483,29 @@
             ['details', 'Details'],
             ['publications', 'Publications' + (pubs.length ? ' (' + pubs.length + ')' : '') +
                 (warned ? ' ⚠' : '')],
+            ['contents', 'Contents'],
             ['history', 'History']
         ].map(function (t) {
             return '<button class="' + (tab === t[0] ? 'on' : '') + '" data-act="tab" data-arg="' +
                 t[0] + '">' + t[1] + '</button>';
         }).join('') + '</div>';
         var body;
-        if (tab === 'publications') {
+        if (tab === 'contents') {
+            var table = Q.get('table') || '';
+            var tables = CONTENTS[code] || [];
+            body = table === ''
+                ? '<div class="cardhead"><h2>Contents</h2><span class="dim">The tables this ' +
+                  'dataset stages into</span></div>' + tablesOf(code) +
+                  '<p class="hint">A dataset stages into the table or the family of tables its ' +
+                  'artefact type names. Each table carries its own columns, so a table is opened ' +
+                  'to read its rows.</p>'
+                : '<div class="cardhead"><h2>' + M.esc(table) + '</h2><span class="dim">' +
+                  M.esc(code) + '</span></div>' + rowsOfTable(code, table) +
+                  '<p class="hint"><a href="#" data-act="back-to-tables">All tables</a></p>';
+            if (table === '' && tables.length === 0) {
+                body = '<div class="cardhead"><h2>Contents</h2></div>' + tablesOf(code);
+            }
+        } else if (tab === 'publications') {
             body = '<div class="cardhead"><h2>Publications</h2><span class="dim">One row per ' +
                 'publish of this dataset</span></div>' + publicationsTable(pubs) +
                 '<p class="hint">A run records what it wrote and, when a row could not be written, ' +
@@ -413,10 +520,9 @@
         }
         document.getElementById('app').innerHTML = areas + '<main class="page">' + crumbs + head +
             '<div class="card cardgap">' + tabs + body + '</div>' +
-            M.gap('The publication log has no writer: nothing on the publish path records a row, so ' +
-                'this tab is empty however the screen is built. It also has no outcome or message ' +
-                'column, so a failed run has nowhere to say why. Both belong to the publish path, ' +
-                'not to this screen.') +
+            M.gap('The rows a dataset has staged have no read over the bus. The artefact table ' +
+                'names its own columns for every family, so the read must carry them with the ' +
+                'rows; until it does, this tab draws mock rows.') +
             M.gap('The published count has no operation. Every published row names its dataset and no ' +
                 'service counts by it, so the figure here is mock data.') +
             '</main>';
@@ -425,7 +531,20 @@
 
     function wireDataset() {
         document.querySelectorAll('.tabs button').forEach(function (btn) {
-            btn.addEventListener('click', function () { goto({ tab: btn.getAttribute('data-arg') }); });
+            btn.addEventListener('click', function () {
+                goto({ tab: btn.getAttribute('data-arg'), table: null });
+            });
+        });
+        document.querySelectorAll('tr[data-table]').forEach(function (tr) {
+            tr.addEventListener('click', function () {
+                goto({ table: tr.getAttribute('data-table') });
+            });
+        });
+        document.querySelectorAll('[data-act="back-to-tables"]').forEach(function (a) {
+            a.addEventListener('click', function (e) {
+                e.preventDefault();
+                goto({ table: null });
+            });
         });
         document.getElementById('proto-bar').innerHTML = M.bar([
             { v: 'tenant', t: 'This tenant' },

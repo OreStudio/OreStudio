@@ -167,9 +167,11 @@ view.
   has no subject, so step 4 is the one read of the screen that is not served.
 - *A view of the rows a dataset holds.* The dataset's page states a count of
   staged rows and never one of them, so a person cannot tell a correct catalogue
-  from a plausible one. The rows live in a table whose columns differ by artefact
-  family, so the read must carry the columns with the rows. This is
-  [[id:99F3E780-6AA0-4879-8F6F-2A1321ACDB85][See the rows a dataset has staged]].
+  from a plausible one. A dataset stages into a table or a family of tables, and
+  each family carries its own columns, so the view lists the tables first and
+  opens one to read its rows; the read must carry the columns with the rows. This
+  is [[id:99F3E780-6AA0-4879-8F6F-2A1321ACDB85][See the rows a dataset has
+  staged]].
 
 - *A written and worded publication log.* The log has no writer and no column for
   an outcome or a message, so a dataset's Publications tab has nothing to draw and

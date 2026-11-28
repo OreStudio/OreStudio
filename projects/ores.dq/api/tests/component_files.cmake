@@ -49,6 +49,7 @@ set(files
     "dataset_bundle_member_protocol_codec_roundtrip_tests.cpp"
     "dataset_bundle_protocol_codec_roundtrip_tests.cpp"
     "dataset_codec_roundtrip_tests.cpp"
+    "dataset_contents_protocol_codec_roundtrip_tests.cpp"
     "dataset_protocol_codec_roundtrip_tests.cpp"
     "dataset_publications_protocol_codec_roundtrip_tests.cpp"
     "domain_badge_definition_tests.cpp"

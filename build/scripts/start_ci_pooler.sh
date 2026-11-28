@@ -69,27 +69,35 @@ mkdir -p "${out}"
 
 # Every user the pooler authenticates, with the secret it authenticates them
 # with. The pooler runs scram-sha-256, so it accepts a SCRAM verifier in place of
-# a password, and a service's password never reaches this file. Two kinds of user
-# are in it, and their secrets come from different places:
+# a password, and a service's password never reaches this file.
 #
-# - the deployment's own accounts, whose password stays in the environment file
-#   because it is the deployment's rather than a service's;
-# - each service account, whose verifier `compass vault provision` reads from the
-#   server after it sets the role's password and writes under build/keys. A
-#   rotation means provisioning again and restarting the pooler, which is the
-#   same step that restarts the services.
+# The verifier comes from the server whenever it can be reached, because that is
+# the only copy that cannot be out of date: a recreate and a provisioning run
+# both rewrite role passwords, and a secret written before either of them is a
+# pooler that refuses a password the server accepts. A host that builds a
+# container's configuration away from the database has no server to ask, and
+# falls back to the verifiers provisioning wrote under build/keys and to the
+# passwords the environment file carries for the deployment's own accounts.
 #
-# The pooler reads this file rather than asking the server for a verifier: an
-# account that answers that question may read every verifier in the instance,
-# and a rotation restarts the fleet anyway, because each service resolves its
-# password at start.
+# The pooler process reads this file and asks nobody: an account inside it that
+# answered a verifier question would hold the right to read every verifier in the
+# instance, and a rotation restarts the fleet anyway, because each service
+# resolves its password at start. The question is asked here instead, once, by
+# the deployment tool that already holds the administrator's password.
 users() {
-    local key user pass verifier_dir
+    local key user pass verifier_dir secret_of
     verifier_dir="${root}/build/keys"
+    local -A from_server=()
+    while read -r user secret_of; do
+        [ -n "${user}" ] && from_server["${user}"]="${secret_of}"
+    done <<< "$(server_verifiers)"
     for key in $(sed -n 's/^\([A-Z0-9_]*_DB_USER\)=.*/\1/p' "${env_file}"); do
         user="$(sed -n "s/^${key}=//p" "${env_file}" | head -1)"
         [ -n "${user}" ] || continue
-        pass="$(sed -n "s/^${key%_USER}_PASSWORD=//p" "${env_file}" | head -1)"
+        pass="${from_server[${user}]:-}"
+        if [ -z "${pass}" ]; then
+            pass="$(sed -n "s/^${key%_USER}_PASSWORD=//p" "${env_file}" | head -1)"
+        fi
         if [ -z "${pass}" ]; then
             # ORES_DQ_SERVICE_DB_USER names the verifier of dq_service.
             local stem
@@ -99,6 +107,21 @@ users() {
         fi
         [ -n "${pass}" ] && printf '"%s" "%s"\n' "${user}" "${pass}"
     done
+}
+
+# The verifier of every user the environment names, read from the server. An
+# empty answer means the server could not be asked, and the caller falls back.
+server_verifiers() {
+    command -v psql > /dev/null 2>&1 || return 0
+    local listed="" user
+    for user in $(sed -n 's/^[A-Z0-9_]*_DB_USER=//p' "${env_file}"); do
+        listed="${listed:+${listed},}'${user//\'/\'\'}'"
+    done
+    [ -n "${listed}" ] || return 0
+    PGPASSWORD="${PGPASSWORD:-$(sed -n 's/^PGPASSWORD=//p' "${env_file}" | head -1)}" \
+        psql -h 127.0.0.1 -p "${db_port}" -U postgres -t -A -F' ' \
+        -c "select usename, passwd from pg_shadow
+            where usename in (${listed}) and passwd is not null" 2> /dev/null || true
 }
 
 # Writes the configuration. A host writes it under build/pgbouncer, log and all.

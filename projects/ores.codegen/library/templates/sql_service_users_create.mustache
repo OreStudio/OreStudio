@@ -8,18 +8,38 @@
  * Creates/updates domain service database users (idempotent).
  * Included by recreate_database.sql (postgres superuser phase).
  *
- * Required psql variables (one pair per service):
- *   :{name}_service_user, :{name}_service_password
- *   :service_role
+ * A service role gets no password here: it resolves its own from the vault at
+ * start, and compass vault provision writes it.
+ *
+ * Each one has a fixture login beside it, named <service user>_test, which
+ * holds the deployment's test password and starts as the service's own role.
+ * A test that acts as a service signs in as the fixture, so the grants it
+ * exercises are the service's, without holding a password the environment file
+ * does not carry.
+ *
+ * Required psql variables:
+ *   :{name}_service_user, :service_role, :test_dml_password
  */
+
+select set_config('ores.test_password', :'test_dml_password', false);
 
 {{#service_registry_db_services}}
 -- {{description}} domain service
 select set_config('ores.cur_user', :'{{psql_var}}_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :{{psql_var}}_user with password :'{{psql_var}}_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :{{psql_var}}_user;
 alter  role :{{psql_var}}_user set search_path to public;
 

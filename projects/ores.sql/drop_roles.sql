@@ -89,6 +89,23 @@ begin
         'ores_' || v_label || '_analytics_service'
     ];
 
+    -- Every domain service the registry holds, and the fixture login beside
+    -- each one, by pattern rather than by list: a list here goes stale the
+    -- moment a service is added, and a role this environment created and never
+    -- dropped keeps a password the next recreate did not set.
+    --
+    -- A fixture is a member of the service role beside it and PostgreSQL
+    -- refuses to drop a role another role is a member of, so the fixtures are
+    -- dropped first and named here rather than left to the order of a list.
+    v_users := array(
+        select rolname from pg_roles
+        where rolname ~ ('^ores_' || v_label || '_.+_service_test$'))
+        || array(
+            select rolname from pg_roles
+            where rolname ~ ('^ores_' || v_label || '_.+_service$'))
+        || v_users;
+    v_users := array(select distinct unnest(v_users));
+
     -- Revoke group memberships and drop user roles
     foreach v_role in array v_users loop
         if exists (select 1 from pg_roles where rolname = v_role) then

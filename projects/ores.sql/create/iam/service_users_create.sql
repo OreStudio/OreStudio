@@ -25,170 +25,360 @@
  * Creates/updates domain service database users (idempotent).
  * Included by recreate_database.sql (postgres superuser phase).
  *
- * Required psql variables (one pair per service):
- *   :{name}_service_user, :{name}_service_password
- *   :service_role
+ * A service role gets no password here: it resolves its own from the vault at
+ * start, and compass vault provision writes it.
+ *
+ * Each one has a fixture login beside it, named <service user>_test, which
+ * holds the deployment's test password and starts as the service's own role.
+ * A test that acts as a service signs in as the fixture, so the grants it
+ * exercises are the service's, without holding a password the environment file
+ * does not carry.
+ *
+ * Required psql variables:
+ *   :{name}_service_user, :service_role, :test_dml_password
  */
+
+select set_config('ores.test_password', :'test_dml_password', false);
 
 -- IAM domain service
 select set_config('ores.cur_user', :'iam_service_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :iam_service_user with password :'iam_service_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :iam_service_user;
 alter  role :iam_service_user set search_path to public;
 
 -- Reference Data domain service
 select set_config('ores.cur_user', :'refdata_service_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :refdata_service_user with password :'refdata_service_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :refdata_service_user;
 alter  role :refdata_service_user set search_path to public;
 
 -- Data Quality domain service
 select set_config('ores.cur_user', :'dq_service_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :dq_service_user with password :'dq_service_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :dq_service_user;
 alter  role :dq_service_user set search_path to public;
 
 -- Variability domain service
 select set_config('ores.cur_user', :'variability_service_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :variability_service_user with password :'variability_service_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :variability_service_user;
 alter  role :variability_service_user set search_path to public;
 
 -- Assets domain service
 select set_config('ores.cur_user', :'assets_service_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :assets_service_user with password :'assets_service_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :assets_service_user;
 alter  role :assets_service_user set search_path to public;
 
 -- Scheduler domain service
 select set_config('ores.cur_user', :'scheduler_service_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :scheduler_service_user with password :'scheduler_service_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :scheduler_service_user;
 alter  role :scheduler_service_user set search_path to public;
 
 -- Reporting domain service
 select set_config('ores.cur_user', :'reporting_service_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :reporting_service_user with password :'reporting_service_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :reporting_service_user;
 alter  role :reporting_service_user set search_path to public;
 
 -- Telemetry domain service
 select set_config('ores.cur_user', :'telemetry_service_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :telemetry_service_user with password :'telemetry_service_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :telemetry_service_user;
 alter  role :telemetry_service_user set search_path to public;
 
 -- Trading domain service
 select set_config('ores.cur_user', :'trading_service_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :trading_service_user with password :'trading_service_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :trading_service_user;
 alter  role :trading_service_user set search_path to public;
 
 -- Compute Grid domain service
 select set_config('ores.cur_user', :'compute_service_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :compute_service_user with password :'compute_service_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :compute_service_user;
 alter  role :compute_service_user set search_path to public;
 
 -- Synthetic domain service
 select set_config('ores.cur_user', :'synthetic_service_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :synthetic_service_user with password :'synthetic_service_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :synthetic_service_user;
 alter  role :synthetic_service_user set search_path to public;
 
 -- Workflow Orchestration domain service
 select set_config('ores.cur_user', :'workflow_service_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :workflow_service_user with password :'workflow_service_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :workflow_service_user;
 alter  role :workflow_service_user set search_path to public;
 
 -- ORE Import domain service
 select set_config('ores.cur_user', :'ore_service_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :ore_service_user with password :'ore_service_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :ore_service_user;
 alter  role :ore_service_user set search_path to public;
 
 -- Market Data domain service
 select set_config('ores.cur_user', :'marketdata_service_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :marketdata_service_user with password :'marketdata_service_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :marketdata_service_user;
 alter  role :marketdata_service_user set search_path to public;
 
 -- Analytics domain service
 select set_config('ores.cur_user', :'analytics_service_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :analytics_service_user with password :'analytics_service_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :analytics_service_user;
 alter  role :analytics_service_user set search_path to public;
 
 -- Object Storage domain service
 select set_config('ores.cur_user', :'storage_service_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :storage_service_user with password :'storage_service_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :storage_service_user;
 alter  role :storage_service_user set search_path to public;
 
 -- Inbox domain service
 select set_config('ores.cur_user', :'inbox_service_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :inbox_service_user with password :'inbox_service_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :inbox_service_user;
 alter  role :inbox_service_user set search_path to public;
 
 -- Vault domain service
 select set_config('ores.cur_user', :'vault_service_user', false);
-do $$ begin
-    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
-        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
-alter  user :vault_service_user with password :'vault_service_password';
+do $$
+declare
+    v_service text := current_setting('ores.cur_user');
+    v_fixture text := current_setting('ores.cur_user') || '_test';
+begin
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create user %I', v_service); end if;
+    if not exists (select 1 from pg_roles where rolname = v_fixture) then
+        execute format('create user %I login', v_fixture); end if;
+    execute format('alter role %I with password %L',
+                   v_fixture, current_setting('ores.test_password'));
+    execute format('grant %I to %I', v_service, v_fixture);
+    execute format('alter role %I set role = %I', v_fixture, v_service);
+end $$;
 grant :service_role to :vault_service_user;
 alter  role :vault_service_user set search_path to public;
 

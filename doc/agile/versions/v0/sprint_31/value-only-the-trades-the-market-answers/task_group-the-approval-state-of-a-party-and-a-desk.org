@@ -167,8 +167,8 @@ suppresses the entity's history-provider registrar.
 
 The codegen prototype of option A — =change_audit= in =ores.database=, the entity
 template and mapper changes, the flag on the two models — is committed on branch
-=feature/group-the-change-audit= rather than left in a stash, so the story can
-revive it from any worktree. The four counts it generates are =party= 16,
+=feature/group-the-change-audit= at =a9738164ee= rather than left in a stash, so
+the story can revive it from any worktree. The four counts it generates are =party= 16,
 =party_entity= 18, =business_unit= 12 and =business_unit_entity= 14, read from
 the generated headers rather than from the check.
 

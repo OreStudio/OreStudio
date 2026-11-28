@@ -22,8 +22,11 @@
  * The Series the Computed Term Indices Are Stated In
  *
  * Each term index the run computes has one series, and the series says so: its
- * derivation_kind is =IR_CURVE_BOOTSTRAP= and it names the generation config
- * and version that produced it. Without this row the ingest would create the
+ * derivation_kind is =IR_TERM_FIXING= and it names the generation config and
+ * version that produced it. The kind is not =IR_CURVE_BOOTSTRAP=: the rate is
+ * compounded from the overnight curve, not bootstrapped from an instrument grid,
+ * and an =IR_CURVE_BOOTSTRAP= config id resolves to a refdata blueprint, so one
+ * kind would name two tables. Without this row the ingest would create the
  * series from the first fixing it stores and leave it =OBSERVED=, because a
  * fixing tick states a value and not how the value was made.
  *
@@ -80,7 +83,7 @@ select md5('computed-fixing|' || s.provider_code || '|' || s.oresmd_uri)::uuid,
        ores_utility_system_tenant_id_fn(), 0,
        ores_iam_account_parties_system_party_id_fn(ores_utility_system_tenant_id_fn()),
        'index_fixing', s.oresmd_uri, s.provider_code,
-       'IR_CURVE_BOOTSTRAP', s.derivation_config_id, s.derivation_config_version,
+       'IR_TERM_FIXING', s.derivation_config_id, s.derivation_config_version,
        current_user, current_user, 'system.initial_load',
        'The series the platform states the term index of ' || s.provider_code ||
            ' in, computed from the run''s own overnight curve'
@@ -121,5 +124,5 @@ drop table t_computed_fixing_series;
 select 'computed_fixing_series' as entity, count(*) as count
 from ores_marketdata_market_series_tbl
 where valid_to = ores_utility_infinity_timestamp_fn()
-  and derivation_kind = 'IR_CURVE_BOOTSTRAP'
+  and derivation_kind = 'IR_TERM_FIXING'
   and oresmd_uri like 'oresmd://ir/%type=fixing%';

@@ -80,7 +80,11 @@ function set(overrides: Partial<PublishedCurveSet> = {}): PublishedCurveSet {
         series_id: SERIES,
         series_uri:
             'oresmd://ir/USD?type=series&instrument=discount&quote=rate&curve_id=USD-SOFR-ACME',
-        bootstrap_config_id: 'd0e1f2a3-b4c5-4d6e-7f80-91a2b3c4d5e6',
+        derivation: {
+            kind: 'IR_CURVE_BOOTSTRAP',
+            config_name: 'USD-SOFR-FOMC',
+            config_id: 'd0e1f2a3-b4c5-4d6e-7f80-91a2b3c4d5e6',
+        },
         party: PARTY,
         party_id: '3f1e2d4c-0000-4000-8000-000000000010',
         as_of: '2026-10-27 12:00:00Z',
@@ -353,6 +357,31 @@ describe('the published curve record', () => {
         expect(html).toContain('The act');
         expect(html).toContain('henry.jones');
         expect(html).toContain(REQUEST);
+    });
+
+    it('says how the curve was made, by the blueprint that built it', () => {
+        const html = render(
+            <PublishedCurvePage />,
+            `/market-data/published-curves/${CURVE}?party=${PARTY}`,
+            (client) => seedRecord(client, [set()]),
+        );
+
+        expect(html).toContain('How it was made');
+        expect(html).toContain('ir curve bootstrap, built by USD-SOFR-FOMC');
+    });
+
+    it('says a curve no derivation produced is observed', () => {
+        const observed = set({
+            derivation: { kind: 'OBSERVED', config_name: '', config_id: '' },
+        });
+        const html = render(
+            <PublishedCurvePage />,
+            `/market-data/published-curves/${CURVE}?party=${PARTY}`,
+            (client) => seedRecord(client, [observed]),
+        );
+
+        expect(html).toContain('Observed');
+        expect(html).not.toContain('built by');
     });
 
     it('says a withdrawn set left use, with its reason and account', () => {

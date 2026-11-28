@@ -31,6 +31,10 @@ TEST_CASE("ores::marketdata::messaging::published_curve_point", "[codec][roundtr
     ores::testing::check_wire_roundtrip<ores::marketdata::messaging::published_curve_point>();
 }
 
+TEST_CASE("ores::marketdata::messaging::curve_derivation", "[codec][roundtrip][protocol]") {
+    ores::testing::check_wire_roundtrip<ores::marketdata::messaging::curve_derivation>();
+}
+
 TEST_CASE("ores::marketdata::messaging::published_curve_set", "[codec][roundtrip][protocol]") {
     ores::testing::check_wire_roundtrip<ores::marketdata::messaging::published_curve_set>();
 }

@@ -33,18 +33,10 @@ import { AreaTrail } from '../shell/AreaTrail.js';
 import { PATHS } from '../shell/paths.js';
 import { Detail, Notice, PageHeader } from '../ui/Primitives.js';
 import { LineChart, SERIES_COLOURS } from './LineChart.js';
+import { methodOf } from './derivationKind.js';
 
 /** The most values the table lists; the count states the rest. */
 const LATEST = 100;
-
-/**
- * The derivation kind in the words a reader uses, such as "IR curve bootstrap".
- * The code is the store's, and the page states it rather than inventing a name
- * for a method it does not hold a word for.
- */
-function methodOf(kind: string): string {
-    return kind.toLowerCase().replaceAll('_', ' ');
-}
 
 export function FixingSeriesPage(): ReactNode {
     const { t } = useTranslation();

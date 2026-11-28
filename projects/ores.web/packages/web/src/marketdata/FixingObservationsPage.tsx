@@ -16,6 +16,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { fixingSeriesPath } from '../shell/paths.js';
 import { Button, Notice, PageHeader, Select, Tag } from '../ui/Primitives.js';
+import { methodOf } from './derivationKind.js';
 
 /** The filters the address holds, so a view can be sent to someone else. */
 type Filters = {
@@ -23,14 +24,6 @@ type Filters = {
     readonly currency: string;
     readonly source: string;
 };
-
-/**
- * The derivation kind in the words a reader uses, such as "IR curve bootstrap".
- * The store holds the code, and the page states it rather than inventing a name.
- */
-function methodOf(kind: string): string {
-    return kind.toLowerCase().replaceAll('_', ' ');
-}
 
 /** A series that holds no day reads as such rather than disappearing. */
 function DaysCell({ series }: { readonly series: FixingObservation }): ReactNode {

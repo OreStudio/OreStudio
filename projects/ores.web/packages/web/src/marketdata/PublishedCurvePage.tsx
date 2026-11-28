@@ -34,6 +34,7 @@ import { useTabs } from '../ui/Tabs.js';
 import { formatDateTime } from '../ui/Time.js';
 import { PublishedCompareTab } from './PublishedCompareTab.js';
 import { PublishedPointsTab } from './PublishedPointsTab.js';
+import { methodOf } from './derivationKind.js';
 import { PersonCell } from '../access/PersonRef.js';
 import {
     DEFAULT_OVERLAY_SETS,
@@ -211,6 +212,28 @@ function relativeOrExact(set: PublishedCurveSet, language: string): string {
     return formatDateTime(lastChangedAt(set) ?? set.as_of, language);
 }
 
+/**
+ * How the curve was made, in the words the fixing screens use: the kind the
+ * record states, and the blueprint that built it. A curve no derivation
+ * produced says so, because "observed" is a fact about the curve and not the
+ * absence of one.
+ */
+function derivationLabel(
+    t: (key: string, values?: Readonly<Record<string, string | number>>) => string,
+    set: PublishedCurveSet,
+): string {
+    const { kind, config_name } = set.derivation;
+    if (kind === '' || kind === 'OBSERVED') {
+        return t('marketdata.published.details.observed');
+    }
+    return config_name === ''
+        ? methodOf(kind)
+        : t('marketdata.published.details.builtBy', {
+              method: methodOf(kind),
+              name: config_name,
+          });
+}
+
 /** The subject the request authorised, the act that published it, and its state. */
 function DetailsTab({
     record,
@@ -241,8 +264,11 @@ function DetailsTab({
                             {record.series_uri}
                         </Link>
                     </Fact>
+                    <Fact label={t('marketdata.published.details.derivation')}>
+                        {derivationLabel(t, record)}
+                    </Fact>
                     <Fact label={t('marketdata.published.details.config')}>
-                        <span className="break-all">{record.bootstrap_config_id}</span>
+                        <span className="break-all">{record.derivation.config_id}</span>
                     </Fact>
                     <Fact label={t('marketdata.published.columns.state')}>
                         {t(`marketdata.published.state.${state}`)}

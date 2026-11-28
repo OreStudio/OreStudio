@@ -1,0 +1,56 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ORE as a relying party: the gateway holds the browser, IAM holds the identity
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "the person's\nbrowser" as browser
+participant "ores.http\n(the gateway)" as gateway
+participant "the provider\n(issuer)" as provider
+participant "ores.vault" as vault
+participant "ores.iam" as iam
+
+browser -> gateway : GET /api/auth/providers
+gateway -> iam : the providers this address enables
+iam --> gateway : provider codes and names
+gateway --> browser : the doors this tenant offers
+
+browser -> gateway : GET /api/auth/external/start?provider=...
+gateway -> gateway : state, nonce, and a PKCE verifier it keeps for this attempt
+gateway --> browser : 302 to the provider, with code_challenge=S256
+browser -> provider : the person consents
+provider --> browser : 302 to the exact redirect address, with code and state
+browser -> gateway : GET the callback, with code and state
+
+gateway -> gateway : refuse a state it did not mint
+gateway -> vault : the client secret the provider row names
+vault --> gateway : sealed to the gateway, opened in memory
+gateway -> provider : code, the PKCE verifier, and the client secret
+provider --> gateway : an ID token and an access token
+
+gateway -> gateway : validate iss, aud, exp, nonce, and the signature by kid
+gateway -> iam : sign in as issuer and subject, through a provider
+iam -> iam : link found, or a first sign-in that registers through the policy
+iam --> gateway : the session, or a refusal with its code
+gateway --> browser : the session cookie, under the hardening it already has
+
+@enduml

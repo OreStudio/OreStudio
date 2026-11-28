@@ -33,6 +33,15 @@ authorisation, and the vocabulary the rest of the cluster uses. The
 authentication and authorisation distinction is worth slowing down on:
 almost every access bug is one being mistaken for the other.
 
+** Where an identity comes from when it is not ORE's
+
+[[id:B008A2C9-BAF5-49F7-AC79-B136AF9DAAE5][Federated identity]] — the structure
+note for the other direction: ORE as a relying party to a provider a tenant
+enables, the link that names a person by issuer and subject, the registration a
+first sign-in goes through, the session that records the method, and ORE as an
+authorization server for clients of its own API. Read it beside the sections below,
+because it answers the same questions with somebody else's store of identity.
+
 ** How an identity comes into being
 
 [[id:84706C3E-D48D-4A4B-967A-4AADB3CF44B2][Registration and Onboarding

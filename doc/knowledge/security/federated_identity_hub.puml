@@ -1,0 +1,51 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title The two directions of federation, and the one place the identity lives
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "a person" as person
+actor "a client\n(an agent, or a tool)" as client
+
+component "ores.http\n(the gateway:\ncookie, hardening,\nbrowser routes)" as gateway
+component "ores.iam\n(providers, links,\nregistration, sessions,\nevents, grants)" as iam
+component "the API\n(ores.http)" as api
+cloud "an external\nidentity provider" as provider
+
+person --> gateway : signs in
+gateway --> provider : asks who this is
+provider --> gateway : an issuer and a subject
+gateway --> iam : sign in, or register the first time
+
+client --> gateway : asks to act for a person
+gateway --> person : asks for consent
+gateway --> iam : writes the grant the consent names
+client --> api : calls, with a token IAM minted
+iam --> api : the keys that verify it
+
+note right of iam
+  Both directions end in the same place. The provider's
+  answer becomes a link, and a client's consent becomes
+  a grant, so the audit, the revocation and the second
+  person who may approve are the same ones either way.
+end note
+
+@enduml

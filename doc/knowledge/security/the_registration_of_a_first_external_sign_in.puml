@@ -1,0 +1,43 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title The registration of a first external sign-in
+
+skinparam activityDiamondBackgroundColor #F7F7F7
+
+start
+:a validated ID token names an issuer and a subject;
+if (a live link names that pair?) then (yes)
+    :the account the link names is the one that signs in;
+else (no)
+    :the registration policy decides the tenant,
+    the party and the default role;
+    note right
+      The same policy a password sign-up
+      goes through: one place decides what a
+      new account receives, whatever door it
+      came through.
+    end note
+    :an account is created as a first sign-in;
+    :a link from that issuer and subject to it is written;
+endif
+:a session is opened, its method the provider that proved it;
+stop
+
+@enduml

@@ -39,6 +39,7 @@ what it makes.
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -228,9 +229,15 @@ def derive_inputs(scripts, shell):
             commands.append(f"script inputs {' '.join(files)} --out {work / (s.name + '.tsv')}")
         batch = work / "derive.ores"
         batch.write_text("\n".join(commands) + "\n", encoding="utf-8")
+        # This run parses scripts; it never logs in. The shell refuses to start
+        # with a login name and no password, and an environment's .env names a
+        # default login, so the login the caller happens to carry is dropped here
+        # rather than left to break every non-interactive use of the shell.
+        environment = {key: value for key, value in os.environ.items()
+                       if not key.startswith("ORES_SHELL_LOGIN_")}
         run = subprocess.run(
             [str(shell), "--nats-url", "nats://127.0.0.1:1", "--load", str(batch)],
-            capture_output=True, text=True, check=False)
+            capture_output=True, text=True, check=False, env=environment)
         if run.returncode != 0:
             raise GenerationError("the shell refused a script:\n" + run.stdout + run.stderr)
         for s in scripts:

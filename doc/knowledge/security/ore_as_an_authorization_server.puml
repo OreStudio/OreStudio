@@ -1,0 +1,50 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ORE as an authorization server: the client asks, the person consents, IAM grants
+
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+autonumber
+
+actor "the person" as person
+participant "the client\n(an agent, or a\nperson's tool)" as client
+participant "ores.http\n(authorization server)" as gateway
+participant "ores.iam" as iam
+participant "the API\n(ores.http)" as api
+
+client -> gateway : GET /authorize, with client id, redirect, scope, state, PKCE
+gateway --> person : the sign-in, then the consent screen
+person -> gateway : approve the grant
+gateway -> iam : create the grant this consent names
+note right
+  The grant an approval creates is the grant
+  an agent key creates: one entity, so the
+  audit and the revocation are the same act
+  whichever door the client came through.
+end note
+iam --> gateway : the grant, and its code
+gateway --> client : 302 to the client's address, with code and state
+client -> gateway : POST /token, with the code and the PKCE verifier
+gateway --> client : a token whose subject is the person and whose actor is the client
+client -> api : the call, bearing the token
+api -> iam : the keys that verify it
+api -> api : authorise what the grant allows, and nothing more
+
+@enduml
